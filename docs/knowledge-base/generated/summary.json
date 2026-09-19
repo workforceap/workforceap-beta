@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "e041516fa07967877ed8a649c3fa80bbe6dbd8affa626105330a7e1ad4182f0a",
+  "inputTreeSha256": "06a5ea9bb0a905aefc730f138ae74560157cb3080ccdc6b37cf138e129480726",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,27 +8,27 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4718,
-    "sourceModules": 3392,
-    "importReferences": 16345,
-    "resolvedLocalReferences": 10911,
+    "files": 4810,
+    "sourceModules": 3473,
+    "importReferences": 16865,
+    "resolvedLocalReferences": 11248,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1053,
-    "nextRouteFiles": 1020,
-    "apiHandlers": 489,
+    "routeFiles": 1054,
+    "nextRouteFiles": 1021,
+    "apiHandlers": 490,
     "pageFiles": 313,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 765,
-    "testCandidates": 758,
+    "testFiles": 819,
+    "testCandidates": 812,
     "testHelpers": 7,
-    "staticallySelectedTests": 755,
+    "staticallySelectedTests": 809,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
-    "documentFiles": 414,
+    "documentFiles": 415,
     "environmentNames": 201
   },
   "areas": [
@@ -38,11 +38,11 @@
     },
     {
       "area": "api",
-      "files": 519
+      "files": 520
     },
     {
       "area": "assets",
-      "files": 76
+      "files": 78
     },
     {
       "area": "astro-marketing",
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 672
+      "files": 681
     },
     {
       "area": "content",
@@ -74,11 +74,11 @@
     },
     {
       "area": "documentation",
-      "files": 356
+      "files": 357
     },
     {
       "area": "libraries",
-      "files": 984
+      "files": 1004
     },
     {
       "area": "localization",
@@ -86,15 +86,15 @@
     },
     {
       "area": "operations",
-      "files": 122
+      "files": 126
     },
     {
       "area": "pages",
-      "files": 634
+      "files": 635
     },
     {
       "area": "root",
-      "files": 54
+      "files": 55
     },
     {
       "area": "styles",
@@ -102,41 +102,41 @@
     },
     {
       "area": "supporting-files",
-      "files": 72
+      "files": 74
     },
     {
       "area": "tests",
-      "files": 406
+      "files": 457
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 882
+      "references": 890
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 720
+      "references": 729
     },
     {
       "file": "lib/db/withRequestGuc.ts",
-      "references": 430
+      "references": 432
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 421
+      "references": 427
+    },
+    {
+      "file": "lib/content/programs.ts",
+      "references": 247
     },
     {
       "file": "lib/tenant/organization.ts",
       "references": 241
     },
     {
-      "file": "lib/content/programs.ts",
-      "references": 240
-    },
-    {
       "file": "lib/audit.ts",
-      "references": 209
+      "references": 213
     },
     {
       "file": "app/seo.ts",
@@ -144,19 +144,23 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 201
+      "references": 200
     },
     {
       "file": "lib/audit/log.ts",
       "references": 189
     },
     {
-      "file": "components/portal/PageHeader.tsx",
-      "references": 152
-    },
-    {
       "file": "components/portal/PortalRouteLoading.tsx",
       "references": 139
+    },
+    {
+      "file": "components/portal/PageHeader.tsx",
+      "references": 137
+    },
+    {
+      "file": "lib/observability/captureApiError.ts",
+      "references": 109
     },
     {
       "file": "lib/rate-limit.ts",
@@ -171,12 +175,8 @@
       "references": 96
     },
     {
-      "file": "lib/observability/captureApiError.ts",
-      "references": 94
-    },
-    {
       "file": "lib/email.ts",
-      "references": 91
+      "references": 93
     },
     {
       "file": "lib/content/programTitle.ts",
@@ -188,7 +188,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 66
+      "references": 67
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -200,7 +200,11 @@
     },
     {
       "file": "components/portal/ui/DataTable.tsx",
-      "references": 54
+      "references": 55
+    },
+    {
+      "file": "lib/events/track.ts",
+      "references": 55
     },
     {
       "file": "lib/supabase-admin.ts",
@@ -215,10 +219,6 @@
       "references": 51
     },
     {
-      "file": "lib/events/track.ts",
-      "references": 50
-    },
-    {
       "file": "lib/http/requestFailureCopy.ts",
       "references": 50
     },
@@ -228,19 +228,19 @@
     },
     {
       "file": "components/LocalizedLink.tsx",
-      "references": 41
+      "references": 44
     },
     {
       "file": "lib/ai/groq.ts",
-      "references": 40
+      "references": 42
+    },
+    {
+      "file": "lib/admin/logCronRun.ts",
+      "references": 38
     },
     {
       "file": "lib/db/queryCaps.ts",
       "references": 38
-    },
-    {
-      "file": "lib/admin/logCronRun.ts",
-      "references": 37
     },
     {
       "file": "lib/cron/cronExecution.ts",
@@ -258,7 +258,7 @@
     },
     {
       "file": "lib/email.ts",
-      "lines": 2881
+      "lines": 2875
     },
     {
       "file": "lib/content/courseSkillMap.ts",
@@ -294,7 +294,7 @@
     },
     {
       "file": "components/portal/kit/pages/VoiceStudioKit.tsx",
-      "lines": 1629
+      "lines": 1627
     },
     {
       "file": "scripts/audit-portal-routes.mjs",
@@ -302,11 +302,11 @@
     },
     {
       "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
-      "lines": 1458
+      "lines": 1459
     },
     {
       "file": "tests/api/placement-survey.spec.ts",
-      "lines": 1396
+      "lines": 1397
     },
     {
       "file": "app/(portal)/partner/page.tsx",
@@ -329,12 +329,12 @@
       "lines": 1334
     },
     {
-      "file": "components/portal/PortalVoiceSession.tsx",
-      "lines": 1313
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1327
     },
     {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1304
+      "file": "components/portal/PortalVoiceSession.tsx",
+      "lines": 1313
     },
     {
       "file": "components/portal/tools/SkillMapperClient.tsx",
@@ -357,24 +357,20 @@
       "lines": 1216
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1214
+      "file": "app/(portal)/dashboard/page.tsx",
+      "lines": 1209
     },
     {
-      "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1207
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1206
     },
     {
       "file": "components/admin/MembersTable.tsx",
-      "lines": 1206
+      "lines": 1205
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",
       "lines": 1204
-    },
-    {
-      "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-      "lines": 1140
     },
     {
       "file": "scripts/p1/test-force-rls.ts",
@@ -387,6 +383,10 @@
     {
       "file": "components/admin/CourseraMappingsAdmin.tsx",
       "lines": 1091
+    },
+    {
+      "file": "components/portal/counselor/AtRiskDashboard.tsx",
+      "lines": 1058
     },
     {
       "file": "lib/coursera/progressQueries.ts",

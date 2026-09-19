@@ -58,12 +58,11 @@ async function discoverSuites(): Promise<string[]> {
     '**/*.spec.mjs',
   ];
   const files = new Set<string>();
-  for (const pattern of patterns) {
-    for await (const file of glob(pattern, {
-      exclude: ['**/node_modules/**', '**/.next/**', '**/dist/**'],
-    })) {
-      files.add(normalize(file));
-    }
+  // One traversal keeps this whole-repository guard bounded on Windows too.
+  for await (const file of glob(patterns, {
+    exclude: ['**/node_modules/**', '**/.next/**', '**/dist/**'],
+  })) {
+    files.add(normalize(file));
   }
   return [...files].sort();
 }

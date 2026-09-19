@@ -28,7 +28,7 @@
 | [scripts/check-duplicate-migrations.mjs](../../../scripts/check-duplicate-migrations.mjs) | 134 | operations |  |
 | [scripts/check-duplicate-migrations.test.cjs](../../../scripts/check-duplicate-migrations.test.cjs) | 252 | operations |  |
 | [scripts/check-mabrown040.js](../../../scripts/check-mabrown040.js) | 31 | operations |  |
-| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 81 | operations |  |
+| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 94 | operations |  |
 | [scripts/clawpatch-pre-push.sh](../../../scripts/clawpatch-pre-push.sh) | 50 | operations |  |
 | [scripts/cleanup-fixtures.ts](../../../scripts/cleanup-fixtures.ts) | 46 | operations |  |
 | [scripts/coursera-integration-test.ts](../../../scripts/coursera-integration-test.ts) | 605 | learning-coursera |  |
@@ -61,7 +61,7 @@
 | [scripts/extract-material-symbol-glyphs.mjs](../../../scripts/extract-material-symbol-glyphs.mjs) | 162 | operations |  |
 | [scripts/fix-michael-brown-login.ts](../../../scripts/fix-michael-brown-login.ts) | 209 | operations |  |
 | [scripts/fixtures/rippling-portal-chrome-scrape.txt](../../../scripts/fixtures/rippling-portal-chrome-scrape.txt) | 28 | operations |  |
-| [scripts/generate-api-docs-data.ts](../../../scripts/generate-api-docs-data.ts) | 182 | operations |  |
+| [scripts/generate-api-docs-data.ts](../../../scripts/generate-api-docs-data.ts) | 183 | operations |  |
 | [scripts/generate-quarterly-outcomes.ts](../../../scripts/generate-quarterly-outcomes.ts) | 87 | operations |  |
 | [scripts/install-crabbox-hook.sh](../../../scripts/install-crabbox-hook.sh) | 24 | operations |  |
 | [scripts/invite-chs-partner-admin.ts](../../../scripts/invite-chs-partner-admin.ts) | 124 | operations |  |
@@ -82,7 +82,11 @@
 | [scripts/lib/portal-audit-paths.mjs](../../../scripts/lib/portal-audit-paths.mjs) | 518 | operations | STATIC_PATHS:12, DYNAMIC_PATHS:202, REQUIRED_DYNAMIC_PATHS:244, SAFE_ACTION_CONTRACTS:257, ATTENDED_ACTION_GATES:352, REDIRECT_ONLY_PATHS:382, PRODUCTION_CANARY_PATHS:475, PRODUCTION_CANARY_ROLES:481, SECTION_LOGIN_REDIRECT:485, ROLE_ACCESS_MATRIX:497 |
 | [scripts/lib/portal-audit-target.mjs](../../../scripts/lib/portal-audit-target.mjs) | 104 | operations | PORTAL_AUDIT_MODES:1, PRODUCTION_PORTAL_ORIGINS:7, normalizePortalAuditMode:13, validatePortalAuditTarget:47, formatPortalAuditTargetErrors:102 |
 | [scripts/lib/portal-hub-smoke-paths.mjs](../../../scripts/lib/portal-hub-smoke-paths.mjs) | 45 | operations | PORTAL_HUB_SMOKE_ROLES:8, PORTAL_HUB_SMOKE_PATHS:15, isPortalHubSmokePath:40 |
+| [scripts/lib/portal-qa-guard.cjs](../../../scripts/lib/portal-qa-guard.cjs) | 49 | operations | QA_ROLES:49, readPortalQaConfig:49, assertPortalQaOrganization:49 |
+| [scripts/lib/portal-qa-guard.test.cjs](../../../scripts/lib/portal-qa-guard.test.cjs) | 59 | operations |  |
 | [scripts/lib/prisma-resolve-benign.cjs](../../../scripts/lib/prisma-resolve-benign.cjs) | 36 | operations | isBenignMigrateResolveError:36 |
+| [scripts/lib/runtime-pool-contract.cjs](../../../scripts/lib/runtime-pool-contract.cjs) | 35 | operations | inspectRuntimePoolContract:35 |
+| [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 36 | operations |  |
 | [scripts/lib/supabase-project-guard.cjs](../../../scripts/lib/supabase-project-guard.cjs) | 261 | operations | DEMO_REF:253, PROD_REF:254, assertSupabaseEnvironment:255, expectedProjectForVercelEnv:256, formatSupabaseEnvGuardFailure:257, inspectSupabaseEnvironment:258, projectForAnonKey:259, projectForUrl:260 |
 | [scripts/lint/check-coursera-catalog-placeholders.mjs](../../../scripts/lint/check-coursera-catalog-placeholders.mjs) | 204 | learning-coursera |  |
 | [scripts/locked-stakes/check-i18n-safe-diff.mjs](../../../scripts/locked-stakes/check-i18n-safe-diff.mjs) | 296 | operations | checkI18nSafeDiff:225 |
@@ -108,7 +112,7 @@
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |
-| [scripts/sync-portal-test-auth.ts](../../../scripts/sync-portal-test-auth.ts) | 288 | operations |  |
+| [scripts/sync-portal-test-auth.ts](../../../scripts/sync-portal-test-auth.ts) | 285 | operations | syncPortalTestAuth:235 |
 | [scripts/test-unit.mjs](../../../scripts/test-unit.mjs) | 171 | operations |  |
 | [scripts/validate-approved-coursera-catalog.ts](../../../scripts/validate-approved-coursera-catalog.ts) | 44 | learning-coursera |  |
 | [scripts/validate-approved-coursera-track.ts](../../../scripts/validate-approved-coursera-track.ts) | 67 | learning-coursera |  |

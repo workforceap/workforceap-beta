@@ -59,12 +59,12 @@
         },
         {
           "name": "GET",
-          "line": 50,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 51,
+          "line": 54,
           "kind": "Variable"
         }
       ],
@@ -987,12 +987,12 @@
       "exports": [
         {
           "name": "GET",
-          "line": 73,
+          "line": 74,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 74,
+          "line": 75,
           "kind": "Variable"
         }
       ],

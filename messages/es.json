@@ -2381,6 +2381,48 @@
     "memberDashboard": "Panel del miembro",
     "workforceAPHome": "Inicio de WorkforceAP",
     "loadingCharts": "Cargando gráficos…",
+    "applicantTriage": {
+      "title": "Triaje de admisión de solicitantes",
+      "description": "Preclasificado a partir de las respuestas de admisión que ya constan en el expediente. Es una ayuda para el triaje, no una decisión: aprobar, solicitar información o rechazar sigue siendo una acción del personal, y nada de lo que aparece aquí cambia lo que hacen esos botones.",
+      "reasonsHeading": "Por qué está en este grupo",
+      "checklistHeading": "Lista de revisión (prellenada desde la admisión)",
+      "applicationPending": "Estado de la solicitud: en espera de revisión",
+      "applicationNeedsInfo": "Estado de la solicitud: se solicitó más información",
+      "filterLabel": "Triaje de admisión",
+      "filterAll": "Todos",
+      "bucket": {
+        "ready_to_review": "Listo para revisar",
+        "needs_human": "Requiere revisión humana",
+        "missing_info": "Falta información",
+        "not_eligible_signal": "Inquietud señalada"
+      },
+      "reason": {
+        "work_auth_answered_no": "El solicitante respondió \"no\" a la autorización de trabajo en la admisión",
+        "staff_marked_not_eligible": "La revisión WIOA del personal está marcada como no elegible",
+        "staff_requested_info": "El personal ya pidió más información al solicitante",
+        "staff_wioa_needs_info": "La revisión WIOA del personal está a la espera de más información",
+        "contact_incomplete": "Falta el nombre, el correo electrónico o el teléfono",
+        "program_missing": "No se eligió ningún programa",
+        "program_unrecognized": "El programa elegido no está en el catálogo",
+        "intake_screening_missing": "No hay respuestas de evaluación de admisión en el expediente",
+        "work_auth_unanswered": "No se respondió la autorización de trabajo",
+        "work_auth_conflict": "Las respuestas sobre autorización de trabajo se contradicen entre los formularios de admisión",
+        "funding_fit_not_indicated": "Las respuestas de admisión aún no indican compatibilidad con un financiamiento",
+        "wioa_signal_unclear": "La señal de autoevaluación WIOA del portal no es clara",
+        "minor_applicant": "El solicitante es menor de 18 años (vía de consentimiento parental)",
+        "wioa_review_in_progress": "La revisión WIOA del personal sigue en curso",
+        "intake_complete": "Admisión completa: contacto, programa, evaluación y autorización de trabajo en el expediente"
+      },
+      "checklist": {
+        "contact": "Datos de contacto en el expediente",
+        "program": "Programa elegido y presente en el catálogo",
+        "intake_screening": "Evaluación de admisión respondida",
+        "work_authorization": "Autorización de trabajo respondida con sí",
+        "funding_fit_signal": "La admisión indica compatibilidad con un financiamiento (no es una determinación)",
+        "partner_referral": "Referencia de socio o embajador registrada",
+        "wioa_staff_review": "Revisión WIOA del personal registrada como verificada"
+      }
+    },
     "courseraProvisioning": {
       "lastActivity": "Última actividad",
       "noActivityYet": "Sin actividad todavía",
