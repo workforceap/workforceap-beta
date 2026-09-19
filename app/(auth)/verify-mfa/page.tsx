@@ -1,5 +1,8 @@
 'use client';
 
+import { CircleCheck, ShieldCheck } from 'lucide-react';
+
+import actionStyles from '@/components/auth/AuthActions.module.css';
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
@@ -94,7 +97,7 @@ export default function VerifyMfaPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-container-lowest)' }}>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 64, color: 'var(--color-green)', marginBottom: '1rem' }}>check_circle</span>
+          <CircleCheck size={64} aria-hidden="true" style={{ color: 'var(--color-green)', marginBottom: '1rem' }} />
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{tAuth('mfaVerify.verifiedHeading')}</h1>
           <p role="status" style={{ color: 'var(--color-on-surface-variant)' }}>{tAuth('mfaVerify.redirecting')}</p>
         </div>
@@ -106,7 +109,7 @@ export default function VerifyMfaPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-container-lowest)', padding: '1rem' }}>
       <div style={{ width: '100%', maxWidth: 380 }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 48, color: 'var(--color-accent)', marginBottom: '0.5rem' }}>security</span>
+          <ShieldCheck size={48} aria-hidden="true" style={{ color: 'var(--color-accent)', marginBottom: '0.5rem' }} />
           <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{tAuth('mfaVerify.heading')}</h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
             {tAuth('mfaVerify.subheading')}
@@ -115,7 +118,7 @@ export default function VerifyMfaPage() {
 
         <form onSubmit={handleSubmit} noValidate>
           <div style={{ marginBottom: '1rem' }}>
-            <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <label htmlFor="mfa-code" style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {tAuth('mfaVerify.codeLabel')}
             </label>
             <input
@@ -169,7 +172,7 @@ export default function VerifyMfaPage() {
               type="checkbox"
               checked={trustDevice}
               onChange={(e) => setTrustDevice(e.target.checked)}
-              style={{ marginTop: '0.15rem' }}
+              style={{ marginTop: '0.15rem', accentColor: '#ad2c4d' }}
             />
             <span>{tAuth('mfaVerify.trustDeviceLabel')}</span>
           </label>
@@ -178,18 +181,14 @@ export default function VerifyMfaPage() {
             type="submit"
             disabled={loading || code.length !== 6}
             aria-busy={loading}
+            className={actionStyles.primary}
             style={{
               width: '100%',
               minHeight: 44,
               padding: '0.875rem',
-              background: loading || code.length !== 6 ? 'var(--surface-container-high)' : 'linear-gradient(135deg, #c79a45 0%, #a47f38 55%, #7d5f26 100%)',
-              color: loading || code.length !== 6 ? 'var(--color-on-surface-variant)' : 'var(--color-white)',
-              border: 'none',
               borderRadius: 'var(--radius-md)',
               fontWeight: 700,
               fontSize: '0.9rem',
-              cursor: loading || code.length !== 6 ? 'not-allowed' : 'pointer',
-              boxShadow: loading || code.length !== 6 ? 'none' : '0 12px 30px -12px rgba(124, 92, 38, 0.5)',
             }}
           >
             <span aria-live="polite">{loading ? tAuth('mfaVerify.verifying') : tAuth('mfaVerify.verifyButton')}</span>

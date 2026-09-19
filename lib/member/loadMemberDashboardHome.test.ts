@@ -538,3 +538,30 @@ test('kit-default dashboard page calls the loader and has no prisma. on that bra
   assert.doesNotMatch(kitBlock, /fetchLearnerProgressFromB4B/);
   assert.doesNotMatch(kitBlock, /getMemberState/);
 });
+
+
+test('lean loader uses real starter-profile gaps and keeps the one-operation budget', async () => {
+  const { db, counts } = mockDb({ row: makeRow({ nextBestActions: [],
+    applications: [{ status: 'APPROVED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+    courseEnrollments: [{ programSlug: FIXTURE_PROGRAM_SLUG, enrolledByAdminId: 'staff' }],
+    wioaReviewStatus: 'verified', wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
+    courseraEnrollmentApproved: false,
+  }) });
+  const view = await loadMemberDashboardHome({ userId: 'member' }, db);
+  assert.equal(view.doThisNext?.id, 'review_starter_profile');
+  assert.equal(view.coursePercent, 0);
+  assert.equal(view.approvalStatus.intake, 'verified');
+  assert.equal(view.approvalStatus.training, 'pending');
+  assert.equal(view.approvalStatus.providerAccess, 'unknown');
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+});
+
+test('lean loader uses the assigned program over the legacy pointer and still recommends continued training', async () => {
+  const { db } = mockDb({ row: makeRow({ nextBestActions: [], assessmentCompleted: true,
+    enrolledProgram: 'stale-program', applications: [{ status: 'APPROVED', submittedAt: null }],
+  }) });
+  const view = await loadMemberDashboardHome({ userId: 'member' }, db);
+  assert.equal(view.doThisNext?.id, 'continue_training');
+  assert.equal(view.coursePercent, 0);
+  assert.equal(view.programTitle, getProgramBySlug(canonicalizeProgramSlug(FIXTURE_PROGRAM_SLUG))?.title);
+});

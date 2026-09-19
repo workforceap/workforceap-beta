@@ -14,26 +14,27 @@
  */
 
 :root {
-  /* Semantic solids — align Badge warning/success with DESIGN.md */
-  --color-warning: var(--wa-gold);
-  --color-on-warning: var(--wa-on-accent);
-  --color-success: var(--wa-success);
-  --color-on-success: var(--wa-on-accent);
+  /* Public Next routes do not load portal-tokens.css. Every portal reference
+     needs a fallback; a global portal import also changes marketing surfaces. */
+  --color-warning: var(--wa-gold, light-dark(#a47f38, #d4ad5a));
+  --color-on-warning: #211507;
+  --color-success: var(--wa-success, light-dark(#4a9b4f, #6fc99a));
+  --color-on-success: #0d2418;
 
   /* Categorical tints — remap Astryx pink/red/yellow to WAP brand */
-  --color-background-pink: var(--wa-accent-soft);
-  --color-text-pink: var(--wa-accent);
-  --color-background-red: var(--wa-accent-soft);
-  --color-text-red: var(--wa-accent-dark);
-  --color-background-yellow: var(--wa-gold-soft);
-  --color-text-yellow: var(--wa-gold-dark);
+  --color-background-pink: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(224, 101, 138, 0.18)));
+  --color-text-pink: var(--wa-accent-text, light-dark(#8c0f37, #f39ab5));
+  --color-background-red: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(224, 101, 138, 0.18)));
+  --color-text-red: var(--wa-accent-text, light-dark(#8c0f37, #f39ab5));
+  --color-background-yellow: var(--wa-gold-soft, light-dark(#fef3c7, rgba(212, 173, 90, 0.2)));
+  --color-text-yellow: var(--wa-gold-dark, light-dark(#7d5f26, #e0b062));
   --color-background-green: light-dark(rgba(74, 155, 79, 0.14), rgba(111, 201, 154, 0.2));
-  --color-text-green: var(--wa-success);
-  --color-background-blue: var(--wa-info-soft);
-  --color-text-blue: var(--wa-info);
+  --color-text-green: var(--wa-success-dark, light-dark(#357a3a, #8fd9b0));
+  --color-background-blue: var(--wa-info-soft, light-dark(#eef5fb, rgba(119, 173, 230, 0.18)));
+  --color-text-blue: var(--wa-info-dark, light-dark(#1f5a87, #74b3e3));
 
   /* Muted accent for selection/hover chrome inside Astryx tables & trees */
-  --color-accent-muted: color-mix(in srgb, var(--wa-accent) 14%, transparent);
+  --color-accent-muted: color-mix(in srgb, var(--wa-accent, light-dark(#ad2c4d, #e0658a)) 14%, transparent);
 }
 
 /* Member warm surfaces: Stitch uses #fcf9f8 cream, not cool #f7f8fa gray.

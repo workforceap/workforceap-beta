@@ -12,7 +12,7 @@ vi.mock('next/server', () => ({
 
 vi.mock('@/lib/auth/server', () => ({
   getUser: vi.fn(),
-  resolveAuthGucContext: vi.fn(),
+  resolveAuthGucContext: vi.fn(async () => ({ userId: null, orgId: null, role: 'anonymous' })),
 }));
 
 vi.mock('@/lib/auth/roles', () => ({

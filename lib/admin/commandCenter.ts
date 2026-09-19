@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/member/persistedAtRisk';
 import { APPLICANT_TRIAGE_BUCKET_RANK, APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
 import {
@@ -34,7 +35,6 @@ export type {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_LIMIT = 8;
-const AT_RISK_DAYS = 14;
 const PROGRAM_HEALTH_LIMIT = 5;
 
 export async function getAdminCommandCenter(
@@ -47,12 +47,11 @@ export async function getAdminCommandCenter(
   const offset = (page - 1) * limit;
   const skipFor = (key: AdminQueueKey) => queue === key ? offset : 0;
   const now = options?.now ?? new Date();
-  const atRiskCutoff = new Date(now.getTime() - AT_RISK_DAYS * DAY_MS);
 
   const [needsReply, atRisk, interviewing, applicationsPending, programHealth, certificationsPendingCount] =
     await Promise.all([
       loadNeedsReply(orgId, now, limit, skipFor('needs-reply')),
-      loadAtRisk(orgId, now, atRiskCutoff, limit, skipFor('at-risk')),
+      loadAtRisk(orgId, now, limit, skipFor('at-risk')),
       loadInterviewing(orgId, limit, skipFor('interviewing')),
       loadApplicationsPending(orgId, now, limit, skipFor('applications')),
       loadProgramHealth(orgId),
@@ -115,37 +114,9 @@ async function loadNeedsReply(orgId: string, now: Date, limit: number, offset: n
   })) };
 }
 
-async function loadAtRisk(orgId: string, now: Date, atRiskCutoff: Date, limit: number, offset: number) {
-  const result = await readQueue<{
-    id: string; full_name: string | null; email: string; enrolled_program: string;
-    days_inactive: number; stale_training: boolean;
-  }>(Prisma.sql`
-    SELECT u.id, u.full_name, u.email, u.enrolled_program,
-      u.stale_training_detected_at IS NOT NULL AS stale_training,
-      GREATEST(0, FLOOR(EXTRACT(EPOCH FROM (${now}::timestamptz -
-        (COALESCE(last_event.created_at, u.enrolled_at, u.created_at) AT TIME ZONE 'UTC'))) / 86400)::int) AS days_inactive
-    FROM users u
-    LEFT JOIN LATERAL (
-      SELECT me.created_at FROM member_events me WHERE me.user_id = u.id
-      ORDER BY me.created_at DESC LIMIT 1
-    ) last_event ON true
-    WHERE u.organization_id = ${orgId} AND u.deleted_at IS NULL AND u.enrolled_program IS NOT NULL
-      AND (
-        u.stale_training_detected_at IS NOT NULL
-        OR (
-          (u.coursera_enrollment_approved OR EXISTS (
-            SELECT 1 FROM member_program_progress mp WHERE mp.user_id = u.id
-              AND mp.program_slug = u.enrolled_program AND (mp.courses_completed > 0 OR mp.average_percent > 0)
-          ))
-          AND (COALESCE(last_event.created_at, u.enrolled_at, u.created_at) AT TIME ZONE 'UTC') <= ${atRiskCutoff}::timestamptz
-        )
-      )
-  `, Prisma.sql`days_inactive DESC, id ASC`, limit, offset);
-  return { total: result.total, rows: result.rows.map((row): AdminAtRiskRow => ({
-    memberId: row.id, memberName: row.full_name ?? row.email, memberEmail: row.email,
-    daysInactive: row.days_inactive, enrolledProgram: row.enrolled_program,
-    reason: row.stale_training ? 'Training activity flagged for follow-up' : 'No recent portal activity',
-  })) };
+async function loadAtRisk(orgId: string, now: Date, limit: number, offset: number) {
+  const result = await loadPersistedAtRiskMembers({ organizationId: orgId }, { limit, offset });
+  return { total: result.total, rows: result.rows.map((row): AdminAtRiskRow => persistedRiskCommandRow(row, now)) };
 }
 
 async function loadInterviewing(orgId: string, limit: number, offset: number) {

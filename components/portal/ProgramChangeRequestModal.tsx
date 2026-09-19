@@ -17,7 +17,6 @@ type ComparisonTrack = {
   shortName: string;
   duration: string;
   difficulty: string;
-  salary: string;
   demand: 'High' | 'Very High';
   certs: string;
 };
@@ -36,7 +35,7 @@ export default function ProgramChangeRequestModal({ currentProgram, programs, ha
   const titleId = useId();
   const trapRef = useFocusTrap(open, () => setOpen(false));
 
-  // Fetch the maintained comparison dataset (duration/salary/demand/certs)
+  // Fetch the maintained comparison dataset (duration/difficulty/demand/certs)
   // once, the first time the modal opens — lets members see how the
   // program they're requesting compares before they submit.
   useEffect(() => {
@@ -230,7 +229,6 @@ export default function ProgramChangeRequestModal({ currentProgram, programs, ha
                       <span style={{ fontWeight: 600 }}>{t('programChangeCompareTitle', { program: requestedComparison.shortName })}</span>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem 1.25rem', color: 'var(--color-on-surface-variant)' }}>
                         <span>{t('programChangeCompareDuration')}: <strong style={{ color: 'var(--color-on-surface)' }}>{requestedComparison.duration}</strong></span>
-                        <span>{t('programChangeCompareSalary')}: <strong style={{ color: 'var(--color-on-surface)' }}>{requestedComparison.salary}</strong></span>
                         <span>{t('programChangeCompareDemand')}: <strong style={{ color: 'var(--color-on-surface)' }}>{requestedComparison.demand}</strong></span>
                         <span>{t('programChangeCompareCerts')}: <strong style={{ color: 'var(--color-on-surface)' }}>{requestedComparison.certs}</strong></span>
                       </div>

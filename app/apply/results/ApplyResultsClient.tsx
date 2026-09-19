@@ -1,41 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LocalizedLink from '@/components/LocalizedLink';
 import { PROGRAMS, getProgramBySlug, type Program } from '@/lib/content/programs';
-import { APPLY_STORAGE_KEY } from '../ApplyEligibilityClient';
-import {
-  APPLY_PROGRAM_SLUG_KEY,
-  APPLY_PROGRAM_RANKED_KEY,
-  APPLY_FLOW_DRAFT_KEY,
-  type ApplyFlowDraftV1,
-} from '@/lib/apply/applyProgramStorage';
+import { readApplyDraft, readSavedEligibility, saveSelectedPrograms, type SavedEligibility, type ApplyDraft } from '@/lib/apply/applyBrowserState';
+import { applyRecoveryHref, type ApplyRecoveryContext } from '@/lib/apply/applyRecoveryHref';
+import { ApplyReadyContent, ApplyResumeGate } from '@/components/apply/ApplyReadiness';
+import { localizeHref, useLocaleFromPath } from '@/lib/i18n/client';
 import { CardSkeleton } from '@/components/ui/Skeleton';
 import { ProgramIcon } from '@/components/ProgramIcon';
 import { useTranslations } from 'next-intl';
 import { trackApplyFunnel } from '@/lib/analytics/events';
 
 const FYP_RESULTS_KEY = 'find_your_path_results';
-const APPLY_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-/** Mirrors ApplyEligibilityClient's readDraft() — just the presence/freshness check. */
-function hasSavedApplyDraft(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    const raw = localStorage.getItem(APPLY_FLOW_DRAFT_KEY);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw) as ApplyFlowDraftV1;
-    if (parsed?.version !== 1) return false;
-    if (typeof parsed.updatedAt === 'string') {
-      const updated = Date.parse(parsed.updatedAt);
-      if (Number.isFinite(updated) && Date.now() - updated > APPLY_DRAFT_TTL_MS) return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
+const EMPTY_PROGRAMS: string[] = [];
 
 type CareerMatchPayload = {
   version?: number;
@@ -53,18 +32,27 @@ function toggleSlug(list: string[], slug: string, max: number): string[] {
 export default function ApplyResultsClient({
   schoolApply: schoolApplyFromServer = false,
   schoolName = null,
-  schoolProgramSlugs = [],
+  schoolProgramSlugs = EMPTY_PROGRAMS,
+  readyHeader,
+  readyIntro,
+  recoveryContext,
 }: {
+  recoveryContext?: ApplyRecoveryContext;
+  readyHeader?: ReactNode;
+  readyIntro?: ReactNode;
   schoolApply?: boolean;
   schoolName?: string | null;
   schoolProgramSlugs?: string[];
 }) {
   const t = useTranslations('apply');
   const tCta = useTranslations('cta');
+  const locale = useLocaleFromPath();
+  const [storageError, setStorageError] = useState(false);
+  const [eligibility, setEligibility] = useState<SavedEligibility | null>(null);
   const searchParams = useSearchParams();
   const programParam = searchParams?.get('program');
   const [pageState, setPageState] = useState<'loading' | 'ready' | 'missing'>('loading');
-  const [hasSavedDraft, setHasSavedDraft] = useState(false);
+  const [savedDraft, setSavedDraft] = useState<ApplyDraft | null>(null);
   const [qualifies, setQualifies] = useState<boolean | null>(null);
   const [isSchool, setIsSchool] = useState(schoolApplyFromServer);
   const [schoolLabel, setSchoolLabel] = useState(schoolName ?? '');
@@ -78,21 +66,14 @@ export default function ApplyResultsClient({
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      // sessionStorage is per-tab; the localStorage mirror covers "finish
-      // later" resumes in a new tab.
-      const stored =
-        sessionStorage.getItem(APPLY_STORAGE_KEY) ?? localStorage.getItem(APPLY_STORAGE_KEY);
-      if (!stored) {
+      const data = readSavedEligibility();
+      if (!data) {
         trackApplyFunnel(2, 'results_missing_prereq');
-        setHasSavedDraft(hasSavedApplyDraft());
+        setSavedDraft(readApplyDraft());
         setPageState('missing');
         return;
       }
-      const data = JSON.parse(stored) as {
-        qualifies?: boolean;
-        schoolApply?: boolean;
-        schoolName?: string;
-      };
+      setEligibility(data);
       const schoolFlow = schoolApplyFromServer || data.schoolApply === true;
       setIsSchool(schoolFlow);
       if (data.schoolName) setSchoolLabel(data.schoolName);
@@ -138,7 +119,7 @@ export default function ApplyResultsClient({
       setPageState('ready');
     } catch {
       trackApplyFunnel(2, 'results_missing_prereq');
-      setHasSavedDraft(hasSavedApplyDraft());
+      setSavedDraft(readApplyDraft());
       setPageState('missing');
     }
   }, [programParam, schoolApplyFromServer, schoolProgramSlugs]);
@@ -179,16 +160,16 @@ export default function ApplyResultsClient({
       trackApplyFunnel(2, 'program_continue_blocked');
       return;
     }
+    if (!saveSelectedPrograms(selectedSlugs, eligibility)) {
+      setStorageError(true);
+      return;
+    }
     continuedRef.current = true;
     trackApplyFunnel(2, 'program_selected', {
       program_slugs: selectedSlugs,
       qualifies,
     });
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem(APPLY_PROGRAM_RANKED_KEY, JSON.stringify(selectedSlugs));
-      sessionStorage.setItem(APPLY_PROGRAM_SLUG_KEY, selectedSlugs[0]);
-    }
-    window.location.href = '/apply/create-account';
+    window.location.href = localizeHref(applyRecoveryHref('/apply/create-account', recoveryContext), locale);
   };
 
   const programsOrdered = useMemo(() => {
@@ -238,48 +219,11 @@ export default function ApplyResultsClient({
     );
   }
 
-  if (pageState === 'missing') {
-    return (
-      <div className="apply-flow">
-        <div className="apply-progress-bar">
-          <div className="apply-progress-fill" style={{ width: '66%' }} />
-          <p className="apply-progress-label">{t(isSchool ? 'schoolResultsProgressLabel' : 'resultsProgressLabel')}</p>
-        </div>
-        <div className="apply-step-content apply-missing-session">
-          {hasSavedDraft ? (
-            <>
-              <h2 className="apply-step-title">{t('resultsMissingResumeTitle')}</h2>
-              <p className="apply-step-desc">
-                {t('resultsMissingResumeDesc')}
-              </p>
-              <p style={{ marginBottom: '1.25rem' }}>
-                <LocalizedLink href="/apply" className="btn btn-primary">
-                  {t('resultsMissingResumeCta')}
-                </LocalizedLink>
-              </p>
-            </>
-          ) : (
-            <>
-              <h2 className="apply-step-title">{t(isSchool ? 'schoolResultsMissingTitle' : 'resultsMissingTitle')}</h2>
-              <p className="apply-step-desc">
-                {t(isSchool ? 'schoolResultsMissingDesc' : 'resultsMissingDesc')}
-              </p>
-              <p style={{ marginBottom: '1.25rem' }}>
-                <LocalizedLink href="/apply" className="btn btn-primary">
-                  {t('resultsMissingCta')}
-                </LocalizedLink>
-              </p>
-              <p className="apply-step-desc" style={{ fontSize: '0.9rem' }}>
-                {t('resultsMissingFootnote')} <LocalizedLink href="/apply">/apply</LocalizedLink> {t('resultsMissingFootnoteSuffix')}
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (pageState === 'missing') return <ApplyResumeGate draft={savedDraft} recoveryContext={recoveryContext} />;
 
   return (
+    <ApplyReadyContent header={readyHeader} intro={readyIntro}>
+    {storageError && <p role="alert">{t('storageContinueFailed')}</p>}
     <div className="apply-flow">
       <div className="apply-progress-bar">
         <div className="apply-progress-fill" style={{ width: '66%' }} />
@@ -288,7 +232,7 @@ export default function ApplyResultsClient({
 
       <div className="apply-step-content">
         <p className="apply-step-back-nav">
-          <LocalizedLink href="/apply">{t(isSchool ? 'schoolResultsBackStep1' : 'resultsBackStep1')}</LocalizedLink>
+          <LocalizedLink href={applyRecoveryHref('/apply', recoveryContext)}>{t(isSchool ? 'schoolResultsBackStep1' : 'resultsBackStep1')}</LocalizedLink>
         </p>
         <p className="apply-step-kicker">{t(isSchool ? 'schoolResultsKicker' : 'resultsKicker')}</p>
         <details className="apply-transition-details">
@@ -481,5 +425,6 @@ export default function ApplyResultsClient({
         </button>
       </div>
     </div>
+    </ApplyReadyContent>
   );
 }

@@ -22,7 +22,7 @@ vi.mock('@/lib/email', () => ({
   sendApplicantFollowupEmail: vi.fn(() => Promise.resolve({ ok: true })),
   sendAdminPendingApplicantsEmail: vi.fn(() => Promise.resolve({ ok: true })),
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/lib/cron/withCronLogging', () => ({
   withCronLogging: (_key: string, handler: (request: Request) => Promise<Response>) => handler,

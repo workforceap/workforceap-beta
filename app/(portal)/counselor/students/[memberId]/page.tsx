@@ -493,6 +493,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
       }))}
       wioa={{
         hasScreening: wioaSnap != null,
+        submittedAt: wioaSnap?.submittedAt ?? null,
         reviewStatus: member.wioaReviewStatus,
         reviewedAt: member.wioaReviewedAt?.toISOString() ?? null,
         reviewNotes: member.wioaReviewNotes,

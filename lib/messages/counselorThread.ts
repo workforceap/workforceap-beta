@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { isAdmin, isAdminInOrg, isSuperAdmin } from '@/lib/auth/roles';
 import { ensureSelfServeCounselorAssigned } from '@/lib/counselor/autoAssign';
@@ -29,13 +30,35 @@ export function getMessageAuthorName(nameById: Map<string, string | null>, autho
 }
 
 export async function resolveAssignedCounselorUserId(memberId: string): Promise<string | null> {
-  const row = await prisma.counselorAssignment.findFirst({
-    where: { memberId, active: true },
+  const member = await prisma.user.findFirst({ where: { id: memberId, deletedAt: null }, select: { organizationId: true } });
+  if (!member) return null;
+  return assignedCounselorUserId(prisma, memberId, member.organizationId);
+}
+
+async function assignedCounselorUserId(tx: Pick<Prisma.TransactionClient, 'counselorAssignment'>, memberId: string, organizationId: string) {
+  const row = await tx.counselorAssignment.findFirst({
+    where: { memberId, active: true, counselor: { active: true, user: { organizationId, deletedAt: null } } },
     orderBy: { assignedAt: 'desc' },
     select: { counselor: { select: { userId: true, active: true } } },
   });
-  if (!row?.counselor?.active) return null;
-  return row.counselor.userId;
+  return row?.counselor.active ? row.counselor.userId : null;
+}
+
+/** Serialize routing with assignment.ts's member-row lock. Never changes assignments. */
+export async function refreshMemberCounselorThread(tx: Prisma.TransactionClient, memberId: string) {
+  const members = await tx.$queryRaw<Array<{ organizationId: string }>>(Prisma.sql`
+    SELECT organization_id AS "organizationId" FROM users
+    WHERE id = ${memberId} AND deleted_at IS NULL FOR UPDATE
+  `);
+  const member = members[0];
+  if (!member) throw new Error('Member not found');
+  const counselorUserId = await assignedCounselorUserId(tx, memberId, member.organizationId);
+  const existing = await tx.messageThread.findUnique({ where: { memberId } });
+  if (existing) {
+    if (existing.counselorUserId === counselorUserId) return existing;
+    return tx.messageThread.update({ where: { id: existing.id }, data: { counselorUserId } });
+  }
+  return tx.messageThread.create({ data: { kind: 'member', memberId, counselorUserId } });
 }
 
 export async function getOrCreateMemberCounselorThread(
@@ -55,31 +78,7 @@ export async function getOrCreateMemberCounselorThread(
     }
   }
 
-  const existing = await prisma.messageThread.findUnique({
-    where: { memberId },
-  });
-  if (existing) {
-    if (!existing.counselorUserId) {
-      const cid = await resolveAssignedCounselorUserId(memberId);
-      if (cid) {
-        return prisma.messageThread.update({
-          where: { id: existing.id },
-          data: { counselorUserId: cid },
-        });
-      }
-    }
-    return existing;
-  }
-
-  const counselorUserId = await resolveAssignedCounselorUserId(memberId);
-
-  return prisma.messageThread.create({
-    data: {
-      kind: 'member',
-      memberId,
-      counselorUserId,
-    },
-  });
+  return prisma.$transaction((tx) => refreshMemberCounselorThread(tx, memberId));
 }
 
 export async function assertMemberCanAccessThread(userId: string, threadId: string) {

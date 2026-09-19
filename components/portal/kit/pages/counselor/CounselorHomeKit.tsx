@@ -269,7 +269,7 @@ export function CounselorHomeKit({
     {
       key: 'atRisk',
       icon: TriangleAlert,
-      label: 'Needs attention',
+      label: 'Members with risk alerts',
       value: atRiskCount,
       color: atRiskCount > 0 ? 'accent' : 'muted',
       spark: atRiskSpark,

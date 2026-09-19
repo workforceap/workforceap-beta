@@ -37,7 +37,8 @@ import {
 } from '@/lib/apply/applyReferralCapture';
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/requestId';
 import { WAP_USER_ID_HEADER } from '@/lib/auth/layoutUserId';
-import { hasSupabaseAuthCookies, shouldTalkToGoTrue } from '@/lib/auth/supabaseAuthCookie';
+import { readAuthWithRetry, reportAuthReadFailure } from '@/lib/auth/authRead';
+import { hasSupabaseAuthCookies, shouldTalkToGoTrue, isSupabaseAuthTokenCookieName, isSupabasePkceCookieName } from '@/lib/auth/supabaseAuthCookie';
 import { isUnauthenticatedBrowserNavigationApiPath } from '@/lib/auth/tenantApiNavigation';
 import {
   READ_ONLY_PORTAL_AUDIT_HEADER,
@@ -310,6 +311,8 @@ export async function middleware(request: NextRequest) {
       },
       setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
         cookiesToSet.forEach(({ name, value, options }) => {
+          // Session validation must not consume a separate in-progress PKCE flow.
+          if (isSupabasePkceCookieName(name)) return;
           if (sessionOnly) {
             const { maxAge: _drop1, expires: _drop2, ...rest } = (options ?? {}) as Record<string, unknown>;
             response.cookies.set(name, value, rest);
@@ -322,27 +325,44 @@ export async function middleware(request: NextRequest) {
   });
 
   let user: User | null = null;
-  if (needsValidatedUser) {
-    try {
-      const {
-        data: { user: u },
-      } = await supabase.auth.getUser();
-      user = u;
-    } catch (error) {
-      console.error('[middleware] Supabase user validation failed:', error);
-      user = null;
+  let clearedInvalidSession = false;
+  const handleAuthFailure = (error: unknown) => {
+    if (reportAuthReadFailure(error, 'middleware') !== 'stale_session') return;
+    clearedInvalidSession = true;
+    // Include SDK-created chunks, but never clear PKCE or application preferences.
+    const names = new Set([...request.cookies.getAll(), ...response.cookies.getAll()].map(c => c.name));
+    for (const name of names) {
+      if (!isSupabaseAuthTokenCookieName(name)) continue;
+      request.cookies.delete(name);
+      response.cookies.set(name, '', { ...getSupabaseCookieOptions(), maxAge: 0 });
     }
-  } else {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      user = session?.user ?? null;
-    } catch (error) {
-      console.error('[middleware] Supabase session refresh failed:', error);
-      user = null;
+    requestHeaders.set('cookie', request.cookies.toString());
+  };
+  try {
+    if (needsValidatedUser) {
+      const result = await readAuthWithRetry(() => supabase.auth.getUser());
+      if (result.error) handleAuthFailure(result.error);
+      else user = result.data.user;
+    } else {
+      const result = await readAuthWithRetry(() => supabase.auth.getSession());
+      if (result.error) handleAuthFailure(result.error);
+      else user = result.data.session?.user ?? null;
     }
+  } catch (error) {
+    handleAuthFailure(error);
   }
+
+  // Redirects/401s must retain session clears, refresh cookies and correlation.
+  const withAuthResponseState = (target: NextResponse) => {
+    response.headers.forEach((value, key) => {
+      const name = key.toLowerCase();
+      if (!name.startsWith('x-middleware-') && !['set-cookie', 'content-type', 'content-length', 'location'].includes(name) && !target.headers.has(key)) {
+        target.headers.set(key, value);
+      }
+    });
+    for (const cookie of response.cookies.getAll()) target.cookies.set(cookie);
+    return target;
+  };
 
   // Forward user ID to Node runtime so SSR layouts / API routes can set
   // PostgreSQL GUCs without repeating the Supabase round-trip. Protected
@@ -353,9 +373,9 @@ export async function middleware(request: NextRequest) {
   // reaches the app — rebuild the response with the updated headers and
   // carry over everything already set on the original (request-id echo,
   // Supabase session cookies).
-  if (user?.id) {
-    requestHeaders.set(WAP_USER_ID_HEADER, user.id);
-    if (validReadOnlyAuditToken) {
+  if (user?.id || clearedInvalidSession) {
+    if (user?.id) requestHeaders.set(WAP_USER_ID_HEADER, user.id);
+    if (user?.id && validReadOnlyAuditToken) {
       requestHeaders.set(READ_ONLY_PORTAL_AUDIT_HEADER, '1');
     }
     const rebuilt = rewriteUrl
@@ -372,7 +392,7 @@ export async function middleware(request: NextRequest) {
   if (isProtectedPath(effectivePath) && !user) {
     const loginUrl = new URL(localizedLoginPath(prefixLocale ?? inferredLocale), request.url);
     loginUrl.searchParams.set('redirectTo', requestedPathWithSearch(request));
-    return NextResponse.redirect(loginUrl);
+    return withAuthResponseState(NextResponse.redirect(loginUrl));
   }
 
   // API backstop: ordinary API calls return JSON 401. A very small set of
@@ -383,7 +403,7 @@ export async function middleware(request: NextRequest) {
     && !user
     && !isUnauthenticatedBrowserNavigationApiPath(request.method, effectivePath)
   ) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return withAuthResponseState(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
   }
 
   if (isStaffMfaEnforcementEnabled() && isStaffMfaPath(effectivePath) && user) {

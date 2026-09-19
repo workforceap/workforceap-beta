@@ -61,6 +61,29 @@ function show(role: 'member' | 'employer' = 'member') {
 }
 
 describe('workspace navigation', () => {
+  it('limits the dynamic-height warm canvas to the mounted workspace, including dark mode', () => {
+    const css = readFileSync(join(process.cwd(), 'css/portal-kit.css'), 'utf8');
+    const rule = css.match(/(html \.workspace-shell-root\[data-workspace-role\])\s*\{([^}]+)\}/)!;
+    expect(rule).not.toBeNull();
+    expect(rule[2]).toMatch(/min-height: 100vh;\s*min-height: 100dvh;/);
+    expect(rule[2]).toContain('background: var(--wa-bg-wave, var(--wa-bg))');
+    const { container } = show();
+    const shell = container.querySelector('.workspace-shell-root')!;
+    expect(shell.matches(rule[1])).toBe(true);
+    document.documentElement.classList.add('dark');
+    try {
+      expect(shell.matches(rule[1])).toBe(true);
+      expect(document.body.matches(rule[1])).toBe(false);
+      const publicSurface = document.createElement('main');
+      publicSurface.dataset.surface = 'warm';
+      document.body.append(publicSurface);
+      expect(publicSurface.matches(rule[1])).toBe(false);
+      publicSurface.remove();
+    } finally {
+      document.documentElement.classList.remove('dark');
+    }
+  });
+
   it('keeps desktop scrolling inside the shell and reserves the remaining width for main content', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-main-extracted.css'), 'utf8');
 

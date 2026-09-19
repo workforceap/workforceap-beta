@@ -249,7 +249,7 @@ vi.mock('@/lib/messages/superAdminMessageQueries', () => ({
   getSlaStatusForThreads: vi.fn(async () => new Map()),
   getThreadIdsBreachingSla: vi.fn(async () => []),
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/storage/publicAssetUrl', () => ({ resolveSupabasePublicAssetUrl: vi.fn(() => null) }));
 vi.mock('@/lib/counselor/staffMemberAccess', () => ({ assertStaffCanAccessMemberRecord: vi.fn(async () => true) }));
 vi.mock('@/lib/counselor/followUpTemplates', () => ({

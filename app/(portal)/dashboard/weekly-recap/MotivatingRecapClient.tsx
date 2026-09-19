@@ -1,5 +1,7 @@
 'use client';
 
+import { formatRecapWeekLabel } from '@/lib/recap/weekLabel';
+
 import Link from 'next/link';
 
 /**
@@ -88,10 +90,7 @@ function goalPercent(g: RecapGoalProgress): number {
 }
 
 export default function MotivatingRecapClient({ recap, recapData, weekStart }: Props) {
-  const week = new Date(weekStart);
-  const weekEnd = new Date(week);
-  weekEnd.setDate(week.getDate() + 6);
-  const weekLabel = `${week.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  const weekLabel = formatRecapWeekLabel(weekStart);
 
   const data = recapData ?? {};
   const wins = (data.wins ?? []).filter((w) => w?.label?.trim());

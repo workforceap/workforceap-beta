@@ -1,6 +1,6 @@
 /**
- * salaryGuide.ts — static, pre-resolved salary-guide data for the Astro
- * marketing site.
+ * @deprecated Unused legacy snapshot. The live salary guide uses occupational
+ * research links; these unsourced ranges must not be published as outcomes.
  *
  * These values are the VERBATIM output of the Next site's
  * `buildSalaryGuideRows()` and `salaryGuideSummaryStats()`

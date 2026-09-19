@@ -4,6 +4,8 @@ import { getUser } from '@/lib/auth/server';
 import { checkAuthRateLimit } from '@/lib/rate-limit';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditRequestMeta } from '@/lib/audit/log';
+import { applicationReviewFailure } from '@/lib/admin/applicationReviewErrors';
+import { captureApiError } from '@/lib/observability/captureApiError';
 import { changeApplicationStatus, type ApplicationReviewResult } from '@/lib/admin/applicationReview';
 import { canReviewActorActOnApplication, resolveReviewActor } from '@/lib/counselor/applicationReviewAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -75,21 +77,27 @@ async function _POST(request: NextRequest) {
 
     const results: ApplicationReviewResult[] = [];
     for (const applicationId of applicationIds) {
-      if (!(await canReviewActorActOnApplication(actor, applicationId, orgId))) {
-        // Out of the counselor's caseload: reported like a not-in-org id.
-        results.push({ ok: false, applicationId, error: 'Application not found' });
-        continue;
+      try {
+        if (!(await canReviewActorActOnApplication(actor, applicationId, orgId))) {
+          // Preserve the same not-found response for members outside the caseload.
+          results.push({ ok: false, applicationId, error: 'Application not found' });
+          continue;
+        }
+        const result = await changeApplicationStatus({
+          applicationId,
+          status,
+          notes,
+          orgId,
+          actorUserId: user.id,
+          actorRole: actor.role,
+          requestMeta,
+        });
+        results.push(result);
+      } catch (error) {
+        const failure = applicationReviewFailure(error);
+        if (failure.status === 500) captureApiError(error, { route: '/api/admin/applications/bulk-review' });
+        results.push({ ok: false, applicationId, error: failure.error, status: failure.status });
       }
-      const result = await changeApplicationStatus({
-        applicationId,
-        status,
-        notes,
-        orgId,
-        actorUserId: user.id,
-        actorRole: actor.role,
-        requestMeta,
-      });
-      results.push(result);
     }
 
     const approvedCount = results.filter((r) => r.ok).length;
@@ -98,6 +106,7 @@ async function _POST(request: NextRequest) {
     return NextResponse.json({
       success: failed.length === 0,
       processedCount: approvedCount,
+      processedApplicationIds: results.filter((result) => result.ok).map((result) => result.applicationId),
       failedCount: failed.length,
       failures: failed,
     });

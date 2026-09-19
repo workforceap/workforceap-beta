@@ -208,22 +208,18 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 31
+          "line": 38
         }
       ]
     },
     {
       "name": "COUNSELOR_BOOKING_URL",
       "publicPrefix": false,
-      "declaredInRootExample": false,
+      "declaredInRootExample": true,
       "references": [
         {
-          "file": "emails/member-stuck.ts",
-          "line": 9
-        },
-        {
-          "file": "lib/email.ts",
-          "line": 2740
+          "file": "lib/counselor/bookingLink.ts",
+          "line": 19
         }
       ]
     },
@@ -234,7 +230,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 420
+          "line": 421
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
@@ -242,15 +238,15 @@
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 545
+          "line": 546
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 567
+          "line": 568
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 218
+          "line": 226
         },
         {
           "file": "lib/coursera/config.test.ts",
@@ -333,15 +329,15 @@
       "references": [
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 546
+          "line": 547
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 568
+          "line": 569
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 216
+          "line": 224
         }
       ]
     },
@@ -352,7 +348,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 424
+          "line": 425
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
@@ -360,11 +356,11 @@
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 472
+          "line": 473
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 201
+          "line": 209
         },
         {
           "file": "lib/coursera/b4bSync.ts",
@@ -395,7 +391,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 425
+          "line": 426
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
@@ -403,11 +399,11 @@
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 473
+          "line": 474
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 202
+          "line": 210
         },
         {
           "file": "lib/coursera/b4bSync.ts",
@@ -449,23 +445,23 @@
       "references": [
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 498
+          "line": 499
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 501
+          "line": 502
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 524
+          "line": 525
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
-          "line": 527
+          "line": 528
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 251
+          "line": 261
         }
       ]
     },
@@ -574,7 +570,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 419
+          "line": 420
         },
         {
           "file": "lib/coursera/b4bClient.test.ts",
@@ -582,7 +578,7 @@
         },
         {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 224
+          "line": 232
         },
         {
           "file": "lib/coursera/configCore.ts",
@@ -608,16 +604,16 @@
       "declaredInRootExample": true,
       "references": [
         {
-          "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 417
-        },
-        {
           "file": "lib/coursera/b4bClient.test.ts",
           "line": 58
         },
         {
+          "file": "lib/coursera/b4bClient.test.ts",
+          "line": 472
+        },
+        {
           "file": "lib/coursera/b4bClient.ts",
-          "line": 228
+          "line": 236
         },
         {
           "file": "lib/coursera/b4bSync.ts",
@@ -683,7 +679,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 418
+          "line": 419
         },
         {
           "file": "scripts/coursera-integration-test.ts",
@@ -721,7 +717,7 @@
         },
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 508
+          "line": 509
         },
         {
           "file": "lib/coursera/config.test.ts",
@@ -788,7 +784,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 413
+          "line": 414
         },
         {
           "file": "scripts/coursera-integration-test.ts",
@@ -829,7 +825,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 422
+          "line": 423
         }
       ]
     },
@@ -840,7 +836,7 @@
       "references": [
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 423
+          "line": 424
         }
       ]
     },
@@ -851,11 +847,11 @@
       "references": [
         {
           "file": "app/admin/email-crons/page.tsx",
-          "line": 106
+          "line": 104
         },
         {
           "file": "app/admin/email-crons/page.tsx",
-          "line": 106
+          "line": 104
         },
         {
           "file": "app/api/admin/email-crons/[id]/trigger/route.ts",
@@ -864,6 +860,10 @@
         {
           "file": "lib/cron/authorizeCronRequest.ts",
           "line": 32
+        },
+        {
+          "file": "lib/cron/withCronLogging.ts",
+          "line": 33
         },
         {
           "file": "lib/email/send.test.ts",
@@ -923,11 +923,11 @@
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 79
+          "line": 85
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 83
+          "line": 89
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
@@ -970,7 +970,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 43
+          "line": 50
         },
         {
           "file": "scripts/ensure-prisma-env.cjs",
@@ -1780,7 +1780,7 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 31
+          "line": 38
         }
       ]
     },
@@ -1831,10 +1831,6 @@
         {
           "file": "lib/ai/groq.ts",
           "line": 18
-        },
-        {
-          "file": "lib/ai/proactiveResumeGenerator.ts",
-          "line": 4
         }
       ]
     },
@@ -1904,7 +1900,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 23
+          "line": 25
         },
         {
           "file": "app/api/apply/signup/route.test.ts",
@@ -1912,7 +1908,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 262
+          "line": 263
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2085,7 +2081,7 @@
         },
         {
           "file": "app/api/admin/coursera/self-test/route.ts",
-          "line": 414
+          "line": 415
         },
         {
           "file": "app/api/admin/email-crons/[id]/trigger/route.ts",
@@ -2181,7 +2177,7 @@
         },
         {
           "file": "app/api/member/wioa-qualification/route.ts",
-          "line": 76
+          "line": 90
         },
         {
           "file": "app/api/partner/connect/route.ts",
@@ -2254,6 +2250,10 @@
         {
           "file": "lib/audit/log.ts",
           "line": 10
+        },
+        {
+          "file": "lib/counselor/bookingLink.ts",
+          "line": 22
         },
         {
           "file": "lib/cron/at-risk-alerts.ts",
@@ -2348,7 +2348,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 434
+          "line": 435
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2368,11 +2368,11 @@
         },
         {
           "file": "lib/auth/server.ts",
-          "line": 16
+          "line": 17
         },
         {
           "file": "lib/auth/server.ts",
-          "line": 40
+          "line": 42
         },
         {
           "file": "lib/portal/mockInterviewVideoUpload.ts",
@@ -2388,11 +2388,11 @@
         },
         {
           "file": "middleware.ts",
-          "line": 279
+          "line": 280
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 61
+          "line": 68
         },
         {
           "file": "tests/api/employer-signup.spec.ts",
@@ -2419,7 +2419,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 433
+          "line": 434
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2443,11 +2443,11 @@
         },
         {
           "file": "lib/auth/server.ts",
-          "line": 15
+          "line": 16
         },
         {
           "file": "lib/auth/server.ts",
-          "line": 39
+          "line": 41
         },
         {
           "file": "lib/portal/mockInterviewVideoUpload.ts",
@@ -2471,11 +2471,11 @@
         },
         {
           "file": "middleware.ts",
-          "line": 278
+          "line": 279
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 40
+          "line": 47
         },
         {
           "file": "scripts/create-employer-michael-brown.ts",
@@ -2484,10 +2484,6 @@
         {
           "file": "scripts/invite-chs-partner-admin.ts",
           "line": 84
-        },
-        {
-          "file": "scripts/sync-portal-test-auth.ts",
-          "line": 32
         },
         {
           "file": "tests/api/employer-signup.spec.ts",
@@ -2526,11 +2522,11 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 24
+          "line": 26
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 275
+          "line": 276
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2749,11 +2745,11 @@
         },
         {
           "file": "middleware.ts",
-          "line": 268
+          "line": 269
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 37
+          "line": 44
         },
         {
           "file": "sentry.edge.config.ts",
@@ -2832,59 +2828,59 @@
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 117
+          "line": 118
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 121
+          "line": 122
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 227
+          "line": 228
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 231
+          "line": 232
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 405
+          "line": 406
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 411
+          "line": 412
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 578
+          "line": 579
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 582
+          "line": 583
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 688
+          "line": 689
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 692
+          "line": 693
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 889
+          "line": 890
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 918
+          "line": 919
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1251
+          "line": 1252
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1255
+          "line": 1256
         },
         {
           "file": "tests/api/testimonials.spec.ts",
@@ -3151,7 +3147,7 @@
       "references": [
         {
           "file": "middleware.ts",
-          "line": 163
+          "line": 164
         },
         {
           "file": "scripts/audit-portal-routes.mjs",
@@ -3257,7 +3253,11 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 41
+          "line": 48
+        },
+        {
+          "file": "scripts/check-supabase-env.mjs",
+          "line": 79
         },
         {
           "file": "scripts/cronq.ts",
@@ -3312,7 +3312,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 42
+          "line": 49
         },
         {
           "file": "scripts/cronq.ts",
@@ -3452,6 +3452,10 @@
           "line": 128
         },
         {
+          "file": "lib/wioa/wioaNotification.test.ts",
+          "line": 162
+        },
+        {
           "file": "lib/wioa/wioaNotification.ts",
           "line": 41
         },
@@ -3524,7 +3528,7 @@
       "references": [
         {
           "file": "next.config.ts",
-          "line": 372
+          "line": 384
         }
       ]
     },
@@ -3565,7 +3569,7 @@
       "references": [
         {
           "file": "next.config.ts",
-          "line": 370
+          "line": 382
         }
       ]
     },
@@ -3576,7 +3580,7 @@
       "references": [
         {
           "file": "next.config.ts",
-          "line": 371
+          "line": 383
         }
       ]
     },
@@ -3587,7 +3591,7 @@
       "references": [
         {
           "file": "next.config.ts",
-          "line": 377
+          "line": 389
         }
       ]
     },
@@ -3789,10 +3793,6 @@
           "line": 85
         },
         {
-          "file": "scripts/sync-portal-test-auth.ts",
-          "line": 33
-        },
-        {
           "file": "tests/api/partner-signup.spec.ts",
           "line": 186
         },
@@ -3846,7 +3846,7 @@
       "references": [
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 264
+          "line": 265
         },
         {
           "file": "app/api/contact/route.ts",
@@ -3926,6 +3926,30 @@
         {
           "file": "tests/lib/today-in-portal-timezone.spec.ts",
           "line": 1
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 4
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 5
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 5
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 9
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 17
+        },
+        {
+          "file": "tests/lib/weekly-recap-label.spec.ts",
+          "line": 19
         }
       ]
     },
@@ -4049,11 +4073,11 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 30
+          "line": 37
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 63
+          "line": 70
         }
       ]
     },
@@ -4335,7 +4359,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 37
+          "line": 44
         },
         {
           "file": "scripts/vercel-build.cjs",
@@ -4374,7 +4398,7 @@
         },
         {
           "file": "next.config.ts",
-          "line": 378
+          "line": 390
         },
         {
           "file": "tests/api/health-check.spec.ts",
@@ -4438,11 +4462,11 @@
         },
         {
           "file": "app/api/member/wioa-qualification/route.ts",
-          "line": 77
+          "line": 91
         },
         {
           "file": "app/api/member/wioa-qualification/route.ts",
-          "line": 77
+          "line": 91
         },
         {
           "file": "app/api/public/wioa-qualification/route.ts",
@@ -4924,7 +4948,7 @@
       "references": [
         {
           "file": "next.config.ts",
-          "line": 379
+          "line": 391
         }
       ]
     }
@@ -4938,6 +4962,7 @@
     "ARTIFACTS_DIR",
     "AT_RISK_DIGEST_EMAILS",
     "AUTH_TRUST_COOKIE_SECRET",
+    "COUNSELOR_BOOKING_URL",
     "COURSERA_API_BASE_URL",
     "COURSERA_API_TOKEN",
     "COURSERA_APP_ID",

@@ -104,15 +104,18 @@ function formatTimeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-export default function NotificationBell({
-  badges: externalBadges,
-  readOnlyAudit = false,
-}: {
+type NotificationBellProps = {
   badges?: Partial<Record<NavBadgeKey, number>>;
   readOnlyAudit?: boolean;
-}) {
-  const pathname = usePathname() ?? '';
-  const role = getRole(pathname);
+};
+
+export default function NotificationBell(props: NotificationBellProps) {
+  const role = getRole(usePathname() ?? '');
+  // Role transitions discard old results and abort the previous request.
+  return <RoleNotificationBell key={`${role}:${!!props.readOnlyAudit}`} {...props} role={role} />;
+}
+
+function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, role }: NotificationBellProps & { role: string }) {
   const [selfBadges, setSelfBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [dbNotifications, setDbNotifications] = useState<NotificationItem[]>([]);
   const [dbUnreadCount, setDbUnreadCount] = useState(0);
@@ -121,52 +124,45 @@ export default function NotificationBell({
   const [lastFetch, setLastFetch] = useState(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const dropRef = useRef<HTMLDivElement>(null);
+  const requestRef = useRef<AbortController | null>(null);
   const closeDropdown = useCallback(() => setOpen(false), []);
   // Escape closes the dropdown and returns focus to the bell button (the
   // previously-focused element); Tab stays inside the panel while it's open.
   const panelTrapRef = useFocusTrap(open, closeDropdown);
 
   const badges = externalBadges ?? selfBadges;
+  const hasExternalBadges = externalBadges != null;
 
-  const fetchDbNotifications = useCallback(async () => {
-    if (readOnlyAudit || role !== 'member') return;
+  const refresh = useCallback(async () => {
+    if (readOnlyAudit || (role !== 'member' && hasExternalBadges) || requestRef.current) return;
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const isMember = role === 'member';
+    const timeout = setTimeout(() => controller.abort('notification-timeout'), 10_000);
+    controller.signal.addEventListener('abort', () => clearTimeout(timeout), { once: true });
     try {
       setLoading(true);
       setFetchError(null);
-      const r = await fetch('/api/member/notifications?limit=5', { credentials: 'include' });
-      if (r.ok) {
-        const data = await r.json() as { notifications: NotificationItem[]; unreadCount: number };
+      const url = isMember ? '/api/member/notifications?limit=5'
+        : `/api/portal/nav-badges?role=${encodeURIComponent(role)}`;
+      const response = await fetch(url, { credentials: 'include', signal: controller.signal });
+      if (!response.ok) throw new Error(await getErrorMessageFromResponse(response));
+      const data = await response.json();
+      if (controller.signal.aborted) return;
+      if (isMember) {
         setDbNotifications(data.notifications);
         setDbUnreadCount(data.unreadCount);
-        setLastFetch(Date.now());
-      } else {
-        const msg = await getErrorMessageFromResponse(r);
-        setFetchError(msg);
-      }
-    } catch {
-      setFetchError('Notifications are temporarily unavailable.');
+      } else setSelfBadges(data);
+      setLastFetch(Date.now());
+    } catch (error) {
+      if (controller.signal.reason === 'notification-timeout') setFetchError('Notifications are temporarily unavailable.');
+      else if (!controller.signal.aborted) setFetchError(error instanceof Error ? error.message : 'Notifications are temporarily unavailable.');
     } finally {
-      setLoading(false);
+      clearTimeout(timeout);
+      if (requestRef.current === controller) requestRef.current = null;
+      if (!controller.signal.aborted || controller.signal.reason === 'notification-timeout') setLoading(false);
     }
-  }, [readOnlyAudit, role]);
-
-  const fetchBadges = useCallback(async () => {
-    if (readOnlyAudit || externalBadges || role === 'member') return;
-    try {
-      setFetchError(null);
-      const r = await fetch(`/api/portal/nav-badges?role=${encodeURIComponent(role)}`, { credentials: 'include' });
-      if (r.ok) {
-        const data = await r.json() as Partial<Record<NavBadgeKey, number>>;
-        setSelfBadges(data);
-        setLastFetch(Date.now());
-      } else {
-        const msg = await getErrorMessageFromResponse(r);
-        setFetchError(msg);
-      }
-    } catch {
-      setFetchError('Notification counts are temporarily unavailable.');
-    }
-  }, [readOnlyAudit, role, externalBadges]);
+  }, [readOnlyAudit, role, hasExternalBadges]);
 
   const markRead = useCallback(async (id: string) => {
     if (readOnlyAudit) return;
@@ -217,30 +213,49 @@ export default function NotificationBell({
     }
   }, [readOnlyAudit]);
 
-  // Initial load + poll every 45s
+  // Visible active tabs poll every 45s; idle tabs back off to five minutes.
+  // Hidden tabs stop entirely. Explicit refresh/open remains immediate.
   useEffect(() => {
-    if (readOnlyAudit) return;
-    if (role === 'member') {
-      void fetchDbNotifications();
-      const id = setInterval(() => void fetchDbNotifications(), 45_000);
-      return () => clearInterval(id);
-    } else {
-      void fetchBadges();
-      const id = setInterval(() => void fetchBadges(), 45_000);
-      return () => clearInterval(id);
-    }
-  }, [fetchDbNotifications, fetchBadges, readOnlyAudit, role]);
-
-  // Refresh on wa-nav-badges-refresh event
-  useEffect(() => {
-    if (readOnlyAudit) return;
-    const handler = () => {
-      if (role === 'member') void fetchDbNotifications();
-      else void fetchBadges();
+    if (readOnlyAudit || (role !== 'member' && hasExternalBadges)) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let lastActivity = Date.now();
+    let disposed = false;
+    const schedule = () => {
+      clearTimeout(timer);
+      if (disposed || document.visibilityState === 'hidden') return;
+      const delay = Date.now() - lastActivity >= 120_000 ? 300_000 : 45_000;
+      timer = setTimeout(() => { void refresh().finally(schedule); }, delay);
     };
-    window.addEventListener('wa-nav-badges-refresh', handler);
-    return () => window.removeEventListener('wa-nav-badges-refresh', handler);
-  }, [fetchDbNotifications, fetchBadges, readOnlyAudit, role]);
+    const explicitRefresh = () => {
+      lastActivity = Date.now();
+      clearTimeout(timer);
+      if (document.visibilityState !== 'hidden') void refresh().finally(schedule);
+    };
+    const activity = () => {
+      const wasIdle = Date.now() - lastActivity >= 120_000;
+      lastActivity = Date.now();
+      if (wasIdle) explicitRefresh();
+    };
+    const visibility = () => {
+      if (document.visibilityState === 'hidden') clearTimeout(timer);
+      else explicitRefresh();
+    };
+    explicitRefresh();
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('pointerdown', activity, { passive: true });
+    window.addEventListener('keydown', activity);
+    window.addEventListener('wa-nav-badges-refresh', explicitRefresh);
+    return () => {
+      disposed = true;
+      clearTimeout(timer);
+      requestRef.current?.abort();
+      requestRef.current = null;
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('pointerdown', activity);
+      window.removeEventListener('keydown', activity);
+      window.removeEventListener('wa-nav-badges-refresh', explicitRefresh);
+    };
+  }, [refresh, readOnlyAudit, role, hasExternalBadges]);
 
   // Close on outside click
   useEffect(() => {
@@ -274,8 +289,7 @@ export default function NotificationBell({
             // NOTE: opening does NOT auto-mark notifications read — use the
             // "Mark all read" action in the dropdown header instead.
             if (!readOnlyAudit && Date.now() - lastFetch > 10_000) {
-              if (role === 'member') void fetchDbNotifications();
-              else void fetchBadges();
+              void refresh();
             }
           }
         }}

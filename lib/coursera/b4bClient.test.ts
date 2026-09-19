@@ -467,8 +467,9 @@ test('write methods surface 5xx with body for caller diagnostics', async (t) => 
   }
 });
 
-test('module load throws when credentials are missing (deferred to first call)', async (t) => {
+test('missing credentials are rejected before the first network call', async (t) => {
   snapshotEnv();
+  process.env.COURSERA_ORG_ID = 'TEST_ORG_ID';
   delete process.env.COURSERA_B4B_CLIENT_ID;
   delete process.env.COURSERA_B4B_CLIENT_SECRET;
   _resetTokenCacheForTesting();

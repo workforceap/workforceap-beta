@@ -198,7 +198,7 @@ describe('Bulk operations', () => {
         { id: uid(2), email: 'bob@example.com', fullName: 'Bob Jones', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
 
-      const sendMock = vi.fn().mockResolvedValue({ id: 'email-id' });
+      const sendMock = vi.fn().mockResolvedValue({ data: { id: 'email-id' }, error: null });
       vi.mocked(getResend).mockReturnValue({ emails: { send: sendMock } } as any);
 
       const res = await bulkEmailPost(
@@ -237,6 +237,27 @@ describe('Bulk operations', () => {
           data: expect.objectContaining({ threadId: `thread-${uid(2)}`, authorId: uid(99) }),
         })
       );
+    });
+
+    it('reports resolved provider errors without counting success and continues with the next member', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        { id: uid(1), email: 'alice@example.com', fullName: 'Alice', enrolledProgram: null, organizationId: 'org-1' },
+        { id: uid(2), email: 'bob@example.com', fullName: 'Bob', enrolledProgram: null, organizationId: 'org-1' },
+      ] as any);
+      const sendMock = vi.fn()
+        .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected' } })
+        .mockResolvedValueOnce({ data: { id: 'email-id' }, error: null });
+      vi.mocked(getResend).mockReturnValue({ emails: { send: sendMock } } as any);
+
+      const res = await bulkEmailPost(makeRequest({ memberIds: [uid(1), uid(2)], subject: 'Hi', body: 'Hello', sendAsEmail: true, createMessage: true }));
+      expect(await res.json()).toEqual({ sent: 1, messagesCreated: 1, total: 2, errors: ['Alice (alice@example.com): Recipient rejected'] });
+      expect(sendMock).toHaveBeenCalledTimes(2);
+      expect(mockTx.message.create).toHaveBeenCalledTimes(1);
+      expect(createNotification).toHaveBeenCalledTimes(1);
+      expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({ userId: uid(2) }));
     });
 
     it('returns 503 when email not configured and sendAsEmail true', async () => {

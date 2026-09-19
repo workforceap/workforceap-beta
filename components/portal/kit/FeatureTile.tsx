@@ -28,7 +28,7 @@ export function FeatureTile({ icon, title, body, badge, tone = 'crimson', href, 
       </div>
       <div>
         <h3 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{title}</h3>
-        {body ? <p style={{ fontSize: 12, opacity: 0.85, marginTop: 4 }}>{body}</p> : null}
+        {body ? <p style={{ fontSize: 13, opacity: 0.85, marginTop: 4 }}>{body}</p> : null}
       </div>
     </>
   );

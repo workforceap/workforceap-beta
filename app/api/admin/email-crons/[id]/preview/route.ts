@@ -28,7 +28,7 @@ export const GET = withApiGuc(async (
     if (!cron) return NextResponse.json({ error: 'Cron not found' }, { status: 404 });
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
     try {
       const result = await getPreviewRecipients(id, orgId);
@@ -154,7 +154,7 @@ async function getPreviewRecipients(id: string, orgId: string | null): Promise<C
 
     case 'partner-outcome-digest': {
       const partners = await prisma.$transaction((tx) => tx.partner.findMany({
-        where: { active: true, notifyOnEnrollment: true },
+        where: { ...orgFilter, active: true, notifyOnEnrollment: true },
         select: { name: true, contactEmail: true },
         take: PREVIEW_LIMIT + 1,
       }));

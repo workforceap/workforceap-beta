@@ -51,7 +51,7 @@ export const POST = withApiGuc(async (request: Request) => {
           occupationTitle: parsed.data.occupationTitle,
           occupationCode: parsed.data.occupationCode,
         },
-        sourcePage: '/dashboard/skills-assessment',
+        sourcePage: '/dashboard/assessment',
       });
   
       auditLog({ actorUserId: user.id, action: 'member.skillAssessment.submit', targetType: 'SkillAssessment', targetId: result.id }).catch(() => {});

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { requireAdminOrCounselor, isSuperAdmin } from '@/lib/auth/roles';
+import { requireAdminOrCounselor, isSuperAdmin, isAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getRiskLevel, THRESHOLDS } from '@/lib/member/atRiskScoring';
+import { loadPersistedAtRiskMembers } from '@/lib/member/persistedAtRisk';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
-import { auditLog } from '@/lib/audit';async function _GET(req: Request) {
+import { auditLog } from '@/lib/audit';
+
+async function _GET(req: Request) {
   try {
     const auth = await requireAdminOrCounselor(req);
     if (!auth.ok) {
@@ -13,89 +16,28 @@ import { auditLog } from '@/lib/audit';async function _GET(req: Request) {
     }
   
     const superAdmin = await isSuperAdmin(auth.userId);
-    const orgId = superAdmin ? null : await getActorOrganizationId(auth.userId).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(auth.userId);
 
     const { searchParams } = new URL(req.url);
-    const threshold = parseInt(searchParams.get('threshold') ?? '', 10) || THRESHOLDS.HIGH;
-    const limit = Math.min(parseInt(searchParams.get('limit') ?? '20', 10) || 20, 100);
+    const rawThreshold = searchParams.get('threshold');
+    const parsedThreshold = rawThreshold !== null && /^\d+$/.test(rawThreshold) ? Number(rawThreshold) : NaN;
+    const threshold = Number.isSafeInteger(parsedThreshold) && parsedThreshold <= 100 ? parsedThreshold : THRESHOLDS.HIGH;
+    const limit = Math.max(1, Math.min(parseInt(searchParams.get('limit') ?? '20', 10) || 20, 100));
     const status = searchParams.get('status') ?? undefined;
-  
+
     try {
-      const alerts = await prisma.$transaction((tx) => tx.atRiskAlert.findMany({
-        where: {
-          score: { gte: threshold },
-          ...(status ? { status } : { status: { in: ['open', 'acknowledged', 'escalated'] } }),
-          ...(orgId ? { user: { organizationId: orgId } } : {}),
-        },
-        orderBy: [{ score: 'desc' }, { createdAt: 'desc' }],
-        take: limit,
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
-              enrolledProgram: true,
-              enrolledAt: true,
-              createdAt: true,
-              lastCourseraAutoSyncAt: true,
-              phone: true,
-              profile: {
-                select: {
-                  employmentStatus: true,
-                  educationLevel: true,
-                },
-              },
-            },
-          },
-        },
-      }));
-  
-      const userIds = [...new Set(alerts.map((a) => a.userId))];
-      const activityAgg =
-        userIds.length === 0
-          ? []
-          : await prisma.$transaction((tx) => tx.memberEvent.groupBy({
-              by: ['userId'],
-              where: { userId: { in: userIds } },
-              _max: { createdAt: true },
-            }));
-      const lastActivityByUser = new Map(activityAgg.map((r) => [r.userId, r._max.createdAt]));
-  
-      const results = alerts.map((alert) => {
-        const ev = lastActivityByUser.get(alert.userId);
-        const coursera = alert.user.lastCourseraAutoSyncAt;
-        const joined = alert.user.createdAt;
-        const lastActivityAt = [ev, coursera, joined].reduce<Date | undefined>((best, d) => {
-          if (!d) return best;
-          if (!best || d.getTime() > best.getTime()) return d;
-          return best;
-        }, undefined) ?? joined;
-        return {
-          alertId: alert.id,
-          userId: alert.userId,
-          name: alert.user.fullName ?? 'Unknown',
-          email: alert.user.email,
-          phone: alert.user.phone,
-          score: alert.score,
-          riskLevel: getRiskLevel(alert.score),
-          status: alert.status,
-          factors: alert.factors as Array<{ name: string; weight: number; description: string }>,
-          enrolledProgram: alert.user.enrolledProgram,
-          enrolledAt: alert.user.enrolledAt,
-          memberSince: alert.user.createdAt,
-          profile: alert.user.profile,
-          alertCreatedAt: alert.createdAt,
-          alertUpdatedAt: alert.updatedAt,
-          /** Best proxy for “last login”: latest member_activity event, else Coursera sync, else account created. */
-          lastActivityAt: lastActivityAt.toISOString(),
-        };
-      });
-  
+      const admin = superAdmin || await isAdmin(auth.userId);
+      const result = await loadPersistedAtRiskMembers(superAdmin
+        ? { platform: true }
+        : { organizationId: orgId!, ...(admin ? {} : { counselorUserId: auth.userId }) },
+      { threshold, status, limit });
       return NextResponse.json({
-        count: results.length,
+        count: result.rows.length,
+        total: result.total,
         threshold,
-        results,
+        // One representative saved case per member; count is the loaded page,
+        // total is the complete scoped member count, never an alert-row count.
+        results: result.rows.map((row) => ({ ...row, riskLevel: getRiskLevel(row.score) })),
       });
     } catch (error) {
       console.error('[admin/members/at-risk] Failed:', error);
@@ -109,7 +51,9 @@ import { auditLog } from '@/lib/audit';async function _GET(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-export const GET = withApiGuc(_GET);async function _PATCH(req: Request) {
+export const GET = withApiGuc(_GET);
+
+async function _PATCH(req: Request) {
   try {
     const auth = await requireAdminOrCounselor(req);
     if (!auth.ok) {
@@ -117,7 +61,7 @@ export const GET = withApiGuc(_GET);async function _PATCH(req: Request) {
     }
   
     const superAdmin = await isSuperAdmin(auth.userId);
-    const patchOrgId = superAdmin ? null : await getActorOrganizationId(auth.userId).catch(() => null);
+    const patchOrgId = superAdmin ? null : await getActorOrganizationId(auth.userId);
 
     try {
       const body: unknown = await req.json().catch(() => null);

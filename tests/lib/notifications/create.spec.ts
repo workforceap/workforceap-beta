@@ -6,7 +6,7 @@ vi.mock('next/server', () => ({ after: lifetime.after }));
 vi.mock('@/lib/notify/discord', () => ({ notifyDiscord: discord.notify }));
 vi.mock('@/lib/push/sendWebPush', () => ({ sendWebPushToUser: vi.fn(async () => undefined) }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {

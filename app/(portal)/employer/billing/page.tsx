@@ -5,7 +5,7 @@ import { getEmployerForUser } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { prisma } from '@/lib/db/prisma';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { EMPLOYER_PRICING_ENFORCED, EMPLOYER_TIERS } from '@/lib/stripe/client';
 import Link from 'next/link';
@@ -64,7 +64,8 @@ export default async function EmployerBillingPage({
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('billing')}
         subtitle={t('manageSubscription')}
       />

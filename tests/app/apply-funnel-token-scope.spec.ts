@@ -104,7 +104,7 @@ describe('apply funnel --wa-* token scope', () => {
   });
 
   it('covers the create-account and results steps, which regressed before', () => {
-    const rel = funnelPages.map((p) => path.relative(ROOT, p));
+    const rel = funnelPages.map((p) => path.relative(ROOT, p).replace(/\\/g, '/'));
     expect(rel).toContain('app/apply/create-account/page.tsx');
     expect(rel).toContain('app/apply/results/page.tsx');
     expect(rel).toContain('app/apply/confirmation/page.tsx');

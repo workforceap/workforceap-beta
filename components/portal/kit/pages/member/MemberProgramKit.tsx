@@ -66,22 +66,22 @@ const DEFAULT_MODULES: ProgramModule[] = [];
 const MODULE_META: Record<ModuleState, { label: string; color: string; icon: LucideIcon; iconSize: number; bg: string; border?: string; iconBg: string; iconColor: string }> = {
   done: {
     label: 'Done',
-    color: 'var(--wa-success)',
+    color: 'var(--wa-success-dark)',
     icon: Check,
     iconSize: 14,
     bg: 'var(--wa-surface-2)',
     iconBg: 'var(--wa-success)',
-    iconColor: 'var(--wa-on-accent)',
+    iconColor: 'var(--wa-on-accent-control)',
   },
   active: {
     label: 'In progress',
-    color: 'var(--wa-accent)',
+    color: 'var(--wa-accent-text)',
     icon: Play,
     iconSize: 14,
     bg: 'var(--wa-accent-soft)',
     border: '1px solid var(--wa-accent-soft)',
     iconBg: 'var(--wa-accent)',
-    iconColor: 'var(--wa-on-accent)',
+    iconColor: 'var(--wa-on-accent-control)',
   },
   locked: {
     label: 'Locked',
@@ -172,13 +172,13 @@ export function MemberProgramKit({
             <ProgressRing pct={pct} size={120} onDark label="Program progress" />
           </div>
           <div style={{ flex: 1 }}>
-            <div className="wa-kit-meta" style={{ fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', opacity: 0.7, color: 'inherit' }}>
+            <div className="wa-kit-meta" style={{ fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'inherit' }}>
               Current program
             </div>
             <h2 className="h-font" style={{ fontSize: 'clamp(21px, 5.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.03em', marginTop: 4, textWrap: 'balance' }}>
               {programTitle}
             </h2>
-            <p className="wa-kit-lede" style={{ opacity: 0.8, marginTop: 4, fontVariantNumeric: 'tabular-nums', color: 'inherit' }}>
+            <p className="wa-kit-lede" style={{ marginTop: 4, fontVariantNumeric: 'tabular-nums', color: 'inherit' }}>
               {modulesComplete} of {modulesTotal} modules complete
               {estRemaining ? ` · ${estRemaining}` : ''}
             </p>
@@ -187,12 +187,13 @@ export function MemberProgramKit({
             <TrackedCourseraLaunchLink
               href={courseraLaunchHref}
               courseSlug={activeCourseSlug}
-              className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+              className="wa-kit-cta wa-kit-focus wa-kit-focus--on-dark hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
               style={{
-                background: 'var(--wa-on-accent)',
-                color: 'var(--wa-accent)',
+                background: 'var(--wa-hero-action-bg)',
+                color: 'var(--wa-hero-action-text)',
                 fontWeight: 700,
-                whiteSpace: 'nowrap',
+                whiteSpace: 'normal',
+                textAlign: 'center',
               }}
             >
               Resume in Coursera <Play size={14} aria-hidden="true" />
@@ -200,12 +201,13 @@ export function MemberProgramKit({
           ) : (
             <a
               href={resumeHref}
-              className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+              className="wa-kit-cta wa-kit-focus wa-kit-focus--on-dark hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
               style={{
-                background: 'var(--wa-on-accent)',
-                color: 'var(--wa-accent)',
+                background: 'var(--wa-hero-action-bg)',
+                color: 'var(--wa-hero-action-text)',
                 fontWeight: 700,
-                whiteSpace: 'nowrap',
+                whiteSpace: 'normal',
+                textAlign: 'center',
               }}
             >
               Open Learning Hub <Play size={14} aria-hidden="true" />
@@ -336,7 +338,7 @@ export function MemberProgramKit({
                     height: 26,
                     borderRadius: 'var(--wa-radius-sm)',
                     background: 'var(--wa-gold-soft)',
-                    color: 'var(--wa-gold)',
+                    color: 'var(--wa-gold-dark)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -353,7 +355,7 @@ export function MemberProgramKit({
               <a
                 href={missionsHref}
                 className="wa-page-action wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={{ marginTop: 12, color: 'var(--wa-gold)' }}
+                style={{ marginTop: 12, color: 'var(--wa-gold-dark)' }}
               >
                 Open missions <ArrowRight size={14} aria-hidden="true" />
               </a>

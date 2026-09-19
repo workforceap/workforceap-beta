@@ -3,13 +3,13 @@
 import { useTranslations } from 'next-intl';
 
 export type FirstCertProgress = {
-  /** 0–100 blended progress toward first certification. */
+  /** 0–100 recorded program training progress; not credential evidence. */
   percent: number;
   /** Human label for the current milestone stage. */
   stageLabel: string;
-  /** Whether the first cert is fully earned. */
+  /** Whether every validated program course is complete. */
   isComplete: boolean;
-  /** Completed steps count (e.g. courses done + assessment done). */
+  /** Completed course count. */
   stepsComplete: number;
   /** Total steps in the milestone path. */
   stepsTotal: number;
@@ -125,7 +125,7 @@ export default function MemberFirstCertProgressBar({ progress, compact }: Props)
             whiteSpace: 'nowrap',
           }}
         >
-          {t('stepsComplete', { complete: stepsComplete, total: stepsTotal })}
+          {t('trainingCoursesComplete', { complete: stepsComplete, total: stepsTotal })}
         </span>
       </div>
     </div>

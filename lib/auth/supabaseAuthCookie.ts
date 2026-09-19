@@ -20,6 +20,11 @@ export function isSupabaseAuthTokenCookieName(name: string): boolean {
   return /^sb-[a-z0-9]+-auth-token(?:\.\d+)?$/i.test(name);
 }
 
+/** PKCE belongs to an in-progress sign-in flow, not session validation. */
+export function isSupabasePkceCookieName(name: string): boolean {
+  return /^sb-[a-z0-9]+-auth-token-code-verifier(?:\.\d+)?$/i.test(name);
+}
+
 function listCookies(cookies: CookieListLike): CookieNameValue[] {
   if (typeof (cookies as { getAll?: unknown }).getAll === 'function') {
     return (cookies as { getAll(): CookieNameValue[] }).getAll();

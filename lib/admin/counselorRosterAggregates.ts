@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
+import { inheritMemberOrg, inheritUserOrg, type AdminPageTenantOk } from '@/lib/tenant/adminPageScopeFilters';
 
 export type CounselorAssignmentAgg = {
   caseload: number;
@@ -11,28 +12,33 @@ export type CounselorAssignmentAgg = {
  */
 export async function loadCounselorAssignmentAggregates(
   db: Pick<PrismaClient, 'counselorAssignment'>,
-  idleCutoff: Date
+  idleCutoff: Date,
+  scope: AdminPageTenantOk,
 ): Promise<Map<string, CounselorAssignmentAgg>> {
+  const cohort = {
+    active: true,
+    counselor: { active: true, ...inheritUserOrg(scope) },
+    ...inheritMemberOrg(scope),
+  };
   const [caseloadRows, placedRows, atRiskRows] = await Promise.all([
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
-      where: { active: true },
+      where: cohort,
       _count: { _all: true },
     }),
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
-      where: { active: true, member: { memberStatus: 'placed' } },
+      where: { AND: [cohort, { member: { memberStatus: 'placed' } }] },
       _count: { _all: true },
     }),
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
       where: {
-        active: true,
-        OR: [
+        AND: [cohort, { OR: [
           { member: { memberStatus: 'inactive' } },
           { member: { lastLoginAt: null } },
           { member: { lastLoginAt: { lt: idleCutoff } } },
-        ],
+        ] }],
       },
       _count: { _all: true },
     }),

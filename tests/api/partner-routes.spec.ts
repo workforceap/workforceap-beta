@@ -82,7 +82,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 }));
 
 vi.mock('@/lib/partner/attentionQueue', () => ({
-  buildPartnerAttentionQueue: vi.fn(),
+  loadPartnerAttentionPage: vi.fn(),
 }));
 
 vi.mock('@/lib/portal/workflowEvents', () => ({

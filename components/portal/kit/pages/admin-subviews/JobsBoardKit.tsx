@@ -9,7 +9,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   StatusTag,
   type Column,
@@ -178,10 +178,10 @@ export function JobsBoardKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Jobs"
         kicker="Employers"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/jobs?ui=legacy" as={NextLink as never} isStandalone>
             <Button

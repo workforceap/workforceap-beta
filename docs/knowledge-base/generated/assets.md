@@ -5,7 +5,10 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [public/.qa/portal-mockup/wap2-member-dashboard.png](../../../public/.qa/portal-mockup/wap2-member-dashboard.png) | binary | assets |  |
-| [public/api-docs-data.json](../../../public/api-docs-data.json) | 3557 | assets |  |
+| [public/.well-known/assetlinks.json](../../../public/.well-known/assetlinks.json) | 1 | assets |  |
+| [public/.well-known/traffic-advice](../../../public/.well-known/traffic-advice) | 1 | assets |  |
+| [public/apple-touch-icon-precomposed.png](../../../public/apple-touch-icon-precomposed.png) | binary | assets |  |
+| [public/apple-touch-icon.png](../../../public/apple-touch-icon.png) | binary | assets |  |
 | [public/fonts/material-symbols-outlined.woff2](../../../public/fonts/material-symbols-outlined.woff2) | binary | assets |  |
 | [public/images/AdobeStock_78118914.jpeg](../../../public/images/AdobeStock_78118914.jpeg) | binary | assets |  |
 | [public/images/AdobeStock_78118914.webp](../../../public/images/AdobeStock_78118914.webp) | binary | assets |  |
@@ -76,7 +79,6 @@
 | [public/offline.html](../../../public/offline.html) | 66 | assets |  |
 | [public/og-image-placeholder.txt](../../../public/og-image-placeholder.txt) | 3 | assets |  |
 | [public/og-image.png](../../../public/og-image.png) | binary | assets |  |
-| [public/openapi.json](../../../public/openapi.json) | 17143 | assets |  |
 | [public/partner-resources/partner-referral-flyer.html](../../../public/partner-resources/partner-referral-flyer.html) | 25 | assets |  |
 | [public/robots.txt](../../../public/robots.txt) | 26 | assets |  |
 | [public/sw.js](../../../public/sw.js) | 223 | assets |  |

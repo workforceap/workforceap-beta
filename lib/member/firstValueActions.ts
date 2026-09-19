@@ -61,7 +61,7 @@ export function buildFirstValueActions(ctx: FirstValueActionsContext): FirstValu
     });
   }
 
-  if (ctx.state === 'B' && ctx.enrolledProgram && !ctx.assessmentCompleted) {
+  if (ctx.enrolledProgram && !ctx.assessmentCompleted) {
     candidates.push({
       id: 'fv_preassessment',
       title: 'Complete your Training Preassessment',

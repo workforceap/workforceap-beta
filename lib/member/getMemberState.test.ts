@@ -52,6 +52,7 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: prismaMock,
 }));
 
+import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 import { getMemberState } from './getMemberState';
 import { getCacheOrFetch } from '@/lib/cache';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
@@ -176,5 +177,65 @@ describe('getMemberState', () => {
     const state = await getMemberState('member-1');
 
     expect(state.nextBestActions.some((action) => action.id === 'placement_job_loss_reactivate')).toBe(true);
+  });
+});
+
+const enrollment = (programSlug: string, isPrimary = true, enrolledByAdminId: string | null = null) => ({
+  id: programSlug, programSlug, isPrimary, enrolledByAdminId, enrolledAt: new Date('2026-01-01'),
+});
+
+describe('member dashboard business facts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    findUser.mockResolvedValue(userRecord);
+    findAiToolResult.mockResolvedValue(null);
+    findMemberEvent.mockResolvedValue(null);
+    findPlacementRecord.mockResolvedValue(null);
+    vi.mocked(loadMemberProgramTrainingView).mockResolvedValue({
+      completedCount: 0, totalCourses: 2, progressPercentDisplay: 0,
+      hasStartedTraining: false, hasCompletedFirstCourse: false, allCoursesComplete: false,
+      nextIncompleteCourseName: 'First course', nextIncompleteCourseSlug: 'course-1',
+      completedSlugsAuthoritative: [], validatedCourseSlugs: ['course-1', 'course-2'],
+      lastTrainingActivityAt: null, averageGradePercentDisplay: null,
+    });
+  });
+
+  it.each([false, true])('does not manufacture training progress for assessmentCompleted=%s', async (assessmentCompleted) => {
+    findUser.mockResolvedValue({ ...userRecord, assessmentCompleted });
+    const state = await getMemberState('member-1');
+    expect(state.firstCertProgressPercent).toBe(0);
+    expect(state.checklist.startFirstCourse).toBe(false);
+    expect(state.checklist.completeFirstCourse).toBe(false);
+  });
+
+  it('uses the primary assignment over a stale legacy pointer for actions, checklist and training', async () => {
+    findUser.mockResolvedValue({ ...userRecord, enrolledProgram: 'old-program', courseEnrollments: [enrollment('current-program')] });
+    const state = await getMemberState('member-1');
+    expect(state.enrolledProgram).toBe('current-program');
+    expect(state.nextBestActions.map((action) => action.id)).toContain('continue_training');
+    expect(state.nextBestActions.map((action) => action.id)).not.toContain('path_to_cert');
+    expect(loadMemberProgramTrainingView).toHaveBeenCalledWith(expect.objectContaining({ programSlug: 'current-program' }));
+  });
+
+  it('honors a selected assigned secondary and rejects an unassigned slug', async () => {
+    findUser.mockResolvedValue({ ...userRecord, courseEnrollments: [enrollment('primary'), enrollment('secondary', false)] });
+    expect((await getMemberState('member-1', { activeProgramSlug: 'secondary' })).enrolledProgram).toBe('secondary');
+    expect((await getMemberState('member-1', { activeProgramSlug: 'unassigned' })).enrolledProgram).toBe('primary');
+  });
+
+  it('surfaces counselor-created starter-profile gaps before the assessment', async () => {
+    findUser.mockResolvedValue({ ...userRecord, assessmentCompleted: false, courseEnrollments: [enrollment('current', true, 'staff')] });
+    const state = await getMemberState('member-1');
+    expect(state.stateLetter).toBe('C');
+    expect(state.nextBestActions[0].id).toBe('review_starter_profile');
+    expect(state.nextBestActions[0].body).toContain('phone number');
+  });
+
+  it('uses observed program progress even when a first course has completed', async () => {
+    const training = await vi.mocked(loadMemberProgramTrainingView)({ userId: 'member-1', programSlug: 'current' });
+    vi.mocked(loadMemberProgramTrainingView).mockResolvedValue({ ...training!, progressPercentDisplay: 50, completedCount: 1, hasCompletedFirstCourse: true, completedSlugsAuthoritative: ['course-1'] });
+    const state = await getMemberState('member-1');
+    expect(state.firstCertProgressPercent).toBe(50);
+    expect(state.checklist.completeFirstCourse).toBe(true);
   });
 });

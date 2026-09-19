@@ -191,7 +191,7 @@ describe('buildNextBestActions', () => {
     expect(body).toMatch(/preassessment helps personalize your training plan/i);
   });
 
-  test('skills_assessment copy keeps the choose-a-program lead-in while no program is enrolled', () => {
+  test('does not send a member without a program to the gated assessment', () => {
     const actions = buildNextBestActions({
       state: 'B',
       noApplicationOnFile: false,
@@ -205,6 +205,7 @@ describe('buildNextBestActions', () => {
       counselorUnreadCount: 0,
       weeklyRecapUnopened: false,
     });
-    expect(actions.find((a) => a.id === 'skills_assessment')?.body).toMatch(/^After you choose a program, /);
+    expect(actions.some((a) => a.id === 'skills_assessment')).toBe(false);
+    expect(actions[0].id).toBe('choose_program');
   });
 });

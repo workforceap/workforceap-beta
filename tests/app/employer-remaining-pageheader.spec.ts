@@ -8,31 +8,31 @@ function read(rel: string) {
   return readFileSync(join(root, rel), 'utf8');
 }
 
-describe('employer remaining PageHeader contract', () => {
-  it('matches page mounts one PageHeader (jobs pattern) and no SectionHeader', () => {
+describe('employer remaining EmployerPageOpener contract', () => {
+  it('matches page mounts one EmployerPageOpener (jobs pattern) and no SectionHeader', () => {
     const source = read('app/(portal)/employer/matches/page.tsx');
-    expect(source.match(/<PageHeader[\s>]/g)?.length ?? 0).toBe(1);
+    expect(source.match(/<EmployerPageOpener[\s>]/g)?.length ?? 0).toBe(1);
     expect(source).toContain('PortalPageFrame');
     expect(source).toContain('matchHistory');
     expect(source).not.toContain('SectionHeader');
     expect(source).not.toMatch(/<h1[\s>]/);
   });
 
-  it('messages page uses PageHeader on every branch and no SectionHeader', () => {
+  it('messages page uses EmployerPageOpener on every branch and no SectionHeader', () => {
     const source = read('app/(portal)/employer/messages/page.tsx');
     expect(source).toContain('PortalPageFrame');
     expect(source).toContain('EmployerMessagesHeader');
-    expect(source).toContain('<PageHeader');
-    expect(source.match(/<PageHeader[\s>]/g)?.length ?? 0).toBe(1);
+    expect(source).toContain('<EmployerPageOpener');
+    expect(source.match(/<EmployerPageOpener[\s>]/g)?.length ?? 0).toBe(1);
     expect(source).not.toContain('SectionHeader');
     expect(source).not.toMatch(/<h1[\s>]/);
     // Single inbox client — do not reintroduce dual mobile/desktop mounts.
     expect(source.match(/<EmployerMessagesInboxClient[\s>]/g)?.length ?? 0).toBe(1);
   });
 
-  it('work-queue page mounts one PageHeader with breadcrumbs (jobs pattern)', () => {
+  it('work-queue page mounts one EmployerPageOpener with breadcrumbs (jobs pattern)', () => {
     const source = read('app/(portal)/employer/work-queue/page.tsx');
-    expect(source.match(/<PageHeader[\s>]/g)?.length ?? 0).toBe(1);
+    expect(source.match(/<EmployerPageOpener[\s>]/g)?.length ?? 0).toBe(1);
     expect(source).toContain('PortalPageFrame');
     expect(source).toContain('employerWorkQueueSubtitle');
     expect(source).not.toContain('SectionHeader');

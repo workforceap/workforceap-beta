@@ -9,7 +9,8 @@ import { trackApplyFunnel } from '@/lib/analytics/events';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
 import { US_STATES, toStateAbbr } from '@/lib/apply/usStates';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
-import { APPLY_FLOW_DRAFT_KEY, type ApplyFlowDraftV1 } from '@/lib/apply/applyProgramStorage';
+import { type ApplyFlowDraftV1 } from '@/lib/apply/applyProgramStorage';
+import { APPLY_STORAGE_KEY, readApplyDraft, writeApplyDraft, saveEligibilityForNextStep, removeApplyDraft, type EligibilityPanel } from '@/lib/apply/applyBrowserState';
 import {
   DEFAULT_PRIMARY_BARRIER,
   normalizePrimaryBarriers,
@@ -30,74 +31,12 @@ import {
   schoolPrimaryBarriers,
 } from '@/lib/apply/schoolCollection';
 
-const APPLY_STORAGE_KEY = 'apply_eligibility';
-
 const ADULT_AGE_GROUPS = [
   { value: 'under_18', label: 'Under 18' },
   { value: '18_24', label: '18–24' },
   { value: '25_50', label: '25–50' },
   { value: '50_plus', label: '50+' },
 ] as const;
-
-const APPLY_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-function readDraft(): ApplyFlowDraftV1 | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(APPLY_FLOW_DRAFT_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as ApplyFlowDraftV1;
-    if (parsed?.version !== 1) return null;
-    if (typeof parsed.updatedAt === 'string') {
-      const updated = Date.parse(parsed.updatedAt);
-      if (Number.isFinite(updated) && Date.now() - updated > APPLY_DRAFT_TTL_MS) {
-        try { localStorage.removeItem(APPLY_FLOW_DRAFT_KEY); } catch { /* noop */ }
-        return null;
-      }
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writeDraft(payload: Omit<ApplyFlowDraftV1, 'version' | 'updatedAt'> & { version?: 1 }) {
-  if (typeof window === 'undefined') return;
-  try {
-    const next: ApplyFlowDraftV1 = {
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      phone: payload.phone,
-      ageGroup: payload.ageGroup,
-      city: payload.city,
-      state: payload.state,
-      zip: payload.zip,
-      county: payload.county,
-      primaryBarriers: payload.primaryBarriers,
-      q1: payload.q1,
-      q2: payload.q2,
-      q3: payload.q3,
-      receivingUnemployment: payload.receivingUnemployment,
-      exhaustedUnemployment: payload.exhaustedUnemployment,
-      layoffCompany: payload.layoffCompany,
-      snapWic: payload.snapWic,
-      hearAbout: payload.hearAbout,
-      hearAboutOther: payload.hearAboutOther,
-      partnerAmbassadorReferral: payload.partnerAmbassadorReferral,
-      gradeLevel: payload.gradeLevel,
-      parentGuardianName: payload.parentGuardianName,
-      parentGuardianEmail: payload.parentGuardianEmail,
-      parentGuardianPhone: payload.parentGuardianPhone,
-      schoolName: payload.schoolName,
-    };
-    localStorage.setItem(APPLY_FLOW_DRAFT_KEY, JSON.stringify(next));
-  } catch {
-    /* storage full / disabled */
-  }
-}
 
 export default function ApplyEligibilityClient({
   variant = 'organic',
@@ -152,6 +91,10 @@ export default function ApplyEligibilityClient({
   const [partnerAmbassadorReferral, setPartnerAmbassadorReferral] = useState('');
   const [attemptedContinue, setAttemptedContinue] = useState(false);
   const [saveNotice, setSaveNotice] = useState('');
+  const [panel, setPanel] = useState<EligibilityPanel>(schoolApply ? 'contact' : 'funding');
+  const panelHeadingRef = useRef<HTMLHeadingElement>(null);
+  const panels: EligibilityPanel[] = schoolApply ? ['contact', 'background'] : ['funding', 'contact', 'background'];
+  const panelIndex = panels.indexOf(panel);
   const completedRef = useRef(false);
   const answeredCountRef = useRef(0);
   const hydratedRef = useRef(false);
@@ -159,8 +102,9 @@ export default function ApplyEligibilityClient({
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
-    const draft = readDraft();
+    const draft = readApplyDraft();
     if (!draft) return;
+    setPanel(draft.panel === 'background' || draft.panel === 'contact' ? draft.panel : schoolApply ? 'contact' : 'funding');
     setFirstName(draft.firstName ?? '');
     setLastName(draft.lastName ?? '');
     setEmail(draft.email ?? '');
@@ -170,7 +114,7 @@ export default function ApplyEligibilityClient({
     setStateVal(toStateAbbr(draft.state));
     setZip(draft.zip ?? '');
     setCounty(draft.county ?? '');
-    setPrimaryBarriers(normalizePrimaryBarriers(draft.primaryBarriers));
+    setPrimaryBarriers(normalizePrimaryBarriers(draft.primaryBarriers ?? (draft.primaryBarrier ? [draft.primaryBarrier] : undefined)));
     setQ1(draft.q1 ?? null);
     setQ2(draft.q2 ?? null);
     setQ3(draft.q3 ?? null);
@@ -185,7 +129,7 @@ export default function ApplyEligibilityClient({
     setParentGuardianName(draft.parentGuardianName ?? '');
     setParentGuardianEmail(draft.parentGuardianEmail ?? '');
     setParentGuardianPhone(draft.parentGuardianPhone ?? '');
-  }, []);
+  }, [schoolApply]);
 
   const emailLooksValid = (value: string) => {
     const v = value.trim();
@@ -243,7 +187,7 @@ export default function ApplyEligibilityClient({
     screeningDetailsOk &&
     fundingAnswersOk;
   const ageOptions = isSchool ? SCHOOL_AGE_GROUPS : ADULT_AGE_GROUPS;
-  const missingEligibilityAnswers = yesNoAnswers.filter((answer) => answer === null).length;
+  const panelComplete = panel === 'funding' ? fundingAnswersOk : panel === 'contact' ? contactOk : screeningDetailsOk;
   const fundingYesCount = [q1, q2, q3].filter((answer) => answer === 'yes').length;
   const yesCount = fundingYesCount;
   const qualifies = fundingYesCount >= 1;
@@ -254,6 +198,7 @@ export default function ApplyEligibilityClient({
   });
 
   const draftPayload = () => ({
+    panel,
     firstName,
     lastName,
     email,
@@ -287,7 +232,7 @@ export default function ApplyEligibilityClient({
   }, []);
 
   useEffect(() => {
-    answeredCountRef.current = yesNoAnswers.filter(Boolean).length;
+    answeredCountRef.current = [q1, q2, q3, receivingUnemployment, exhaustedUnemployment, snapWic].filter(Boolean).length;
     trackApplyFunnel(1, 'eligibility_progress', {
       answered_count: answeredCountRef.current,
     });
@@ -303,8 +248,15 @@ export default function ApplyEligibilityClient({
     };
   }, []);
 
-  const persistDraft = () => {
-    writeDraft(draftPayload());
+  const persistDraft = (nextPanel = panel) => writeApplyDraft({ ...draftPayload(), panel: nextPanel });
+
+  const changePanel = (nextPanel: EligibilityPanel) => {
+    const saved = persistDraft(nextPanel);
+    setAutoSaved(saved);
+    setSaveNotice(saved ? '' : t('storageSaveFailed'));
+    setAttemptedContinue(false);
+    setPanel(nextPanel);
+    requestAnimationFrame(() => panelHeadingRef.current?.focus());
   };
 
   const [autoSaved, setAutoSaved] = useState(false);
@@ -314,10 +266,14 @@ export default function ApplyEligibilityClient({
       autosaveSkippedInitial.current = true;
       return;
     }
-    if (!firstName && !lastName && !email && !phone) return;
+    setAutoSaved(false);
+    if (completedRef.current) return;
+    if (!firstName && !lastName && !email && !phone && !yesNoAnswers.some(Boolean)) return;
     const handle = setTimeout(() => {
-      writeDraft(draftPayload());
-      setAutoSaved(true);
+      if (completedRef.current) return;
+      const saved = writeApplyDraft(draftPayload());
+      setAutoSaved(saved);
+      setSaveNotice(saved ? '' : t('storageSaveFailed'));
     }, 1500);
     return () => clearTimeout(handle);
     // draftPayload reads the latest field values on each run
@@ -348,16 +304,18 @@ export default function ApplyEligibilityClient({
     parentGuardianEmail,
     parentGuardianPhone,
     schoolApply?.schoolName,
+    panel,
   ]);
 
   const handleSaveLater = () => {
-    persistDraft();
-    setSaveNotice(t('saveContinueHint'));
-    trackApplyFunnel(1, 'apply_save_draft');
+    const saved = persistDraft();
+    setAutoSaved(saved);
+    setSaveNotice(t(saved ? 'saveContinueHint' : 'storageSaveFailed'));
+    if (saved) trackApplyFunnel(1, 'apply_save_draft');
   };
 
   const handleContinue = () => {
-    if (!canContinue) {
+    if (!panelComplete) {
       setAttemptedContinue(true);
       trackApplyFunnel(1, 'eligibility_continue_blocked', {
         answered_count: yesNoAnswers.filter(Boolean).length,
@@ -374,16 +332,19 @@ export default function ApplyEligibilityClient({
       return;
     }
 
-    completedRef.current = true;
-    trackApplyFunnel(2, 'qualification_completed', { qualifies, yes_count: yesCount });
-    trackApplyFunnel(1, 'eligibility_complete', { qualifies, yes_count: yesCount });
+    if (panelIndex < panels.length - 1) {
+      changePanel(panels[panelIndex + 1]);
+      return;
+    }
+    // A restored draft can land on a later panel with earlier fields incomplete.
+    if (!canContinue) {
+      changePanel(!fundingAnswersOk ? 'funding' : 'contact');
+      setAttemptedContinue(true);
+      return;
+    }
     if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem(APPLY_FLOW_DRAFT_KEY);
-      } catch {
-        /* ignore */
-      }
-      const eligibilityJson = JSON.stringify({
+      const eligibility = {
+        updatedAt: new Date().toISOString(),
         q1: isSchool ? null : q1,
         q2: isSchool ? null : q2,
         q3: isSchool ? null : q3,
@@ -418,14 +379,17 @@ export default function ApplyEligibilityClient({
         parentGuardianPhone: parentGuardianPhone.replace(/\D/g, '') || undefined,
         schoolName: schoolApply?.schoolName,
         schoolApply: Boolean(schoolApply),
-      });
-      sessionStorage.setItem(APPLY_STORAGE_KEY, eligibilityJson);
-      try {
-        localStorage.setItem(APPLY_STORAGE_KEY, eligibilityJson);
-      } catch {
-        /* storage full / disabled */
+      };
+      if (!saveEligibilityForNextStep(eligibility)) {
+        setSaveNotice(t('storageContinueFailed'));
+        setAutoSaved(false);
+        return;
       }
+      removeApplyDraft();
     }
+    completedRef.current = true;
+    trackApplyFunnel(2, 'qualification_completed', { qualifies, yes_count: yesCount });
+    trackApplyFunnel(1, 'eligibility_complete', { qualifies, yes_count: yesCount });
     const resultsPath = programParam ? `/apply/results?program=${encodeURIComponent(programParam)}` : '/apply/results';
     router.push(localizeHref(resultsPath, locale));
   };
@@ -433,6 +397,8 @@ export default function ApplyEligibilityClient({
   return (
     <div className={`apply-flow apply-flow--step1${isPaid ? ' apply-flow--paid' : ''}`} data-variant={isPaid ? 'paid' : 'organic'}>
       <style>{`
+        .apply-flow--step1 .apply-step1-actions { position: sticky; bottom: 0; z-index: 2; padding: 1rem 0; background: var(--color-background, var(--color-white)); border-top: 1px solid var(--color-border); }
+        .apply-flow--step1 .apply-panel-heading { scroll-margin-top: 7rem; outline-offset: 4px; margin: 1.25rem 0; }
         .apply-flow--step1 .form-radio-cards { gap: 0.5rem; }
         .apply-flow--step1 .form-radio-card {
           display: flex;
@@ -506,7 +472,7 @@ export default function ApplyEligibilityClient({
       `}</style>
       {!isPaid ? (
         <div className="apply-progress-bar" aria-label={t('progressAriaLabel')}>
-          <div className="apply-progress-fill" style={{ width: '33%' }} />
+          <div className="apply-progress-fill" style={{ width: `${Math.round(((panelIndex + 1) / panels.length) * 33)}%` }} />
           <p className="apply-progress-label">{t(isSchool ? 'schoolStep1ProgressLabel' : 'step1ProgressLabel')}</p>
         </div>
       ) : null}
@@ -562,7 +528,10 @@ export default function ApplyEligibilityClient({
           </>
         )}
 
-        {!isSchool ? (
+        <h2 ref={panelHeadingRef} tabIndex={-1} className="apply-panel-heading">
+          {t('eligibilityPanelProgress', { current: panelIndex + 1, total: panels.length })}: {t(panel === 'funding' ? 'eligibilityPanelFunding' : panel === 'contact' ? 'eligibilityPanelContact' : 'eligibilityPanelBackground')}
+        </h2>
+        {panel === 'funding' ? (
         <div className="funding-questions">
           {(
             [
@@ -632,7 +601,7 @@ export default function ApplyEligibilityClient({
           ) : null}
         </div>
         ) : null}
-        {!isSchool && canContinue && (
+        {panel === 'background' && !isSchool && canContinue && (
           <div className={`funding-banner ${qualifies ? 'funding-banner-qualify' : 'funding-banner-neutral'}`}>
             {qualifies ? (
               <p>
@@ -645,7 +614,7 @@ export default function ApplyEligibilityClient({
             )}
           </div>
         )}
-        <div className="apply-personal-block">
+        {panel === 'contact' && <div className="apply-personal-block">
           <h3 className="apply-personal-block__title">{t('personalSectionTitle')}</h3>
           <div className="apply-personal-grid">
             <div className="form-group apply-form-group--full">
@@ -752,9 +721,9 @@ export default function ApplyEligibilityClient({
               {t('contactIncompleteError')}
             </p>
           )}
-        </div>
+        </div>}
 
-        <div className="apply-personal-block">
+        {panel === 'background' && <div className="apply-personal-block">
           <h3 className="apply-personal-block__title">{t(isSchool ? 'schoolScreeningTitle' : 'screeningSectionTitle')}</h3>
           <div className="apply-personal-grid">
             <div className="form-group apply-form-group--full">
@@ -961,31 +930,26 @@ export default function ApplyEligibilityClient({
               {t(isSchool ? 'schoolScreeningIncompleteError' : 'screeningIncompleteError')}
             </p>
           )}
-        </div>
+        </div>}
 
         <div className="apply-step1-actions">
           <button
             type="submit"
             className={marketingButtonPresets.formSubmitPrimary('apply-step1-actions__primary')}
-            aria-describedby={attemptedContinue && !canContinue ? 'apply-eligibility-summary-error apply-eligibility-continue-hint' : 'apply-eligibility-continue-hint'}
+            aria-describedby={attemptedContinue && !panelComplete ? 'apply-eligibility-summary-error apply-eligibility-continue-hint' : !panelComplete ? 'apply-eligibility-continue-hint' : undefined}
           >
-            {t('continueToPrograms')}
+            {t(panelIndex === panels.length - 1 ? 'continueToPrograms' : 'eligibilityPanelNext')}
           </button>
+          {panelIndex > 0 && <button type="button" className={marketingButtonPresets.formOutlineSecondary('apply-step1-actions__secondary')} onClick={() => changePanel(panels[panelIndex - 1])}>{t('eligibilityPanelBack')}</button>}
           {!isPaid ? (
             <button type="button" className={marketingButtonPresets.formOutlineSecondary('apply-step1-actions__secondary')} onClick={handleSaveLater}>
               {t('saveContinueLater')}
             </button>
           ) : null}
         </div>
-        {attemptedContinue && !canContinue ? (
+        {attemptedContinue && !panelComplete ? (
           <p id="apply-eligibility-summary-error" className="apply-eligibility-field-error" role="alert">
-            {!isSchool && (!contactOk || !screeningDetailsOk) && missingEligibilityAnswers > 0
-              ? `${!contactOk ? t('contactIncompleteError') : t('screeningIncompleteError')} ${t('eligibilityRadioError')}`
-              : !contactOk
-                ? t('contactIncompleteError')
-                : !screeningDetailsOk
-                  ? t(isSchool ? 'schoolScreeningIncompleteError' : 'screeningIncompleteError')
-                : t('eligibilityRadioError')}
+            {t(panel === 'funding' ? 'eligibilityRadioError' : panel === 'contact' ? 'contactIncompleteError' : isSchool ? 'schoolScreeningIncompleteError' : 'screeningIncompleteError')}
           </p>
         ) : null}
         <p className="apply-consent-line" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0', lineHeight: 1.5 }}>
@@ -1008,9 +972,9 @@ export default function ApplyEligibilityClient({
             {t('autoSavedNotice')}
           </p>
         ) : null}
-        {(!canContinue || attemptedContinue) && (
+        {(!panelComplete || attemptedContinue) && (
           <p id="apply-eligibility-continue-hint" className="apply-continue-hint" tabIndex={-1} role={attemptedContinue ? 'status' : undefined}>
-            {attemptedContinue && !canContinue
+            {attemptedContinue && !panelComplete
               ? t(isSchool ? 'schoolContinueBlocked' : 'continueBlockedHint')
               : t(isSchool ? 'schoolContinueSoft' : 'continueSoftHint')}
           </p>

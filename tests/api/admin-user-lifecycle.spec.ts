@@ -28,7 +28,7 @@ vi.mock('@/lib/admin/authUserLifecycle', () => ({
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.event, auditRequestMeta: () => ({}) }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 
 import { POST as restore } from '@/app/api/admin/users/[id]/restore/route';
 import { POST as freeEmail } from '@/app/api/admin/users/[id]/free-email/route';

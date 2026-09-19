@@ -1,7 +1,9 @@
+import { CRON_SETTING_PREFIX, isOperationalFeatureFlagKey } from './reservedKeys';
 import { prisma } from '@/lib/db/prisma';
 
 export async function fetchFeatureFlags() {
   return prisma.featureFlag.findMany({
+    where: { NOT: { key: { startsWith: CRON_SETTING_PREFIX } } },
     orderBy: { createdAt: 'desc' },
     take: 500,
   });
@@ -12,6 +14,10 @@ export function validateCreateBody(body: Record<string, unknown>): { error?: str
 
   if (!key || typeof key !== 'string' || !key.trim() || !name || typeof name !== 'string' || !name.trim()) {
     return { error: 'key and name are required' };
+  }
+
+  if (isOperationalFeatureFlagKey(key.trim())) {
+    return { error: 'Cron settings must be managed through Email & Cron Management' };
   }
 
   const rollPct = Math.max(0, Math.min(100, Number(rolloutPercentage) || 0));

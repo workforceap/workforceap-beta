@@ -235,7 +235,7 @@
   footer{position:relative;background:var(--surface);border-top:1px solid var(--border);padding:54px 0 30px}
   footer::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--grad-text)}
   .fgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:34px;margin-bottom:34px}
-  footer h4{font-size:14px;font-weight:700;margin-bottom:14px}
+  footer h2{font-size:14px;font-weight:700;margin-bottom:14px}
   footer ul{list-style:none}
   footer li{margin-bottom:10px}
   footer li a{color:var(--muted);font-size:14px;background-image:linear-gradient(var(--gold-dark),var(--gold-dark));background-size:0 1.5px;background-position:0 100%;background-repeat:no-repeat;transition:background-size .25s ease,color .2s}

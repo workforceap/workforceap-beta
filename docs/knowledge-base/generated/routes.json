@@ -233,7 +233,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 328,
+        "line": 326,
         "kind": "FunctionDeclaration",
         "localName": "ResetPasswordPage"
       }
@@ -243,12 +243,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/client",
-        "line": 7,
+        "line": 9,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/postLoginRedirect",
-        "line": 8,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -309,7 +309,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 17,
+        "line": 20,
         "kind": "FunctionDeclaration",
         "localName": "SetupMfaPage"
       }
@@ -318,8 +318,13 @@
     "configuration": {},
     "boundaryReferences": [
       {
+        "specifier": "@/components/auth/AuthActions.module.css",
+        "line": 5,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/auth/safeRedirectPath",
-        "line": 8,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -431,7 +436,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 15,
+        "line": 18,
         "kind": "FunctionDeclaration",
         "localName": "VerifyMfaPage"
       }
@@ -440,8 +445,13 @@
     "configuration": {},
     "boundaryReferences": [
       {
+        "specifier": "@/components/auth/AuthActions.module.css",
+        "line": 5,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/auth/safeRedirectPath",
-        "line": 7,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -4078,12 +4088,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 32,
+        "line": 17,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 40,
+        "line": 26,
         "kind": "FunctionDeclaration",
         "localName": "WioaQualificationPage"
       }
@@ -4093,7 +4103,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 6,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -4339,17 +4349,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 98,
+        "line": 99,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 100,
+        "line": 101,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 109,
+        "line": 110,
         "kind": "FunctionDeclaration",
         "localName": "DashboardPage"
       }
@@ -5028,12 +5038,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 13,
+        "line": 14,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 32,
+        "line": 33,
         "kind": "FunctionDeclaration",
         "localName": "WeeklyRecapPage"
       }
@@ -5043,7 +5053,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 7,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -5983,7 +5993,7 @@
       },
       {
         "name": "default",
-        "line": 55,
+        "line": 56,
         "kind": "FunctionDeclaration",
         "localName": "EmployerMessagesPage"
       }
@@ -7990,12 +8000,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 18,
+        "line": 17,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 52,
+        "line": 48,
         "kind": "FunctionDeclaration",
         "localName": "AdminCounselorsPage"
       }
@@ -8548,12 +8558,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 17,
+        "line": 18,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 39,
+        "line": 40,
         "kind": "FunctionDeclaration",
         "localName": "AdminEmailCronsPage"
       }
@@ -9361,12 +9371,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 84,
+        "line": 85,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 92,
+        "line": 93,
         "kind": "FunctionDeclaration",
         "localName": "AdminMemberDetailPage"
       }
@@ -11521,20 +11531,38 @@
     "routing": "filesystem",
     "exports": [
       {
+        "name": "dynamic",
+        "line": 9,
+        "kind": "Variable"
+      },
+      {
         "name": "generateMetadata",
-        "line": 7,
+        "line": 11,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 15,
+        "line": 19,
         "kind": "FunctionDeclaration",
         "localName": "ApiDocsPage"
       }
     ],
     "methods": [],
-    "configuration": {},
-    "boundaryReferences": []
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/roles",
+        "line": 6,
+        "kind": "import"
+      }
+    ]
   },
   {
     "file": "app/api/(portal)/dashboard/jobs/[id]/apply/route.ts",
@@ -11823,6 +11851,48 @@
     ]
   },
   {
+    "file": "app/api/admin/api-docs/openapi/route.ts",
+    "kind": "route",
+    "path": "/api/admin/api-docs/openapi",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 7,
+        "kind": "Variable"
+      },
+      {
+        "name": "GET",
+        "line": 9,
+        "kind": "Variable"
+      }
+    ],
+    "methods": [
+      "GET"
+    ],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 2,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/roles",
+        "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 4,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/api/admin/applications/bulk-review/route.ts",
     "kind": "route",
     "path": "/api/admin/applications/bulk-review",
@@ -11831,7 +11901,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 110,
+        "line": 119,
         "kind": "Variable"
       }
     ],
@@ -11857,7 +11927,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -13166,7 +13236,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 556,
+        "line": 560,
         "kind": "Variable"
       }
     ],
@@ -13187,7 +13257,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 14,
+        "line": 16,
         "kind": "import"
       }
     ]
@@ -13622,7 +13692,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 11,
+        "line": 12,
         "kind": "Variable"
       }
     ],
@@ -13643,12 +13713,12 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 6,
+        "line": 7,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -13702,7 +13772,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 11,
+        "line": 12,
         "kind": "Variable"
       }
     ],
@@ -13723,12 +13793,12 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 6,
+        "line": 7,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -13742,7 +13812,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 8,
+        "line": 9,
         "kind": "Variable"
       }
     ],
@@ -13763,7 +13833,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 7,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -14457,12 +14527,12 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 56,
+        "line": 60,
         "kind": "Variable"
       },
       {
         "name": "DELETE",
-        "line": 79,
+        "line": 86,
         "kind": "Variable"
       }
     ],
@@ -14484,7 +14554,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 6,
+        "line": 7,
         "kind": "import"
       }
     ]
@@ -15588,7 +15658,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 18,
+        "line": 22,
         "kind": "Variable"
       }
     ],
@@ -16332,7 +16402,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 25,
+        "line": 26,
         "kind": "Variable"
       }
     ],
@@ -16358,7 +16428,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -16503,7 +16573,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 123,
+        "line": 161,
         "kind": "Variable"
       }
     ],
@@ -16529,7 +16599,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 15,
+        "line": 16,
         "kind": "import"
       }
     ]
@@ -16589,12 +16659,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 112,
+        "line": 54,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 168,
+        "line": 112,
         "kind": "Variable"
       }
     ],
@@ -16616,7 +16686,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 7,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -16630,7 +16700,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 198,
+        "line": 199,
         "kind": "Variable"
       }
     ],
@@ -19695,12 +19765,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 73,
+        "line": 74,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 74,
+        "line": 75,
         "kind": "Variable"
       }
     ],
@@ -20558,7 +20628,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 181,
+        "line": 182,
         "kind": "Variable"
       }
     ],
@@ -20569,22 +20639,22 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/tenant/withTenantScope",
-        "line": 2,
+        "line": 3,
         "kind": "import"
       },
       {
         "specifier": "@/lib/rate-limit",
-        "line": 14,
+        "line": 15,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/resolveProvisionOrg",
-        "line": 19,
+        "line": 20,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 22,
+        "line": 23,
         "kind": "import"
       }
     ]
@@ -22304,12 +22374,12 @@
       },
       {
         "name": "GET",
-        "line": 50,
+        "line": 53,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 51,
+        "line": 54,
         "kind": "Variable"
       }
     ],
@@ -24047,7 +24117,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 15,
+        "line": 19,
         "kind": "Variable"
       }
     ],
@@ -24062,8 +24132,13 @@
         "kind": "import"
       },
       {
+        "specifier": "@/lib/auth/roles",
+        "line": 3,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 6,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -24077,7 +24152,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 10,
+        "line": 11,
         "kind": "Variable"
       }
     ],
@@ -24098,7 +24173,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 7,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -25395,12 +25470,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 127,
+        "line": 114,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 312,
+        "line": 283,
         "kind": "Variable"
       }
     ],
@@ -25417,7 +25492,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 5,
+        "line": 9,
         "kind": "import"
       }
     ]
@@ -26138,17 +26213,17 @@
     "exports": [
       {
         "name": "GET",
-        "line": 59,
+        "line": 60,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 141,
+        "line": 145,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 165,
+        "line": 169,
         "kind": "Variable"
       }
     ],
@@ -26166,12 +26241,12 @@
       },
       {
         "specifier": "@/lib/messages/rateLimit",
-        "line": 11,
+        "line": 12,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 15,
+        "line": 16,
         "kind": "import"
       }
     ]
@@ -26185,7 +26260,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 8,
+        "line": 9,
         "kind": "Variable"
       }
     ],
@@ -26782,7 +26857,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 38,
+        "line": 37,
         "kind": "Variable"
       }
     ],
@@ -27798,12 +27873,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 28,
+        "line": 29,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 101,
+        "line": 115,
         "kind": "Variable"
       }
     ],
@@ -27815,12 +27890,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 2,
+        "line": 3,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 8,
+        "line": 9,
         "kind": "import"
       }
     ]
@@ -28520,7 +28595,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 23,
+        "line": 26,
         "kind": "Variable"
       }
     ],
@@ -29331,7 +29406,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 87,
+        "line": 75,
         "kind": "Variable"
       }
     ],
@@ -29342,12 +29417,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 4,
+        "line": 8,
         "kind": "import"
       },
       {
         "specifier": "@/lib/rate-limit",
-        "line": 9,
+        "line": 13,
         "kind": "import"
       }
     ]
@@ -29804,7 +29879,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 22,
+        "line": 23,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -29820,7 +29895,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -30058,12 +30133,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 14,
+        "line": 15,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 24,
+        "line": 25,
         "kind": "FunctionDeclaration",
         "localName": "ApplyCreateAccountPage"
       }
@@ -30217,12 +30292,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 15,
+        "line": 16,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 24,
+        "line": 25,
         "kind": "FunctionDeclaration",
         "localName": "ApplyResultsPage"
       }
@@ -32268,12 +32343,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 4,
+        "line": 7,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 13,
+        "line": 17,
         "kind": "FunctionDeclaration",
         "localName": "InviteLayout"
       }
@@ -32291,14 +32366,20 @@
     "exports": [
       {
         "name": "default",
-        "line": 407,
+        "line": 408,
         "kind": "FunctionDeclaration",
         "localName": "InvitePage"
       }
     ],
     "methods": [],
     "configuration": {},
-    "boundaryReferences": []
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/safeRedirectPath",
+        "line": 9,
+        "kind": "import"
+      }
+    ]
   },
   {
     "file": "app/layout.tsx",
@@ -32524,7 +32605,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 8,
+        "line": 6,
         "kind": "FunctionDeclaration",
         "localName": "PartnerSignupRedirectPage"
       }
@@ -32722,12 +32803,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 25,
+        "line": 12,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 34,
+        "line": 21,
         "kind": "FunctionDeclaration",
         "localName": "PublicWioaQualificationPage"
       }

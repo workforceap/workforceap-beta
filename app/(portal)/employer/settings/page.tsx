@@ -6,7 +6,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import EmployerSettingsForm from '@/components/employer/EmployerSettingsForm';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -53,7 +53,8 @@ export default async function EmployerSettingsPage() {
   return (
     <>
       <div style={{ maxWidth: '720px', margin: '0 auto', paddingBottom: '5rem' }}>
-        <PageHeader
+        <EmployerPageOpener
+          kicker={t('employerPortal')}
           title={t('companySettings')}
           subtitle={t('updateCompanyProfile')}
           breadcrumbs={[{ label: t('employerPortal'), href: '/employer' }, { label: t('settings') }]}

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
+import { unstable_rethrow } from 'next/navigation';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { runWithGucContext, SYSTEM_GUC_CONTEXT } from '@/lib/db/gucContext';
+import { captureApiError } from '@/lib/observability/captureApiError';
+import { hasReportedApiError, runWithApiErrorScope } from '@/lib/observability/apiErrorScope';
 import { authorizeCronRequest } from './authorizeCronRequest';
 import { isCronEnabled } from './isCronEnabled';
 import {
@@ -12,78 +15,92 @@ import {
 } from './cronExecution';
 
 /**
- * Wrap a cron route handler with standard auth, toggle check, error logging,
- * and structured CronExecution tracking.
- *
- * Ensures that even if the handler throws (DB error, timeout, etc.),
- * a CronExecution record is created so the admin dashboard can show
- * exactly what happened, when, and for how long.
- *
- * Every terminal path also leaves exactly one WorkflowDiagnostic row. That
- * matters because CronExecution and WorkflowDiagnostic are separate surfaces:
- * a handler that *returns* an error response rather than throwing used to be
- * recorded FAILED in CronExecution while writing nothing to
- * WorkflowDiagnostic. `/api/cron/at-risk-alerts` returned 401 to its own
- * scheduler for three weeks that way — counselor alerts and member nudges
- * silently undelivered, with no diagnostic row to notice. Handlers that log
- * their own row still win; `hasCronDiagnosticBeenLogged` keeps this from
- * double-writing for the 28 routes that do.
+ * Authorize before database work; track every authorized execution and report
+ * failures even when tracking/settings storage is unavailable. Auth rejections
+ * are reported at most once per five minutes per wrapper/configuration state,
+ * without turning unauthenticated requests into database writes.
  */
 export function withCronLogging(
   workflowKey: string,
   handler: (request: any) => Promise<any>,
 ) {
-  return async function (request: any): Promise<any> {
+  let lastAuthReport: { at: number; reason: string } | undefined;
+  const route = `cron/${workflowKey}`;
+
+  return (request: any): Promise<any> => runWithApiErrorScope(async () => {
     const unauthorized = authorizeCronRequest(request);
-    if (unauthorized) return unauthorized;
-
-    const executionId = await startCronExecution(workflowKey);
-
-    return runWithCronExecution(executionId, async () => {
-      if (!(await isCronEnabled(workflowKey))) {
-        await completeCronExecution(executionId, 'SKIPPED');
-        await logCronRun(workflowKey, { skipped: true, reason: 'disabled' }, 'ok');
-        return NextResponse.json({ skipped: true, reason: 'disabled' });
+    if (unauthorized) {
+      const reason = process.env.CRON_SECRET?.trim() ? 'unauthorized' : 'missing_secret';
+      const now = Date.now();
+      if (!lastAuthReport || lastAuthReport.reason !== reason || now - lastAuthReport.at >= 300_000) {
+        lastAuthReport = { at: now, reason };
+        captureApiError(new Error('Cron authorization rejected'), { route, extra: { status: 401, reason } });
       }
+      return unauthorized;
+    }
 
-      try {
-        const response = await runWithGucContext(SYSTEM_GUC_CONTEXT, () => handler(request));
-        const responseStatus =
-          response && typeof response.status === 'number' ? response.status : 200;
-        if (responseStatus >= 400) {
-          const error = `Cron handler returned HTTP ${responseStatus}`;
-          await completeCronExecution(executionId, 'FAILED', error);
-          if (!hasCronDiagnosticBeenLogged()) {
-            await logCronRun(workflowKey, { ok: false, status: responseStatus, error }, 'error');
-          }
-        } else {
-          await completeCronExecution(executionId, 'SUCCESS');
-          if (!hasCronDiagnosticBeenLogged()) {
-            const recordsProcessed = getCronRecordsProcessed();
-            await logCronRun(
-              workflowKey,
-              recordsProcessed === undefined
-                ? { ok: true, status: responseStatus }
-                : { ok: true, status: responseStatus, recordsProcessed },
-              'ok',
-            );
+    return runWithGucContext(SYSTEM_GUC_CONTEXT, async () => {
+      let executionId: string | undefined;
+      let phase = 'start_execution';
+
+      const fail = async (error: unknown) => {
+        unstable_rethrow(error);
+        captureApiError(error, { route, extra: { phase } });
+        const message = error instanceof Error ? error.message : 'Cron failed';
+        if (executionId) {
+          try {
+            await completeCronExecution(executionId, 'FAILED', message);
+          } catch (trackingError) {
+            captureApiError(trackingError, { route, extra: { phase: 'record_failure' } });
           }
         }
-        return response;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error(String(err));
-        console.error(`[cron:${workflowKey}] Unhandled error:`, error);
-        await completeCronExecution(executionId, 'FAILED', error.message);
-        await logCronRun(
-          workflowKey,
-          { ok: false, error: error.message, stack: error.stack },
-          'error',
-        );
-        return NextResponse.json(
-          { error: 'Cron failed' },
-          { status: 500 },
-        );
+        await logCronRun(workflowKey, { ok: false, error: message, phase }, 'error');
+        return NextResponse.json({ error: 'Cron failed' }, { status: 500 });
+      };
+
+      try {
+        executionId = await startCronExecution(workflowKey);
+      } catch (error) {
+        return fail(error);
       }
+
+      const currentExecutionId = executionId;
+      return runWithCronExecution(currentExecutionId, async () => {
+        try {
+          phase = 'settings';
+          if (!(await isCronEnabled(workflowKey))) {
+            phase = 'record_skip';
+            await completeCronExecution(currentExecutionId, 'SKIPPED');
+            await logCronRun(workflowKey, { skipped: true, reason: 'disabled' }, 'ok');
+            return NextResponse.json({ skipped: true, reason: 'disabled' });
+          }
+
+          phase = 'handler';
+          const response = await handler(request);
+          const responseStatus = response && typeof response.status === 'number' ? response.status : 200;
+          const failed = responseStatus >= 400;
+          const error = failed ? `Cron handler returned HTTP ${responseStatus}` : undefined;
+          if (failed && !hasReportedApiError()) {
+            captureApiError(new Error(error), { route, extra: { status: responseStatus } });
+          }
+
+          phase = 'record_result';
+          if (failed) await completeCronExecution(currentExecutionId, 'FAILED', error);
+          else await completeCronExecution(currentExecutionId, 'SUCCESS');
+          if (!hasCronDiagnosticBeenLogged()) {
+            const recordsProcessed = getCronRecordsProcessed();
+            await logCronRun(workflowKey, {
+              ok: !failed,
+              status: responseStatus,
+              ...(error ? { error } : {}),
+              ...(recordsProcessed === undefined ? {} : { recordsProcessed }),
+            }, failed ? 'error' : 'ok');
+          }
+          return response;
+        } catch (error) {
+          return fail(error);
+        }
+      });
     });
-  };
+  });
 }

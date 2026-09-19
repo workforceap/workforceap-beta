@@ -1,43 +1,30 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import { getTranslations } from 'next-intl/server';
+import WioaQualificationLoading from '@/components/portal/WioaQualificationLoading';
 import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
-import PortalRouteFallback from '@/components/portal/PortalRouteFallback';
+import LocalizedLink from '@/components/LocalizedLink';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 const WioaQualificationClient = dynamic(() => import('@/components/portal/WioaQualificationClient'), {
-  loading: () => (
-    <div
-      role="status"
-      aria-live="polite"
-      className="portal-card portal-card--flat"
-      style={{
-        minHeight: 280,
-        padding: '2.5rem 1.25rem',
-        borderRadius: 12,
-        textAlign: 'center',
-        color: 'var(--color-on-surface-variant)',
-        fontSize: '0.9rem',
-        fontWeight: 600,
-      }}
-    >
-      Loading WIOA screening…
-    </div>
-  ),
+  loading: () => <WioaQualificationLoading />,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('wioa');
   return buildPageMetadataAsync({
-  title: 'Training Funding Eligibility Check',
-  description: 'Answer a few questions to help your counselor identify which no-cost training services may be available to you.',
-  path: '/dashboard/learning/wioa-qualification',
-});
+    title: t('title'),
+    description: t('memberIntro'),
+    path: '/dashboard/learning/wioa-qualification',
+  });
 }
 
 export default async function WioaQualificationPage() {
+  const t = await getTranslations('wioa');
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/learning/wioa-qualification');
 
@@ -59,18 +46,15 @@ export default async function WioaQualificationPage() {
 
     if (looksLikeSchemaDrift) {
       return (
-        <>
-          <PortalRouteFallback
-            title="WIOA screening is not enabled yet"
-            description="This WorkforceAP environment does not have WIOA screening storage enabled yet. If you need WIOA guidance right now, message your counselor and we'll help you with the next steps."
-          />        </>
+        <section className="portal-route-fallback" data-portal-error-state="portal-route-fallback">
+          <h1 className="portal-route-fallback__title">{t('unavailableTitle')}</h1>
+          <p className="portal-route-fallback__desc">{t('unavailableBody')}</p>
+          <LocalizedLink href="/dashboard/messages" className="wa-kit-cta">{t('messageCounselor')}</LocalizedLink>
+        </section>
       );
     }
     throw error;
   }
 
-  return (
-    <>
-      <WioaQualificationClient initialSnapshot={initial} />    </>
-  );
+  return <WioaQualificationClient initialSnapshot={initial} />;
 }

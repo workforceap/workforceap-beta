@@ -49,7 +49,7 @@ vi.mock('@/lib/employer/jobCreate', () => ({
   getRouteErrorDetails: vi.fn((err: any) => ({ message: err?.message ?? 'Unknown', code: 'UNKNOWN' })),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

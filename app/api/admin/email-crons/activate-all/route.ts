@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { requireAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { setCronEnabled } from '@/lib/cron/isCronEnabled';
 import { CRON_REGISTRY } from '@/lib/admin/cronRegistry';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
@@ -18,6 +19,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
+  const orgId = await getActorOrganizationId(user.id);
+  const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
   const toggledAt = new Date().toISOString();
   const records = CRON_REGISTRY.map((cron) => ({
     workflow: cron.workflowKey,
@@ -33,7 +36,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     },
   }));
 
-  await prisma.$transaction((tx) => tx.workflowDiagnostic.createMany({ data: records }));
+  await prisma.$transaction(async (tx) => {
+    for (const cron of CRON_REGISTRY) await setCronEnabled(tx, cron.workflowKey, true);
+    await tx.workflowDiagnostic.createMany({ data: records });
+  });
 
   await auditLog({
     actorUserId: user.id,
@@ -45,8 +51,6 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     },
   });
 
-  const orgId = await getActorOrganizationId(user.id);
-  const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
   await logAuditEvent({
     user: { id: user.id, role: actorRole },
     verb: 'activated',

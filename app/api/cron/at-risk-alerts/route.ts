@@ -41,10 +41,13 @@ async function handle(_request: Request) {
     nudgeResult.sentComeBack +
     nudgeResult.sentStuck;
   await setCronRecordsProcessed(recordsProcessed);
+  const failed = counselorResult.success === false ||
+    counselorResult.results?.some((result) => Boolean(result.error)) ||
+    nudgeResult.errors > 0;
   return NextResponse.json({
     counselorAlerts: counselorResult,
     memberNudges: nudgeResult,
-  });
+  }, { status: failed ? 500 : 200 });
 }
 
 export const GET = withCronLogging('cron_at_risk_alerts', handle);

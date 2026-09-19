@@ -1,0 +1,27 @@
+.root { display: grid; gap: 24px; min-width: 0; color: var(--wa-text); font-size: 16px; line-height: 1.6; }
+/* Local bridge for the public Next route; never import portal tokens globally. */
+.public { --wa-text: var(--color-on-surface, #262326); --wa-surface: var(--surface-container-lowest, #fff); --wa-border: var(--outline-variant, #e0dce0); --wa-control-border: #858585; --wa-type-body: 16px; --wa-radius-sm: 8px; max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
+:global(.dark) .public, :global([data-theme='dark']) .public { --wa-control-border: #aa808d; }
+.root h1 { font-size: clamp(26px, 6vw, 36px); line-height: 1.2; }
+.root h2 { font-size: 20px; line-height: 1.35; font-weight: 700; }
+.root h3 { font-size: 17px; font-weight: 600; }
+.root p, .root h2, .root h3 { margin: 0; }
+.root ul, .root ol { margin: 0; padding-inline-start: 24px; }
+.root li + li { margin-top: 8px; }
+.root input, .root select { font-size: 16px; }
+.root :is(input, select, a):focus-visible { outline: 2px solid var(--wa-text); outline-offset: 3px; box-shadow: 0 0 0 3px var(--wa-text); }
+.root :global(.astryx-segmented-control-item) { min-height: 44px; white-space: normal; height: auto; }
+.root :global(.astryx-checkbox-input), .root :global(.astryx-radio-list-item) { min-height: 44px; }
+.root :global(.wa-kit-field-label) { display: block; font-size: 16px; font-weight: 600; }
+.stack { display: grid; gap: 16px; min-width: 0; }
+.fields { --wa-border: var(--wa-control-border); display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 20px; }
+.control { margin-top: 4px; width: 100%; min-height: 44px; border: 1px solid var(--wa-control-border); border-radius: var(--wa-radius-sm); padding: 10px 12px; background: var(--wa-surface); color: var(--wa-text); }
+.group { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.group legend { padding: 0; margin-bottom: 12px; font-weight: 600; }
+.kicker, .meta { font-size: 14px; }
+.kicker { font-weight: 700; }
+.disclaimer { font-weight: 500; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.actions a { display: inline-flex; align-items: center; min-height: 44px; color: var(--wa-accent-text, var(--color-on-surface)); text-decoration: underline; font-weight: 600; }
+.error { color: var(--wa-danger, var(--color-error, #b91c1c)); }
+.success, .warning { font-weight: 600; }

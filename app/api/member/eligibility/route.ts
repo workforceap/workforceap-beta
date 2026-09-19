@@ -2,6 +2,10 @@ import { after, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
+import { lockEligibilityMember, saveEligibilityForm, eligibilityWriteFailure, type EligibilityFormMeta } from '@/lib/wioa/eligibilityForm';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
@@ -42,23 +46,6 @@ const eligibilitySchema = z.object({
   hearAboutOther: z.string().trim().max(200).optional().nullable(),
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
 });
-
-type EligibilityFormMeta = {
-  version: 1;
-  updatedAt: string;
-  ageGroup: string | null;
-  county: string | null;
-  q1: string | null;
-  q2: string | null;
-  q3: string | null;
-  receivingUnemployment: string | null;
-  exhaustedUnemployment: string | null;
-  layoffCompany: string | null;
-  snapWic: string | null;
-  hearAbout: string | null;
-  hearAboutOther: string | null;
-  partnerAmbassadorReferral: string | null;
-};
 
 async function _GET() {
   try {
@@ -182,7 +169,11 @@ async function _PATCH(request: Request) {
         : null,
     };
 
+    if (!interactiveTransactionsGuaranteed()) {
+      return NextResponse.json({ error: 'Screening storage is temporarily unavailable. Try again later.' }, { status: 503 });
+    }
     const notifyMeta = await prisma.$transaction(async (tx) => {
+      const current = await lockEligibilityMember(tx, user.id);
       // city/state/zip + barrierTypes → Profile (existing columns), mirrors
       // app/api/member/profile + the apply signup flow.
       const profileData: Record<string, unknown> = {};
@@ -201,12 +192,6 @@ async function _PATCH(request: Request) {
       });
 
       // ageGroup + county + WS4 answers → User.wioaQualificationJson.
-      const current = await tx.user.findUnique({
-        where: { id: user.id },
-        select: { wioaQualificationJson: true, organizationId: true, fullName: true, email: true },
-      });
-      const existing =
-        (current?.wioaQualificationJson as Record<string, unknown> | null) ?? {};
       const meta: EligibilityFormMeta = {
         version: 1,
         updatedAt: new Date().toISOString(),
@@ -214,32 +199,16 @@ async function _PATCH(request: Request) {
         county: county?.trim() || null,
         ...extended,
       };
-      await tx.user.update({
-        where: { id: user.id },
-        data: { wioaQualificationJson: { ...existing, eligibilityForm: meta } as object },
+      await saveEligibilityForm(tx, {
+        userId: user.id, organizationId: current.organizationId,
+        previous: current.wioaQualificationJson, form: meta,
       });
 
       if (extended.q1 && extended.q2 && current?.organizationId) {
         const yesCount = [extended.q1, extended.q2, extended.q3].filter((v) => v === 'yes').length;
-        const screening = {
-          organizationId: current.organizationId,
-          q1: extended.q1,
-          q2: extended.q2,
-          q3: extended.q3,
-          qualifies: yesCount >= 1,
-          yesCount,
-          receivingUnemployment: extended.receivingUnemployment,
-          exhaustedUnemployment: extended.exhaustedUnemployment,
-          layoffCompany: extended.layoffCompany,
-          snapWic: extended.snapWic,
-          hearAbout: extended.hearAbout,
-          hearAboutOther: extended.hearAboutOther,
-          partnerAmbassadorReferral: extended.partnerAmbassadorReferral,
-        };
-        await tx.applyEligibilityScreening.upsert({
-          where: { userId: user.id },
-          create: { userId: user.id, ...screening },
-          update: screening,
+        await saveEligibilityScreening(tx, {
+          userId: user.id, organizationId: current.organizationId,
+          answers: extended, qualifies: yesCount >= 1, yesCount,
         });
       }
 
@@ -247,7 +216,7 @@ async function _PATCH(request: Request) {
         fullName: current?.fullName ?? null,
         email: current?.email ?? user.email ?? null,
       };
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     auditLog({ actorUserId: user.id, action: 'member.eligibility.update', targetType: 'EligibilityForm', targetId: user.id }).catch(() => {});
     logAuditEvent({ user: { id: user.id, role: 'member' }, verb: 'update', object: { type: 'EligibilityForm', id: user.id }, result: { success: true } }).catch(() => {});
@@ -305,6 +274,8 @@ async function _PATCH(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    const failure = eligibilityWriteFailure(error);
+    if (failure) return NextResponse.json({ error: failure.error }, { status: failure.status });
     console.error('/member/eligibility error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

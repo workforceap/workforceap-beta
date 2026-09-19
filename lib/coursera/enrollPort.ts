@@ -4,10 +4,12 @@ import {
   createProgramMembership,
   enrollUserInCourse,
   inviteUserToProgram,
+  getB4BOrgId,
   listUsers,
   type B4BUser,
 } from '@/lib/coursera/b4bClient';
 import type { B4BPort, EnrollAuditEvent } from '@/lib/coursera/enrollState';
+import { nextEnrollmentReportStart } from '@/lib/coursera/enrollmentReportFields';
 
 /**
  * Shared B4B port + audit writer for the enroll state machine
@@ -24,42 +26,62 @@ import type { B4BPort, EnrollAuditEvent } from '@/lib/coursera/enrollState';
  * Roster lookups walk the whole B4B users list page-by-page (Coursera has no
  * email filter on this endpoint). A short-TTL cache absorbs double-clicks and
  * the admin-approves-then-enrolls sequence without re-scanning up to 50 pages
- * per click. TTL is deliberately short: after an invite, the learner appears
- * in the roster server-side, and a stale negative would just re-invite —
- * which the state machine already folds to success (invites are idempotent).
+ * per click. Only a completed lookup can cache a negative. Cache entries are
+ * isolated by provider organization, and failures are never cached.
  */
 const ROSTER_LOOKUP_TTL_MS = 60_000;
 const rosterLookupCache = new Map<string, { at: number; user: B4BUser | null }>();
 
-async function listUsersByEmailUncached(email: string): Promise<B4BUser | null> {
+export class CourseraRosterIncompleteError extends Error {
+  readonly code = 'COURSERA_ROSTER_INCOMPLETE';
+
+  constructor(readonly reason: 'page_limit' | 'pagination' | 'configuration_changed', cause?: unknown) {
+    super('Coursera roster lookup did not complete. No invitation was attempted.', { cause });
+    this.name = 'CourseraRosterIncompleteError';
+  }
+}
+
+function assertRosterOrganization(orgId: string): void {
+  if (getB4BOrgId() !== orgId) throw new CourseraRosterIncompleteError('configuration_changed');
+}
+
+async function listUsersByEmailUncached(email: string, orgId: string): Promise<B4BUser | null> {
   const target = email.trim().toLowerCase();
   const PAGE_LIMIT = 200;
   const SAFETY_PAGES = 50;
   let start = 0;
   for (let pages = 0; pages < SAFETY_PAGES; pages += 1) {
+    assertRosterOrganization(orgId);
     const result = await listUsers({ start, limit: PAGE_LIMIT });
+    assertRosterOrganization(orgId);
     const hit = result.elements.find(
       (u: B4BUser) => (u.email ?? '').trim().toLowerCase() === target,
     );
     if (hit) return hit;
-    if (result.elements.length === 0) return null;
-    const total = result.paging.total ?? 0;
-    if (total > 0 && start + result.elements.length >= total) return null;
-    if (result.elements.length < PAGE_LIMIT) return null;
-    start += result.elements.length;
+    try {
+      const next = nextEnrollmentReportStart({
+        start, batchLength: result.elements.length, limit: PAGE_LIMIT, ...result.paging,
+      });
+      if (next === null) return null;
+      start = next;
+    } catch (error) {
+      throw new CourseraRosterIncompleteError('pagination', error);
+    }
   }
-  return null;
+  throw new CourseraRosterIncompleteError('page_limit');
 }
 
 export function buildB4BPort(): B4BPort {
   return {
     listUsersByEmail: async (email: string) => {
-      const key = email.trim().toLowerCase();
+      const orgId = getB4BOrgId();
+      const target = email.trim().toLowerCase();
+      const key = JSON.stringify([orgId, target]);
       const cached = rosterLookupCache.get(key);
       if (cached && Date.now() - cached.at < ROSTER_LOOKUP_TTL_MS) {
         return cached.user;
       }
-      const user = await listUsersByEmailUncached(key);
+      const user = await listUsersByEmailUncached(target, orgId);
       rosterLookupCache.set(key, { at: Date.now(), user });
       return user;
     },

@@ -16,8 +16,11 @@ async function reprocessLearningCompletion(event: PendingRetryEvent): Promise<'s
 
   const statement = await prisma.xapiStatement.findUnique({
     where: { statementId: `wh:learning-completion:${event.eventId}` },
-    select: { payload: true },
+    select: { payload: true, processed: true },
   });
+  // The workflow may have completed before its terminal status write failed.
+  // Repair that status without repeating the downstream effects.
+  if (statement?.processed) return 'success';
   const parsed = webhookSchema.safeParse(statement?.payload);
   if (!parsed.success) return 'skipped';
 
@@ -51,15 +54,6 @@ export async function processRetryEvent(
     if (result === 'skipped') {
       return { id: event.id, source: event.source, result: 'skipped' };
     }
-
-    await updateStatus(event.id, {
-      status: 'success',
-      httpStatusCode: 200,
-      errorMessage: null,
-      nextRetryAt: null,
-      processingTimeMs: Date.now() - startedAt,
-    });
-    return { id: event.id, source: event.source, result: 'success' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Retry attempt failed';
     const retryResult = await markForRetry(event.id, event.retryCount, message);
@@ -69,4 +63,16 @@ export async function processRetryEvent(
       result: retryResult === 'max_retries_exceeded' ? 'max_retries_exceeded' : 'failed',
     };
   }
+
+  // Persisting success is distinct from processing: do not consume another
+  // attempt or dead-letter completed work when only its status write fails.
+  // The existing retry row stays discoverable; the caller reports failure.
+  await updateStatus(event.id, {
+    status: 'success',
+    httpStatusCode: 200,
+    errorMessage: null,
+    nextRetryAt: null,
+    processingTimeMs: Date.now() - startedAt,
+  });
+  return { id: event.id, source: event.source, result: 'success' };
 }

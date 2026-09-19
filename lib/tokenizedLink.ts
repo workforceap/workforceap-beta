@@ -5,7 +5,7 @@
  */
 import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/db/prisma';
-import type { TokenLinkType } from '@prisma/client';
+import type { Prisma, TokenLinkType } from '@prisma/client';
 
 const DEFAULT_TTL_DAYS = 14;
 
@@ -66,10 +66,25 @@ export async function validateTokenizedLink(
 }
 
 /** Atomic single-use consume. Returns true if THIS call consumed it (false if already consumed/missing). */
-export async function consumeTokenizedLink(id: string): Promise<boolean> {
-  const res = await prisma.tokenizedLink.updateMany({
-    where: { id, consumedAt: null },
-    data: { consumedAt: new Date() },
+export async function consumeTokenizedLink(
+  id: string,
+  options?: { tx: Prisma.TransactionClient; expected: ValidatedTokenLink },
+): Promise<boolean> {
+  const now = new Date();
+  const res = await (options?.tx ?? prisma).tokenizedLink.updateMany({
+    where: {
+      id, consumedAt: null,
+      // Transactional questionnaire callers recheck the exact binding and
+      // expiry when claiming; legacy callers retain their existing contract.
+      ...(options ? {
+        type: options.expected.type,
+        email: options.expected.email,
+        subjectUserId: options.expected.subjectUserId,
+        orgId: options.expected.orgId,
+        expiresAt: { gte: now },
+      } : {}),
+    },
+    data: { consumedAt: now },
   });
   return res.count === 1;
 }

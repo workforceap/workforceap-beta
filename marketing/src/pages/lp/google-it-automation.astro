@@ -8,7 +8,6 @@ import Icon from '../../components/Icon.astro';
 // lib/content/programExtras.ts for slug `it-automation-with-python-google`.
 //  title:    IT Automation with Python Certificate (Google)
 //  partner:  Google   duration: 3-5 months, 10 hrs/week
-//  salary:   $78K–$98K (Austin market estimate; Lightcast/BLS, Jan 2026)
 //  skills:   Python, Git, Bash, APIs, IT automation
 //  courses:  6 (Coursera-aligned track)
 // Behavior preserved: Apply CTA → /apply?program=it-automation-with-python-google
@@ -17,7 +16,6 @@ const SLUG = 'it-automation-with-python-google';
 const displayTitle = 'IT Automation with Python Certificate (Google)';
 const partner = 'Google';
 const duration = '3-5 months, 10 hrs/week';
-const salaryRange = '$78K–$98K';
 const applyUrl = `/apply?program=${SLUG}`;
 
 // Decision extras (programExtras.ts → it-automation-with-python-google)
@@ -40,7 +38,7 @@ const courses = [
 // Four headline stats
 const stats = [
   { icon: 'laptop', value: duration, label: 'Self-paced online' },
-  { icon: 'dollar', value: salaryRange, label: 'Starting salary range' },
+  { icon: 'book-open', value: 'Python', label: 'Automation and scripting' },
   { icon: 'award', value: partner, label: 'Industry-recognized cert' },
   { icon: 'shield', value: 'WIOA Eligible', label: 'No cost for qualifying members' },
 ];
@@ -63,8 +61,8 @@ const wioaCriteria = [
 ];
 ---
 <Layout
-  title={`${displayTitle} — Free Certification in Austin, TX`}
-  description={`Free ${partner} IT certification in Austin for members who qualify through scholarship/grant funded membership. ${duration}. Starting salary ${salaryRange}. WIOA-funded — apply at no cost. No experience required.`}
+  title={`${displayTitle} — Career Training in Austin, TX`}
+  description={`${partner} IT training in Austin at no cost for members who qualify through scholarship/grant funded membership. ${duration}. Build on basic IT or Python knowledge.`}
 >
 <div class="lpdepth">
 
@@ -79,7 +77,7 @@ const wioaCriteria = [
     <div class="lede">
       <span class="pill"><span class="pill__star"><Icon name="star" size={11} /></span>IT &amp; Cybersecurity</span>
       <h1>Get a {partner} IT Certification <span class="shimmer">at no cost</span></h1>
-      <p class="sub">WIOA-funded training in Austin for members who qualify through scholarship/grant funded membership. {duration}. No prior experience required. Earn a {partner}-recognized certificate and start working in IT automation.</p>
+      <p class="sub">Training in Austin at no cost for members who qualify through scholarship/grant funded membership. {duration}. Build on basic IT or Python knowledge and prepare for a {partner}-recognized certificate.</p>
       <div class="acts">
         <a class="dbtn dbtn--solid" href={applyUrl}>Apply now <span>→</span></a>
         <span class="meta-note">Takes 3 minutes • No credit card required</span>
@@ -90,8 +88,8 @@ const wioaCriteria = [
     <div class="hero-glass">
       <div class="hg-tag">{partner}-recognized credential</div>
       <div class="hg-meter">
-        <span>Starting salary range</span>
-        <strong>{salaryRange}</strong>
+        <span>Build practical skills</span>
+        <strong>Python &amp; IT automation</strong>
       </div>
       <div class="hg-rows">
         <div class="hg-row"><Icon name="clock" size={16} /> {duration}</div>
@@ -156,7 +154,7 @@ const wioaCriteria = [
       </div>
     ))}
   </div>
-  <p class="truth">Salary range is an Austin market estimate (Lightcast/BLS, Jan 2026). Actual pay depends on experience and employer.</p>
+  <p class="truth">Job requirements and pay vary by employer, location, and experience. <a href="/salary-guide">Research occupations, wages, and entry requirements</a> before choosing your next step.</p>
 </div></section>
 
 <!-- ══════════════════════════════════════════════ YOUR JOURNEY ══════════════════════════════════════════════ -->

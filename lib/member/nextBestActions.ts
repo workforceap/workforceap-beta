@@ -15,6 +15,7 @@ export type NextBestAction = {
 };
 
 export type NextBestActionsContext = {
+  /** Legacy display stage; predicates use facts because loaders map letters differently. */
   state: 'A' | 'B' | 'C' | 'D';
   noApplicationOnFile: boolean;
   enrolledProgram: string | null;
@@ -29,7 +30,7 @@ export type NextBestActionsContext = {
   jobApplicationCount: number;
   counselorUnreadCount: number;
   weeklyRecapUnopened: boolean;
-  /** True when a CourseEnrollment row exists (Coursera / training seat provisioned). */
+  /** True when a WAP CourseEnrollment row exists; does not prove provider access. */
   courseEnrollmentActive?: boolean;
   placementPlacedAt?: Date | null;
   placementRetentionDecision?: string | null;
@@ -55,7 +56,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     });
   }
 
-  if (ctx.state === 'A' && !ctx.noApplicationOnFile && !ctx.enrolledProgram) {
+  if (!ctx.noApplicationOnFile && !ctx.enrolledProgram) {
     out.push({
       id: 'choose_program',
       title: 'Choose your program',
@@ -68,7 +69,6 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   }
 
   if (
-    (ctx.state === 'C' || ctx.state === 'D') &&
     !!ctx.enrolledProgram &&
     ctx.assessmentCompleted &&
     ctx.courseEnrollmentActive === false
@@ -84,7 +84,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     });
   }
 
-  if ((ctx.state === 'B' || ctx.state === 'C') && !ctx.assessmentCompleted) {
+  if (!!ctx.enrolledProgram && !ctx.assessmentCompleted) {
     if (ctx.starterProfileReviewRequired) {
       const missing = ctx.starterProfileMissingFields?.slice(0, 3) ?? [];
       const missingNote = missing.length > 0 ? ` Missing: ${missing.join(', ')}.` : '';
@@ -115,7 +115,6 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   }
 
   if (
-    ctx.state === 'C' &&
     ctx.assessmentCompleted &&
     !!ctx.enrolledProgram &&
     ctx.trainingCoursesIncomplete &&
@@ -151,7 +150,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     ctx.assessmentCompleted &&
     !!ctx.enrolledProgram &&
     (ctx.completedCourseCount ?? 0) === 0 &&
-    (ctx.state === 'C' || ctx.state === 'D')
+    !(ctx.trainingCoursesIncomplete && (ctx.nextIncompleteCourseName ?? '').length > 0)
   ) {
     out.push({
       id: 'launch_first_course',
@@ -174,7 +173,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     });
   }
 
-  if ((ctx.state === 'C' || ctx.state === 'D') && !ctx.hasResume) {
+  if (!!ctx.enrolledProgram && !ctx.hasResume) {
     out.push({
       id: 'upload_resume',
       title: 'Add your resume',
@@ -237,7 +236,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     });
   }
 
-  if (ctx.state === 'D' && !ctx.hasCompletedInterviewPractice) {
+  if (!!ctx.enrolledProgram && ctx.assessmentCompleted && !ctx.hasCompletedInterviewPractice) {
     out.push({
       id: 'interview_practice',
       title: 'Practice your interview answers',
@@ -262,8 +261,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   if (
     ctx.assessmentCompleted &&
     !!ctx.enrolledProgram &&
-    ctx.jobApplicationCount === 0 &&
-    (ctx.state === 'C' || ctx.state === 'D')
+    ctx.jobApplicationCount === 0
   ) {
     out.push({
       id: 'job_tracker',

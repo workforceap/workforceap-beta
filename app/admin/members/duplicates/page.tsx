@@ -120,7 +120,7 @@ async function renderKit({ actorUserId }: { actorUserId: string }) {
     const superAdmin = await isSuperAdmin(actorUserId);
     const orgId = superAdmin
       ? null
-      : await getActorOrganizationId(actorUserId).catch(() => null);
+      : await getActorOrganizationId(actorUserId);
 
     // Group by lowercased email, keep duplicate-only groups, newest member first.
     const groups = await prisma.$queryRaw<Array<{ email: string; ids: string[] }>>`

@@ -4,7 +4,7 @@ import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import EmployerWorkQueueClient from '@/components/employer/EmployerWorkQueueClient';
 import EmployerWorkflowTimeline from '@/components/employer/EmployerWorkflowTimeline';
@@ -63,7 +63,8 @@ export default async function EmployerWorkQueuePage({
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('workQueue')}
         subtitle={t('employerWorkQueueSubtitle')}
         breadcrumbs={[

@@ -32,7 +32,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
           <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: 'var(--color-on-surface-variant, #debfc2)' }}>
             {t('builtInAustin')}
           </p>
-          <p style={{ fontSize: '0.75rem', lineHeight: 1.6, color: 'var(--color-on-surface-variant, #debfc2)', opacity: 0.85, marginTop: '0.75rem' }}>
+          <p style={{ fontSize: '0.8125rem', lineHeight: 1.6, color: 'var(--color-on-surface-variant, #debfc2)', opacity: 0.85, marginTop: '0.75rem' }}>
             {t('nonprofitDisclaimer')}
           </p>
           <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
@@ -90,7 +90,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
 
       {/* Workforce ecosystem context */}
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem 2rem 1.5rem', borderTop: '1px solid var(--surface-container-highest, #333537)', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           {t('experienceAcrossEcosystem')}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
@@ -107,10 +107,10 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
         <div style={{ marginBottom: '1rem', color: 'var(--color-on-surface-variant)' }}>
           <LanguageToggle />
         </div>
-        <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {t('copyright', { year })}
         </p>
-        <p style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)', opacity: 0.6, marginTop: '0.75rem', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.6, marginTop: '0.75rem', maxWidth: '600px', marginLeft: 'auto', marginRight: 'auto' }}>
           {t('onetAttribution')}{' '}
           <a href="https://services.onetcenter.org/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-on-surface-variant)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: '44px', minWidth: '44px', padding: '0.75rem 0.5rem' }}>
             O*NET Web Services

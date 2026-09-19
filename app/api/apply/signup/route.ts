@@ -1,3 +1,4 @@
+import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
 import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { NextRequest, NextResponse, after } from 'next/server';
@@ -739,25 +740,20 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         // re-runs the screener updates their row instead of violating the
         // unique constraint (which would roll back the whole signup).
         if (!isSchoolSignup && eligibilityQ1 && eligibilityQ2) {
-          const screening = {
-            organizationId,
-            q1: eligibilityQ1,
-            q2: eligibilityQ2,
-            q3: eligibilityQ3 ?? null,
+          await saveEligibilityScreening(tx, {
+            userId: user.id, organizationId,
             qualifies: eligibilityQualifies ?? (eligibilityYesCount ?? 0) >= 1,
             yesCount: eligibilityYesCount ?? 0,
-            receivingUnemployment: receivingUnemploymentNormalized,
-            exhaustedUnemployment: exhaustedUnemploymentNormalized,
-            layoffCompany: layoffCompanyNormalized,
-            snapWic: snapWicNormalized,
-            hearAbout: hearAboutNormalized,
-            hearAboutOther: hearAboutOtherNormalized,
-            partnerAmbassadorReferral: partnerAmbassadorNormalized,
-          };
-          await tx.applyEligibilityScreening.upsert({
-            where: { userId: user.id },
-            create: { userId: user.id, ...screening },
-            update: screening,
+            answers: {
+              q1: eligibilityQ1, q2: eligibilityQ2, q3: eligibilityQ3 ?? null,
+              receivingUnemployment: receivingUnemploymentNormalized,
+              exhaustedUnemployment: exhaustedUnemploymentNormalized,
+              layoffCompany: layoffCompanyNormalized,
+              snapWic: snapWicNormalized,
+              hearAbout: hearAboutNormalized,
+              hearAboutOther: hearAboutOtherNormalized,
+              partnerAmbassadorReferral: partnerAmbassadorNormalized,
+            },
           });
         }
   

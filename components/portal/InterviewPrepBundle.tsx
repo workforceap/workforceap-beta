@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { FileText, Mail, Copy, Check } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
-import { KitEmptyState } from '@/components/portal/kit';
+import { KitEmptyState, SectionHeader } from '@/components/portal/kit';
 
 export type PrepBundleItem = {
   toolType: string;
@@ -34,12 +34,14 @@ export default function InterviewPrepBundle({
   preview?: boolean;
   items?: PrepBundleItem[];
 } = {}) {
-  const seeded = preview ? { items: items ?? [], empty: !(items && items.length) } : null;
-  const [bundle, setBundle] = useState<{ items: PrepBundleItem[]; empty: boolean } | null>(seeded);
+  const seeded = preview ? { items: items ?? [] } : null;
+  const [bundle, setBundle] = useState<{ items: PrepBundleItem[] } | null>(seeded);
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set((items ?? []).map((i) => i.toolType)),
   );
   const [loading, setLoading] = useState(!preview);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [sending, setSending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -47,19 +49,25 @@ export default function InterviewPrepBundle({
 
   useEffect(() => {
     if (preview) return;
-    fetch('/api/member/prep-bundle')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.items) {
-          setBundle({ items: data.items, empty: data.empty });
-          setSelected(new Set(data.items.map((i: PrepBundleItem) => i.toolType)));
-        } else {
-          setBundle({ items: [], empty: true });
-        }
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadFailed(false);
+    fetch('/api/member/prep-bundle', { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error('Prep bundle unavailable');
+        return response.json();
       })
-      .catch(() => setBundle({ items: [], empty: true }))
-      .finally(() => setLoading(false));
-  }, [preview]);
+      .then((data) => {
+        if (!Array.isArray(data?.items)) throw new Error('Invalid prep bundle');
+        if (controller.signal.aborted) return;
+        // Saved items are authoritative; an inconsistent empty flag must not hide them.
+        setBundle({ items: data.items });
+        setSelected(new Set(data.items.map((i: PrepBundleItem) => i.toolType)));
+      })
+      .catch(() => { if (!controller.signal.aborted) setLoadFailed(true); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [preview, loadAttempt]);
 
   const selectedItems = bundle?.items.filter((i) => selected.has(i.toolType)) ?? [];
 
@@ -135,15 +143,28 @@ export default function InterviewPrepBundle({
     );
   }
 
-  if (!bundle || bundle.empty) {
+  if (loadFailed) {
+    return (
+      <div className="wa-kit-card">
+        <p role="alert">We couldn’t load your prep materials. Try again.</p>
+        <button type="button" className={KIT_BTN_GHOST} onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  if (!bundle || bundle.items.length === 0) {
     return (
       <div>
         <div className="wa-kit-card" style={{ marginBottom: 16 }}>
           <KitEmptyState
             title="No prep materials yet"
-            description="Run a tool and it shows up here to email or copy."
+            description="Create materials with a tool below, then return here to email or copy them."
+            action={<Link href="/dashboard/ai-tools/resume-studio?view=rewrite" className={KIT_BTN}>Create a resume</Link>}
           />
         </div>
+        <SectionHeader title="Tools that create prep materials" />
         <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
           {EMPTY_TOOLS.map((tool, i) => (
             <Link

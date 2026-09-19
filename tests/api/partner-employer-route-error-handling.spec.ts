@@ -70,7 +70,7 @@ vi.mock('@/lib/rate-limit', () => ({
   checkAdminInviteRateLimit: vi.fn(async () => ({ success: true })),
   checkEmployerJobImportRateLimit: vi.fn(async () => ({ success: true, remaining: 10 })),
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: h.captureApiError }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: h.captureApiError }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn(async (_orgId: string, fn: (db: unknown) => Promise<unknown>) => fn({})),
 }));

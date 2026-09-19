@@ -27,7 +27,7 @@ vi.mock('@/lib/auth/server', () => ({
 }));
 vi.mock('@/lib/auth/ensureUser', () => ({ ensureUserInDb: vi.fn() }));
 vi.mock('@/lib/events/track', () => ({ trackEvent: vi.fn(() => Promise.resolve()) }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {

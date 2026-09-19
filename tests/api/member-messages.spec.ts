@@ -81,6 +81,7 @@ vi.mock('@/lib/db/prisma', () => {
 
 vi.mock('@/lib/messages/counselorThread', () => ({
   getOrCreateMemberCounselorThread: vi.fn(),
+  refreshMemberCounselorThread: vi.fn(async (_tx, memberId) => getOrCreateMemberCounselorThread(memberId)),
   assertMemberCanAccessThread: vi.fn(),
   normalizeMessageBody: vi.fn((raw: string) => {
     const body = raw.trim();
@@ -128,6 +129,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import {
   getOrCreateMemberCounselorThread,
+  refreshMemberCounselorThread,
   assertMemberCanAccessThread,
 } from '@/lib/messages/counselorThread';
 import { checkMessageRateLimit } from '@/lib/messages/rateLimit';
@@ -500,4 +502,20 @@ describe('PATCH /api/member/messages', () => {
     const body = await res.json();
     expect(body.error).toBe('Internal server error');
   });
+});
+
+
+it('notifies the current assignment from the message transaction instead of the earlier inbox owner', async () => {
+  vi.clearAllMocks();
+  vi.mocked(getUser).mockResolvedValue({ id: 'user-123', email: 'synthetic@example.invalid' } as never);
+  vi.mocked(getOrCreateMemberCounselorThread).mockResolvedValue({ id: 'thread-1', memberId: 'user-123', counselorUserId: 'old-owner' } as never);
+  vi.mocked(assertMemberCanAccessThread).mockResolvedValue({ id: 'thread-1' } as never);
+  vi.mocked(refreshMemberCounselorThread).mockResolvedValueOnce({ id: 'thread-1', counselorUserId: 'current-owner' } as never);
+  vi.mocked(prisma.message.create).mockResolvedValue({ id: 'msg', threadId: 'thread-1', authorId: 'user-123', body: 'Synthetic message', createdAt: new Date() } as never);
+  vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Synthetic Member', organizationId: 'org' } as never);
+  vi.mocked(checkMessageRateLimit).mockResolvedValue({ ok: true } as never);
+  const response = await POST(makeRequest({ body: 'Synthetic message' }) as never);
+  expect(response.status).toBe(200);
+  expect(createNotification).toHaveBeenCalledWith(expect.objectContaining({ userId: 'current-owner' }));
+  expect(createNotification).not.toHaveBeenCalledWith(expect.objectContaining({ userId: 'old-owner' }));
 });

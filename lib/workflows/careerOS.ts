@@ -3,6 +3,7 @@ import { generateResumeBullet } from '../ai/proactiveResumeGenerator';
 import { findBestEmployerMatch } from '../ai/proactiveJobMatcher';
 import { recordWorkflowDiagnostic } from '../diagnostics';
 import { createNotification } from '../notifications/create';
+import { persistEvent } from '../events/track';
 
 type LearningCompletionResult = {
   actionId: string;
@@ -81,20 +82,18 @@ export async function handleLearningCompletion(memberId: string, courseName: str
     }
 
     if (existingRecentAction) {
-      await prisma.memberEvent.create({
-        data: {
-          userId: memberId,
-          eventName: 'career_os.learning_completion_duplicate',
-          entityType: 'MemberNextBestAction',
-          entityId: existingRecentAction.id,
-          sourcePage: '/api/webhooks/learning-completion',
-          metadata: {
-            courseName: normalizedCourseName,
-            resumeBullet: bullet,
-            matchedJobId: jobMatch?.id ?? null,
-          },
+      await persistEvent({
+        userId: memberId,
+        eventName: 'career_os.learning_completion_duplicate',
+        entityType: 'MemberNextBestAction',
+        entityId: existingRecentAction.id,
+        sourcePage: '/api/webhooks/learning-completion',
+        metadata: {
+          courseName: normalizedCourseName,
+          resumeBullet: bullet,
+          matchedJobId: jobMatch?.id ?? null,
         },
-      });
+      }, prisma);
 
       await recordWorkflowDiagnostic({
         workflow: CAREER_OS_WORKFLOW,
@@ -143,21 +142,19 @@ export async function handleLearningCompletion(memberId: string, courseName: str
         },
       });
 
-      await tx.memberEvent.create({
-        data: {
-          userId: memberId,
-          eventName: 'career_os.learning_completion_processed',
-          entityType: 'MemberNextBestAction',
-          entityId: createdAction.id,
-          sourcePage: '/api/webhooks/learning-completion',
-          metadata: {
-            courseName: normalizedCourseName,
-            resumeBullet: bullet,
-            matchedJobId: jobMatch?.id ?? null,
-            ctaHref,
-          },
+      await persistEvent({
+        userId: memberId,
+        eventName: 'career_os.learning_completion_processed',
+        entityType: 'MemberNextBestAction',
+        entityId: createdAction.id,
+        sourcePage: '/api/webhooks/learning-completion',
+        metadata: {
+          courseName: normalizedCourseName,
+          resumeBullet: bullet,
+          matchedJobId: jobMatch?.id ?? null,
+          ctaHref,
         },
-      });
+      }, tx);
 
       return createdAction;
     });
@@ -260,16 +257,14 @@ export async function handleProgramCompletion(
         },
       });
 
-      await tx.memberEvent.create({
-        data: {
-          userId: memberId,
-          eventName: PROGRAM_COMPLETION_EVENT,
-          entityType: 'Program',
-          entityId: programSlug,
-          sourcePage: 'lib/member/courseCompletion.ts',
-          metadata: { programSlug, programTitle },
-        },
-      });
+      await persistEvent({
+        userId: memberId,
+        eventName: PROGRAM_COMPLETION_EVENT,
+        entityType: 'Program',
+        entityId: programSlug,
+        sourcePage: 'lib/member/courseCompletion.ts',
+        metadata: { programSlug, programTitle },
+      }, tx);
 
       return createdAction;
     });

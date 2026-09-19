@@ -1,172 +1,98 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useFocusTrap } from '@/components/portal/kit';
-import {
-  detectGpc,
-  pushConsentToGtag,
-  readConsent,
-  writeConsent,
-} from '@/lib/consent/state';
+import { useTranslations } from 'next-intl';
+import { splitLocalePrefix } from '@/lib/i18n/config';
+import { detectGpc, pushConsentToGtag, readConsent, writeConsent } from '@/lib/consent/state';
+import styles from './CookieConsentBanner.module.css';
 
 /** Authenticated workspaces — staff/member chrome, not a consent surface. */
 const PORTAL_PREFIXES = [
-  '/admin',
-  '/dashboard',
-  '/counselor',
-  '/employer',
-  '/partner',
-  '/group',
-  // Internal portal preview surfaces used for QA screenshots should behave like
-  // app chrome, not the public marketing site.
-  '/dev/staff',
-  '/dev/member',
+  '/admin', '/dashboard', '/counselor', '/employer', '/partner', '/group',
+  '/dev/staff', '/dev/member',
 ];
 
 function isPortalPath(pathname: string | null): boolean {
-  if (!pathname) return false;
-  // Strip the locale segment (/en, /es, /fr, /pt) before matching.
-  const path = pathname.replace(/^\/(en|es|fr|pt)(?=\/|$)/, '');
-  return PORTAL_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
+  const { pathnameWithoutLocale } = splitLocalePrefix(pathname ?? '/');
+  return PORTAL_PREFIXES.some((p) => pathnameWithoutLocale === p || pathnameWithoutLocale.startsWith(`${p}/`));
 }
 
 export default function CookieConsentBanner() {
   const pathname = usePathname();
+  const t = useTranslations('cookieConsent');
   const [visible, setVisible] = useState(false);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [hasMobileBottomNav, setHasMobileBottomNav] = useState(false);
-  const dialogRef = useFocusTrap<HTMLDivElement>(visible);
+  const bannerRef = useRef<HTMLElement>(null);
+  const shouldShow = visible && !isPortalPath(pathname);
 
   useEffect(() => {
     const existing = readConsent();
     if (existing.decision === 'unset') {
       if (detectGpc()) {
-        // Honor the browser signal automatically and skip showing the banner.
-        // The privacy policy commits to treating GPC as a valid opt-out.
+        // GPC is an opt-out even on routes where the banner is suppressed.
         writeConsent('declined', { fromGpc: true });
         pushConsentToGtag('declined');
       } else {
         setVisible(true);
       }
     }
-    const syncViewport = () => {
-      setIsMobileViewport(window.innerWidth < 768);
-      setHasMobileBottomNav(Boolean(document.getElementById('mobile-bottom-nav')));
-    };
-    syncViewport();
-    window.addEventListener('resize', syncViewport);
-    return () => window.removeEventListener('resize', syncViewport);
   }, []);
 
   useEffect(() => {
+    const banner = bannerRef.current;
+    if (!shouldShow || !banner) return;
+
     const previousPadding = document.body.style.paddingBottom;
-    if (visible) {
-      // Generous padding to ensure banner + bottom nav never overlap CTAs/forms.
-      // Banner height ~70px + bottom nav ~84px + safety gap = ~220px+.
-      document.body.style.paddingBottom = isMobileViewport
-        ? hasMobileBottomNav
-          ? '14rem'
-          : '8rem'
-        : '8rem';
-    }
+    const basePadding = Number.parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    const bottomNav = document.getElementById('mobile-bottom-nav');
+    const measure = () => {
+      const navRect = bottomNav?.getBoundingClientRect();
+      const bottom = navRect && navRect.height > 0
+        ? Math.max(0, window.innerHeight - navRect.top)
+        : 0;
+      banner.style.setProperty('--cookie-consent-bottom', `${bottom}px`);
+      // Reserve actual visible height, including wrapped translations.
+      // Suppressed portal routes never run this layout effect.
+      document.body.style.paddingBottom = `${basePadding + banner.getBoundingClientRect().height + bottom}px`;
+    };
+
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(banner);
+    if (bottomNav) observer?.observe(bottomNav);
+    window.addEventListener('resize', measure);
     return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
       document.body.style.paddingBottom = previousPadding;
     };
-  }, [visible, isMobileViewport, hasMobileBottomNav]);
+  }, [shouldShow, pathname]);
 
-  const accept = () => {
-    writeConsent('accepted');
-    pushConsentToGtag('accepted');
+  const decide = (decision: 'accepted' | 'declined') => {
+    writeConsent(decision);
+    pushConsentToGtag(decision);
     setVisible(false);
   };
 
-  const decline = () => {
-    writeConsent('declined');
-    pushConsentToGtag('declined');
-    setVisible(false);
-  };
-
-  // Suppress inside authenticated portals: staff/members see the banner on the
-  // public site; repeating it over workspace chrome is noise (and the body
-  // padding it adds breaks portal layouts). Consent still defaults to unset
-  // until they visit a public page.
-  if (isPortalPath(pathname)) return null;
-
-  if (!visible) return null;
+  if (!shouldShow) return null;
 
   return (
-    <div
-      ref={dialogRef}
-      style={{
-        position: 'fixed',
-        bottom: isMobileViewport
-          ? hasMobileBottomNav
-            ? '5.5rem'
-            : 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
-          : 0,
-        left: isMobileViewport ? '0.75rem' : 0,
-        right: isMobileViewport ? '0.75rem' : 0,
-        background: 'var(--surface-container-high)',
-        border: '1px solid var(--outline-variant)',
-        borderRadius: isMobileViewport ? 'var(--radius-lg)' : 0,
-        padding: isMobileViewport ? '0.7rem 0.8rem' : '1rem 1.5rem',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: isMobileViewport ? '0.65rem' : '1rem',
-        flexWrap: isMobileViewport ? 'nowrap' : 'wrap',
-        justifyContent: 'space-between',
-        boxShadow: '0 -10px 30px rgba(0,0,0,0.18)',
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Cookie consent"
-    >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontSize: isMobileViewport ? '0.75rem' : '0.85rem', color: 'var(--color-on-surface)', lineHeight: isMobileViewport ? 1.35 : 1.5 }}>
-          {isMobileViewport
-            ? 'We use cookies to improve and measure this site. '
-            : 'We use cookies and similar technologies to improve your experience and measure how our site is used. '}
-          See our{' '}
-          <a href="/privacy" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Privacy</a> and{' '}
-          <a href="/terms" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Terms</a>.
-        </p>
-      </div>
-      <div style={{ display: 'flex', gap: isMobileViewport ? '0.5rem' : '0.75rem', flexShrink: 0 }}>
-        <button type="button"
-          onClick={decline}
-          style={{
-            minHeight: 44,
-            padding: isMobileViewport ? '0.5rem 0.75rem' : '0.5rem 1rem',
-            background: 'transparent',
-            color: 'var(--color-on-surface-variant)',
-            border: '1px solid var(--outline-variant)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Decline
+    <section ref={bannerRef} className={styles.banner} aria-label={t('label')}>
+      <p className={styles.description}>
+        {t.rich('description', {
+          // Legal documents are Astro-owned root routes; use document navigation.
+          privacy: (chunks) => <a href="/privacy">{chunks}</a>,
+          terms: (chunks) => <a href="/terms">{chunks}</a>,
+        })}
+      </p>
+      <div className={styles.actions}>
+        <button type="button" className={styles.decline} onClick={() => decide('declined')}>
+          {t('decline')}
         </button>
-        <button type="button"
-          onClick={accept}
-          style={{
-            minHeight: 44,
-            padding: isMobileViewport ? '0.5rem 0.85rem' : '0.5rem 1rem',
-            background: 'var(--color-accent)',
-            color: 'var(--color-on-accent)',
-            border: 'none',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        >
-          Accept
+        <button type="button" className={styles.accept} onClick={() => decide('accepted')}>
+          {t('accept')}
         </button>
       </div>
-    </div>
+    </section>
   );
 }

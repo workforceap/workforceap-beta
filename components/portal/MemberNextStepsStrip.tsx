@@ -71,14 +71,20 @@ export default function MemberNextStepsStrip({
 
     setDismissed((prev) => new Set([...prev, id]));
     try {
-      await fetch(`/api/member/nba/${id}`, {
+      const response = await fetch(`/api/member/nba/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' }),
         keepalive: true,
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
     } catch {
-      // Navigate anyway — tracking should never block the member.
+      setDismissed((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      // Keep the unsaved action visible, but still open its destination.
     }
     router.push(href);
   }, [router, trackClick]);

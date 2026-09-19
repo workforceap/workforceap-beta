@@ -17639,52 +17639,52 @@
       {
         "level": 2,
         "title": "2. Surface modes: `warm` vs `dense`",
-        "line": 100
+        "line": 112
       },
       {
         "level": 2,
         "title": "3. Dark mode",
-        "line": 127
+        "line": 139
       },
       {
         "level": 2,
         "title": "4. Status colors — two systems, one mapping (read this twice)",
-        "line": 149
+        "line": 161
       },
       {
         "level": 2,
         "title": "5. The `KitBaseProps` contract",
-        "line": 181
+        "line": 212
       },
       {
         "level": 2,
         "title": "6. Component index (`components/portal/kit/index.ts`)",
-        "line": 197
+        "line": 228
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 296
+        "line": 327
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 318
+        "line": 352
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 343
+        "line": 377
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 380
+        "line": 414
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 390
+        "line": 424
       }
     ],
     "datedFilename": false,
@@ -19072,6 +19072,19 @@
         "level": 2,
         "title": "Follow-ups (optional)",
         "line": 35
+      }
+    ],
+    "datedFilename": false,
+    "note": "Filename dates and headings are navigation metadata, not authority or freshness proof."
+  },
+  {
+    "file": "docs/PORTAL-QA-FIXTURES.md",
+    "title": "Portal QA fixture provisioning",
+    "headings": [
+      {
+        "level": 1,
+        "title": "Portal QA fixture provisioning",
+        "line": 1
       }
     ],
     "datedFilename": false,
@@ -28645,47 +28658,52 @@
       {
         "level": 2,
         "title": "Application and enrollment flow",
-        "line": 72
+        "line": 76
       },
       {
         "level": 2,
         "title": "Training and progress flow",
-        "line": 95
+        "line": 99
       },
       {
         "level": 2,
         "title": "What is redundant, breaking, or due for replacement",
-        "line": 114
-      },
-      {
-        "level": 3,
-        "title": "Redundant (two or more live sources for one concept)",
         "line": 118
       },
       {
         "level": 3,
+        "title": "Redundant (two or more live sources for one concept)",
+        "line": 122
+      },
+      {
+        "level": 3,
         "title": "Breaking (failure paths that exist in source today)",
-        "line": 129
+        "line": 133
       },
       {
         "level": 3,
         "title": "Replacement order (do not skip steps)",
-        "line": 138
+        "line": 142
+      },
+      {
+        "level": 2,
+        "title": "Staff reporting projections",
+        "line": 153
       },
       {
         "level": 2,
         "title": "Communication and asynchronous work",
-        "line": 149
+        "line": 159
       },
       {
         "level": 2,
         "title": "Delivery and developer orchestration",
-        "line": 169
+        "line": 179
       },
       {
         "level": 2,
         "title": "Complete machine diagrams",
-        "line": 189
+        "line": 199
       }
     ],
     "datedFilename": false,
@@ -28768,13 +28786,18 @@
       },
       {
         "level": 2,
-        "title": "Shared files with a wide change impact",
+        "title": "Application and staff workflow contracts",
         "line": 28
       },
       {
         "level": 2,
+        "title": "Shared files with a wide change impact",
+        "line": 37
+      },
+      {
+        "level": 2,
         "title": "Historical and supporting areas",
-        "line": 34
+        "line": 43
       }
     ],
     "datedFilename": false,
@@ -28822,32 +28845,32 @@
       {
         "level": 2,
         "title": "Stripe and donation links",
-        "line": 89
+        "line": 93
       },
       {
         "level": 2,
         "title": "Turnstile and Upstash",
-        "line": 99
+        "line": 103
       },
       {
         "level": 2,
         "title": "Career data, search and enrichment",
-        "line": 108
+        "line": 112
       },
       {
         "level": 2,
         "title": "GitHub, Vercel, Sentry and analytics",
-        "line": 119
+        "line": 123
       },
       {
         "level": 2,
         "title": "Stubs, hosted content and historical material",
-        "line": 129
+        "line": 133
       },
       {
         "level": 2,
         "title": "Verify a provider change",
-        "line": 137
+        "line": 141
       }
     ],
     "datedFilename": false,
@@ -28938,17 +28961,17 @@
       {
         "level": 2,
         "title": "Scheduled work",
-        "line": 97
+        "line": 99
       },
       {
         "level": 2,
         "title": "Health and observability",
-        "line": 140
+        "line": 144
       },
       {
         "level": 2,
         "title": "Provisioning names and execution ownership",
-        "line": 156
+        "line": 162
       }
     ],
     "datedFilename": false,
@@ -28975,18 +28998,23 @@
       },
       {
         "level": 2,
-        "title": "Structural debt and navigation hazards",
+        "title": "September 19 platform source dispositions",
         "line": 33
       },
       {
         "level": 2,
+        "title": "Structural debt and navigation hazards",
+        "line": 45
+      },
+      {
+        "level": 2,
         "title": "Active release and historical backlog",
-        "line": 46
+        "line": 58
       },
       {
         "level": 3,
         "title": "WAP-58 / WAP-59 source disposition",
-        "line": 54
+        "line": 66
       }
     ],
     "datedFilename": false,

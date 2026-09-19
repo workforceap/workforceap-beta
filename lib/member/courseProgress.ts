@@ -9,6 +9,7 @@ import {
 } from '@/lib/content/programSlug';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { prisma } from '@/lib/db/prisma';
+import { persistEvent } from '@/lib/events/track';
 import type { ParsedXapiStatement } from '@/lib/xapi/statements';
 import { isXapiCompletionVerb, isXapiCourseProgressVerb } from '@/lib/xapi/statements';
 import { xapiLearnerActivityAt } from '@/lib/xapi/activityTimestamp';
@@ -348,22 +349,19 @@ export async function claimLiveCourseCompletionEvent(args: {
     `);
     if (existing.length > 0) return false;
 
-    await tx.memberEvent.create({
-      data: {
-        userId: args.userId,
-        eventName: 'course_completed',
-        entityType: 'Course',
-        entityId: courseSlug,
-        metadata: {
-          courseName: args.courseName,
-          programSlug,
-          courseCompletionKey: completionKey,
-          completedCount: args.completedCount,
-          source: args.source,
-        },
+    await persistEvent({
+      userId: args.userId,
+      eventName: 'course_completed',
+      entityType: 'Course',
+      entityId: courseSlug,
+      metadata: {
+        courseName: args.courseName,
+        programSlug,
+        courseCompletionKey: completionKey,
+        completedCount: args.completedCount,
+        source: args.source,
       },
-      select: { id: true },
-    });
+    }, tx);
     return true;
   });
 }

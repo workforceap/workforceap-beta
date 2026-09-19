@@ -32,7 +32,7 @@ export const PROGRAM_EXTRAS: Record<string, ProgramExtra> = {
     rampNote: 'Intermediate track. Best if you enjoy problem-solving, structured learning, and tech.',
   },
   'aws-cloud-technology-amazon': {
-    bestFor: 'Tech-curious learners ready for cloud. Strong demand, higher salary ceiling.',
+    bestFor: 'Tech-curious learners ready to explore cloud infrastructure.',
     jobOutcomes: ['Cloud Engineer', 'Solutions Architect', 'DevOps Engineer'],
     difficulty: 3,
     rampNote: 'Assumes comfort with computers. Higher ceiling, steeper ramp.',
@@ -59,7 +59,7 @@ export const PROGRAM_EXTRAS: Record<string, ProgramExtra> = {
     bestFor: 'Career changers ready to enter the security field. You do not need a security background, but comfort with computers helps — members new to technology entirely should complete Digital Literacy or IT Support first.',
     jobOutcomes: ['Cybersecurity Analyst', 'SOC Analyst', 'Security Operations Specialist'],
     difficulty: 3,
-    rampNote: 'Assumes basic computer comfort. Strong employer demand and higher salary ceiling than most entry tracks.',
+    rampNote: 'Assumes basic computer comfort. Compare related job requirements with your existing skills and experience.',
   },
   'data-analytics-professional-certificate-google': {
     bestFor: 'Learners who want to turn business problems and data into recommendations for management.',

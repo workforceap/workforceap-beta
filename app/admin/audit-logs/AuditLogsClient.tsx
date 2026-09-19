@@ -251,6 +251,7 @@ export default function AuditLogsClient({
           columns={[
             {
               key: 'time',
+              cellDataLabel: 'Time',
               header: (
                 <Link
                   href={buildAuditLogsHref(1, initialQ, initialEvent, order === 'desc' ? 'asc' : 'desc')}
