@@ -12,7 +12,7 @@ export const GET = withApiGuc(async (req: Request) => {
     }
   
     const superAdmin = await isSuperAdmin(auth.userId);
-    const orgId = superAdmin ? null : await getActorOrganizationId(auth.userId).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(auth.userId);
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') ?? undefined;

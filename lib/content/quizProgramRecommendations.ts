@@ -8,13 +8,13 @@ import { ANCHOR_DIGITAL_LITERACY_SLUG, ANCHOR_IT_SUPPORT_SLUG } from '@/lib/onet
 export function getTopProgramsFromQuiz(weights: CategoryWeights, answers: QuizAnswers): Program[] {
   const scored = PROGRAMS.map((p) => {
     const score = weights[p.category as keyof CategoryWeights] ?? 0;
-    const salaryMatch = p.salary.match(/\$(\d+)K/);
-    const salaryNum = salaryMatch ? parseInt(salaryMatch[1], 10) : 0;
-    return { program: p, score, salaryNum };
+    return { program: p, score };
   });
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
-    return b.salaryNum - a.salaryNum;
+    // Keep catalog order for equal interest scores. Historical salary bands
+    // have no outcome evidence and must not influence recommendations.
+    return 0;
   });
 
   const topMatches = scored.filter((s) => s.score > 0);

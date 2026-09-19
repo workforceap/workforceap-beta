@@ -4,6 +4,7 @@
  * unchanged; plain members still get 403; out-of-caseload ids 404 without
  * touching the application.
  */
+import { Prisma } from '@prisma/client';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('next/server', () => ({
@@ -39,6 +40,10 @@ vi.mock('@/lib/tenant/organization', () => ({
 vi.mock('@/lib/audit/log', () => ({
   auditRequestMeta: vi.fn(() => ({ ip: 'test' })),
   logAuditEvent: vi.fn(() => Promise.resolve()),
+}));
+vi.mock('@/lib/observability/captureApiError', () => ({
+  captureApiError: vi.fn(),
+  captureApiResponseError: vi.fn(),
 }));
 vi.mock('@/lib/admin/applicationReview', () => ({
   changeApplicationStatus: vi.fn(),
@@ -224,4 +229,39 @@ describe('POST /api/admin/applications/bulk-review — counselor approvals', () 
     expect(body.error).toMatch(/intake/i);
     expect(body.error).not.toMatch(/eligib/i);
   });
+});
+
+
+it.each([
+  [new Error('APPLICATION_REVIEW_CONFLICT'), 409],
+  [new Prisma.PrismaClientKnownRequestError('retry', { code: 'P2034', clientVersion: 'test' }), 409],
+  [new Error('APPLICATION_REVIEW_TRANSACTION_UNAVAILABLE'), 503],
+] as const)('maps a known review failure to its actionable status', async (error, status) => {
+  asAdmin();
+  vi.mocked(changeApplicationStatus).mockRejectedValueOnce(error);
+  const response = await patchStatus(statusRequest(APP_IN_SCOPE, { status: 'APPROVED' }), paramsFor(APP_IN_SCOPE));
+  expect(response.status).toBe(status);
+});
+
+it('returns committed IDs and per-item failures while continuing the bulk batch', async () => {
+  asAdmin();
+  const third = 'third-app';
+  vi.mocked(changeApplicationStatus)
+    .mockResolvedValueOnce({ ok: true, applicationId: APP_IN_SCOPE, previousStatus: 'PENDING', newStatus: 'APPROVED' })
+    .mockRejectedValueOnce(new Error('APPLICATION_REVIEW_CONFLICT'))
+    .mockResolvedValueOnce({ ok: true, applicationId: third, previousStatus: 'PENDING', newStatus: 'APPROVED' });
+  const response = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE, third], status: 'APPROVED', verified: true }));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ success: false, processedCount: 2, processedApplicationIds: [APP_IN_SCOPE, third], failedCount: 1,
+    failures: [{ ok: false, applicationId: APP_OUT_OF_SCOPE, status: 409 }] });
+  expect(changeApplicationStatus).toHaveBeenCalledTimes(3);
+});
+
+it('preserves successful results if a later per-item permission lookup fails', async () => {
+  asCounselor();
+  vi.mocked(prisma.application.findFirst).mockResolvedValueOnce({ userId: MEMBER_IN_SCOPE } as never).mockRejectedValueOnce(new Error('lookup unavailable'));
+  const response = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED' }));
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ processedCount: 1, processedApplicationIds: [APP_IN_SCOPE], failedCount: 1,
+    failures: [{ applicationId: APP_OUT_OF_SCOPE, status: 500 }] });
 });

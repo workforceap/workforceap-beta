@@ -8,6 +8,8 @@ import {
 } from './gucContext';
 import type { GucContext } from './gucContext';
 import { resolveAuthGucContext } from '@/lib/auth/server';
+import { captureApiError, captureApiResponseError } from '@/lib/observability/captureApiError';
+import { apiRouteLabel, runWithApiErrorScope } from '@/lib/observability/apiErrorScope';
 
 /**
  * Resolve the minimal GucContext from a Supabase User object.
@@ -105,16 +107,23 @@ export function withApiGuc<T, R extends Request = Request, C = unknown>(
 export function withApiGuc<T, R extends Request = Request, C = unknown>(
   handler: (request: R, context: C) => Promise<T>,
 ): (request: Request, context?: C) => Promise<T> {
-  return async (request: Request, context?: C) => {
+  return (request: Request, context?: C) => runWithApiErrorScope(async () => {
+    let userId: string | null = null;
+    const route = await apiRouteLabel(request, context);
     try {
       const ctx = await resolveAuthGucContext();
-      return await runWithGucContext(ctx, () => handler(request as R, context as C));
+      userId = ctx.userId;
+      return await runWithGucContext(ctx, async () => {
+        const response = await handler(request as R, context as C);
+        captureApiResponseError(response, route);
+        return response;
+      });
     } catch (error) {
       unstable_rethrow(error);
-      console.error('[withApiGuc] Unhandled error:', error);
+      captureApiError(error, { route, userId });
       return Response.json({ error: 'Internal server error' }, { status: 500 }) as unknown as T;
     }
-  };
+  });
 }
 
 /**
@@ -134,17 +143,24 @@ export function withAuthenticatedApiGuc<T, R extends Request = Request, C = unkn
 export function withAuthenticatedApiGuc<T, R extends Request = Request, C = unknown>(
   handler: (request: R, userId: string, context: C) => Promise<T>,
 ): (request: Request, context?: C) => Promise<T> {
-  return async (request: Request, context?: C) => {
+  return (request: Request, context?: C) => runWithApiErrorScope(async () => {
+    let userId: string | null = null;
+    const route = await apiRouteLabel(request, context);
     try {
       const ctx = await resolveAuthGucContext();
+      userId = ctx.userId;
       if (ctx.role === 'anonymous') {
         return Response.json({ error: 'Unauthorized' }, { status: 401 }) as unknown as T;
       }
-      return await runWithGucContext(ctx, () => handler(request as R, ctx.userId!, context as C));
+      return await runWithGucContext(ctx, async () => {
+        const response = await handler(request as R, ctx.userId!, context as C);
+        captureApiResponseError(response, route);
+        return response;
+      });
     } catch (error) {
       unstable_rethrow(error);
-      console.error('[withAuthenticatedApiGuc] Unhandled error:', error);
+      captureApiError(error, { route, userId });
       return Response.json({ error: 'Internal server error' }, { status: 500 }) as unknown as T;
     }
-  };
+  });
 }

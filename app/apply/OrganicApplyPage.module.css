@@ -1,0 +1,73 @@
+/* This dark marketing hero has a stable palette in either page theme. */
+.page .hero {
+  background: linear-gradient(170deg, var(--mdx-crimson) 0%, var(--mdx-accent-dark) 60%, var(--mdx-plum) 100%);
+  color: var(--mdx-surface);
+}
+.page .hero::after {
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+.page .hero > * { z-index: 1; }
+.page .hero p { color: inherit; }
+.page .hero :global(.mdx-pill) { white-space: normal; }
+
+.page .startAction,
+.page .helpAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: normal;
+  text-align: center;
+  text-decoration: none;
+}
+.page .startAction {
+  margin: var(--space-5) auto 0;
+  min-width: min(100%, 320px);
+  background: var(--mdx-surface);
+  border-color: var(--mdx-surface);
+  color: var(--mdx-accent-dark);
+}
+.page .startAction:hover { text-decoration: underline; }
+.page .helpCard {
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  border: 1px solid var(--wa-border);
+}
+.page .helpAction {
+  background: transparent;
+  color: var(--wa-text);
+  border-color: var(--wa-control-border);
+}
+.page .helpAction:hover { text-decoration: underline; }
+.page .hero .helpCard {
+  background: color-mix(in srgb, var(--mdx-surface) 8%, transparent);
+  color: var(--mdx-surface);
+  border-color: color-mix(in srgb, var(--mdx-surface) 30%, transparent);
+}
+.page .hero .helpAction {
+  color: var(--mdx-surface);
+  border-color: color-mix(in srgb, var(--mdx-surface) 75%, transparent);
+}
+.page .hero a:focus-visible,
+.page .helpAction:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.page .hero .startAction:focus-visible { outline-color: var(--mdx-surface); }
+.page .costTag > span {
+  max-width: 100%;
+  font-size: 0.875rem;
+  white-space: normal;
+  color: var(--mdx-surface);
+  background: color-mix(in srgb, var(--mdx-surface) 8%, transparent);
+}

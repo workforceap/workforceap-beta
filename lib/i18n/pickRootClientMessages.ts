@@ -114,6 +114,7 @@ export function pickClientMessageSlice(
 
   switch (slice) {
     case 'root': {
+      if (m.cookieConsent !== undefined) out.cookieConsent = m.cookieConsent;
       const marketing = pickMarketingClientSlice(m);
       if (marketing) out.marketing = marketing;
       if (m.findYourPath !== undefined) out.findYourPath = m.findYourPath;

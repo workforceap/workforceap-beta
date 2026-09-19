@@ -70,7 +70,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 vi.mock('@/lib/auth/actAsSubject', () => ({
   resolveActOnBehalf: vi.fn(async () => ({ ok: true, actorName: 'Coach', subjectUserId: 'member-1' })),
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/coach/memory', () => ({
   loadCoachMemory: vi.fn(async () => null),
   appendCoachMemoryToSystemPrompt: (prompt: string) => prompt,

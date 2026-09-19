@@ -141,6 +141,7 @@ test('notification returns true only when Resend resolves with a delivery id', a
   assert.deepEqual(payload?.to, ['staff@example.test']);
   assert.match(payload?.subject ?? '', /Member portal screening/);
   assert.match(payload?.text ?? '', /Test Member/);
+  assert.match(payload?.text ?? '', /Saved explanation \(original language\): Staff review recommended/);
 });
 
 test('the structured form is default and voice is disclosed as preparation-only', () => {
@@ -150,6 +151,20 @@ test('the structured form is default and voice is disclosed as preparation-only'
   );
 
   assert.match(source, /useState<'voice' \| 'form'>\('form'\)/);
-  assert.match(source, /Voice preparation only/);
-  assert.match(source, /does not save or send your answers/);
+  assert.match(source, /t\('voiceMode'\)/);
+  const en = JSON.parse(readFileSync(join(process.cwd(), 'messages/en.json'), 'utf8'));
+  assert.match(en.wioa.voiceMode, /Voice preparation only/);
+  assert.match(en.wioa.memberModeHelp, /does not save or send your answers/);
+  assert.match(en.wioa.publicModeHelp, /does not save or send your answers/);
+});
+
+test('version-2 notification renders staff explanations instead of raw reason objects', async () => {
+  process.env.RESEND_API_KEY = 'test-only-resend-key';
+  let text = '';
+  await sendWioaScreeningNotification({ ...notification, snapshot: { ...snapshot, version: 2, reasons: [{ code: 'dislocated_worker' }, { code: 'barrier', params: { barrier: 'transportation' } }] } }, {
+    sendEmail: async (payload) => { text = payload.text ?? ''; return { data: { id: 'test-email' }, error: null }; },
+  });
+  assert.match(text, /You reported being unemployed or laid off/);
+  assert.match(text, /You identified a barrier, Transportation/);
+  assert.doesNotMatch(text, /\[object Object\]|dislocated_worker|"code"/);
 });

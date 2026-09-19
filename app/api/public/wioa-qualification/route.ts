@@ -20,7 +20,7 @@ async function _POST(request: NextRequest) {
     const { success: withinLimit } = await checkPublicWioaQualificationRateLimit(ip);
     if (!withinLimit) {
       return NextResponse.json(
-        { error: 'Too many submissions. Please try again later.' },
+        { error: 'Too many submissions. Please try again later.', errorCode: 'rate_limited' },
         { status: 429, headers: { 'Retry-After': '3600' } }
       );
     }
@@ -29,22 +29,22 @@ async function _POST(request: NextRequest) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid JSON', errorCode: 'invalid_json' }, { status: 400 });
     }
 
     const contact = publicLeadSchema.safeParse((body as Record<string, unknown> | null)?.contact ?? null);
     if (!contact.success) {
-      return NextResponse.json({ error: contact.error.errors[0]?.message ?? 'Invalid contact info' }, { status: 400 });
+      return NextResponse.json({ error: contact.error.errors[0]?.message ?? 'Invalid contact info', errorCode: 'contact' }, { status: 400 });
     }
 
     const answers = parseWioaAnswers(body);
     if (!answers) {
-      return NextResponse.json({ error: 'Invalid answers' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid answers', errorCode: 'invalid_answers' }, { status: 400 });
     }
 
     const { signal, reasons } = computeWioaSignal(answers);
     const snapshot: WioaQualificationSnapshot = {
-      version: 1,
+      version: 2,
       submittedAt: new Date().toISOString(),
       answers,
       signal,
@@ -71,7 +71,7 @@ async function _POST(request: NextRequest) {
     } catch (dbErr) {
       console.error('PublicWioaScreening persist error:', dbErr);
       return NextResponse.json(
-        { error: 'We could not save your screening. Please try again.' },
+        { error: 'We could not save your screening. Please try again.', errorCode: 'save_failed' },
         { status: 503 }
       );
     }
@@ -107,7 +107,7 @@ async function _POST(request: NextRequest) {
     return NextResponse.json({ ok: true, snapshot, emailSent });
   } catch (error) {
     console.error('/public/wioa-qualification error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', errorCode: 'save_failed' }, { status: 500 });
   }
 }
 export const POST = withApiGuc(_POST);

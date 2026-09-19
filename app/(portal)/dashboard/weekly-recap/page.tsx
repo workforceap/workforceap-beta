@@ -1,3 +1,4 @@
+import { recapCalendarDateKey } from '@/lib/recap/weekLabel';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -95,7 +96,7 @@ export default async function WeeklyRecapPage() {
           <MotivatingRecapClient
             recap={recap}
             recapData={recapData}
-            weekStart={weekStart.toISOString()}
+            weekStart={recapCalendarDateKey(weekStart)}
           />
         )}
       </div>    </>

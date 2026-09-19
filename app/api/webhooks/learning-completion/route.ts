@@ -5,6 +5,7 @@ import { handleLearningCompletion } from '@/lib/workflows/careerOS';
 import { logWebhookEvent } from '@/lib/webhooks/logEvent';
 import { markWebhookForRetry } from '@/lib/webhooks/retry';
 import { prisma } from '@/lib/db/prisma';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withSystemGuc } from '@/lib/db/withRequestGuc';
 import {
@@ -24,6 +25,7 @@ export async function POST(req: Request) {
   const startTime = Date.now();
   let rawBody = '';
   let eventId: string | undefined;
+  let retryEventId: string | undefined;
   let payloadSize = 0;
 
   try {
@@ -108,6 +110,9 @@ export async function POST(req: Request) {
     const dedupeKey = buildDedupeKey(data, rawBody);
 
     const idempotency = await checkIdempotency(dedupeKey, data);
+    // Even deliveries without an external eventId have a durable replay key.
+    // Set it only after the payload's idempotency row was persisted/read.
+    retryEventId = dedupeKey.slice('wh:learning-completion:'.length);
     if (idempotency === 'already_processed') {
       await logWebhookEvent({
         source: 'learning-completion',
@@ -154,27 +159,35 @@ export async function POST(req: Request) {
     const message = error instanceof Error ? error.message : 'Internal Server Error';
     const processingTimeMs = Date.now() - startTime;
 
-    // Log the failure
-    const logEntry = await prisma.webhookEvent.create({
-      data: {
-        source: 'learning-completion',
-        eventType: 'learning.completion',
-        eventId: eventId ?? null,
-        payloadSize,
-        processingTimeMs,
-        status: 'failed',
-        httpStatusCode: 500,
-        errorMessage: message,
-        retryCount: 0,
-      },
-    });
+    captureApiError(error, { route: '/api/webhooks/learning-completion' });
+    let retryScheduled = false;
+    try {
+      const logEntry = await prisma.webhookEvent.create({
+        data: {
+          source: 'learning-completion',
+          eventType: 'learning.completion',
+          eventId: retryEventId ?? eventId ?? null,
+          payloadSize,
+          processingTimeMs,
+          status: 'failed',
+          httpStatusCode: 500,
+          errorMessage: message,
+          retryCount: 0,
+        },
+      });
 
-    // Attempt to schedule retry
-    const retryResult = await markWebhookForRetry(logEntry.id, 0, message);
-
-    console.error('Webhook error:', error);
+      if (retryEventId !== undefined) {
+        retryScheduled = (await markWebhookForRetry(logEntry.id, 0, message)) === 'scheduled';
+      }
+    } catch (persistenceError) {
+      // Keep 500 so the sender can retry; never promise an unpersisted internal retry.
+      captureApiError(persistenceError, {
+        route: '/api/webhooks/learning-completion',
+        extra: { phase: 'schedule_retry' },
+      });
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error', retryScheduled: retryResult === 'scheduled' },
+      { error: 'Internal Server Error', retryScheduled },
       { status: 500 }
     );
     }

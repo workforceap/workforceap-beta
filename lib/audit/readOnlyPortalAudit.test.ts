@@ -30,6 +30,6 @@ describe('read-only portal audit header', () => {
     const source = readFileSync(join(process.cwd(), 'middleware.ts'), 'utf8');
     expect(source).toContain('requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_HEADER)');
     expect(source).toContain('requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER)');
-    expect(source).toMatch(/if \(user\?\.id\)[\s\S]*if \(validReadOnlyAuditToken\)[\s\S]*requestHeaders\.set\(READ_ONLY_PORTAL_AUDIT_HEADER, '1'\)/);
+    expect(source).toMatch(/if \(user\?\.id && validReadOnlyAuditToken\)\s*\{\s*requestHeaders\.set\(READ_ONLY_PORTAL_AUDIT_HEADER, '1'\)/);
   });
 });

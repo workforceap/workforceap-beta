@@ -6,7 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import EmployerJobPostForm from '@/components/employer/EmployerJobPostForm';
@@ -51,7 +51,8 @@ export default async function EmployerJobPostPage() {
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('postAJobTitle')}
         subtitle={t('publishToJobBoard')}
         breadcrumbs={[

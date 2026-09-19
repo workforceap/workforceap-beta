@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Users, X, AlertCircle } from 'lucide-react';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useState, useEffect, useRef } from 'react';
+import { Users, AlertCircle } from 'lucide-react';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, HStack, VStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
 
 const PIPELINE_STAGES = [
   { value: '', label: '— No change —' },
@@ -41,7 +43,10 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
   const [loadingCounselors, setLoadingCounselors] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const trapRef = useFocusTrap(open, onClose);
+  const requestPending = useRef(false);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && !requestPending.current) onClose();
+  };
 
   useEffect(() => {
     if (open) {
@@ -68,13 +73,13 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
     }
   }, [open]);
 
-  if (!open) return null;
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (requestPending.current) return;
     const hasUpdate = pipelineStage !== '' || memberStatus !== '' || counselorUserId !== '' || programSlug !== '';
     if (!hasUpdate) { setError('Select at least one field to update.'); return; }
 
+    requestPending.current = true;
     setSaving(true);
     setError(null);
 
@@ -107,185 +112,151 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
     } catch {
       setError('Network error. Please try again.');
     } finally {
+      requestPending.current = false;
       setSaving(false);
     }
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="bulk-update-title"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1100,
-        background: 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '1rem',
-      }}
-    >
-      <div
-        ref={trapRef as React.RefObject<HTMLDivElement>}
-        style={{
-          background: 'var(--color-white)',
-          borderRadius: 'var(--radius-lg, 1rem)',
-          width: '100%',
-          maxWidth: '480px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          boxShadow: 'var(--shadow-xl, 0 20px 40px rgba(0,0,0,0.25))',
-        }}
-      >
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--outline-variant, #e5e0dc)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Users size={20} style={{ color: 'var(--color-accent)' }} />
-            <h2 id="bulk-update-title" style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800 }}>
-              Bulk Update
-            </h2>
-          </div>
-          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm" aria-label="Close">
-            <X size={18} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {error && (
-            <div style={{
-              padding: '0.625rem 0.875rem',
-              borderRadius: '0.625rem',
-              background: 'rgba(173,44,77,0.1)',
-              color: 'var(--color-accent)',
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}>
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-            <strong>{memberIds.length}</strong> member{memberIds.length === 1 ? '' : 's'} selected.
-            Choose the fields you want to update. Empty fields will not be changed.
-          </p>
-
-          <div>
-            <label htmlFor="bulkupdatemodal-member-status-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
-              Member Status
-            </label>
-            <select id="bulkupdatemodal-member-status-field"
-              value={memberStatus}
-              onChange={(e) => setMemberStatus(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)',
-                color: 'var(--color-on-surface)',
-                fontSize: '0.875rem',
-              }}
-            >
-              {MEMBER_STATUSES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="bulkupdatemodal-pipeline-stage-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
-              Pipeline Stage
-            </label>
-            <select id="bulkupdatemodal-pipeline-stage-field"
-              value={pipelineStage}
-              onChange={(e) => setPipelineStage(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)',
-                color: 'var(--color-on-surface)',
-                fontSize: '0.875rem',
-              }}
-            >
-              {PIPELINE_STAGES.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="bulkupdatemodal-counselor-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
-              Counselor
-            </label>
-            <select id="bulkupdatemodal-counselor-field"
-              value={counselorUserId}
-              onChange={(e) => setCounselorUserId(e.target.value)}
-              disabled={loadingCounselors}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)',
-                color: 'var(--color-on-surface)',
-                fontSize: '0.875rem',
-              }}
-            >
-              <option value="">— No change —</option>
-              <option value="__null">— Unassign —</option>
-              {counselors.map((c) => (
-                <option key={c.userId} value={c.userId}>
-                  {c.fullName}{c.partnerName ? ` (${c.partnerName})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="bulkupdatemodal-program-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
-              Program
-            </label>
-            <select id="bulkupdatemodal-program-field"
-              value={programSlug}
-              onChange={(e) => setProgramSlug(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '0.5rem',
-                border: '1px solid var(--outline-variant)',
-                background: 'var(--surface-container)',
-                color: 'var(--color-on-surface)',
-                fontSize: '0.875rem',
-              }}
-            >
-              <option value="">— No change —</option>
-              <option value="__null">— Clear program —</option>
-              {programs.map((p) => (
-                <option key={p.slug} value={p.slug}>{p.title}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-ghost" disabled={saving}>
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={saving} aria-busy={saving}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                {saving && (
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', animation: 'spin 1s linear infinite' }} aria-hidden="true">
-                    progress_activity
-                  </span>
+    <Dialog isOpen={open} onOpenChange={handleOpenChange} purpose="form" width={480} maxHeight="90dvh" aria-label="Bulk Update">
+      <Layout
+        header={<DialogHeader title="Bulk Update" startContent={<Users size={20} aria-hidden="true" />} onOpenChange={saving ? undefined : handleOpenChange} />}
+        content={
+          <LayoutContent>
+            <form id="bulk-update-form" onSubmit={handleSubmit} aria-busy={saving}>
+              <VStack gap={4}>
+                {error && (
+                  <div role="alert" style={{
+                    padding: '0.625rem 0.875rem',
+                    borderRadius: '0.625rem',
+                    background: 'var(--wa-accent-soft)',
+                    color: 'var(--wa-accent-text)',
+                    fontSize: '0.875rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                  }}>
+                    <AlertCircle size={16} />
+                    {error}
+                  </div>
                 )}
-                {saving ? 'Updating…' : 'Update'}
-              </span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+                <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
+                  <strong>{memberIds.length}</strong> member{memberIds.length === 1 ? '' : 's'} selected.
+                  Choose the fields you want to update. Empty fields will not be changed.
+                </p>
+
+                <div>
+                  <label htmlFor="bulkupdatemodal-member-status-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                    Member Status
+                  </label>
+                  <select id="bulkupdatemodal-member-status-field"
+                    value={memberStatus}
+                    onChange={(e) => setMemberStatus(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--outline-variant)',
+                      background: 'var(--surface-container)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {MEMBER_STATUSES.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="bulkupdatemodal-pipeline-stage-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                    Pipeline Stage
+                  </label>
+                  <select id="bulkupdatemodal-pipeline-stage-field"
+                    value={pipelineStage}
+                    onChange={(e) => setPipelineStage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--outline-variant)',
+                      background: 'var(--surface-container)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    {PIPELINE_STAGES.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="bulkupdatemodal-counselor-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                    Counselor
+                  </label>
+                  <select id="bulkupdatemodal-counselor-field"
+                    value={counselorUserId}
+                    onChange={(e) => setCounselorUserId(e.target.value)}
+                    disabled={loadingCounselors}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--outline-variant)',
+                      background: 'var(--surface-container)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    <option value="">— No change —</option>
+                    <option value="__null">— Unassign —</option>
+                    {counselors.map((c) => (
+                      <option key={c.userId} value={c.userId}>
+                        {c.fullName}{c.partnerName ? ` (${c.partnerName})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="bulkupdatemodal-program-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                    Program
+                  </label>
+                  <select id="bulkupdatemodal-program-field"
+                    value={programSlug}
+                    onChange={(e) => setProgramSlug(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '0.5rem',
+                      border: '1px solid var(--outline-variant)',
+                      background: 'var(--surface-container)',
+                      color: 'var(--color-on-surface)',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    <option value="">— No change —</option>
+                    <option value="__null">— Clear program —</option>
+                    {programs.map((p) => (
+                      <option key={p.slug} value={p.slug}>{p.title}</option>
+                    ))}
+                  </select>
+                </div>
+              </VStack>
+            </form>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter hasDivider>
+            <HStack gap={2} hAlign="end">
+              <Button type="button" label="Cancel" variant="secondary" isDisabled={saving} onClick={() => handleOpenChange(false)} />
+              <Button type="submit" form="bulk-update-form" label={saving ? 'Updating…' : 'Update'} variant="primary" isDisabled={saving} />
+            </HStack>
+          </LayoutFooter>
+        }
+      />
+    </Dialog>
   );
 }

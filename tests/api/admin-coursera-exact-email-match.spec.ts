@@ -48,7 +48,7 @@ vi.mock('@/lib/member/courseProgress', () => ({
   upsertCourseProgressFromXapiStatement: mocks.upsertProgress,
 }));
 vi.mock('@/lib/coursera/syncUserFromB4B', () => ({ syncUserFromB4B: mocks.syncUserFromB4B }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
 

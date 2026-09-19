@@ -75,12 +75,12 @@ export function MemberCertificatesKit({
   counselorHref = '/dashboard/messages',
 }: MemberCertificatesKitProps) {
   const kpiItems = [
-    { label: 'Earned', value: earnedCount, color: 'gold' as const },
-    { label: 'In progress', value: inProgressCount, color: 'accent' as const },
+    { label: 'Earned', value: earnedCount, color: 'text' as const },
+    { label: 'In progress', value: inProgressCount, color: 'text' as const },
     ...(typeof learningHours === 'number' && learningHours > 0
       ? [{ label: 'Hours', value: learningHours, color: 'text' as const }]
       : []),
-    { label: 'Verified', value: verifiedCount, color: 'success' as const },
+    { label: 'Verified', value: verifiedCount, color: 'text' as const },
   ];
   return (
     <DesignSurface surface="warm">

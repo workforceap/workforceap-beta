@@ -9,7 +9,7 @@ import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
 import { getActiveProgramsResult } from '@/lib/platform/programCatalog';
 import JobForm from '@/components/employer/JobForm';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -67,7 +67,8 @@ export default async function EmployerJobEditPage({ params }: Props) {
   return (
     <PortalPageFrame>
       {catalogResult.loadFailed ? <span hidden data-portal-error-state="employer-program-catalog-load" /> : null}
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('editJobPosting')}
         subtitle={t('updateDetails')}
         breadcrumbs={[

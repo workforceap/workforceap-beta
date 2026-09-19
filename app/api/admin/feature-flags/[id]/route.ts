@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
+import { isOperationalFeatureFlagKey } from '@/lib/feature-flags/reservedKeys';
 import { prisma } from '@/lib/db/prisma';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -25,6 +26,9 @@ import { logAuditEvent } from '@/lib/audit/log';async function _PATCH(
 
     const existing = await prisma.$transaction((tx) => tx.featureFlag.findUnique({ where: { id } }));
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (isOperationalFeatureFlagKey(existing.key)) {
+      return NextResponse.json({ error: 'Cron settings must be managed through Email & Cron Management' }, { status: 400 });
+    }
 
     const update: Record<string, unknown> = {};
     if (name !== undefined) update.name = typeof name === 'string' && name.trim() ? name.trim() : existing.name;
@@ -65,8 +69,11 @@ export const PATCH = withApiGuc(_PATCH);async function _DELETE(
     }
 
     const { id } = await params;
-    const existing = await prisma.$transaction((tx) => tx.featureFlag.findUnique({ where: { id }, select: { id: true } }));
+    const existing = await prisma.$transaction((tx) => tx.featureFlag.findUnique({ where: { id }, select: { id: true, key: true } }));
     if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    if (isOperationalFeatureFlagKey(existing.key)) {
+      return NextResponse.json({ error: 'Cron settings must be managed through Email & Cron Management' }, { status: 400 });
+    }
     await prisma.$transaction((tx) => tx.featureFlag.delete({ where: { id } }));
     void auditLog({ actorUserId: user.id, action: 'admin_feature_flag_delete', targetType: 'featureFlag', targetId: id, metadata: {} }).catch(() => {});
     logAuditEvent({ user: { id: user.id, role: 'admin' }, verb: 'deleted', object: { type: 'FeatureFlag', id }, result: { success: true } }).catch(() => {});

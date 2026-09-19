@@ -25,7 +25,7 @@ vi.mock('@/lib/email', () => ({
   sendInterviewDebriefPromptEmail: vi.fn(),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

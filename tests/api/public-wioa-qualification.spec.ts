@@ -105,7 +105,7 @@ describe('public WIOA qualification persistence', () => {
     const body = await response.json();
 
     expect(response.status).toBe(503);
-    expect(body).toEqual({ error: 'We could not save your screening. Please try again.' });
+    expect(body).toEqual({ error: 'We could not save your screening. Please try again.', errorCode: 'save_failed' });
     expect(mocks.sendNotification).not.toHaveBeenCalled();
     expect(mocks.updateScreening).not.toHaveBeenCalled();
   });
@@ -119,6 +119,9 @@ describe('public WIOA qualification persistence', () => {
     expect(response.status).toBe(200);
     expect(body.ok).toBe(true);
     expect(body.emailSent).toBe(true);
+    expect(body.snapshot.version).toBe(2);
+    expect(body.snapshot.reasons).toEqual([{ code: 'dislocated_worker' }, { code: 'barrier', params: { barrier: 'transportation' } }, { code: 'training_interest' }]);
+    expect(mocks.createScreening.mock.calls[0][0].data.snapshot).toEqual(body.snapshot);
     expect(mocks.createScreening).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ email: 'jamie@example.com', emailSent: false }),

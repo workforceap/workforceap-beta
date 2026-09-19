@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 /** Canonical signup is on `/partners#partner-signup` (single self-service path). */
 export default function PartnerSignupRedirectPage() {
-  const router = useRouter();
   useEffect(() => {
-    router.replace('/partners#partner-signup');
-  }, [router]);
+    // The destination is served by Astro and cannot handle a Next RSC request.
+    window.location.replace('/partners#partner-signup');
+  }, []);
   return (
     <div className="mdx inner-page" style={{ background: 'var(--mdx-bg)', minHeight: '60vh' }}>
       <div style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 16px' }}>
@@ -23,12 +21,12 @@ export default function PartnerSignupRedirectPage() {
             automatically, use the button below.
           </p>
           <div style={{ marginTop: '24px' }}>
-            <Link
+            <a
               href="/partners#partner-signup"
               className="mdx-btn mdx-btn--solid"
             >
               Continue to partner sign-up
-            </Link>
+            </a>
           </div>
         </section>
       </div>

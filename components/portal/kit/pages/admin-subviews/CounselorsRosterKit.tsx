@@ -1,9 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { TextInput } from '@astryxdesign/core/TextInput';
+import { Button } from '@astryxdesign/core/Button';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   Avatar,
@@ -50,6 +53,10 @@ export interface CounselorRow {
 
 export interface CounselorsRosterKitProps {
   counselors: CounselorRow[];
+  currentPage?: number;
+  pageSize?: number;
+  matchingTotal?: number;
+  searchQuery?: string;
   /** Total active counselors (KPI + roster header). */
   total: number;
   /** Avg caseload across counselors (rounded). */
@@ -72,7 +79,13 @@ export function CounselorsRosterKit({
   avgCaseload,
   atRiskOwned,
   avgResponse,
+  currentPage = 1,
+  pageSize = 50,
+  matchingTotal = total,
+  searchQuery = '',
 }: CounselorsRosterKitProps) {
+  const [query, setQuery] = useState(searchQuery);
+  const pageHref = (page: number) => `/admin/counselors?${new URLSearchParams({ search: searchQuery, page: String(page) })}`;
   const { sortKey, sortDirection, sortHeader } = useKitTableSort<CounselorSortKey>(
     DEFAULT_COUNSELOR_SORT_KEY,
     DEFAULT_COUNSELOR_SORT_DIRECTION,
@@ -197,15 +210,21 @@ export function CounselorsRosterKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Counselors"
         kicker="People"
-        goal="Staff caseload & performance"
+        lede="Staff caseload & performance"
       />
 
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
       </div>
+
+      <form action="/admin/counselors" method="get" className="wa-flex wa-flex-wrap wa-items-end wa-gap-2 wa-mb-5">
+        <TextInput label="Search counselors" htmlName="search" value={query} onChange={setQuery} placeholder="Name, partner, or title" hasClear />
+        <Button type="submit" label="Search" variant="secondary" />
+      </form>
+      <p className="wa-mb-3">{matchingTotal} matching counselors. Column sorting applies to this page.</p>
 
       <DataTable<CounselorRow>
         columns={columns}
@@ -258,8 +277,8 @@ export function CounselorsRosterKit({
             </div>
           </Card>
         )}
-        emptyTitle="No counselors yet"
-        emptyDescription="Add a counselor to start tracking caseload and performance."
+        emptyTitle={searchQuery ? 'No matching counselors' : 'No counselors yet'}
+        emptyDescription={searchQuery ? 'Try a different name, partner, or title.' : 'Add a counselor to start tracking caseload and performance.'}
       />
 
       <p
@@ -270,8 +289,12 @@ export function CounselorsRosterKit({
           marginTop: 16,
         }}
       >
-        Showing {counselors.length} of {total}
+        Showing {counselors.length ? (currentPage - 1) * pageSize + 1 : 0}–{(currentPage - 1) * pageSize + counselors.length} of {matchingTotal}
       </p>
+      <nav aria-label="Counselor pagination" className="wa-flex wa-flex-wrap wa-gap-2">
+        {currentPage > 1 && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage - 1)}>Previous page</Link>}
+        {currentPage * pageSize < matchingTotal && <Link className="wa-kit-cta wa-kit-cta--ghost" href={pageHref(currentPage + 1)}>Next page</Link>}
+      </nav>
     </DesignSurface>
   );
 }

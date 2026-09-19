@@ -33,7 +33,7 @@ export const POST = withApiGuc(async (
     if (!cron) return NextResponse.json({ error: 'Cron not found' }, { status: 404 });
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
     try {
       const result = await simulateCron(id, orgId);
@@ -207,11 +207,11 @@ async function simulateCron(id: string, orgId: string | null): Promise<DryRunRes
     }
 
     case 'partner-outcome-digest': {
-      const partners = await prisma.$transaction((tx) => tx.partner.findMany({ where: { active: true, notifyOnEnrollment: true }, select: { name: true, contactEmail: true }, take: 1 }));
+      const partners = await prisma.$transaction((tx) => tx.partner.findMany({ where: { ...orgFilter, active: true, notifyOnEnrollment: true }, select: { name: true, contactEmail: true }, take: 1 }));
       const sample = partners[0] ?? null;
       const body = partnerWeeklyDigestHtml({ partnerName: sample?.name ?? 'Workforce Solutions', weekLabel: 'May 5–9, 2026', stageLines: ['3 Applied', '2 In Training', '1 Placed'], successLines: ['Maria S. — IT Support Certificate earned'] });
       const html = brandedEmailLayout({ title: 'Your Weekly Partner Digest', bodyHtml: body, ctaText: 'View Partner Portal', ctaUrl: '/partner' });
-      const totalCount = await prisma.$transaction((tx) => tx.partner.count({ where: { active: true, notifyOnEnrollment: true, contactEmail: { not: null } } }));
+      const totalCount = await prisma.$transaction((tx) => tx.partner.count({ where: { ...orgFilter, active: true, notifyOnEnrollment: true, contactEmail: { not: null } } }));
       return {
         cronId: id, cronName: cron.name,
         recipientCount: totalCount,

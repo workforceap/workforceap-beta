@@ -56,6 +56,7 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 vi.mock('@/lib/db/gucContext', () => ({
+  getGucContext: () => undefined,
   SYSTEM_GUC_CONTEXT: { userId: null, organizationId: null, role: 'system' },
   runWithGucContext: (_context: unknown, callback: () => unknown) => callback(),
 }));

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import JSZip from 'jszip';
 import test from 'node:test';
 import {
   replaceResumeObjectsAtomically,
@@ -22,8 +22,6 @@ import { prepareResumeUpload, type ResumeUploadFileLike } from './prepareResumeU
  * `ArrayBuffer` surrenders a whole backing store.
  */
 
-const nodeRequire = createRequire(import.meta.url);
-
 /** Mirrors `File.arrayBuffer()`: an exact, standalone ArrayBuffer. */
 function fileLike(bytes: Buffer, name: string, type: string): ResumeUploadFileLike {
   return {
@@ -40,12 +38,6 @@ function fileLike(bytes: Buffer, name: string, type: string): ResumeUploadFileLi
 
 /** A real DEFLATE-compressed DOCX carrying enough text to clear the substance gate. */
 async function docxFixture(text: string): Promise<Buffer> {
-  const mammothPackagePath = nodeRequire.resolve('mammoth/package.json');
-  const jsZipPath = nodeRequire.resolve('jszip', { paths: [dirname(mammothPackagePath)] });
-  const JSZip = nodeRequire(jsZipPath) as new () => {
-    file(name: string, value: string): void;
-    generateAsync(options: unknown): Promise<Buffer>;
-  };
   const zip = new JSZip();
   zip.file(
     '[Content_Types].xml',

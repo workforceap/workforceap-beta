@@ -7,7 +7,9 @@ const {
   findFirstUser,
   findFirstAssignment,
   ensureSelfServeCounselorAssigned,
+  lockMember,
 } = vi.hoisted(() => ({
+  lockMember: vi.fn(),
   findUniqueThread: vi.fn(),
   createThread: vi.fn(),
   updateThread: vi.fn(),
@@ -16,17 +18,15 @@ const {
   ensureSelfServeCounselorAssigned: vi.fn(),
 }));
 
-vi.mock('@/lib/db/prisma', () => ({
-  prisma: {
-    messageThread: {
-      findUnique: findUniqueThread,
-      create: createThread,
-      update: updateThread,
-    },
+vi.mock('@/lib/db/prisma', () => {
+  const prisma = {
+    messageThread: { findUnique: findUniqueThread, create: createThread, update: updateThread },
     user: { findFirst: findFirstUser },
     counselorAssignment: { findFirst: findFirstAssignment },
-  },
-}));
+    $queryRaw: lockMember,
+  };
+  return { prisma: { ...prisma, $transaction: async (fn: (tx: unknown) => unknown) => fn(prisma) } };
+});
 
 vi.mock('@/lib/counselor/autoAssign', () => ({
   ensureSelfServeCounselorAssigned,
@@ -37,6 +37,7 @@ import { getOrCreateMemberCounselorThread } from '@/lib/messages/counselorThread
 describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    lockMember.mockResolvedValue([{ organizationId: 'org-1' }]);
     findUniqueThread.mockResolvedValue(null);
     createThread.mockResolvedValue({ id: 'thread-1', memberId: 'member-1', counselorUserId: null });
     findFirstAssignment.mockResolvedValue(null);
@@ -101,4 +102,52 @@ describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
     expect(createThread).not.toHaveBeenCalled();
     expect(thread.counselorUserId).toBeNull();
   });
+});
+
+
+it('replaces a stale non-null thread owner only after locking and validating the current same-org assignment', async () => {
+  lockMember.mockResolvedValue([{ organizationId: 'org-1' }]);
+  findUniqueThread.mockResolvedValue({ id: 'thread-1', memberId: 'member-1', counselorUserId: 'old-admin', memberLastReadAt: new Date('2026-01-01') });
+  findFirstAssignment.mockResolvedValue({ counselor: { userId: 'current', active: true } });
+  updateThread.mockImplementation(async ({ data }) => ({ id: 'thread-1', ...data }));
+  const result = await getOrCreateMemberCounselorThread('member-1');
+  expect(result.counselorUserId).toBe('current');
+  expect(findFirstAssignment).toHaveBeenLastCalledWith(expect.objectContaining({ where: {
+    memberId: 'member-1', active: true,
+    counselor: { active: true, user: { organizationId: 'org-1', deletedAt: null } },
+  } }));
+  expect(lockMember.mock.invocationCallOrder.at(-1)).toBeLessThan(findFirstAssignment.mock.invocationCallOrder.at(-1)!);
+  expect(updateThread).toHaveBeenLastCalledWith({ where: { id: 'thread-1' }, data: { counselorUserId: 'current' } });
+});
+
+it('clears stale routing when no valid assignment exists, keeping message history and cursors', async () => {
+  lockMember.mockResolvedValue([{ organizationId: 'org-1' }]);
+  findUniqueThread.mockResolvedValue({ id: 'thread-1', memberId: 'member-1', counselorUserId: 'old-admin' });
+  findFirstAssignment.mockResolvedValue(null);
+  await getOrCreateMemberCounselorThread('member-1');
+  expect(updateThread).toHaveBeenLastCalledWith({ where: { id: 'thread-1' }, data: { counselorUserId: null } });
+});
+
+it('fails closed for an unavailable member before reading an assignment or thread', async () => {
+  vi.clearAllMocks();
+  lockMember.mockResolvedValue([]);
+  await expect(getOrCreateMemberCounselorThread('deleted-member')).rejects.toThrow('Member not found');
+  expect(findFirstAssignment).not.toHaveBeenCalled();
+  expect(updateThread).not.toHaveBeenCalled();
+});
+
+
+it('reads the new assignment after waiting for a concurrent handoff lock', async () => {
+  vi.clearAllMocks();
+  let release!: () => void;
+  const handoff = new Promise<void>((resolve) => { release = resolve; });
+  lockMember.mockImplementationOnce(async () => { await handoff; return [{ organizationId: 'org-1' }]; });
+  const pending = getOrCreateMemberCounselorThread('member-1');
+  expect(findFirstAssignment).not.toHaveBeenCalled();
+  // The handoff commits both records while this refresh waits on the member row.
+  findFirstAssignment.mockResolvedValue({ counselor: { userId: 'new-owner', active: true } });
+  findUniqueThread.mockResolvedValue({ id: 'thread-1', memberId: 'member-1', counselorUserId: 'new-owner' });
+  release();
+  expect((await pending).counselorUserId).toBe('new-owner');
+  expect(updateThread).not.toHaveBeenCalled();
 });

@@ -28,7 +28,7 @@ export const POST = withApiGuc(async (req: NextRequest) => {
     }
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
     const body = (await req.json().catch(() => ({}))) ?? {};
     const { placementId } = body;

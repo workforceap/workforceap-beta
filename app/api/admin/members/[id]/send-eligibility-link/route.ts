@@ -30,7 +30,7 @@ export const POST = withApiGuc(
 
       const { id } = await context.params;
       const superAdmin = await isSuperAdmin(user.id);
-      const actorOrgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+      const actorOrgId = superAdmin ? null : await getActorOrganizationId(user.id);
       const member = await prisma.$transaction((tx) => tx.user.findUnique({
         where: { id, ...(actorOrgId ? { organizationId: actorOrgId } : {}) },
         select: { email: true, fullName: true },

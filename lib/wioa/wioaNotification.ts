@@ -4,7 +4,7 @@ import {
   type CreateEmailResponse,
 } from 'resend';
 import { getAdminAlertRecipients } from '@/lib/email';
-import { barrierLabel, publicAssistanceLabel, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { barrierLabel, formatWioaReasons, publicAssistanceLabel, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 export function getWioaScreeningNotificationRecipients(): string[] {
   const configured = (process.env.WIOA_SCREENING_NOTIFY_EMAIL ?? '')
@@ -47,7 +47,7 @@ export async function sendWioaScreeningNotification(params: {
   });
   const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
   const { source, contact, snapshot, userId, adminUrl } = params;
-  const { answers, signal, reasons, submittedAt } = snapshot;
+  const { answers, signal, submittedAt } = snapshot;
   const sourceLabel = source === 'member_portal' ? 'Member portal screening' : 'Public WIOA screening';
 
   try {
@@ -74,8 +74,8 @@ export async function sendWioaScreeningNotification(params: {
         `• Interested in training: ${answers.trainingInterest ? 'Yes' : 'No'}`,
         `• Completed intake already: ${answers.completedIntakeSelfReport ? 'Yes' : 'No'}`,
         '',
-        'Reasons shown on screen:',
-        ...reasons.map((reason) => `• ${reason}`),
+        'Screening explanations (staff copy in English; historical text labeled):',
+        ...formatWioaReasons(snapshot).map((reason) => `• ${reason}`),
         adminUrl ? '' : null,
         adminUrl ? `Admin: ${adminUrl}` : null,
       ]

@@ -308,9 +308,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <NextIntlClientProvider messages={messages}>
         <ConditionalMarketingNav forceHidden={hidePaidApplyMarketingNav} />
         <main id="main-content">{children}</main>
+        <DeferredRootChrome suppressAnalytics={readOnlyAudit} />
         </NextIntlClientProvider>
         {!readOnlyAudit ? <SentrySetUser userId={resolvedUserId} /> : null}
-        <DeferredRootChrome suppressAnalytics={readOnlyAudit} />
       </body>
     </html>
   ));

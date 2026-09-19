@@ -25,6 +25,7 @@ vi.mock('@/lib/db/prisma', () => {
   };
   const user = {
     findMany: vi.fn(),
+    findUnique: vi.fn(async () => ({ organizationId: 'org-1' })),
   };
   const prismaMock: any = { atRiskAlert, memberEvent, user };
   prismaMock.$transaction = vi.fn(async (arg: any) => (typeof arg === 'function' ? arg(prismaMock) : Promise.all(arg)));
@@ -57,7 +58,10 @@ vi.mock('@/lib/counselor/staffMemberAccess', () => ({
   assertStaffCanAccessMemberRecord: vi.fn(),
 }));
 
+vi.mock('@/lib/member/persistedAtRisk', () => ({ loadPersistedAtRiskMembers: vi.fn() }));
+
 // ─── Imports after mocks ───
+import { loadPersistedAtRiskMembers } from '@/lib/member/persistedAtRisk';
 import { GET as getAtRiskMembers, PATCH as patchAtRiskMembers } from '@/app/api/admin/members/at-risk/route';
 import { GET as getActivityTimeline } from '@/app/api/counselor/members/[memberId]/activity-timeline/route';
 import { getUser } from '@/lib/auth/server';
@@ -74,93 +78,39 @@ function makeRequest(url: string, init?: RequestInit): any {
 describe('GET /api/admin/members/at-risk', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'user-1' });
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(loadPersistedAtRiskMembers).mockResolvedValue({ total: 0, rows: [] });
   });
 
-  it('returns at-risk members sorted by score desc', async () => {
-    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'user-1' } as any);
-    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
-      {
-        id: 'alert-1',
-        userId: 'u1',
-        score: 75,
-        factors: [{ name: 'NO_LOGIN', weight: 25, description: 'No login in 7 days' }],
-        status: 'open',
-        createdAt: new Date('2026-05-01'),
-        updatedAt: new Date('2026-05-01'),
-        user: {
-          id: 'u1',
-          fullName: 'Alice',
-          email: 'alice@example.com',
-          enrolledProgram: 'data-analytics',
-          enrolledAt: new Date('2026-04-01'),
-          createdAt: new Date('2026-04-01'),
-          lastCourseraAutoSyncAt: null,
-          phone: null,
-          profile: { employmentStatus: 'unemployed', educationLevel: 'high_school' },
-        },
-      },
-      {
-        id: 'alert-2',
-        userId: 'u2',
-        score: 55,
-        factors: [],
-        status: 'acknowledged',
-        createdAt: new Date('2026-05-02'),
-        updatedAt: new Date('2026-05-02'),
-        user: {
-          id: 'u2',
-          fullName: 'Bob',
-          email: 'bob@example.com',
-          enrolledProgram: null,
-          enrolledAt: null,
-          createdAt: new Date('2026-04-02'),
-          lastCourseraAutoSyncAt: null,
-          phone: null,
-          profile: null,
-        },
-      },
-    ] as any);
-    vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([]);
-
-    const req = makeRequest('http://localhost/api/admin/members/at-risk?threshold=0&limit=20');
-    const res = await getAtRiskMembers(req);
+  it('returns distinct member totals and nullable real activity from the shared saved-case reader', async () => {
+    vi.mocked(loadPersistedAtRiskMembers).mockResolvedValue({ total: 42, rows: [
+      { userId: 'u1', alertId: 'alert-1', score: 75, lastActivityAt: null },
+      { userId: 'u2', alertId: 'alert-2', score: 30, lastActivityAt: '2026-05-01T00:00:00Z' },
+    ] } as Awaited<ReturnType<typeof loadPersistedAtRiskMembers>>);
+    const res = await getAtRiskMembers(makeRequest('http://localhost/api/admin/members/at-risk?threshold=0&limit=20'));
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.count).toBe(2);
-    expect(body.results[0].score).toBe(75);
-    expect(body.results[0].riskLevel).toBe('CRITICAL');
-    expect(body.results[1].riskLevel).toBe('HIGH');
+    expect(body).toMatchObject({ count: 2, total: 42, threshold: 0 });
+    expect(body.results[0]).toMatchObject({ score: 75, riskLevel: 'CRITICAL', lastActivityAt: null });
+    expect(body.results[1].riskLevel).toBe('MEDIUM');
+    expect(loadPersistedAtRiskMembers).toHaveBeenCalledWith({ organizationId: 'org-1' }, { threshold: 0, limit: 20, status: undefined });
   });
 
-  it('filters by status param', async () => {
-    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'user-1' } as any);
-    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([]);
-
-    const req = makeRequest('http://localhost/api/admin/members/at-risk?status=open');
-    const res = await getAtRiskMembers(req);
-    expect(res.status).toBe(200);
-    expect(prisma.atRiskAlert.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ status: 'open' }),
-      })
-    );
+  it('keeps an explicit status filter, including resolved history', async () => {
+    await getAtRiskMembers(makeRequest('http://localhost/api/admin/members/at-risk?status=resolved'));
+    expect(loadPersistedAtRiskMembers).toHaveBeenCalledWith({ organizationId: 'org-1' }, { threshold: 50, limit: 20, status: 'resolved' });
   });
 
-  it('defaults to open, acknowledged, escalated when no status', async () => {
-    vi.mocked(requireAdminOrCounselor).mockResolvedValue({ ok: true, userId: 'user-1' } as any);
-    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([]);
-    vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([]);
+  it.each(['', '-1', '1000', 'NaN', '20junk', '1.5'])('keeps the existing default for invalid threshold %s', async threshold => {
+    await getAtRiskMembers(makeRequest(`http://localhost/api/admin/members/at-risk?threshold=${threshold}`));
+    expect(loadPersistedAtRiskMembers).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ threshold: 50 }));
+  });
 
-    const req = makeRequest('http://localhost/api/admin/members/at-risk');
-    await getAtRiskMembers(req);
-    expect(prisma.atRiskAlert.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          status: { in: ['open', 'acknowledged', 'escalated'] },
-        }),
-      })
-    );
+  it('requires current counselor assignment scope for a non-admin reader', async () => {
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    await getAtRiskMembers(makeRequest('http://localhost/api/admin/members/at-risk?limit=-10'));
+    expect(loadPersistedAtRiskMembers).toHaveBeenCalledWith({ organizationId: 'org-1', counselorUserId: 'user-1' }, { threshold: 50, limit: 1, status: undefined });
   });
 });
 

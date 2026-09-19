@@ -4,6 +4,14 @@ import { prisma } from '@/lib/db/prisma';
 
 export type WebhookEventStatus = 'success' | 'failed' | 'retrying' | 'dead_letter';
 
+/** Durable retry state is not best-effort telemetry. Callers must surface failure. */
+export class WebhookStatusPersistenceError extends Error {
+  constructor(cause: unknown) {
+    super('Failed to persist webhook status', { cause });
+    this.name = 'WebhookStatusPersistenceError';
+  }
+}
+
 export type LogWebhookEventInput = {
   source: string;
   eventType?: string | null;
@@ -56,6 +64,6 @@ export async function updateWebhookEventStatus(
       },
     });
   } catch (err) {
-    console.error('[webhooks/logEvent] Failed to update webhook event:', err);
+    throw new WebhookStatusPersistenceError(err);
   }
 }

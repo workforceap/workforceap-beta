@@ -67,7 +67,7 @@ vi.mock('@/lib/events/track', () => ({ trackEvent: vi.fn(async () => undefined) 
 vi.mock('@/lib/member/points', () => ({ awardPoints: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/rate-limit', () => ({
   checkAIToolRateLimit: vi.fn(async () => ({ success: true })),
   checkInviteAcceptRateLimit: vi.fn(async () => ({ success: true })),

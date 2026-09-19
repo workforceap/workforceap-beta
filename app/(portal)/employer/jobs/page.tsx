@@ -6,7 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import EmployerJobsBoard from '@/components/employer/EmployerJobsBoard';
 import EmployerJobQuickActions from '@/components/employer/EmployerJobQuickActions';
 import { assessJobPostingReadiness } from '@/lib/employer/jobReadiness';
@@ -132,7 +132,8 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('jobPostings')}
         subtitle={t('managePostingsAndCandidates')}
         action={

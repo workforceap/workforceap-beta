@@ -45,14 +45,16 @@ export default function MemberDoThisNextCard({ action, paddingX = '2rem', varian
 
   const completeAndOpen = async () => {
     try {
-      await fetch(`/api/member/nba/${actionId}`, {
+      const response = await fetch(`/api/member/nba/${actionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' }),
         keepalive: true,
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
     } catch {
-      // Navigate anyway — clearing the card should never block the member.
+      setCompleted(false);
+      // Keep the unsaved action visible, but still open its destination.
     }
     router.push(actionHref);
   };

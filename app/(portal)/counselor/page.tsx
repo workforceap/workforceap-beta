@@ -130,7 +130,7 @@ export default async function CounselorPortalPage({
         ))}
         <CounselorHomeKit
         assignedCount={assignedCount}
-        atRiskCount={kitQueue.totals.critical + kitQueue.totals.warning}
+        atRiskCount={kitCenter.totals.atRiskCount}
         needsReplyCount={kitCenter.totals.needsReplyCount}
         onTrackCount={kitQueue.totals.ontrack}
         slaBreachCount={kitCenter.totals.slaBreachCount}

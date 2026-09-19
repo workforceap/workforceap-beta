@@ -36,7 +36,7 @@ vi.mock('@/lib/cron/cronExecution', () => ({
   getCurrentCronExecutionId: vi.fn(() => null),
 }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: mocks.log }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/pipeline/stage', () => ({
   getPipelineStage: vi.fn(() => 'enrolled'),
   PIPELINE_STAGE_LABELS: { enrolled: 'Enrolled' },

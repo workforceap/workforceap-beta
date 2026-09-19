@@ -2735,19 +2735,13 @@ export async function sendMemberStuckEmail(params: {
     console.warn('sendMemberStuckEmail: RESEND_API_KEY not set');
     return { ok: false, error: 'Email not configured' };
   }
-  const calendarUrl =
-    params.calendarUrl ||
-    process.env.COUNSELOR_BOOKING_URL ||
-    'https://www.workforceap.org/counselor/book-15';
   const html = brandedEmailLayout({
     title: "Let's get unstuck",
     bodyHtml: memberStuckHtml({
       firstName: params.firstName,
       counselorName: params.counselorName,
-      calendarUrl,
+      calendarUrl: params.calendarUrl,
     }),
-    ctaText: 'Book 15 minutes',
-    ctaUrl: calendarUrl,
   });
   try {
     await sendBrandedEmail(resend, {

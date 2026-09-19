@@ -1,7 +1,9 @@
 'use client';
 
+import type { ClientEventName } from './names';
+
 export type MemberEventRequest = {
-  eventName: string;
+  eventName: ClientEventName;
   entityType?: string;
   entityId?: string;
   metadata?: Record<string, unknown>;

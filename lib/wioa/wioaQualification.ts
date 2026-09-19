@@ -35,36 +35,45 @@ export type WioaQualificationAnswers = {
 
 export type WioaEligibilitySignal = 'likely' | 'possible' | 'review' | 'unclear';
 
-export type WioaQualificationSnapshot = {
+export type WioaReason =
+  | { code: 'public_assistance' | 'low_income' | 'dislocated_worker' | 'training_interest' | 'intake_complete' | 'youth_review' | 'staff_review' }
+  | { code: 'barrier'; params: { barrier: WioaBarrier } };
+
+type SnapshotFields = {
   answers: WioaQualificationAnswers;
   signal: WioaEligibilitySignal;
-  reasons: string[];
   submittedAt: string;
-  version: 1;
 };
+
+/** Preserve historical prose; only new writes use language-neutral reasons. */
+export type WioaQualificationSnapshot = SnapshotFields & (
+  | { version: 1; reasons: string[] }
+  | { version: 2; reasons: WioaReason[] }
+);
 
 export function parseWioaQualificationSnapshot(raw: unknown): WioaQualificationSnapshot | null {
   if (!raw || typeof raw !== 'object') return null;
   const o = raw as Record<string, unknown>;
   const signal = o.signal;
   if (
-    o.version !== 1 ||
+    (o.version !== 1 && o.version !== 2) ||
     typeof o.submittedAt !== 'string' ||
     (signal !== 'likely' && signal !== 'possible' && signal !== 'review' && signal !== 'unclear') ||
-    !Array.isArray(o.reasons) ||
-    !o.reasons.every((reason) => typeof reason === 'string')
+    !Array.isArray(o.reasons)
   ) {
     return null;
   }
   const answers = parseWioaAnswers(o.answers);
   if (!answers) return null;
-  return {
-    answers,
-    signal,
-    reasons: o.reasons,
-    submittedAt: o.submittedAt,
-    version: 1,
-  };
+  const fields: SnapshotFields = { answers, signal, submittedAt: o.submittedAt };
+  if (o.version === 1) {
+    return o.reasons.every((reason) => typeof reason === 'string')
+      ? { ...fields, version: 1, reasons: o.reasons }
+      : null;
+  }
+  const reasons = o.reasons.map(parseWioaReason);
+  if (reasons.some((reason) => reason === null)) return null;
+  return { ...fields, version: 2, reasons: reasons as WioaReason[] };
 }
 
 const BARRIER_LABELS: Record<WioaBarrier, string> = {
@@ -89,14 +98,75 @@ export function publicAssistanceLabel(value: boolean | null | undefined): string
   return 'Not answered';
 }
 
+const REASON_TEXT = {
+  public_assistance: 'You shared that you receive TANF, WIC, or SNAP (food stamps), which usually meets WIOA low-income guidelines once staff verify it.',
+  low_income: 'You shared that your household income may fit common WIOA income guidelines, which staff can verify.',
+  dislocated_worker: 'You reported being unemployed or laid off, which often fits WIOA dislocated worker pathways.',
+  training_interest: 'You said you want training for an in-demand occupation, which is a strong match for many WIOA-funded plans.',
+  intake_complete: 'You said you already completed intake or orientation, which can help staff move faster on next steps.',
+  youth_review: 'Youth eligibility is reviewed differently, so WorkforceAP staff will confirm age, school status, and program fit.',
+  staff_review: 'Complete a conversation with WorkforceAP staff or your local American Job Center to confirm WIOA eligibility and next steps.',
+} as const;
+
+function barrierReasonText(barrier: WioaBarrier): string {
+  return `You identified a barrier, ${barrierLabel(barrier)}, which can strengthen the case for supportive services alongside training.`;
+}
+
+function parseWioaReason(raw: unknown): WioaReason | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  if (o.code === 'barrier') {
+    const barrier = (o.params as Record<string, unknown> | null)?.barrier;
+    return typeof barrier === 'string' && Object.hasOwn(BARRIER_LABELS, barrier)
+      ? { code: 'barrier', params: { barrier: barrier as WioaBarrier } }
+      : null;
+  }
+  return typeof o.code === 'string' && Object.hasOwn(REASON_TEXT, o.code)
+    ? { code: o.code as Exclude<WioaReason['code'], 'barrier'> }
+    : null;
+}
+
+/** Exact matching only: do not infer a reason from arbitrary historical prose. */
+function legacyReason(text: string): WioaReason | null {
+  for (const [code, message] of Object.entries(REASON_TEXT)) {
+    if (text === message) return { code: code as Exclude<WioaReason['code'], 'barrier'> };
+  }
+  for (const barrier of Object.keys(BARRIER_LABELS) as WioaBarrier[]) {
+    if (text === barrierReasonText(barrier)) return { code: 'barrier', params: { barrier } };
+  }
+  return null;
+}
+
+type WioaTranslate = (key: string, values?: Record<string, string>) => string;
+
+/** English by default for staff/email; member/public UI supplies its active translator. */
+export function formatWioaReasons(snapshot: WioaQualificationSnapshot, translate?: WioaTranslate): string[] {
+  if (snapshot.reasons.length === 0) {
+    return [translate ? translate('reasons.unavailable') : 'No explanation was saved with this assessment.'];
+  }
+  return snapshot.reasons.map((saved) => {
+    const reason = typeof saved === 'string' ? legacyReason(saved) : saved;
+    if (!reason) {
+      const text = saved as string;
+      return translate ? translate('reasons.legacy', { text }) : `Saved explanation (original language): ${text}`;
+    }
+    if (reason.code === 'barrier') {
+      return translate
+        ? translate('reasons.barrier', { barrier: translate(`barriers.${reason.params.barrier}`) })
+        : barrierReasonText(reason.params.barrier);
+    }
+    return translate ? translate(`reasons.${reason.code}`) : REASON_TEXT[reason.code];
+  });
+}
+
 /**
  * Heuristic signal for UI routing — counselors make final WIOA determinations.
  */
 export function computeWioaSignal(answers: WioaQualificationAnswers): {
   signal: WioaEligibilitySignal;
-  reasons: string[];
+  reasons: WioaReason[];
 } {
-  const reasons: string[] = [];
+  const reasons: WioaReason[] = [];
   const hasBarrier = answers.primaryBarrier !== 'none';
   const isYouth = answers.ageBracket === 'under18';
   const receivesPublicAssistance = answers.publicAssistanceSelfReport === true;
@@ -109,31 +179,29 @@ export function computeWioaSignal(answers: WioaQualificationAnswers): {
     (hasBarrier ? 1 : 0);
 
   if (receivesPublicAssistance) {
-    reasons.push('You shared that you receive TANF, WIC, or SNAP (food stamps), which usually meets WIOA low-income guidelines once staff verify it.');
+    reasons.push({ code: 'public_assistance' });
   }
   if (answers.lowIncomeSelfReport) {
-    reasons.push('You shared that your household income may fit common WIOA income guidelines, which staff can verify.');
+    reasons.push({ code: 'low_income' });
   }
   if (answers.dislocatedWorker) {
-    reasons.push('You reported being unemployed or laid off, which often fits WIOA dislocated worker pathways.');
+    reasons.push({ code: 'dislocated_worker' });
   }
   if (hasBarrier) {
-    reasons.push(
-      `You identified a barrier, ${barrierLabel(answers.primaryBarrier)}, which can strengthen the case for supportive services alongside training.`
-    );
+    reasons.push({ code: 'barrier', params: { barrier: answers.primaryBarrier } });
   }
   if (answers.trainingInterest) {
-    reasons.push('You said you want training for an in-demand occupation, which is a strong match for many WIOA-funded plans.');
+    reasons.push({ code: 'training_interest' });
   }
   if (answers.completedIntakeSelfReport) {
-    reasons.push('You said you already completed intake or orientation, which can help staff move faster on next steps.');
+    reasons.push({ code: 'intake_complete' });
   }
 
   let signal: WioaEligibilitySignal = 'review';
 
   if (isYouth) {
     signal = coreQualifierCount >= 1 || answers.trainingInterest ? 'possible' : 'unclear';
-    reasons.push('Youth eligibility is reviewed differently, so WorkforceAP staff will confirm age, school status, and program fit.');
+    reasons.push({ code: 'youth_review' });
   } else if (answers.dislocatedWorker) {
     signal = 'likely';
   } else if (
@@ -147,9 +215,7 @@ export function computeWioaSignal(answers: WioaQualificationAnswers): {
   }
 
   if (reasons.length === 0) {
-    reasons.push(
-      'Complete a conversation with WorkforceAP staff or your local American Job Center to confirm WIOA eligibility and next steps.'
-    );
+    reasons.push({ code: 'staff_review' });
   }
 
   return { signal, reasons };

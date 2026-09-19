@@ -38,6 +38,11 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 - **Brand (constant across modes):** `--wa-accent` (brand magenta) / `--wa-accent-dark` /
   `--wa-accent-soft` / `--wa-on-accent`, `--wa-gold(-dark|-soft)`, `--wa-info(-soft)`,
   `--wa-success(-soft)`, `--wa-danger(-soft)`, `--wa-violet`.
+- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)` and
+  `--wa-hero-gold(-dark)` stay dark in both themes and pair with `--wa-on-hero`.
+  A white hero action uses `--wa-hero-action-bg` and `--wa-hero-action-text`;
+  do not substitute the theme-adaptive solid-control foreground. Categorical
+  KPI totals use neutral text; retain semantic color for an actual state.
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
   sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
@@ -76,6 +81,13 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   `.wa-kit-cta--ghost` (44px, `--wa-type-body`) instead of a 13–14px inline size.
   Lesson-start and other “must look like a button” member actions use
   `.wa-kit-cta--xl` (52px, full-width on mobile) with `.wa-kit-cta--block`.
+  Solid accent pills pair `--wa-accent` with `--wa-on-accent-control`; the
+  foreground adapts in dark mode. `--wa-on-accent` remains white for existing
+  gradient/hero contexts and must not be globally replaced with the control
+  foreground. Ghost buttons use `--wa-control-border`, not the low-contrast
+  decorative `--wa-border`. Small tinted status labels use
+  `--wa-accent-text`, `--wa-info-dark`, `--wa-success-dark`, or
+  `--wa-gold-dark` with their matching soft tint.
 - **Shape / density / pop (flip per surface, §2):** `--wa-radius`, `--wa-radius-sm`, `--wa-pad`,
   `--wa-pad-sm`, `--wa-pop`, `--wa-shadow`, `--wa-shadow-lg`.
 - **Motion (§7):** `--wa-dur-fast` (120ms) / `--wa-dur-base` (200ms) / `--wa-dur-slow` (300ms) +
@@ -175,6 +187,25 @@ confirm button). Rationale is in the file header — don't "fix" it.
 
 Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(status)↔alert`,
 `info↔info`, `neutral↔muted`; kit `danger` (true red) has no `StatusTone` equivalent on purpose.
+
+Use `lib/ui/statusToneAdapters.ts` at these boundaries instead of copying color triples.
+`StatusBadge` reads the same palette as `statusColor`; its `error` and `accent` variants
+both preserve the legacy attention meaning. Do not infer a reverse conversion for kit
+`danger`: keep genuinely destructive/failed kit statuses on their existing red path.
+
+| Legacy StatusTone | StatusBadge variant | KitTone | Astryx Token |
+| --- | --- | --- | --- |
+| success | success | ok | green |
+| warning | warning | warn | yellow |
+| danger (attention) | error / accent | alert | pink |
+| info | info | info | blue |
+| neutral | neutral | muted | gray |
+| no equivalent | no equivalent | danger | red |
+
+Legacy `PortalEmptyState` delegates its content to `KitEmptyState`. Set `headingAs="h2"`
+when an empty section directly follows the page h1; the default h3 is retained for
+empties inside an existing h2 section. Preserve the distinction between a failed load
+and a confirmed empty result. Keep existing directory empties on `KitEmptyState`.
 
 ---
 
@@ -303,6 +334,9 @@ kit table cells beyond `Token` for Pace.
   `wa-kit-tag--*`, `wa-kit-table`, `wa-kit-focus`, …). Follow that naming for new kit CSS.
 - Focus rings: use the `.wa-kit-focus` / `.wa-kit-focus--on-dark` utilities — don't restyle
   outlines per component.
+  The general portal focus fallback excludes these opted-in controls. Kit rings
+  use one shadow treatment plus a transparent outline that becomes a system
+  Highlight outline in forced-colors mode; the on-dark variant uses a white ring.
 - **Motion:** use the `--wa-dur-fast|base|slow` + `--wa-ease` tokens, never literal durations.
   Where motion helps: state feedback (hover/press within `--wa-dur-fast`), entering overlays,
   progress. Where it hurts: table row hovers and list reflows at perceptible durations (the UI

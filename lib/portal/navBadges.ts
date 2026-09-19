@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { countThreadsWithSlaBreach, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
-import { buildPartnerAttentionQueue, countActionablePartnerAttention } from '@/lib/partner/attentionQueue';
+import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
   countAwaitingApprovalCascades,
   resolveCascadeScope,
@@ -213,8 +213,8 @@ async function getPartnerBadgeCounts(partnerId: string, organizationId: string):
   const since = new Date();
   since.setDate(since.getDate() - MILESTONE_LOOKBACK_DAYS);
 
-  const [attentionRows, referralIds, partnerUsers, thread] = await Promise.all([
-    buildPartnerAttentionQueue(partnerId, organizationId),
+  const [attentionCount, referralIds, partnerUsers, thread] = await Promise.all([
+    countPartnerAttention(partnerId, organizationId),
     prisma.partnerReferral.findMany({
       take: 500,
       where: { partnerId, member: { deletedAt: null } },
@@ -257,7 +257,7 @@ async function getPartnerBadgeCounts(partnerId: string, organizationId: string):
   }
 
   return {
-    partner_needs_attention: countActionablePartnerAttention(attentionRows),
+    partner_needs_attention: attentionCount,
     milestones_new: milestonesNew,
     partner_messages_unread,
   };

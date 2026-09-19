@@ -19,7 +19,7 @@ export const GET = withApiGuc(async (_req: NextRequest) => {
     }
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);

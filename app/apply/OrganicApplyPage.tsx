@@ -14,6 +14,7 @@ import ApplyOrganicStickyCta from '@/components/apply/ApplyOrganicStickyCta';
 import TrustStrip from '@/components/marketing/TrustStrip';
 import PreLaunchTag from '@/components/portal/PreLaunchTag';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
+import styles from './OrganicApplyPage.module.css';
 
 type OrganicApplyPageProps = { program?: string; schoolApply?: SchoolApplyContext | null };
 
@@ -28,8 +29,6 @@ const sPage = {
   hero: {
     padding: 'calc(var(--nav-height-default, 80px) + var(--space-8)) var(--space-6) var(--space-8)',
     textAlign: 'center' as const,
-    background: 'linear-gradient(170deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-accent-dark) 72%, black) 60%, var(--color-accent-dark) 100%)',
-    color: 'var(--color-white)',
   } as React.CSSProperties,
 
   heroLabel: {
@@ -59,7 +58,6 @@ const sPage = {
     lineHeight: 'var(--line-height-normal)',
     maxWidth: 640,
     margin: '0 auto',
-    opacity: 0.85,
   } as React.CSSProperties,
 
   heroFallback: {
@@ -70,8 +68,6 @@ const sPage = {
     padding: 'var(--space-4) var(--space-5)',
     maxWidth: 640,
     borderRadius: 'var(--radius-lg)',
-    background: 'color-mix(in srgb, var(--color-on-accent) 8%, transparent)',
-    border: '1px solid color-mix(in srgb, var(--color-on-accent) 14%, transparent)',
     textAlign: 'left' as const,
   } as React.CSSProperties,
 
@@ -80,14 +76,12 @@ const sPage = {
     fontWeight: 700,
     letterSpacing: '0.04em',
     textTransform: 'uppercase' as const,
-    color: 'color-mix(in srgb, var(--color-on-accent) 85%, transparent)',
     margin: 0,
   } as React.CSSProperties,
 
   heroFallbackText: {
     fontSize: 'var(--font-size-sm)',
     lineHeight: 'var(--line-height-normal)',
-    color: 'color-mix(in srgb, var(--color-on-accent) 86%, transparent)',
     margin: 0,
   } as React.CSSProperties,
 
@@ -196,14 +190,14 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
   const progressSteps = isSchool ? SCHOOL_PROGRESS_STEPS : APPLY_PROGRESS_STEPS;
 
   const helpCard = (
-    <div className="apply-hero-help-card" style={sPage.heroFallback}>
+    <div className={`apply-hero-help-card ${styles.helpCard}`} style={sPage.heroFallback}>
       <p style={sPage.heroFallbackTitle}>{t('helpTitle')}</p>
       <p style={sPage.heroFallbackText}>{isSchool ? t('schoolHelpBody', { school: schoolApply?.partnerName ?? '' }) : t('helpBody')}</p>
       <div style={sPage.heroFallbackActions}>
-        <LocalizedLink href="/contact" className="btn btn-outline mdx-btn mdx-btn--glass" style={{ color: 'var(--color-on-accent)', borderColor: 'color-mix(in srgb, var(--color-on-accent) 30%, transparent)' }}>
+        <LocalizedLink href="/contact" className={styles.helpAction}>
           {t('helpCta1')}
         </LocalizedLink>
-        <a href="tel:+15127771808" className="btn btn-outline mdx-btn mdx-btn--glass" style={{ color: 'var(--color-on-accent)', borderColor: 'color-mix(in srgb, var(--color-on-accent) 30%, transparent)' }}>
+        <a href="tel:+15127771808" className={styles.helpAction}>
           {t('helpCta2')}
         </a>
       </div>
@@ -211,9 +205,9 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
   );
 
   return (
-    <div className="apply-page-organic mdx" style={sPage.wrapper}>
+    <div className={`apply-page-organic mdx ${styles.page}`} style={sPage.wrapper}>
       {/* ── Hero ── */}
-      <section className="apply-hero mdx-stage" style={sPage.hero}>
+      <section className={`apply-hero mdx-stage ${styles.hero}`} style={sPage.hero}>
         <span className="mdx-pill" style={sPage.heroLabel}>
           <span className="material-symbols-outlined" style={{ fontSize: 16 }} aria-hidden="true">assured_workload</span>
           {isSchool ? t('schoolHeroLabel') : t('heroLabel')}
@@ -221,7 +215,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
         <h1 style={sPage.heroHeading}><span className="mdx-grad-accent">{isSchool ? t('schoolHeroHeading') : t('heroHeading')}</span></h1>
         <p className="apply-hero-social" style={{ ...sPage.heroDesc, marginBottom: 'var(--space-2)' }}>{isSchool ? t('schoolApplySocialProof', { school: schoolApply?.partnerName ?? '' }) : t('applySocialProof')}</p>
         {/* Launch-safe cost tag — `PreLaunchTag` (no-cost / grants, not “Pilot Program”) */}
-        <div style={{ marginTop: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+        <div className={styles.costTag} style={{ marginTop: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
           <PreLaunchTag compact />
         </div>
         <p className="apply-hero-desc-full" style={sPage.heroDesc}>
@@ -233,7 +227,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           {t('questionsCall')}{' '}
           <a href="tel:+15127771808" className="apply-hero-help-compact__link">(512) 777-1808</a>
         </p>
-        <a href="#apply-form-start" className="btn btn-primary apply-hero-start-cta mdx-btn mdx-btn--solid">
+        <a href="#apply-form-start" className={`apply-hero-start-cta ${styles.startAction}`}>
           {t('startYourApplication')}
         </a>
         <div className="apply-hero-help-desktop">{helpCard}</div>
@@ -288,7 +282,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
                 {isSchool ? null : <li>{t('nextStep5')}</li>}
               </ol>
               <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-3)', marginBottom: 0 }}>
-                {t('questionsCall')} <a href="tel:+15127771808" style={{ color: 'var(--color-marketing-gold-on-light)', fontWeight: 700 }}>(512) 777-1808</a>
+                {t('questionsCall')} <a href="tel:+15127771808" style={{ color: 'var(--wa-accent-text)', fontWeight: 700 }}>(512) 777-1808</a>
               </p>
             </div>
           </details>
@@ -401,7 +395,6 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
         }
 
         .apply-hero-help-compact,
-        .apply-hero-start-cta,
         .apply-hero-help-mobile {
           display: none;
         }
@@ -411,7 +404,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           max-width: 640px;
           font-size: var(--font-size-sm);
           line-height: var(--line-height-normal);
-          color: color-mix(in srgb, var(--color-on-accent) 88%, transparent);
+          color: var(--mdx-surface);
         }
 
         .apply-hero-help-compact__link {
@@ -419,15 +412,6 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           font-weight: 700;
           text-decoration: underline;
           text-underline-offset: 2px;
-        }
-
-        .apply-hero-start-cta {
-          margin: var(--space-5) auto 0;
-          min-width: min(100%, 320px);
-          min-height: 48px;
-          background: var(--color-accent);
-          color: var(--color-on-accent, #fff);
-          font-weight: 700;
         }
 
         .apply-hero-help-mobile {
@@ -438,25 +422,6 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
 
         .apply-organic-form-kicker {
           display: none;
-        }
-
-        .apply-hero-help-mobile .apply-hero-help-card {
-          background: var(--surface-container);
-          border-color: var(--outline-variant);
-          color: var(--color-on-surface);
-        }
-
-        .apply-hero-help-mobile .apply-hero-help-card p:first-of-type {
-          color: var(--color-on-surface);
-        }
-
-        .apply-hero-help-mobile .apply-hero-help-card p:nth-of-type(2) {
-          color: var(--color-on-surface-variant);
-        }
-
-        .apply-hero-help-mobile .apply-hero-help-card .btn-outline {
-          color: var(--color-on-surface) !important;
-          border-color: var(--outline-variant) !important;
         }
 
         @media (min-width: 769px) {
@@ -513,7 +478,10 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
             display: flex;
             min-height: 48px;
             background: var(--color-accent);
-            color: var(--color-on-accent, #fff);
+            color: var(--wa-on-accent-control);
+            font-size: 1rem;
+            line-height: 1.5;
+            white-space: normal;
             font-weight: 700;
           }
 
@@ -538,14 +506,8 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
             display: none !important;
           }
           .apply-hero-help-compact,
-          .apply-hero-start-cta,
           .apply-hero-help-mobile {
             display: block;
-          }
-          .apply-hero-start-cta {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
           }
           .apply-organic-form-kicker {
             display: block;
@@ -553,7 +515,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
             padding: 0;
             border: none;
             background: transparent;
-            font-size: var(--font-size-xs, 0.75rem);
+            font-size: var(--font-size-sm);
             font-weight: 500;
             letter-spacing: 0;
             color: var(--color-on-surface-variant);

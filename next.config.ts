@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
     ],
   },
   poweredByHeader: false,
-  serverExternalPackages: ['pdfjs-dist', 'mammoth'],
+  serverExternalPackages: ['pdfjs-dist'],
   // Build-time ESLint is now a required gate (burned down 2026-05-20 — see
   // PLAN-2026-Q3 §7 / AGENTS.md). The known lint errors (bare <table>s + 1
   // missing alt) have been fixed or moved under the documented legacy
@@ -60,6 +60,13 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: false },
   async headers() {
     return [
+      {
+        source: '/.well-known/traffic-advice',
+        headers: [
+          { key: 'Content-Type', value: 'application/trafficadvice+json' },
+          { key: 'Cache-Control', value: 'public, max-age=1800' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
@@ -200,6 +207,8 @@ const nextConfig: NextConfig = {
       { source: '/blog/career-change-guide', destination: '/blog/breaking-into-tech-starting-over', permanent: true },
       { source: '/blog/it-certifications-explained', destination: '/blog/5-certifications-under-6-months', permanent: true },
       { source: '/blog/it-certifications-guide', destination: '/blog/5-certifications-under-6-months', permanent: true },
+      { source: '/blog/why-comptia-certifications-matter', destination: '/blog/5-certifications-under-6-months', permanent: true },
+      { source: '/:locale(en|es|fr|pt)/blog/why-comptia-certifications-matter', destination: '/:locale/blog/5-certifications-under-6-months', permanent: true },
       { source: '/blog/remote-work-tips', destination: '/blog', permanent: true },
       { source: '/blog/remote-work-guide', destination: '/blog', permanent: true },
 
@@ -225,6 +234,9 @@ const nextConfig: NextConfig = {
       },
 
       // Short program alias still linked from older materials
+      // Matches the existing provider/curriculum canonicalization in programSlug.ts.
+      { source: '/programs/ai-professional-developer-certificate-ibm', destination: '/programs/ai-practitioner-professional-certificate-aws', permanent: true },
+      { source: '/:locale(en|es|fr|pt)/programs/ai-professional-developer-certificate-ibm', destination: '/:locale/programs/ai-practitioner-professional-certificate-aws', permanent: true },
       {
         source: '/programs/cybersecurity',
         destination: '/programs/cybersecurity-professional-certificate-google',

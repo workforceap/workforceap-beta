@@ -18,7 +18,6 @@ import {
   type StoredInterestProfilerV1,
 } from '@/lib/content/quizIpMerge';
 import { getProgramExtra } from '@/lib/content/programExtras';
-import { salaryRangeDisplay } from '@/lib/content/programSalaryOutcomes';
 import { useTranslations } from 'next-intl';
 
 const QUIZ_STORAGE_KEY = 'find_your_path_results';
@@ -395,7 +394,6 @@ function QuizResultsView({
           const borderColor = CATEGORY_BORDER[program.category] ?? program.categoryColor;
           const reasoning = answers ? getFitReasoning(program, answers) : null;
           const extra = getProgramExtra(program.slug);
-          const salaryBand = salaryRangeDisplay(program);
           return (
             <div
               key={program.slug}
@@ -432,7 +430,7 @@ function QuizResultsView({
                 {program.duration}
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 600, marginBottom: '0.5rem' }}>
-                Starting range: {salaryBand} <span style={{ fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>(national framing)</span>
+                <a href="/salary-guide">Research pay and job requirements</a>
               </div>
               {extra?.jobOutcomes && extra.jobOutcomes.length > 0 && (
                 <p className="quiz-result-roles">
@@ -464,7 +462,7 @@ function QuizResultsView({
       {topProgram && (
         <div className="quiz-results-cta">
           <p className="quiz-results-cta-lead">
-            Your strongest match is <strong>{topProgram.title}</strong>. The published starting band is {salaryRangeDisplay(topProgram)} and the fastest next step is to start your application now.
+            Your strongest match is <strong>{topProgram.title}</strong>. Review the curriculum and occupational requirements, then discuss your next step with an advisor.
           </p>
           <p className="quiz-results-cta-sub">
             Choose the track that fits you best, then we’ll follow up within 1–2 business days.
@@ -511,8 +509,8 @@ function QuizResultsView({
 
       <div className="quiz-results-next-steps">
         <p>
-          Use the comparison page to review published tracks side-by-side — time, difficulty, salary band, and best-for notes.
-          Then use the salary guide for the same published ranges.
+          Use the comparison page to review tracks side-by-side — time, difficulty, and best-for notes.
+          Then use the salary guide to research occupational pay and job requirements.
         </p>
         <div className="quiz-results-next-links">
           <LocalizedLink href="/program-comparison">Compare programs</LocalizedLink>

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import { STATUS_COLORS } from '@/lib/ui/statusColors';
+import StatusBadge from '@/components/portal/StatusBadge';
 
 /**
  * Green status text (StatusBadge `success`, STATUS_COLORS.success, the
@@ -65,8 +68,11 @@ describe('--wa-success-dark text-on-success-tint token', () => {
   });
 
   it('is the pair StatusBadge success and the /10 fit-score badge read', () => {
-    const badge = readFileSync(path.join(root, 'components/portal/StatusBadge.tsx'), 'utf8');
-    expect(badge).toMatch(/success:\s*\{\s*background:\s*'var\(--wa-success-soft\)',\s*color:\s*'var\(--wa-success-dark\)'\s*\}/);
+    // Exercise the complete variant adapter and renderer, rather than requiring
+    // the pair to be duplicated in this consumer's source code.
+    const badge = renderToStaticMarkup(createElement(StatusBadge, { variant: 'success', label: 'Complete' }));
+    expect(badge).toContain('background:var(--wa-success-soft)');
+    expect(badge).toContain('color:var(--wa-success-dark)');
 
     const table = readFileSync(path.join(root, 'components/admin/MembersTable.tsx'), 'utf8');
     const fitScore = table.match(/function FitScoreBadge[\s\S]*?\n\}/)?.[0] ?? '';

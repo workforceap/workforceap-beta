@@ -350,7 +350,6 @@ export default async function ProgramPage({
             </div>
             <div className="dashboard-program-detail-meta">
               <span>⏱ {program.duration}</span>
-              <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{program.salary}</span>
             </div>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
               Progress: {completedCount} of {curriculumCourses.length} courses complete

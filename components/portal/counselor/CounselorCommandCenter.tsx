@@ -2,14 +2,14 @@ import Link from 'next/link';
 import { AlertTriangle, MessageSquare, Sparkles } from 'lucide-react';
 import type { CommandCenter } from '@/lib/counselor/commandCenter';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import { describeInactivity, isUrgentInactivity } from '@/lib/counselor/lastActivity';
+import { describeInactivity } from '@/lib/counselor/lastActivity';
 
 /**
  * Counselor Command Center — Today's priorities.
  *
  * Three sections, one screen, one click to act on each row:
  *   - Needs reply now (oldest first; threads where a 48h SLA breach is pending)
- *   - At risk of ghosting (no platform activity in 7+ days)
+ *   - Members with unresolved saved risk alerts
  *   - Interviewing this week (interview_practice tool was run recently)
  *
  * Per /plan-ceo-review (2026-04-26): this is the force multiplier that
@@ -87,19 +87,19 @@ export default function CounselorCommandCenter({ data }: { data: CommandCenter }
         <PrioritySection
           icon={AlertTriangle}
           accent="var(--color-gold, #a47f38)"
-          title="At risk of ghosting"
+          title="Saved risk alerts"
           count={data.totals.atRiskCount}
-          empty="Everyone's been active in the last week."
+          empty="No members have an active saved risk alert."
         >
           {data.atRisk.map((row) => (
             <PriorityRow
               key={row.memberId}
               name={row.memberName}
-              meta={describeInactivity(row.daysInactive)}
+              meta={`Saved risk score ${row.riskScore ?? "unknown"} · ${row.alertStatus ?? "active"} · ${describeInactivity(row.daysInactive)}`}
               preview={row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : null}
               actionLabel="Check in"
               actionHref={`/counselor/students/${row.memberId}`}
-              urgent={isUrgentInactivity(row.daysInactive, 14)}
+              urgent={(row.riskScore ?? 0) >= 70}
             />
           ))}
         </PrioritySection>

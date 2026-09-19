@@ -21,7 +21,7 @@ test('assignment aggregates come from groupBy counts, not a 20k findMany', async
   };
 
   const idleCutoff = new Date('2026-01-01T00:00:00.000Z');
-  const agg = await loadCounselorAssignmentAggregates(db as never, idleCutoff);
+  const agg = await loadCounselorAssignmentAggregates(db as never, idleCutoff, { ok: true, orgId: 'org-1', superAdmin: false });
 
   assert.equal(calls.length, 3);
   assert.equal(agg.get('c1')?.caseload, 4);

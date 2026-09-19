@@ -73,8 +73,8 @@ export interface AtRiskMember {
   } | null;
   alertCreatedAt: string;
   alertUpdatedAt: string;
-  /** ISO timestamp: latest portal activity signal from the API (member events → Coursera sync → joined). */
-  lastActivityAt?: string;
+  /** ISO timestamp of the latest recorded member event; null when none is recorded. */
+  lastActivityAt?: string | null;
 }
 
 interface ApiResponse {
@@ -96,9 +96,14 @@ const RISK_SORT_INDEX: Record<AtRiskMember['riskLevel'], number> = {
 type SortMode = 'risk' | 'last_activity';
 
 function activityTimestamp(m: AtRiskMember): number {
-  const raw = m.lastActivityAt ?? m.memberSince;
-  const t = Date.parse(raw);
-  return Number.isFinite(t) ? t : 0;
+  const t = m.lastActivityAt ? Date.parse(m.lastActivityAt) : NaN;
+  return Number.isFinite(t) ? t : Number.POSITIVE_INFINITY;
+}
+
+function compareActivity(a: AtRiskMember, b: AtRiskMember): number {
+  const left = activityTimestamp(a);
+  const right = activityTimestamp(b);
+  return left === right ? 0 : left < right ? -1 : 1;
 }
 
 const RISK_CONFIG: Record<
@@ -267,11 +272,12 @@ export function AtRiskDashboardView({
         const byRisk = RISK_SORT_INDEX[a.riskLevel] - RISK_SORT_INDEX[b.riskLevel];
         if (byRisk !== 0) return byRisk;
         if (b.score !== a.score) return b.score - a.score;
-        return activityTimestamp(a) - activityTimestamp(b);
+        const byUpdate = Date.parse(b.alertUpdatedAt) - Date.parse(a.alertUpdatedAt);
+        return byUpdate || a.alertId.localeCompare(b.alertId);
       });
     } else {
       ranked.sort((a, b) => {
-        const byActivity = activityTimestamp(a) - activityTimestamp(b);
+        const byActivity = compareActivity(a, b);
         if (byActivity !== 0) return byActivity;
         const byRisk = RISK_SORT_INDEX[a.riskLevel] - RISK_SORT_INDEX[b.riskLevel];
         if (byRisk !== 0) return byRisk;
@@ -546,7 +552,7 @@ export function AtRiskDashboardView({
               <SortModeButton
                 active={sortMode === 'risk'}
                 onClick={() => setSortMode('risk')}
-                title="Highest severity first (Critical → Low), then score, then oldest activity."
+                title="Highest severity first (Critical → Low), then score, most recently updated saved case, and case ID."
               >
                 Severity ↑
               </SortModeButton>
@@ -997,7 +1003,7 @@ function RiskRow({
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
           <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 4 }}>
-            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · last activity {formatDate(row.lastActivityAt ?? row.memberSince)}
+            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
         </div>

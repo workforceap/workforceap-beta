@@ -45,7 +45,7 @@ interface AtRiskMember {
   } | null;
   alertCreatedAt: string;
   alertUpdatedAt: string;
-  lastActivityAt?: string;
+  lastActivityAt?: string | null;
 }
 
 interface TimelineEvent {

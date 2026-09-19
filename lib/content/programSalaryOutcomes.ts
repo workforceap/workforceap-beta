@@ -1,7 +1,8 @@
 /**
- * Parses program.salary strings ("Starting salary: $55K-$72K") and derives
- * decision-support labels used consistently across /programs, /salary-guide,
- * /program-comparison, and /find-your-path.
+ * @deprecated Unused legacy calculations retained while catalog authorities
+ * are consolidated. These unsourced bands are not wage evidence and must not
+ * be imported into pages, APIs, metadata, recommendations or generated copy.
+ * The live salary guide provides occupational research links instead.
  */
 
 import type { Program } from './programs';

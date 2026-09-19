@@ -71,6 +71,7 @@ import MobileQuickActions from './_components/MobileQuickActions';
 import MobileRecentActivity from './_components/MobileRecentActivity';
 import DesktopDashboard from './_components/DesktopDashboard';
 import { MemberDashboardKit } from '@/components/portal/kit';
+import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import SkillMissionTeaserCard, {
   type SkillMissionTeaserData,
@@ -176,6 +177,8 @@ async function renderMemberDashboard(
       provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
     });
     return (
+      <>
+      <MemberApprovalStatusCard status={home.approvalStatus} />
       <MemberHomeKit
         firstName={home.firstName}
         coursePercent={home.coursePercent}
@@ -207,6 +210,7 @@ async function renderMemberDashboard(
         doThisNext={home.doThisNext}
         ungatedDigitalBasicsHref={home.programTitle ? null : home.ungatedDigitalBasicsHref}
       />
+      </>
     );
   }
 
@@ -997,16 +1001,14 @@ async function renderMemberDashboard(
                 <MemberFirstCertProgressBar
                   progress={{
                     percent: memberState.firstCertProgressPercent,
-                    stageLabel: memberState.firstCertProgressPercent >= 100
+                    stageLabel: totalCourses > 0 && completedCount === totalCourses
                       ? t('firstCertCompleteStage')
                       : memberState.assessmentCompleted
                         ? t('firstCertTrainingStage')
                         : t('firstCertAssessmentStage'),
-                    isComplete: memberState.firstCertProgressPercent >= 100,
-                    stepsComplete: memberState.checklist.completeAssessment
-                      ? (memberState.checklist.completeFirstCourse ? 2 : 1)
-                      : 0,
-                    stepsTotal: 2,
+                    isComplete: totalCourses > 0 && completedCount === totalCourses,
+                    stepsComplete: completedCount,
+                    stepsTotal: totalCourses,
                   }}
                   compact
                 />

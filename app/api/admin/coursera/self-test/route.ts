@@ -4,6 +4,8 @@ import { isAdmin } from '@/lib/auth/roles';
 import { getXapiConfig, getXapiReadiness } from '@/lib/xapi/config';
 import {
   _resetTokenCacheForTesting,
+  B4BConfigurationError,
+  getB4BOrgId,
   getCourseGradebookReports,
   getEnrollmentReports,
   getOrgInfo,
@@ -31,7 +33,6 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 // subpath IS required for businesses.v1/* paths).
 const DEFAULT_COURSERA_OAUTH_URL = 'https://api.coursera.com/oauth2/client_credentials/token';
 const DEFAULT_COURSERA_API_BASE = 'https://api.coursera.com/ent';
-const DEFAULT_ORG_ID = '8R2W4McwOMWJp9cCBV1kvw';
 const DEFAULT_ORG_SLUG = 'workforce-advancement';
 
 function obfuscate(value: string | undefined | null): string {
@@ -414,7 +415,7 @@ async function _GET() {
       process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
       'https://www.workforceap.org'
     ).replace(/\/$/, '');
-    const orgId = process.env.COURSERA_ORG_ID?.trim() || DEFAULT_ORG_ID;
+    const orgId = getB4BOrgId();
     const orgSlug = process.env.COURSERA_ORG_SLUG?.trim() || DEFAULT_ORG_SLUG;
     const oauthUrl = process.env.COURSERA_OAUTH_TOKEN_URL?.trim() || DEFAULT_COURSERA_OAUTH_URL;
     const apiBase = (process.env.COURSERA_API_BASE_URL?.trim() || DEFAULT_COURSERA_API_BASE).replace(/\/$/, '');
@@ -548,6 +549,9 @@ async function _GET() {
   
     return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof B4BConfigurationError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: 503 });
+    }
     console.error('/admin/coursera/self-test:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -45,7 +45,7 @@ export const POST = withApiGuc(
       const { id } = await context.params;
 
       const superAdmin = await isSuperAdmin(user.id);
-      const actorOrgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+      const actorOrgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
       const member = await prisma.$transaction((tx) => tx.user.findUnique({
         where: { id, ...(actorOrgId ? { organizationId: actorOrgId } : {}) },
@@ -170,7 +170,7 @@ export const POST = withApiGuc(
       return NextResponse.json({ summary: out ?? 'Summary unavailable, try again.' });
     } catch (error) {
       console.error('/api/admin/members/[id]/summary:', error);
-      return NextResponse.json({ summary: 'Summary unavailable, try again.' });
+      return NextResponse.json({ summary: 'Summary unavailable, try again.' }, { status: 500 });
     }
   }
 );

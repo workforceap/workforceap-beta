@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { requireAdmin, isSuperAdmin } from '@/lib/auth/roles';
+import { setCronEnabled } from '@/lib/cron/isCronEnabled';
 import { CRON_REGISTRY } from '@/lib/admin/cronRegistry';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -28,9 +29,16 @@ export const POST = withApiGuc(async (
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const enabled = body.enabled !== false;
+  if (typeof body.enabled !== 'boolean') {
+    return NextResponse.json({ error: 'enabled must be a boolean' }, { status: 400 });
+  }
+  const enabled = body.enabled;
+  const orgId = await getActorOrganizationId(user.id);
+  const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
 
-  await prisma.$transaction((tx) => tx.workflowDiagnostic.create({
+  await prisma.$transaction(async (tx) => {
+    await setCronEnabled(tx, cron.workflowKey, enabled);
+    await tx.workflowDiagnostic.create({
     data: {
       workflow: cron.workflowKey,
       status: 'inspection',
@@ -39,7 +47,8 @@ export const POST = withApiGuc(async (
       summary: `Cron ${enabled ? 'enabled' : 'disabled'} by admin`,
       metadata: { enabled, toggledBy: user.id, toggledAt: new Date().toISOString() },
     },
-  }));
+    });
+  });
 
   await auditLog({
     actorUserId: user.id,
@@ -49,8 +58,6 @@ export const POST = withApiGuc(async (
     metadata: { workflow: cron.workflowKey, enabled },
   });
 
-  const orgId = await getActorOrganizationId(user.id);
-  const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
   await logAuditEvent({
     user: { id: user.id, role: actorRole },
     verb: 'updated',

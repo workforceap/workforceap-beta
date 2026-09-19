@@ -897,6 +897,29 @@ describe('POST /api/apply/signup partner ref cookie handling', () => {
 describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
   beforeEach(resetState);
 
+  it('retains the signup supplied result rather than applying the questionnaire scoring policy', async () => {
+    const res = await POST(makeRequest({
+      eligibilityQ1: 'yes', eligibilityQ2: 'yes', eligibilityQ3: 'yes',
+      eligibilityQualifies: false, eligibilityYesCount: 0,
+    }));
+    expect(res.status).toBe(200);
+    expect(state.screeningUpserts[0].create).toMatchObject({ qualifies: false, yesCount: 0 });
+    expect(state.screeningUpserts[0].update).toMatchObject({ qualifies: false, yesCount: 0 });
+  });
+
+  it('preserves the existing null result fallback and skips incomplete triads', async () => {
+    const res = await POST(makeRequest({
+      eligibilityQualifies: null, eligibilityYesCount: null,
+      eligibilityQ1: 'yes', eligibilityQ2: 'yes', eligibilityQ3: null,
+    }));
+    expect(res.status).toBe(200);
+    expect(state.screeningUpserts[0].create).toMatchObject({ q3: null, qualifies: false, yesCount: 0 });
+    resetState();
+    const incomplete = await POST(makeRequest({ eligibilityQ1: null, eligibilityQ2: 'yes' }));
+    expect(incomplete.status).toBe(200);
+    expect(state.screeningUpserts).toEqual([]);
+  });
+
   it('persists unemployment / SNAP / hear-about / ambassador fields on screening upsert', async () => {
     const res = await POST(
       makeRequest({

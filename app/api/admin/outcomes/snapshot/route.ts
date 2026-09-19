@@ -15,7 +15,7 @@ async function _GET(request: NextRequest) {
     if (!(await isAdmin(user.id))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
     const { searchParams } = new URL(request.url);
     const period = (searchParams.get('period') ?? 'all-time') as BoardOutcomesPeriod;

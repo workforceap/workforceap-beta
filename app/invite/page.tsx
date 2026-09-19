@@ -4,8 +4,10 @@ import { useState, useEffect, Suspense } from 'react';
 import LocalizedLink from '@/components/LocalizedLink';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
+import { isConnectionFailure } from '@/lib/http/requestFailureCopy';
 import { safeParseResponseJson } from '@/lib/http/safeFetchJson';
+import { sanitizeRedirectPath } from '@/lib/auth/safeRedirectPath';
+import { invitationErrorKey, invitationRoleKey, type InvitationErrorKey } from '@/lib/invitations/inviteUiCopy';
 
 type InviteData = {
   valid: boolean;
@@ -18,10 +20,12 @@ type InviteData = {
   program?: { slug: string; title: string } | null;
   counselorAffiliation?: string | null;
   error?: string;
+  displayError?: InvitationErrorKey;
 };
 
 function InviteContent() {
   const tCommon = useTranslations('common');
+  const t = useTranslations('auth.invite');
   const searchParams = useSearchParams();
   const tokenParam = searchParams?.get('token');
   // The token either arrives in the link or is resolved from email + login code.
@@ -52,21 +56,15 @@ function InviteContent() {
     setLoading(true);
     fetch(`/api/invite/validate?token=${encodeURIComponent(token)}`)
       .then((res) => safeParseResponseJson<InviteData>(res))
-      .then(({ ok, data, parseError, status }) => {
+      .then(({ ok, data, parseError }) => {
         if (parseError || !data) {
-          setData({
-            valid: false,
-            error:
-              status >= 500
-                ? 'The server could not load this invitation. Please try again shortly.'
-                : "We couldn't load this invitation. Try again in a moment.",
-          });
+          setData({ valid: false, displayError: 'loadFailed' });
           return;
         }
-        setData(data);
-        if (data.valid && data.email) setFullName('');
+        setData({ ...data, valid: ok && data.valid });
+        if (ok && data.valid && data.email) setFullName('');
       })
-      .catch(() => setData({ valid: false, error: "We couldn't load this invitation. Try again in a moment." }))
+      .catch(() => setData({ valid: false, displayError: 'loadFailed' }))
       .finally(() => setLoading(false));
   }, [token]);
 
@@ -79,15 +77,18 @@ function InviteContent() {
       const res = await fetch(`/api/invite/validate?${qs.toString()}`);
       const parsed = await safeParseResponseJson<InviteData & { token?: string }>(res);
       if (parsed.parseError || !parsed.data) {
-        throw new Error("We couldn't check that code. Try again in a moment.");
+        setCodeError(t('errors.codeFailed'));
+        return;
       }
       if (!res.ok || !parsed.data.valid || !parsed.data.token) {
-        throw new Error(parsed.data.error ?? 'That email and login code do not match an open invitation.');
+        setCodeError(t(`errors.${invitationErrorKey(parsed.data.error, 'codeMismatch')}`));
+        return;
       }
       setData(parsed.data);
       setToken(parsed.data.token);
     } catch (err) {
-      setCodeError(requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Something went wrong. Try again in a moment.' }, 'invite-code'));
+      console.error('[invite-code] Request failed', err);
+      setCodeError(isConnectionFailure(err) ? tCommon('connectionError') : t('errors.generic'));
     } finally {
       setCodeSubmitting(false);
     }
@@ -111,28 +112,25 @@ function InviteContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const parsed = await safeParseResponseJson<{ error?: string; redirectTo?: string }>(res);
+      const parsed = await safeParseResponseJson<{ error?: string; code?: string; redirectTo?: string }>(res);
       if (parsed.parseError || !parsed.data) {
-        throw new Error(
-          parsed.status >= 500
-            ? 'The server returned an incomplete response. Please try again.'
-            : 'Could not read the server response. Please try again.'
-        );
+        setError(t('errors.acceptFailed'));
+        setSubmitting(false);
+        return;
       }
       const result = parsed.data;
 
       if (!res.ok) {
-        throw new Error(result.error ?? "We couldn't accept this invitation. Try again in a moment.");
+        setError(t(`errors.${invitationErrorKey(result.error, 'acceptFailed', result.code)}`));
+        setSubmitting(false);
+        return;
       }
-      const next =
-        typeof result.redirectTo === 'string' && result.redirectTo.startsWith('/')
-          ? result.redirectTo
-          : '/login?redirectTo=/dashboard';
+      const next = sanitizeRedirectPath(result.redirectTo, '/login?redirectTo=/dashboard');
       setPostAcceptRedirect(next);
       setSuccess(true);
       window.location.href = next;
     } catch (e) {
-      setError(requestFailureMessage(e, { connection: tCommon('connectionError'), fallback: 'Something went wrong. Try again in a moment.' }, 'invite-accept'));
+      setError(isConnectionFailure(e) ? tCommon('connectionError') : t('errors.generic'));
       setSubmitting(false);
     }
   };
@@ -150,7 +148,7 @@ function InviteContent() {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '3rem' }}>
-        <p>Loading invitation...</p>
+        <p role="status">{t('loading')}</p>
       </div>
     );
   }
@@ -159,10 +157,9 @@ function InviteContent() {
     return (
       <div className="container" style={{ maxWidth: '560px', paddingTop: '3rem', paddingBottom: '3rem' }}>
         <div style={{ background: 'var(--surface-container-low)', borderRadius: '12px', padding: '2rem' }}>
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Have a login code?</h1>
+          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('codeHeading')}</h1>
           <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
-            Enter the email address your invitation was sent to and the login code from your WorkforceAP
-            contact. Counselors and Community Ambassadors use this to set up their account.
+            {t('codeDescription')}
           </p>
           <form onSubmit={handleCodeSubmit}>
             {codeError && (
@@ -182,7 +179,7 @@ function InviteContent() {
             )}
             <div style={{ marginBottom: '1rem' }}>
               <label htmlFor="code-email" style={labelStyle}>
-                Email
+                {t('email')}
               </label>
               <input
                 id="code-email"
@@ -191,13 +188,13 @@ function InviteContent() {
                 autoComplete="email"
                 value={codeEmail}
                 onChange={(e) => setCodeEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('emailPlaceholder')}
                 style={inputStyle}
               />
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <label htmlFor="code-value" style={labelStyle}>
-                Login code
+                {t('loginCode')}
               </label>
               <input
                 id="code-value"
@@ -218,11 +215,11 @@ function InviteContent() {
               className="btn btn-primary"
               style={{ width: '100%', padding: '0.75rem' }}
             >
-              {codeSubmitting ? 'Checking…' : 'Continue'}
+              {codeSubmitting ? t('checking') : t('continue')}
             </button>
           </form>
           <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginTop: '1rem' }}>
-            Already set up? <LocalizedLink href="/login">Sign in</LocalizedLink>.
+            {t.rich('alreadySetUp', { link: (chunks) => <LocalizedLink href="/login">{chunks}</LocalizedLink> })}
           </p>
         </div>
       </div>
@@ -240,12 +237,12 @@ function InviteContent() {
             textAlign: 'center',
           }}
         >
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Invalid or Expired Invitation</h1>
+          <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('invalidHeading')}</h1>
           <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
-            {data?.error ?? 'This invitation link is no longer valid.'}
+            {t(`errors.${data?.displayError ?? invitationErrorKey(data?.error, 'loadFailed')}`)}
           </p>
           <LocalizedLink href="/" className="btn btn-primary">
-            Go to Homepage
+            {t('home')}
           </LocalizedLink>
         </div>
       </div>
@@ -264,13 +261,13 @@ function InviteContent() {
           }}
         >
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--color-green)' }}>
-            Invitation Accepted!
+            {t('acceptedHeading')}
           </h1>
           <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
-            Redirecting you to sign in...
+            {t('redirecting')}
           </p>
           <LocalizedLink href={postAcceptRedirect} className="btn btn-primary">
-            Log In
+            {t('signIn')}
           </LocalizedLink>
         </div>
       </div>
@@ -286,36 +283,40 @@ function InviteContent() {
           padding: '2rem',
         }}
       >
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>You&rsquo;re Invited!</h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('invitedHeading')}</h1>
         <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
-          {data.inviterName} has invited you to join WorkforceAP as a <strong>{data.roleLabel}</strong>.
+          {t.rich('invitedBy', {
+            name: data.inviterName && data.inviterName !== 'A WorkforceAP team member' ? data.inviterName : t('teamMember'),
+            role: t(`roles.${invitationRoleKey(data.role)}`),
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
         {data.subgroup && (
           <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-            Subgroup: <strong>{data.subgroup.name}</strong>
+            {t('subgroup')} <strong>{data.subgroup.name}</strong>
           </p>
         )}
         {data.role === 'counselor' && (
           <p style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>
-            Affiliation:{' '}
+            {t('affiliation')}{' '}
             <strong>
               {data.counselorAffiliation === 'community_ambassador'
-                ? 'Community Ambassador'
+                ? t('communityAmbassador')
                 : data.counselorAffiliation === 'independent'
-                  ? 'Independent advisor'
+                  ? t('independentAdvisor')
                   : data.partner
                     ? data.partner.name
-                    : 'WorkforceAP (organization counselor)'}
+                    : t('organizationCounselor')}
             </strong>
           </p>
         )}
         {data.program && (
           <p style={{ fontSize: '0.95rem', marginBottom: '1rem' }}>
-            Program: <strong>{data.program.title}</strong>
+            {t('program')} <strong>{data.program.title}</strong>
           </p>
         )}
         <p style={{ fontSize: '0.9375rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
-          Fill in the form below to accept and get started.
+          {t('formDescription')}
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -337,7 +338,7 @@ function InviteContent() {
 
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="invite-email" style={labelStyle}>
-              Email
+              {t('email')}
             </label>
             <input
               id="invite-email"
@@ -350,7 +351,7 @@ function InviteContent() {
 
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="invite-name" style={labelStyle}>
-              Full name
+              {t('fullName')}
             </label>
             <input
               id="invite-name"
@@ -358,14 +359,14 @@ function InviteContent() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
+              placeholder={t('fullNamePlaceholder')}
               style={inputStyle}
             />
           </div>
 
           <div style={{ marginBottom: '1rem' }}>
             <label htmlFor="invite-phone" style={labelStyle}>
-              Phone (optional)
+              {t('phone')}
             </label>
             <input
               id="invite-phone"
@@ -379,24 +380,24 @@ function InviteContent() {
 
           <div style={{ marginBottom: '1.5rem' }}>
             <label htmlFor="invite-password" style={labelStyle}>
-              Create a password
+              {t('password')}
             </label>
             <input
               id="invite-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 8 characters"
+              placeholder={t('passwordPlaceholder')}
               minLength={8}
               style={inputStyle}
             />
             <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
-              First time here? Create a password. Already have an account? Leave this blank.
+              {t('passwordHelp')}
             </p>
           </div>
 
           <button type="submit" disabled={submitting} className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }}>
-            {submitting ? 'Accepting...' : 'Accept Invitation'}
+            {submitting ? t('accepting') : t('accept')}
           </button>
         </form>
       </div>
@@ -405,8 +406,9 @@ function InviteContent() {
 }
 
 export default function InvitePage() {
+  const t = useTranslations('auth.invite');
   return (
-    <Suspense fallback={<div style={{ padding: '3rem', textAlign: 'center' }}>Loading invitation...</div>}>
+    <Suspense fallback={<div role="status" style={{ padding: '3rem', textAlign: 'center' }}>{t('loading')}</div>}>
       <InviteContent />
     </Suspense>
   );

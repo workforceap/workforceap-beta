@@ -11,7 +11,7 @@ const compat = new FlatCompat({
 const nextVitals = compat.extends("next/core-web-vitals");
 
 const NO_BARE_TABLE_MESSAGE =
-  "Do not render bare <table> in product code. Use the shared <DataTable> from components/portal/ui/DataTable instead so we get consistent column hiding (hideOnMobile), horizontal scroll, density, and admin-table styling. The only exception is the DataTable implementation itself in components/portal/ui/.";
+  "Do not render bare <table> in product code. New kit pages use components/portal/kit/DataTable (with KitTableShell); existing featureful tables may use components/portal/ui/DataTable. Preserve sorting, density and responsive behavior. Native table markup belongs in these shared implementations or the explicit legacy exceptions. See docs/KIT_GUIDE.md.";
 
 const NO_RAW_HEX_MESSAGE =
   "No raw hex colors in kit components. Use a semantic token — var(--wa-*) or colorVar() from components/portal/kit/tokens.ts — so dark mode and surface modes stay automatic (docs/KIT_GUIDE.md §1). For tinted backgrounds use color-mix(in srgb, var(--wa-x) 15%, transparent).";

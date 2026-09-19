@@ -50,7 +50,8 @@ import PageHeader from '@/components/portal/PageHeader';
 import AdminMemberAiMatches from './AdminMemberAiMatches';
 import MemberProgressStrip from '@/components/portal/MemberProgressStrip';
 import { loadLearnerProgressByUserId } from '@/lib/coursera/progressQueries';
-import { getBoardSnapshot, SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
+import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
+import { getMemberOutcomesSummary } from '@/lib/admin/memberOutcomesSummary';
 import MemberCourseraDiagnoseButton from '@/components/admin/MemberCourseraDiagnoseButton';
 import AdminMemberSkillCheckpointPanel from '@/components/admin/AdminMemberSkillCheckpointPanel';
 import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
@@ -532,27 +533,19 @@ export default async function AdminMemberDetailPage({
     completedCourseSlugs,
   });
 
-  // Outcomes snapshot scoped to the member's organization. Pulled from
-  // `getBoardSnapshot()` — the single source of truth that also feeds
-  // /admin/outcomes and the printable /admin/outcomes/board.pdf — so the
-  // cohort numbers shown next to a member match what funders see on the
-  // public board. Org filter narrows the snapshot to the member's tenant
-  // so cross-org cohorts are not mixed.
-  const memberOrgId = (member as { organizationId?: string }).organizationId;
-  const outcomesSnapshot = await getBoardSnapshot('all-time', memberOrgId).catch(
+  // Exact organization-scoped aggregates, without loading the board's sampled
+  // placement list, demographic breakdowns or unrelated application funnel.
+  const outcomesSummary = await getMemberOutcomesSummary(member.organizationId).catch(
     (err: unknown) => {
-      console.error('[admin/member-detail] getBoardSnapshot failed', err);
+      console.error('[admin/member-detail] outcomes summary failed', err);
       return null;
     },
   );
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-  const placedLast90d = outcomesSnapshot
-    ? outcomesSnapshot.outcomes.placements.filter((p) => p.placedAt >= ninetyDaysAgo).length
-    : 0;
-  const orgPlacementRate = outcomesSnapshot?.outcomes.totals.placementRate ?? null;
-  const orgEnrolled = outcomesSnapshot?.outcomes.totals.membersEnrolled ?? 0;
-  const orgPlaced = outcomesSnapshot?.outcomes.totals.membersPlaced ?? 0;
-  const orgAvgWeeksToPlacement = outcomesSnapshot?.outcomes.totals.averageWeeksToPlacement ?? null;
+  const placedLast90d = outcomesSummary?.placedLast90d ?? 0;
+  const orgPlacementRate = outcomesSummary?.placementRate ?? null;
+  const orgEnrolled = outcomesSummary?.membersEnrolled ?? 0;
+  const orgPlaced = outcomesSummary?.membersPlaced ?? 0;
+  const orgAvgWeeksToPlacement = outcomesSummary?.averageWeeksToPlacement ?? null;
   const orgAvgDaysToPlacement =
     orgAvgWeeksToPlacement === null ? null : Math.round(orgAvgWeeksToPlacement * 7);
 
@@ -884,7 +877,7 @@ export default async function AdminMemberDetailPage({
           />
         </section>
 
-        {/* Outcomes summary — same getBoardSnapshot() truth-set that drives
+        {/* Outcomes summary — the same all-time definitions used by
             /admin/outcomes and /admin/outcomes/board.pdf. Shows the org-level
             cohort context (placement rate, time-to-placement, recent placement
             volume) so an admin reviewing one member can see how their case
@@ -901,10 +894,9 @@ export default async function AdminMemberDetailPage({
             </Link>
           </div>
           <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
-            Cohort context for this member&apos;s organization — single source of truth via{' '}
-            <code>getBoardSnapshot()</code>.
+            Cohort context for this member&apos;s organization, including exact placements over the last 90 days.
           </p>
-          {outcomesSnapshot ? (
+          {outcomesSummary ? (
             <>
               <div
                 style={{

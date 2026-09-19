@@ -17,7 +17,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
     }
 
     const superAdmin = await isSuperAdmin(user.id);
-    const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+    const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
     const orgScope = orgId ? { user: { organizationId: orgId } } : {};
 
     const [totalSent, totalCompleted, atRiskRows] = await Promise.all([

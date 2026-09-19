@@ -1,5 +1,8 @@
 'use client';
 
+import { CircleAlert, CircleCheck, QrCode } from 'lucide-react';
+
+import actionStyles from '@/components/auth/AuthActions.module.css';
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -117,7 +120,7 @@ export default function SetupMfaPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 48, color: 'var(--color-error)', marginBottom: '0.5rem' }}>error</span>
+          <CircleAlert size={48} aria-hidden="true" style={{ color: 'var(--color-error)', marginBottom: '0.5rem' }} />
           <h1 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{tAuth('mfaSetup.setupFailedHeading')}</h1>
           <p role="alert" style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1rem' }}>{error}</p>
           <LocalizedLink href={nextPath} style={{ color: 'var(--color-accent)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44 }}>{tAuth('mfaSetup.continueButton')}</LocalizedLink>
@@ -130,25 +133,23 @@ export default function SetupMfaPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <div style={{ textAlign: 'center', maxWidth: 400 }}>
-          <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 64, color: 'var(--color-green)', marginBottom: '1rem' }}>check_circle</span>
+          <CircleCheck size={64} aria-hidden="true" style={{ color: 'var(--color-green)', marginBottom: '1rem' }} />
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>{tAuth('mfaSetup.doneHeading')}</h1>
           <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
             {tAuth('mfaSetup.doneMessage')}
           </p>
           <LocalizedLink
             href={nextPath}
+            className={actionStyles.primary}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               minHeight: 44,
               padding: '0.75rem 1.5rem',
-              background: 'linear-gradient(135deg, #c79a45 0%, #a47f38 55%, #7d5f26 100%)',
-              color: 'var(--color-white)',
               borderRadius: 'var(--radius-md)',
               fontWeight: 700,
               textDecoration: 'none',
-              boxShadow: '0 12px 30px -12px rgba(124, 92, 38, 0.5)',
             }}
           >
             {tAuth('mfaSetup.continueButton')}
@@ -162,7 +163,7 @@ export default function SetupMfaPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-container-lowest)', padding: '1rem' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 48, color: 'var(--color-accent)', marginBottom: '0.5rem' }}>qr_code_2</span>
+          <QrCode size={48} aria-hidden="true" style={{ color: 'var(--color-accent)', marginBottom: '0.5rem' }} />
           <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>{tAuth('mfaSetup.heading')}</h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
             {tAuth('mfaSetup.subheading')}
@@ -190,26 +191,22 @@ export default function SetupMfaPage() {
                   </div>
                 )}
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.5rem' }}>
                 {tAuth('mfaSetup.manualEntryHint')} <code style={{ background: 'var(--surface-container-high)', padding: '0.15rem 0.35rem', borderRadius: 4, fontFamily: 'monospace' }}>{secret}</code>
               </p>
             </div>
 
             <button type="button"
               onClick={() => setStep('confirm')}
+              className={actionStyles.primary}
               style={{
                 width: '100%',
                 minHeight: 44,
                 padding: '0.875rem',
-                background: 'linear-gradient(135deg, #c79a45 0%, #a47f38 55%, #7d5f26 100%)',
-                color: 'var(--color-white)',
-                border: 'none',
                 borderRadius: 'var(--radius-md)',
                 fontWeight: 700,
                 fontSize: '0.9rem',
-                cursor: 'pointer',
                 marginBottom: '0.75rem',
-                boxShadow: '0 12px 30px -12px rgba(124, 92, 38, 0.5)',
               }}
             >
               {tAuth('mfaSetup.scannedButton')}
@@ -226,7 +223,7 @@ export default function SetupMfaPage() {
             <div style={{ marginBottom: '1rem' }}>
               <label
                 htmlFor="mfa-setup-code"
-                style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}
               >
                 {tAuth('mfaSetup.codeLabel')}
               </label>
@@ -270,18 +267,14 @@ export default function SetupMfaPage() {
               type="submit"
               disabled={loading || code.length !== 6}
               aria-busy={loading}
+              className={actionStyles.primary}
               style={{
                 width: '100%',
                 minHeight: 44,
                 padding: '0.875rem',
-                background: loading || code.length !== 6 ? 'var(--surface-container-high)' : 'linear-gradient(135deg, #c79a45 0%, #a47f38 55%, #7d5f26 100%)',
-                color: loading || code.length !== 6 ? 'var(--color-on-surface-variant)' : 'var(--color-white)',
-                border: 'none',
                 borderRadius: 'var(--radius-md)',
                 fontWeight: 700,
                 fontSize: '0.9rem',
-                cursor: loading || code.length !== 6 ? 'not-allowed' : 'pointer',
-                boxShadow: loading || code.length !== 6 ? 'none' : '0 12px 30px -12px rgba(124, 92, 38, 0.5)',
               }}
             >
               <span aria-live="polite">{loading ? tAuth('mfaSetup.verifying') : tAuth('mfaSetup.enableButton')}</span>
@@ -307,7 +300,7 @@ export default function SetupMfaPage() {
           </form>
         )}
 
-        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {tAuth('mfaSetup.recommendedApps')}
         </p>
       </div>

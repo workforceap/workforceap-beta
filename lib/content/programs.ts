@@ -119,6 +119,7 @@ export interface Program {
   borderColor: string;
   icon: string;
   duration: string;
+  /** @deprecated Historical unsourced catalog field; never publish or rank by it. Use occupational research. */
   salary: string;
   skills: string[];
   courses: ProgramCourse[];

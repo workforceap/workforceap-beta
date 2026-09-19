@@ -521,7 +521,6 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.25rem' }}><ProgramIcon program={p} size={24} /></div>
                 <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{p.title}</h3>
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>{p.duration}</div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>{p.salary}</div>
                 {p.curriculumMigrationPending ? (
                   <p
                     id={`program-${p.slug}-status`}

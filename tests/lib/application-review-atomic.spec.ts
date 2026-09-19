@@ -1,0 +1,150 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const fixture = vi.hoisted(() => {
+  const initial = () => ({ id: 'app-a', userId: 'member-a', status: 'PENDING', notes: null as string | null, programInterest: null, user: { email: 'member@example.invalid', fullName: 'Fixture', programInterest: null } });
+  const state = { application: initial(), snapshotFails: false, updates: 1, snapshots: [] as unknown[] };
+  const tx = {
+    $queryRaw: vi.fn(async () => [{ id: 'member-a' }]),
+    application: {
+      findFirst: vi.fn(async () => ({ ...state.application })),
+      updateMany: vi.fn(async (args: { data: { status: string; notes: string | null } }) => {
+        if (state.updates === 1) Object.assign(state.application, args.data);
+        return { count: state.updates };
+      }),
+    },
+    counselorAssignment: { findFirst: vi.fn(async () => null) },
+  };
+  const transaction = vi.fn(async (callback: (db: typeof tx) => Promise<unknown>) => {
+    const preimage = structuredClone(state.application);
+    const priorSnapshots = [...state.snapshots];
+    try { return await callback(tx); } catch (error) {
+      state.application = preimage;
+      state.snapshots = priorSnapshots;
+      throw error;
+    }
+  });
+  return { state, tx, transaction, initial };
+});
+vi.mock('@/lib/db/prisma', () => ({ prisma: { $transaction: fixture.transaction } }));
+vi.mock('@/lib/db/transactionPolicy', () => ({ interactiveTransactionsGuaranteed: vi.fn(() => true) }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
+vi.mock('@/lib/audit/log', () => ({ auditRequestMeta: vi.fn(), logAuditEvent: vi.fn(async () => {}) }));
+vi.mock('@/lib/email', () => ({ sendEnrollmentConfirmationEmail: vi.fn(async () => {}), sendApplicationRejectedEmail: vi.fn(async () => {}) }));
+vi.mock('@/lib/content/programs', () => ({ getProgramByInterestValue: vi.fn() }));
+vi.mock('@/lib/events/track', () => ({ trackEvent: vi.fn(async () => {}) }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
+vi.mock('@/lib/wioa/reviewSnapshot', () => ({ recordWioaReviewSnapshot: vi.fn(async (args: unknown, tx: unknown) => {
+  if (tx !== fixture.tx) throw new Error('snapshot escaped transaction');
+  if (fixture.state.snapshotFails) throw new Error('snapshot unavailable');
+  fixture.state.snapshots.push(args);
+}) }));
+
+import { changeApplicationStatus } from '@/lib/admin/applicationReview';
+import { auditLog } from '@/lib/audit';
+import { sendEnrollmentConfirmationEmail, sendApplicationRejectedEmail } from '@/lib/email';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { recordWioaReviewSnapshot } from '@/lib/wioa/reviewSnapshot';
+import { trackEvent } from '@/lib/events/track';
+
+const args = { applicationId: 'app-a', status: 'APPROVED' as const, orgId: 'org-a', actorUserId: 'staff-a', actorRole: 'admin' as const, requestMeta: {} };
+beforeEach(() => {
+  vi.clearAllMocks();
+  fixture.state.application = fixture.initial();
+  fixture.tx.$queryRaw.mockResolvedValue([{ id: 'member-a' }]);
+  fixture.state.snapshotFails = false;
+  fixture.state.updates = 1;
+  fixture.state.snapshots = [];
+  fixture.tx.application.findFirst.mockImplementation(async () => ({ ...fixture.state.application }));
+  fixture.tx.counselorAssignment.findFirst.mockResolvedValue(null);
+  vi.mocked(interactiveTransactionsGuaranteed).mockReturnValue(true);
+  vi.mocked(auditLog).mockResolvedValue();
+});
+
+describe('application decision transaction', () => {
+  it('commits evidence and audit with the tenant-scoped decision before sending', async () => {
+    const result = await changeApplicationStatus(args);
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.status).toBe('APPROVED');
+    expect(fixture.state.snapshots).toHaveLength(1);
+    expect(fixture.tx.application.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ user: { organizationId: 'org-a', deletedAt: null }, status: 'PENDING' }) }));
+    expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({ action: 'application_status_change' }), fixture.tx);
+    expect(sendEnrollmentConfirmationEmail).toHaveBeenCalledOnce();
+    expect(vi.mocked(recordWioaReviewSnapshot).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(sendEnrollmentConfirmationEmail).mock.invocationCallOrder[0]);
+  });
+  it('rolls back a failed snapshot and sends no email/event; a retry commits once', async () => {
+    fixture.state.snapshotFails = true;
+    await expect(changeApplicationStatus(args)).rejects.toThrow('snapshot unavailable');
+    expect(fixture.state.application.status).toBe('PENDING');
+    expect(sendEnrollmentConfirmationEmail).not.toHaveBeenCalled();
+    expect(trackEvent).not.toHaveBeenCalled();
+    fixture.state.snapshotFails = false;
+    await changeApplicationStatus(args);
+    await changeApplicationStatus(args);
+    expect(fixture.state.snapshots).toHaveLength(1);
+    expect(sendEnrollmentConfirmationEmail).toHaveBeenCalledOnce();
+  });
+  it('rolls back the decision and evidence if the durable audit fails', async () => {
+    vi.mocked(auditLog).mockRejectedValueOnce(new Error('audit unavailable'));
+    await expect(changeApplicationStatus(args)).rejects.toThrow('audit unavailable');
+    expect(fixture.state.application.status).toBe('PENDING');
+    expect(fixture.state.snapshots).toHaveLength(0);
+    expect(sendEnrollmentConfirmationEmail).not.toHaveBeenCalled();
+  });
+  it('rejects an optimistic concurrency miss without a snapshot or notification', async () => {
+    fixture.state.updates = 0;
+    await expect(changeApplicationStatus(args)).rejects.toThrow('CONFLICT');
+    expect(recordWioaReviewSnapshot).not.toHaveBeenCalled();
+    expect(sendEnrollmentConfirmationEmail).not.toHaveBeenCalled();
+  });
+  it('never writes when transaction flattening is enabled', async () => {
+    vi.mocked(interactiveTransactionsGuaranteed).mockReturnValue(false);
+    await expect(changeApplicationStatus(args)).rejects.toThrow('TRANSACTION_UNAVAILABLE');
+    expect(fixture.transaction).not.toHaveBeenCalled();
+  });
+  it('does not report a persisted decision as failed if a later contact lookup fails', async () => {
+    fixture.tx.counselorAssignment.findFirst.mockRejectedValueOnce(new Error('contact lookup unavailable'));
+    expect((await changeApplicationStatus(args)).ok).toBe(true);
+    expect(fixture.state.snapshots).toHaveLength(1);
+  });
+  it('records a denial and suppresses duplicate denial emails on retry', async () => {
+    await changeApplicationStatus({ ...args, status: 'DENIED', notes: 'Reason recorded' });
+    await changeApplicationStatus({ ...args, status: 'DENIED', notes: 'Reason recorded' });
+    expect(fixture.state.snapshots).toHaveLength(1);
+    expect(sendApplicationRejectedEmail).toHaveBeenCalledOnce();
+  });
+  it('returns not-found without writes for a missing tenant-scoped application', async () => {
+    fixture.tx.application.findFirst.mockResolvedValueOnce(null as never);
+    expect(await changeApplicationStatus(args)).toEqual({ ok: false, applicationId: 'app-a', error: 'Application not found' });
+    expect(fixture.tx.application.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+
+it('does not let a former counselor review after a handoff between preflight and the transaction', async () => {
+  fixture.tx.counselorAssignment.findFirst.mockResolvedValueOnce(null);
+  const result = await changeApplicationStatus({ ...args, actorRole: 'counselor' });
+  expect(result).toEqual({ ok: false, applicationId: 'app-a', error: 'Application not found' });
+  expect(fixture.tx.application.updateMany).not.toHaveBeenCalled();
+  expect(recordWioaReviewSnapshot).not.toHaveBeenCalled();
+  expect(sendEnrollmentConfirmationEmail).not.toHaveBeenCalled();
+  expect(fixture.tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(fixture.tx.counselorAssignment.findFirst.mock.invocationCallOrder[0]);
+  expect(fixture.tx.counselorAssignment.findFirst).toHaveBeenCalledWith({ where: {
+    memberId: 'member-a', active: true,
+    counselor: { userId: 'staff-a', active: true, user: { organizationId: 'org-a', deletedAt: null } },
+  }, select: { id: true } });
+});
+
+it('allows the current counselor to deny without adding a new mandatory reason policy', async () => {
+  fixture.tx.counselorAssignment.findFirst.mockResolvedValueOnce({ id: 'assignment' } as never);
+  const result = await changeApplicationStatus({ ...args, actorRole: 'counselor', status: 'DENIED' });
+  expect(result.ok).toBe(true);
+  expect(fixture.state.application.status).toBe('DENIED');
+  expect(recordWioaReviewSnapshot).toHaveBeenCalledWith(expect.objectContaining({ notes: null }), fixture.tx);
+});
+
+it('does not write if the subject leaves the tenant before the member lock', async () => {
+  fixture.tx.$queryRaw.mockResolvedValueOnce([]);
+  const result = await changeApplicationStatus(args);
+  expect(result.ok).toBe(false);
+  expect(fixture.tx.application.updateMany).not.toHaveBeenCalled();
+});

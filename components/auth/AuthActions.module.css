@@ -1,0 +1,27 @@
+/* Stable marketing crimson/white pair; unrelated to portal theme accents. */
+.primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  background: #ad2c4d;
+  color: #fff;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  white-space: normal;
+}
+
+.primary:hover:not(:disabled) { background: #8c0f37; }
+.primary:focus-visible { outline: 3px solid var(--color-accent, #ad2c4d); outline-offset: 3px; }
+.primary:disabled {
+  background: var(--surface-container-high);
+  color: var(--color-on-surface-variant);
+  border-color: var(--outline-variant);
+  cursor: not-allowed;
+}
+
+@media (forced-colors: active) {
+  .primary { border-color: ButtonText; }
+  .primary:disabled { border-color: GrayText; color: GrayText; }
+}

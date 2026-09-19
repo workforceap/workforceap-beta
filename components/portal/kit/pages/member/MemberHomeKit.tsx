@@ -613,7 +613,7 @@ export function MemberHomeKit({
                   border: '1px solid color-mix(in srgb, var(--wa-gold) 35%, transparent)',
                   fontSize: 'var(--wa-type-meta)',
                   fontWeight: 700,
-                  color: 'var(--wa-gold)',
+                  color: 'var(--wa-gold-dark)',
                   flexShrink: 0,
                 }}
               >
@@ -846,7 +846,7 @@ export function MemberHomeKit({
                   borderRadius: 14,
                   flexShrink: 0,
                   background: 'var(--wa-gold-soft)',
-                  color: 'var(--wa-gold)',
+                  color: 'var(--wa-gold-dark)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

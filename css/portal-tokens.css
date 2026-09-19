@@ -34,12 +34,26 @@
   --wa-accent: light-dark(#ad2c4d, #e0658a);
   --wa-accent-dark: light-dark(#8c0f37, #c94e75);
   --wa-on-accent: #ffffff;
+  /* Solid accent controls lighten in dark mode; hero gradients keep white.
+     Do not use this foreground on gradients or white secondary-action fills. */
+  --wa-on-accent-control: light-dark(#ffffff, #2a0d16);
+  --wa-accent-text: light-dark(#8c0f37, #f39ab5);
+  /* Text-bearing gradients stay dark in either theme; solid controls use the
+     adaptive accent tokens above. Dedicated pairs prevent white-on-pink. */
+  --wa-hero-crimson: #ad2c4d;
+  --wa-hero-crimson-dark: #8c0f37;
+  --wa-hero-gold: #7d5f26;
+  --wa-hero-gold-dark: #5d461a;
+  --wa-on-hero: #ffffff;
+  --wa-hero-action-bg: #ffffff;
+  --wa-hero-action-text: #8c0f37;
   --wa-gold: light-dark(#a47f38, #d4ad5a);
   /* Text-on-gold-tint (e.g. yellow status pills). Artifact has no separate
      gold-dark, so the dark value borrows its `--warn` (#e0b062) — the closest
      analog for "readable text over a gold tint on a dark surface." */
   --wa-gold-dark: light-dark(#7d5f26, #e0b062);
   --wa-info: light-dark(#2b7bb9, #77ade6);
+  --wa-info-dark: light-dark(#1f5a87, #74b3e3);
   --wa-success: light-dark(#4a9b4f, #6fc99a);
   /* Text-on-success-tint (green status pills, "/10" fit scores). --wa-success
      itself measures 3.1:1 on --wa-success-soft and 3.5:1 on white, so it is a
@@ -63,8 +77,10 @@
   --wa-surface: light-dark(#ffffff, #1e1417);
   --wa-surface-2: light-dark(#f4f4f5, #25181c); /* subtle raised fill (icon tiles, chips) */
   --wa-text: light-dark(#1a1a1a, #f2e8ea);
-  --wa-muted: light-dark(#737373, #b39ea4);
+  --wa-muted: light-dark(#6b6b6b, #b39ea4);
   --wa-border: light-dark(#e8e8e8, #372830);
+  /* Interactive boundaries need stronger contrast than decorative dividers. */
+  --wa-control-border: light-dark(#858585, #aa808d);
   --wa-track: light-dark(#f0eef0, #2c1c21);
   /* Shared portal canvas: warm wash on --wa-bg. Header/nav sit on this, not a
      separate white/glass slab. Shell paints it; pages inside stay transparent. */
@@ -185,6 +201,13 @@
 [data-surface] {
   background: var(--wa-bg-wave);
   color: var(--wa-text);
+}
+
+/* Keep adapting legacy portal status/icon colors out of the public root. */
+.workspace-shell-root,
+[data-surface] {
+  --color-blue: var(--wa-info);
+  --color-green: var(--wa-success);
 }
 
 /* Inside WorkspaceShell the wash is on `.workspace-shell-root`. Re-painting it

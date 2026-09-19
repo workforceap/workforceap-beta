@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, test } from 'node:test';
 
 const originalEnv = { ...process.env };
@@ -31,9 +32,18 @@ test('notification helpers await both aggregated Discord paths', () => {
 
 
 test('request-lifetime code never abandons createNotification promises', () => {
-  const roots = ['app', 'lib'];
-  const { spawnSync } = require('node:child_process') as typeof import('node:child_process');
-  const result = spawnSync('grep', ['-RIn', '--exclude=*.test.ts', 'void createNotification', ...roots], { encoding: 'utf8' });
-  assert.ok(result.status === 0 || result.status === 1, result.stderr);
-  assert.equal(result.stdout.trim(), '', result.stdout);
+  const matches: string[] = [];
+  function inspect(directory: string) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) inspect(path);
+      else if (entry.isFile() && !entry.name.endsWith('.test.ts')) {
+        readFileSync(path, 'utf8').split('\n').forEach((line, index) => {
+          if (line.includes('void createNotification')) matches.push(`${path}:${index + 1}`);
+        });
+      }
+    }
+  }
+  for (const root of ['app', 'lib']) inspect(root);
+  assert.deepEqual(matches, [], 'Notification writes must remain in the request lifetime');
 });

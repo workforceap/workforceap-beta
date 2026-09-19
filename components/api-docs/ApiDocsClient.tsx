@@ -183,7 +183,7 @@ export default function ApiDocsClient({ data }: { data: ApiDocsData }) {
             </div>
             <div className="wa-flex wa-flex-wrap wa-gap-2 wa-w-full md:wa-w-auto">
               <a
-                href="/openapi.json"
+                href="/api/admin/api-docs/openapi"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="wa-inline-flex wa-items-center wa-px-3 wa-py-2 wa-rounded-md wa-text-sm wa-font-semibold wa-bg-surface-container wa-text-on-surface hover:wa-bg-surface-container-high wa-transition-colors wa-border wa-border-surface-container-high"
@@ -344,7 +344,7 @@ export default function ApiDocsClient({ data }: { data: ApiDocsData }) {
         <div className="wa-max-w-7xl wa-mx-auto wa-px-4 wa-py-6 wa-text-sm wa-text-on-surface-variant">
           Auto-generated from <code className="wa-text-xs wa-bg-surface-container wa-px-1 wa-py-0.5 wa-rounded">docs/API-REFERENCE.md</code>
           {' · '}
-          <a href="/openapi.json" className="wa-text-brand-accent hover:wa-underline">OpenAPI spec</a>
+          <a href="/api/admin/api-docs/openapi" className="wa-text-brand-accent hover:wa-underline">OpenAPI spec</a>
         </div>
       </footer>
     </div>

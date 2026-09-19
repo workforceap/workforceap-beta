@@ -8,7 +8,7 @@
  * of the site is honored by both.
  */
 ---
-<div id="wap-consent" class="consent" role="dialog" aria-label="Cookie consent" hidden>
+<section id="wap-consent" class="consent" aria-label="Cookie preferences" hidden>
   <p class="consent__copy">
     We use cookies and similar technologies to improve your experience and measure
     how our site is used. See our <a href="/privacy">Privacy</a> and <a href="/terms">Terms</a>.
@@ -17,21 +17,23 @@
     <button type="button" class="consent__btn consent__btn--decline" data-consent="declined">Decline</button>
     <button type="button" class="consent__btn consent__btn--accept" data-consent="accepted">Accept</button>
   </div>
-</div>
+</section>
 
 <style>
   .consent[hidden]{display:none}
-  .consent{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:9999;
+  .consent{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;
     display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between;
+    box-sizing:border-box;max-height:calc(100dvh - 24px - env(safe-area-inset-bottom,0px));overflow-y:auto;
     background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 18px;
     box-shadow:0 -10px 30px rgba(28,20,20,.18)}
-  .consent__copy{margin:0;flex:1;min-width:220px;font-size:13.5px;line-height:1.5;color:var(--text)}
+  .consent__copy{margin:0;flex:1 1 28rem;min-width:0;font-size:1rem;line-height:1.5;color:var(--text)}
   .consent__copy a{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;
     color:var(--crimson);font-weight:700;vertical-align:middle}
   .consent__acts{display:flex;gap:10px;flex-shrink:0}
-  .consent__btn{min-height:44px;padding:8px 18px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer}
+  .consent__btn{min-height:44px;padding:8px 18px;border-radius:11px;font-size:1rem;font-weight:700;cursor:pointer}
   .consent__btn--decline{background:transparent;color:var(--muted);border:1px solid var(--border)}
   .consent__btn--accept{background:var(--crimson);color:#fff;border:none}
+  .consent a:focus-visible,.consent__btn:focus-visible{outline:2px solid var(--text);outline-offset:3px}
   @media(min-width:880px){.consent{left:0;right:0;bottom:0;border-radius:0;padding:16px 24px}}
 </style>
 
@@ -81,12 +83,25 @@
 
     el.hidden = false;
     var prevPad = document.body.style.paddingBottom;
-    document.body.style.paddingBottom = '8rem';
+    var basePad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    function measure() {
+      if (el.hidden) return;
+      // The occupied area includes the rendered height, bottom gap and safe
+      // area. Re-measure wrapped text, viewport changes and loaded fonts.
+      var occupied = Math.max(0, window.innerHeight - el.getBoundingClientRect().top);
+      document.body.style.paddingBottom = (basePad + occupied) + 'px';
+    }
+    measure();
+    var observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    if (observer) observer.observe(el);
+    window.addEventListener('resize', measure);
     el.addEventListener('click', function (e) {
       var btn = e.target && e.target.closest ? e.target.closest('[data-consent]') : null;
       if (!btn) return;
       write(btn.getAttribute('data-consent'));
       el.hidden = true;
+      if (observer) observer.disconnect();
+      window.removeEventListener('resize', measure);
       document.body.style.paddingBottom = prevPad;
     });
   })();

@@ -11,7 +11,7 @@ import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -209,7 +209,8 @@ export default async function EmployerCandidateProfilePage({
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={student.fullName ?? t('candidate')}
         subtitle={
           <>

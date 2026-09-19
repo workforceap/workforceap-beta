@@ -38,7 +38,7 @@ const patchSchema = z.object({
   }
 
   const superAdmin = await isSuperAdmin(user.id);
-  const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+  const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
   const subgroup = await prisma.$transaction((tx) => tx.subgroup.findFirst({
     where: { id, ...(orgId ? { leader: { organizationId: orgId } } : {}) },
@@ -107,7 +107,7 @@ export const PATCH = withApiGuc(_PATCH);async function _DELETE(
 
   const { id } = await params;
   const superAdmin = await isSuperAdmin(user.id);
-  const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+  const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
   const subgroup = await prisma.$transaction((tx) => tx.subgroup.findFirst({
     where: { id, ...(orgId ? { leader: { organizationId: orgId } } : {}) },
@@ -131,4 +131,3 @@ export const PATCH = withApiGuc(_PATCH);async function _DELETE(
   }
 }
 export const DELETE = withApiGuc(_DELETE);
-

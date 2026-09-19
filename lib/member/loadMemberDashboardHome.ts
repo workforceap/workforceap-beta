@@ -1,3 +1,5 @@
+import { buildMemberApprovalStatus, type MemberApprovalFacts, type MemberApprovalStatus } from './memberApprovalStatus';
+import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from './starterProfileReview';
 import { prisma } from '@/lib/db/prisma';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { getProgramBySlug } from '@/lib/content/programs';
@@ -64,6 +66,7 @@ export type DashboardPointsLedgerEntry = {
 };
 
 export type MemberDashboardHomeView = {
+  approvalStatus: MemberApprovalStatus;
   firstName: string;
   coursePercent: number;
   programTitle?: string;
@@ -125,7 +128,9 @@ type DashboardHomeDb = {
   $transaction: <T>(fn: (tx: DashboardHomeTx) => Promise<T>) => Promise<T>;
 };
 
-type DashboardUserRow = {
+type DashboardUserRow = MemberApprovalFacts & {
+  phone?: string | null;
+  profile?: { profilePhone: string | null; profileAddress: string | null; city: string | null; state: string | null; zip: string | null; referralSource: string | null } | null;
   fullName: string | null;
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
@@ -139,7 +144,7 @@ type DashboardUserRow = {
       courseraSlug: string | null;
     }>;
   };
-  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string }>;
+  courseEnrollments: Array<{ programSlug: string; curriculumVersion?: string; enrolledByAdminId?: string | null }>;
   courseProgress: Array<{
     programSlug: string;
     courseSlug: string;
@@ -312,6 +317,9 @@ function dashboardHomeStateLetter(args: {
 }
 
 function fallbackDashboardHomeAction(args: {
+  noApplicationOnFile?: boolean;
+  starterProfileReviewRequired?: boolean;
+  starterProfileMissingFields?: string[];
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
   courseEnrollmentActive: boolean;
@@ -323,13 +331,12 @@ function fallbackDashboardHomeAction(args: {
 }): NextBestAction {
   const actions = buildNextBestActions({
     state: dashboardHomeStateLetter(args),
-    // Applications are not in this loader's select. Do not send members to
-    // /apply without that fact — choose_program / counselor still fire.
-    noApplicationOnFile: false,
+    noApplicationOnFile: args.noApplicationOnFile ?? false,
     enrolledProgram: args.enrolledProgram,
     assessmentCompleted: args.assessmentCompleted,
     completedCourseCount: args.completedCourseCount,
-    starterProfileReviewRequired: false,
+    starterProfileReviewRequired: args.starterProfileReviewRequired,
+    starterProfileMissingFields: args.starterProfileMissingFields,
     hasResume: true,
     profileCompletenessPct: 100,
     jobApplicationCount: args.jobApplicationCount,
@@ -344,6 +351,9 @@ function fallbackDashboardHomeAction(args: {
 
 function resolveDashboardHomeNextAction(args: {
   persisted: DashboardUserRow['nextBestActions'];
+  noApplicationOnFile?: boolean;
+  starterProfileReviewRequired?: boolean;
+  starterProfileMissingFields?: string[];
   enrolledProgram: string | null;
   assessmentCompleted: boolean;
   courseEnrollmentActive: boolean;
@@ -384,6 +394,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
   return {
     firstName,
     coursePercent: 0,
+    approvalStatus: buildMemberApprovalStatus({}),
     activeJobs: 0,
     certs: 0,
     points: 0,
@@ -482,7 +493,15 @@ function shapeHome(args: {
   // /dashboard/training only redirects back to /dashboard, so enrolled members
   // must resume on My Program — otherwise Continue/Resume is a do-loop.
   const resumeHref = programHref;
+  const starterReview = getCounselorStarterProfileReview({
+    wasCounselorCreated: !!args.row.courseEnrollments[0]?.enrolledByAdminId,
+    phone: args.row.phone,
+    ...args.row.profile,
+  });
   const doThisNext = resolveDashboardHomeNextAction({
+    noApplicationOnFile: args.row.applications ? args.row.applications.length === 0 : false,
+    starterProfileReviewRequired: starterReview.required,
+    starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
     persisted: args.row.nextBestActions,
     enrolledProgram: assignedSlug,
     assessmentCompleted: args.row.assessmentCompleted,
@@ -508,6 +527,7 @@ function shapeHome(args: {
   return {
     firstName,
     coursePercent: pct,
+    approvalStatus: buildMemberApprovalStatus(args.row),
     programTitle: program?.title ?? undefined,
     noProgram: Boolean(program && !assignedSlug),
     programStatus: program ? (allCoursesComplete ? 'Complete' : 'In progress') : undefined,
@@ -541,6 +561,13 @@ function shapeHome(args: {
 function userSelect() {
   return {
     fullName: true,
+    phone: true,
+    profile: { select: { profilePhone: true, profileAddress: true, city: true, state: true, zip: true, referralSource: true } },
+    applications: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { status: true, submittedAt: true } },
+    wioaReviewStatus: true,
+    wioaReviewedAt: true,
+    courseraEnrollmentApproved: true,
+    courseraEnrollmentApprovedAt: true,
     enrolledProgram: true,
     assessmentCompleted: true,
     organization: {
@@ -562,7 +589,7 @@ function userSelect() {
     courseEnrollments: {
       where: { isPrimary: true },
       take: 1,
-      select: { programSlug: true, curriculumVersion: true },
+      select: { programSlug: true, curriculumVersion: true, enrolledByAdminId: true },
     },
     courseProgress: {
       orderBy: [{ lastActivityAt: 'desc' as const }, { lastUpdatedAt: 'desc' as const }],

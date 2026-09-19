@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
-import { logWebhookEvent, updateWebhookEventStatus } from './logEvent';
+import { updateWebhookEventStatus } from './logEvent';
 export { updateWebhookEventStatus };
 
 // Exponential backoff: 1min, 5min, 15min, 1hr
@@ -30,6 +30,7 @@ export async function markWebhookForRetry(
       status: 'dead_letter',
       errorMessage: errorMessage ?? 'Max retries exceeded',
       retryCount: currentRetryCount,
+      nextRetryAt: null,
     });
     return 'max_retries_exceeded';
   }
@@ -47,7 +48,8 @@ export async function getPendingRetryEvents(source?: string, limit = 50) {
   const where = {
     status: 'retrying' as const,
     nextRetryAt: { lte: new Date() },
-    retryCount: { lt: MAX_RETRIES },
+    // retryCount counts scheduled attempts; the fourth scheduled attempt must run.
+    retryCount: { lte: MAX_RETRIES },
     ...(source ? { source } : {}),
   };
 

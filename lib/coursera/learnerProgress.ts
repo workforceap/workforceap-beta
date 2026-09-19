@@ -20,6 +20,7 @@
 
 import {
   getEnrollmentReports,
+  B4BConfigurationError,
   getB4BOrgId,
   listPrograms,
   type B4BEnrollmentReport,
@@ -220,8 +221,20 @@ export async function fetchLearnerProgressFromB4B(
 ): Promise<LearnerProgressByContent> {
   if (!email || typeof email !== 'string' || opts.readOnlyAudit) return new Map();
 
+  let orgId: string;
+  try {
+    orgId = getB4BOrgId();
+  } catch (error) {
+    if (!(error instanceof B4BConfigurationError)) throw error;
+    // Missing provider configuration must not break the member's local view
+    // or become a cached claim that the learner has no provider progress.
+    const unavailable: LearnerProgressByContent = new Map();
+    unavailable.coverage = 'unavailable';
+    return unavailable;
+  }
+
   // New envelope carries coverage; never reuse an older first-page-only cache.
-  const cacheKey = `coursera:learner:${learnerCacheKey(email, opts.programId)}:v2:${getB4BOrgId()}`;
+  const cacheKey = `coursera:learner:${learnerCacheKey(email, opts.programId)}:v2:${orgId}`;
 
   if (opts.skipCache) {
     await invalidateCache(cacheKey);

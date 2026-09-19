@@ -68,7 +68,7 @@ export function validateFileType(
 
   // H-S17: DOCX files share the ZIP magic bytes (PK\x03\x04) with any ZIP archive.
   // A malicious ZIP renamed to .docx would otherwise pass validation and be fed
-  // to `mammoth` downstream. Confirm the archive is actually a DOCX by checking
+  // to the bounded DOCX reader downstream. Confirm the archive is actually a DOCX by checking
   // for the canonical DOCX entries in the ZIP central directory.
   if (ext === 'docx') {
     return isDocxArchive(buf);

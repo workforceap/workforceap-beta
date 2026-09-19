@@ -31,7 +31,7 @@ vi.mock('@/lib/recap/generate', () => ({
   generateWeeklyRecaps: vi.fn(),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

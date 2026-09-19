@@ -9,6 +9,15 @@
  * classes. Kit React components in components/portal/kit/ emit these.
  */
 
+/* Only the mounted workspace owns this canvas; public page bodies stay separate.
+ * Match dynamic viewport height so the legacy 100vh minimum cannot exceed the
+ * desktop 100dvh shell when browser chrome is present. */
+html .workspace-shell-root[data-workspace-role] {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--wa-bg-wave, var(--wa-bg));
+}
+
 .wa-kit-card {
   background: var(--wa-surface);
   border: 1px solid var(--wa-border);
@@ -114,7 +123,7 @@
   background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
 }
 
-/* Primary 44px pill. Ghost variant for secondary actions on the same row. */
+/* Primary 44px pill. Solid-control text is distinct from white hero text. */
 .wa-kit-cta {
   box-sizing: border-box;
   display: inline-flex;
@@ -124,7 +133,7 @@
   min-height: 44px;
   padding: 10px 16px;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-weight: 600;
   font-size: var(--wa-type-body);
   line-height: 1.2;
@@ -136,7 +145,7 @@
 .wa-kit-cta--ghost {
   background: transparent;
   color: var(--wa-accent);
-  border: 1px solid var(--wa-border);
+  border: 1px solid var(--wa-control-border);
 }
 .wa-kit-cta--block {
   width: 100%;
@@ -242,35 +251,35 @@ html.dark [data-surface] .wa-kit-card,
   border-color: transparent;
 }
 .wa-kit-card--gradient-crimson {
-  background: linear-gradient(135deg, var(--wa-accent), var(--wa-accent-dark));
+  background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark));
   border-color: transparent;
-  color: var(--wa-on-accent);
+  color: var(--wa-on-hero);
 }
 .wa-kit-card--gradient-gold {
-  background: linear-gradient(135deg, var(--wa-gold), var(--wa-gold-dark));
+  background: linear-gradient(135deg, var(--wa-hero-gold), var(--wa-hero-gold-dark));
   border-color: transparent;
-  color: var(--wa-on-accent);
+  color: var(--wa-on-hero);
 }
 [data-surface] .wa-kit-card--gradient-crimson {
-  background: linear-gradient(135deg, var(--wa-accent), var(--wa-accent-dark));
+  background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark));
   border-color: transparent;
-  color: var(--wa-on-accent);
+  color: var(--wa-on-hero);
   box-shadow: 0 20px 42px color-mix(in srgb, var(--wa-accent) 24%, transparent);
 }
 [data-surface] .wa-kit-card--gradient-gold {
-  background: linear-gradient(135deg, var(--wa-gold), var(--wa-gold-dark));
+  background: linear-gradient(135deg, var(--wa-hero-gold), var(--wa-hero-gold-dark));
   border-color: transparent;
-  color: var(--wa-on-accent);
+  color: var(--wa-on-hero);
   box-shadow: 0 20px 42px color-mix(in srgb, var(--wa-gold) 20%, transparent);
 }
 /* When pop is off (dense), gradient tiles fall back to calm tints. */
 [data-surface='dense'] .wa-kit-card--gradient-crimson {
   background: var(--wa-accent-soft);
-  color: var(--wa-accent);
+  color: var(--wa-accent-text);
 }
 [data-surface='dense'] .wa-kit-card--gradient-gold {
   background: var(--wa-gold-soft);
-  color: var(--wa-gold);
+  color: var(--wa-gold-dark);
 }
 
 .wa-kit-stat-label {
@@ -313,7 +322,7 @@ html.dark [data-surface] .wa-kit-card,
   background: var(--wa-gold-soft);
 }
 .wa-kit-tag--alert {
-  color: light-dark(var(--wa-accent), #e58aa1);
+  color: var(--wa-accent-text);
   background: var(--wa-accent-soft);
 }
 /* True red for destructive/failed/rejected states — distinct from --alert's
@@ -324,7 +333,7 @@ html.dark [data-surface] .wa-kit-card,
   background: var(--wa-danger-soft);
 }
 .wa-kit-tag--info {
-  color: light-dark(#1f5a87, #74b3e3);
+  color: var(--wa-info-dark);
   background: var(--wa-info-soft);
 }
 .wa-kit-tag--muted {
@@ -365,12 +374,21 @@ html.dark [data-surface] .wa-kit-card,
 
 /* WCAG AA focus ring, consistent across the kit */
 .wa-kit-focus:focus-visible {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: 0 0 0 2px var(--wa-surface), 0 0 0 4px var(--wa-accent);
 }
 .wa-kit-focus--on-dark:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--wa-sidebar-bg), 0 0 0 4px var(--wa-accent);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--wa-sidebar-bg), 0 0 0 4px var(--wa-on-hero);
+}
+@media (forced-colors: active) {
+  .wa-kit-focus:focus-visible,
+  .wa-kit-focus--on-dark:focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
 }
 
 /* Queue actions stay beside the copy on roomy screens. On narrow phones the

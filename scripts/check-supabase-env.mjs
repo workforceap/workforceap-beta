@@ -9,10 +9,17 @@
  * NEXT_PUBLIC_SUPABASE_ANON_KEY, and the connection URLs and fails loud if a
  * scope is wired to the wrong project or auth is missing the public anon key.
  *
+ * Optional --check-pool-contract also checks explicit runtime port/Prisma pool
+ * params without printing the URL. This is not enabled by the default build:
+ * verify the deployed parameters before enforcing this additional contract.
  * Exit 0 = ok, 1 = misconfigured (block the deploy).
  */
 
 import guard from './lib/supabase-project-guard.cjs';
+import poolContract from './lib/runtime-pool-contract.cjs';
+
+// Opt-in until deployed runtime parameters have been verified. Never rewrites URLs.
+const checkPoolContract = process.argv.includes('--check-pool-contract');
 
 const {
   DEMO_REF,
@@ -27,7 +34,7 @@ const {
 // CI uses stub DB URLs, but Vercel also sets CI=1. A real Vercel deployment
 // must never bypass this guard before a database-mutating build command.
 if (
-  process.env.VERCEL !== '1' &&
+  !checkPoolContract && process.env.VERCEL !== '1' &&
   (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true')
 ) {
   console.log('[supabase-env-guard] CI — skipping project ref check');
@@ -66,6 +73,12 @@ if (process.env.VERCEL === '1') {
     requireDirectUrl: true,
   });
   errors.push(...strict.errors.map((message) => `  ✗ ${message}`));
+}
+
+if (checkPoolContract) {
+  const pool = poolContract.inspectRuntimePoolContract(process.env.POSTGRES_PRISMA_URL);
+  console.log('[supabase-env-guard] runtime pool parameters:', pool.parameters);
+  errors.push(...pool.errors.map((message) => `  - ${message}`));
 }
 
 console.log(`[supabase-env-guard] env=${env} expected=${expected} →`, seen);

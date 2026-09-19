@@ -68,6 +68,7 @@ export default async function FunderReportPrintPage({
         .funder-report-shell { padding: 1.25rem; max-width: 1100px; margin: 0 auto; }
       `}</style>
       <div className="funder-report-shell">
+        <h1 style={{ fontSize: '1.75rem', margin: '0 0 1rem' }}>Funder outcomes report</h1>
         <div
           className="funder-report-toolbar"
           style={{

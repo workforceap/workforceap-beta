@@ -9,7 +9,7 @@ vi.mock('next/server', () => ({
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withSystemGuc: vi.fn(async (fn: () => Promise<unknown>) => fn()) }));
 vi.mock('@/lib/webhooks/logEvent', () => ({ logWebhookEvent: vi.fn() }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/stripe/subscriptionPersistence', () => ({
   reconcileOrganizationSubscription: vi.fn(async () => 'applied'),
   reconcileEmployerSubscription: vi.fn(async (...args: unknown[]) => {

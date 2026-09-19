@@ -31,7 +31,7 @@ async function requireAdminUser() {
       return NextResponse.json({ ok: false, error: 'email query param required' }, { status: 400 });
     }
   
-    return runBackfill(email, user.id);
+    return await runBackfill(email, user.id);
   } catch (error) {
     console.error('/admin/coursera/backfill-xapi:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -54,7 +54,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
       return NextResponse.json({ ok: false, error: 'email required' }, { status: 400 });
     }
   
-    return runBackfill(email, user.id);
+    return await runBackfill(email, user.id);
   } catch (error) {
     console.error('/admin/coursera/backfill-xapi:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -64,7 +64,7 @@ export const POST = withApiGuc(_POST);
 
 async function runBackfill(email: string, actorId: string) {
   const superAdmin = await isSuperAdmin(actorId);
-  const orgId = superAdmin ? null : await getActorOrganizationId(actorId).catch(() => null);
+  const orgId = superAdmin ? null : await getActorOrganizationId(actorId);
 
   // `mode: 'insensitive'` compiles to ILIKE, so `_`/`%` in the requested
   // address are wildcards: `m_johnson@x.org` also matches `mrjohnson@x.org`,

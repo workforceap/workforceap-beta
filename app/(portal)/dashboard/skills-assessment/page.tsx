@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getTranslations } from 'next-intl/server';
 
@@ -13,5 +13,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function SkillsAssessmentRedirectPage() {
-  redirect('/dashboard/assessment');
+  permanentRedirect('/dashboard/assessment');
 }

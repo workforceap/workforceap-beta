@@ -7,7 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import JobApplicantsClient from '@/components/employer/JobApplicantsClient';
 
@@ -72,7 +72,8 @@ export default async function EmployerJobApplicantsPage({ params }: Props) {
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={`${t('applicantsFor')}: ${job.title}`}
         subtitle={`${applicants.length} ${applicants.length === 1 ? t('applicant') : t('applicants')}`}
         breadcrumbs={[

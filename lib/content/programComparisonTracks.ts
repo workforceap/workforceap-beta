@@ -1,6 +1,7 @@
 /**
  * Featured comparison tracks — slugs tie to lib/content/programs.ts.
- * Salary + duration come from the canonical program record so numbers match /programs.
+ * Duration comes from the canonical program record. Historical salary bands
+ * are not evidence of member outcomes and are excluded.
  *
  * Covers the 15 career-track programs. Excludes Digital Literacy (on-ramp)
  * and trades programs (CPT, CLT, OSHA-10) — those live on /programs.
@@ -9,7 +10,6 @@
 import { getProgramBySlug } from './programs';
 import type { LanguageSupport, Program } from './programs';
 import { getProgramExtra } from './programExtras';
-import { salaryRangeDisplay } from './programSalaryOutcomes';
 
 export type ComparisonTrack = {
   /** Short label for dense tables */
@@ -17,7 +17,6 @@ export type ComparisonTrack = {
   slug: string;
   duration: string;
   difficulty: string;
-  salary: string;
   demand: 'High' | 'Very High';
   certs: string;
   categoryLabel: string;
@@ -185,7 +184,6 @@ export function getProgramComparisonTracks(): ComparisonTrack[] {
       slug,
       duration: program.duration.replace(/, 10 hrs\/week/i, '').replace(/10 hrs\/week/i, '~10 hrs/wk').trim(),
       difficulty: difficultyStars(program),
-      salary: salaryRangeDisplay(program),
       demand,
       certs,
       categoryLabel,

@@ -280,7 +280,7 @@ describe('PartnerAttentionClient', () => {
       const url = String(input);
       const method = init?.method ?? 'GET';
       if (method === 'GET') {
-        if (url.startsWith('/api/partner/members/needs-attention')) return okJson({ members: [member] });
+        if (url.startsWith('/api/partner/members/needs-attention')) return okJson({ members: [member], counts: { all: 1, high: 1, medium: 0, low: 0, watch: 0 }, total: 1, nextCursor: null });
         if (url.startsWith('/api/partner/outreach')) return okJson({ logs: [] });
         if (url.startsWith('/api/partner/referral-members')) return okJson({ members: [{ id: 'member-1', fullName: 'Sample Member' }] });
         if (url.startsWith('/api/partner/team-assign')) return okJson({ users: team });

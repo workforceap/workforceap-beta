@@ -36,7 +36,7 @@ vi.mock('@/lib/content/programs', () => ({
   getProgramBySlug: vi.fn(),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

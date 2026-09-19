@@ -7,7 +7,10 @@ import { sendEnrollmentConfirmationEmail, sendApplicationRejectedEmail } from '@
 import { getProgramByInterestValue } from '@/lib/content/programs';
 import { trackEvent } from '@/lib/events/track';
 import { recordWioaReviewSnapshot } from '@/lib/wioa/reviewSnapshot';
-import type { ApplicationStatus } from '@prisma/client';
+import { lockMemberForReview } from '@/lib/counselor/lockMemberForReview';
+import { Prisma, type ApplicationStatus } from '@prisma/client';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 /**
  * Shared core of "change an application's status," used by both the
@@ -19,7 +22,7 @@ import type { ApplicationStatus } from '@prisma/client';
 
 export type ApplicationReviewResult =
   | { ok: true; applicationId: string; previousStatus: ApplicationStatus; newStatus: ApplicationStatus }
-  | { ok: false; applicationId: string; error: string };
+  | { ok: false; applicationId: string; error: string; status?: number };
 
 function resolveApplicationStatusVerb(status: ApplicationStatus): string {
   if (status === 'APPROVED') return 'approved';
@@ -38,58 +41,98 @@ export async function changeApplicationStatus(args: {
 }): Promise<ApplicationReviewResult> {
   const { applicationId: id, status, notes, orgId, actorUserId, actorRole, requestMeta } = args;
 
-  // Tenant scope: Application isn't in TENANT_SCOPED_MODELS but is org-bound
-  // via its owning User. Filter through the parent so an admin from Org A
-  // can't change status on an Org B member's application by guessing the id.
-  const application = await prisma.$transaction((tx) =>
-    tx.application.findFirst({
-      where: { id, user: { organizationId: orgId } },
+  if (!interactiveTransactionsGuaranteed()) {
+    throw new Error('APPLICATION_REVIEW_TRANSACTION_UNAVAILABLE');
+  }
+  // Keep the decision, immutable evidence and durable audit in one transaction.
+  // A stale request cannot overwrite a concurrent review or emit its notifications.
+  const outcome = await prisma.$transaction(async (tx) => {
+    const application = await tx.application.findFirst({
+      where: { id, user: { organizationId: orgId, deletedAt: null } },
       include: { user: { select: { email: true, fullName: true, programInterest: true } } },
-    }),
-  );
-
-  if (!application) {
+    });
+    if (!application) return null;
+    if (!(await lockMemberForReview(tx, {
+      memberId: application.userId, organizationId: orgId, actorUserId, actorRole,
+    }))) return null;
+    const nextNotes = notes ?? application.notes;
+    const statusChanged = application.status !== status;
+    if (!statusChanged && nextNotes === application.notes) {
+      return { application, changed: false, statusChanged };
+    }
+    const updated = await tx.application.updateMany({
+      where: {
+        id, status: application.status, notes: application.notes,
+        user: { organizationId: orgId, deletedAt: null },
+      },
+      data: { status, notes: nextNotes },
+    });
+    if (updated.count !== 1) throw new Error('APPLICATION_REVIEW_CONFLICT');
+    if (status === 'APPROVED' || status === 'DENIED') {
+      await recordWioaReviewSnapshot({
+        organizationId: orgId,
+        userId: application.userId,
+        applicationId: id,
+        source: 'application_decision',
+        decision: status,
+        notes: nextNotes,
+        actorUserId,
+      }, tx);
+    }
+    await auditLog({
+      actorUserId,
+      action: 'application_status_change',
+      targetType: 'application',
+      targetId: id,
+      metadata: {
+        previousStatus: application.status,
+        newStatus: status,
+        userId: application.userId,
+        userEmail: application.user.email,
+      },
+    }, tx);
+    return { application, changed: true, statusChanged };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  if (!outcome) {
     return { ok: false, applicationId: id, error: 'Application not found' };
   }
-
+  const { application, changed, statusChanged } = outcome;
   const previousStatus = application.status;
-
-  // updateMany ensures the FK-filter is honored on the write side.
-  // (Plain update({where:{id}}) bypasses the user.organizationId clause.)
-  await prisma.$transaction((tx) =>
-    tx.application.updateMany({
-      where: { id, user: { organizationId: orgId } },
-      data: { status, notes: notes ?? application.notes },
-    }),
-  );
+  if (!changed) return { ok: true, applicationId: id, previousStatus, newStatus: status };
 
   // Best-effort: send enrollment confirmation / rejection emails to member
-  if (status === 'APPROVED') {
-    const interest = application.user.programInterest ?? application.programInterest;
-    const program = interest ? getProgramByInterestValue(interest) : undefined;
-    const programName = program?.title ?? application.programInterest ?? 'your selected program';
+  try {
+    if (statusChanged && status === 'APPROVED') {
+      const interest = application.user.programInterest ?? application.programInterest;
+      const program = interest ? getProgramByInterestValue(interest) : undefined;
+      const programName = program?.title ?? application.programInterest ?? 'your selected program';
 
-    const assignment = await prisma.$transaction((tx) =>
-      tx.counselorAssignment.findFirst({
-        where: { memberId: application.userId, active: true },
-        include: { counselor: { include: { user: { select: { fullName: true, email: true } } } } },
-      }),
-    );
-    const counselorName = assignment?.counselor.user.fullName ?? undefined;
-    const counselorContact = assignment?.counselor.user.email ?? undefined;
+      const assignment = await prisma.$transaction((tx) =>
+        tx.counselorAssignment.findFirst({
+          where: { memberId: application.userId, active: true },
+          include: { counselor: { include: { user: { select: { fullName: true, email: true } } } } },
+        }),
+      );
+      const counselorName = assignment?.counselor.user.fullName ?? undefined;
+      const counselorContact = assignment?.counselor.user.email ?? undefined;
 
-    sendEnrollmentConfirmationEmail({
-      to: application.user.email,
-      fullName: application.user.fullName,
-      programName,
-      counselorName,
-      counselorContact,
-    }).catch((err) => console.error('Enrollment confirmation email failed:', err));
-  } else if (status === 'DENIED') {
-    sendApplicationRejectedEmail({
-      to: application.user.email,
-      fullName: application.user.fullName,
-    }).catch((err) => console.error('Application rejected email failed:', err));
+      sendEnrollmentConfirmationEmail({
+        to: application.user.email,
+        fullName: application.user.fullName,
+        programName,
+        counselorName,
+        counselorContact,
+      }).catch((err) => console.error('Enrollment confirmation email failed:', err));
+    } else if (statusChanged && status === 'DENIED') {
+      sendApplicationRejectedEmail({
+        to: application.user.email,
+        fullName: application.user.fullName,
+      }).catch((err) => console.error('Application rejected email failed:', err));
+    }
+  } catch (error) {
+    // The review is already durable. A contact lookup failure must not make
+    // the response imply that its decision and evidence were rolled back.
+    captureApiError(error, { route: 'lib/admin/applicationReview/notification' });
   }
 
   if ((status === 'APPROVED' || status === 'DENIED') && previousStatus !== status) {
@@ -100,30 +143,7 @@ export async function changeApplicationStatus(args: {
       entityId: id,
       metadata: { previousStatus, decidedByUserId: actorUserId },
     });
-
-    await recordWioaReviewSnapshot({
-      organizationId: orgId,
-      userId: application.userId,
-      applicationId: id,
-      source: 'application_decision',
-      decision: status,
-      notes: notes ?? null,
-      actorUserId,
-    });
   }
-
-  await auditLog({
-    actorUserId,
-    action: 'application_status_change',
-    targetType: 'application',
-    targetId: id,
-    metadata: {
-      previousStatus,
-      newStatus: status,
-      userId: application.userId,
-      userEmail: application.user.email,
-    },
-  });
 
   await logAuditEvent({
     user: { id: actorUserId, role: actorRole },
