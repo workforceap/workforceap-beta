@@ -177,7 +177,7 @@ def validate(root, files=None):
             continue
         text = file.read_text()
         for offset, destination in destinations(text):
-            location = f'{file.relative_to(root)}:{text[:offset].count(chr(10)) + 1}'
+            location = f'{file.relative_to(root).as_posix()}:{text[:offset].count(chr(10)) + 1}'
             if destination is None:
                 failures.append(f'{location}: malformed or unclosed link')
                 continue

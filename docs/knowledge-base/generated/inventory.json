@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "06a5ea9bb0a905aefc730f138ae74560157cb3080ccdc6b37cf138e129480726",
+  "inputTreeSha256": "c74fb79d0ac1d3233304c55bdcc10d8f0f064341e86de9ac2503d4a24e72119e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -149681,9 +149681,9 @@
       "path": "scripts/knowledge-links.py",
       "area": "operations",
       "domain": "operations",
-      "bytes": 8169,
+      "bytes": 8180,
       "lines": 227,
-      "sha256": "8dfcbae133928195db734c17867725f1585bcf1c319b28a601001f6d74fdf57a",
+      "sha256": "6e38667aa5323dcc7e086f188cd68dce5f5f376f5463a9485c89555440cec630",
       "binary": false
     },
     {
