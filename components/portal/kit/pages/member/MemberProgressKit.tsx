@@ -18,6 +18,7 @@ import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
 interface WeekStat {
   value: string;
   label: string;
+  /** Retained for caller compatibility; category totals render as neutral text. */
   color: string;
 }
 
@@ -156,7 +157,7 @@ export function MemberProgressKit({
             <div className="wa-grid wa-grid-cols-2 sm:wa-grid-cols-4 wa-gap-3" style={{ marginBottom: 24 }}>
               {weekStats.map((stat) => (
                 <div key={stat.label} style={{ textAlign: 'center', padding: 12, background: 'var(--wa-surface-2)', borderRadius: 'var(--wa-radius-sm)' }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: stat.color, fontVariantNumeric: 'tabular-nums' }}>{stat.value}</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--wa-text)', fontVariantNumeric: 'tabular-nums' }}>{stat.value}</div>
                   <div className="wa-kit-meta" style={{ fontWeight: 600, marginTop: 4 }}>{stat.label}</div>
                 </div>
               ))}

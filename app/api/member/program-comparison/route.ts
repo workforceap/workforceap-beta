@@ -5,8 +5,8 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 /**
  * GET /api/member/program-comparison
- * Read-only, static comparison data (duration/salary/demand/certs) for the
- * 14 featured career tracks — powers the compare panel in the program
+ * Read-only, static comparison data (duration/difficulty/demand/certs) for the
+ * featured career tracks — powers the compare panel in the program
  * change request modal (components/portal/ProgramChangeRequestModal.tsx) so
  * members can weigh options before requesting a switch. Content mirrors what
  * already exists on the public /program-comparison marketing page; gated
@@ -25,7 +25,6 @@ async function _GET() {
         shortName: t.shortName,
         duration: t.duration,
         difficulty: t.difficulty,
-        salary: t.salary,
         demand: t.demand,
         certs: t.certs,
       })),

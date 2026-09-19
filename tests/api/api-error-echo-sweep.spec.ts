@@ -111,7 +111,7 @@ vi.mock('@/lib/audit/log', () => ({
   logAuditEvent: vi.fn(async () => undefined),
   auditRequestMeta: vi.fn(() => ({})),
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: h.captureApiError }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: h.captureApiError }));
 vi.mock('@/lib/rate-limit', () => ({
   checkInterestProfilerRateLimit: vi.fn(async () => ({ success: true })),
   checkContactRateLimit: vi.fn(async () => ({ success: true })),

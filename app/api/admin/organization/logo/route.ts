@@ -42,9 +42,9 @@ const MAX_SIZE = 2 * 1024 * 1024;export const POST = withApiGuc(async (request: 
 
     const supabase = getSupabaseAdmin();
     const path = `${organizationId}/logo.${ext}`;
-    const arrayBuffer = await file.arrayBuffer();
+    const uploadBytes = new Uint8Array(await file.arrayBuffer());
 
-    const { error } = await supabase.storage.from(BUCKET).upload(path, arrayBuffer, {
+    const { error } = await supabase.storage.from(BUCKET).upload(path, uploadBytes, {
       upsert: true,
       contentType,
     });

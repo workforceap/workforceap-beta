@@ -22,7 +22,7 @@ vi.mock('@/lib/cron/isCronEnabled', () => ({
   isCronEnabled: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

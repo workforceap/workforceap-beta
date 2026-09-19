@@ -5,6 +5,7 @@ vi.mock('@/lib/admin/logCronRun', () => ({
 }));
 
 vi.mock('@/lib/db/gucContext', () => ({
+  getGucContext: vi.fn(() => ({ userId: null, organizationId: null, role: 'system' })),
   SYSTEM_GUC_CONTEXT: { userId: null, organizationId: null, role: 'system' },
   runWithGucContext: vi.fn((_context, callback) => callback()),
 }));

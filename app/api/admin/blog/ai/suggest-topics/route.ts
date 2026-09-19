@@ -28,7 +28,7 @@ export const POST = withApiGuc(async () => {
     }));
   
     const programSummary = PROGRAMS.slice(0, 15).map(
-      (p) => `${p.title} (${p.category}) — ${p.salary}`
+      (p) => `${p.title} (${p.category}) — ${p.duration}`
     ).join('\n');
   
     const blogSummary = posts

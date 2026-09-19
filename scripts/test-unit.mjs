@@ -149,7 +149,7 @@ async function main() {
   env.POSTGRES_URL_NON_POOLING ??= 'postgresql://test:test@localhost:5432/test';
 
   const child = spawn(
-    'node',
+    process.execPath,
     [
       '--require',
       path.join(ROOT, 'tests/server-only-stub.cjs'),

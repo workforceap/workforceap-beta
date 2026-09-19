@@ -15,7 +15,7 @@ export const GET = withApiGuc(async (_req: NextRequest) => {
   }
 
   const superAdmin = await isSuperAdmin(user.id);
-  const orgId = superAdmin ? null : await getActorOrganizationId(user.id).catch(() => null);
+  const orgId = superAdmin ? null : await getActorOrganizationId(user.id);
 
   // Raw query: group by lower(email) having count > 1
   const rows = await prisma.$transaction((tx) => tx.$queryRaw<Array<{ email: string; ids: string[] }>>`
@@ -114,4 +114,3 @@ export const GET = withApiGuc(async (_req: NextRequest) => {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 });
-

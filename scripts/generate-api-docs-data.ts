@@ -2,12 +2,12 @@
  * generate-api-docs-data.ts
  *
  * Parses docs/API-REFERENCE.md into:
- * - public/api-docs-data.json (structured route catalog)
- * - public/openapi.json (OpenAPI 3.0.3 spec)
+ * - data/api-docs/catalog.json (server-only structured route catalog)
+ * - data/api-docs/openapi.json (server-only OpenAPI 3.0.3 spec)
  *
  * Run: npx tsx scripts/generate-api-docs-data.ts
  */
-import { readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
 interface ApiRoute {
@@ -168,13 +168,14 @@ function main() {
   const categories = parseApiReference(md);
 
   // Write structured data
-  const dataPath = resolve(process.cwd(), 'public/api-docs-data.json');
+  mkdirSync(resolve(process.cwd(), 'data/api-docs'), { recursive: true });
+  const dataPath = resolve(process.cwd(), 'data/api-docs/catalog.json');
   writeFileSync(dataPath, JSON.stringify({ categories, totalRoutes: categories.reduce((sum, c) => sum + c.routes.length, 0), generatedAt: new Date().toISOString() }, null, 2));
   console.log(`✓ Wrote ${dataPath} (${categories.reduce((sum, c) => sum + c.routes.length, 0)} routes)`);
 
   // Write OpenAPI spec
   const openApi = generateOpenApi(categories);
-  const openApiPath = resolve(process.cwd(), 'public/openapi.json');
+  const openApiPath = resolve(process.cwd(), 'data/api-docs/openapi.json');
   writeFileSync(openApiPath, JSON.stringify(openApi, null, 2));
   console.log(`✓ Wrote ${openApiPath}`);
 }

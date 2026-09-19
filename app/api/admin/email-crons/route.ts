@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { requireAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { loadCronEnabledStates } from '@/lib/cron/isCronEnabled';
 import { CRON_REGISTRY } from '@/lib/admin/cronRegistry';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -22,6 +23,8 @@ export const GET = withApiGuc(async () => {
     select: { id: true, workflow: true, status: true, summary: true, createdAt: true, metadata: true },
   }));
 
+  const enabledStates = await loadCronEnabledStates(cronKeys);
+
   // Build a map: workflowKey → recent runs
   const runsByKey = new Map<string, typeof recentDiags>();
   for (const d of recentDiags) {
@@ -34,12 +37,7 @@ export const GET = withApiGuc(async () => {
     const runs = runsByKey.get(cron.workflowKey) ?? [];
     const last = runs[0] ?? null;
     const meta = last?.metadata as Record<string, unknown> | null;
-    const latestToggle = runs.find(r => {
-      const m = r.metadata as Record<string, unknown> | null;
-      return m?.toggledBy !== undefined;
-    });
-    const toggleMeta = latestToggle?.metadata as Record<string, unknown> | null;
-    const enabled = toggleMeta?.enabled !== false;
+    const enabled = enabledStates.get(cron.workflowKey)!;
 
     return {
       ...cron,

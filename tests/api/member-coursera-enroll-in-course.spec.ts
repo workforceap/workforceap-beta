@@ -49,7 +49,7 @@ vi.mock('@/lib/coursera/enrollPort', () => ({
   }),
   writeEnrollAudit: mocks.audit,
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: mocks.capture }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: mocks.capture }));
 vi.mock('@/lib/xapi/mappings', () => ({ listCourseraIdentityMappingsForUser: mocks.mappings }));
 vi.mock('@/lib/coursera/syncUserFromB4B', () => ({ syncUserFromB4B: mocks.sync }));
 

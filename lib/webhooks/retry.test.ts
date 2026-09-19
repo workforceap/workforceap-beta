@@ -92,7 +92,7 @@ test('getPendingRetryEvents queries with correct filters', async (t) => {
   assert.ok(findArgs);
   assert.equal(findArgs.where.status, 'retrying');
   assert.ok(findArgs.where.nextRetryAt.lte instanceof Date);
-  assert.equal(findArgs.where.retryCount.lt, 4);
+  assert.equal(findArgs.where.retryCount.lte, 4);
   assert.equal(findArgs.where.source, 'coursera');
   assert.equal(findArgs.take, 25);
   assert.deepEqual(findArgs.orderBy, { nextRetryAt: 'asc' });

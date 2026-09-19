@@ -16,7 +16,6 @@ export async function GET(request: Request) {
 
   const title = program?.title ?? 'Workforce Advancement Project';
   const partner = program?.partner ?? 'Professional Certificate';
-  const salary = program?.salary ?? 'Starting salary: $55K-$72K';
   const duration = program?.duration ?? '3-5 months, 10 hrs/week';
 
   return new ImageResponse(
@@ -75,14 +74,14 @@ export async function GET(request: Request) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 18, color: TEXT_MUTED, fontSize: 29, fontWeight: 700, marginTop: 30 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 58, height: 58, borderRadius: 58, background: GOLD, color: MAROON, fontSize: 38, fontWeight: 950 }}>✓</div>
-            {salary} · {duration} · Free for qualifying members
+            {duration} · No cost for qualifying members
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: WHITE, fontSize: 29, fontWeight: 800, zIndex: 1 }}>
           <div style={{ display: 'flex', opacity: 0.9 }}>WorkforceAP · Austin, TX</div>
           <div style={{ display: 'flex', background: WHITE, color: MAROON, padding: '10px 22px', borderRadius: 12, fontWeight: 900 }}>
-            Apply Free
+            Apply now
           </div>
         </div>
       </div>

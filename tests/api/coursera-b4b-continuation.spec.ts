@@ -21,7 +21,7 @@ vi.mock('@/lib/coursera/programContentsCache', () => ({ loadB4BContents: vi.fn(a
 vi.mock('@/lib/coursera/seedCanonicalMappingsFromB4B', () => ({ seedCanonicalMappingsFromB4B: vi.fn(async () => ({})) }));
 vi.mock('@/lib/cron/withCronLogging', () => ({ withCronLogging: (_key: string, handle: unknown) => handle }));
 vi.mock('@/lib/cron/cronExecution', () => ({ setCronRecordsProcessed: vi.fn(), markCronDiagnosticLogged: vi.fn() }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(), captureApiError: vi.fn() }));
 
 import { _setFetchForTesting } from '@/lib/coursera/b4bClient';
 import { GET } from '@/app/api/cron/coursera-b4b-sync/route';

@@ -14,7 +14,10 @@ export type AdminNeedsReplyRow = AdminCommandCenterBaseRow & {
 };
 
 export type AdminAtRiskRow = AdminCommandCenterBaseRow & {
-  daysInactive: number;
+  daysInactive: number | null;
+  riskScore?: number;
+  alertStatus?: string;
+  alertId?: string;
   reason?: string;
   enrolledProgram: string | null;
 };

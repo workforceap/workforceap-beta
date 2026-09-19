@@ -5,7 +5,7 @@ import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import { prisma } from '@/lib/db/prisma';
 import EmployerPipelineClient from '@/components/employer/EmployerPipelineClient';
 import EmployerKanban from '@/components/employer/EmployerKanban';
@@ -120,7 +120,8 @@ export default async function EmployerPipelinePage() {
 
   return (
     <PortalPageFrame>
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={t('candidatePipeline')}
         breadcrumbs={[{ label: t('employerPortal'), href: '/employer' }, { label: t('candidatePipeline') }]}
         subtitle={

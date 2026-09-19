@@ -1,10 +1,11 @@
 // @vitest-environment node
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
 
 vi.mock('next/headers', () => ({ headers: vi.fn() }));
 vi.mock('next/font/google', () => ({ Inter: () => ({ variable: 'synthetic-font' }) }));
 vi.mock('next/script', () => ({ default: () => null }));
-vi.mock('next-intl/server', () => ({ getMessages: async () => ({}) }));
+vi.mock('next-intl/server', () => ({ getMessages: async () => ({ cookieConsent: { label: 'Cookie preferences' }, dashboard: { privateNamespace: 'not root chrome' } }) }));
 vi.mock('next-intl', () => ({ NextIntlClientProvider: () => null }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/auth/roles', () => ({ getProfileRole: vi.fn() }));
@@ -32,6 +33,8 @@ import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
 import { resolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import { gucContextStorage } from '@/lib/db/gucContext';
 import { prisma } from '@/lib/db/prisma';
+import { NextIntlClientProvider } from 'next-intl';
+import DeferredRootChrome from '@/components/DeferredRootChrome';
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -42,6 +45,27 @@ beforeEach(() => {
   vi.mocked(resolveOrgFromRequest).mockResolvedValue('synthetic-public-org');
 });
 afterEach(() => vi.restoreAllMocks());
+
+it('places deferred chrome inside the root localization boundary without a page provider or portal catalog', async () => {
+  const tree = await RootLayout({ children: <div>Plain page without a provider</div> });
+  type TreeProps = { children?: ReactNode; messages?: Record<string, unknown> };
+  const elements: ReactElement<TreeProps>[] = [];
+  function visit(node: ReactNode) {
+    Children.forEach(node, (child) => {
+      if (!isValidElement<TreeProps>(child)) return;
+      elements.push(child);
+      visit(child.props.children);
+    });
+  }
+  visit(tree);
+  const provider = elements.find((element) => element.type === NextIntlClientProvider)!;
+  expect(provider).toBeDefined();
+  expect(provider.props.messages).toHaveProperty('cookieConsent.label', 'Cookie preferences');
+  expect(provider.props.messages).not.toHaveProperty('dashboard');
+  elements.length = 0;
+  visit(provider.props.children);
+  expect(elements.some((element) => element.type === DeferredRootChrome)).toBe(true);
+});
 
 it('drops the forwarded identity when shared auth rejects an existing session', async () => {
   const run = vi.spyOn(gucContextStorage, 'run');

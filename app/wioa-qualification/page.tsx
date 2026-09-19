@@ -1,32 +1,19 @@
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
+import { getTranslations } from 'next-intl/server';
+import WioaQualificationLoading from '@/components/portal/WioaQualificationLoading';
 import Footer from '@/components/Footer';
 import { buildPageMetadataAsync } from '@/app/seo';
 
 const WioaQualificationClient = dynamic(() => import('@/components/portal/WioaQualificationClient'), {
-  loading: () => (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        minHeight: '40vh',
-        padding: '2.5rem 1.25rem',
-        textAlign: 'center',
-        color: 'var(--color-on-surface-variant)',
-        fontSize: '0.9rem',
-        fontWeight: 600,
-      }}
-    >
-      Loading assessment…
-    </div>
-  ),
+  loading: () => <WioaQualificationLoading />,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('wioa');
   return buildPageMetadataAsync({
-    title: 'WIOA Qualification Assessment',
-    description:
-      'See whether WIOA-funded training may be a fit. Complete a quick public qualification assessment and WorkforceAP can follow up with next steps.',
+    title: t('title'),
+    description: t('publicIntro'),
     path: '/wioa-qualification',
   });
 }

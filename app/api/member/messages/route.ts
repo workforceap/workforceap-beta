@@ -4,6 +4,7 @@ import { readJsonObjectBody } from '@/lib/api/readJsonBody';
 import { prisma } from '@/lib/db/prisma';
 import {
   getOrCreateMemberCounselorThread,
+  refreshMemberCounselorThread,
   assertMemberCanAccessThread,
   normalizeMessageBody,
   serializeMessage,
@@ -86,7 +87,10 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
   const ok = await assertMemberCanAccessThread(user.id, thread.id);
   if (!ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const msg = await prisma.$transaction(async (tx) => {
+  const { msg, recipientId } = await prisma.$transaction(async (tx) => {
+    // Resolve again under the same lock used by handoffs before persisting the
+    // message, so an earlier inbox read cannot route a new message to old staff.
+    const routedThread = await refreshMemberCounselorThread(tx, user.id);
     const m = await tx.message.create({
       data: {
         threadId: thread.id,
@@ -98,7 +102,7 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
       where: { id: thread.id },
       data: { updatedAt: new Date() },
     });
-    return m;
+    return { msg: m, recipientId: routedThread.counselorUserId };
   });
 
   // Prefer the member's display name over their email in staff notifications;
@@ -109,9 +113,9 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
   const senderLabel = sender?.fullName || user.email || 'member';
   const messagePreview = normalized.body.slice(0, 200);
 
-  if (thread.counselorUserId) {
+  if (recipientId) {
     await createNotification({
-      userId: thread.counselorUserId,
+      userId: recipientId,
       type: 'message',
       title: `New message from ${senderLabel}`,
       body: messagePreview,

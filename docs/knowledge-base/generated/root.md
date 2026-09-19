@@ -5,9 +5,10 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [.crabbox.yaml](../../../.crabbox.yaml) | 31 | root |  |
-| [.env.example](../../../.env.example) | 377 | root |  |
+| [.env.example](../../../.env.example) | 382 | root |  |
 | [.gitattributes](../../../.gitattributes) | 1 | root |  |
 | [.gitignore](../../../.gitignore) | 121 | root |  |
+| [.nvmrc](../../../.nvmrc) | 1 | root |  |
 | [.vercelignore](../../../.vercelignore) | 8 | root |  |
 | [AGENTS.md](../../../AGENTS.md) | 210 | root |  |
 | [AI-TOOLS-BACKLOG.md](../../../AI-TOOLS-BACKLOG.md) | 12 | root |  |
@@ -41,12 +42,12 @@
 | [eslint.config.mjs](../../../eslint.config.mjs) | 166 | root | default:166 |
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 225 | root | onRouterTransitionStart:194, setSentryUser:213 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
-| [middleware.ts](../../../middleware.ts) | 443 | identity-tenancy | middleware:148, config:439 |
-| [next.config.ts](../../../next.config.ts) | 392 | root | default:390 |
+| [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
+| [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
 | [package.json](../../../package.json) | 143 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |
-| [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12727 | root |  |
-| [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 10 | root |  |
+| [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12644 | root |  |
+| [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 13 | root |  |
 | [postcss.config.mjs](../../../postcss.config.mjs) | 9 | root | default:9 |
 | [sentry.edge.config.ts](../../../sentry.edge.config.ts) | 40 | root |  |
 | [sentry.server.config.ts](../../../sentry.server.config.ts) | 44 | root |  |

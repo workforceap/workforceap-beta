@@ -66,7 +66,7 @@ vi.mock('@/lib/tenant/withTenantScope', async () => {
 vi.mock('@/lib/observability/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 
 import { GET as unsubscribeGet, POST as unsubscribePost } from '@/app/api/unsubscribe/route';
 import { GET as savedJobsGet } from '@/app/api/member/saved-jobs/route';

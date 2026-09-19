@@ -12,7 +12,6 @@ export type EnrollmentProgramCard = {
   categoryColor: string;
   icon: string;
   duration: string;
-  salary: string;
   partner: string;
   skills: string[];
   featured: boolean;
@@ -47,12 +46,6 @@ function candidateKeys(school: string): string[] {
   const keys = new Set<string>([key]);
   if (!key.endsWith('-high-school')) keys.add(`${key}-high-school`);
   return [...keys];
-}
-
-function salaryRangeDisplay(salary: string): string {
-  const m = salary.match(/\$(\d+)K\s*[-–]\s*\$(\d+)K/i);
-  if (m) return `$${parseInt(m[1], 10)}K–$${parseInt(m[2], 10)}K`;
-  return salary.replace(/^Starting salary:\s*/i, '').trim();
 }
 
 function buildCostSentence(name: string, termLabel: string): string {
@@ -100,7 +93,6 @@ export async function resolveEnrollmentPartner(school: string): Promise<Enrollme
       categoryColor: program.categoryColor,
       icon: program.icon,
       duration: program.duration,
-      salary: salaryRangeDisplay(program.salary),
       partner: program.partner,
       skills: program.skills.slice(0, 3),
       featured: row.featured,

@@ -3,7 +3,7 @@ import { Card } from '@astryxdesign/core/Card';
 import {
   DesignSurface,
   KpiStrip,
-  SectionHeader,
+  PageOpener,
   RankBars,
   type KpiItem,
   type RankDatum,
@@ -59,7 +59,7 @@ export function PipelineFunnelKit({
   const hasData = funnel.length > 0;
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title={title} goal={goal} kicker={kicker} action={headerAction} />
+      <PageOpener className="wa-mb-5" title={title} lede={goal} kicker={kicker ?? 'Applications'} action={headerAction} />
 
       {kpis && kpis.length > 0 ? (
         <KpiStrip cols={kpis.length === 5 ? 5 : 4} items={kpis} />
@@ -67,7 +67,7 @@ export function PipelineFunnelKit({
 
       <div className="wa-mt-6">
         <Card style={{ minWidth: 0 }}>
-          <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em' }}>{funnelTitle}</h3>
+          <h2 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em' }}>{funnelTitle}</h2>
           <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
             {funnelSubtitle}
           </p>

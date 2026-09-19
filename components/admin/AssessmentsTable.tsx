@@ -286,6 +286,7 @@ export default function AssessmentsTable({
           columns={[
             {
               key: 'name',
+              cellDataLabel: 'Name',
               header: (
                 <span
                   role="button"
@@ -341,6 +342,7 @@ export default function AssessmentsTable({
             { key: 'program', header: 'Program Interest', cell: (u) => u.programInterest ?? '—' },
             {
               key: 'score',
+              cellDataLabel: 'Score %',
               header: (
                 <span
                   role="button"
@@ -372,6 +374,7 @@ export default function AssessmentsTable({
             },
             {
               key: 'date',
+              cellDataLabel: 'Date completed',
               header: (
                 <span
                   role="button"

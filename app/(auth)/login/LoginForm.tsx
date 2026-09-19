@@ -1,5 +1,7 @@
 'use client';
 
+import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react';
+
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -10,91 +12,26 @@ import { splitLocalePrefix } from '@/lib/i18n/config';
 import { trackFunnelEvent, trackMemberLoggedIn } from '@/lib/analytics/events';
 import { heroPhotoForKey } from '@/lib/marketing/heroPhotos';
 
-/* ─── portal destination data (unchanged business logic) ─── */
-const PORTAL_DESTINATIONS: { redirectTo: string; title: string; desc: string }[] = [
-  {
-    redirectTo: '/admin',
-    title: 'Admin portal',
-    desc: 'Operations, member oversight, and back-office tools for workforce staff.',
-  },
-  {
-    redirectTo: '/counselor',
-    title: 'Counselor portal',
-    desc: 'Member roster, messaging, and resources for counseling partners.',
-  },
-  {
-    redirectTo: '/partner',
-    title: 'Partner portal',
-    desc: 'Referrals you sent us, member progress, and accountability views for your organization.',
-  },
-  {
-    redirectTo: '/employer',
-    title: 'Employer portal',
-    desc: 'Job postings, Workforce AP applicants, and hiring workflows for your company.',
-  },
-  {
-    redirectTo: '/dashboard',
-    title: 'Member portal',
-    desc: 'Training progress, learning hub, applications, and career tools after you enroll or apply.',
-  },
-];
+/* Paths identify destinations; copy comes from the active auth catalog. */
+const PORTAL_DESTINATIONS = [
+  { redirectTo: '/admin', audience: 'admin' },
+  { redirectTo: '/counselor', audience: 'counselor' },
+  { redirectTo: '/partner', audience: 'partner' },
+  { redirectTo: '/employer', audience: 'employer' },
+  { redirectTo: '/dashboard', audience: 'member' },
+] as const;
 
 function canonicalPortalPath(path: string): string {
   return splitLocalePrefix(new URL(path, 'https://internal.invalid').pathname).pathnameWithoutLocale;
 }
 
-function portalTitleForPath(path: string): string {
+function portalAudienceForPath(path: string) {
   const canonicalPath = canonicalPortalPath(path);
-  for (const o of PORTAL_DESTINATIONS) {
-    if (o.redirectTo === '/dashboard') continue;
-    if (canonicalPath === o.redirectTo || canonicalPath.startsWith(`${o.redirectTo}/`)) {
-      return o.title;
-    }
-  }
-  return PORTAL_DESTINATIONS.find((o) => o.redirectTo === '/dashboard')!.title;
+  return PORTAL_DESTINATIONS.find((destination) =>
+    canonicalPath === destination.redirectTo || canonicalPath.startsWith(`${destination.redirectTo}/`)
+  )?.audience ?? 'member';
 }
 
-/** Hero headline + subtitle shown on the login page brand panel.
- *  Defaults to member-focused copy; staff/employer/partner sign-ins get
- *  audience-appropriate copy so we don't tell employers their "career starts here". */
-function portalHeroCopyForPath(path: string): { headline: string; subtitle: string } {
-  const canonicalPath = canonicalPortalPath(path);
-  if (canonicalPath === '/employer' || canonicalPath.startsWith('/employer/')) {
-    return {
-      headline: 'Find Job-Ready Talent',
-      subtitle:
-        'Sign in to post roles, review WorkforceAP candidates, and run hiring workflows for your company.',
-    };
-  }
-  if (canonicalPath === '/partner' || canonicalPath.startsWith('/partner/')) {
-    return {
-      headline: 'Connect Your Community',
-      subtitle:
-        'Sign in to track referrals, follow member progress, and review accountability views for your organization.',
-    };
-  }
-  if (canonicalPath === '/counselor' || canonicalPath.startsWith('/counselor/')) {
-    return {
-      headline: 'Support Members at Every Step',
-      subtitle:
-        'Sign in to access your member roster, messaging, and counseling resources.',
-    };
-  }
-  if (canonicalPath === '/admin' || canonicalPath.startsWith('/admin/')) {
-    return {
-      headline: 'Operations Workspace',
-      subtitle:
-        'Sign in for member oversight, organizational tools, and back-office workflows.',
-    };
-  }
-  return {
-    headline: 'Your Career Starts Here',
-    subtitle:
-      'Workforce Advancement Project — career training, certificates, and job placement support at no cost for qualifying members.',
-  };
-}
-
-/* ─── styles ─── */
 const s = {
   wrapper: {
     display: 'flex',
@@ -317,6 +254,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
   /* Keep the requested page through sign-in and recovery. */
   const redirectTo = sanitizeRedirectPath(initialRedirectTo, '/dashboard');
   const canonicalRedirectTo = canonicalPortalPath(redirectTo);
+  const audience = portalAudienceForPath(redirectTo);
   const isMemberLogin = canonicalRedirectTo === '/dashboard' || canonicalRedirectTo.startsWith('/dashboard/');
 
   const destinationActive = (target: string) => {
@@ -458,14 +396,14 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
         />
         <div style={s.brandContent}>
           <div style={s.brandBadge}>
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }} aria-hidden="true">verified_user</span>
+            <ShieldCheck size={18} aria-hidden="true" />
             {tAuth('login.trustedSecure')}
           </div>
-          <h2 style={{ ...s.brandHeading, marginTop: 'var(--space-6)' }}>
-            {portalHeroCopyForPath(redirectTo).headline}
-          </h2>
+          <p style={{ ...s.brandHeading, marginTop: 'var(--space-6)' }}>
+            {tAuth(`login.destinations.${audience}.headline`)}
+          </p>
           <p style={{ fontSize: 'var(--font-size-base)', opacity: 0.8, lineHeight: 'var(--line-height-normal)' }}>
-            {portalHeroCopyForPath(redirectTo).subtitle}
+            {tAuth(`login.destinations.${audience}.subtitle`)}
           </p>
         </div>
       </div>
@@ -475,7 +413,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
         <div style={s.formContainer}>
           <h1 style={s.heading}>{tAuth('login.heading')}</h1>
           <p style={s.subheading}>
-            {tAuth('login.signingInto')}{' '}<strong style={{ color: 'var(--color-accent)' }}>{portalTitleForPath(redirectTo)}</strong>
+            {tAuth('login.signingInto')}{' '}<strong style={{ color: 'var(--color-accent)' }}>{tAuth(`login.destinations.${audience}.title`)}</strong>
           </p>
 
           {/* First-time CTA — prominent for members who land here by accident */}
@@ -531,6 +469,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
                     key={o.redirectTo}
                     href={href}
                     aria-current={active || undefined}
+                    title={tAuth(`login.destinations.${o.audience}.description`)}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -546,7 +485,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
                       transition: 'all 0.2s',
                     }}
                   >
-                    {o.title.replace(' portal', '')}
+                    {tAuth(`login.destinations.${o.audience}.label`)}
                   </LocalizedLink>
                 );
               })}
@@ -643,9 +582,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
                   aria-label={showPassword ? tAuth('login.hidePassword') : tAuth('login.showPassword')}
                   aria-pressed={showPassword}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
               {passwordError && (
@@ -690,7 +627,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
           {/* Trust bar — reassurance at the moment of login friction */}
           <div style={{ ...s.trustBar, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.2rem 0.75rem', alignItems: 'center', fontSize: '0.8125rem', opacity: 0.85 }} aria-label={tAuth('login.programCredentialsAria')}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }} aria-hidden="true">lock</span>
+              <LockKeyhole size={14} aria-hidden="true" />
               {tAuth('login.secureLogin')}
             </span>
             <span style={s.trustDot} aria-hidden="true">·</span>

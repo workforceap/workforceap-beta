@@ -9,6 +9,9 @@ import { getMemberEngagementSignals, type MemberEngagementSignals } from './memb
 import { getMemberResumePlainText } from './getMemberResumePlainText';
 import type { CareerMatchResult } from '@/lib/onet/types';
 import type { LearnerProgressByContent } from '@/lib/coursera/learnerProgress';
+import { resolveActiveDashboardProgram } from './resolveActiveDashboardProgram';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
+import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from './starterProfileReview';
 import { deriveTrainingMilestoneTruth } from '@/lib/coursera/milestones';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -54,7 +57,7 @@ export type MemberState = {
   careerRecommendation: CareerMatchResult | null;
   inferredTargetRole: string | null;
 
-  // First-cert milestone progress (0–100)
+  // Recorded training progress; legacy field name, not credential evidence (0–100)
   firstCertProgressPercent: number;
 
   // Derived
@@ -82,6 +85,11 @@ async function loadMemberCore(userId: string) {
         id: true,
         email: true,
         fullName: true,
+        phone: true,
+        courseEnrollments: {
+          orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+          select: { id: true, programSlug: true, isPrimary: true, enrolledAt: true, enrolledByAdminId: true },
+        },
         enrolledProgram: true,
         enrolledAt: true,
         assessmentCompleted: true,
@@ -269,11 +277,20 @@ async function _getMemberStateUncached(
   const profile = user.profile;
   const latestApplication = user.applications[0] ?? null;
 
-  // Multi-program: prefer the explicitly-passed active slug (from
-  // `getActiveProgramForDashboard`) so the trainingView we compute matches
-  // the program the dashboard hero is rendering. Fall back to the legacy
-  // single-program field for callers that haven't been wired through yet.
-  const programSlugForTraining = opts.activeProgramSlug ?? user.enrolledProgram;
+  const enrollments = user.courseEnrollments ?? [];
+  const { activeProgramSlug: programSlugForTraining } = resolveActiveDashboardProgram({
+    enrollments,
+    legacyEnrolledProgram: user.enrolledProgram,
+    requestedProgramSlug: opts.activeProgramSlug,
+  });
+  const activeEnrollment = enrollments.find((row) =>
+    programSlugForTraining && programSlugsEquivalent(row.programSlug, programSlugForTraining),
+  );
+  const starterReview = getCounselorStarterProfileReview({
+    wasCounselorCreated: !!enrollments.find((row) => row.isPrimary)?.enrolledByAdminId,
+    phone: user.phone,
+    ...profile,
+  });
 
   const trainingView = programSlugForTraining
     ? await loadMemberProgramTrainingView({
@@ -288,7 +305,7 @@ async function _getMemberStateUncached(
     ? buildMemberApplicationStatusView(
         latestApplication,
         {
-          enrolledProgram: user.enrolledProgram,
+          enrolledProgram: programSlugForTraining,
           enrolledAt: user.enrolledAt,
           assessmentCompleted: user.assessmentCompleted,
         },
@@ -304,13 +321,13 @@ async function _getMemberStateUncached(
   const profileCompletenessPct = getProfileCompleteness(profile, {
     fullName: user.fullName,
     email: user.email,
-    enrolledProgram: user.enrolledProgram,
+    enrolledProgram: programSlugForTraining,
     assessmentCompleted: user.assessmentCompleted,
   });
   const profileMissingFields = getProfileMissingFields(profile, {
     fullName: user.fullName,
     email: user.email,
-    enrolledProgram: user.enrolledProgram,
+    enrolledProgram: programSlugForTraining,
     assessmentCompleted: user.assessmentCompleted,
   });
 
@@ -318,50 +335,29 @@ async function _getMemberStateUncached(
   const inferredTargetRole = inferTargetRole(
     careerRecommendation,
     user.programInterest,
-    user.enrolledProgram
+    programSlugForTraining
   );
 
   const stateLetter = deriveStateLetter({
     applicationExists: !!latestApplication,
-    enrolledProgram: user.enrolledProgram,
+    enrolledProgram: programSlugForTraining,
     assessmentCompleted: user.assessmentCompleted,
   });
 
   const completedCount = trainingView?.completedCount ?? 0;
-  const totalCourses = trainingView?.totalCourses ?? 0;
   const milestoneTruth = deriveTrainingMilestoneTruth({
     completedSlugs: trainingView?.completedSlugsAuthoritative ?? [],
     started: trainingView?.hasStartedTraining ?? false,
     validatedSlugs: trainingView?.validatedCourseSlugs ?? [],
   });
 
-  // ── First-cert milestone progress ──
-  // Blends assessment completion + course progress toward the first cert.
-  // Two steps: (1) assessment, (2) first course complete.
-  // If there are multiple courses, course progress is the % of courses
-  // completed capped at the first-cert boundary (i.e. 100% when first
-  // course is done, not when the whole program is done).
-  let firstCertProgressPercent = 0;
-  if (user.assessmentCompleted) {
-    if (trainingView?.hasCompletedFirstCourse) {
-      firstCertProgressPercent = 100;
-    } else if (totalCourses > 0) {
-      // Assessment done = 50% base; remaining 50% from first-course progress.
-      // Use per-course progress % for the first incomplete course if available.
-      const firstIncompletePct = trainingView?.progressPercentDisplay ?? 0;
-      firstCertProgressPercent = 50 + Math.round((firstIncompletePct / 100) * 50);
-    } else {
-      // Assessment done but no course catalog yet — show 50%.
-      firstCertProgressPercent = 50;
-    }
-  } else if (latestApplication) {
-    // Application submitted but assessment not done — show 25% as a nudge.
-    firstCertProgressPercent = 25;
-  }
+  // An application or assessment is not training progress. Keep the legacy
+  // field for callers, but use the same recorded course mean as My Program.
+  const firstCertProgressPercent = trainingView?.progressPercentDisplay ?? 0;
 
   const checklist: MemberChecklist = {
     createAccount: true,
-    chooseProgram: !!user.enrolledProgram,
+    chooseProgram: !!programSlugForTraining,
     completeAssessment: user.assessmentCompleted,
     startFirstCourse: trainingView ? milestoneTruth.trainingStarted : completedCount >= 1,
     completeFirstCourse: trainingView ? milestoneTruth.firstCourseCompleted : completedCount >= 1,
@@ -370,11 +366,11 @@ async function _getMemberStateUncached(
   const actionsCtx: NextBestActionsContext = {
     state: stateLetter,
     noApplicationOnFile: !latestApplication,
-    enrolledProgram: user.enrolledProgram,
+    enrolledProgram: programSlugForTraining,
     assessmentCompleted: user.assessmentCompleted,
     completedCourseCount: trainingView?.completedCount,
-    starterProfileReviewRequired: false,
-    starterProfileMissingFields: [],
+    starterProfileReviewRequired: starterReview.required,
+    starterProfileMissingFields: getStarterProfileFieldLabels(starterReview.missing),
     hasResume: !!latestResumeText,
     hasCompletedInterviewPractice,
     profileCompletenessPct,
@@ -382,7 +378,7 @@ async function _getMemberStateUncached(
     jobApplicationCount: user._count?.jobApplications ?? 0,
     counselorUnreadCount: engagement.counselorUnreadCount,
     weeklyRecapUnopened: engagement.weeklyRecapUnopened,
-    courseEnrollmentActive: false,
+    courseEnrollmentActive: !!activeEnrollment,
     placementPlacedAt: placementForActions?.placedAt ?? null,
     placementRetentionDecision: placementForActions?.retentionDecision ?? null,
     placementSeparated: isPlacementSeparated(placementForActions),

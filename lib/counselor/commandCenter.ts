@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
-import { resolveMemberLastActivity } from '@/lib/counselor/lastActivity';
+import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/member/persistedAtRisk';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { resolveAdminEnrolledMemberIds } from '@/lib/counselor/adminMemberScope';
 
@@ -13,7 +14,7 @@ import { resolveAdminEnrolledMemberIds } from '@/lib/counselor/adminMemberScope'
  * counselor's home page three answers to "what should I do today?":
  *
  *   1. Members who messaged me — sorted oldest first, the 48h SLA stake
- *   2. Members at risk of ghosting — no activity in 7+ days
+ *   2. Members with unresolved saved risk alerts
  *   3. Members interviewing this week — interview-prep tool was run
  *
  * Each row gets a one-click action so the counselor can resolve in seconds:
@@ -37,6 +38,9 @@ export type AtRiskRow = CommandCenterRow & {
   /** Whole days since the last MemberEvent; `null` when none was ever recorded. */
   daysInactive: number | null;
   enrolledProgram: string | null;
+  riskScore?: number;
+  alertStatus?: string;
+  alertId?: string;
 };
 
 export type InterviewingRow = CommandCenterRow & {
@@ -70,7 +74,8 @@ export async function getCounselorCommandCenter(
   counselorUserId: string,
   options?: { isAdmin?: boolean; perSectionLimit?: number },
 ): Promise<CommandCenter> {
-  const limit = options?.perSectionLimit ?? 5;
+  const limit = Math.max(1, Math.min(100, Math.floor(options?.perSectionLimit ?? 5)));
+  const organizationId = await getActorOrganizationId(counselorUserId);
 
   // Scope: which member IDs is this counselor responsible for?
   let memberIds: string[] = [];
@@ -78,7 +83,7 @@ export async function getCounselorCommandCenter(
     memberIds = await resolveAdminEnrolledMemberIds(counselorUserId, 200);
   } else {
     const counselor = await prisma.counselor.findFirst({
-      where: { userId: counselorUserId, active: true },
+      where: { userId: counselorUserId, active: true, user: { organizationId, deletedAt: null } },
       select: { id: true },
     });
     if (!counselor) {
@@ -86,14 +91,20 @@ export async function getCounselorCommandCenter(
     }
     const assignments = await prisma.counselorAssignment.findMany({
       take: COUNSELOR_ROSTER_CAP,
-      where: { counselorId: counselor.id, active: true },
+      where: { counselorId: counselor.id, active: true, member: { organizationId, deletedAt: null } },
       select: { memberId: true },
     });
     memberIds = assignments.map((a) => a.memberId);
   }
-  if (memberIds.length === 0) return emptyCommandCenter();
-
   const now = new Date();
+  const savedRisk = await loadPersistedAtRiskMembers({
+    organizationId, ...(options?.isAdmin ? {} : { counselorUserId }),
+  }, { limit });
+  const atRisk: AtRiskRow[] = savedRisk.rows.map((row) => persistedRiskCommandRow(row, now));
+  if (memberIds.length === 0) {
+    const center = emptyCommandCenter();
+    return { ...center, atRisk, totals: { ...center.totals, atRiskCount: savedRisk.total } };
+  }
   const sevenDaysAgo = new Date(now.getTime() - 7 * DAY_MS);
   const slaBreachThreshold = new Date(now.getTime() - 2 * DAY_MS); // 48h
 
@@ -153,61 +164,6 @@ export async function getCounselorCommandCenter(
   needsReply.sort((a, b) => a.lastMessageAt.getTime() - b.lastMessageAt.getTime()); // oldest first
   const slaBreachCount = needsReply.filter((r) => r.lastMessageAt < slaBreachThreshold).length;
 
-  // ── 2. At risk: no MemberEvent in the last 7 days, enrolled member only.
-  const recentActivityRows = await prisma.memberEvent.findMany({
-    take: COUNSELOR_ROSTER_CAP,
-    where: {
-      userId: { in: memberIds },
-      createdAt: { gte: sevenDaysAgo },
-    },
-    select: { userId: true },
-    distinct: ['userId'],
-  });
-  const activeIds = new Set(recentActivityRows.map((r) => r.userId));
-  const enrolledRows = await prisma.user.findMany({
-    take: COUNSELOR_ROSTER_CAP,
-    where: {
-      id: { in: memberIds },
-      deletedAt: null,
-      enrolledProgram: { not: null },
-    },
-    select: { id: true, fullName: true, email: true, enrolledProgram: true },
-  });
-  // Find each at-risk user's actual last MemberEvent timestamp in a single
-  // grouped query (no N+1) so the "X days inactive" count reflects real
-  // last activity. Members with no event at all get `daysInactive: null`
-  // ("No activity recorded") — the same derivation the students roster uses
-  // (`lib/counselor/lastActivity.ts`), so the two pages cannot disagree.
-  const atRiskCandidateIds = enrolledRows.filter((u) => !activeIds.has(u.id)).map((u) => u.id);
-  const lastEventByUser = new Map<string, Date>();
-  if (atRiskCandidateIds.length > 0) {
-    const lastEvents = await prisma.$queryRawUnsafe<Array<{ user_id: string; last_at: Date | null }>>(
-      `SELECT user_id, MAX(created_at) AS last_at
-       FROM member_events
-       WHERE user_id = ANY($1::text[])
-       GROUP BY user_id`,
-      atRiskCandidateIds,
-    );
-    for (const r of lastEvents) {
-      if (r.last_at) lastEventByUser.set(r.user_id, r.last_at);
-    }
-  }
-  const atRisk: AtRiskRow[] = enrolledRows
-    .filter((u) => !activeIds.has(u.id))
-    .map((u) => {
-      const { daysInactive } = resolveMemberLastActivity(lastEventByUser.get(u.id) ?? null, now);
-      return {
-        memberId: u.id,
-        memberName: u.fullName ?? u.email,
-        memberEmail: u.email,
-        daysInactive,
-        enrolledProgram: u.enrolledProgram ?? null,
-      };
-    })
-    // Longest known inactivity first; "No activity recorded" rows last, since
-    // an unknown recency is not evidence of a long absence.
-    .sort((a, b) => (b.daysInactive ?? -1) - (a.daysInactive ?? -1));
-
   // ── 3. Interviewing this week: interview_practice AI tool runs in the last 7 days.
   const interviewRuns = await prisma.aIToolResult.findMany({
     take: COUNSELOR_ROSTER_CAP,
@@ -237,11 +193,11 @@ export async function getCounselorCommandCenter(
 
   return {
     needsReply: needsReply.slice(0, limit),
-    atRisk: atRisk.slice(0, limit),
+    atRisk,
     interviewing: interviewing.slice(0, limit),
     totals: {
       needsReplyCount: needsReply.length,
-      atRiskCount: atRisk.length,
+      atRiskCount: savedRisk.total,
       interviewingCount: interviewing.length,
       slaBreachCount,
     },

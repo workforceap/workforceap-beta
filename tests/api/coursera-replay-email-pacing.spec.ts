@@ -13,7 +13,7 @@ vi.mock('next/server', () => ({ NextResponse: { json: (body: unknown) => Respons
 vi.mock('@/lib/cron/withCronLogging', () => ({ withCronLogging: (_name: string, handler: unknown) => handler }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn() }));
 vi.mock('@/lib/cron/cronExecution', () => ({ setCronRecordsProcessed: vi.fn() }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/coursera/replayPendingXapi', () => ({ replayPendingXapiStatements: mocks.replay }));
 vi.mock('@/lib/xapi/reprocess', () => ({ autoHealUnmatchedXapiEvents: mocks.heal, reprocessIgnoredXapiEventsWithMappings: mocks.ignored }));
 vi.mock('@/lib/cron/courseraHealQueue', () => ({ countCourseraHealQueue: mocks.queue }));

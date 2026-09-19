@@ -33,7 +33,7 @@ vi.mock('@/lib/notifications/create', () => ({
   createNotification: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

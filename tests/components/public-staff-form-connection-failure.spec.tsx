@@ -84,9 +84,9 @@ describe('public invitation login-code form', () => {
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('invite-code'), expect.any(TypeError));
   });
 
-  it('still shows a message the server sent on purpose', async () => {
+  it('localizes a recognized message the server sent on purpose', async () => {
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ valid: false, error: 'That login code has expired.' }), {
+      new Response(JSON.stringify({ valid: false, error: 'Invitation has expired' }), {
         status: 404,
         headers: { 'content-type': 'application/json' },
       }),
@@ -94,7 +94,7 @@ describe('public invitation login-code form', () => {
     const { container } = withMessages(<InvitePage />);
     await fillAndSubmit(container);
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('That login code has expired.');
+    expect(alert).toHaveTextContent(messages.auth.invite.errors.expired);
     expect(alert.textContent).not.toContain(CONNECTION_COPY);
   });
 });
@@ -112,7 +112,7 @@ describe('counselor profile form', () => {
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('counselor-profile'), expect.any(TypeError));
   });
 
-  it('still shows a message the server sent on purpose', async () => {
+  it('localizes a recognized message the server sent on purpose', async () => {
     fetchMock.mockResolvedValue(serverMessage('Phone number must include an area code.', 400));
     const { container } = withMessages(<CounselorProfileForm initial={initial} isNew={false} />);
     fireEvent.submit(container.querySelector('form')!);

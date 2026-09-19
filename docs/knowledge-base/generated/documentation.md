@@ -47,7 +47,7 @@
 | [docs/I18N-LOCALE-ROUTING.md](../../../docs/I18N-LOCALE-ROUTING.md) | 520 | documentation |  |
 | [docs/INCIDENT-RESPONSE-PLAN.md](../../../docs/INCIDENT-RESPONSE-PLAN.md) | 340 | documentation |  |
 | [docs/JOB-CREATE-FIX.md](../../../docs/JOB-CREATE-FIX.md) | 33 | documentation |  |
-| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 398 | documentation |  |
+| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 432 | documentation |  |
 | [docs/LAUNCH-PREP-AUDIT.md](../../../docs/LAUNCH-PREP-AUDIT.md) | 146 | documentation |  |
 | [docs/LIVE-PORTAL-AUDIT-2026-04-26.md](../../../docs/LIVE-PORTAL-AUDIT-2026-04-26.md) | 707 | documentation |  |
 | [docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md](../../../docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md) | 318 | documentation |  |
@@ -62,6 +62,7 @@
 | [docs/PLAN-2026-Q3-Q4-10-SPRINT.md](../../../docs/PLAN-2026-Q3-Q4-10-SPRINT.md) | 330 | documentation |  |
 | [docs/PORTAL-GAMEPLAN.md](../../../docs/PORTAL-GAMEPLAN.md) | 64 | documentation |  |
 | [docs/PORTAL-PRE-PR-AUDIT.md](../../../docs/PORTAL-PRE-PR-AUDIT.md) | 38 | documentation |  |
+| [docs/PORTAL-QA-FIXTURES.md](../../../docs/PORTAL-QA-FIXTURES.md) | 40 | documentation |  |
 | [docs/PORTAL-UI-ONE-SHOT-TASK.md](../../../docs/PORTAL-UI-ONE-SHOT-TASK.md) | 233 | documentation |  |
 | [docs/PORTAL-UI-UX-AUDIT-FINDINGS.md](../../../docs/PORTAL-UI-UX-AUDIT-FINDINGS.md) | 123 | documentation |  |
 | [docs/PORTAL-UI-UX-ENHANCEMENTS.md](../../../docs/PORTAL-UI-UX-ENHANCEMENTS.md) | 166 | documentation |  |
@@ -264,15 +265,15 @@
 | [docs/email-templates.md](../../../docs/email-templates.md) | 80 | communications |  |
 | [docs/knowledge-base/README.md](../../../docs/knowledge-base/README.md) | 50 | documentation |  |
 | [docs/knowledge-base/agent-context.md](../../../docs/knowledge-base/agent-context.md) | 33 | documentation |  |
-| [docs/knowledge-base/architecture.md](../../../docs/knowledge-base/architecture.md) | 195 | documentation |  |
+| [docs/knowledge-base/architecture.md](../../../docs/knowledge-base/architecture.md) | 205 | documentation |  |
 | [docs/knowledge-base/audit-baseline.json](../../../docs/knowledge-base/audit-baseline.json) | 6 | documentation |  |
 | [docs/knowledge-base/audit-report.md](../../../docs/knowledge-base/audit-report.md) | 37 | documentation |  |
 | [docs/knowledge-base/data.md](../../../docs/knowledge-base/data.md) | 62 | documentation |  |
-| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 36 | documentation |  |
-| [docs/knowledge-base/integrations.md](../../../docs/knowledge-base/integrations.md) | 139 | documentation |  |
+| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 45 | documentation |  |
+| [docs/knowledge-base/integrations.md](../../../docs/knowledge-base/integrations.md) | 143 | documentation |  |
 | [docs/knowledge-base/maintenance.md](../../../docs/knowledge-base/maintenance.md) | 68 | documentation |  |
-| [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 164 | documentation |  |
-| [docs/knowledge-base/technical-debt.md](../../../docs/knowledge-base/technical-debt.md) | 56 | documentation |  |
+| [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 170 | documentation |  |
+| [docs/knowledge-base/technical-debt.md](../../../docs/knowledge-base/technical-debt.md) | 68 | documentation |  |
 | [docs/live-qa-sweep-2026-05-14.md](../../../docs/live-qa-sweep-2026-05-14.md) | 55 | documentation |  |
 | [docs/marketing-perf-audit-2026-05-13.md](../../../docs/marketing-perf-audit-2026-05-13.md) | 272 | documentation |  |
 | [docs/member-portal-content-editor-guide.md](../../../docs/member-portal-content-editor-guide.md) | 149 | documentation |  |

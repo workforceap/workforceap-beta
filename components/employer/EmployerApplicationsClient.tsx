@@ -408,6 +408,7 @@ export default function EmployerApplicationsClient({
             columns={[
               {
                 key: 'candidate',
+                cellDataLabel: 'Candidate',
                 header: (
                   <div className="employer-applications-th-candidate">
                     <input

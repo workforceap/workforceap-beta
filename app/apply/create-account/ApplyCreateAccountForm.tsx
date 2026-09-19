@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import LocalizedLink from '@/components/LocalizedLink';
 import { useSearchParams } from 'next/navigation';
@@ -13,11 +13,11 @@ import { isPaidUtmSource } from '@/lib/apply/paidApplyUtm';
 import { US_STATES, toStateAbbr } from '@/lib/apply/usStates';
 import { readMarketingAttribution, clearMarketingAttribution } from '@/lib/marketing/utmCapture';
 import {
-  APPLY_FLOW_DRAFT_KEY,
-  APPLY_PROGRAM_RANKED_KEY,
-  APPLY_PROGRAM_SLUG_KEY,
   getCareerQuizPayloadFromStorage,
 } from '@/lib/apply/applyProgramStorage';
+import { readAccountDraft, writeAccountDraft, readSavedEligibility, readApplyDraft, readSelectedPrograms, clearApplyBrowserState, sameEligibility, type SavedEligibility, type AccountDraft, type ApplyDraft } from '@/lib/apply/applyBrowserState';
+import { applyRecoveryHref, type ApplyRecoveryContext } from '@/lib/apply/applyRecoveryHref';
+import { ApplyReadyContent, ApplyResumeGate } from '@/components/apply/ApplyReadiness';
 import { getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
@@ -33,22 +33,6 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 // navigation does not wipe what the user already typed. Cleared on successful
 // signup or when the user resets the flow. Password fields are intentionally
 // excluded for security.
-const APPLY_ACCOUNT_DRAFT_KEY = 'apply_account_draft';
-type AccountDraft = {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  smsOptIn?: boolean;
-  contactConsent?: boolean;
-};
-
-
 function getPasswordStrengthScore(password: string): number {
   let score = 0;
   if (password.length >= 8) score++;
@@ -66,10 +50,14 @@ function formatPhoneInput(value: string): string {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-export default function ApplyCreateAccountForm() {
+export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recoveryContext }: { readyHeader?: ReactNode; readyIntro?: ReactNode; recoveryContext?: ApplyRecoveryContext }) {
   const t = useTranslations('apply');
   const tForm = useTranslations('form');
   const searchParams = useSearchParams();
+  const initialEligibilityRef = useRef<SavedEligibility | null>(null);
+  const [hasEligibility, setHasEligibility] = useState(false);
+  const [savedDraft, setSavedDraft] = useState<ApplyDraft | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const [init, setInit] = useState<'loading' | 'missing' | 'ready'>('loading');
   const [programRankedSlugs, setProgramRankedSlugs] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -137,33 +125,10 @@ export default function ApplyCreateAccountForm() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const raw = sessionStorage.getItem(APPLY_ACCOUNT_DRAFT_KEY);
-      type EligStored = {
-        firstName?: string;
-        lastName?: string;
-        email?: string;
-        phone?: string;
-        ageGroup?: string;
-        city?: string;
-        state?: string;
-        zip?: string;
-        county?: string;
-        primaryBarrier?: string;
-        primaryBarriers?: string[];
-      };
-      let elig: EligStored | null = null;
-      try {
-        // sessionStorage is per-tab; fall back to the localStorage mirror so
-        // "finish later" resumes in a new tab keep the eligibility answers.
-        const er =
-          sessionStorage.getItem('apply_eligibility') ?? localStorage.getItem('apply_eligibility');
-        if (er) elig = JSON.parse(er) as EligStored;
-      } catch {
-        elig = null;
-      }
+      const elig = readSavedEligibility();
+      const draft = readAccountDraft(elig);
 
-      if (raw) {
-        const draft = JSON.parse(raw) as AccountDraft;
+      if (draft) {
         if (draft.firstName) {
           setFirstName(draft.firstName);
         } else if (elig?.firstName) {
@@ -237,13 +202,15 @@ export default function ApplyCreateAccountForm() {
       }
     } catch {
       /* ignore corrupt draft */
+    } finally {
+      setHydrated(true);
     }
   }, []);
 
   // Persist non-sensitive draft on every change. Passwords are intentionally
   // excluded.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!hydrated || init !== 'ready' || completedRef.current || typeof window === 'undefined') return;
     const draft: AccountDraft = {
       firstName,
       lastName,
@@ -257,35 +224,21 @@ export default function ApplyCreateAccountForm() {
       smsOptIn,
       contactConsent,
     };
-    try {
-      sessionStorage.setItem(APPLY_ACCOUNT_DRAFT_KEY, JSON.stringify(draft));
-    } catch {
-      /* storage may be full or disabled — non-fatal */
-    }
-  }, [firstName, lastName, email, phone, addressLine1, addressLine2, city, stateVal, zip, smsOptIn, contactConsent]);
+    writeAccountDraft(draft, initialEligibilityRef.current);
+  }, [hydrated, init, firstName, lastName, email, phone, addressLine1, addressLine2, city, stateVal, zip, smsOptIn, contactConsent]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const rankedRaw = sessionStorage.getItem(APPLY_PROGRAM_RANKED_KEY);
-      if (rankedRaw) {
-        const parsed = JSON.parse(rankedRaw) as unknown;
-        if (Array.isArray(parsed) && parsed.length > 0 && parsed.every((x) => typeof x === 'string')) {
-          setProgramRankedSlugs(parsed as string[]);
-          setInit('ready');
-          return;
-        }
-      }
-    } catch {
-      /* fall through */
-    }
-    const slug = sessionStorage.getItem(APPLY_PROGRAM_SLUG_KEY);
-    if (!slug) {
+    const eligibility = readSavedEligibility();
+    const programs = readSelectedPrograms(eligibility);
+    setHasEligibility(Boolean(eligibility));
+    setSavedDraft(readApplyDraft());
+    if (!eligibility || !programs) {
       trackApplyFunnel(3, 'account_missing_program');
       setInit('missing');
       return;
     }
-    setProgramRankedSlugs([slug]);
+    initialEligibilityRef.current = eligibility;
+    setProgramRankedSlugs(programs);
     setInit('ready');
   }, []);
 
@@ -395,42 +348,14 @@ export default function ApplyCreateAccountForm() {
 
       const careerPayload = typeof window !== 'undefined' ? getCareerQuizPayloadFromStorage() : null;
       const attribution = readMarketingAttribution();
-      let eligibilityPayload: {
-        ageGroup?: string;
-        city?: string;
-        state?: string;
-        zip?: string;
-        county?: string;
-        primaryBarrier?: string;
-        primaryBarriers?: string[];
-        q1?: 'yes' | 'no';
-        q2?: 'yes' | 'no';
-        q3?: 'yes' | 'no';
-        receivingUnemployment?: 'yes' | 'no';
-        exhaustedUnemployment?: 'yes' | 'no';
-        layoffCompany?: string;
-        snapWic?: 'yes' | 'no';
-        hearAbout?: string;
-        hearAboutOther?: string;
-        partnerAmbassadorReferral?: string;
-        qualifies?: boolean;
-        yesCount?: number;
-        gradeLevel?: string;
-        parentGuardianName?: string;
-        parentGuardianEmail?: string;
-        parentGuardianPhone?: string;
-        schoolName?: string;
-        schoolApply?: boolean;
-      } | null = null;
-      if (typeof window !== 'undefined') {
-        try {
-          const rawEligibility =
-            sessionStorage.getItem('apply_eligibility') ??
-            localStorage.getItem('apply_eligibility');
-          eligibilityPayload = rawEligibility ? JSON.parse(rawEligibility) : null;
-        } catch {
-          eligibilityPayload = null;
-        }
+      const eligibilityPayload = readSavedEligibility();
+      if (!eligibilityPayload || !sameEligibility(eligibilityPayload, initialEligibilityRef.current) ||
+        JSON.stringify(readSelectedPrograms(eligibilityPayload)) !== JSON.stringify(programRankedSlugs)) {
+        setHasEligibility(Boolean(eligibilityPayload));
+        setSavedDraft(readApplyDraft());
+        setInit('missing');
+        setLoading(false);
+        return;
       }
 
       const schoolSignup = isSchoolCollectionSignup({
@@ -536,20 +461,7 @@ export default function ApplyCreateAccountForm() {
         return;
       }
 
-      sessionStorage.removeItem(APPLY_PROGRAM_SLUG_KEY);
-      sessionStorage.removeItem(APPLY_PROGRAM_RANKED_KEY);
-      sessionStorage.removeItem('apply_eligibility');
-      try {
-        localStorage.removeItem('apply_eligibility');
-      } catch {
-        /* ignore */
-      }
-      sessionStorage.removeItem(APPLY_ACCOUNT_DRAFT_KEY);
-      try {
-        localStorage.removeItem(APPLY_FLOW_DRAFT_KEY);
-      } catch {
-        /* ignore */
-      }
+      clearApplyBrowserState();
       try {
         clearPersistedPartnerRef();
         clearMarketingAttribution();
@@ -633,25 +545,10 @@ export default function ApplyCreateAccountForm() {
     );
   }
 
-  if (init === 'missing') {
-    return (
-      <div className="apply-form-missing-session">
-        <p role="alert" style={{ marginBottom: '1rem', lineHeight: 1.5 }}>
-          {t('accountMissingSessionP1')}
-        </p>
-        <p style={{ marginBottom: '0.75rem' }}>
-          <LocalizedLink href="/apply/results" className="btn btn-primary">
-            {t('accountMissingSessionCta')}
-          </LocalizedLink>
-        </p>
-        <p>
-          <LocalizedLink href="/apply">{t('accountMissingSessionRestart')}</LocalizedLink>
-        </p>
-      </div>
-    );
-  }
+  if (init === 'missing') return <ApplyResumeGate draft={savedDraft} hasEligibility={hasEligibility} recoveryContext={recoveryContext} />;
 
   return (
+    <ApplyReadyContent header={readyHeader} intro={readyIntro} account>
     <form onSubmit={handleSubmit} className="apply-form" noValidate>
       <div className="apply-progress-bar" style={{ marginBottom: '1.25rem' }}>
         <div className="apply-progress-fill" style={{ width: '100%' }} />
@@ -659,7 +556,7 @@ export default function ApplyCreateAccountForm() {
       </div>
 
       <p className="apply-step-back-nav" style={{ marginBottom: '1rem' }}>
-        <LocalizedLink href="/apply/results">{t('accountBackResults')}</LocalizedLink>
+        <LocalizedLink href={applyRecoveryHref('/apply/results', recoveryContext)}>{t('accountBackResults')}</LocalizedLink>
       </p>
 
       <details className="apply-transition-details apply-transition-details--stacked">
@@ -1136,5 +1033,7 @@ export default function ApplyCreateAccountForm() {
         {t('accountProfileLater')}
       </p>
     </form>
+    <p className="afd-footnote">{t('createAccountAlready')}{' '}<LocalizedLink href="/login">{t('createAccountLogIn')}</LocalizedLink></p>
+    </ApplyReadyContent>
   );
 }

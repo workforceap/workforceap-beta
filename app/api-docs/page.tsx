@@ -1,21 +1,24 @@
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
 import type { Metadata } from 'next';
+import { notFound, redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import ApiDocsClient from '@/components/api-docs/ApiDocsClient';
+import { getUser } from '@/lib/auth/server';
+import { isSuperAdmin } from '@/lib/auth/roles';
+import { apiDocsCatalog } from '@/lib/api-docs/catalog';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildPageMetadataAsync({
+  return { ...await buildPageMetadataAsync({
     title: 'API Reference',
     description: 'Interactive documentation for all WorkforceAP API endpoints.',
     path: '/api-docs',
-  });
+  }), robots: { index: false, follow: false } };
 }
 
-export default function ApiDocsPage() {
-  const dataPath = resolve(process.cwd(), 'public/api-docs-data.json');
-  const raw = readFileSync(dataPath, 'utf-8');
-  const data = JSON.parse(raw);
-
-  return <ApiDocsClient data={data} />;
+export default async function ApiDocsPage() {
+  const user = await getUser();
+  if (!user) redirect('/login?redirectTo=/api-docs');
+  if (!(await isSuperAdmin(user.id))) notFound();
+  return <ApiDocsClient data={apiDocsCatalog} />;
 }

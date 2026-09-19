@@ -1,5 +1,7 @@
 'use client';
 
+import { Eye, EyeOff } from 'lucide-react';
+
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -228,9 +230,7 @@ function ResetPasswordForm() {
                         minHeight: 44,
                       }}
                     >
-                      <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 20 }}>
-                        {showPassword ? 'visibility_off' : 'visibility'}
-                      </span>
+                      {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                     </button>
                   </div>
                   <p id="new-password-hint" className="form-hint">
@@ -273,9 +273,7 @@ function ResetPasswordForm() {
                         minHeight: 44,
                       }}
                     >
-                      <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: 20 }}>
-                        {showConfirm ? 'visibility_off' : 'visibility'}
-                      </span>
+                      {showConfirm ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                     </button>
                   </div>
                 </div>

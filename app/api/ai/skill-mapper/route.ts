@@ -146,7 +146,7 @@ import {
           eventName: 'ai_tool_run_completed',
           entityType: 'ai_tool',
           metadata: { tool: 'skill_assessment', mode: 'occupation_lookup', occupationCode: code },
-          sourcePage: '/dashboard/skills-assessment',
+          sourcePage: '/dashboard/assessment',
         });
   
         return NextResponse.json({

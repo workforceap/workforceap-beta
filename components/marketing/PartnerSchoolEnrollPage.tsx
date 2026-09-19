@@ -173,11 +173,9 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
                 <h3><Link href={applyUrl(p.slug)}>{p.title}</Link></h3>
                 <div className="pmeta">
                   <span><Icon name="clock" size={16} /> {p.duration}</span>
-                  <span className="prange-inline">Starting range: <b>{p.salary}</b></span>
                 </div>
                 <p className="pdisc">
-                  Salary range is a national early-career estimate (Lightcast/BLS, Jan 2026). Actual pay depends on
-                  experience, employer, and location.
+                  <a href="/salary-guide">Research pay and job requirements</a> for the occupations you want to explore.
                 </p>
                 <div className="pskills">{p.skills.map((s) => <span className="stag" key={s}>{s}</span>)}</div>
                 <div className="pcard-foot">

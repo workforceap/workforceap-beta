@@ -1,3 +1,5 @@
+import { isOperationalFeatureFlagKey } from './reservedKeys';
+
 export function hashStringToBucket(str: string, buckets: number): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -14,7 +16,7 @@ export function filterVisibleFlags(
   allRoles: string[]
 ) {
   return flags.filter((flag) => {
-    if (!flag.enabled) return false;
+    if (!flag.enabled || isOperationalFeatureFlagKey(flag.key)) return false;
 
     // Check if user has any of the allowed roles (empty = no restriction)
     if (flag.allowedRoles && flag.allowedRoles.length > 0) {

@@ -15,6 +15,7 @@ import type {
   AdminNeedsReplyRow,
 } from '@/lib/admin/commandCenter';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { describeInactivity } from '@/lib/counselor/lastActivity';
 
 type ReviewStatus = 'APPROVED' | 'NEEDS_INFO' | 'DENIED';
 
@@ -341,13 +342,13 @@ function AtRiskCard({ row }: { row: AdminAtRiskRow }) {
   return (
     <ActionCard
       name={row.memberName}
-      meta={`${row.daysInactive} days since portal activity or enrollment`}
+      meta={`${row.reason ?? "Saved risk alert"} · ${describeInactivity(row.daysInactive)}`}
       detail={row.enrolledProgram
-        ? `${row.reason ?? "Check-in needed"} · Program: ${programDisplayTitle(row.enrolledProgram)}`
-        : 'Enrolled, no program label'}
+        ? `Program: ${programDisplayTitle(row.enrolledProgram)}`
+        : 'No program label recorded'}
       href={`/admin/members/${row.memberId}`}
       action="Check in"
-      urgent={row.daysInactive >= 21}
+      urgent={(row.riskScore ?? 0) >= 70}
     />
   );
 }

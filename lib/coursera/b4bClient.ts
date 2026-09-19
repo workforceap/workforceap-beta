@@ -46,7 +46,6 @@ import { normalizeCourseraPageOffset } from './enrollmentReportFields';
 
 const DEFAULT_OAUTH_URL = 'https://api.coursera.com/oauth2/client_credentials/token';
 const DEFAULT_API_BASE = 'https://api.coursera.com/ent';
-const DEFAULT_ORG_ID = '8R2W4McwOMWJp9cCBV1kvw';
 
 const TOKEN_REFRESH_SAFETY_MS = 60_000;
 
@@ -186,6 +185,15 @@ export class B4BApiError extends Error {
   }
 }
 
+export class B4BConfigurationError extends Error {
+  readonly code = 'COURSERA_ORG_NOT_CONFIGURED';
+
+  constructor() {
+    super('COURSERA_ORG_ID must be configured before using Coursera B4B.');
+    this.name = 'B4BConfigurationError';
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /*  Internals                                                          */
 /* ------------------------------------------------------------------ */
@@ -225,7 +233,9 @@ function getOauthUrl(): string {
 }
 
 export function getB4BOrgId(): string {
-  return process.env.COURSERA_ORG_ID?.trim() || DEFAULT_ORG_ID;
+  const orgId = process.env.COURSERA_ORG_ID?.trim();
+  if (!orgId) throw new B4BConfigurationError();
+  return orgId;
 }
 
 function fetchImpl(): FetchLike {

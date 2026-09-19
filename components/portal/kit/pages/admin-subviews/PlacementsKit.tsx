@@ -9,7 +9,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type Column,
@@ -190,10 +190,10 @@ export function PlacementsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Placements"
         kicker="Outcomes"
-        goal="Confirmed hires & wage data"
+        lede="Confirmed hires & wage data"
         action={
           // Wraps like UsersKit's action row: three nowrap buttons in a single
           // flex line pushed the shell to 415px at a 390px viewport.

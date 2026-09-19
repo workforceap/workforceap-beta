@@ -1129,8 +1129,7 @@ export default function MembersTable({
         memberIds={selectedRows.map((m) => m.id)}
         onClose={() => setShowEmailModal(false)}
         onSent={(result) => {
-          const ok = result.sent + result.messagesCreated;
-          const hint = `Sent to ${ok}/${result.total} members${result.errors.length > 0 ? ` (${result.errors.length} failed)` : ''}`;
+          const hint = `Reported results for ${result.total} members: ${result.sent} emails sent, ${result.messagesCreated} portal messages created${result.errors.length > 0 ? ` (${result.errors.length} issues to review)` : ''}`;
           setBulkHint(hint);
           window.setTimeout(() => setBulkHint(null), 5000);
         }}

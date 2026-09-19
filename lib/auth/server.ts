@@ -3,7 +3,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { unstable_rethrow } from 'next/navigation';
 import { getSupabaseCookieOptions, SESSION_ONLY_COOKIE } from '@/lib/supabaseCookieOptions';
-import { hasSupabaseAuthCookies } from '@/lib/auth/supabaseAuthCookie';
+import { readAuthWithRetry, reportAuthReadFailure } from './authRead';
+import { hasSupabaseAuthCookies, isSupabaseAuthTokenCookieName, isSupabasePkceCookieName } from '@/lib/auth/supabaseAuthCookie';
 import { runWithGucContext, buildGucContext, ANONYMOUS_GUC_CONTEXT } from '@/lib/db/gucContext';
 import type { GucContext } from '@/lib/db/gucContext';
 import { getProfileRole } from './roles';
@@ -34,7 +35,8 @@ async function isApplicationAccountAvailable(userId: string): Promise<boolean> {
  * Creates a Supabase client for Server Components, Server Actions, and Route Handlers.
  * Uses cookies for session management. Requires middleware for session refresh.
  */
-export async function createSupabaseServerClient() {
+export async function createSupabaseServerClient(options: { preservePkce?: boolean } = {}) {
+  const preservePkce = options.preservePkce === true;
   const cookieStore = await cookies();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -58,6 +60,9 @@ export async function createSupabaseServerClient() {
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
+              // auth-js removes PKCE as part of _removeSession; auth reads must
+              // leave a separate in-progress sign-in flow intact.
+              if (preservePkce && isSupabasePkceCookieName(name)) return;
               if (sessionOnly) {
                 // Strip maxAge/expires to keep the session ephemeral
                 const { maxAge: _1, expires: _2, ...rest } = (options ?? {}) as Record<string, unknown>;
@@ -77,6 +82,20 @@ export async function createSupabaseServerClient() {
   );
 }
 
+async function handleServerAuthFailure(error: unknown, context: string): Promise<void> {
+  if (reportAuthReadFailure(error, context) !== 'stale_session') return;
+  // Server Components may have a read-only cookie store; middleware performs
+  // the authoritative browser clear. Route handlers/actions can clear here too.
+  try {
+    const cookieStore = await cookies();
+    for (const { name } of cookieStore.getAll()) {
+      if (isSupabaseAuthTokenCookieName(name)) {
+        cookieStore.set(name, '', { ...getSupabaseCookieOptions(), maxAge: 0 });
+      }
+    }
+  } catch { /* Cookie mutation is unavailable in a Server Component. */ }
+}
+
 /**
  * Gets the current session from the server. Returns null if not authenticated
  * or if the request has no Supabase session cookie (no GoTrue client).
@@ -86,20 +105,20 @@ export async function getSession() {
   try {
     const cookieStore = await cookies();
     if (!hasSupabaseAuthCookies(cookieStore)) return null;
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient({ preservePkce: true });
     const {
       data: { session },
       error,
-    } = await supabase.auth.getSession();
+    } = await readAuthWithRetry(() => supabase.auth.getSession());
     if (error) {
-      console.error('[auth:getSession] Supabase session read failed; treating request as signed out', error);
+      await handleServerAuthFailure(error, 'auth:getSession');
       return null;
     }
     if (session?.user && !(await isApplicationAccountAvailable(session.user.id))) return null;
     return session;
   } catch (err) {
     unstable_rethrow(err);
-    console.error('[auth:getSession] Supabase session read failed; treating request as signed out', err);
+    await handleServerAuthFailure(err, 'auth:getSession');
     return null;
   }
 }
@@ -116,20 +135,20 @@ export const getUser = cache(async function getUser() {
   try {
     const cookieStore = await cookies();
     if (!hasSupabaseAuthCookies(cookieStore)) return null;
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient({ preservePkce: true });
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser();
+    } = await readAuthWithRetry(() => supabase.auth.getUser());
     if (error) {
-      console.error('[auth:getUser] Supabase user validation failed; treating request as signed out', error);
+      await handleServerAuthFailure(error, 'auth:getUser');
       return null;
     }
     if (user && !(await isApplicationAccountAvailable(user.id))) return null;
     return user;
   } catch (err) {
     unstable_rethrow(err);
-    console.error('[auth:getUser] Supabase user validation failed; treating request as signed out', err);
+    await handleServerAuthFailure(err, 'auth:getUser');
     return null;
   }
 });

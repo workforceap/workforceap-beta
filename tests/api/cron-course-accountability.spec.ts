@@ -6,7 +6,7 @@ vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn() }));
 vi.mock('@/lib/cron/withCronLogging', () => ({ withCronLogging: (_key: string, handler: unknown) => handler }));
 vi.mock('@/lib/cron/cronExecution', () => ({ setCronRecordsProcessed: vi.fn() }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn() }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/content/programs', () => ({ getProgramBySlug: () => ({ title: 'IT Support' }), getProgramDisplayTitle: () => 'IT Support' }));
 vi.mock('@/lib/cron/nudgeThrottle', () => ({ filterNudgeEligibleUserIds: vi.fn(), recordNudgeSent: vi.fn() }));
 import { GET } from '@/app/api/cron/course-accountability/route';

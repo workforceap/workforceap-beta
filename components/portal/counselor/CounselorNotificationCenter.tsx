@@ -252,6 +252,7 @@ export default function CounselorNotificationCenter({ members }: { members: Memb
         </div>
       ) : notifications.length === 0 ? (
         <PortalEmptyState
+          headingAs="h2"
           title="No notifications"
           description="Notifications will appear here when members complete courses, match with jobs, or need follow-up."
           icon={<BellOff size={40} aria-hidden style={{ color: 'var(--wa-accent)' }} />}

@@ -33,6 +33,7 @@ type CounselorReviewableApplication = {
 
 type CounselorWioaIntakeState = {
   hasScreening: boolean;
+  submittedAt: string | null;
   reviewStatus: string | null;
   reviewedAt: string | null;
   reviewNotes: string | null;
@@ -154,7 +155,12 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
       const res = await fetch(`/api/admin/members/${memberId}/wioa-review`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: intakeStatus, notes: intakeNotes.trim() || null }),
+        body: JSON.stringify({
+          status: intakeStatus,
+          notes: intakeNotes.trim() || null,
+          expectedSubmittedAt: wioa.submittedAt,
+          expectedReviewedAt: intakeSavedAt,
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; wioaReviewedAt?: string };
       if (!res.ok) {

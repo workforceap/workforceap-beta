@@ -120,12 +120,13 @@ async function _POST(request: NextRequest) {
             branding,
           });
 
-          await resend.emails.send({
+          const { error: sendError } = await resend.emails.send({
             from: getFrom(),
             to: member.email,
             subject: sanitizeEmailSubjectLine(subject),
             html,
           });
+          if (sendError) throw new Error(sendError.message || 'Email provider rejected the request.');
           sentCount++;
         }
 

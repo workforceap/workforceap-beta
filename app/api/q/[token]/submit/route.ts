@@ -1,5 +1,9 @@
 import { after, NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
+import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
+import { lockEligibilityMember, saveEligibilityForm, eligibilityWriteFailure, type EligibilityFormMeta } from '@/lib/wioa/eligibilityForm';
 import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import {
@@ -26,8 +30,9 @@ import { hasEligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningF
  *
  * Security:
  *  - NO auth. The single-use token is the only credential. It is validated
- *    server-side AND atomically consumed BEFORE any write, so the link is
- *    single-use even under concurrent submits.
+ *    server-side AND atomically consumed in the same transaction as the
+ *    answers, so a failed write rolls back consumption and concurrent submits
+ *    cannot both persist.
  *  - Per-IP rate limited (5/min) to cap abuse on the public path.
  *  - Expiry is enforced by validateTokenizedLink.
  *  - A bound link only ever writes its own subjectUserId — no cross-member
@@ -58,23 +63,6 @@ const submitSchema = z.object({
   hearAboutOther: z.string().trim().max(200).optional().nullable(),
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
 });
-
-type EligibilityFormMeta = {
-  version: 1;
-  updatedAt: string;
-  ageGroup: string | null;
-  county: string | null;
-  q1: string | null;
-  q2: string | null;
-  q3: string | null;
-  receivingUnemployment: string | null;
-  exhaustedUnemployment: string | null;
-  layoffCompany: string | null;
-  snapWic: string | null;
-  hearAbout: string | null;
-  hearAboutOther: string | null;
-  partnerAmbassadorReferral: string | null;
-};
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -141,12 +129,8 @@ export const POST = withApiGuc(
           : null,
       };
 
-      // Atomic single-use consume BEFORE the write, so concurrent submits
-      // can never both persist. If this call did not flip consumedAt, the
-      // link was already used.
-      const consumed = await consumeTokenizedLink(link.id);
-      if (!consumed) {
-        return NextResponse.json({ error: 'This link has already been used.' }, { status: 409 });
+      if (!interactiveTransactionsGuaranteed()) {
+        return NextResponse.json({ error: 'Screening storage is temporarily unavailable. Try again later.' }, { status: 503 });
       }
 
       if (link.subjectUserId) {
@@ -154,6 +138,10 @@ export const POST = withApiGuc(
         // /api/member/eligibility. No other member is ever touched.
         const subjectId = link.subjectUserId;
         const notifyMeta = await prisma.$transaction(async (tx) => {
+          if (!(await consumeTokenizedLink(link.id, { tx, expected: link }))) throw new Error('ELIGIBILITY_TOKEN_CONFLICT');
+          // Older bound links may have no orgId; their immutable subject remains
+          // the authority. When an organization is bound, require that exact org.
+          const current = await lockEligibilityMember(tx, subjectId, link.orgId ?? undefined);
           const profileData: Record<string, unknown> = {
             city: data.city?.trim() || null,
             state: data.state?.trim() || null,
@@ -167,17 +155,6 @@ export const POST = withApiGuc(
             update: profileData,
           });
 
-          const current = await tx.user.findUnique({
-            where: { id: subjectId },
-            select: {
-              wioaQualificationJson: true,
-              organizationId: true,
-              email: true,
-              fullName: true,
-            },
-          });
-          const existing =
-            (current?.wioaQualificationJson as Record<string, unknown> | null) ?? {};
           const meta: EligibilityFormMeta = {
             version: 1,
             updatedAt: new Date().toISOString(),
@@ -185,34 +162,18 @@ export const POST = withApiGuc(
             county: data.county?.trim() || null,
             ...extendedMeta,
           };
-          await tx.user.update({
-            where: { id: subjectId },
-            data: { wioaQualificationJson: { ...existing, eligibilityForm: meta } as object },
+          await saveEligibilityForm(tx, {
+            userId: subjectId, organizationId: current.organizationId,
+            previous: current.wioaQualificationJson, form: meta,
           });
 
           if (extendedMeta.q1 && extendedMeta.q2 && current?.organizationId) {
             const yesCount = [extendedMeta.q1, extendedMeta.q2, extendedMeta.q3].filter(
               (v) => v === 'yes',
             ).length;
-            const screening = {
-              organizationId: current.organizationId,
-              q1: extendedMeta.q1,
-              q2: extendedMeta.q2,
-              q3: extendedMeta.q3,
-              qualifies: yesCount >= 1,
-              yesCount,
-              receivingUnemployment: extendedMeta.receivingUnemployment,
-              exhaustedUnemployment: extendedMeta.exhaustedUnemployment,
-              layoffCompany: extendedMeta.layoffCompany,
-              snapWic: extendedMeta.snapWic,
-              hearAbout: extendedMeta.hearAbout,
-              hearAboutOther: extendedMeta.hearAboutOther,
-              partnerAmbassadorReferral: extendedMeta.partnerAmbassadorReferral,
-            };
-            await tx.applyEligibilityScreening.upsert({
-              where: { userId: subjectId },
-              create: { userId: subjectId, ...screening },
-              update: screening,
+            await saveEligibilityScreening(tx, {
+              userId: subjectId, organizationId: current.organizationId,
+              answers: extendedMeta, qualifies: yesCount >= 1, yesCount,
             });
           }
 
@@ -220,7 +181,7 @@ export const POST = withApiGuc(
             email: current?.email ?? data.email?.trim() ?? link.email ?? null,
             fullName: current?.fullName ?? null,
           };
-        });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
         auditLog({
           actorUserId: link.subjectUserId,
           action: 'member_eligibility_questionnaire_submitted',
@@ -297,28 +258,31 @@ export const POST = withApiGuc(
         const leadEmail = data.email?.trim() || link.email || null;
         const leadName =
           [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || leadEmail || 'Lead';
-        await auditLog({
-          actorUserId: null,
-          action: 'public_eligibility_lead_submitted',
-          targetType: 'tokenized_link',
-          targetId: link.id,
-          actorEmailSnapshot: null,
-          actorRoleSnapshot: null,
-          metadata: {
-            orgId: link.orgId,
-            email: leadEmail,
-            firstName: data.firstName?.trim() || null,
-            lastName: data.lastName?.trim() || null,
-            phone: data.phone?.trim() || null,
-            ageGroup: data.ageGroup ?? null,
-            city: data.city?.trim() || null,
-            state: data.state?.trim() || null,
-            zip: data.zip?.trim() || null,
-            county: data.county?.trim() || null,
-            primaryBarriers: barrierTypes,
-            ...extendedMeta,
-          },
-        });
+        await prisma.$transaction(async (tx) => {
+          if (!(await consumeTokenizedLink(link.id, { tx, expected: link }))) throw new Error('ELIGIBILITY_TOKEN_CONFLICT');
+          await auditLog({
+            actorUserId: null,
+            action: 'public_eligibility_lead_submitted',
+            targetType: 'tokenized_link',
+            targetId: link.id,
+            actorEmailSnapshot: null,
+            actorRoleSnapshot: null,
+            metadata: {
+              orgId: link.orgId,
+              email: leadEmail,
+              firstName: data.firstName?.trim() || null,
+              lastName: data.lastName?.trim() || null,
+              phone: data.phone?.trim() || null,
+              ageGroup: data.ageGroup ?? null,
+              city: data.city?.trim() || null,
+              state: data.state?.trim() || null,
+              zip: data.zip?.trim() || null,
+              county: data.county?.trim() || null,
+              primaryBarriers: barrierTypes,
+              ...extendedMeta,
+            },
+          }, tx);
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
         if (leadEmail && hasEligibilityScreeningFields(extendedMeta)) {
           after(() =>
@@ -354,6 +318,11 @@ export const POST = withApiGuc(
 
       return NextResponse.json({ ok: true });
     } catch (error) {
+      if (error instanceof Error && error.message === 'ELIGIBILITY_TOKEN_CONFLICT') {
+        return NextResponse.json({ error: 'This link has been used or expired. Ask for a new link.' }, { status: 409 });
+      }
+      const failure = eligibilityWriteFailure(error);
+      if (failure) return NextResponse.json({ error: failure.error }, { status: failure.status });
       console.error('/api/q/[token]/submit error:', error);
       return NextResponse.json({ error: 'We could not save your answers. Please try again.' }, { status: 500 });
     }

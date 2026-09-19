@@ -1,5 +1,7 @@
 'use client';
 
+import { Eye, EyeOff, Landmark, MailCheck } from 'lucide-react';
+
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -336,7 +338,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
     return (
       <div style={{ ...s.wrapper, justifyContent: 'center', alignItems: 'center' }}>
         <div style={{ textAlign: 'center', maxWidth: 440, padding: 'var(--space-8)' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 56, color: 'var(--color-green)', marginBottom: 'var(--space-4)', display: 'block' }} aria-hidden="true">mark_email_read</span>
+          <MailCheck size={56} aria-hidden="true" style={{ color: 'var(--color-green)', marginBottom: 'var(--space-4)', display: 'block', marginInline: 'auto' }} />
           <h2 style={{ ...s.heading, marginBottom: 'var(--space-4)' }}>{tAuth('signup.successTitle')}</h2>
           <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: 'var(--space-6)', lineHeight: 'var(--line-height-normal)' }}>
             {tAuth('signup.successBody')}
@@ -367,7 +369,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
         </div>
 
         <div style={s.brandContent}>
-          <span className="material-symbols-outlined" style={{ fontSize: 48, opacity: 0.9, marginBottom: 'var(--space-4)', display: 'block' }} aria-hidden="true">account_balance</span>
+          <Landmark size={48} aria-hidden="true" style={{ opacity: 0.9, marginBottom: 'var(--space-4)', display: 'block', marginInline: 'auto' }} />
           <h1 style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 800, lineHeight: 1.15, marginBottom: 'var(--space-4)', letterSpacing: '-0.02em' }}>
             {tAuth('signup.heroTitle')}
           </h1>
@@ -463,9 +465,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
                   aria-label={showPassword ? tAuth('signup.hidePassword') : tAuth('signup.showPassword')}
                   aria-pressed={showPassword}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
                 </button>
               </div>
               {/* Strength bars */}

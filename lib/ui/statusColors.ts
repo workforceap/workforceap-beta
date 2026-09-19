@@ -2,16 +2,15 @@
  * Single source of truth for semantic status colors — badges, chips, and
  * severity indicators across admin + portal surfaces.
  *
- * Every entry is a `{ fg, bg, border }` triple of `var()` strings built from
- * the existing brand tokens (`--color-green` / `--color-gold` / `--color-blue`
- * / `--color-accent`) plus `color-mix()` tints, so nothing here hardcodes a
- * hex value that could drift from the rest of the design kit.
+ * Every entry is a `{ fg, bg, border }` triple from the portal token layer.
+ * Foregrounds use text-on-tint tokens; fill/icon colors are not safe substitutes
+ * for small status labels. Legacy border colors adapt within portal surfaces.
  *
- * `danger` intentionally resolves to `--color-accent` (brand magenta), NOT
+ * `danger` intentionally resolves to `--wa-accent-text` (brand magenta), NOT
  * `--wa-danger` (true red). This mirrors two components that already ship
  * this exact palette app-wide:
  *   - components/portal/StatusBadge.tsx — variant `'error'` ("at risk, not
- *     enrolled, rejected") already uses `--color-accent`.
+ *     enrolled, rejected") uses the same accent text/tint pair.
  *   - components/portal/counselor/AtRiskDashboard.tsx — `RISK_CONFIG`
  *     (lines ~84-87) colors CRITICAL/HIGH/MEDIUM with accent/gold/blue.
  * Backing `danger` with `--wa-danger` here would create a SECOND, disagreeing
@@ -49,21 +48,20 @@ export const STATUS_COLORS: Record<StatusTone, StatusColorSet> = {
     bg: 'var(--wa-gold-soft)',
     border: 'color-mix(in srgb, var(--color-gold) 40%, transparent)',
   },
-  // See file header: matches StatusBadge's 'error' variant + AtRiskDashboard's
-  // CRITICAL, both `--color-accent` — not `--wa-danger`.
+  // Keep the legacy attention/at-risk meaning magenta, not destructive red.
   danger: {
-    fg: 'var(--color-accent)',
-    bg: 'color-mix(in srgb, var(--color-accent) 15%, transparent)',
+    fg: 'var(--wa-accent-text)',
+    bg: 'var(--wa-accent-soft)',
     border: 'color-mix(in srgb, var(--color-accent) 35%, transparent)',
   },
   info: {
-    fg: 'var(--color-blue)',
-    bg: 'color-mix(in srgb, var(--color-blue) 15%, transparent)',
+    fg: 'var(--wa-info-dark)',
+    bg: 'var(--wa-info-soft)',
     border: 'color-mix(in srgb, var(--color-blue) 35%, transparent)',
   },
   neutral: {
-    fg: 'var(--color-on-surface-variant)',
-    bg: 'var(--surface-container-high)',
+    fg: 'var(--wa-muted)',
+    bg: 'var(--wa-surface-2)',
     border: 'var(--outline-variant)',
   },
 };

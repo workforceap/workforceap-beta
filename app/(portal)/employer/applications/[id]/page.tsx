@@ -8,7 +8,7 @@ import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
 import { formatPortalDate } from '@/lib/formatDate';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import StatusBadge from '@/components/portal/StatusBadge';
 import PortalCard from '@/components/portal/ui/PortalCard';
@@ -80,7 +80,8 @@ export default async function EmployerApplicationPage({
 
   return (
     <PortalPageFrame maxWidth="64rem">
-      <PageHeader
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
         title={candidateName}
         subtitle={t('applyingForJob', { title: application.job.title })}
         breadcrumbs={[

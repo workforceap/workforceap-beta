@@ -69,6 +69,10 @@ Read [middleware.ts](../../middleware.ts), [authentication](../../lib/auth/serve
 
 The application has several independent controls. A verified Supabase session identifies the caller. Application roles decide permitted actions. Actor/subject organization checks constrain the data. GUC context transports database identity where enabled. These controls are not interchangeable: the current Prisma client disables the GUC layer unless `WAP_RLS_GUC_ENABLED=true`, and its comments describe a staged RLS rollout. Static source cannot establish the live database role, `FORCE ROW LEVEL SECURITY`, or deployed flag values. See [data and trust boundaries](data.md).
 
+[Auth read recovery](../../lib/auth/authRead.ts) classifies stale sessions separately from transient transport/provider errors. Edge middleware and server auth reads allow one additional read after a 300 ms delay for a transient failure; stale or unexpected failures are not retried by this helper. Protected middleware paths still verify with `getUser`; public `getSession` use is refresh plumbing, not authorization. Only a classified stale session triggers targeted Supabase session-cookie cleanup, including chunks. Transient failures preserve cookies, and auth reads preserve PKCE cookies. Redirects and API denials retain accumulated refresh/clear cookies and request correlation headers. This additional retry budget is not a total request deadline: the Auth SDK can retry refresh internally and underlying request latency remains separate. See [auth recovery regressions](../../tests/api/auth-read-recovery.spec.ts).
+
+[API GUC wrappers](../../lib/db/withRequestGuc.ts) also provide a shared error boundary through [request-scoped reporting](../../lib/observability/apiErrorScope.ts). Uncaught failures return a generic 500 after preserving Next control-flow exceptions; otherwise unreported returned 5xx responses are captured without consuming their body or stream. A detailed error already reported within the request suppresses a duplicate synthetic response error. Telemetry failure must not replace the API result. This boundary supplies observability, not endpoint authorization.
+
 ## Application and enrollment flow
 
 ```mermaid
@@ -145,6 +149,12 @@ This is the current training/enrollment architecture, not a wish list. Collectin
 6. **Leave Astro/Next and kit/Astryx as coexistence, not merge projects**, unless a specific overlapping URL or surface is being migrated with an owner.
 
 KB-06 made omitted Node suites visible. It did not replace these sources of truth. WAP-14 notification reliability is a separate owner and is not this replacement list.
+
+## Staff reporting projections
+
+The [counselor roster loader](../../lib/admin/counselorRoster.ts) searches and paginates active counselors in the database, with 50 rows per page and stable name/ID ordering. Whole-cohort counters remain separate from the filtered page. [Assignment aggregates](../../lib/admin/counselorRosterAggregates.ts) count active assignments to active counselors with counselor/member tenant predicates; the explicit super-admin scope remains supported. Caseload counts assignment rows, placements count those whose member status is `placed`, and the roster's risk count retains its inactive/no-login/over-21-day-login predicate. This roster measure is distinct from persisted risk-alert queues. Response time is unmeasured and displays as unknown. Load failure renders a recoverable error panel, with retry or legacy navigation as an explicit choice, rather than a successful-looking empty roster.
+
+[Member-detail outcomes](../../lib/admin/memberOutcomesSummary.ts) use four scoped aggregates instead of hydrating a full board report. The preserved historical denominator is non-deleted users with a non-null legacy `enrolledProgram`; the numerator counts placement records, not distinct members. The recent count covers the preceding 90 days through the supplied current time. Mean weeks uses records with a positive interval from legacy enrollment to placement and remains unknown when none qualify. These are existing operational definitions, not a reconciled funder cohort or proof that legacy enrollment pointers are complete. See [reporting regressions](../../tests/lib/staff-reporting-efficiency.spec.ts) and [roster failure handling](../../tests/app/counselor-roster-failure.spec.tsx).
 
 ## Communication and asynchronous work
 

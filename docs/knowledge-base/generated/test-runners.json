@@ -3,7 +3,7 @@
   "sources": [
     {
       "file": "scripts/test-unit.mjs",
-      "sha256": "40e9c675a9ba91757c5c0ec4361e5dbe23bcc8c794b17d2776c4bebaab23a476"
+      "sha256": "a3fd48b2f441aa4d154d4e966bcdcc01f2d5c83bd7fa4456eeaeb7cbd78fea5e"
     },
     {
       "file": "scripts/vitest-library-specs.mjs",
@@ -19,7 +19,7 @@
     },
     {
       "file": "package.json",
-      "sha256": "8151db874d881b391c1b8300f615276d15b8f8550ef4dec913ab943caa4d43a1"
+      "sha256": "b585bc8579f76c46da17be8eb200e04352e94f0a4d69a514b8edd2ff40cf29fd"
     }
   ],
   "directNodeScripts": [],

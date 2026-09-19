@@ -67,7 +67,7 @@ describe('buildNextBestActions', () => {
   });
 
   it('shows skills_assessment for state B without starter profile review', () => {
-    const actions = buildNextBestActions(makeCtx({ state: 'B', starterProfileReviewRequired: false }));
+    const actions = buildNextBestActions(makeCtx({ state: 'B', enrolledProgram: 'cyber', starterProfileReviewRequired: false }));
     expect(actions.some((a) => a.id === 'skills_assessment')).toBe(true);
     expect(actions.find((a) => a.id === 'skills_assessment')?.variant).toBe('urgent');
   });
@@ -75,6 +75,7 @@ describe('buildNextBestActions', () => {
   it('shows review_starter_profile for state B when review required', () => {
     const actions = buildNextBestActions(makeCtx({
       state: 'B',
+      enrolledProgram: 'cyber',
       starterProfileReviewRequired: true,
       starterProfileMissingFields: ['phone', 'address'],
     }));
@@ -109,7 +110,7 @@ describe('buildNextBestActions', () => {
   });
 
   it('shows interview_practice and career_readiness for state D without practice', () => {
-    const actions = buildNextBestActions(makeCtx({ state: 'D', hasCompletedInterviewPractice: false }));
+    const actions = buildNextBestActions(makeCtx({ state: 'D', enrolledProgram: 'cyber', assessmentCompleted: true, completedCourseCount: 1, hasResume: true, hasCompletedInterviewPractice: false }));
     expect(actions.some((a) => a.id === 'interview_practice')).toBe(true);
     expect(actions.some((a) => a.id === 'career_readiness')).toBe(true);
   });
@@ -120,6 +121,9 @@ describe('buildNextBestActions', () => {
       enrolledProgram: 'cyber',
       assessmentCompleted: true,
       jobApplicationCount: 0,
+      hasResume: true,
+      hasCompletedInterviewPractice: true,
+      completedCourseCount: 1,
     }));
     expect(actions.some((a) => a.id === 'job_tracker')).toBe(true);
   });

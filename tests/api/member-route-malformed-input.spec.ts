@@ -68,7 +68,7 @@ vi.mock('@/lib/member/applicationAiFeedback', () => ({
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
-vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),  captureApiError: vi.fn() }));
 vi.mock('@/lib/rate-limit', () => ({ checkAIToolRateLimit: vi.fn(async () => ({ success: true })) }));
 vi.mock('@/lib/ai/elevenlabs', () => ({ generateSpeech: vi.fn() }));
 

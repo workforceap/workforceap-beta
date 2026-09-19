@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { getUserRoles, getProfileRole } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { CRON_SETTING_PREFIX } from '@/lib/feature-flags/reservedKeys';
 import { filterVisibleFlags } from '@/lib/feature-flags/publicApi';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -25,7 +26,7 @@ export const GET = withApiGuc(async () => {
     const allRoles = Array.from(new Set([profileRole, ...userRoles]));
 
     const flags = await prisma.$transaction((tx) => tx.featureFlag.findMany({
-      where: { enabled: true },
+      where: { enabled: true, NOT: { key: { startsWith: CRON_SETTING_PREFIX } } },
       take: 500,
     }));
 

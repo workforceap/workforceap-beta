@@ -3,11 +3,10 @@ import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import {
-  inheritMemberOrg,
-  inheritUserOrg,
   resolveAdminPageTenant,
   withAdminPageScope,
 } from '@/lib/tenant/adminPageScope';
+import { loadCounselorRoster, parseCounselorRosterQuery, COUNSELOR_PAGE_SIZE } from '@/lib/admin/counselorRoster';
 import PageHeader from '@/components/portal/PageHeader';
 import AdminCounselorsClient from '@/components/admin/AdminCounselorsClient';
 import {
@@ -22,9 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
     path: '/admin/counselors',
   });
 }
-
-/** Members idle this long count toward a counselor's "at-risk" tally. */
-const AT_RISK_IDLE_DAYS = 21;
 
 /** Build initials from a full name (e.g. "Sarah Chen" → "SC"). */
 function initialsFrom(name: string): string {
@@ -87,77 +83,22 @@ export default async function AdminCounselorsPage({
 
   // --- DEFAULT: real (lean) caseload & performance roster (design kit) ---
 
-  const idleCutoff = new Date();
-  idleCutoff.setDate(idleCutoff.getDate() - AT_RISK_IDLE_DAYS);
-
-  // Active counselors + their active assignments (with the member signals we
-  // aggregate). Two lean findMany calls in parallel; if either core query
-  // fails we fall back to the proven legacy form rather than a fake kit.
-  const [counselorsResult, assignmentsResult] = await withAdminPageScope(scope, (db) =>
-    Promise.allSettled([
-      db.counselor.findMany({
-        where: { active: true, ...inheritUserOrg(scope) },
-        take: 500,
-        orderBy: [{ partner: { name: 'asc' } }, { user: { fullName: 'asc' } }],
-        select: {
-          id: true,
-          affiliation: true,
-          title: true,
-          partner: { select: { name: true } },
-          user: { select: { fullName: true } },
-        },
-      }),
-      db.counselorAssignment.findMany({
-        where: { active: true, ...inheritMemberOrg(scope) },
-        take: 20000,
-        select: {
-          counselorId: true,
-          member: { select: { memberStatus: true, lastLoginAt: true } },
-        },
-      }),
-    ]),
-  );
-
-  if (counselorsResult.status === 'rejected') {
-    console.error('[admin/counselors] counselor load failed', counselorsResult.reason);
-    redirect('/admin/counselors?ui=legacy');
+  const query = parseCounselorRosterQuery(params);
+  const roster = await withAdminPageScope(scope, (db) => loadCounselorRoster(db, scope, query)).catch((error: unknown) => {
+    console.error('[admin/counselors] roster load failed', error);
+    return null;
+  });
+  if (!roster) {
+    return <div className="admin-main-content" data-portal-error-state="admin-counselors-assignment-load">
+      <PageHeader title="Counselors & Advisors" subtitle="Counselor reporting is temporarily unavailable." />
+      <div role="alert">
+        <p>We could not load counselor caseloads. No reporting totals are shown.</p>
+        <p><a href="/admin/counselors">Try loading the roster again</a></p>
+        <p><a href="/admin/counselors?ui=legacy">Open counselor management</a></p>
+      </div>
+    </div>;
   }
-
-  const counselorRecords = counselorsResult.value;
-  const counselorAssignmentsLoadFailed = assignmentsResult.status === 'rejected';
-
-  // Aggregate caseload / at-risk / placements per counselor from the active
-  // assignments. A failed aggregate degrades to zeros (roster still renders).
-  type Agg = { caseload: number; atRisk: number; placements: number };
-  const aggMap = new Map<string, Agg>();
-  for (const c of counselorRecords) aggMap.set(c.id, { caseload: 0, atRisk: 0, placements: 0 });
-
-  if (assignmentsResult.status === 'fulfilled') {
-    for (const a of assignmentsResult.value) {
-      const agg = aggMap.get(a.counselorId);
-      if (!agg) continue; // assignment for an inactive/filtered counselor
-      agg.caseload += 1;
-      if (a.member.memberStatus === 'placed') agg.placements += 1;
-      // At-risk: explicitly inactive, or no login within the idle window.
-      const lastLogin = a.member.lastLoginAt;
-      if (a.member.memberStatus === 'inactive' || !lastLogin || lastLogin < idleCutoff) {
-        agg.atRisk += 1;
-      }
-    }
-  } else {
-    console.error('[admin/counselors] assignment aggregate failed', assignmentsResult.reason);
-  }
-
-  const total = counselorRecords.length;
-  const totalCaseload = counselorRecords.reduce(
-    (sum, c) => sum + (aggMap.get(c.id)?.caseload ?? 0),
-    0,
-  );
-  const avgCaseload = total > 0 ? Math.round(totalCaseload / total) : 0;
-  const atRiskOwned = counselorRecords.reduce(
-    (sum, c) => sum + (aggMap.get(c.id)?.atRisk ?? 0),
-    0,
-  );
+  const { counselors: counselorRecords, aggregates: aggMap, total, avgCaseload, atRiskOwned } = roster;
 
   // Load tone vs the cohort average: >15% over avg = Over, >15% under = Light.
   const overBand = avgCaseload * 1.15;
@@ -197,9 +138,12 @@ export default async function AdminCounselorsPage({
 
   return (
     <>
-      {counselorAssignmentsLoadFailed ? <span hidden data-portal-error-state="admin-counselors-assignment-load" /> : null}
       <CounselorsRosterKit
         counselors={counselors}
+        currentPage={roster.page}
+        pageSize={COUNSELOR_PAGE_SIZE}
+        matchingTotal={roster.matchingTotal}
+        searchQuery={query.search}
         total={total}
         avgCaseload={avgCaseload}
         atRiskOwned={atRiskOwned}

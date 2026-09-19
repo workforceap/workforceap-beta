@@ -9,7 +9,10 @@ vi.mock('@/lib/db/prisma', () => ({
   },
 }));
 
-import { buildPartnerAttentionQueue } from '@/lib/partner/attentionQueue';
+import { partnerAttentionRows } from '@/lib/partner/attentionQueue';
+import { buildAttentionPageQuery } from '@/lib/partner/attentionPagination';
+
+async function loadFixtureRows() { return partnerAttentionRows(await db.referrals(), new Map(), now); }
 import { programDisplayTitle } from '@/lib/content/programTitle';
 
 const programSlug = 'it-support-professional-certificate-ibm';
@@ -46,7 +49,7 @@ describe('partner follow-up eligibility', () => {
         memberProgramProgress: [{ programSlug, averagePercent: 10, coursesCompleted: 1 }],
       }),
     ]);
-    const rows = await buildPartnerAttentionQueue('partner-1', 'org-1');
+    const rows = await loadFixtureRows();
     expect(rows).toEqual([expect.objectContaining({
       memberId: 'active', stage: 'in_training', stageLabel: 'In Training', riskTier: 'high',
       nextBestAction: expect.stringContaining('latest course progress'),
@@ -58,7 +61,7 @@ describe('partner follow-up eligibility', () => {
       referral('pending', { courseraEnrollmentApproved: false }),
       referral('approved'),
     ]);
-    const rows = await buildPartnerAttentionQueue('partner-1', 'org-1');
+    const rows = await loadFixtureRows();
     expect(rows.find(row => row.memberId === 'pending')).toMatchObject({
       stage: 'approval_pending', stageLabel: 'Training approval pending',
       nextBestAction: expect.stringContaining('confirm enrollment approval and any funding steps'),
@@ -69,12 +72,19 @@ describe('partner follow-up eligibility', () => {
     expect(JSON.stringify(rows)).not.toMatch(/funding approved|fully funded/i);
   });
 
+  it('keeps completed training without a recorded certificate in this queue', async () => {
+    db.referrals.mockResolvedValue([referral('completed-coursework', {
+      memberProgramProgress: [{ programSlug, averagePercent: 100, coursesCompleted: 99 }],
+    })]);
+    expect((await loadFixtureRows())[0]).toMatchObject({ memberId: 'completed-coursework', stage: 'in_training' });
+  });
+
   it('does not hide observed training merely because a legacy approval flag is absent', async () => {
     db.referrals.mockResolvedValue([referral('legacy-active', {
       courseraEnrollmentApproved: false,
       memberProgramProgress: [{ programSlug, averagePercent: 20, coursesCompleted: 2 }],
     })]);
-    expect(await buildPartnerAttentionQueue('partner-1', 'org-1')).toEqual([
+    expect(await loadFixtureRows()).toEqual([
       expect.objectContaining({ stage: 'in_training' }),
     ]);
   });
@@ -86,19 +96,17 @@ describe('partner follow-up eligibility', () => {
       referral('placed', { placementRecord: { employerName: 'Synthetic', jobTitle: 'Support', placedAt: now } }),
       referral('certified', { userCertifications: [{ certName: 'Recorded certificate', earnedAt: now }] }),
     ]);
-    expect((await buildPartnerAttentionQueue('partner-1', 'org-1')).map(row => row.memberId)).toEqual(['applicant']);
+    expect((await loadFixtureRows()).map(row => row.memberId)).toEqual(['applicant']);
   });
 
-  it('applies the active partner, same-tenant member and real-member predicates before reading referrals', async () => {
-    db.referrals.mockResolvedValue([]);
-    expect(await buildPartnerAttentionQueue('partner-1', 'org-1')).toEqual([]);
-    expect(db.referrals).toHaveBeenCalledWith(expect.objectContaining({
-      where: {
-        partnerId: 'partner-1', partner: { organizationId: 'org-1', active: true },
-        member: expect.objectContaining({ organizationId: 'org-1', deletedAt: null, profile: { role: 'member' } }),
-      },
-    }));
-    expect(db.logs).not.toHaveBeenCalled();
+  it('applies the active partner, same-tenant member and real-member predicates before paging', () => {
+    const query = buildAttentionPageQuery('partner-1', 'org-1', { tier: 'all', asOf: now, limit: 50 });
+    expect(query.text).toContain('p.active = true');
+    expect(query.text).toContain('u.deleted_at IS NULL');
+    expect(query.text).toContain("profile.role = 'member'");
+    expect(query.text).toContain('NOT EXISTS (SELECT 1 FROM user_certifications');
+    expect(query.values).toContain('partner-1');
+    expect(query.values.filter(value => value === 'org-1')).toHaveLength(2);
   });
 });
 
@@ -109,7 +117,7 @@ describe('program titles on partner attention rows', () => {
       referral('known'),
       referral('unknown', { enrolledProgram: unknownSlug, courseEnrollments: [{ programSlug: unknownSlug, curriculumVersion: 'legacy-v1', isPrimary: true }] }),
     ]);
-    const rows = await buildPartnerAttentionQueue('partner-1', 'org-1');
+    const rows = await loadFixtureRows();
     const byId = new Map(rows.map(row => [row.memberId, row]));
     expect(byId.get('known')?.programTitle).toBe(programDisplayTitle(programSlug));
     expect(byId.get('known')?.programTitle).not.toMatch(/-/);

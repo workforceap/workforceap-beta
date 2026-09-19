@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, Bell, Clock, Eye, MessageSquare } from 'lucide-react';
@@ -23,6 +23,8 @@ type AttentionMember = {
   lastTouchName: string | null;
 };
 
+type ConfirmedQueueFields = Partial<Pick<AttentionMember, 'assignedPartnerUserId' | 'assignedToName' | 'lastTouchName'>>;
+
 type LogRow = {
   id: string;
   memberId: string;
@@ -37,13 +39,6 @@ type MemberOption = { id: string; fullName: string };
 type TeamUser = { id: string; fullName: string; email: string };
 
 type TierFilter = 'all' | 'high' | 'medium' | 'low' | 'watch';
-
-const TIER_ORDER: Record<AttentionMember['riskTier'], number> = {
-  high: 0,
-  medium: 1,
-  low: 2,
-  watch: 3,
-};
 
 const TIER_TONE: Record<AttentionMember['riskTier'], QueueTone> = {
   high: 'red',
@@ -81,6 +76,12 @@ const kitSmallSelectStyle: React.CSSProperties = {
   color: 'var(--wa-text)',
 };
 
+function mergeRecentLogs(fetched: LogRow[], current: LogRow[]): LogRow[] {
+  const byId = new Map(current.map(log => [log.id, log]));
+  for (const log of fetched) byId.set(log.id, log);
+  return [...byId.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id)).slice(0, 80);
+}
+
 const ASSIGN_FAILED = 'Could not change the owner. Please try again.';
 
 export default function PartnerAttentionClient({ initialTier = 'high' as TierFilter }) {
@@ -102,10 +103,25 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
   const [assignError, setAssignError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [queueLoading, setQueueLoading] = useState(true);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [cursorHistory, setCursorHistory] = useState<Array<string | null>>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [queueRevision, setQueueRevision] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [tierCounts, setTierCounts] = useState<Record<TierFilter, number> | null>(null);
+  const [resourceErrors, setResourceErrors] = useState<Partial<Record<'logs' | 'members' | 'team', string>>>({});
+  const [selectedMember, setSelectedMember] = useState<MemberOption | null>(null);
+  const outreachRevision = useRef(0);
+  const draftRevision = useRef(0);
+  const confirmedQueueFields = useRef(new Map<string, ConfirmedQueueFields>());
   const tCommon = useTranslations('common');
 
+  const routeTier = searchParams?.get('tier');
   useEffect(() => {
-    const tr = searchParams?.get('tier');
+    const tr = routeTier;
+    setCursor(null);
+    setCursorHistory([]);
     if (!tr) {
       setTierFilter('high');
       return;
@@ -113,7 +129,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
     if (tr === 'high' || tr === 'medium' || tr === 'low' || tr === 'watch' || tr === 'all') {
       setTierFilter(tr);
     }
-  }, [searchParams]);
+  }, [routeTier]);
 
   const pushTierRoute = useCallback(
     (t: TierFilter) => {
@@ -122,73 +138,79 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
       else next.set('tier', t);
       const qs = next.toString();
       if (pathname) router.replace(qs.length ? `${pathname}?${qs}` : pathname, { scroll: false });
+      setCursor(null);
+      setCursorHistory([]);
       setTierFilter(t);
     },
     [pathname, router, searchParams],
   );
 
-  const reload = useCallback(async () => {
+  const loadQueue = useCallback(async (signal: AbortSignal) => {
+    // Only writes confirmed after this GET starts can supersede its fields.
+    confirmedQueueFields.current = new Map();
+    setQueueLoading(true);
     setLoadError(null);
     try {
-      const [r1, r2, r3, r4] = await Promise.all([
-        fetch('/api/partner/members/needs-attention', { credentials: 'include' }),
-        fetch('/api/partner/outreach', { credentials: 'include' }),
-        fetch('/api/partner/referral-members', { credentials: 'include' }),
-        fetch('/api/partner/team-assign', { credentials: 'include' }),
-      ]);
-      if (!r1.ok) {
-        setRows([]);
-        setLoadError('The attention queue could not load. Try again in a moment.');
-      } else {
-        const d = (await r1.json()) as { members: AttentionMember[] };
-        setRows(d.members);
-      }
-      if (r2.ok) {
-        const d = (await r2.json()) as { logs: LogRow[] };
-        setLogs(d.logs);
-      }
-      if (r3.ok) {
-        const d = (await r3.json()) as { members: MemberOption[] };
-        setAllMembers(d.members);
-      }
-      if (r4.ok) {
-        const d = (await r4.json()) as { users: TeamUser[] };
-        setTeam(d.users);
-      }
+      const params = new URLSearchParams({ tier: tierFilter, limit: '50' });
+      if (cursor) params.set('cursor', cursor);
+      const response = await fetch(`/api/partner/members/needs-attention?${params}`, { credentials: 'include', signal });
+      const data = await response.json();
+      if (!response.ok) throw new Error('The attention queue could not load. Refresh the queue and try again.');
+      if (!Array.isArray(data.members) || !data.counts || !Number.isSafeInteger(data.total) || data.total < 0 ||
+        !['all', 'high', 'medium', 'low', 'watch'].every(key => Number.isSafeInteger(data.counts[key]) && data.counts[key] >= 0) ||
+        !(data.nextCursor === null || (typeof data.nextCursor === 'string' && data.nextCursor.length > 0))) throw new Error('The attention queue response could not be confirmed.');
+      if (signal.aborted) return;
+      setRows(data.members.map((member: AttentionMember) => ({ ...member, ...confirmedQueueFields.current.get(member.memberId) }))); setTierCounts(data.counts); setTotal(data.total); setNextCursor(data.nextCursor);
     } catch {
-      setRows([]);
-      setLoadError('The attention queue could not load. Check your connection and retry.');
+      if (!signal.aborted) setLoadError('The attention queue could not load. Refresh the queue and try again.');
+    } finally {
+      if (!signal.aborted) setQueueLoading(false);
+    }
+  }, [tierFilter, cursor]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadQueue(controller.signal);
+    return () => controller.abort();
+  }, [loadQueue, queueRevision]);
+
+  const loadResource = useCallback(async (kind: 'logs' | 'members' | 'team', signal?: AbortSignal) => {
+    const startedAtRevision = outreachRevision.current;
+    const urls = { logs: '/api/partner/outreach', members: '/api/partner/referral-members', team: '/api/partner/team-assign' };
+    try {
+      const response = await fetch(urls[kind], { credentials: 'include', signal });
+      const data = await response.json();
+      const value = data[kind === 'team' ? 'users' : kind];
+      if (!response.ok || !Array.isArray(value)) throw new Error('Resource unavailable');
+      if (signal?.aborted) return;
+      if (kind === 'logs') {
+        // A GET started before a confirmed POST cannot erase that saved log.
+        setLogs(previous => startedAtRevision === outreachRevision.current ? value : mergeRecentLogs(value, previous ?? []));
+      }
+      else if (kind === 'members') setAllMembers(value);
+      else setTeam(value);
+      setResourceErrors(previous => ({ ...previous, [kind]: undefined }));
+    } catch {
+      if (!signal?.aborted) setResourceErrors(previous => ({ ...previous, [kind]: `Could not load ${kind === 'logs' ? 'recent outreach' : kind === 'team' ? 'team owners' : 'member choices'}.` }));
     }
   }, []);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    const controller = new AbortController();
+    void Promise.all(['logs', 'members', 'team'].map(kind => loadResource(kind as 'logs' | 'members' | 'team', controller.signal)));
+    return () => controller.abort();
+  }, [loadResource]);
 
-  const tierCounts = useMemo(() => {
-    if (!rows) return null;
-    let high = 0;
-    let medium = 0;
-    let low = 0;
-    let watch = 0;
-    for (const r of rows) {
-      if (r.riskTier === 'high') high++;
-      else if (r.riskTier === 'medium') medium++;
-      else if (r.riskTier === 'low') low++;
-      else watch++;
-    }
-    return { all: rows.length, high, medium, low, watch };
-  }, [rows]);
-
-  const filtered = useMemo(() => {
-    if (!rows) return [];
-    const subset = tierFilter === 'all' ? rows : rows.filter((r) => r.riskTier === tierFilter);
-    return [...subset].sort((a, b) => {
-      const o = TIER_ORDER[a.riskTier] - TIER_ORDER[b.riskTier];
-      if (o !== 0) return o;
-      return b.staleDays - a.staleDays;
-    });
-  }, [rows, tierFilter]);
+  const refreshQueue = () => {
+    setCursor(null); setCursorHistory([]); setQueueRevision(value => value + 1);
+  };
+  const filtered = rows ?? [];
+  const memberChoices = useMemo(() => {
+    const choices = new Map((allMembers ?? []).map(member => [member.id, member]));
+    for (const row of rows ?? []) choices.set(row.memberId, { id: row.memberId, fullName: row.fullName });
+    if (selectedMember) choices.set(selectedMember.id, selectedMember);
+    return [...choices.values()];
+  }, [allMembers, rows, selectedMember]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +219,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
       setMessage('Choose a member and add a note.');
       return;
     }
+    const submittedDraftRevision = draftRevision.current;
     setSaving(true);
     try {
       const r = await fetch('/api/partner/outreach', {
@@ -210,10 +233,16 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
         setMessage(typeof data.error === 'string' ? data.error : 'Save failed');
         return;
       }
-      setNote('');
+      if (typeof data.id !== 'string' || typeof data.memberName !== 'string' || typeof data.createdAt !== 'string' || data.memberId !== memberId) {
+        setMessage('The saved response could not be confirmed. Refresh recent outreach before retrying.');
+        return;
+      }
+      if (draftRevision.current === submittedDraftRevision) setNote('');
+      outreachRevision.current += 1;
       setMessage('Outreach logged.');
-      await reload();
-      window.location.reload();
+      setLogs(previous => [{ ...data, createdByName: 'You' } as LogRow, ...(previous ?? []).filter(log => log.id !== data.id)].slice(0, 80));
+      confirmedQueueFields.current.set(memberId, { ...confirmedQueueFields.current.get(memberId), lastTouchName: 'You' });
+      setRows(previous => previous?.map(row => row.memberId === memberId ? { ...row, lastTouchName: 'You' } : row) ?? null);
     } catch (err) {
       setMessage(requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Save failed' }, 'partner-outreach'));
     } finally {
@@ -232,7 +261,14 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
         body: JSON.stringify({ assignedPartnerUserId: userId }),
       });
       if (r.ok) {
-        window.location.reload();
+        const data = await r.json();
+        if (data.ok !== true || data.assignedPartnerUserId !== userId || !(data.assignedToName === null || typeof data.assignedToName === 'string')) {
+          setAssignError('The saved owner could not be confirmed. Refresh the queue before retrying.');
+          return;
+        }
+        confirmedQueueFields.current.set(memberIdTarget, { ...confirmedQueueFields.current.get(memberIdTarget), assignedPartnerUserId: data.assignedPartnerUserId, assignedToName: data.assignedToName });
+        setRows(previous => previous?.map(row => row.memberId === memberIdTarget
+          ? { ...row, assignedPartnerUserId: data.assignedPartnerUserId, assignedToName: data.assignedToName } : row) ?? null);
         return;
       }
       // The select re-renders back to the saved owner; say why it did not stick.
@@ -250,9 +286,14 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
       <section className="wa-kit-card">
         <CardHead title="Who needs you right now" />
         <p style={{ color: 'var(--wa-muted)', fontSize: 13, marginTop: -8, marginBottom: 16, lineHeight: 1.5 }}>
-          Sorted with highest urgency first — quiet days show how long it has been since the member updated their
-          profile. Assign owners and log outreach so nothing slips through the cracks.
+          Sorted by time since the member record was last updated, with the longest gaps first. Assign owners and log outreach so nothing slips through the cracks.
         </p>
+        <p style={{ color: 'var(--wa-muted)', fontSize: 12 }}>
+          Counts use the same reference time across these pages. Member updates can change the order; refresh for the current queue.
+        </p>
+        {(['members', 'team'] as const).map(kind => resourceErrors[kind] ? (
+          <p role="alert" key={kind}>{resourceErrors[kind]} <button type="button" onClick={() => void loadResource(kind)}>Retry {kind}</button></p>
+        ) : null)}
         <div role="tablist" aria-label="Risk tier" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
           {(['all', 'high', 'medium', 'low', 'watch'] as const).map((t) => {
             const active = tierFilter === t;
@@ -295,11 +336,11 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
         {loadError ? (
           <div role="alert" className="wa-kit-card wa-kit-card--sm">
             <p style={{ color: 'var(--wa-muted)', marginBottom: 12 }}>{loadError}</p>
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => void reload()}>
+            <button type="button" className="btn btn-outline btn-sm" onClick={refreshQueue}>
               Retry
             </button>
           </div>
-        ) : !rows ? (
+        ) : queueLoading ? (
           <p style={{ color: 'var(--wa-muted)' }}>Loading…</p>
         ) : filtered.length === 0 ? (
           <KitEmptyState title={t('attentionQueue')} description={t('noMembersInFilter')} />
@@ -313,7 +354,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                     tone={TIER_TONE[m.riskTier]}
                     icon={<Icon size={16} aria-hidden />}
                     title={m.fullName}
-                    meta={`${m.stageLabel} · ${m.programTitle} · profile updated ${m.staleDays}d ago`}
+                    meta={`${m.stageLabel} · ${m.programTitle} · member record updated ${m.staleDays}d ago`}
                     flag={m.riskTier.toUpperCase()}
                     action={
                       <Link href={`/partner/referred-members/${m.memberId}`} className="portal-section-action">
@@ -330,7 +371,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                       <select
                         aria-label={`Assign owner for ${m.fullName}`}
                         value={m.assignedPartnerUserId ?? ''}
-                        disabled={assignBusy === m.memberId || !team}
+                        disabled={assignBusy === m.memberId || !team || queueLoading}
                         onChange={(e) => {
                           const v = e.target.value;
                           void assign(m.memberId, v === '' ? null : v);
@@ -349,7 +390,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                     <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>
                       Last touch: {m.lastTouchName ?? '—'}
                     </span>
-                    <button type="button" className="btn btn-outline btn-sm" onClick={() => setMemberId(m.memberId)}>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => { draftRevision.current += 1; setMemberId(m.memberId); setSelectedMember({ id: m.memberId, fullName: m.fullName }); }}>
                       Log outreach
                     </button>
                     <Link
@@ -366,6 +407,16 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
             })}
           </div>
         )}
+        <nav aria-label="Attention queue pages" className="wa-flex wa-items-center wa-gap-3 wa-mt-4">
+          <button type="button" disabled={queueLoading || cursorHistory.length === 0} onClick={() => {
+            setCursor(cursorHistory.at(-1) ?? null); setCursorHistory(history => history.slice(0, -1));
+          }}>Previous page</button>
+          <span>Page {cursorHistory.length + 1}{tierCounts ? ` · ${filtered.length} of ${total} members in this tier` : ''}</span>
+          <button type="button" disabled={queueLoading || !!loadError || !nextCursor} onClick={() => {
+            if (nextCursor) { setCursorHistory(history => [...history, cursor]); setCursor(nextCursor); }
+          }}>Next page</button>
+          <button type="button" disabled={queueLoading} onClick={refreshQueue}>Refresh queue</button>
+        </nav>
       </section>
 
       <section className="wa-kit-card">
@@ -377,9 +428,13 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
         ) : null}
         <form onSubmit={submit} className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3 wa-gap-3" style={{ maxWidth: 640 }}>
           <FormField label="Member">
-            <select value={memberId} onChange={(e) => setMemberId(e.target.value)} required style={kitFieldStyle}>
+            <select value={memberId} onChange={(e) => {
+              draftRevision.current += 1;
+              setMemberId(e.target.value);
+              setSelectedMember(memberChoices.find(member => member.id === e.target.value) ?? null);
+            }} required style={kitFieldStyle}>
               <option value="">Select member…</option>
-              {(allMembers ?? []).map((m) => (
+              {memberChoices.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.fullName}
                 </option>
@@ -387,7 +442,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
             </select>
           </FormField>
           <FormField label="Channel">
-            <select value={channel} onChange={(e) => setChannel(e.target.value as typeof channel)} style={kitFieldStyle}>
+            <select value={channel} onChange={(e) => { draftRevision.current += 1; setChannel(e.target.value as typeof channel); }} style={kitFieldStyle}>
               <option value="email">Email</option>
               <option value="call">Call</option>
               <option value="text">Text</option>
@@ -397,7 +452,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
           <FormField label="Note" full>
             <textarea
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => { draftRevision.current += 1; setNote(e.target.value); }}
               rows={3}
               required
               style={{ ...kitFieldStyle, resize: 'vertical' }}
@@ -413,8 +468,9 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
 
       <section className="wa-kit-card">
         <CardHead title="Recent outreach" />
+        {resourceErrors.logs && <p role="alert">{resourceErrors.logs} <button type="button" onClick={() => void loadResource('logs')}>Retry recent outreach</button></p>}
         {!logs ? (
-          <p style={{ color: 'var(--wa-muted)' }}>Loading…</p>
+          resourceErrors.logs ? null : <p style={{ color: 'var(--wa-muted)' }}>Loading…</p>
         ) : logs.length === 0 ? (
           <p style={{ color: 'var(--wa-muted)' }}>No logs yet.</p>
         ) : (

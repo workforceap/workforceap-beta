@@ -74,5 +74,7 @@
 | [audit-screenshots/SPRINT-PLAN.md](../../../audit-screenshots/SPRINT-PLAN.md) | 322 | supporting-files |  |
 | [config/agent-knowledge/manifest.v1.json](../../../config/agent-knowledge/manifest.v1.json) | 266 | supporting-files |  |
 | [config/elevenlabs/member-agent-tools.v1.json](../../../config/elevenlabs/member-agent-tools.v1.json) | 26 | ai-voice |  |
+| [data/api-docs/catalog.json](../../../data/api-docs/catalog.json) | 3557 | supporting-files |  |
+| [data/api-docs/openapi.json](../../../data/api-docs/openapi.json) | 17143 | supporting-files |  |
 | [pages/_app.tsx](../../../pages/_app.tsx) | 9 | supporting-files | default:7 |
 | [types/job-application.ts](../../../types/job-application.ts) | 25 | supporting-files | JobApplicationSource:7, JobApplicationStatus:8, JobApplication:11 |

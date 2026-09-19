@@ -9,7 +9,7 @@ import { Selector } from '@astryxdesign/core/Selector';
 import { Pagination } from '@astryxdesign/core/Pagination';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { DesignSurface } from '@/components/portal/kit/DesignSurface';
-import { SectionHeader } from '@/components/portal/kit/SectionHeader';
+import { PageOpener } from '@/components/portal/kit/PageOpener';
 import { DataTable, type Column } from '@/components/portal/kit/DataTable';
 import { Avatar } from '@/components/portal/kit/Avatar';
 import { useDirectoryNavigation } from '@/components/admin/useDirectoryNavigation';
@@ -59,7 +59,7 @@ export function UsersKit({ users, total, currentPage = 1, pageSize = 50, searchQ
 
   return (
     <DesignSurface surface="dense" className="wa-kit-people-roster">
-      <SectionHeader title="Staff & admins" kicker="People" goal="Find a staff account and manage access."
+      <PageOpener className="wa-mb-5" title="Staff & admins" kicker="People" lede="Find a staff account and manage access."
         action={<div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
           <AstryxLink href="/admin/users?ui=legacy" as={Link as never} isStandalone><Button label="All accounts" variant="secondary" /></AstryxLink>
           <AstryxLink href="/admin/invites/new" as={Link as never} isStandalone><Button label="Invite staff" variant="primary" icon={<Plus size={16} aria-hidden />} /></AstryxLink>

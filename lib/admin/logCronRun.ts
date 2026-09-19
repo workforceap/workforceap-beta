@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { markCronDiagnosticLogged } from '@/lib/cron/cronExecution';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 export async function logCronRun(
   workflowKey: string,
@@ -23,6 +24,6 @@ export async function logCronRun(
     // leave a trace rather than both layers staying silent.
     markCronDiagnosticLogged();
   }).catch((err) => {
-    console.error(`[logCronRun] Failed to write workflowDiagnostic for ${workflowKey}:`, err);
+    captureApiError(err, { route: `cron/${workflowKey}`, extra: { phase: 'write_diagnostic' } });
   });
 }

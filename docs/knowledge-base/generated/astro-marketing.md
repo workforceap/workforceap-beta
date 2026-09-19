@@ -55,7 +55,7 @@
 | [marketing/src/_archive/outcomes.astro](../../../marketing/src/_archive/outcomes.astro) | 257 | astro-marketing |  |
 | [marketing/src/components/AnalyticsHead.astro](../../../marketing/src/components/AnalyticsHead.astro) | 84 | astro-marketing |  |
 | [marketing/src/components/CareerQuiz.tsx](../../../marketing/src/components/CareerQuiz.tsx) | 242 | astro-marketing | default:100 |
-| [marketing/src/components/ConsentBanner.astro](../../../marketing/src/components/ConsentBanner.astro) | 93 | astro-marketing |  |
+| [marketing/src/components/ConsentBanner.astro](../../../marketing/src/components/ConsentBanner.astro) | 108 | astro-marketing |  |
 | [marketing/src/components/FindYourPathQuiz.tsx](../../../marketing/src/components/FindYourPathQuiz.tsx) | 605 | astro-marketing | mergeQuizShortAnswers:62, scoreQuiz:66, getTopProgramsFromQuiz:239, default:414 |
 | [marketing/src/components/Home.astro](../../../marketing/src/components/Home.astro) | 68 | astro-marketing |  |
 | [marketing/src/components/Icon.astro](../../../marketing/src/components/Icon.astro) | 73 | astro-marketing |  |
@@ -95,7 +95,7 @@
 | [marketing/src/pages/interest-profiler.astro](../../../marketing/src/pages/interest-profiler.astro) | 207 | astro-marketing |  |
 | [marketing/src/pages/leadership.astro](../../../marketing/src/pages/leadership.astro) | 266 | astro-marketing |  |
 | [marketing/src/pages/leadership/\[slug\].astro](../../../marketing/src/pages/leadership/%5Bslug%5D.astro) | 416 | astro-marketing |  |
-| [marketing/src/pages/lp/google-it-automation.astro](../../../marketing/src/pages/lp/google-it-automation.astro) | 369 | astro-marketing |  |
+| [marketing/src/pages/lp/google-it-automation.astro](../../../marketing/src/pages/lp/google-it-automation.astro) | 367 | astro-marketing |  |
 | [marketing/src/pages/mentor.astro](../../../marketing/src/pages/mentor.astro) | 259 | astro-marketing |  |
 | [marketing/src/pages/partners.astro](../../../marketing/src/pages/partners.astro) | 642 | astro-marketing |  |
 | [marketing/src/pages/partners/thank-you.astro](../../../marketing/src/pages/partners/thank-you.astro) | 214 | partners-funding |  |

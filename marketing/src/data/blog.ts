@@ -96,23 +96,23 @@ Marcus is now pursuing his CompTIA Network+ certification and has his eye on a s
     content: `The fastest path from unemployed to employed in tech isn't a four-year degree — it's a targeted certification. Here are five credentials employers are actively hiring for, all completable in under six months.
 
 **1. Google Cybersecurity Professional Certificate**
-3–5 months | Starting salary $75K–$112K
+3–5 months | Research occupational pay and entry requirements in our [career and salary guide](/salary-guide).
 Covers network security, Linux, Python, and incident response. One of the most recognized entry-level cybersecurity credentials on the market.
 
 **2. CompTIA A+**
-3–5 months | Starting salary $55K–$78K
+3–5 months | Research occupational pay and entry requirements in our [career and salary guide](/salary-guide).
 The gold standard for IT support and help desk roles. Two exams covering hardware, networking, operating systems, and security fundamentals.
 
 **3. AWS Cloud Technology (Amazon)**
-3–5 months | Starting salary $95K–$145K
+3–5 months | Research occupational pay and entry requirements in our [career and salary guide](/salary-guide).
 Cloud is everywhere. This program covers AWS architecture, DevOps, Python, and data analytics — and Amazon's name on your resume opens doors.
 
 **4. Database Administrator (DBA) Professional Certificate (IBM)**
-3–5 months | Starting salary $88K–$130K
+3–5 months | Research occupational pay and entry requirements in our [career and salary guide](/salary-guide).
 SQL, Python, Linux, ETL, database security, backup and recovery, and performance tuning for database-administration careers.
 
 **5. Google Project Management Certificate**
-3–5 months | Starting salary $82K–$112K
+3–5 months | Research occupational pay and entry requirements in our [career and salary guide](/salary-guide).
 Agile, Scrum, risk management, and MS Project. Project management credentials transfer across industries — tech, healthcare, construction, and more.
 
 All five programs are available through WorkforceAP. Qualifying applicants may be eligible for funded enrollment.`,

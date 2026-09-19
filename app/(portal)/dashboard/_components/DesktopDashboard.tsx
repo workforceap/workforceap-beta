@@ -239,16 +239,12 @@ export default function DesktopDashboard({
                       <MemberFirstCertProgressBar
                         progress={{
                           percent: firstCertProgressPercent,
-                          stageLabel: firstCertProgressPercent >= 100
-                            ? 'First cert earned'
-                            : assessmentCompleted
-                              ? 'Training in progress'
-                              : 'Complete your assessment',
-                          isComplete: firstCertProgressPercent >= 100,
-                          stepsComplete: checklist.completeAssessment
-                            ? (checklist.completeFirstCourse ? 2 : 1)
-                            : 0,
-                          stepsTotal: 2,
+                          stageLabel: totalCourses > 0 && completedCount === totalCourses
+                            ? 'Training courses complete'
+                            : assessmentCompleted ? 'Recorded course progress' : 'Complete your assessment',
+                          isComplete: totalCourses > 0 && completedCount === totalCourses,
+                          stepsComplete: completedCount,
+                          stepsTotal: totalCourses,
                         }}
                       />
                     </ErrorBoundary>

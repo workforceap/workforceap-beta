@@ -5,17 +5,20 @@ export function KitEmptyState({
   title,
   description,
   action,
+  headingAs: Heading = 'h3',
 }: {
   title: string;
   description?: string;
   /** Real next step — a kit CTA, never pep-talk. */
   action?: ReactNode;
+  /** Match the surrounding outline; a page-level empty section follows h1 with h2. */
+  headingAs?: 'h2' | 'h3' | 'h4';
 }) {
   return (
     <div style={{ textAlign: 'left', padding: 0 }}>
-      <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em', margin: 0, color: 'var(--wa-text)' }}>
+      <Heading style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em', margin: 0, color: 'var(--wa-text)' }}>
         {title}
-      </h3>
+      </Heading>
       {description ? (
         <p className="wa-kit-lede" style={{ marginTop: 6 }}>
           {description}

@@ -62,3 +62,9 @@ describe('isNewMember', () => {
     expect(isNewMember(createdAt)).toBe(false);
   });
 });
+
+
+it.each(['B', 'C'] as const)('offers the enrolled incomplete assessment with either loader stage %s', (state) => {
+  const actions = buildFirstValueActions(makeCtx({ state, enrolledProgram: 'assigned', noApplicationOnFile: false }));
+  expect(actions[0].id).toBe('fv_preassessment');
+});

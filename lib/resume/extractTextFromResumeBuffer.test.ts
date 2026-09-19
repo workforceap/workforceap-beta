@@ -2,27 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
+import JSZip from 'jszip';
 import { clampElevenLabsDynamicVariables } from '@/lib/ai/clampElevenLabsDynamicVariables';
 import { extractTextFromResumeBuffer } from './extractTextFromResumeBuffer';
 import { isUnsafeResumePlainText, sanitizeResumePlainText } from './extractionQuality';
 import { validateFileType } from './file-validation';
 
-const require = createRequire(import.meta.url);
-
-async function mammothDocxFixture(): Promise<Buffer> {
-  const packagePath = require.resolve('mammoth/package.json');
-  return readFile(join(dirname(packagePath), 'test', 'test-data', 'single-paragraph.docx'));
-}
-
 async function compressedDocx(documentXml: string): Promise<Buffer> {
-  const mammothPackagePath = require.resolve('mammoth/package.json');
-  const jsZipPath = require.resolve('jszip', { paths: [dirname(mammothPackagePath)] });
-  const JSZip = require(jsZipPath) as new () => {
-    file(name: string, value: string): void;
-    generateAsync(options: unknown): Promise<Buffer>;
-  };
   const zip = new JSZip();
   zip.file('[Content_Types].xml', '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>');
   zip.file('word/document.xml', documentXml);
@@ -54,8 +41,12 @@ test('extractTextFromResumeBuffer: UTF-8 .txt', async () => {
 });
 
 test('extractTextFromResumeBuffer: extracts a real DOCX', async () => {
-  const text = await extractTextFromResumeBuffer(await mammothDocxFixture(), '.docx');
-  assert.equal(text, 'Walking on imported air');
+  const docx = await compressedDocx(
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+      + '<w:body><w:p><w:r><w:t>Jordan Test Candidate</w:t></w:r></w:p></w:body></w:document>',
+  );
+  const text = await extractTextFromResumeBuffer(docx, '.docx');
+  assert.equal(text, 'Jordan Test Candidate');
 });
 
 test('extractTextFromResumeBuffer: malformed PDF never becomes resume text', async () => {

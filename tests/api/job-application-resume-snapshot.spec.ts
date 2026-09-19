@@ -64,7 +64,7 @@ vi.mock('@/lib/member/points', () => ({
   awardPoints: vi.fn(),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

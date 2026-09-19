@@ -48,13 +48,13 @@ test('i18n Training Preassessment nav matches the canonical assessment path', ()
 
 test('legacy skills-assessment URL redirects to Training Preassessment, not AI tools', () => {
   const page = source('app/(portal)/dashboard/skills-assessment/page.tsx');
-  assert.match(page, /redirect\(['"]\/dashboard\/assessment['"]\)/);
+  assert.match(page, /permanentRedirect\(['"]\/dashboard\/assessment['"]\)/);
   assert.doesNotMatch(page, /\/dashboard\/ai-tools/);
 });
 
 test('plural assessments alias redirects to Training Preassessment', () => {
   const page = source('app/(portal)/dashboard/assessments/page.tsx');
-  assert.match(page, /redirect\(['"]\/dashboard\/assessment['"]\)/);
+  assert.match(page, /permanentRedirect\(['"]\/dashboard\/assessment['"]\)/);
 });
 
 test('labeled preassessment CTAs use the assessment page', () => {

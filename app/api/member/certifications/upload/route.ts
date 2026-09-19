@@ -53,11 +53,11 @@ function storageErrorMessage(error: { message?: string } | null): string {
     }
   
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      const uploadBytes = new Uint8Array(await file.arrayBuffer());
       const storagePath = `cert-files/${user.id}/${cert.id}.${ext}`;
       const supabase = getSupabaseAdmin();
   
-      const { error } = await supabase.storage.from(BUCKET).upload(storagePath, arrayBuffer, {
+      const { error } = await supabase.storage.from(BUCKET).upload(storagePath, uploadBytes, {
         upsert: true,
         contentType,
       });

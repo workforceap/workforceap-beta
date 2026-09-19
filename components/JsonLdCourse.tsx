@@ -10,7 +10,7 @@ import type { Program } from '@/lib/content/programs';
  * Field choices:
  * - `provider` is the catalog `partner` field (IBM / Google / MSSC etc.)
  * - `description` is a short blurb composed from the program's
- *   `categoryLabel`, `duration`, and `salary` so it reads independently
+ *   `categoryLabel` and `duration` so it reads independently
  *   of any marketing-only copy the page might also render
  * - `educationalCredentialAwarded` is the program title; aligns with
  *   how members describe what they earn
@@ -23,7 +23,7 @@ export default function JsonLdCourse({ program }: { program: Program }) {
   const url = `${SITE_URL}/programs/${program.slug}`;
   const description =
     `${program.categoryLabel} pathway: ${program.title}. ` +
-    `${program.duration}. ${program.salary}.`;
+    `${program.duration}.`;
 
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',

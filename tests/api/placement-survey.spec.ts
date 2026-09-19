@@ -46,6 +46,7 @@ vi.mock('@/lib/db/prisma', () => {
   };
   const user = {
     findMany: vi.fn(),
+    findUnique: vi.fn(async () => ({ organizationId: 'org-1' })),
     count: vi.fn(),
   };
   const courseProgress = {
@@ -676,7 +677,7 @@ describe('GET /api/admin/placement-surveys', () => {
     expect(res.status).toBe(200);
     expect(prisma.placementSurvey.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { sentAt: { not: null }, completedAt: { not: null } },
+        where: { user: { organizationId: 'org-1' }, sentAt: { not: null }, completedAt: { not: null } },
       })
     );
   });

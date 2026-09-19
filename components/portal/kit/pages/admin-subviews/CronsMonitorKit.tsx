@@ -1,6 +1,6 @@
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   StatusTag,
@@ -117,7 +117,7 @@ export function CronsMonitorKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title="Cron Monitor" kicker="System" goal="Scheduled jobs" />
+      <PageOpener className="wa-mb-5" title="Cron Monitor" kicker="System" lede="Scheduled jobs" />
 
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />

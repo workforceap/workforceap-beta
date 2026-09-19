@@ -1,0 +1,67 @@
+/* Nonmodal consent stays below dialogs and wraps without shrinking its copy. */
+.banner {
+  position: fixed;
+  inset-inline: 0;
+  bottom: var(--cookie-consent-bottom, 0px);
+  z-index: var(--z-sticky, 10);
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  max-height: calc(100dvh - var(--cookie-consent-bottom, 0px));
+  overflow-y: auto;
+  background: var(--surface-container-high);
+  border-top: 1px solid var(--outline-variant);
+  color: var(--color-on-surface);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+}
+.description {
+  flex: 1 1 28rem;
+  min-width: 0;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.description a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.actions button {
+  min-height: 44px;
+  padding: 0.625rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.decline {
+  background: transparent;
+  color: var(--color-on-surface);
+  border: 1px solid var(--wa-control-border, currentColor);
+}
+.accept {
+  background: var(--color-accent);
+  color: var(--wa-on-accent-control, #ffffff);
+  border: 1px solid transparent;
+}
+.banner a:focus-visible,
+.actions button:focus-visible {
+  outline: 2px solid var(--color-on-surface);
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .banner { padding-inline: 1rem; }
+  .actions { width: 100%; }
+  .actions button { flex: 1 1 auto; }
+}

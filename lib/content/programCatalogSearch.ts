@@ -11,7 +11,6 @@ export function buildProgramSearchHaystack(p: Program): string {
     p.slug.replace(/-/g, ' '),
     p.partner,
     p.duration,
-    p.salary,
     ...p.skills,
     ...p.courses.map((c) => c.name),
   ];

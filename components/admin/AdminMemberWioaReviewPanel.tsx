@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
-import { barrierLabel, publicAssistanceLabel } from '@/lib/wioa/wioaQualification';
+import { barrierLabel, formatWioaReasons, publicAssistanceLabel } from '@/lib/wioa/wioaQualification';
 import { WIOA_REVIEW_LABELS, WIOA_REVIEW_STATUSES, type WioaReviewStatus } from '@/lib/wioa/wioaReview';
 import type { WioaReviewSnapshotRow } from '@/lib/wioa/reviewSnapshot';
 
@@ -22,6 +22,7 @@ type Props = {
 const SOURCE_LABEL: Record<string, string> = {
   wioa_review: 'WIOA staff review',
   application_decision: 'Application decision',
+  enrollment_funding: 'Enrollment funding decision',
 };
 
 const AGE_LABEL: Record<string, string> = {
@@ -54,7 +55,12 @@ export default function AdminMemberWioaReviewPanel({
       const res = await fetch(`/api/admin/members/${memberId}/wioa-review`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes: notes || null }),
+        body: JSON.stringify({
+          status,
+          notes: notes || null,
+          expectedSubmittedAt: snapshot.submittedAt,
+          expectedReviewedAt: savedAt,
+        }),
       });
       const data = (await res.json()) as { error?: string; wioaReviewedAt?: string };
       if (!res.ok) {
@@ -115,9 +121,9 @@ export default function AdminMemberWioaReviewPanel({
       </ul>
 
       <details style={{ marginBottom: '1rem' }}>
-        <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Reasons shown to member</summary>
+        <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>Screening explanations (staff copy)</summary>
         <ul style={{ marginTop: '0.5rem', paddingLeft: '1.25rem', fontSize: '0.88rem' }}>
-          {snapshot.reasons.map((r, i) => (
+          {formatWioaReasons(snapshot).map((r, i) => (
             <li key={i}>{r}</li>
           ))}
         </ul>
@@ -189,7 +195,7 @@ export default function AdminMemberWioaReviewPanel({
         <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem', marginTop: '1rem' }}>
           <h3 style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>Decision history</h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
-            Immutable record — one row per WIOA review or application decision, oldest change never overwritten.
+            Immutable record — one row per WIOA review, application decision, or enrollment funding decision.
           </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.5rem' }}>
             {decisionHistory.map((row) => (

@@ -59,7 +59,7 @@
 | [emails/job-submitted.ts](../../../emails/job-submitted.ts) | 22 | communications | jobSubmittedHtml:7 |
 | [emails/member-check-in.ts](../../../emails/member-check-in.ts) | 24 | communications | memberCheckInHtml:8, memberCheckInSubject:24 |
 | [emails/member-come-back.ts](../../../emails/member-come-back.ts) | 33 | communications | memberComeBackHtml:8, memberComeBackSubject:31 |
-| [emails/member-stuck.ts](../../../emails/member-stuck.ts) | 33 | communications | memberStuckHtml:12, memberStuckSubject:33 |
+| [emails/member-stuck.ts](../../../emails/member-stuck.ts) | 34 | communications | memberStuckHtml:9, memberStuckSubject:34 |
 | [emails/member-welcome-letter.test.ts](../../../emails/member-welcome-letter.test.ts) | 73 | communications |  |
 | [emails/member-welcome-letter.ts](../../../emails/member-welcome-letter.ts) | 85 | communications | MEMBER_WELCOME_LETTER_TITLE:9, memberWelcomeLetterHtml:28 |
 | [emails/new-application-alert.ts](../../../emails/new-application-alert.ts) | 47 | communications | newApplicationAlertHtml:9 |

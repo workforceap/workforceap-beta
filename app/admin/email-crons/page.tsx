@@ -4,6 +4,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { prisma } from '@/lib/db/prisma';
+import { loadCronEnabledStates } from '@/lib/cron/isCronEnabled';
 import { CRON_REGISTRY, CRON_CATEGORY_COLOR } from '@/lib/admin/cronRegistry';
 import PageHeader from '@/components/portal/PageHeader';
 import EmailCronsClient from '@/components/admin/EmailCronsClient';
@@ -57,6 +58,8 @@ export default async function AdminEmailCronsPage({
     select: { id: true, workflow: true, status: true, summary: true, createdAt: true, metadata: true },
   });
 
+  const enabledStates = await loadCronEnabledStates(cronKeys);
+
   // Group by workflow key
   const runsByKey = new Map<string, typeof recentDiags>();
   for (const d of recentDiags) {
@@ -70,12 +73,7 @@ export default async function AdminEmailCronsPage({
     const last = runs[0] ?? null;
     const meta = last?.metadata as Record<string, unknown> | null;
     // Check if most recent toggle set enabled = false
-    const latestToggle = runs.find(r => {
-      const m = r.metadata as Record<string, unknown> | null;
-      return m?.toggledBy !== undefined;
-    });
-    const toggleMeta = latestToggle?.metadata as Record<string, unknown> | null;
-    const enabled = toggleMeta?.enabled !== false;
+    const enabled = enabledStates.get(cron.workflowKey)!;
 
     return {
       ...cron,
@@ -179,8 +177,8 @@ export default async function AdminEmailCronsPage({
 
       {/* Notice about enable/disable */}
       <div style={{ padding: '0.875rem 1rem', background: 'rgba(43,123,185,0.07)', border: '1px solid rgba(43,123,185,0.15)', borderRadius: '0.75rem', marginBottom: '1.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-        <strong style={{ color: 'var(--color-blue, #2b7bb9)' }}>How toggling works:</strong> Enabling/disabling a job records a soft flag in the run history.
-        The Vercel scheduler still calls the endpoint on schedule — but the job can check this flag before sending. To permanently remove a job from the schedule,
+        <strong style={{ color: 'var(--color-blue, #2b7bb9)' }}>How toggling works:</strong> Enabling/disabling a job saves a persistent setting.
+        The Vercel scheduler still calls the endpoint on schedule — but the job checks this setting before running. To permanently remove a job from the schedule,
         edit <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.75rem' }}>vercel.json</code>.
         Manual triggers always run regardless of enabled state.
       </div>

@@ -76,7 +76,7 @@ vi.mock('@/lib/events/track', () => ({
   trackEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

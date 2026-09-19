@@ -12,7 +12,7 @@ import JobForm from '@/components/employer/JobForm';
 import JobApplicantsClient from '@/components/employer/JobApplicantsClient';
 import JobReadinessIssueList from '@/components/employer/JobReadinessIssueList';
 import { assessJobPostingReadiness, readinessLabel } from '@/lib/employer/jobReadiness';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import StatusBadge from '@/components/portal/StatusBadge';
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
@@ -118,7 +118,8 @@ export default async function EmployerJobDetailPage({ params }: Props) {
       {catalogResult.loadFailed ? <span hidden data-portal-error-state="employer-program-catalog-load" /> : null}
       <article className="employer-job-edit wa-pb-24 md:wa-pb-0">
         <PortalPageFrame>
-          <PageHeader
+          <EmployerPageOpener
+            kicker={t('employerPortal')}
             title={t('jobDetails')}
             subtitle={t('jobDetailsSubtitle')}
             action={

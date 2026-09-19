@@ -1,13 +1,15 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@/lib/pipeline/stage';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { buildAttentionPageQuery, encodeAttentionCursor, type AttentionCounts, type AttentionCursor, type AttentionQueryResult, type AttentionTier } from '@/lib/partner/attentionPagination';
 
 export type RiskTier = 'high' | 'medium' | 'low' | 'watch';
 
-export function staleDaysSince(updatedAt: Date): number {
-  return Math.floor((Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
+export function staleDaysSince(updatedAt: Date, asOf = new Date()): number {
+  return Math.floor((asOf.getTime() - updatedAt.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export function computeRiskTier(daysStale: number): RiskTier {
@@ -48,64 +50,36 @@ export type PartnerAttentionRow = {
   lastTouchName: string | null;
 };
 
-export async function buildPartnerAttentionQueue(partnerId: string, organizationId: string): Promise<PartnerAttentionRow[]> {
-  const referrals = await prisma.partnerReferral.findMany({
-    take: 500,
-    where: {
-      partnerId,
-      partner: { organizationId, active: true },
-      member: { organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
-    },
-    include: {
-      assignedPartnerUser: { select: { fullName: true } },
-      member: {
-        select: {
-          id: true,
-          fullName: true,
-          enrolledProgram: true,
-          courseEnrollments: {
-            orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-            select: { programSlug: true, curriculumVersion: true, isPrimary: true },
-          },
-          enrolledAt: true,
-          courseraEnrollmentApproved: true,
-          updatedAt: true,
-          deletedAt: true,
-          assessmentCompleted: true,
-          placementRecord: {
-            select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
-          },
-          userCertifications: { select: { certName: true, earnedAt: true } },
-          applications: { select: { status: true, submittedAt: true } },
-          memberProgramProgress: {
-            select: { programSlug: true, averagePercent: true, coursesCompleted: true },
-          },
-        },
+const attentionInclude = {
+  assignedPartnerUser: { select: { fullName: true } },
+  member: {
+    select: {
+      id: true,
+      fullName: true,
+      enrolledProgram: true,
+      courseEnrollments: {
+        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+        select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+      },
+      enrolledAt: true,
+      courseraEnrollmentApproved: true,
+      updatedAt: true,
+      deletedAt: true,
+      assessmentCompleted: true,
+      placementRecord: {
+        select: { employerName: true, jobTitle: true, salaryOffered: true, placedAt: true },
+      },
+      userCertifications: { select: { certName: true, earnedAt: true } },
+      applications: { select: { status: true, submittedAt: true } },
+      memberProgramProgress: {
+        select: { programSlug: true, averagePercent: true, coursesCompleted: true },
       },
     },
-    orderBy: { referredAt: 'desc' },
-  });
+  },
+} satisfies Prisma.PartnerReferralInclude;
+export type AttentionReferral = Prisma.PartnerReferralGetPayload<{ include: typeof attentionInclude }>;
 
-  const memberIds = referrals.map((r) => r.member.id);
-  const recentLogs =
-    memberIds.length === 0
-      ? []
-      : await prisma.partnerOutreachLog.findMany({
-          where: { partnerId, memberId: { in: memberIds } },
-          orderBy: { createdAt: 'desc' },
-          // No global cap: the dedup loop below keeps only the FIRST log
-          // per memberId (most-recent due to orderBy). A global take: 400
-          // would starve later memberIds — high-activity members consumed
-          // the entire window and the rest showed "Unknown" as last touch.
-          // Bound generously per-member.
-          take: Math.max(memberIds.length * 5, 400),
-          include: { createdBy: { select: { fullName: true } } },
-        });
-  const lastTouchByMember = new Map<string, string>();
-  for (const l of recentLogs) {
-    if (!lastTouchByMember.has(l.memberId)) lastTouchByMember.set(l.memberId, l.createdBy?.fullName ?? 'User');
-  }
-
+export function partnerAttentionRows(referrals: AttentionReferral[], lastTouchByMember: Map<string, string>, asOf = new Date()): PartnerAttentionRow[] {
   const rows: PartnerAttentionRow[] = [];
 
   for (const r of referrals) {
@@ -137,7 +111,7 @@ export async function buildPartnerAttentionQueue(partnerId: string, organization
       ? 'approval_pending'
       : pipelineStage;
 
-    const staleDays = staleDaysSince(m.updatedAt);
+    const staleDays = staleDaysSince(m.updatedAt, asOf);
     const riskTier = computeRiskTier(staleDays);
 
     rows.push({
@@ -157,10 +131,51 @@ export async function buildPartnerAttentionQueue(partnerId: string, organization
     });
   }
 
-  const tierOrder: Record<RiskTier, number> = { high: 0, medium: 1, low: 2, watch: 3 };
-  rows.sort((a, b) => tierOrder[a.riskTier] - tierOrder[b.riskTier] || b.staleDays - a.staleDays);
-
   return rows;
+}
+
+export type PartnerAttentionPage = {
+  members: PartnerAttentionRow[]; counts: AttentionCounts; total: number; nextCursor: string | null; asOf: string;
+};
+
+export async function loadPartnerAttentionPage(
+  partnerId: string, organizationId: string,
+  options: { tier: AttentionTier; limit: number; asOf: Date; cursor?: AttentionCursor },
+): Promise<PartnerAttentionPage> {
+  // The count, page keys, and hydration share a repeatable-read snapshot. A later
+  // request remains live: updated member rows may move; Refresh starts a new page set.
+  return prisma.$transaction(async (tx) => {
+    const [result] = await tx.$queryRaw<AttentionQueryResult[]>(buildAttentionPageQuery(partnerId, organizationId, options));
+    if (!result) throw new Error('Partner attention query returned no aggregate');
+    const keys = result.rows.slice(0, options.limit);
+    const referrals = keys.length ? await tx.partnerReferral.findMany({
+      where: { id: { in: keys.map(key => key.referralId) }, partnerId,
+        partner: { organizationId, active: true }, member: { organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE } },
+      include: attentionInclude,
+    }) : [];
+    const byId = new Map(referrals.map(referral => [referral.id, referral]));
+    const ordered = keys.map(key => byId.get(key.referralId)).filter((value): value is AttentionReferral => value !== undefined);
+    if (ordered.length !== keys.length) throw new Error('Partner attention page could not be fully loaded');
+    const lastTouch = new Map(keys.filter(key => key.lastTouchName !== null).map(key => [key.memberId, key.lastTouchName!]));
+    const last = keys.at(-1);
+    const members = partnerAttentionRows(ordered, lastTouch, options.asOf);
+    if (members.length !== keys.length) throw new Error('Partner attention eligibility changed; refresh the queue');
+    return {
+      members, counts: result.counts, total: result.counts[options.tier],
+      nextCursor: result.rows.length > options.limit && last ? encodeAttentionCursor({
+        v: 1, partnerId, organizationId, tier: options.tier, asOf: options.asOf.toISOString(),
+        updatedAt: new Date(last.updatedAt).toISOString(), referralId: last.referralId,
+      }) : null,
+      asOf: options.asOf.toISOString(),
+    };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+}
+
+export async function countPartnerAttention(partnerId: string, organizationId: string): Promise<number> {
+  const [result] = await prisma.$queryRaw<AttentionQueryResult[]>(buildAttentionPageQuery(partnerId, organizationId,
+    { tier: 'all', asOf: new Date(), limit: 0, countsOnly: true }));
+  if (!result) throw new Error('Partner attention query returned no aggregate');
+  return result.counts.high + result.counts.medium + result.counts.low;
 }
 
 export function countActionablePartnerAttention(rows: PartnerAttentionRow[]): number {

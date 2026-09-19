@@ -1,20 +1,20 @@
 #!/usr/bin/env npx tsx
 /**
- * Creates Supabase Auth users for portal QA accounts and re-seeds Prisma rows
+ * Creates fresh Supabase Auth users and Prisma fixtures in the demo project
  * so `User.id` matches `auth.users.id` (required for /dashboard, /employer, etc.).
  *
- * Requires: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL (or POSTGRES_*)
+ * Requires explicit demo target, dedicated fixture organization, and unique
+ * per-account secrets supplied through environment variables. See
+ * docs/PORTAL-QA-FIXTURES.md. Never updates or deletes existing accounts.
  *
  * Run: node scripts/prisma-env.js npx tsx scripts/sync-portal-test-auth.ts
  *
- * Password for all QA accounts: TestWfAP2026!
  */
 import { randomUUID } from 'crypto';
-import { PrismaClient, ApplicationStatus } from '@prisma/client';
-import { createClient } from '@supabase/supabase-js';
-import { getDefaultOrganizationId } from '../lib/tenant/organization';
-
-const PASSWORD = 'TestWfAP2026!';
+import { pathToFileURL } from 'node:url';
+import { PrismaClient, ApplicationStatus, type Prisma } from '@prisma/client';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { readPortalQaConfig, assertPortalQaOrganization } from './lib/portal-qa-guard.cjs';
 
 const QA_EMAILS = [
   'member-test@workforceap.org',
@@ -26,67 +26,38 @@ const QA_EMAILS = [
   'match-candidate@workforceap.org',
 ];
 
-const prisma = new PrismaClient();
-
-async function ensureAuthUser(email: string, fullName: string): Promise<string> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');
-  }
-  const supabase = createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
-
+async function createFreshAuthUser(supabase: SupabaseClient, email: string, fullName: string, password: string, orgId: string): Promise<string> {
   const { data: created, error: createErr } = await supabase.auth.admin.createUser({
     email,
-    password: PASSWORD,
+    password,
     email_confirm: true,
     user_metadata: { full_name: fullName },
+    app_metadata: { portal_qa_fixture: true, portal_qa_organization_id: orgId },
   });
 
   if (!createErr && created.user) {
-    console.log(`Auth: created ${email}`);
     return created.user.id;
   }
 
-  if (
-    createErr &&
-    (createErr.message.includes('already been registered') ||
-      createErr.message.includes('already exists') ||
-      (createErr as { code?: string }).code === 'email_exists')
-  ) {
-    const { data: list, error: listErr } = await supabase.auth.admin.listUsers({ perPage: 200 });
-    if (listErr) throw new Error(`listUsers: ${listErr.message}`);
-    const found = list.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
-    if (!found) throw new Error(`Could not find existing auth user for ${email}`);
-
-    const { error: updErr } = await supabase.auth.admin.updateUserById(found.id, {
-      password: PASSWORD,
-      user_metadata: { full_name: fullName },
-    });
-    if (updErr) console.warn(`Auth: password update for ${email}: ${updErr.message}`);
-    else console.log(`Auth: updated password for ${email}`);
-    return found.id;
-  }
-
-  throw new Error(`createUser ${email}: ${createErr?.message ?? 'unknown'}`);
+  // Provider errors may include request context. Do not print them or rotate
+  // an existing account just because its email resembles a fixture.
+  throw new Error('Portal QA Auth creation failed. Existing accounts were not changed; inspect exact fixture IDs before recovery.');
 }
 
-async function removeExistingQaRows() {
-  const users = await prisma.user.findMany({
-    where: { email: { in: QA_EMAILS } },
-    select: { id: true, email: true },
-  });
-  for (const u of users) {
-    await prisma.user.delete({ where: { id: u.id } }).catch((e) => {
-      console.warn(`Delete ${u.email}:`, (e as Error).message);
-    });
+async function assertAuthFixturesAbsent(supabase: SupabaseClient) {
+  for (let page = 1; page <= 100; page += 1) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw new Error('Portal QA Auth inventory failed. No fixtures were created.');
+    if (data.users.some(user => QA_EMAILS.includes(user.email?.toLowerCase() ?? ''))) {
+      throw new Error('Portal QA account already exists. Automatic replacement and password rotation are disabled.');
+    }
+    if (data.users.length < 200) return;
   }
-  console.log('Prisma: removed prior QA user rows (if any)');
+  throw new Error('Portal QA Auth inventory was incomplete. No fixtures were created.');
 }
 
 async function seedQaWithAuthIds(
+  prisma: Prisma.TransactionClient,
   orgId: string,
   ids: {
     member: string;
@@ -100,8 +71,15 @@ async function seedQaWithAuthIds(
   const employerRole = await prisma.role.findUniqueOrThrow({ where: { name: 'employer' } });
   const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'admin' } });
 
-  const partnerOrg = await prisma.partner.findFirst({
-    where: { slug: 'workforce-solutions-austin' },
+  const partnerOrg = await prisma.partner.create({
+    data: {
+      organizationId: orgId,
+      name: 'Portal QA Partner Organization',
+      slug: `portal-qa-${ids.partner}`,
+      referralCode: `QA-${ids.partner}`,
+      status: 'active',
+      notifyOnEnrollment: false,
+    },
     select: { id: true },
   });
 
@@ -252,37 +230,56 @@ async function seedQaWithAuthIds(
     },
   });
 
-  console.log('Prisma: QA portal users + employer fixtures created with Supabase-aligned ids');
 }
 
-async function main() {
-  const orgId = await getDefaultOrganizationId();
-
-  const memberId = await ensureAuthUser('member-test@workforceap.org', 'Portal QA Member');
-  const partnerId = await ensureAuthUser('partner-test@workforceap.org', 'Portal QA Partner');
-  const employerId = await ensureAuthUser('employer-test@workforceap.org', 'Portal QA Employer');
-  const adminId = await ensureAuthUser('admin-test@workforceap.org', 'Portal QA Admin');
-
-  await removeExistingQaRows();
-  await seedQaWithAuthIds(orgId, {
-    member: memberId,
-    partner: partnerId,
-    employer: employerId,
-    admin: adminId,
+export async function syncPortalTestAuth(env: NodeJS.ProcessEnv = process.env) {
+  const config = readPortalQaConfig(env);
+  // Bind the effective DB explicitly: validation must not check one URL while
+  // Prisma inherits a different one through process-global configuration.
+  const prisma = new PrismaClient({ datasourceUrl: config.databaseUrl });
+  const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
-
-  console.log('');
-  console.log('Done. Sign in at /login with any of:');
-  console.log('  member-test@workforceap.org');
-  console.log('  partner-test@workforceap.org');
-  console.log('  employer-test@workforceap.org');
-  console.log('  admin-test@workforceap.org');
-  console.log(`Password: ${PASSWORD}`);
+  const createdAuthIds: string[] = [];
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { id: config.organizationId }, select: { id: true, slug: true, active: true },
+    });
+    assertPortalQaOrganization(org, config);
+    if (await prisma.user.count({ where: { email: { in: QA_EMAILS, mode: 'insensitive' } } })) {
+      throw new Error('Portal QA rows already exist. Automatic replacement is disabled.');
+    }
+    // Preflight role configuration before creating any Auth accounts.
+    for (const name of ['member', 'partner', 'employer', 'admin']) {
+      await prisma.role.findUniqueOrThrow({ where: { name } });
+    }
+    await assertAuthFixturesAbsent(supabase);
+    const ids = {} as { member: string; partner: string; employer: string; admin: string };
+    for (const role of ['member', 'partner', 'employer', 'admin'] as const) {
+      ids[role] = await createFreshAuthUser(supabase, `${role}-test@workforceap.org`, `Portal QA ${role}`, config.passwords[role], config.organizationId);
+      createdAuthIds.push(ids[role]);
+    }
+    await prisma.$transaction(async tx => {
+      // Revalidate the exact fixture organization in the same transaction as
+      // all database writes. Auth and Postgres cannot share one transaction.
+      const currentOrg = await tx.organization.findUnique({ where: { id: config.organizationId }, select: { id: true, slug: true, active: true } });
+      assertPortalQaOrganization(currentOrg, config);
+      await seedQaWithAuthIds(tx, config.organizationId, ids);
+    });
+    console.log('Portal QA fixtures created. Sign in using the supplied per-account secrets.');
+  } catch {
+    // Only exact newly created IDs are useful for a separately reviewed
+    // recovery. Never dump provider/Prisma errors, URLs, or credentials.
+    if (createdAuthIds.length) console.error('New fixture Auth IDs requiring inspection:', createdAuthIds.join(', '));
+    throw new Error('Portal QA provisioning stopped. No existing accounts were changed. Review target and exact fixture IDs before retrying.');
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  syncPortalTestAuth().catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : 'Portal QA provisioning stopped.');
+    process.exitCode = 1;
+  });
+}

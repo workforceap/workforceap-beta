@@ -22,12 +22,9 @@
   min-height: auto;
 }
 
-/* Focus indicators for keyboard navigation */
-.portal-touch-target a:focus-visible,
-.portal-touch-target button:focus-visible,
-.portal-touch-target [role="button"]:focus-visible,
-.portal-touch-target input:focus-visible,
-.portal-touch-target select:focus-visible {
+/* Fallback for controls without an opted-in kit focus treatment. */
+.portal-touch-target :is(a, button, [role="button"], input, select, textarea):not(.wa-kit-focus):not(.wa-kit-focus--on-dark):focus-visible {
   outline: 2px solid var(--wa-accent, var(--color-accent, #ad2c4d));
   outline-offset: 2px;
+  box-shadow: none;
 }

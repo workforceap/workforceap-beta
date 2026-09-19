@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { Button } from '@astryxdesign/core/Button';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 type LinkAction = { label: string; href: string };
 type ButtonAction = { label: string; onClick: () => void };
@@ -12,6 +14,7 @@ type PortalEmptyStateProps = {
   primaryAction?: LinkAction | ButtonAction;
   secondaryAction?: LinkAction;
   className?: string;
+  headingAs?: 'h2' | 'h3' | 'h4';
 };
 
 function isButtonAction(a: LinkAction | ButtonAction): a is ButtonAction {
@@ -28,36 +31,44 @@ export default function PortalEmptyState({
   primaryAction,
   secondaryAction,
   className = '',
+  headingAs = 'h3',
 }: PortalEmptyStateProps) {
   return (
-    <div className={`portal-empty-state ${className}`.trim()}>
-      {icon ? <div style={{ marginBottom: '0.75rem', display: 'flex', justifyContent: 'center' }}>{icon}</div> : null}
-      <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.125rem', fontWeight: 600, color: 'var(--color-on-surface, #1a1a1a)' }}>
-        {title}
-      </h3>
-      {description ? (
-        <p style={{ margin: '0 0 1.25rem', fontSize: '0.9375rem', color: 'var(--color-on-surface-variant, #525252)', lineHeight: 1.5 }}>
-          {description}
-        </p>
-      ) : null}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-        {primaryAction ? (
-          isButtonAction(primaryAction) ? (
-            <button type="button" className="btn btn-primary" onClick={primaryAction.onClick}>
-              {primaryAction.label}
-            </button>
-          ) : (
-            <Link href={primaryAction.href} className="btn btn-primary">
-              {primaryAction.label}
-            </Link>
-          )
-        ) : null}
-        {secondaryAction ? (
-          <Link href={secondaryAction.href} className="btn btn-outline">
-            {secondaryAction.label}
-          </Link>
-        ) : null}
-      </div>
+    <div
+      className={`portal-empty-state ${className}`.trim()}
+      style={{
+        background: 'var(--wa-surface-2)',
+        color: 'var(--wa-text)',
+        border: '1px solid var(--wa-border)',
+        borderRadius: 'var(--wa-radius)',
+        padding: 'var(--wa-pad, 24px)',
+        textAlign: 'left',
+      }}
+    >
+      {icon ? <div aria-hidden="true" style={{ marginBottom: 12 }}>{icon}</div> : null}
+      <KitEmptyState
+        title={title}
+        description={description}
+        headingAs={headingAs}
+        action={primaryAction || secondaryAction ? (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            {primaryAction ? (
+              isButtonAction(primaryAction) ? (
+                <Button type="button" variant="primary" size="lg" label={primaryAction.label} onClick={primaryAction.onClick} />
+              ) : (
+                <Link href={primaryAction.href} className="wa-kit-cta">
+                  {primaryAction.label}
+                </Link>
+              )
+            ) : null}
+            {secondaryAction ? (
+              <Link href={secondaryAction.href} className="wa-kit-cta wa-kit-cta--ghost">
+                {secondaryAction.label}
+              </Link>
+            ) : null}
+          </div>
+        ) : undefined}
+      />
     </div>
   );
 }

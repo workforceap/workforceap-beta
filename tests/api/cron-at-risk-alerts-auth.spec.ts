@@ -44,10 +44,15 @@ vi.mock('@/lib/cron/isCronEnabled', () => ({
 vi.mock('@/lib/db/gucContext', () => ({
   runWithGucContext: vi.fn(async (_ctx: unknown, fn: () => Promise<unknown>) => fn()),
   SYSTEM_GUC_CONTEXT: { role: 'system' },
+  getGucContext: () => null,
 }));
 
 vi.mock('@/lib/admin/logCronRun', () => ({
   logCronRun: vi.fn(async () => undefined),
+}));
+
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
+  captureApiError: vi.fn(),
 }));
 
 // The work itself is out of scope here; these tests are about reachability.
@@ -66,6 +71,7 @@ import {
   runMemberRetentionNudges,
 } from '@/lib/cron/at-risk-alerts';
 import { completeCronExecution } from '@/lib/cron/cronExecution';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 const CRON_SECRET = 'test-cron-secret';
 
@@ -125,12 +131,50 @@ describe('/api/cron/at-risk-alerts authorization', () => {
     expect(runMemberRetentionNudges).not.toHaveBeenCalled();
   });
 
-  it('never records a FAILED execution for an authorized Vercel-style request', async () => {
+  it('records success for authorized work with no failed deliveries', async () => {
     await POST(request({ authorization: `Bearer ${CRON_SECRET}` }));
 
     const failedCalls = vi
       .mocked(completeCronExecution)
       .mock.calls.filter((call) => call[1] === 'FAILED');
     expect(failedCalls).toEqual([]);
+  });
+
+  it('records partial counselor delivery failures as failed runs', async () => {
+    vi.mocked(runDailyAtRiskCounselorAlerts).mockResolvedValueOnce({
+      success: true,
+      counselorsNotified: 1,
+      results: [{ counselorId: 'counselor-1', error: 'Delivery failed' }],
+    } as Awaited<ReturnType<typeof runDailyAtRiskCounselorAlerts>>);
+
+    const res = await POST(request({ authorization: `Bearer ${CRON_SECRET}` }));
+
+    expect(res.status).toBe(500);
+    expect((await res.json()).counselorAlerts.counselorsNotified).toBe(1);
+    expect(completeCronExecution).toHaveBeenCalledWith(
+      'exec-test-id', 'FAILED', 'Cron handler returned HTTP 500',
+    );
+    expect(captureApiError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({
+      route: 'cron/cron_at_risk_alerts', extra: { status: 500 },
+    }));
+  });
+
+  it('records partial member nudge delivery failures as failed runs', async () => {
+    vi.mocked(runMemberRetentionNudges).mockResolvedValueOnce({
+      success: true,
+      sentCheckIn: 1,
+      sentComeBack: 0,
+      sentStuck: 0,
+      errors: 1,
+    } as Awaited<ReturnType<typeof runMemberRetentionNudges>>);
+
+    const res = await POST(request({ authorization: `Bearer ${CRON_SECRET}` }));
+
+    expect(res.status).toBe(500);
+    expect((await res.json()).memberNudges.sentCheckIn).toBe(1);
+    expect(completeCronExecution).toHaveBeenCalledWith(
+      'exec-test-id', 'FAILED', 'Cron handler returned HTTP 500',
+    );
+    expect(runDailyAtRiskCounselorAlerts).toHaveBeenCalledTimes(1);
   });
 });

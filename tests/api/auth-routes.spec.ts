@@ -98,7 +98,7 @@ vi.mock('@/lib/auth/server', () => ({
       },
     })
   ),
-  resolveAuthGucContext: vi.fn(() => Promise.resolve(null)),
+  resolveAuthGucContext: vi.fn(() => Promise.resolve({ userId: null, orgId: null, role: 'anonymous' })),
 }));
 
 vi.mock('@/lib/db/prisma', () => {
@@ -163,7 +163,7 @@ vi.mock('@/lib/auth/portalRoleSwitcher', () => ({
   getPortalSwitcherRoles: vi.fn(() => Promise.resolve([])),
 }));
 
-vi.mock('@/lib/observability/captureApiError', () => ({
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiResponseError: vi.fn(),
   captureApiError: vi.fn(),
 }));
 

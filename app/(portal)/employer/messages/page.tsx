@@ -6,7 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import EmployerMessagesInboxClient from '@/components/portal/EmployerMessagesInboxClient';
 import { getOrCreateEmployerMessageThread } from '@/lib/messages/portalThreads';
@@ -36,7 +36,8 @@ function EmployerMessagesHeader({
   employerPortalLabel: string;
 }) {
   return (
-    <PageHeader
+    <EmployerPageOpener
+      kicker={employerPortalLabel}
       title={title}
       subtitle={
         <>

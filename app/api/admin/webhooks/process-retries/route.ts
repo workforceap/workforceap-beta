@@ -6,6 +6,7 @@ import { processRetryEvent, type RetryResult } from './_processRetries';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 /**
  * Admin endpoint to process pending webhook retries.
@@ -65,7 +66,7 @@ async function handle(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('[admin/webhooks/process-retries] Error:', error);
+    captureApiError(error, { route: '/api/admin/webhooks/process-retries' });
     return NextResponse.json({ error: 'Failed to process retries' }, { status: 500 });
   }
 }

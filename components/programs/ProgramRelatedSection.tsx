@@ -1,5 +1,4 @@
 import LocalizedLink from '@/components/LocalizedLink';
-import { salaryRangeDisplay } from '@/lib/content/programSalaryOutcomes';
 import { getProgramDisplayPartner, getProgramDisplayTitle, type Program } from '@/lib/content/programs';
 
 export default function ProgramRelatedSection({ programs }: { programs: Program[] }) {
@@ -22,7 +21,7 @@ export default function ProgramRelatedSection({ programs }: { programs: Program[
                 <LocalizedLink href={`/programs/${p.slug}`}>{getProgramDisplayTitle(p)}</LocalizedLink>
               </h3>
               <p className="program-related__meta">
-                {getProgramDisplayPartner(p)} · Starting range {salaryRangeDisplay(p)}
+                {getProgramDisplayPartner(p)} · {p.duration}
               </p>
               <div className="program-related__actions">
                 <LocalizedLink href={`/programs/${p.slug}`} className="btn btn-outline btn-sm">

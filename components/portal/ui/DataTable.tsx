@@ -43,7 +43,7 @@ export type DataTableColumn<TRow> = {
   align?: 'left' | 'right' | 'center';
   /** Optional `style.width` (use sparingly — flex is usually better). */
   width?: string | number;
-  /** Hide on small viewports — column is dropped from render below 640px. */
+  /** Hide the header and its cells below the shared md breakpoint. */
   hideOnMobile?: boolean;
   /** Applied to both `<th>` and `<td>` for this column (e.g. `members-col-md`). */
   columnClassName?: string;
@@ -54,7 +54,7 @@ export type DataTableColumn<TRow> = {
    * e.g. program comparison matrices).
    */
   rowHeader?: boolean;
-  /** Forwarded to the cell as `data-label` (responsive stacked-row tables). */
+  /** Mobile stacked-cell label. Required for rich headers; plain string/number headers are inferred. */
   cellDataLabel?: string;
   /**
    * Sets `aria-sort` on this column's `<th>` (e.g. `'ascending'` on the
@@ -104,6 +104,8 @@ export type DataTableProps<TRow> = {
   /**
    * When this returns a React element, it replaces the default `<tr>` (and optional sub-row)
    * for that index — use for category rows with `colSpan` or other non-uniform rows.
+   * Custom rows own their cells' data-label values; category/colSpan rows must
+   * not inherit a positional label from an unrelated column.
    */
   renderBodyRow?: (
     row: TRow,
@@ -205,7 +207,7 @@ export default function DataTable<TRow>({
                 }
               }
               className={
-                [col.columnClassName].filter(Boolean).join(' ') || undefined
+                [col.hideOnMobile ? 'wa-hidden md:wa-table-cell' : undefined, col.columnClassName].filter(Boolean).join(' ') || undefined
               }
             >
               {col.header}
