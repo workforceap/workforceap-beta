@@ -23,6 +23,7 @@ import { fetchLearnerProgressFromB4B } from '@/lib/coursera/learnerProgress';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 import CounselorNotesPanel from './CounselorNotesPanel';
+import styles from './studentDetail.module.css';
 import CounselorTrainingHandoff from '@/components/portal/counselor/CounselorTrainingHandoff';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import AdvisorSessionNotesPanel from './AdvisorSessionNotesPanel';
@@ -555,6 +556,50 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
           </>
         }
       />
+
+      {/* ── Messages ───────────────────────────────────────── */}
+      {/* First on mobile, sticky right rail on desktop: the roster's
+          #counselor-member-messages deep link lands on the composer without
+          scrolling (counselor audit §6 item 2). The id is the public anchor. */}
+      <div className={styles.detailLayout}>
+      <section
+        id="counselor-member-messages"
+        className={styles.messagesRail}
+        aria-labelledby="counselor-member-messages-title"
+      >
+        <div className="wa-kit-card">
+          <h2 id="counselor-member-messages-title" className="wa-kit-stat-label" style={{ margin: '0 0 0.75rem' }}>
+            Messages
+          </h2>
+          {readOnlyAudit && <span hidden data-portal-audit-suppressed="counselor-member-message-thread-create-read-receipt-and-realtime" />}
+          {messagesTruncated ? (
+            <p className="wa-kit-meta" style={{ margin: '0 0 0.5rem' }}>
+              {messagesLabel}
+            </p>
+          ) : null}
+          {readOnlyAudit && thread ? (
+            <p>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
+          ) : thread ? <AdminMemberCounselorChatClient
+            readCursorMode
+            messagesApiBase={`/api/counselor/members/${member.id}/messages`}
+            initial={{
+              staffUserId: user.id,
+              member: { id: member.id, fullName: member.fullName },
+              thread: {
+                id: thread.id,
+                memberId: thread.memberId,
+                counselorUserId: thread.counselorUserId,
+                memberLastReadAt: thread.memberLastReadAt?.toISOString() ?? null,
+                counselorLastReadAt: thread.counselorLastReadAt?.toISOString() ?? null,
+              },
+              messages: messages.map((m) => ({
+                ...serializeMessage(m),
+                authorName: getMessageAuthorName(nameById, m.authorId),
+              })),
+            }}
+          /> : <p>No counselor conversation has started yet.</p>}
+        </div>
+      </section>
 
       {/* ── Mobile ─────────────────────────────────────────── */}
       <div className="wa-block md:wa-hidden" style={{ paddingBottom: '6rem' }}>
@@ -1187,36 +1232,6 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
             <AdvisorSessionNotesPanel key={member.id} memberId={member.id} />
           </section>
 
-          <section id="counselor-member-messages" style={{ marginTop: '1.5rem' }}>
-            {readOnlyAudit && <span hidden data-portal-audit-suppressed="counselor-member-message-thread-create-read-receipt-and-realtime" />}
-            {messagesTruncated ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
-                {messagesLabel}
-              </p>
-            ) : null}
-            {readOnlyAudit && thread ? (
-              <p>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
-            ) : thread ? <AdminMemberCounselorChatClient
-              readCursorMode
-              messagesApiBase={`/api/counselor/members/${member.id}/messages`}
-              initial={{
-                staffUserId: user.id,
-                member: { id: member.id, fullName: member.fullName },
-                thread: {
-                  id: thread.id,
-                  memberId: thread.memberId,
-                  counselorUserId: thread.counselorUserId,
-                  memberLastReadAt: thread.memberLastReadAt?.toISOString() ?? null,
-                  counselorLastReadAt: thread.counselorLastReadAt?.toISOString() ?? null,
-                },
-                messages: messages.map((m) => ({
-                  ...serializeMessage(m),
-                  authorName: getMessageAuthorName(nameById, m.authorId),
-                })),
-              }}
-            /> : <p>No counselor conversation has started yet.</p>}
-          </section>
-
           {/* Job Pipeline — Desktop */}
           <section style={{ marginTop: '1.5rem' }}>
             <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Job Pipeline</h2>
@@ -1285,6 +1300,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
             </p>
           ) : null}
         </div>
+      </div>
       </div>
 
     </PortalPageFrame>

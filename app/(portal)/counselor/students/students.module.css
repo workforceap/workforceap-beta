@@ -40,3 +40,17 @@
     transform: none;
   }
 }
+
+/* Four stat tiles above the roster — one treatment for both widths. The
+   mobile body pads its own children (1rem), the desktop body does not. */
+.statsRow {
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .statsRow {
+    padding: 0;
+    margin-bottom: 1.5rem;
+  }
+}

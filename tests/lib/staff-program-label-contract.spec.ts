@@ -7,7 +7,6 @@ const root = path.resolve(__dirname, '../..');
 const STAFF_PROGRAM_SURFACES = [
   'app/(portal)/counselor/overview/page.tsx',
   'components/portal/counselor/AtRiskDashboard.tsx',
-  'components/portal/counselor/AtRiskMemberList.tsx',
   'components/portal/counselor/CounselorCommandCenter.tsx',
   'components/portal/counselor/CounselorPriorityQueue.tsx',
   'components/portal/counselor/CounselorStudentsRosterClient.tsx',
