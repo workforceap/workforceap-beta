@@ -11,6 +11,7 @@ describe('curriculum-versioned portal reads', () => {
     'lib/admin/trainingDashboard.ts',
     'lib/admin/studentsRosterEnrichment.ts',
     'app/admin/training-progress/page.tsx',
+    'lib/admin/trainingRosterLoad.ts',
     'app/admin/members/[id]/page.tsx',
     'app/(portal)/partner/referred-members/[memberId]/page.tsx',
     'app/(portal)/employer/candidates/[studentId]/page.tsx',
@@ -34,7 +35,9 @@ describe('curriculum-versioned portal reads', () => {
   it('separates admin validated-course caches by curriculum version', () => {
     const dashboard = readRepo('lib/admin/trainingDashboard.ts');
     const roster = readRepo('lib/admin/studentsRosterEnrichment.ts');
-    const progress = readRepo('app/admin/training-progress/page.tsx');
+    // The training-progress roster loader moved out of the page when the
+    // admin rosters were consolidated into one kit; the cache keys did not.
+    const progress = readRepo('lib/admin/trainingRosterLoad.ts');
 
     expect(dashboard).toContain(
       '`${m.organizationId}:${enrolledProgram}:${curriculumVersion}`',

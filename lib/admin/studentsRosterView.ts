@@ -1,0 +1,141 @@
+/**
+ * View presets for the single admin roster (`StudentsRosterKit`).
+ *
+ * Admin used to list the same members on four surfaces with different
+ * columns. The kit now renders one roster with a view preset (admin audit
+ * 2026-09-20, §7 item 2):
+ *
+ *   roster   → Students columns (program, progress, grade, readiness,
+ *              counselor, status, last active); `/admin/students`
+ *   training → Training-progress columns (program, modules, % complete,
+ *              grade, pace, last active); `/admin/students?view=training`
+ *              and `/admin/training-progress`
+ *
+ * Everything here is pure so the preset behaviour (which chips exist, which
+ * rows a chip keeps, how a URL param resolves) is verifiable without React.
+ */
+
+import type { StudentRow } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
+import type { RosterRow } from '@/lib/admin/trainingProgressRoster';
+
+export const STUDENTS_ROSTER_VIEWS = ['roster', 'training'] as const;
+export type StudentsRosterView = (typeof STUDENTS_ROSTER_VIEWS)[number];
+
+const DEFAULT_STUDENTS_ROSTER_VIEW: StudentsRosterView = 'roster';
+
+/** `?view=` query value → preset. Anything unrecognised is the default roster. */
+export function parseStudentsRosterView(
+  value: string | string[] | undefined | null,
+): StudentsRosterView {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw === 'training' ? 'training' : DEFAULT_STUDENTS_ROSTER_VIEW;
+}
+
+/** Where each preset lives when the kit is mounted on `/admin/students`. */
+export const STUDENTS_ROSTER_VIEW_HREFS: Record<StudentsRosterView, string> = {
+  roster: '/admin/students',
+  training: '/admin/students?view=training',
+};
+
+/** Legacy dual-table (canonical + raw Coursera) kept behind `?ui=legacy`. */
+export const TRAINING_PROGRESS_LEGACY_HREF = '/admin/training-progress?ui=legacy';
+
+/** Legacy management hub (bulk actions, server-side filters, CSV export). */
+export const MEMBERS_MANAGEMENT_HREF = '/admin/members';
+
+export const ROSTER_CHIPS = ['All', 'Job-Ready', 'At Risk', 'In Training', 'Unmatched'] as const;
+export type RosterChip = (typeof ROSTER_CHIPS)[number];
+
+export const TRAINING_CHIPS = ['All', 'Ahead', 'On track', 'Behind', 'Stalled', 'Unmatched'] as const;
+export type TrainingChip = (typeof TRAINING_CHIPS)[number];
+
+export type StudentsRosterChip = RosterChip | TrainingChip;
+
+export function chipsForView(view: StudentsRosterView): readonly StudentsRosterChip[] {
+  return view === 'training' ? TRAINING_CHIPS : ROSTER_CHIPS;
+}
+
+/**
+ * Chip semantics are the same in both views: "All" keeps everything,
+ * "Unmatched" keeps Coursera identities with no WAP member, and every other
+ * chip keeps WAP members whose status (roster) or pace (training) matches.
+ * Unmatched identities never leak into a status or pace chip.
+ */
+export function matchesRosterChip(
+  row: StudentRow,
+  chip: StudentsRosterChip,
+  view: StudentsRosterView,
+): boolean {
+  if (chip === 'All') return true;
+  if (chip === 'Unmatched') return row.inWap === false;
+  if (row.inWap === false) return false;
+  if (view === 'training') return row.training?.pace === chip;
+  return row.status === chip;
+}
+
+/** Case-insensitive contains across the identifiers staff actually type. */
+export function matchesRosterSearch(row: StudentRow, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return `${row.name} ${row.email} ${row.program}`.toLowerCase().includes(needle);
+}
+
+export type StudentsRosterViewCopy = {
+  title: string;
+  kicker: string;
+  lede: string;
+  searchLabel: string;
+  emptyTitle: string;
+  emptyDescription: string;
+};
+
+export const STUDENTS_ROSTER_VIEW_COPY: Record<StudentsRosterView, StudentsRosterViewCopy> = {
+  roster: {
+    title: 'Students',
+    kicker: 'People',
+    lede: 'Find and act on any student.',
+    searchLabel: 'Search students',
+    emptyTitle: 'No students match this view',
+    emptyDescription: 'Try a different filter or search.',
+  },
+  training: {
+    title: 'Training progress',
+    kicker: 'Programs',
+    lede: 'Live B4B + LMS progress across all members',
+    searchLabel: 'Search learners',
+    emptyTitle: 'No training progress yet',
+    emptyDescription:
+      'Members in a program and Coursera learners not yet in WAP show up here once activity exists.',
+  },
+};
+
+/**
+ * Projection onto the training-roster helper row so the training view can
+ * reuse the tested pace ordering, module tie-break and KPI summary from
+ * `lib/admin/trainingProgressRoster`. A row without training facts sorts as
+ * an unknown pace (after every known one) with zero modules.
+ */
+export function toTrainingRosterRow(row: StudentRow): RosterRow {
+  return {
+    id: row.id,
+    student: row.name,
+    program: row.program,
+    modulesDone: row.training?.modulesDone ?? 0,
+    modulesTotal: row.training?.modulesTotal ?? 0,
+    percentComplete: row.progress,
+    pace: row.training?.pace ?? '',
+    courseraGrade: row.courseraGrade,
+    inWap: row.inWap,
+    noProgram: row.noProgram,
+    lastActive: row.lastActive,
+    lastActiveAt: row.lastActiveAt,
+  };
+}
+
+/** Build initials from a full name (e.g. "Jasmine Davis" → "JD"). */
+export function initialsFrom(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '??';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}

@@ -29,6 +29,11 @@ const STATUS_RANK: Record<StudentStatus, number> = {
   Placed: 4,
 };
 
+/** Rows without a status (training-view rows) rank after every known status. */
+function statusRank(row: StudentRow): number {
+  return row.status ? STATUS_RANK[row.status] ?? 99 : 99;
+}
+
 function gradeOf(row: StudentRow): number | null {
   const grade = row.courseraGrade;
   return grade != null && Number.isFinite(grade) ? grade : null;
@@ -48,11 +53,12 @@ function compareOn(a: StudentRow, b: StudentRow, key: StudentSortKey): number {
     case 'progress':
       return a.progress - b.progress;
     case 'readiness':
-      return a.readiness - b.readiness;
+      // Rows without a readiness read (training-view rows) sort as 0.
+      return (a.readiness ?? 0) - (b.readiness ?? 0);
     case 'counselor':
-      return a.counselor.localeCompare(b.counselor);
+      return (a.counselor ?? '').localeCompare(b.counselor ?? '');
     case 'status':
-      return (STATUS_RANK[a.status] ?? 99) - (STATUS_RANK[b.status] ?? 99);
+      return statusRank(a) - statusRank(b);
     case 'lastActive':
       return (lastActiveMs(a) ?? 0) - (lastActiveMs(b) ?? 0);
     case 'courseraGrade':

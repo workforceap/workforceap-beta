@@ -9838,7 +9838,7 @@
       },
       {
         "name": "default",
-        "line": 28,
+        "line": 37,
         "kind": "FunctionDeclaration",
         "localName": "AdminTrainingProgressPage"
       }
@@ -11017,12 +11017,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 34,
+        "line": 21,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 95,
+        "line": 35,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }
@@ -11032,12 +11032,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 4,
+        "line": 5,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/adminPageScope",
-        "line": 6,
+        "line": 7,
         "kind": "import"
       }
     ]
@@ -11270,17 +11270,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 36,
+        "line": 28,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 45,
+        "line": 37,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 47,
+        "line": 45,
         "kind": "FunctionDeclaration",
         "localName": "AdminTrainingProgressPage"
       }
@@ -11302,7 +11302,7 @@
       },
       {
         "specifier": "@/lib/tenant/adminPageScope",
-        "line": 400,
+        "line": 86,
         "kind": "type"
       }
     ]
@@ -32252,12 +32252,12 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 9,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 53,
+        "line": 59,
         "kind": "FunctionDeclaration",
         "localName": "DevStaffTrainingProgressPage"
       }

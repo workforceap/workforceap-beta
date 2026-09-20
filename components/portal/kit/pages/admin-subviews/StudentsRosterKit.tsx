@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@astryxdesign/core/Card';
+import { Button } from '@astryxdesign/core/Button';
+import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
@@ -11,9 +14,12 @@ import {
   PageOpener,
   DataTable,
   Avatar,
+  FormField,
+  KpiStrip,
   colorVar,
   type Column,
   type KitColor,
+  type KpiItem,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
 import {
@@ -22,13 +28,36 @@ import {
   sortStudentRows,
   type StudentSortKey,
 } from '@/lib/admin/studentsRosterSort';
+import {
+  DEFAULT_SORT_DIRECTION as DEFAULT_TRAINING_SORT_DIRECTION,
+  DEFAULT_SORT_KEY as DEFAULT_TRAINING_SORT_KEY,
+  sortTrainingRows,
+  summarizeTrainingRows,
+  type SortKey as TrainingSortKey,
+} from '@/lib/admin/trainingProgressRoster';
+import type { TrainingPace } from '@/lib/admin/trainingProgressPrograms';
+import {
+  MEMBERS_MANAGEMENT_HREF,
+  STUDENTS_ROSTER_VIEW_COPY,
+  STUDENTS_ROSTER_VIEW_HREFS,
+  TRAINING_PROGRESS_LEGACY_HREF,
+  chipsForView,
+  matchesRosterChip,
+  matchesRosterSearch,
+  toTrainingRosterRow,
+  type StudentsRosterChip,
+  type StudentsRosterView,
+} from '@/lib/admin/studentsRosterView';
 
 /**
- * Students roster — the consolidated members workspace with saved-view filter
- * chips (dense). Mockup: workforceap-admin-suite.html "Students" view.
- * Target route: /admin/students
+ * Students roster — the one admin roster, rendered with a view preset
+ * (dense). Mockups: workforceap-admin-suite.html "Students" view and
+ * workforceap-admin-full.html "training-progress" view.
  *
- * Interactive (filter chips toggle the visible rows) → needs 'use client'.
+ *   view="roster"   → /admin/students (default)
+ *   view="training" → /admin/students?view=training and /admin/training-progress
+ *
+ * Interactive (search, filter chips and sortable headers) → needs 'use client'.
  * Uses DataTable mobile="cards" so the wide roster stacks cleanly on mobile
  * (the mockup calls out "wide table → stacked cards on mobile, no squish").
  * Names always include the full account email to distinguish same-name accounts
@@ -39,21 +68,35 @@ import {
  */
 export type StudentStatus = 'Job-Ready' | 'At Risk' | 'In Training' | 'Interviewing' | 'Placed';
 
+export interface StudentTrainingFacts {
+  /** Canonical modules completed in the program. */
+  modulesDone: number;
+  /** Total canonical modules in the program. */
+  modulesTotal: number;
+  /** Pace classification derived from progress + recent activity. */
+  pace: TrainingPace;
+}
+
 export interface StudentRow {
   id: string;
   name: string;
   email: string;
   initials?: string;
-  location: string;
+  /** City/state; roster view only. */
+  location?: string;
   program: string;
   /** 0–100 course progress. */
   progress: number;
   /** False when no assigned-program denominator or progress read is available. */
   progressKnown?: boolean;
-  /** Readiness score, 0–100. */
-  readiness: number;
-  counselor: string;
-  status: StudentStatus;
+  /** Readiness score, 0–100; roster view only. */
+  readiness?: number;
+  /** Active counselor display name; roster view only. */
+  counselor?: string;
+  /** Roster status; roster view only. */
+  status?: StudentStatus;
+  /** Module counts + pace; training view only. */
+  training?: StudentTrainingFacts;
   /** Last-active caption, e.g. "2h ago". */
   lastActive: string;
   /** Sortable last-activity instant (epoch ms). Caption alone is not ordered. */
@@ -71,14 +114,20 @@ export interface StudentRow {
 }
 
 /** Filter chips. "All" is special-cased to show everything. */
-export type StudentFilter = 'All' | 'Job-Ready' | 'At Risk' | 'In Training' | 'Unmatched';
+export type StudentFilter = StudentsRosterChip;
 
 export interface StudentsRosterKitProps {
+  /** Column preset. Defaults to the Students roster. */
+  view?: StudentsRosterView;
+  /** Where each preset lives from this mount; defaults to the /admin/students URLs. */
+  viewHrefs?: Partial<Record<StudentsRosterView, string>>;
   /** Shown under the header when a secondary roster source (activity, Coursera evidence) failed soft. */
   notice?: string;
   students?: StudentRow[];
   /** Total roster size for the "Showing N of TOTAL" footer + All chip count. */
   total?: number;
+  /** Override the footer, e.g. with the loader's cap and coverage disclosure. */
+  showingLabel?: string;
 }
 
 const DEFAULT_STUDENTS: StudentRow[] = [
@@ -136,8 +185,6 @@ const DEFAULT_STUDENTS: StudentRow[] = [
   },
 ];
 
-const FILTERS: StudentFilter[] = ['All', 'Job-Ready', 'At Risk', 'In Training', 'Unmatched'];
-
 /** Maps the kit's semantic tone vocabulary to a real Token color. */
 const STATUS_TOKEN_COLOR: Record<StudentStatus, TokenColor> = {
   'Job-Ready': 'orange',
@@ -147,12 +194,14 @@ const STATUS_TOKEN_COLOR: Record<StudentStatus, TokenColor> = {
   'In Training': 'gray',
 };
 
-function matchesFilter(student: StudentRow, filter: StudentFilter): boolean {
-  if (filter === 'All') return true;
-  if (filter === 'Unmatched') return student.inWap === false;
-  if (student.inWap === false) return false;
-  return student.status === filter;
-}
+const PACE_TOKEN_COLOR: Record<TrainingPace, TokenColor> = {
+  'On track': 'green',
+  Ahead: 'green',
+  Stalled: 'pink',
+  Behind: 'yellow',
+};
+
+const TEXT_SORT_KEYS: readonly (StudentSortKey | TrainingSortKey)[] = ['name', 'program', 'counselor', 'student'];
 
 function formatRosterGrade(pct: number | null | undefined): string {
   if (pct == null || !Number.isFinite(pct)) return '—';
@@ -171,35 +220,59 @@ function readinessVar(score: number): string {
   return colorVar(readinessColor(score));
 }
 
+function NavButton({ href, label }: { href: string; label: string }) {
+  return (
+    <AstryxLink href={href} as={NextLink as never} isStandalone>
+      <Button label={label} variant="secondary" size="sm" />
+    </AstryxLink>
+  );
+}
+
 export function StudentsRosterKit({
+  view = 'roster',
+  viewHrefs,
   notice,
   students = DEFAULT_STUDENTS,
   total = 847,
+  showingLabel,
 }: StudentsRosterKitProps) {
   const router = useRouter();
+  const copy = STUDENTS_ROSTER_VIEW_COPY[view];
+  const chips = chipsForView(view);
+  const hrefs = { ...STUDENTS_ROSTER_VIEW_HREFS, ...viewHrefs };
+  const isTraining = view === 'training';
+
   const [active, setActive] = useState<StudentFilter>('All');
-  const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey>(
-    DEFAULT_STUDENT_SORT_KEY,
-    DEFAULT_STUDENT_SORT_DIRECTION,
-    ['name', 'program', 'counselor'],
+  const [search, setSearch] = useState('');
+  const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey | TrainingSortKey>(
+    isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY,
+    isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION,
+    TEXT_SORT_KEYS,
   );
 
-  const counts: Record<StudentFilter, number> = {
-    All: total,
-    'Job-Ready': students.filter((s) => matchesFilter(s, 'Job-Ready')).length,
-    'At Risk': students.filter((s) => s.status === 'At Risk' && s.inWap !== false).length,
-    'In Training': students.filter((s) => s.status === 'In Training' && s.inWap !== false).length,
-    Unmatched: students.filter((s) => s.inWap === false).length,
-  };
+  const counts = Object.fromEntries(
+    chips.map((chip) => [
+      chip,
+      chip === 'All' ? total : students.filter((s) => matchesRosterChip(s, chip, view)).length,
+    ]),
+  ) as Record<StudentFilter, number>;
 
-  const visible = useMemo(
-    () =>
-      sortStudentRows(
-        students.filter((s) => matchesFilter(s, active)),
-        sortKey,
-        sortDirection,
-      ),
-    [students, active, sortKey, sortDirection],
+  const visible = useMemo(() => {
+    const kept = students.filter(
+      (s) => matchesRosterChip(s, active, view) && matchesRosterSearch(s, search),
+    );
+    if (!isTraining) return sortStudentRows(kept, sortKey as StudentSortKey, sortDirection);
+    // The training preset reuses the tested pace ordering and module
+    // tie-break from the training-roster helpers via a row projection.
+    const byId = new Map(kept.map((row) => [row.id, row]));
+    return sortTrainingRows(kept.map(toTrainingRosterRow), sortKey as TrainingSortKey, sortDirection)
+      .map((row) => byId.get(row.id))
+      .filter((row): row is StudentRow => row != null);
+  }, [students, active, search, view, isTraining, sortKey, sortDirection]);
+
+  const summary = useMemo(
+    () => (isTraining ? summarizeTrainingRows(visible.map(toTrainingRosterRow)) : null),
+    [isTraining, visible],
   );
 
   const StudentCell = ({ row }: { row: StudentRow }) => (
@@ -228,17 +301,19 @@ export function StudentsRosterKit({
         <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
           {row.email}
         </p>
-        <div
-          style={{
-            fontSize: 13,
-            color: 'var(--wa-muted)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {row.location}
-        </div>
+        {row.location ? (
+          <div
+            style={{
+              fontSize: 13,
+              color: 'var(--wa-muted)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {row.location}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -261,48 +336,81 @@ export function StudentsRosterKit({
     </div>
   );
 
-  const columns: Column<StudentRow>[] = [
-    {
-      key: 'name',
-      header: sortHeader('name', 'Student'),
-      stickyLeft: true,
-      minWidth: 220,
-      ariaSort: ariaSortForColumn('name', sortKey, sortDirection),
-      render: (row) => <StudentCell row={row} />,
-    },
-    {
-      key: 'program',
-      header: sortHeader('program', 'Program'),
-      minWidth: 160,
-      ariaSort: ariaSortForColumn('program', sortKey, sortDirection),
-      render: (row) => <span style={{ color: 'var(--wa-muted)' }}>{row.program}</span>,
-    },
+  /** Program title; the training view marks a program inferred from activity rather than assigned. */
+  const programLabel = (row: StudentRow) =>
+    `${row.program}${isTraining && row.inWap !== false && row.noProgram ? ' (inferred)' : ''}`;
+
+  const LastActiveCell = ({ row }: { row: StudentRow }) => (
+    <span
+      title={row.lastActiveSource}
+      aria-label={row.lastActiveSource ? `${row.lastActive} · ${row.lastActiveSource}` : undefined}
+      style={{
+        color: row.status === 'At Risk' ? 'var(--wa-accent)' : 'var(--wa-muted)',
+        fontWeight: row.status === 'At Risk' ? 700 : 400,
+        fontVariantNumeric: 'tabular-nums',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {row.lastActive}
+    </span>
+  );
+
+  const ariaSort = (key: StudentSortKey | TrainingSortKey) => ariaSortForColumn(key, sortKey, sortDirection);
+
+  const nameColumn: Column<StudentRow> = {
+    key: 'name',
+    header: sortHeader(isTraining ? 'student' : 'name', 'Student'),
+    stickyLeft: true,
+    minWidth: 220,
+    ariaSort: ariaSort(isTraining ? 'student' : 'name'),
+    render: (row) => <StudentCell row={row} />,
+  };
+  const programColumn: Column<StudentRow> = {
+    key: 'program',
+    header: sortHeader('program', 'Program'),
+    minWidth: isTraining ? 200 : 160,
+    ariaSort: ariaSort('program'),
+    render: (row) => <span style={{ color: 'var(--wa-muted)' }} title={row.program}>{programLabel(row)}</span>,
+  };
+  const gradeColumn: Column<StudentRow> = {
+    key: 'courseraGrade',
+    header: sortHeader('courseraGrade', 'Coursera grade'),
+    align: 'right',
+    minWidth: 112,
+    ariaSort: ariaSort('courseraGrade'),
+    render: (row) => (
+      <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700, whiteSpace: 'nowrap' }}>
+        {formatRosterGrade(row.courseraGrade)}
+      </span>
+    ),
+  };
+  const lastActiveColumn: Column<StudentRow> = {
+    key: 'lastActive',
+    header: sortHeader('lastActive', 'Last active'),
+    align: 'right',
+    minWidth: 96,
+    ariaSort: ariaSort('lastActive'),
+    render: (row) => <LastActiveCell row={row} />,
+  };
+
+  const rosterColumns: Column<StudentRow>[] = [
+    nameColumn,
+    programColumn,
     {
       key: 'progress',
       header: sortHeader('progress', 'Progress'),
       minWidth: 120,
-      ariaSort: ariaSortForColumn('progress', sortKey, sortDirection),
+      ariaSort: ariaSort('progress'),
       render: (row) => <ProgressCell row={row} />,
     },
-    {
-      key: 'courseraGrade',
-      header: sortHeader('courseraGrade', 'Coursera grade'),
-      align: 'right',
-      minWidth: 112,
-      ariaSort: ariaSortForColumn('courseraGrade', sortKey, sortDirection),
-      render: (row) => (
-        <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700, whiteSpace: 'nowrap' }}>
-          {formatRosterGrade(row.courseraGrade)}
-        </span>
-      ),
-    },
+    gradeColumn,
     {
       key: 'readiness',
       header: sortHeader('readiness', 'Readiness'),
       align: 'right',
       minWidth: 88,
-      ariaSort: ariaSortForColumn('readiness', sortKey, sortDirection),
-      render: (row) => (
+      ariaSort: ariaSort('readiness'),
+      render: (row) => row.readiness == null ? <span>—</span> : (
         <span
           style={{
             fontVariantNumeric: 'tabular-nums',
@@ -319,45 +427,101 @@ export function StudentsRosterKit({
       key: 'counselor',
       header: sortHeader('counselor', 'Counselor'),
       minWidth: 120,
-      ariaSort: ariaSortForColumn('counselor', sortKey, sortDirection),
-      render: (row) => <span style={{ color: 'var(--wa-muted)' }}>{row.counselor}</span>,
+      ariaSort: ariaSort('counselor'),
+      render: (row) => <span style={{ color: 'var(--wa-muted)' }}>{row.counselor ?? 'Unassigned'}</span>,
     },
     {
       key: 'status',
       header: sortHeader('status', 'Status'),
       minWidth: 108,
-      ariaSort: ariaSortForColumn('status', sortKey, sortDirection),
-      render: (row) => (
+      ariaSort: ariaSort('status'),
+      render: (row) => row.status ? (
         <span style={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
           <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />
+        </span>
+      ) : <span>—</span>,
+    },
+    lastActiveColumn,
+  ];
+
+  const trainingColumns: Column<StudentRow>[] = [
+    nameColumn,
+    programColumn,
+    {
+      key: 'modules',
+      header: sortHeader('modules', 'Modules'),
+      align: 'right',
+      minWidth: 88,
+      ariaSort: ariaSort('modules'),
+      render: (row) => (
+        <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          {row.training ? `${row.training.modulesDone} / ${row.training.modulesTotal}` : '—'}
         </span>
       ),
     },
     {
-      key: 'lastActive',
-      header: sortHeader('lastActive', 'Last active'),
-      align: 'right',
-      minWidth: 96,
-      ariaSort: ariaSortForColumn('lastActive', sortKey, sortDirection),
-      render: (row) => (
-        <span
-          title={row.lastActiveSource}
-          aria-label={row.lastActiveSource ? `${row.lastActive} · ${row.lastActiveSource}` : undefined}
-          style={{
-            color: row.status === 'At Risk' ? 'var(--wa-accent)' : 'var(--wa-muted)',
-            fontWeight: row.status === 'At Risk' ? 700 : 400,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {row.lastActive}
-        </span>
-      ),
+      key: 'percentComplete',
+      header: sortHeader('percentComplete', '% Complete'),
+      minWidth: 120,
+      ariaSort: ariaSort('percentComplete'),
+      render: (row) => <ProgressCell row={row} />,
     },
+    gradeColumn,
+    {
+      key: 'pace',
+      header: sortHeader('pace', 'Pace'),
+      minWidth: 108,
+      ariaSort: ariaSort('pace'),
+      render: (row) => row.training ? (
+        <span style={{ display: 'inline-flex', whiteSpace: 'nowrap' }}>
+          <Token label={row.training.pace} size="sm" color={PACE_TOKEN_COLOR[row.training.pace]} />
+        </span>
+      ) : <span>—</span>,
+    },
+    lastActiveColumn,
   ];
+
+  const kpis: KpiItem[] | null = summary
+    ? [
+        { label: 'On Track', value: summary.onTrack, tone: 'success' },
+        { label: 'Behind', value: summary.behind, tone: 'gold' },
+        { label: 'Stalled', value: summary.stalled, tone: 'accent' },
+        { label: 'Avg %', value: `${summary.avgPercent}%`, tone: 'info' },
+      ]
+    : null;
+
+  const rowBadge = (row: StudentRow) =>
+    isTraining
+      ? row.training
+        ? <Token label={row.training.pace} size="sm" color={PACE_TOKEN_COLOR[row.training.pace]} />
+        : null
+      : row.status
+        ? <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />
+        : null;
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title="Students" kicker="People" lede="Find and act on any student." />
+      <PageOpener
+        className="wa-mb-5"
+        title={copy.title}
+        kicker={copy.kicker}
+        lede={copy.lede}
+        action={
+          <nav aria-label="Roster views" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {isTraining ? (
+              <>
+                <NavButton href={hrefs.roster} label="Roster" />
+                <NavButton href={TRAINING_PROGRESS_LEGACY_HREF} label="Detailed view" />
+              </>
+            ) : (
+              <>
+                <NavButton href={hrefs.training} label="Training progress" />
+                <NavButton href={MEMBERS_MANAGEMENT_HREF} label="Management hub" />
+              </>
+            )}
+          </nav>
+        }
+      />
 
       {notice ? (
         <p role="status" className="wa-kit-training-notice" data-testid="students-roster-notice">
@@ -365,27 +529,42 @@ export function StudentsRosterKit({
         </p>
       ) : null}
 
-      {/* Saved-view filter chips */}
-      <div className="wa-mb-5">
-        <SegmentedControl
-          value={active}
-          onChange={(v) => setActive(v as StudentFilter)}
-          label="Roster filters"
-          size="sm"
-          layout="hug"
-        >
-          {FILTERS.map((f) => (
-            <SegmentedControlItem key={f} value={f} label={`${f} · ${counts[f]}`} />
-          ))}
-        </SegmentedControl>
+      {kpis ? (
+        <div className="wa-mb-5" data-testid="students-roster-kpis">
+          <KpiStrip items={kpis} />
+        </div>
+      ) : null}
+
+      {/* Search + saved-view filter chips */}
+      <div className="wa-mb-5 wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-3" style={{ alignItems: 'end' }}>
+        <FormField
+          label={copy.searchLabel}
+          type="search"
+          placeholder="Name, email or program"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <div className="lg:wa-col-span-2">
+          <SegmentedControl
+            value={active}
+            onChange={(v) => setActive(v as StudentFilter)}
+            label="Roster filters"
+            size="sm"
+            layout="hug"
+          >
+            {chips.map((f) => (
+              <SegmentedControlItem key={f} value={f} label={`${f} · ${counts[f]}`} />
+            ))}
+          </SegmentedControl>
+        </div>
       </div>
 
       <DataTable<StudentRow>
-        columns={columns}
+        columns={isTraining ? trainingColumns : rosterColumns}
         rows={visible}
         rowKey={(row) => row.id}
         onRowClick={(row) => router.push(row.href ?? `/admin/members/${row.id}`)}
-        minWidth={1040}
+        minWidth={isTraining ? 1080 : 1040}
         mobile="cards"
         cardRender={(row) => (
           <Card padding={3}>
@@ -393,24 +572,36 @@ export function StudentsRosterKit({
               <div style={{ minWidth: 0, flex: 1 }}>
                 <StudentCell row={row} />
               </div>
-              <div style={{ flexShrink: 0 }}>
-                <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />
+              <div style={{ flexShrink: 0 }}>{rowBadge(row)}</div>
+            </div>
+            {isTraining ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
+                <span style={{ minWidth: 0 }}>{programLabel(row)}</span>
+                <span style={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                  Modules{' '}
+                  <b style={{ color: 'var(--wa-text)' }}>
+                    {row.training ? `${row.training.modulesDone} / ${row.training.modulesTotal}` : '—'}
+                  </b>
+                </span>
               </div>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
-              <span style={{ minWidth: 0 }}>{row.program} · {row.counselor}</span>
-              <span style={{ whiteSpace: 'nowrap' }}>
-                Readiness{' '}
-                <b
-                  style={{
-                    fontVariantNumeric: 'tabular-nums',
-                    color: readinessVar(row.readiness),
-                  }}
-                >
-                  {row.readiness}
-                </b>
-              </span>
-            </div>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
+                <span style={{ minWidth: 0 }}>{row.program} · {row.counselor ?? 'Unassigned'}</span>
+                {row.readiness != null ? (
+                  <span style={{ whiteSpace: 'nowrap' }}>
+                    Readiness{' '}
+                    <b
+                      style={{
+                        fontVariantNumeric: 'tabular-nums',
+                        color: readinessVar(row.readiness),
+                      }}
+                    >
+                      {row.readiness}
+                    </b>
+                  </span>
+                ) : null}
+              </div>
+            )}
             {row.progressKnown !== false && <ProgressBar
               value={row.progress}
               label={`${row.name} progress`}
@@ -425,12 +616,15 @@ export function StudentsRosterKit({
             </div>
           </Card>
         )}
-        emptyTitle="No students match this view"
-        emptyDescription="Try a different filter."
+        emptyTitle={copy.emptyTitle}
+        emptyDescription={copy.emptyDescription}
       />
 
-      <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}>
-        Showing {visible.length} of {total}
+      <p
+        data-testid="students-roster-footer"
+        style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}
+      >
+        {showingLabel ?? `Showing ${visible.length} of ${total}`}
       </p>
     </DesignSurface>
   );

@@ -11,27 +11,19 @@ import { getProgramBySlug, PROGRAMS } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { parseCourseGradeString, scoreScaledToDisplayPercent } from '@/lib/coursera/courseGradeDisplay';
-import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
-import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { humanizeCourseraCourseTitle } from '@/lib/coursera/courseTitle';
-import { countUnmatchedLearners, loadUnmatchedLearners } from '@/lib/coursera/progressQueries';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { latestCompletedGradeByUser } from '@/lib/admin/trainingProgressGrades';
-import {
-  STALLED_IDLE_DAYS,
-  deriveTrainingPace,
-  programSlugsForLearner,
-} from '@/lib/admin/trainingProgressPrograms';
-import { countMembersWithTraining, latestActivityMs, relativeLastActiveCaption } from '@/lib/admin/trainingProgressRoster';
+import { STUDENTS_SECONDARY_LOAD_NOTICE } from '@/lib/admin/studentsRosterLoad';
+import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
+import { TRAINING_PROGRESS_LEGACY_HREF } from '@/lib/admin/studentsRosterView';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import TrainingProgressClient, {
   type CurriculumRow,
   type RawCourseraRow,
 } from '@/components/admin/TrainingProgressClient';
-import TrainingProgressRoster from '@/components/admin/TrainingProgressRoster';
-import type { TrainingRow } from '@/components/portal/kit/pages/admin-subviews/TrainingProgressKit';
+import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -44,6 +36,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Training progress is the training preset of the one admin roster
+ * (`StudentsRosterKit view="training"`, also at /admin/students?view=training).
+ * The original sortable dual-table (canonical + raw Coursera) stays behind
+ * `?ui=legacy`.
+ */
 export default async function AdminTrainingProgressPage({
   searchParams,
 }: {
@@ -63,334 +61,22 @@ export default async function AdminTrainingProgressPage({
     return renderLegacy(scope);
   }
 
-  // ─── DEFAULT: lean per-learner pace roster (design kit) ───
-  // One pass over members + their primary enrollment + canonical course
-  // progress. All lean (findMany take:N / count); no $transaction, no HTTP.
-  let learners: Array<{
-    id: string;
-    fullName: string | null;
-    enrolledProgram: string | null;
-    lastLoginAt: Date | null;
-  }>;
-  let learnerTotal = 0;
-  try {
-    [learners, learnerTotal] = await Promise.all([
-      withAdminPageScope(scope, (db) => db.user.findMany({
-        take: ADMIN_SSR_LIST_CAP,
-        where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE },
-        orderBy: [{ fullName: 'asc' }],
-        select: { id: true, fullName: true, enrolledProgram: true, lastLoginAt: true },
-      })),
-      withAdminPageScope(scope, (db) => db.user.count({
-        where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE },
-      })),
-    ]);
-  } catch (error) {
-    console.error('[admin/training-progress] learner load failed', error);
-    redirect('/admin/training-progress?ui=legacy');
-  }
-
-  // Resolve the tenant-owned learner set before loading progress. A global
-  // take cap is not a tenant boundary: another organization's rows could
-  // otherwise consume the cap or appear in this admin roster.
-  const learnerIds = learners.map((learner) => learner.id);
-  const [enrollmentsResult, progressResult] = await Promise.allSettled([
-    // Primary program per learner drives the single pace row we show.
-    withAdminPageScope(scope, (db) => db.courseEnrollment.findMany({
-      where: { isPrimary: true, userId: { in: learnerIds } },
-      orderBy: { enrolledAt: 'desc' },
-      select: { userId: true, programSlug: true, curriculumVersion: true },
-    })),
-    prisma.courseProgress.findMany({
-      where: { userId: { in: learnerIds } },
-      // Unordered reads made the derived grade and inferred program depend on
-      // whatever order Postgres returned. Newest activity first, slug as the
-      // tie-break, so the same data renders the same page every load.
-      orderBy: [{ lastActivityAt: 'desc' }, { courseSlug: 'asc' }],
-      select: {
-        userId: true,
-        programSlug: true,
-        courseSlug: true,
-        courseId: true,
-        status: true,
-        percentComplete: true,
-        scoreScaled: true,
-        lastActivityAt: true,
-        lastUpdatedAt: true,
-      },
-    }),
-  ]);
-
-  let trainingSecondaryLoadFailed = false;
-
-  // Primary program per learner (falls back to legacy User.enrolledProgram
-  // when no CourseEnrollment row exists yet — e.g. seeded users).
-  const primaryByUser = new Map<
-    string,
-    { programSlug: string; curriculumVersion: string }
-  >();
-  if (enrollmentsResult.status === 'fulfilled') {
-    for (const e of enrollmentsResult.value) {
-      if (!primaryByUser.has(e.userId)) {
-        primaryByUser.set(e.userId, {
-          programSlug: e.programSlug,
-          curriculumVersion: e.curriculumVersion,
-        });
-      }
-    }
-  } else {
-    trainingSecondaryLoadFailed = true;
-    console.error(
-      '[admin/training-progress] enrollment load failed',
-      enrollmentsResult.reason,
-    );
-  }
-
-  // Canonical program buckets feed the same reconciliation helper used by
-  // the member portal. Missing joins remain observable facts instead of an
-  // inline `?? 0` shortcut with a different formula.
-  type AdminLocalProgressRow = {
-    courseSlug: string;
-    courseId: string | null;
-    status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
-    percentComplete: number;
-  };
-  const progressByUserProgram = new Map<string, AdminLocalProgressRow[]>();
-  const lastActivityByUserProgram = new Map<string, Date>();
-  // Every program a learner holds course_progress in, so multi-program
-  // learners get one roster row per program instead of collapsing to the
-  // single program of their most recent activity.
-  const programSlugsByUser = new Map<string, Set<string>>();
-  const inferredProgramByUser = new Map<
-    string,
-    { programSlug: string; activityMs: number; percentComplete: number }
-  >();
-  // Grade selection is deliberately not inlined here: see
-  // `latestCompletedGradeByUser` for why an in-progress partial score must
-  // never reach this column.
-  let gradeByUserId = new Map<string, number>();
-  if (progressResult.status === 'fulfilled') {
-    gradeByUserId = latestCompletedGradeByUser(progressResult.value);
-    for (const p of progressResult.value) {
-      const canonicalProgramSlug =
-        getProgramBySlug(p.programSlug)?.slug ?? canonicalizeProgramSlug(p.programSlug);
-      const userProgramKey = `${p.userId}:${canonicalProgramSlug}`;
-      const bucket = progressByUserProgram.get(userProgramKey) ?? [];
-      bucket.push({
-        courseSlug: p.courseSlug,
-        courseId: p.courseId,
-        status: p.status,
-        percentComplete: p.percentComplete,
-      });
-      progressByUserProgram.set(userProgramKey, bucket);
-      const slugsForUser = programSlugsByUser.get(p.userId) ?? new Set<string>();
-      slugsForUser.add(canonicalProgramSlug);
-      programSlugsByUser.set(p.userId, slugsForUser);
-      const activityAt = p.lastActivityAt ?? p.lastUpdatedAt;
-      if (activityAt) {
-        const cur = lastActivityByUserProgram.get(userProgramKey);
-        if (!cur || activityAt > cur) {
-          lastActivityByUserProgram.set(userProgramKey, activityAt);
-        }
-      }
-      const inferred = inferredProgramByUser.get(p.userId);
-      const activityMs = activityAt?.getTime() ?? 0;
-      if (
-        !inferred ||
-        activityMs > inferred.activityMs ||
-        (activityMs === inferred.activityMs && p.percentComplete > inferred.percentComplete)
-      ) {
-        inferredProgramByUser.set(p.userId, {
-          programSlug: canonicalProgramSlug,
-          activityMs,
-          percentComplete: p.percentComplete,
-        });
-      }
-    }
-  } else {
-    trainingSecondaryLoadFailed = true;
-    console.error(
-      '[admin/training-progress] progress load failed',
-      progressResult.reason,
-    );
-  }
-
-  // Every program a learner should appear under: their stored primary
-  // program first, then every program holding their course progress. Falls
-  // back to the inferred (most-recent-activity) program only when the learner
-  // has no stored program and no progress rows at all.
-  const catalogSlug = (slug: string) => getProgramBySlug(slug)?.slug;
-  const slugsFor = (learner: { id: string; enrolledProgram: string | null }) =>
-    programSlugsForLearner({
-      learner,
-      primaryEnrollment: primaryByUser.get(learner.id),
-      progressProgramSlugs: programSlugsByUser.get(learner.id),
-      inferredProgramSlug: inferredProgramByUser.get(learner.id)?.programSlug,
-      resolveCanonicalSlug: catalogSlug,
-    });
-
-  const curriculumAssignments = new Map<
-    string,
-    { programSlug: string; curriculumVersion: string }
-  >();
-  for (const learner of learners) {
-    const enrollment = primaryByUser.get(learner.id);
-    for (const programSlug of slugsFor(learner)) {
-      const program = getProgramBySlug(programSlug);
-      if (!program) continue;
-      const curriculumVersion =
-        enrollment && programSlugsEquivalent(enrollment.programSlug, program.slug)
-          ? enrollment.curriculumVersion
-          : 'legacy-v1';
-      curriculumAssignments.set(`${program.slug}:${curriculumVersion}`, {
-        programSlug: program.slug,
-        curriculumVersion,
-      });
-    }
-  }
-  const validatedCourseLists = new Map(
-    await Promise.all(
-      Array.from(curriculumAssignments.entries()).map(async ([cacheKey, assignment]) => {
-        const result = await loadValidatedProgramCourses({
-          organizationId: scope.orgId,
-          programSlug: assignment.programSlug,
-          curriculumVersion: assignment.curriculumVersion,
-          readOnlyAudit,
-          checkB4BContents: false,
-        });
-        return [cacheKey, result.courses] as const;
-      }),
-    ),
-  );
-
-  /**
-   * Pace heuristic lives in `deriveTrainingPace`. Ahead is checked first, so
-   * a nearly-done idle learner stays Ahead rather than flipping to Stalled.
-   */
-  const idleCutoff = new Date();
-  idleCutoff.setDate(idleCutoff.getDate() - STALLED_IDLE_DAYS);
-
-  const rows: TrainingRow[] = [];
-  for (const learner of learners) {
-    const primaryEnrollment = primaryByUser.get(learner.id);
-    const storedProgramSlug = primaryEnrollment?.programSlug ?? learner.enrolledProgram;
-    // One row per program instead of one row per learner: a learner whose
-    // courses span several programs (e.g. Joseph Ring's software-dev work
-    // plus an AI practitioner course) previously collapsed to whichever
-    // program held their single most-recently-active course.
-    for (const programSlug of slugsFor(learner)) {
-      const program = getProgramBySlug(programSlug);
-      if (!program) continue;
-      const curriculumVersion =
-        primaryEnrollment && programSlugsEquivalent(primaryEnrollment.programSlug, programSlug)
-          ? primaryEnrollment.curriculumVersion
-          : 'legacy-v1';
-      const assignedCourses = getProgramCoursesForCurriculumVersion(
-        program,
-        curriculumVersion,
-      );
-      if (assignedCourses.length === 0) continue;
-      const validatedCourses =
-        validatedCourseLists.get(`${programSlug}:${curriculumVersion}`) ?? assignedCourses;
-      const reconciliation = reconcileProgramProgress({
-        validatedCourses,
-        localRows: progressByUserProgram.get(`${learner.id}:${programSlug}`) ?? [],
-      });
-      const percentComplete = reconciliation.programPercent;
-      const lastActivity = lastActivityByUserProgram.get(`${learner.id}:${programSlug}`);
-      const lastActiveAt = latestActivityMs([lastActivity, learner.lastLoginAt]);
-
-      rows.push({
-        id: `${learner.id}:${programSlug}`,
-        student: learner.fullName?.trim() || 'Unnamed learner',
-        program: program.title,
-        modulesDone: reconciliation.completedCount,
-        modulesTotal: reconciliation.totalCourses,
-        percentComplete,
-        pace: deriveTrainingPace({ percentComplete, lastActivity, idleCutoff }),
-        inWap: true,
-        noProgram: !storedProgramSlug,
-        courseraGrade: gradeByUserId.get(learner.id) ?? null,
-        lastActive: relativeLastActiveCaption(lastActiveAt),
-        lastActiveAt,
-      });
-    }
-  }
-
-  // Sort most-complete first so the live, healthy learners lead.
-  rows.sort((a, b) => b.percentComplete - a.percentComplete);
-
-  const [unmatchedLearners, unmatchedLearnerTotal] = await Promise.all([
-    loadUnmatchedLearners(scope.orgId, ADMIN_SSR_LIST_CAP, {
-      includeTestAccounts: false,
-    }).catch((reason: unknown) => {
-      trainingSecondaryLoadFailed = true;
-      console.error('[admin/training-progress] unmatched Coursera learners failed', reason);
-      return [];
-    }),
-    countUnmatchedLearners(scope.orgId, { includeTestAccounts: false }).catch(
-      (reason: unknown) => {
-        trainingSecondaryLoadFailed = true;
-        console.error('[admin/training-progress] unmatched Coursera count failed', reason);
-        return 0;
-      },
-    ),
-  ]);
-  for (const learner of unmatchedLearners) {
-    const lastActivity = learner.lastActivityTime
-      ? new Date(learner.lastActivityTime)
-      : undefined;
-    const lastActiveAt = latestActivityMs([lastActivity]);
-    // averageProgressPercent means over every historical row for the email,
-    // so one stale 0% row halves the real number (38% reads as 19%).
-    // latestProgressPercent is the most recently active course with real
-    // progress — the learner's actual current position.
-    const percentComplete = learner.latestProgressPercent;
-    rows.push({
-      id: `coursera:${learner.externalEmail}`,
-      student: learner.externalName?.trim() || learner.externalEmail,
-      program: 'Coursera activity',
-      modulesDone: learner.completedCourseCount,
-      modulesTotal: learner.courseCount || 0,
-      percentComplete,
-      pace: deriveTrainingPace({ percentComplete, lastActivity, idleCutoff }),
-      inWap: false,
-      courseraGrade: learner.latestGradePercent,
-      lastActive: relativeLastActiveCaption(lastActiveAt),
-      lastActiveAt,
-    });
-  }
-
-  // A member only produces a row once they have a program or Coursera
-  // activity; the guards above skip everyone else. The header says "across all
-  // members", so say plainly how many members that leaves out rather than
-  // letting the KPI totals read as an organization-wide count.
-  // Counted as distinct members, not rows: a learner with progress in more
-  // than one program contributes several rows, which would otherwise inflate
-  // this straight past the real member count.
-  const memberCountWithTraining = countMembersWithTraining(rows, learnerIds);
-  const membersWithoutTraining = Math.max(0, learnerTotal - memberCountWithTraining);
-  const coverageLabel =
-    membersWithoutTraining > 0
-      ? `${memberCountWithTraining} of ${learnerTotal} members have training activity · ${membersWithoutTraining} not in a program or course yet`
-      : `All ${learnerTotal} members have training activity`;
+  // ─── DEFAULT: the shared roster kit with the training column preset ───
+  const training = await loadTrainingRoster(scope, { readOnlyAudit });
+  if (!training.ok) redirect(TRAINING_PROGRESS_LEGACY_HREF);
 
   return (
     <>
-      {trainingSecondaryLoadFailed ? (
+      {training.secondaryLoadFailed ? (
         <span hidden data-portal-error-state="admin-training-progress-secondary-load" />
       ) : null}
-      <TrainingProgressRoster
-        rows={rows}
-        coverageLabel={coverageLabel}
-        showingLabel={[
-          showingFirstLabel(learners.length, learnerTotal, 'member records'),
-          showingFirstLabel(
-            unmatchedLearners.length,
-            unmatchedLearnerTotal,
-            'unmatched Coursera learners',
-          ),
-        ].join(' · ')}
+      <StudentsRosterKit
+        view="training"
+        viewHrefs={{ roster: '/admin/students', training: '/admin/training-progress' }}
+        students={training.students}
+        total={training.total}
+        showingLabel={training.showingLabel}
+        notice={training.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
       />
     </>
   );

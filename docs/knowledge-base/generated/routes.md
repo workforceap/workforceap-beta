@@ -405,7 +405,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/sessions/walk-in | page |  | [app/admin/sessions/walk-in/page.tsx](../../../app/admin/sessions/walk-in/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/settings | loading |  | [app/admin/settings/loading.tsx](../../../app/admin/settings/loading.tsx) |  |
 | /admin/settings | page |  | [app/admin/settings/page.tsx](../../../app/admin/settings/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:8 |
-| /admin/students | page |  | [app/admin/students/page.tsx](../../../app/admin/students/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:6 |
+| /admin/students | page |  | [app/admin/students/page.tsx](../../../app/admin/students/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:7 |
 | /admin/subgroups/\[id\]/edit | page |  | [app/admin/subgroups/\[id\]/edit/page.tsx](../../../app/admin/subgroups/%5Bid%5D/edit/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/subgroups/\[id\] | page |  | [app/admin/subgroups/\[id\]/page.tsx](../../../app/admin/subgroups/%5Bid%5D/page.tsx) | @/lib/auth/server:3, @/lib/tenant/adminPageScope:4 |
 | /admin/subgroups | loading |  | [app/admin/subgroups/loading.tsx](../../../app/admin/subgroups/loading.tsx) |  |
@@ -414,7 +414,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/subgroups | page |  | [app/admin/subgroups/page.tsx](../../../app/admin/subgroups/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/testimonials | loading |  | [app/admin/testimonials/loading.tsx](../../../app/admin/testimonials/loading.tsx) |  |
 | /admin/testimonials | page |  | [app/admin/testimonials/page.tsx](../../../app/admin/testimonials/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
-| /admin/training-progress | page |  | [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:400 |
+| /admin/training-progress | page |  | [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:86 |
 | /admin/users/deleted | page |  | [app/admin/users/deleted/page.tsx](../../../app/admin/users/deleted/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/users | loading |  | [app/admin/users/loading.tsx](../../../app/admin/users/loading.tsx) |  |
 | /admin/users | page |  | [app/admin/users/page.tsx](../../../app/admin/users/page.tsx) | @/lib/auth/server:6, @/lib/auth/roles:7, @/lib/tenant/adminPageScope:8 |
