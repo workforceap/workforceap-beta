@@ -23,7 +23,7 @@ export default function PartnerSignupRedirectPage() {
           <div style={{ marginTop: '24px' }}>
             <a
               href="/partners#partner-signup"
-              className="mdx-btn mdx-btn--solid"
+              className="btn btn-primary"
             >
               Continue to partner sign-up
             </a>

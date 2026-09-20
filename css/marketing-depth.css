@@ -29,16 +29,24 @@
 .mdx-stage .mdx-grad-accent{background:linear-gradient(100deg,#fff,#f2cf86);-webkit-background-clip:text;
   background-clip:text;-webkit-text-fill-color:transparent}
 
-/* buttons */
-.mdx-btn{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:16px;padding:15px 28px;
-  border-radius:14px;border:1px solid transparent;cursor:pointer;text-decoration:none;line-height:1;
-  transition:transform .15s,box-shadow .2s,background .2s}
+/* buttons — WAP-114: the depth pages compose the shared `.btn.btn-primary` /
+   `.btn.btn-secondary` (css/main.css) and only recolor them here. `.mdx-btn`
+   is retained for the glass hero chip and inherits the exact `.btn` geometry
+   (44px min-height, .8125rem/1.75rem padding, radius-md, .9375rem/600). */
+.mdx-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:600;font-size:.9375rem;
+  padding:.8125rem 1.75rem;min-height:var(--btn-min-height,44px);border-radius:var(--radius-md);border:1px solid transparent;
+  cursor:pointer;text-decoration:none;line-height:1.2;transition:transform .15s,box-shadow .2s,background .2s}
 .mdx-btn:hover{transform:translateY(-2px)}
-.mdx-btn--solid{background:linear-gradient(135deg,#fff,#fbeede);color:var(--mdx-accent-dark);box-shadow:0 12px 30px -10px rgba(0,0,0,.4)}
 .mdx-btn--glass{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.34);backdrop-filter:blur(8px)}
-.mdx-btn--primary{background:var(--mdx-grad);color:#fff;box-shadow:0 12px 32px -10px rgba(173,44,77,.55)}
-.mdx-btn--ghost{background:var(--mdx-surface);border-color:var(--mdx-border);color:var(--mdx-text)}
-.mdx-btn--ghost:hover{border-color:var(--mdx-crimson);color:var(--mdx-crimson)}
+/* Crimson gradient primary on the light depth surface */
+.mdx .btn-primary{background:var(--mdx-grad);color:#fff;box-shadow:0 12px 32px -10px rgba(173,44,77,.55)}
+.mdx .btn-primary:hover{background:var(--mdx-grad);box-shadow:0 18px 44px -10px rgba(173,44,77,.62)}
+/* Light solid primary when it sits ON the crimson stage */
+.mdx .mdx-stage .btn-primary{background:linear-gradient(135deg,#fff,#fbeede);color:var(--mdx-accent-dark);box-shadow:0 12px 30px -10px rgba(0,0,0,.4)}
+.mdx .mdx-stage .btn-primary:hover{background:#fff}
+/* Secondary: surface + hairline border, crimson on hover */
+.mdx .btn-secondary,.mdx .btn-outline{background:var(--mdx-surface);border:1px solid var(--mdx-border);color:var(--mdx-text)}
+.mdx .btn-secondary:hover,.mdx .btn-outline:hover{border-color:var(--mdx-crimson);color:var(--mdx-crimson);background:var(--mdx-surface)}
 
 /* surface cards + sections */
 .mdx-card{background:var(--mdx-surface);border:1px solid var(--mdx-border);border-radius:18px;padding:24px;
@@ -163,7 +171,7 @@ html:not(.dark) .main-nav--depth.scrolled .nav-menu .nav-login-flyout-trigger{
 .main-nav--depth .nav-login-flyout-chevron{border-top-color:currentColor;opacity:.6}
 .main-nav--depth .nav-login-dropdown.active .nav-login-flyout-trigger{color:var(--depthnav-crimson)}
 
-/* ---- Apply CTA: crimson gradient primary (matches .btn--primary) ---- */
+/* ---- Apply CTA: crimson gradient primary (matches `.mdx .btn-primary`) ---- */
 .main-nav--depth .nav-cta,
 .main-nav--depth a.nav-cta{
   background:var(--depthnav-grad)!important;color:#fff!important;

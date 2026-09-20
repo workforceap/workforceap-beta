@@ -233,7 +233,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 326,
+        "line": 296,
         "kind": "FunctionDeclaration",
         "localName": "ResetPasswordPage"
       }
@@ -309,7 +309,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 20,
+        "line": 19,
         "kind": "FunctionDeclaration",
         "localName": "SetupMfaPage"
       }
@@ -318,13 +318,8 @@
     "configuration": {},
     "boundaryReferences": [
       {
-        "specifier": "@/components/auth/AuthActions.module.css",
-        "line": 5,
-        "kind": "import"
-      },
-      {
         "specifier": "@/lib/auth/safeRedirectPath",
-        "line": 11,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -436,7 +431,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 18,
+        "line": 17,
         "kind": "FunctionDeclaration",
         "localName": "VerifyMfaPage"
       }
@@ -445,13 +440,8 @@
     "configuration": {},
     "boundaryReferences": [
       {
-        "specifier": "@/components/auth/AuthActions.module.css",
-        "line": 5,
-        "kind": "import"
-      },
-      {
         "specifier": "@/lib/auth/safeRedirectPath",
-        "line": 10,
+        "line": 9,
         "kind": "import"
       }
     ]
@@ -6313,17 +6303,17 @@
     "exports": [
       {
         "name": "metadata",
-        "line": 15,
+        "line": 16,
         "kind": "Variable"
       },
       {
         "name": "maxDuration",
-        "line": 28,
+        "line": 29,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 30,
+        "line": 31,
         "kind": "FunctionDeclaration",
         "localName": "PortalLayout"
       }
@@ -9261,17 +9251,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 22,
+        "line": 23,
         "kind": "Variable"
       },
       {
         "name": "metadata",
-        "line": 24,
+        "line": 25,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 31,
+        "line": 32,
         "kind": "FunctionDeclaration",
         "localName": "AdminLayout"
       }
@@ -9283,17 +9273,17 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 5,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/adminPageScope",
         "line": 6,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/portalRoleSwitcher",
+        "specifier": "@/lib/tenant/adminPageScope",
         "line": 7,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/portalRoleSwitcher",
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -30095,12 +30085,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 18,
+        "line": 20,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 31,
+        "line": 33,
         "kind": "FunctionDeclaration",
         "localName": "ApplyConfirmationPage"
       }
@@ -30110,7 +30100,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 12,
+        "line": 14,
         "kind": "import"
       }
     ]
@@ -32286,7 +32276,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 17,
+        "line": 18,
         "kind": "FunctionDeclaration",
         "localName": "EmployerSignupPage"
       }
@@ -32764,17 +32754,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 6,
+        "line": 7,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 39,
+        "line": 40,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 78,
+        "line": 79,
         "kind": "FunctionDeclaration",
         "localName": "ShareAchievementPage"
       }

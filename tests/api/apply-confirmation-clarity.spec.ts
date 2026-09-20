@@ -23,11 +23,13 @@ describe('apply confirmation clarity', () => {
   it('keeps a single primary next-step CTA zone (footer stays secondary)', () => {
     expect(pageSource).toContain('afd-confirm__recommend');
     expect(pageSource).toContain('afd-confirm__foot-actions');
+    // WAP-114: footer links carry the shared secondary class; the single
+    // primary lives in the recommend zone above it.
     expect(pageSource).toMatch(
-      /afd-confirm__foot-actions[\s\S]*mdx-btn--ghost[\s\S]*confirmationCtaStatus/,
+      /afd-confirm__foot-actions[\s\S]*btn btn-secondary[\s\S]*confirmationCtaStatus/,
     );
     expect(pageSource).not.toMatch(
-      /afd-confirm__foot-actions[\s\S]*mdx-btn--primary/,
+      /afd-confirm__foot-actions[\s\S]*btn-primary/,
     );
   });
 

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import LocalizedLink from '@/components/LocalizedLink';
 import LanguageToggle from '@/components/portal/LanguageToggle';
-import { Linkedin } from 'lucide-react';
+import { AtSign, Linkedin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inner' }) {
@@ -40,7 +40,7 @@ export default function Footer({ variant = 'inner' }: { variant?: 'home' | 'inne
               <Linkedin size={18} color="var(--color-on-surface-variant)" aria-hidden="true" />
             </a>
             <a href="mailto:info@workforceap.org" aria-label="Email">
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-on-surface-variant)', cursor: 'pointer' }} aria-hidden="true">alternate_email</span>
+              <AtSign size={18} color="var(--color-on-surface-variant)" aria-hidden="true" />
             </a>
           </div>
         </div>
