@@ -75,6 +75,8 @@ export type NavBadgeKey =
   | 'milestones_new'
   | 'milestones_awaiting_approval'
   | 'counselor_messages_unread'
+  /** Unread rows in the counselor's own notifications table (counselor audit §6.8). */
+  | 'counselor_notifications_unread'
   | 'counselor_sla_breach_48h'
   /** Member threads whose latest message has no staff reply yet (any age). */
   | 'member_messages_unanswered'
@@ -466,7 +468,7 @@ export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/counselor/at-risk', label: 'At-risk members', group: 'workflows', Icon: AlertTriangle },
   { href: '/counselor/inactive-members', label: 'Inactive members', group: 'workflows', Icon: Users },
   { href: '/counselor/placements', label: 'Placements', group: 'outcomes', Icon: Briefcase },
-  { href: '/counselor/notifications', label: 'Notifications', group: 'manage', Icon: Bell },
+  { href: '/counselor/notifications', label: 'Notifications', group: 'manage', Icon: Bell, badgeKey: 'counselor_notifications_unread' },
   { href: '/counselor/profile', label: 'My profile', group: 'manage', Icon: User },
   { href: '/counselor/resources', label: 'Resources', group: 'manage', Icon: BookOpen },
   { href: '/counselor/guide', label: 'Portal guide', group: 'manage', Icon: HelpCircle },

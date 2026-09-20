@@ -61,7 +61,7 @@ function matches(value: unknown, where: unknown): boolean {
 function user(id: string, overrides: RecordValue = {}): RecordValue {
   return {
     id, fullName: 'Pat Jones', email: `pat${id}@example.test`, organizationId: 'org-a',
-    profile: { role: 'counselor' }, deletedAt: null, createdAt: new Date('2026-09-01'),
+    profile: { role: 'counselor' }, userRoles: [], deletedAt: null, createdAt: new Date('2026-09-01'),
     lastLoginAt: null, updatedAt: new Date(), ...overrides,
   };
 }

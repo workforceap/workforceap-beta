@@ -18109,6 +18109,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/admin-exports-verbs.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 3
+      },
+      {
+        "file": "app/admin/exports/page.tsx",
+        "line": 43
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/admin-partners-page.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -18139,6 +18167,38 @@
       {
         "file": "lib/tenant/adminPageScope.ts",
         "line": 74
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/admin-users-directory-roles.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/admin/users/page.tsx",
+        "line": 32
+      },
+      {
+        "file": "components/admin/AdminUsersManager.tsx",
+        "line": 33
+      },
+      {
+        "file": "lib/admin/roleLabels.ts",
+        "line": 34
       }
     ],
     "kind": "test-candidate",
@@ -18547,6 +18607,30 @@
       {
         "file": "components/portal/kit/index.ts",
         "line": 87
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/counselor-students-hot-queue.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/counselor/students/page.tsx",
+        "line": 59
       }
     ],
     "kind": "test-candidate",
@@ -19849,6 +19933,31 @@
       {
         "file": "components/admin/SubgroupMembersTable.tsx",
         "line": 26
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/admin-users-self-guard.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/admin/AdminUsersManager.tsx",
+        "line": 31
       }
     ],
     "kind": "test-candidate",
@@ -22309,6 +22418,38 @@
       {
         "file": "messages/es.json",
         "line": 14
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/counselor-notifications-nav-badge.spec.ts",
+    "area": "tests",
+    "domain": "communications",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/portal/nav-badges/route.ts",
+        "line": 66
+      },
+      {
+        "file": "lib/nav/portalNav.ts",
+        "line": 67
+      },
+      {
+        "file": "lib/portal/navBadges.ts",
+        "line": 68
       }
     ],
     "kind": "test-candidate",

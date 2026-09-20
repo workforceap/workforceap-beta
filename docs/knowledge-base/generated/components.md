@@ -65,7 +65,7 @@
 | [components/admin/AdminResumeUpload.tsx](../../../components/admin/AdminResumeUpload.tsx) | 102 | administration | default:11 |
 | [components/admin/AdminSuperMessagesClient.tsx](../../../components/admin/AdminSuperMessagesClient.tsx) | 746 | administration | default:177 |
 | [components/admin/AdminTrainingDashboardTable.tsx](../../../components/admin/AdminTrainingDashboardTable.tsx) | 246 | administration | default:42 |
-| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 562 | administration | default:35 |
+| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 589 | administration | SELF_DELETE_BLOCKED_TITLE:41, SELF_ROLE_CHANGE_BLOCKED_TITLE:42, default:44 |
 | [components/admin/AnalyticsDashboard.tsx](../../../components/admin/AnalyticsDashboard.tsx) | 352 | administration | default:113 |
 | [components/admin/ApplicantTriageChecklist.tsx](../../../components/admin/ApplicantTriageChecklist.tsx) | 79 | administration | ApplicantTriageChecklistProps:10, default:21 |
 | [components/admin/ApplicantTriageChip.tsx](../../../components/admin/ApplicantTriageChip.tsx) | 50 | administration | ApplicantTriageChipProps:10, default:24 |

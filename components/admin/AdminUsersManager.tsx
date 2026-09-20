@@ -23,6 +23,12 @@ type UserRow = {
 type Props = {
   initialUsers: UserRow[];
   canManageRoles: boolean;
+  /**
+   * The signed-in admin. Their own row never offers Delete or a role change
+   * (admin audit §4.7, WAP-182): the API already refuses a self-delete with
+   * 400, and demoting yourself locks you out of this page.
+   */
+  currentUserId?: string;
   totalCount: number;
   currentPage: number;
   pageSize: number;
@@ -32,9 +38,13 @@ type Props = {
 
 const ROLE_OPTIONS = ['member', 'admin', 'super_admin', 'case_manager'] as const;
 
+export const SELF_DELETE_BLOCKED_TITLE = 'You cannot delete the account you are signed in with.';
+export const SELF_ROLE_CHANGE_BLOCKED_TITLE = 'You cannot change your own role. Ask another super admin.';
+
 export default function AdminUsersManager({
   initialUsers,
   canManageRoles,
+  currentUserId,
   totalCount,
   currentPage,
   pageSize,
@@ -42,6 +52,7 @@ export default function AdminUsersManager({
   roleFilter = '',
 }: Props) {
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
+  const isSelfRow = (userId: string) => !!currentUserId && userId === currentUserId;
   const { query, search, navigate, pending } = useDirectoryNavigation(searchQuery);
   useEffect(() => { setUsers(initialUsers); }, [initialUsers]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -110,11 +121,13 @@ export default function AdminUsersManager({
     setSavingId(userId);
     setMessage(null);
     try {
+      // Own row: name and email only — the role control is disabled for it.
+      const payload = isSelfRow(userId) ? { fullName: draft.fullName, email: draft.email } : draft;
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(draft),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -371,6 +384,9 @@ export default function AdminUsersManager({
                   <select
                     value={draft.role}
                     onChange={(e) => setDraft((prev) => ({ ...prev, role: e.target.value }))}
+                    disabled={isSelfRow(user.id)}
+                    title={isSelfRow(user.id) ? SELF_ROLE_CHANGE_BLOCKED_TITLE : undefined}
+                    aria-label="Account role"
                     style={{
                       width: '100%',
                       padding: '0.45rem 0.6rem',
@@ -457,6 +473,8 @@ export default function AdminUsersManager({
                           type="button"
                           className="btn btn-outline btn-sm"
                           style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }}
+                          disabled={isSelfRow(user.id)}
+                          title={isSelfRow(user.id) ? SELF_DELETE_BLOCKED_TITLE : undefined}
                           onClick={() => setConfirmDeleteId(user.id)}
                         >
                           Delete
@@ -490,6 +508,8 @@ export default function AdminUsersManager({
                       aria-label="Account role"
                       value={draft.role}
                       onChange={(e) => setDraft((prev) => ({ ...prev, role: e.target.value }))}
+                      disabled={isSelfRow(user.id)}
+                      title={isSelfRow(user.id) ? SELF_ROLE_CHANGE_BLOCKED_TITLE : undefined}
                       style={{
                         width: '100%',
                         padding: '0.55rem 0.65rem',
@@ -534,7 +554,14 @@ export default function AdminUsersManager({
                       <button type="button" className="btn btn-outline btn-sm" onClick={closeConfirmDelete}>Cancel</button>
                     </span>
                   ) : (
-                    <button type="button" className="btn btn-outline btn-sm" style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }} onClick={() => setConfirmDeleteId(user.id)}>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      style={{ color: 'var(--color-accent)', borderColor: 'var(--color-accent)' }}
+                      disabled={isSelfRow(user.id)}
+                      title={isSelfRow(user.id) ? SELF_DELETE_BLOCKED_TITLE : undefined}
+                      onClick={() => setConfirmDeleteId(user.id)}
+                    >
                       Delete
                     </button>
                   )
