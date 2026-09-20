@@ -10,6 +10,7 @@ import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import AdminUsersManager from '@/components/admin/AdminUsersManager';
 import { buildUserDirectoryWhere, normalizeDirectorySearch, STAFF_DIRECTORY_ROLES, USER_DIRECTORY_ROLES } from '@/lib/admin/directorySearch';
+import { resolveDirectoryRole } from '@/lib/admin/roleLabels';
 import {
   UsersKit,
   type UserRow,
@@ -98,6 +99,7 @@ export default async function AdminUsersPage({
             email: true,
             createdAt: true,
             profile: { select: { role: true } },
+            userRoles: { select: { role: { select: { name: true } } } },
           },
         }),
       ),
@@ -125,20 +127,28 @@ export default async function AdminUsersPage({
 
         <AdminUsersManager
           canManageRoles={canManageRoles}
+          currentUserId={user.id}
           totalCount={totalCount}
           currentPage={currentPage}
           pageSize={pageSize}
           searchQuery={searchQuery}
           roleFilter={roleFilter}
-          initialUsers={users.map((row) => ({
-            id: row.id,
-            fullName: row.fullName ?? row.email,
-            email: row.email,
-            role: row.profile?.role ?? 'member',
-            createdAt: row.createdAt.toISOString(),
-            memberHref:
-              (row.profile?.role ?? 'member') === 'member' ? `/admin/members/${row.id}` : null,
-          }))}
+          initialUsers={users.map((row) => {
+            // Partner / employer demo logins carry only a user_roles row, so the
+            // displayed role comes from profile + user_roles, not profile alone.
+            const role = resolveDirectoryRole(
+              row.profile?.role,
+              row.userRoles.map((entry) => entry.role.name),
+            );
+            return {
+              id: row.id,
+              fullName: row.fullName ?? row.email,
+              email: row.email,
+              role,
+              createdAt: row.createdAt.toISOString(),
+              memberHref: role === 'member' ? `/admin/members/${row.id}` : null,
+            };
+          })}
         />
       </PortalPageFrame>
     );

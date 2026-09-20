@@ -2298,6 +2298,7 @@
     "analyticsPageDescription": "Enrollment, progress, and outcomes at a glance.",
     "platformEngagement": "Engagement de la plateforme, inscriptions et résultats de placement.",
     "exportFunderCsv": "Exporter CSV financeur",
+    "exportFunderCsvDownload": "Télécharger le CSV de la synthèse financeurs",
     "exportFunderCsvTitle": "Synthèse des programmes (financeurs)",
     "exportFunderCsvDescription": "Inscriptions par programme, activité sur 30 jours, achèvement, placements, membres à risque et taux d'achèvement/placement pour les rapports de subvention.",
     "totalMembers": "Membres totaux",
