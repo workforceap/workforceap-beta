@@ -1,6 +1,6 @@
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   StatusTag,
@@ -193,10 +193,10 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Data Retention"
         kicker="System"
-        goal="Keep log & telemetry tables within their retention windows for WIOA / 20 CFR 677 compliance"
+        lede="Keep log & telemetry tables within their retention windows for WIOA / 20 CFR 677 compliance"
       />
 
       <div className="wa-mb-5">

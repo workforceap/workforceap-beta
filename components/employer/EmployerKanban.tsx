@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Sparkles, Mail, Video, CheckCircle2, Ban, GripVertical, Briefcase } from 'lucide-react';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { Avatar, DesignSurface, colorVar, type KitColor } from '@/components/portal/kit';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 /**
  * Employer candidate pipeline (Kanban) — Command Center visual language.
@@ -114,28 +115,17 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
   if (matches.length === 0) {
     return (
       <DesignSurface surface="dense">
-        <div className="wa-kit-card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-          <div
-            aria-hidden
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 999,
-              margin: '0 auto 1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--wa-accent-soft)',
-              color: 'var(--wa-accent)',
-            }}
-          >
-            <Briefcase size={26} />
-          </div>
-          <p style={{ fontWeight: 800, fontSize: 17, color: 'var(--wa-text)', margin: '0 0 6px' }}>No pipeline yet</p>
-          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 20px' }}>
-            Post a job and AI will match qualified candidates from the WorkforceAP member pool.
-          </p>
-          <Link href="/employer/jobs/new" className="btn btn-primary">Post a Job</Link>
+        <div className="wa-kit-card">
+          <KitEmptyState
+            headingAs="h2"
+            title="No pipeline yet"
+            description="Post a job and AI will match qualified candidates from the WorkforceAP member pool."
+            action={
+              <Link href="/employer/jobs/new" className="wa-kit-cta">
+                Post a Job
+              </Link>
+            }
+          />
         </div>
       </DesignSurface>
     );

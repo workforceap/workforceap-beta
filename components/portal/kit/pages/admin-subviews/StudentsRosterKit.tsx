@@ -8,7 +8,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   Avatar,
   colorVar,
@@ -354,7 +354,7 @@ export function StudentsRosterKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title="Students" kicker="People" goal="Find and act on any student." />
+      <PageOpener className="wa-mb-5" title="Students" kicker="People" lede="Find and act on any student." />
 
       {/* Saved-view filter chips */}
       <div className="wa-mb-5">

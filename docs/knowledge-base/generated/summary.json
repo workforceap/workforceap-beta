@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "4433822aee3ed884d92e9b57d8975ff5a000bbe74c3f32b9abdb4e3ef7e7479e",
+  "inputTreeSha256": "a454f16a29427f70542301207a8ccf9818024ed3c5f0b25101e15f8880448299",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4815,
-    "sourceModules": 3477,
-    "importReferences": 16883,
-    "resolvedLocalReferences": 11252,
+    "files": 4816,
+    "sourceModules": 3478,
+    "importReferences": 16911,
+    "resolvedLocalReferences": 11270,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1054,
     "nextRouteFiles": 1021,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 822,
-    "testCandidates": 815,
+    "testFiles": 823,
+    "testCandidates": 816,
     "testHelpers": 7,
-    "staticallySelectedTests": 812,
+    "staticallySelectedTests": 813,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 457
+      "files": 458
     }
   ],
   "mostReferenced": [
@@ -144,19 +144,19 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 200
+      "references": 205
     },
     {
       "file": "lib/audit/log.ts",
       "references": 189
     },
     {
-      "file": "components/portal/PortalRouteLoading.tsx",
-      "references": 139
+      "file": "components/portal/PageHeader.tsx",
+      "references": 141
     },
     {
-      "file": "components/portal/PageHeader.tsx",
-      "references": 137
+      "file": "components/portal/PortalRouteLoading.tsx",
+      "references": 139
     },
     {
       "file": "lib/observability/captureApiError.ts",
@@ -184,7 +184,7 @@
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
-      "references": 71
+      "references": 72
     },
     {
       "file": "lib/content/programSlug.ts",
@@ -366,11 +366,11 @@
     },
     {
       "file": "components/admin/MembersTable.tsx",
-      "lines": 1205
+      "lines": 1206
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",
-      "lines": 1204
+      "lines": 1187
     },
     {
       "file": "scripts/p1/test-force-rls.ts",

@@ -1,27 +1,26 @@
 import type { ReactNode } from 'react';
-import PortalBreadcrumb, { type PortalBreadcrumbItem } from '@/components/portal/PortalBreadcrumb';
 import { PageOpener } from '@/components/portal/kit/PageOpener';
 import styles from './EmployerPageOpener.module.css';
 
-/** Employer wayfinding and actions composed around the shared portal page heading. */
+/**
+ * Employer page start: kicker + h1 + lede with the route's actions, composed
+ * on the shared kit `PageOpener`. Per `docs/KIT_GUIDE.md` §6 the opener is
+ * "not `PageHeader` breadcrumbs" — wayfinding lives in the kicker and in
+ * explicit back links, never in a breadcrumb row above the title.
+ */
 export default function EmployerPageOpener({
   kicker,
   title,
   subtitle,
   action,
-  breadcrumbs,
 }: {
   kicker: string;
   title: string;
   subtitle?: ReactNode;
   action?: ReactNode;
-  breadcrumbs?: PortalBreadcrumbItem[];
 }) {
   return (
     <div className={styles.root}>
-      {breadcrumbs && breadcrumbs.length > 0 ? (
-        <div className={styles.breadcrumbs}><PortalBreadcrumb items={breadcrumbs} /></div>
-      ) : null}
       <PageOpener
         className={styles.opener}
         kicker={kicker}

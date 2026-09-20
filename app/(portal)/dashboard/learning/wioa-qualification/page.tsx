@@ -9,6 +9,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import LocalizedLink from '@/components/LocalizedLink';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { PageOpener } from '@/components/portal/kit';
 
 const WioaQualificationClient = dynamic(() => import('@/components/portal/WioaQualificationClient'), {
   loading: () => <WioaQualificationLoading />,
@@ -47,8 +48,7 @@ export default async function WioaQualificationPage() {
     if (looksLikeSchemaDrift) {
       return (
         <section className="portal-route-fallback" data-portal-error-state="portal-route-fallback">
-          <h1 className="portal-route-fallback__title">{t('unavailableTitle')}</h1>
-          <p className="portal-route-fallback__desc">{t('unavailableBody')}</p>
+          <PageOpener className="wa-mb-5" kicker={t('title')} title={t('unavailableTitle')} lede={t('unavailableBody')} />
           <LocalizedLink href="/dashboard/messages" className="wa-kit-cta">{t('messageCounselor')}</LocalizedLink>
         </section>
       );

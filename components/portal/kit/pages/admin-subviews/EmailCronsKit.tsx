@@ -2,7 +2,7 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type Column,
@@ -105,10 +105,10 @@ export function EmailCronsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Email Crons"
         kicker="System"
-        goal="Automated email & workflow jobs"
+        lede="Automated email & workflow jobs"
       />
 
       <div className="wa-mb-5">

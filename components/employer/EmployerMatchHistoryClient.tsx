@@ -8,6 +8,7 @@ import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { DataTable, Avatar, type Column, type KitColor } from '@/components/portal/kit';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 export type EmployerMatchHistoryRow = {
   id: string;
@@ -146,32 +147,17 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
 
   if (rows.length === 0) {
     return (
-      <div className="wa-kit-card" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
-        <Sparkles size={40} aria-hidden style={{ color: 'var(--wa-muted)', margin: '0 auto 0.75rem' }} />
-        <p style={{ fontWeight: 800, fontSize: 16, margin: '0 0 0.25rem' }}>No suggested candidates yet</p>
-        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 1.25rem' }}>
-          When WorkforceAP matches members to your open roles, they will appear here with match scores and pipeline
-          status.
-        </p>
-        <Link
-          href="/employer/jobs/new"
-          className="wa-kit-focus"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '10px 18px',
-            minHeight: 44,
-            background: 'var(--wa-accent)',
-            color: 'var(--wa-on-accent)',
-            fontWeight: 700,
-            fontSize: 13,
-            borderRadius: 999,
-            textDecoration: 'none',
-          }}
-        >
-          Post your first job <ArrowRight size={14} aria-hidden />
-        </Link>
+      <div className="wa-kit-card">
+        <KitEmptyState
+          headingAs="h2"
+          title="No suggested candidates yet"
+          description="When WorkforceAP matches members to your open roles, they will appear here with match scores and pipeline status."
+          action={
+            <Link href="/employer/jobs/new" className="wa-kit-cta">
+              Post your first job <ArrowRight size={14} aria-hidden />
+            </Link>
+          }
+        />
       </div>
     );
   }

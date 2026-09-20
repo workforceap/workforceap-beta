@@ -17,6 +17,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
   SectionHeader,
+  PageOpener,
   QueueRow,
   StatSparkTile,
   AreaChartMini,
@@ -302,13 +303,12 @@ export function CounselorHomeKit({
   return (
     <DesignSurface surface="dense">
       <div style={{ padding: 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <h1 className="wa-sr-only">Counselor overview</h1>
 
         {/* 1. Page opener */}
-        <SectionHeader
+        <PageOpener className="wa-mb-5"
           kicker={greeting}
           title={firstName ? `Hey, ${firstName}.` : 'Caseload'}
-          goal="Know who needs me today."
+          lede="Know who needs me today."
         />
 
         {/* 2. KPI row */}

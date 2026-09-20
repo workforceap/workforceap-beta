@@ -9,6 +9,7 @@ import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemb
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import ReadinessCounselorClient from './ReadinessCounselorClient';
+import PageHeader from '@/components/portal/PageHeader';
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
   title: 'Readiness Checklist',
@@ -39,15 +40,20 @@ export default async function AdminMemberReadinessPage({
 
   return (
     <div className="readiness-counselor-page">
-      <div className="readiness-counselor-header">
-        <div>
-          <Link href={`/admin/members/${id}`} className="readiness-back-link">
+      <PageHeader
+        title={`Career Readiness Checklist — ${member.fullName}`}
+        subtitle={`Program: ${member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : '—'}`}
+        breadcrumbs={[
+          { href: '/admin/members', label: 'Members' },
+          { href: `/admin/members/${id}`, label: member.fullName },
+          { label: 'Readiness checklist' },
+        ]}
+        action={
+          <Link href={`/admin/members/${id}`} className="btn btn-outline btn-sm">
             Back to {member.fullName}
           </Link>
-          <h1 className="readiness-title">Career Readiness Checklist — {member.fullName}</h1>
-          <p className="readiness-meta">Program: {member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : '—'}</p>
-        </div>
-      </div>
+        }
+      />
       <ReadinessCounselorClient
         memberId={id}
         memberName={member.fullName}

@@ -29,6 +29,7 @@ vi.mock('@/components/portal/kit', () => ({
   CardHead: ({ title }: { title: string }) => <h2>{title}</h2>,
   DesignSurface: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
   SectionHeader: ({ title }: { title: string }) => <h2>{title}</h2>,
+  PageOpener: ({ title }: { title: string }) => <h1>{title}</h1>,
   DataTable: () => null, QueueRow: () => null,
 }));
 

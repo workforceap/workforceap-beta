@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PROGRAMS } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import PageHeader from '@/components/portal/PageHeader';
 
 type MappingRow = {
   id: string;
@@ -249,15 +250,10 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
 
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '1.5rem 1rem' }}>
-      {/* Page header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>
-          Career Mappings
-        </h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.6 }}>
-          Search an O*NET occupation, review AI-suggested program matches, then approve or manually add. Approved mappings drive career recommendations for members.
-        </p>
-      </div>
+      <PageHeader
+        title="Career Mappings"
+        subtitle="Search an O*NET occupation, review AI-suggested program matches, then approve or manually add. Approved mappings drive career recommendations for members."
+      />
 
       <div className="content-card" style={{ padding: '0.85rem 1rem', marginBottom: '1rem', fontSize: '0.88rem', color: 'var(--color-on-surface-variant)' }}>
         Employer-designed screening packs (shown to members near program completion) are managed separately:{' '}
