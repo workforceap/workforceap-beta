@@ -44,6 +44,7 @@ import {
   colorVar,
   type KitColor,
 } from '@/components/portal/kit';
+import { pluralCount } from '@/lib/i18n/pluralCount';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -415,7 +416,7 @@ export default async function AdminOverviewPage() {
         {pendingPlacements.length > 0 && (
           <div className="wa-hidden md:wa-block portal-alert" style={{ marginBottom: '1.5rem', borderColor: 'color-mix(in srgb, var(--wa-success) 35%, transparent)' }}>
             <span className="portal-alert__label">
-              {pendingPlacements.length} placement{pendingPlacements.length === 1 ? '' : 's'} waiting for counselor review
+              {pluralCount(pendingPlacements.length, 'placement')} waiting for counselor review
             </span>
             <Link href="/admin/members" className="portal-alert__action">
               Finalize &rarr;
