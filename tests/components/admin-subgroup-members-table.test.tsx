@@ -1,5 +1,24 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+// JSDOM lacks native <dialog> methods. Keep the actual Astryx dialog, events and
+// focus restoration; only emulate opening/closing (same shim as bulk-action-dialogs).
+const dialogMethods = ['showModal', 'close'] as const;
+const originalMethods = dialogMethods.map((name) => Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name));
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value: function (this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+    this.querySelector<HTMLElement>('h2')?.focus();
+  } });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.removeAttribute('open'); } });
+});
+afterAll(() => {
+  dialogMethods.forEach((name, index) => {
+    const original = originalMethods[index];
+    if (original) Object.defineProperty(HTMLDialogElement.prototype, name, original);
+    else Reflect.deleteProperty(HTMLDialogElement.prototype, name);
+  });
+});
 
 const router = { refresh: vi.fn(), push: vi.fn(), replace: vi.fn() };
 vi.mock('next/navigation', () => ({ useRouter: () => router }));
@@ -50,8 +69,9 @@ describe('SubgroupMembersTable dialog focus management', () => {
     const dialog = screen.getByRole('dialog', { name: 'Remove from subgroup?' });
     const cancel = screen.getByRole('button', { name: 'Cancel' });
     // Focus must move into the dialog — the accessibility goal of the change.
+    // The shared Astryx ConfirmDialog lands it on the dialog title.
     expect(dialog.contains(document.activeElement)).toBe(true);
-    expect(document.activeElement).toBe(cancel);
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Remove from subgroup?' }));
 
     fireEvent.click(cancel);
     await settleFocus();
@@ -74,7 +94,9 @@ describe('SubgroupMembersTable dialog focus management', () => {
 
     const dialog = screen.getByRole('dialog', { name: 'Add member to subgroup' });
     expect(dialog.contains(document.activeElement)).toBe(true);
-    expect(document.activeElement).toBe(screen.getByPlaceholderText('Search by name or email'));
+    // Astryx Dialog moves initial focus to the title, not the first field.
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'Add member to subgroup' }));
+    expect(screen.getByPlaceholderText('Search by name or email'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     await settleFocus();
