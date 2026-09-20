@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel } from '@/lib/wioa/wioaQualification';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 import { WIOA_REVIEW_LABELS, WIOA_REVIEW_STATUSES, type WioaReviewStatus } from '@/lib/wioa/wioaReview';
 import type { WioaReviewSnapshotRow } from '@/lib/wioa/reviewSnapshot';
 
@@ -49,6 +50,12 @@ export default function AdminMemberWioaReviewPanel({
   const [savedReviewer, setSavedReviewer] = useState(reviewerName);
 
   const onSave = async () => {
+    // WAP-184 G-3: the server refuses a not-eligible decision without a
+    // written reason; say so before the request instead of after.
+    if (isMissingDenialReason('wioa_review', status, notes)) {
+      setErr(DENIAL_REASON_REQUIRED_MESSAGE);
+      return;
+    }
     setSaving(true);
     setErr('');
     try {
@@ -157,14 +164,16 @@ export default function AdminMemberWioaReviewPanel({
         </select>
 
         <label htmlFor="wioa-review-notes" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>
-          Internal notes
+          Internal notes{status === 'not_eligible' ? ' (reason required)' : ''}
         </label>
         <textarea
           id="wioa-review-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
-          placeholder="Documentation, follow-ups, AJC referral, etc."
+          required={status === 'not_eligible'}
+          aria-required={status === 'not_eligible'}
+          placeholder={status === 'not_eligible' ? 'Why this member is not eligible (required)' : 'Documentation, follow-ups, AJC referral, etc.'}
           style={{
             width: '100%',
             padding: '0.5rem',

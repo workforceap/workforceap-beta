@@ -5356,7 +5356,7 @@
       },
       {
         "file": "lib/coursera/seedCanonicalMappingsFromB4B.ts",
-        "line": 70
+        "line": 69
       }
     ],
     "kind": "test-candidate",
@@ -6304,6 +6304,30 @@
       {
         "file": "lib/enroll/resolveEnrollmentPartner.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/events/memberEventWriters.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/events/names.ts",
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -16954,6 +16978,38 @@
       {
         "file": "lib/email/unsubscribeToken.ts",
         "line": 28
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/upload-body-fidelity.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/member/certifications/upload/route.ts",
+        "line": 70
+      },
+      {
+        "file": "app/api/admin/organization/logo/route.ts",
+        "line": 71
+      },
+      {
+        "file": "app/api/employer/logo/route.ts",
+        "line": 72
       }
     ],
     "kind": "test-candidate",

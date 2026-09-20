@@ -24,6 +24,7 @@
     "lib/db/scanCaps.test.ts",
     "lib/email/bulkCronGuard.test.ts",
     "lib/email/serverlessAfterGuard.test.ts",
+    "lib/events/memberEventWriters.test.ts",
     "lib/gdpr/erase-routes.test.ts",
     "lib/lilley-student-coach-structure.test.ts",
     "lib/marketing-public-ui-regressions.test.ts",

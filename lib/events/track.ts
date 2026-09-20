@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getRequestId } from '@/lib/observability/requestId';
 import { logger } from '@/lib/observability/logger';
 
-import { isEventName, type EventName } from './names';
+import { canonicalEventName, type EventName } from './names';
 import type { Prisma } from '@prisma/client';
 export type { EventName } from './names';
 
@@ -25,16 +25,23 @@ export type TrackEventParams = {
 /**
  * Durable writer for callers whose event belongs to a transaction. Errors
  * propagate so the caller can roll back; never replace this with trackEvent.
+ *
+ * This is the only production module allowed to call `memberEvent.create`
+ * (enforced by ESLint `no-restricted-syntax` and
+ * `lib/events/memberEventWriters.test.ts`). A historical alias spelling is
+ * stored under its canonical name; an unknown name is rejected before any
+ * storage call.
  */
 export async function persistEvent(
   params: TrackEventParams,
   db: Pick<Prisma.TransactionClient, 'memberEvent'>,
 ) {
-  if (!isEventName(params.eventName)) throw new Error('Unknown member event');
+  const eventName = canonicalEventName(params.eventName);
+  if (!eventName) throw new Error('Unknown member event');
   return db.memberEvent.create({
     data: {
       userId: params.userId,
-      eventName: params.eventName,
+      eventName,
       entityType: params.entityType ?? null,
       entityId: params.entityId ?? null,
       metadata: params.metadata ? JSON.parse(JSON.stringify(params.metadata)) : undefined,

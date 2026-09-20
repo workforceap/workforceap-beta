@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import type { CourseEnrollment, Prisma } from '@prisma/client';
 import {
   canonicalizeProgramSlug,
   programSlugReadCandidates,
@@ -16,13 +16,38 @@ type EnrollmentUpdateData = Omit<
 > & { curriculumVersion?: never };
 
 /**
+ * The Prisma surface the canonical writer needs. An interactive transaction
+ * client and a tenant-scoped client (`withTenantScope`) both satisfy it, so
+ * every program-assignment write can go through this one module.
+ */
+export type CourseEnrollmentWriterClient = Pick<
+  Prisma.TransactionClient,
+  'courseEnrollment' | 'courseProgress' | 'memberProgramProgress'
+>;
+
+export type AssignedCourseEnrollment = CourseEnrollment & {
+  /**
+   * `created` when no equivalent assignment existed before this call and a
+   * canonical row was written; `updated` when an existing row (canonical or
+   * retired alias) was reused. A concurrent request that wins the same
+   * composite key is still reported as `created` by the loser.
+   */
+  assignmentOutcome: 'created' | 'updated';
+};
+
+/**
+ * The only production writer that creates `CourseEnrollment` rows.
+ *
  * Create or update one logical program assignment without duplicating an
  * older row stored under a retired program alias. New rows always use the
  * canonical slug; existing rows keep both their stored slug and immutable
  * curriculumVersion and are updated by primary key.
+ *
+ * `lib/member/curriculumAssignmentWriters.test.ts` and the repo ESLint config
+ * reject `courseEnrollment.create` / `.upsert` anywhere else.
  */
 export async function upsertEquivalentCourseEnrollment(
-  tx: Prisma.TransactionClient,
+  tx: CourseEnrollmentWriterClient,
   args: {
     userId: string;
     programSlug: string;
@@ -30,7 +55,7 @@ export async function upsertEquivalentCourseEnrollment(
     create: EnrollmentCreateData;
     update: EnrollmentUpdateData;
   },
-) {
+): Promise<AssignedCourseEnrollment> {
   const canonicalProgramSlug = canonicalizeProgramSlug(args.programSlug);
   const equivalentRows = await tx.courseEnrollment.findMany({
     where: {
@@ -47,10 +72,11 @@ export async function upsertEquivalentCourseEnrollment(
   })[0];
 
   if (existing) {
-    return tx.courseEnrollment.update({
+    const updated = await tx.courseEnrollment.update({
       where: { id: existing.id },
       data: args.update,
     });
+    return { ...updated, assignmentOutcome: 'updated' };
   }
 
   let curriculumVersion = args.create.curriculumVersion;
@@ -85,7 +111,7 @@ export async function upsertEquivalentCourseEnrollment(
 
   // Keep exact-key retry safety for concurrent requests while still handling
   // legacy aliases through the lookup above.
-  return tx.courseEnrollment.upsert({
+  const created = await tx.courseEnrollment.upsert({
     where: {
       userId_programSlug: {
         userId: args.userId,
@@ -100,4 +126,5 @@ export async function upsertEquivalentCourseEnrollment(
     },
     update: { ...args.update },
   });
+  return { ...created, assignmentOutcome: 'created' };
 }

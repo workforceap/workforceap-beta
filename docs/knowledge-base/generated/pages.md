@@ -171,7 +171,7 @@
 | [app/(portal)/dashboard/eligibility/loading.tsx](../../../app/%28portal%29/dashboard/eligibility/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/dashboard/eligibility/page.tsx](../../../app/%28portal%29/dashboard/eligibility/page.tsx) | 133 | member-counselor | generateMetadata:9, default:20 |
 | [app/(portal)/dashboard/error.tsx](../../../app/%28portal%29/dashboard/error.tsx) | 13 | member-counselor | default:5 |
-| [app/(portal)/dashboard/first90DaysAction.ts](../../../app/%28portal%29/dashboard/first90DaysAction.ts) | 92 | member-counselor | submitFirst90DaysCheckIn:26 |
+| [app/(portal)/dashboard/first90DaysAction.ts](../../../app/%28portal%29/dashboard/first90DaysAction.ts) | 91 | member-counselor | submitFirst90DaysCheckIn:27 |
 | [app/(portal)/dashboard/guide/loading.tsx](../../../app/%28portal%29/dashboard/guide/loading.tsx) | 6 | member-counselor | default:3 |
 | [app/(portal)/dashboard/guide/page.tsx](../../../app/%28portal%29/dashboard/guide/page.tsx) | 354 | member-counselor | generateMetadata:14, default:96 |
 | [app/(portal)/dashboard/help/loading.tsx](../../../app/%28portal%29/dashboard/help/loading.tsx) | 6 | member-counselor | default:3 |
@@ -208,7 +208,7 @@
 | [app/(portal)/dashboard/missions/page.tsx](../../../app/%28portal%29/dashboard/missions/page.tsx) | 79 | member-counselor | generateMetadata:14, default:23 |
 | [app/(portal)/dashboard/not-found.tsx](../../../app/%28portal%29/dashboard/not-found.tsx) | 20 | member-counselor | default:3 |
 | [app/(portal)/dashboard/page.tsx](../../../app/%28portal%29/dashboard/page.tsx) | 1209 | member-counselor | maxDuration:99, generateMetadata:101, default:110 |
-| [app/(portal)/dashboard/placementAction.ts](../../../app/%28portal%29/dashboard/placementAction.ts) | 77 | member-counselor | confirmPlacement:10 |
+| [app/(portal)/dashboard/placementAction.ts](../../../app/%28portal%29/dashboard/placementAction.ts) | 76 | member-counselor | confirmPlacement:11 |
 | [app/(portal)/dashboard/points/ReferralShareCard.module.css](../../../app/%28portal%29/dashboard/points/ReferralShareCard.module.css) | 31 | applications-enrollment |  |
 | [app/(portal)/dashboard/points/ReferralShareCard.tsx](../../../app/%28portal%29/dashboard/points/ReferralShareCard.tsx) | 114 | applications-enrollment | default:14 |
 | [app/(portal)/dashboard/points/loading.tsx](../../../app/%28portal%29/dashboard/points/loading.tsx) | 5 | member-counselor | default:3 |
@@ -309,8 +309,8 @@
 | [app/(portal)/partner/not-found.tsx](../../../app/%28portal%29/partner/not-found.tsx) | 20 | partners-funding | default:3 |
 | [app/(portal)/partner/outcomes/loading.tsx](../../../app/%28portal%29/partner/outcomes/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/outcomes/page.tsx](../../../app/%28portal%29/partner/outcomes/page.tsx) | 163 | partners-funding | generateMetadata:25, default:53 |
-| [app/(portal)/partner/page.tsx](../../../app/%28portal%29/partner/page.tsx) | 1389 | partners-funding | generateMetadata:61, default:72 |
-| [app/(portal)/partner/referred-members/\[memberId\]/page.tsx](../../../app/%28portal%29/partner/referred-members/%5BmemberId%5D/page.tsx) | 533 | partners-funding | generateMetadata:32, default:61 |
+| [app/(portal)/partner/page.tsx](../../../app/%28portal%29/partner/page.tsx) | 1390 | partners-funding | generateMetadata:62, default:73 |
+| [app/(portal)/partner/referred-members/\[memberId\]/page.tsx](../../../app/%28portal%29/partner/referred-members/%5BmemberId%5D/page.tsx) | 534 | partners-funding | generateMetadata:33, default:62 |
 | [app/(portal)/partner/referred-members/loading.tsx](../../../app/%28portal%29/partner/referred-members/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/referred-members/page.tsx](../../../app/%28portal%29/partner/referred-members/page.tsx) | 80 | partners-funding | generateMetadata:18, default:27 |
 | [app/(portal)/partner/resources/loading.tsx](../../../app/%28portal%29/partner/resources/loading.tsx) | 6 | partners-funding | default:3 |
@@ -410,9 +410,9 @@
 | [app/admin/members/\[id\]/CreateSuccessToast.tsx](../../../app/admin/members/%5Bid%5D/CreateSuccessToast.tsx) | 45 | administration | default:7 |
 | [app/admin/members/\[id\]/billing/BillingPacketClient.tsx](../../../app/admin/members/%5Bid%5D/billing/BillingPacketClient.tsx) | 405 | partners-funding | BillingProgramOption:11, default:63 |
 | [app/admin/members/\[id\]/billing/page.tsx](../../../app/admin/members/%5Bid%5D/billing/page.tsx) | 128 | partners-funding | generateMetadata:16, default:29 |
-| [app/admin/members/\[id\]/introduceAction.ts](../../../app/admin/members/%5Bid%5D/introduceAction.ts) | 108 | administration | introduceMemberToEmployer:13 |
+| [app/admin/members/\[id\]/introduceAction.ts](../../../app/admin/members/%5Bid%5D/introduceAction.ts) | 107 | administration | introduceMemberToEmployer:14 |
 | [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) | 225 | administration | generateMetadata:12, default:20 |
-| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1206 | administration | generateMetadata:85, default:93 |
+| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1207 | administration | generateMetadata:86, default:94 |
 | [app/admin/members/\[id\]/readiness/ReadinessCounselorClient.tsx](../../../app/admin/members/%5Bid%5D/readiness/ReadinessCounselorClient.tsx) | 216 | administration | default:25 |
 | [app/admin/members/\[id\]/readiness/page.tsx](../../../app/admin/members/%5Bid%5D/readiness/page.tsx) | 64 | administration | generateMetadata:13, default:21 |
 | [app/admin/members/\[id\]/stakeholder/page.tsx](../../../app/admin/members/%5Bid%5D/stakeholder/page.tsx) | 697 | administration | dynamic:21, generateMetadata:23, default:57 |
@@ -442,7 +442,7 @@
 | [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 725 | administration | generateMetadata:48, default:113 |
 | [app/admin/page.tsx](../../../app/admin/page.tsx) | 448 | administration | generateMetadata:26, default:41 |
 | [app/admin/partners/OpenPartnerPortalButton.tsx](../../../app/admin/partners/OpenPartnerPortalButton.tsx) | 62 | partners-funding | default:6 |
-| [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 390 | partners-funding | default:55 |
+| [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 391 | partners-funding | default:56 |
 | [app/admin/partners/\[id\]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx](../../../app/admin/partners/%5Bid%5D/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx) | 476 | partners-funding | default:158 |
 | [app/admin/partners/\[id\]/quarterly-outcomes/page.tsx](../../../app/admin/partners/%5Bid%5D/quarterly-outcomes/page.tsx) | 43 | partners-funding | generateMetadata:11, default:26 |
 | [app/admin/partners/loading.tsx](../../../app/admin/partners/loading.tsx) | 6 | partners-funding | default:3 |
@@ -455,7 +455,7 @@
 | [app/admin/pipeline/StaleApplicationsBanner.tsx](../../../app/admin/pipeline/StaleApplicationsBanner.tsx) | 53 | administration | default:6 |
 | [app/admin/pipeline/loading.tsx](../../../app/admin/pipeline/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/pipeline/page.tsx](../../../app/admin/pipeline/page.tsx) | 179 | administration | dynamic:14, generateMetadata:16, default:27 |
-| [app/admin/pipeline/remindAction.ts](../../../app/admin/pipeline/remindAction.ts) | 81 | administration | remindStaleApplication:13 |
+| [app/admin/pipeline/remindAction.ts](../../../app/admin/pipeline/remindAction.ts) | 80 | administration | remindStaleApplication:14 |
 | [app/admin/placement-surveys/page.tsx](../../../app/admin/placement-surveys/page.tsx) | 307 | administration | generateMetadata:18, default:114 |
 | [app/admin/placements/loading.tsx](../../../app/admin/placements/loading.tsx) | 5 | jobs-employers | default:3 |
 | [app/admin/placements/new/loading.tsx](../../../app/admin/placements/new/loading.tsx) | 6 | jobs-employers | default:3 |

@@ -65,7 +65,7 @@ export const FAQ_DATA: Record<FaqCategoryKey, FaqItem[]> = {
   ],
   'Job Placement': [
     { q: 'Do you help members find jobs?', a: 'Yes. WorkforceAP provides support like resume help, interview prep, career guidance, and employer-facing support as members move toward job readiness.', link: { text: 'Explore Career Outcomes', href: '/salary-guide' } },
-    { q: 'What kind of jobs will I qualify for?', a: 'Entry-level to mid-level roles in IT, cybersecurity, data analytics, project management, healthcare, and skilled trades. Starting salaries range from $38K to $145K depending on the program.', link: { text: 'See Salary Guide', href: '/salary-guide' } },
+    { q: 'What kind of jobs will I qualify for?', a: 'Entry-level to mid-level roles in IT, cybersecurity, data analytics, project management, healthcare, and skilled trades. Pay varies by role and region; the salary guide links to occupational research for each track.', link: { text: 'See Salary Guide', href: '/salary-guide' } },
     { q: 'How soon after completing the program can I get hired?', a: 'Hiring timelines vary by market, role, location, and the path you choose. Many members begin preparing and applying during training so they are ready for the next step as they finish.', link: { text: 'Read Career Tips', href: '/blog' } },
   ],
   'For Members': [
