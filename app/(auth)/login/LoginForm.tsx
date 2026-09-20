@@ -12,6 +12,7 @@ import { sanitizeRedirectPath } from '@/lib/auth/safeRedirectPath';
 import { splitLocalePrefix } from '@/lib/i18n/config';
 import { trackFunnelEvent, trackMemberLoggedIn } from '@/lib/analytics/events';
 import { heroPhotoForKey } from '@/lib/marketing/heroPhotos';
+import { CONSENT_AWARE_SCREEN_MIN_HEIGHT } from '@/lib/consent/reserve';
 
 /* Paths identify destinations; copy comes from the active auth catalog. */
 const PORTAL_DESTINATIONS = [
@@ -36,7 +37,8 @@ function portalAudienceForPath(path: string) {
 const s = {
   wrapper: {
     display: 'flex',
-    minHeight: '100vh',
+    // Shrinks by the cookie notice's height so the centered form never paints under it.
+    minHeight: CONSENT_AWARE_SCREEN_MIN_HEIGHT,
     fontFamily: 'var(--font-family)',
   } as React.CSSProperties,
 

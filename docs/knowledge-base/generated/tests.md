@@ -269,6 +269,7 @@
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
 | [tests/components/partner-overview-density.spec.tsx](../../../tests/components/partner-overview-density.spec.tsx) | 41 | tests |  |
 | [tests/components/partner-referral-share.spec.tsx](../../../tests/components/partner-referral-share.spec.tsx) | 56 | tests |  |
+| [tests/components/partner-signup-redirect.spec.tsx](../../../tests/components/partner-signup-redirect.spec.tsx) | 36 | tests |  |
 | [tests/components/partner-status-pill.spec.ts](../../../tests/components/partner-status-pill.spec.ts) | 19 | tests |  |
 | [tests/components/password-toggle.spec.tsx](../../../tests/components/password-toggle.spec.tsx) | 81 | tests |  |
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
@@ -292,7 +293,7 @@
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
-| [tests/e2e/README.md](../../../tests/e2e/README.md) | 72 | tests |  |
+| [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
 | [tests/e2e/ai-tool-resume-analysis.spec.ts](../../../tests/e2e/ai-tool-resume-analysis.spec.ts) | 74 | tests |  |
@@ -311,6 +312,7 @@
 | [tests/e2e/member-portal-mvp.spec.ts](../../../tests/e2e/member-portal-mvp.spec.ts) | 72 | tests |  |
 | [tests/e2e/member-portal-nav.spec.ts](../../../tests/e2e/member-portal-nav.spec.ts) | 22 | tests |  |
 | [tests/e2e/member-signup.spec.ts](../../../tests/e2e/member-signup.spec.ts) | 273 | tests |  |
+| [tests/e2e/partner-signup-viewports.spec.ts](../../../tests/e2e/partner-signup-viewports.spec.ts) | 47 | tests |  |
 | [tests/e2e/portal-hub-smoke.spec.ts](../../../tests/e2e/portal-hub-smoke.spec.ts) | 62 | tests |  |
 | [tests/e2e/portal-revenue-flows.spec.ts](../../../tests/e2e/portal-revenue-flows.spec.ts) | 59 | tests |  |
 | [tests/e2e/portal-sprint-mobile.spec.ts](../../../tests/e2e/portal-sprint-mobile.spec.ts) | 66 | tests |  |
@@ -392,6 +394,7 @@
 | [tests/lib/firstValueActions.test.ts](../../../tests/lib/firstValueActions.test.ts) | 70 | tests |  |
 | [tests/lib/focus-ring-recipe.spec.ts](../../../tests/lib/focus-ring-recipe.spec.ts) | 131 | tests |  |
 | [tests/lib/google-it-support-completion.spec.ts](../../../tests/lib/google-it-support-completion.spec.ts) | 49 | tests |  |
+| [tests/lib/hydration-telemetry.spec.ts](../../../tests/lib/hydration-telemetry.spec.ts) | 107 | tests |  |
 | [tests/lib/i18n-page-message-keys.spec.ts](../../../tests/lib/i18n-page-message-keys.spec.ts) | 45 | tests |  |
 | [tests/lib/job-expiry-instant.spec.ts](../../../tests/lib/job-expiry-instant.spec.ts) | 43 | tests |  |
 | [tests/lib/lab-workspace-access.spec.ts](../../../tests/lib/lab-workspace-access.spec.ts) | 220 | tests |  |

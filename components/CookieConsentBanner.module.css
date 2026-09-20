@@ -19,6 +19,14 @@
   color: var(--color-on-surface);
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
+/* Auth screens (login, signup, MFA): the notice sits after the page in normal
+   flow, so nothing interactive can paint underneath it at any viewport. */
+.banner[data-placement='in-flow'] {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  box-shadow: none;
+}
 .description {
   flex: 1 1 28rem;
   min-width: 0;
