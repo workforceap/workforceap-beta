@@ -5,8 +5,8 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [i18n/request.ts](../../../i18n/request.ts) | 53 | localization | default:33 |
-| [messages/en.json](../../../messages/en.json) | 3472 | localization |  |
-| [messages/es.json](../../../messages/es.json) | 3472 | localization |  |
-| [messages/fr.json](../../../messages/fr.json) | 3412 | localization |  |
+| [messages/en.json](../../../messages/en.json) | 3506 | localization |  |
+| [messages/es.json](../../../messages/es.json) | 3506 | localization |  |
+| [messages/fr.json](../../../messages/fr.json) | 3446 | localization |  |
 | [messages/new-i18n-keys.json](../../../messages/new-i18n-keys.json) | 844 | localization |  |
-| [messages/pt.json](../../../messages/pt.json) | 3412 | localization |  |
+| [messages/pt.json](../../../messages/pt.json) | 3446 | localization |  |

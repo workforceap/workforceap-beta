@@ -15,8 +15,12 @@ test('super-admin switcher uses server-provided state where available', () => {
   const counselorLayout = read('app/(portal)/counselor/layout.tsx');
 
   assert.match(switcher, /initialIsSuperAdmin\?: boolean/);
-  assert.match(switcher, /const isSuperAdmin = initialIsSuperAdmin \|\| fetchedIsSuperAdmin/);
-  assert.match(shell, /const isSuperAdmin = Boolean\(superAdmin\) \|\| fetchedIsSuperAdmin/);
+  // WAP-27: a server-known flag short-circuits the shared /api/auth/me read.
+  assert.match(switcher, /export function useIsSuperAdmin\(knownSuperAdmin = false\)/);
+  assert.match(switcher, /useCurrentUser\(\{ enabled: !knownSuperAdmin \}\)/);
+  assert.match(switcher, /const isSuperAdmin = useIsSuperAdmin\(initialIsSuperAdmin\)/);
+  assert.match(shell, /const isSuperAdmin = useIsSuperAdmin\(Boolean\(superAdmin\)\)/);
+  assert.doesNotMatch(switcher, /fetch\('\/api\/auth\/me'/);
   assert.equal((shell.match(/<SuperAdminViewSwitcher initialIsSuperAdmin=\{isSuperAdmin\} \/>/g) ?? []).length, 2);
   assert.match(memberShell, /superAdmin=\{superAdmin\}/);
   assert.match(counselorShell, /superAdmin=\{superAdmin\}/);
