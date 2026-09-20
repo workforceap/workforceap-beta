@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import CookieConsentBanner from './CookieConsentBanner';
@@ -52,6 +54,7 @@ afterEach(() => {
   cleanup();
   document.getElementById('mobile-bottom-nav')?.remove();
   document.body.style.paddingBottom = '';
+  document.documentElement.style.removeProperty('--cookie-consent-reserve');
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -127,6 +130,38 @@ describe('CookieConsentBanner', () => {
     rerender(view('es'));
     expect(screen.getByRole('region', { name: 'Preferencias de cookies' })).toBeInTheDocument();
     expect(document.body.style.paddingBottom).toBe('292px');
+  });
+
+  it('publishes its reserved height for focus scroll-margin and clears it when hidden', () => {
+    // Desktop /login (1280x900): the 100vh-centered form kept its submit at y 778-836 under an
+    // 81px banner at y 819, and Tab focus never scrolled because body padding cannot move
+    // centered content. main.css turns this variable into scroll-margin-bottom on focusables.
+    const reserve = () => document.documentElement.style.getPropertyValue('--cookie-consent-reserve');
+    const nav = document.createElement('nav');
+    nav.id = 'mobile-bottom-nav';
+    document.body.appendChild(nav); // hidden (0px) on desktop
+    bannerHeight = 81;
+    navHeight = 0;
+    const { rerender } = render(view());
+    expect(reserve()).toBe('81px');
+    expect(document.body.style.paddingBottom).toBe('113px'); // base 32 + banner 81
+    bannerHeight = 96;
+    navHeight = 68;
+    act(() => measurements[0]([], {} as ResizeObserver));
+    expect(reserve()).toBe('164px'); // banner 96 + bottom nav 68, matching the body reservation
+    fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+    expect(reserve()).toBe('');
+    pathname = '/dashboard';
+    rerender(view());
+    expect(reserve()).toBe('');
+  });
+
+  it('is backed by a global scroll-margin rule that reads the reserve and rests at 0px', () => {
+    const mainCss = readFileSync(path.resolve(__dirname, '../css/main.css'), 'utf8');
+    expect(mainCss).toMatch(/:root\s*\{\s*--cookie-consent-reserve:\s*0px;\s*\}/);
+    const rule = mainCss.match(/\na, button, input, select, textarea, summary, \[tabindex\]\s*\{([^}]*)\}/)?.[1];
+    expect(rule).toBeTruthy();
+    expect(rule).toContain('scroll-margin-bottom: var(--cookie-consent-reserve)');
   });
 
   it.each([

@@ -6,6 +6,8 @@ import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCa
 import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import { buildMemberApprovalStatus } from '@/lib/member/memberApprovalStatus';
 import { formatPortalDate } from '@/lib/formatDate';
+import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
+import es from '@/messages/es.json';
 
 function show(status: ReturnType<typeof buildMemberApprovalStatus>) {
   return render(<NextIntlClientProvider locale="en" messages={messages}>
@@ -85,6 +87,21 @@ describe('truthful member status surfaces', () => {
     expect(within(training).getByText("Who's on it: WorkforceAP staff")).toBeInTheDocument();
     expect(within(training).getByText(/Next: Staff approve your training enrollment/)).toBeInTheDocument();
     expect(within(stage(container, 'intake')).getByText(/^Reviewed /)).toBeInTheDocument();
+  });
+
+  // Regression: /dashboard showed "MEMBERAPPROVAL.TITLE", "memberApproval.intro",
+  // "memberApproval.applicationStatus.unknown" and "memberApproval.contact" because the
+  // portal layout's client payload (pickPortalClientMessages) omitted the namespace.
+  it.each([['en', messages], ['es', es]] as const)('renders from the sliced %s portal payload without leaking memberApproval.* keys', (locale, catalog) => {
+    const text = catalog.memberApproval;
+    const view = render(<NextIntlClientProvider locale={locale} messages={pickPortalClientMessages(catalog)}>
+      <MemberApprovalStatusCard status={buildMemberApprovalStatus({ applications: [], wioaReviewStatus: null })} />
+    </NextIntlClientProvider>);
+    expect(screen.getByRole('heading', { name: text.title })).toBeInTheDocument();
+    expect(screen.getByText(text.intro)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: text.contact })).toBeInTheDocument();
+    expect(view.container.textContent).not.toMatch(/memberApproval\./i);
+    view.unmount();
   });
 
   it('labels recorded course progress without claiming a certificate', () => {

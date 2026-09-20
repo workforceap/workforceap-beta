@@ -32812,6 +32812,24 @@
     ]
   },
   {
+    "file": "app/wioa-qualification/layout.tsx",
+    "kind": "layout",
+    "path": "/wioa-qualification",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "default",
+        "line": 12,
+        "kind": "FunctionDeclaration",
+        "localName": "PublicWioaQualificationLayout"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": []
+  },
+  {
     "file": "app/wioa-qualification/page.tsx",
     "kind": "page",
     "path": "/wioa-qualification",
