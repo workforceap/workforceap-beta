@@ -17639,52 +17639,52 @@
       {
         "level": 2,
         "title": "2. Surface modes: `warm` vs `dense`",
-        "line": 121
+        "line": 138
       },
       {
         "level": 2,
         "title": "3. Dark mode",
-        "line": 148
+        "line": 165
       },
       {
         "level": 2,
         "title": "4. Status colors — two systems, one mapping (read this twice)",
-        "line": 170
+        "line": 201
       },
       {
         "level": 2,
         "title": "5. The `KitBaseProps` contract",
-        "line": 221
+        "line": 252
       },
       {
         "level": 2,
         "title": "6. Component index (`components/portal/kit/index.ts`)",
-        "line": 237
+        "line": 268
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 336
+        "line": 385
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 368
+        "line": 417
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 393
+        "line": 442
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 430
+        "line": 479
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 440
+        "line": 489
       }
     ],
     "datedFilename": false,
@@ -29009,12 +29009,12 @@
       {
         "level": 2,
         "title": "Active release and historical backlog",
-        "line": 58
+        "line": 61
       },
       {
         "level": 3,
         "title": "WAP-58 / WAP-59 source disposition",
-        "line": 66
+        "line": 69
       }
     ],
     "datedFilename": false,

@@ -6,6 +6,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { persistEvent } from '@/lib/events/track';
 export const PATCH = withApiGuc(async (
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -36,15 +37,13 @@ export const PATCH = withApiGuc(async (
         data: { status: 'COMPLETED' },
       }));
 
-      await prisma.$transaction((tx) => tx.memberEvent.create({
-        data: {
-          userId: user.id,
-          eventName: 'member_next_best_action_clicked',
-          entityType: 'MemberNextBestAction',
-          entityId: id,
-          sourcePage: '/dashboard',
-        },
-      })).catch(() => {});
+      await prisma.$transaction((tx) => persistEvent({
+        userId: user.id,
+        eventName: 'member_next_best_action_clicked',
+        entityType: 'MemberNextBestAction',
+        entityId: id,
+        sourcePage: '/dashboard',
+      }, tx)).catch(() => {});
     } else {
       await prisma.$transaction((tx) => tx.memberNextBestAction.update({
         where: { id, memberId: user.id },

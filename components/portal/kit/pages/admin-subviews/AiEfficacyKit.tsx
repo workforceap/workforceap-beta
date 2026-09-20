@@ -1,6 +1,6 @@
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   type KpiItem,
 } from '@/components/portal/kit';
@@ -83,10 +83,10 @@ export function AiEfficacyKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="AI Efficacy"
         kicker="Analytics"
-        goal="Does AI tool use correlate with outcomes?"
+        lede="Does AI tool use correlate with outcomes?"
         action={
           <Button
             label="Filter & export"

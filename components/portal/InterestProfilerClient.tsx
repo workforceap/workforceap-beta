@@ -199,9 +199,9 @@ export default function InterestProfilerClient() {
   if (!loadError && questions.length > 0 && questions.length !== 30) {
     return (
       <div>
-        <h1 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
+        <h2 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
           O*NET Interest Profiler
-        </h1>
+        </h2>
         <p style={{ lineHeight: 1.65 }}>
           The Mini Interest Profiler should load exactly 30 questions; this session received {questions.length}. Please
           refresh the page or try again later.
@@ -213,9 +213,9 @@ export default function InterestProfilerClient() {
   if (loadError) {
     return (
       <div>
-        <h1 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
+        <h2 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
           O*NET Interest Profiler
-        </h1>
+        </h2>
         <p style={{ color: 'var(--color-error)' }}>{loadError}</p>
         <p style={{ marginTop: '1rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
           The Interest Profiler is provided by the U.S. Department of Labor through O*NET Web Services. Your site needs a
@@ -232,9 +232,9 @@ export default function InterestProfilerClient() {
     );
     return (
       <div>
-        <h1 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
+        <h2 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
           Your interest profile
-        </h1>
+        </h2>
         <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1rem', lineHeight: 1.65 }}>
           Here are your RIASEC interest scores from the Mini Interest Profiler (30 questions). Results are also saved in
           this browser for when you use <Link href="/find-your-path">Find Your Path</Link> — we blend them gently with that
@@ -388,9 +388,9 @@ export default function InterestProfilerClient() {
 
   return (
     <div>
-      <h1 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
+      <h2 className="portal-page-title" style={{ marginBottom: '0.5rem' }}>
         O*NET Interest Profiler (Mini)
-      </h1>
+      </h2>
       <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', lineHeight: 1.65 }}>
         Rate how much you would enjoy each activity. There are {total} questions; allow about 10 minutes. Your answers
         stay in your browser until you submit; after scoring, we save a summary so Find Your Path can use it.

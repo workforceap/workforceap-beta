@@ -157,7 +157,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/jobs/\[id\] | page |  | [app/(portal)/dashboard/jobs/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/page.tsx) | @/lib/auth/server:4 |
 | /dashboard/jobs | loading |  | [app/(portal)/dashboard/jobs/loading.tsx](../../../app/%28portal%29/dashboard/jobs/loading.tsx) |  |
 | /dashboard/jobs | page |  | [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | @/lib/auth/server:4 |
-| /dashboard | layout |  | [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/auth/portalRoleSwitcher:9 |
+| /dashboard | layout |  | [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/auth/portalRoleSwitcher:11 |
 | /dashboard/learning/find-your-career | loading |  | [app/(portal)/dashboard/learning/find-your-career/loading.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/loading.tsx) |  |
 | /dashboard/learning/find-your-career | page |  | [app/(portal)/dashboard/learning/find-your-career/page.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/page.tsx) | @/lib/auth/server:5 |
 | /dashboard/learning/interest-profiler | loading |  | [app/(portal)/dashboard/learning/interest-profiler/loading.tsx](../../../app/%28portal%29/dashboard/learning/interest-profiler/loading.tsx) |  |
@@ -193,7 +193,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/resources | loading |  | [app/(portal)/dashboard/resources/loading.tsx](../../../app/%28portal%29/dashboard/resources/loading.tsx) |  |
 | /dashboard/resources | page |  | [app/(portal)/dashboard/resources/page.tsx](../../../app/%28portal%29/dashboard/resources/page.tsx) | @/lib/auth/server:7 |
 | /dashboard/resume | loading |  | [app/(portal)/dashboard/resume/loading.tsx](../../../app/%28portal%29/dashboard/resume/loading.tsx) |  |
-| /dashboard/resume | page |  | [app/(portal)/dashboard/resume/page.tsx](../../../app/%28portal%29/dashboard/resume/page.tsx) | @/lib/auth/server:9 |
+| /dashboard/resume | page |  | [app/(portal)/dashboard/resume/page.tsx](../../../app/%28portal%29/dashboard/resume/page.tsx) | @/lib/auth/server:8 |
 | /dashboard/settings | loading |  | [app/(portal)/dashboard/settings/loading.tsx](../../../app/%28portal%29/dashboard/settings/loading.tsx) |  |
 | /dashboard/settings | page |  | [app/(portal)/dashboard/settings/page.tsx](../../../app/%28portal%29/dashboard/settings/page.tsx) |  |
 | /dashboard/skills-assessment | loading |  | [app/(portal)/dashboard/skills-assessment/loading.tsx](../../../app/%28portal%29/dashboard/skills-assessment/loading.tsx) |  |
@@ -540,13 +540,13 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/admin/members/\[id\]/subgroup | route | POST, DELETE | [app/api/admin/members/\[id\]/subgroup/route.ts](../../../app/api/admin/members/%5Bid%5D/subgroup/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:5, @/lib/db/withRequestGuc:10 |
 | /api/admin/members/\[id\]/summary | route | POST | [app/api/admin/members/\[id\]/summary/route.ts](../../../app/api/admin/members/%5Bid%5D/summary/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/rate-limit:7, @/lib/db/withRequestGuc:8 |
 | /api/admin/members/\[id\]/upload-resume | route | POST | [app/api/admin/members/\[id\]/upload-resume/route.ts](../../../app/api/admin/members/%5Bid%5D/upload-resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:25, @/lib/db/withRequestGuc:29 |
-| /api/admin/members/\[id\]/wioa-review | route | PATCH | [app/api/admin/members/\[id\]/wioa-review/route.ts](../../../app/api/admin/members/%5Bid%5D/wioa-review/route.ts) | @/lib/auth/server:3, @/lib/tenant/withTenantScope:4, @/lib/tenant/organization:5, @/lib/db/withRequestGuc:16 |
+| /api/admin/members/\[id\]/wioa-review | route | PATCH | [app/api/admin/members/\[id\]/wioa-review/route.ts](../../../app/api/admin/members/%5Bid%5D/wioa-review/route.ts) | @/lib/auth/server:3, @/lib/tenant/withTenantScope:4, @/lib/tenant/organization:5, @/lib/db/withRequestGuc:17 |
 | /api/admin/members/\[id\]/workspace-email | route | POST, DELETE | [app/api/admin/members/\[id\]/workspace-email/route.ts](../../../app/api/admin/members/%5Bid%5D/workspace-email/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:8, @/lib/db/withRequestGuc:11 |
 | /api/admin/members/at-risk | route | GET, PATCH | [app/api/admin/members/at-risk/route.ts](../../../app/api/admin/members/at-risk/route.ts) | @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:8 |
 | /api/admin/members/bulk-email | route | POST | [app/api/admin/members/bulk-email/route.ts](../../../app/api/admin/members/bulk-email/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:13, @/lib/tenant/withTenantScope:14, @/lib/tenant/organizationBranding:15, @/lib/rate-limit:16, @/lib/db/withRequestGuc:17 |
 | /api/admin/members/bulk-export | route | POST | [app/api/admin/members/bulk-export/route.ts](../../../app/api/admin/members/bulk-export/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:8, @/lib/tenant/withTenantScope:9, @/lib/db/withRequestGuc:12 |
 | /api/admin/members/bulk-update | route | POST | [app/api/admin/members/bulk-update/route.ts](../../../app/api/admin/members/bulk-update/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:8, @/lib/tenant/withTenantScope:9, @/lib/db/withRequestGuc:13 |
-| /api/admin/members/create | route | POST | [app/api/admin/members/create/route.ts](../../../app/api/admin/members/create/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:13, @/lib/auth/passwordReset:15, @/lib/db/withRequestGuc:22 |
+| /api/admin/members/create | route | POST | [app/api/admin/members/create/route.ts](../../../app/api/admin/members/create/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:13, @/lib/auth/passwordReset:15, @/lib/db/withRequestGuc:23 |
 | /api/admin/members/duplicates | route | GET | [app/api/admin/members/duplicates/route.ts](../../../app/api/admin/members/duplicates/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:8 |
 | /api/admin/members/enhance-resume | route | POST | [app/api/admin/members/enhance-resume/route.ts](../../../app/api/admin/members/enhance-resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/rate-limit:6, @/lib/db/withRequestGuc:7 |
 | /api/admin/members/export | route | GET | [app/api/admin/members/export/route.ts](../../../app/api/admin/members/export/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:8, @/lib/tenant/withTenantScope:9, @/lib/db/withRequestGuc:15 |
@@ -1010,7 +1010,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | / | global-error |  | [app/global-error.tsx](../../../app/global-error.tsx) |  |
 | /invite | layout |  | [app/invite/layout.tsx](../../../app/invite/layout.tsx) |  |
 | /invite | page |  | [app/invite/page.tsx](../../../app/invite/page.tsx) | @/lib/auth/safeRedirectPath:9 |
-| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/db/gucContext:19, @/lib/auth/roles:24, @/lib/auth/layoutUserId:25, @/lib/auth/server:26, @/lib/tenant/resolveOrgFromRequest:30, @/lib/db/gucContext:113 |
+| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/db/gucContext:19, @/lib/auth/roles:24, @/lib/auth/layoutUserId:25, @/lib/auth/server:26, @/lib/tenant/resolveOrgFromRequest:30, @/lib/db/gucContext:115 |
 | /mentor/apply | layout |  | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) |  |
 | /mentor/apply | page |  | [app/mentor/apply/page.tsx](../../../app/mentor/apply/page.tsx) |  |
 | / | not-found |  | [app/not-found.tsx](../../../app/not-found.tsx) |  |

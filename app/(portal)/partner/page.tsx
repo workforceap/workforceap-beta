@@ -43,6 +43,7 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   DesignSurface,
   SectionHeader as KitSectionHeader,
+  PageOpener,
   DataTable as KitDataTable,
   QueueRow,
 } from '@/components/portal/kit';
@@ -56,6 +57,7 @@ import {
   type PartnerPayoutLedgerRow,
 } from '@/components/portal/kit/pages/PartnerOverviewKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -202,7 +204,7 @@ export default async function PartnerDashboardPage({
         }),
         prisma.memberEvent.findMany({
           where: {
-            eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED',
+            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
             user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
           },
           orderBy: { createdAt: 'desc' },
@@ -221,7 +223,7 @@ export default async function PartnerDashboardPage({
         }),
         prisma.memberEvent.findMany({
           where: {
-            eventName: 'PARTNER_PAYOUT_SENT',
+            eventName: { in: eventNameReadCandidates('partner_payout_sent') },
             user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
           },
           orderBy: { createdAt: 'desc' },
@@ -343,12 +345,11 @@ export default async function PartnerDashboardPage({
       <PortalPageFrame maxWidth="80rem">
         {partnerSchemaCompatibilityFallback ? <span hidden data-portal-error-state="partner-schema-compatibility-fallback" /> : null}
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
-          <h1 className="wa-sr-only">Partner overview</h1>
           {isPendingApproval && <PendingApprovalBanner />}
-          <KitSectionHeader
+          <PageOpener
             kicker={t('partnerDashboard')}
             title={ctx.partner.name}
-            goal={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
+            lede={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
           <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />

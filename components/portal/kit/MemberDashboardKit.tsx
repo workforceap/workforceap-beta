@@ -90,7 +90,7 @@ export function MemberDashboardKit({
 
         {/* feature tiles from recommended actions + toolkit */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5" style={{ marginBottom: 20 }}>
-          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="Career Toolkit" body="Resume audit, cover letters, interview prep." tone="crimson" href="/dashboard/ai-tools" />
+          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="AI Career Tools" body="Resume audit, cover letters, interview prep." tone="crimson" href="/dashboard/ai-tools" />
           {topActions[0] ? (
             <FeatureTile icon={<GraduationCap size={22} />} badge="NEXT" title={topActions[0].label} body="Your recommended next step." tone="gold" href={topActions[0].href} />
           ) : null}

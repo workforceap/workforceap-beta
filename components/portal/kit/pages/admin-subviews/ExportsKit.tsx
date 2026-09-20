@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   colorVar,
 } from '@/components/portal/kit';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
@@ -171,10 +171,10 @@ function ExportTile({ option }: { option: ExportOption }) {
 export function ExportsKit({ exports = DEFAULT_EXPORTS }: ExportsKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Exports"
         kicker="Reporting"
-        goal="Download data for board, funders & compliance"
+        lede="Download data for board, funders & compliance"
       />
 
       {exports.length > 0 ? (

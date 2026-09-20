@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const VIEWS = [
   { id: 'admin', label: 'Admin Portal', path: '/admin' },
@@ -22,17 +23,14 @@ function getCurrentView(pathname: string): ViewId {
   return 'student';
 }
 
-export function useIsSuperAdmin() {
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((r) => r.json())
-      .then((d) => setIsSuperAdmin(d.superAdmin === true))
-      .catch(() => {});
-  }, []);
-
-  return isSuperAdmin;
+/**
+ * Super-admin flag from the shared current-user snapshot (WAP-27). When the
+ * server already rendered the answer (`knownSuperAdmin`), no request is made;
+ * otherwise every caller on the page shares the same single `/api/auth/me`.
+ */
+export function useIsSuperAdmin(knownSuperAdmin = false) {
+  const { user } = useCurrentUser({ enabled: !knownSuperAdmin });
+  return knownSuperAdmin || user?.superAdmin === true;
 }
 
 export default function SuperAdminViewSwitcher({
@@ -43,8 +41,7 @@ export default function SuperAdminViewSwitcher({
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const fetchedIsSuperAdmin = useIsSuperAdmin();
-  const isSuperAdmin = initialIsSuperAdmin || fetchedIsSuperAdmin;
+  const isSuperAdmin = useIsSuperAdmin(initialIsSuperAdmin);
   const currentView = getCurrentView(pathname ?? '');
   const panelRef = useRef<HTMLDivElement>(null);
 

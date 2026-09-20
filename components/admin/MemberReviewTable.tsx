@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { ApplicationStatus } from '@prisma/client';
 import { formatPhone } from '@/lib/formatPhone';
 import DataTable from '@/components/portal/ui/DataTable';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 type ApplicationWithUser = {
   id: string;
@@ -38,6 +39,11 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const handleStatusChange = async (applicationId: string, newStatus: ApplicationStatus) => {
+    // WAP-184 G-3: a denial needs a written reason; the server enforces it too.
+    if (isMissingDenialReason('application_decision', newStatus, notes[applicationId])) {
+      setFeedback(DENIAL_REASON_REQUIRED_MESSAGE);
+      return;
+    }
     setUpdatingId(applicationId);
     setFeedback(null);
     try {
@@ -141,11 +147,11 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                             : 'var(--surface-container)',
                     color:
                       app.status === 'APPROVED'
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success-dark)'
                         : app.status === 'DENIED'
                           ? 'var(--color-accent)'
                           : app.status === 'NEEDS_INFO'
-                            ? 'var(--color-gold)'
+                            ? 'var(--wa-gold-dark)'
                             : 'var(--color-on-surface-variant)',
                   }}
                 >
@@ -183,7 +189,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                           fontSize: '.8rem',
                           background:
                             opt.value === 'APPROVED'
-                              ? 'var(--color-green)'
+                              ? 'var(--wa-success)'
                               : opt.value === 'DENIED'
                                 ? 'var(--color-accent)'
                                 : 'var(--color-on-surface-variant)',
@@ -251,7 +257,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                     fontSize: '.8rem',
                     background:
                       opt.value === 'APPROVED'
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success)'
                         : opt.value === 'DENIED'
                           ? 'var(--color-accent)'
                           : 'var(--color-on-surface-variant)',

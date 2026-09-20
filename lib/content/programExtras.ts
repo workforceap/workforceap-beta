@@ -6,7 +6,7 @@
 export type ProgramExtra = {
   bestFor: string;
   jobOutcomes: string[];
-  /** Difficulty: 1–3 stars. Affects comparison and salary-guide framing. */
+  /** Difficulty: 1–3 stars. Affects comparison framing. */
   difficulty?: 1 | 2 | 3;
   /** Short note on ramp/effort. E.g. "Assumes basic computer comfort." */
   rampNote?: string;

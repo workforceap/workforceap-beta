@@ -227,7 +227,7 @@ export default async function AdminProgramsPage({
                   </div>
                   <div data-program-metric="avg-score">
                     <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Avg Score</p>
-                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: avgScore !== null && avgScore >= 70 ? 'var(--color-green, #4a9b4f)' : 'var(--color-on-surface)', margin: 0, letterSpacing: '-0.03em' }}>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 800, color: avgScore !== null && avgScore >= 70 ? 'var(--wa-success-dark)' : 'var(--color-on-surface)', margin: 0, letterSpacing: '-0.03em' }}>
                       {avgScore !== null ? `${avgScore}%` : '—'}
                     </p>
                   </div>

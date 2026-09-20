@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { CircleCheck } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import MobileBottomNav from '@/components/MobileBottomNav';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import { getUser } from '@/lib/auth/server';
@@ -48,14 +48,14 @@ export default async function VoiceInterviewPage() {
       <div style={{ maxWidth: 980, margin: '0 auto', padding: '1.25rem 1rem 1rem' }} className="wa-space-y-5">
         <PortalBreadcrumb
           items={[
-            { label: 'AI Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: 'Voice Job/Role Interviewer' },
           ]}
         />
-        <SectionHeader
-          kicker="AI Career Toolkit"
+        <PageOpener
+          kicker="AI Career Tools"
           title="Voice Job/Role Interviewer"
-          goal="Open a dedicated mock interview flow, answer questions out loud, and get live coaching feedback in a setup built specifically for practice."
+          lede="Open a dedicated mock interview flow, answer questions out loud, and get live coaching feedback in a setup built specifically for practice."
         />
 
         <div className="wa-kit-card wa-kit-card--sm">

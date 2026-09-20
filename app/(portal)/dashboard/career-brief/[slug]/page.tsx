@@ -10,6 +10,7 @@ import { getCareerBriefs, getCareerBriefContent } from '@/lib/content/careerBrie
 import { getCareerBriefContext } from '@/lib/content/careerBriefPersonalization';
 import { generatePersonalizedBriefSection } from '@/lib/ai/careerBriefAI';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { PageOpener } from '@/components/portal/kit';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -51,12 +52,17 @@ export default async function CareerBriefDetailPage({ params }: Props) {
       className="inner-page"
       {...(readOnlyAudit ? { 'data-portal-audit-suppressed': 'career-brief-personalized-llm' } : {})}
     >
-      <section className="page-hero">
-        <div className="page-hero-content">
-          <Link href="/dashboard/career-brief" className="resource-back-link">
-            ← Back to Career Brief
-          </Link>
-          <h1>{brief?.title ?? 'Career Brief'}</h1>
+      <section className="content-section" style={{ paddingBottom: 0 }}>
+        <div className="container">
+          <PageOpener
+            kicker="Weekly Career Brief"
+            title={brief?.title ?? 'Career Brief'}
+            action={
+              <Link href="/dashboard/career-brief" className="wa-kit-cta wa-kit-cta--ghost">
+                Back to Career Brief
+              </Link>
+            }
+          />
         </div>
       </section>
 

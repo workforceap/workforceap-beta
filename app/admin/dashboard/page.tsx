@@ -78,6 +78,7 @@ interface MetricsData {
 
 import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PageHeader from '@/components/portal/PageHeader';
 
 export default function ExecutiveDashboardPage() {
   const searchParams = useSearchParams();
@@ -141,28 +142,11 @@ export default function ExecutiveDashboardPage() {
 
   return (
     <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: 1200, margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <nav style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
-          <Link href="/admin" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>Admin</Link>
-          <span style={{ margin: '0 0.35rem' }}>/</span>
-          <span style={{ fontWeight: 600 }}>Executive Dashboard</span>
-        </nav>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Executive Dashboard</h1>
-            <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
-              Real-time metrics across all 7 CEO funnels and placement KPIs
-            </p>
-          </div>
+      <PageHeader
+        title="Executive Dashboard"
+        subtitle="Real-time metrics across all 7 CEO funnels and placement KPIs"
+        breadcrumbs={[{ href: '/admin', label: 'Admin' }, { label: 'Executive Dashboard' }]}
+        action={
           <a
             href="/api/admin/funder-program-summary"
             className="btn btn-outline"
@@ -173,8 +157,8 @@ export default function ExecutiveDashboardPage() {
             </span>
             Export funder CSV
           </a>
-        </div>
-      </div>
+        }
+      />
 
       {/* MFA Status Banner for staff */}
       <MfaStatusBanner />
@@ -189,14 +173,14 @@ export default function ExecutiveDashboardPage() {
         }}
       >
         <SummaryCard label="Total Members" value={summary.totalMembers} />
-        <SummaryCard label="Enrolled" value={summary.enrolledMembers} suffix={`${summary.enrollmentRate}%`} color="var(--color-green)" />
-        <SummaryCard label="Assessment Done" value={`${summary.assessmentRate}%`} color="var(--color-blue)" />
+        <SummaryCard label="Enrolled" value={summary.enrolledMembers} suffix={`${summary.enrollmentRate}%`} color="var(--wa-success-dark)" />
+        <SummaryCard label="Assessment Done" value={`${summary.assessmentRate}%`} color="var(--wa-info-dark)" />
         <SummaryCard label="Dashboard Active" value={summary.activeDashboardUsers} />
         <SummaryCard label="Activation Rate" value={`${summary.activationRate}%`} color="var(--color-accent)" />
-        <SummaryCard label="AI Tool Runs" value={summary.aiToolRuns} color="var(--color-gold)" />
-        <SummaryCard label="Placements" value={summary.totalPlacements} color="var(--color-green)" />
+        <SummaryCard label="AI Tool Runs" value={summary.aiToolRuns} color="var(--wa-gold-dark)" />
+        <SummaryCard label="Placements" value={summary.totalPlacements} color="var(--wa-success-dark)" />
         <SummaryCard label="Placement Rate" value={`${summary.placementRate}%`} color="var(--color-accent)" />
-        <SummaryCard label="Avg Salary" value={`$${summary.avgPlacementSalary.toLocaleString()}`} color="var(--color-blue)" />
+        <SummaryCard label="Avg Salary" value={`$${summary.avgPlacementSalary.toLocaleString()}`} color="var(--wa-info-dark)" />
       </div>
 
       {/* Work Queue — actionable items needing attention */}
@@ -269,7 +253,7 @@ export default function ExecutiveDashboardPage() {
                   style={{
                     fontSize: '1.25rem',
                     fontWeight: 800,
-                    color: f.rate >= 50 ? 'var(--color-green)' : f.rate >= 25 ? 'var(--color-gold)' : 'var(--color-accent)',
+                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--color-accent)',
                   }}
                 >
                   {f.rate}%
@@ -293,9 +277,9 @@ export default function ExecutiveDashboardPage() {
                     height: '100%',
                     background:
                       f.rate >= 50
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success)'
                         : f.rate >= 25
-                          ? 'var(--color-gold)'
+                          ? 'var(--wa-gold)'
                           : 'var(--color-accent)',
                     borderRadius: 4,
                     transition: 'width 0.3s ease',

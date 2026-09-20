@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
@@ -123,7 +123,7 @@ export function DuplicatesKit({ rows = DEFAULT_ROWS, groupCount }: DuplicatesKit
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title="Duplicate students" kicker="Members" goal={subtitle} />
+      <PageOpener className="wa-mb-5" title="Duplicate students" kicker="Members" lede={subtitle} />
 
       <DataTable<DuplicateRow>
         columns={columns}

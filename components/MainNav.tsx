@@ -8,6 +8,7 @@ import LocalizedLink from '@/components/LocalizedLink';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { usePathname } from 'next/navigation';
 import { splitLocalePrefix } from '@/lib/i18n/config';
+import { CURRENT_USER_MAX_AGE_MS, fetchCurrentUser } from '@/lib/auth/currentUserClient';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 
 /** Module-level TTL cache so auth checks survive re-mounts across pages. */
@@ -191,17 +192,11 @@ export default function MainNav() {
   useEffect(() => {
     let cancelled = false;
     /** Cap refresh rate so tab-switching every few seconds doesn't spam /api/auth/me. */
-    const REFRESH_THROTTLE_MS = 60_000;
+    const REFRESH_THROTTLE_MS = CURRENT_USER_MAX_AGE_MS;
     const doFetch = async () => {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        const data = (await res.json()) as {
-          role: string | null;
-          partner: { partnerId: string } | null;
-          employer: { employerId: string; companyName: string } | null;
-          superAdmin: boolean;
-          canAccessMemberDashboard: boolean;
-        };
+        // Shared snapshot (WAP-27): portal shells on the same page reuse this read.
+        const data = await fetchCurrentUser({ maxAgeMs: REFRESH_THROTTLE_MS });
         if (cancelled) return;
         if (!data.role) {
           setPortalState({

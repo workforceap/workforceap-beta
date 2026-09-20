@@ -15,7 +15,7 @@ import {
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 /**
- * Career Studio — the canonical voice-first career-tools workspace.
+ * AI Career Tools — the canonical voice-first career-tools workspace.
  * Four internal tabs (Voice Coaches / Live Session / Resume Studio / AI Toolkit),
  * deep-linkable via ?tab=. Ported from docs/mockups/workforceap-voice-studio.html.
  */
