@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "bb51db80f3869165997268b7088fb8189296202824adec9b79e7722b05031ef5",
+  "inputTreeSha256": "aaf64d52f23b7afd7d9783a872ca6a63399cd5fc1148472b77414bb7f320f215",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -47956,9 +47956,9 @@
       "path": "components/MobileBottomNav.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7127,
+      "bytes": 7136,
       "lines": 174,
-      "sha256": "4017c3487aabec68d60c896b15667fce7083f544c59fcf41992747acd9994079",
+      "sha256": "c08128e483cd16e6c87ca2fbac4c565b07b8a7a619f7eecfd39d7b8d551d33fc",
       "binary": false,
       "exports": [
         {
