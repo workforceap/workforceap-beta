@@ -434,7 +434,7 @@
 | [app/admin/members/new/AddMemberWizard.tsx](../../../app/admin/members/new/AddMemberWizard.tsx) | 805 | administration | default:95 |
 | [app/admin/members/new/loading.tsx](../../../app/admin/members/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/new/page.tsx](../../../app/admin/members/new/page.tsx) | 53 | administration | generateMetadata:12, default:20 |
-| [app/admin/members/page.tsx](../../../app/admin/members/page.tsx) | 450 | administration | generateMetadata:31, default:40 |
+| [app/admin/members/page.tsx](../../../app/admin/members/page.tsx) | 496 | administration | generateMetadata:31, default:40 |
 | [app/admin/members/training/page.tsx](../../../app/admin/members/training/page.tsx) | 75 | learning-coursera | generateMetadata:11, default:37 |
 | [app/admin/mentors/loading.tsx](../../../app/admin/mentors/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/mentors/page.tsx](../../../app/admin/mentors/page.tsx) | 345 | administration | generateMetadata:15, default:107 |

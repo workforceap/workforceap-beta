@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "1f3bad1f4a0820432c93fc87a32fa214939e64eab0aaf291f0a684b86d692633",
+  "inputTreeSha256": "111ac4169501de570ce84315065fe50c02ae36ff3e9a81be33d82c2502b81ecf",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4936,
-    "sourceModules": 3585,
-    "importReferences": 17845,
-    "resolvedLocalReferences": 11980,
+    "files": 4941,
+    "sourceModules": 3590,
+    "importReferences": 17870,
+    "resolvedLocalReferences": 11999,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 951,
-    "testCandidates": 941,
+    "testFiles": 956,
+    "testCandidates": 946,
     "testHelpers": 10,
-    "staticallySelectedTests": 939,
+    "staticallySelectedTests": 944,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 558
+      "files": 563
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 927
+      "references": 928
     },
     {
       "file": "lib/auth/server.ts",
@@ -191,12 +191,12 @@
       "references": 71
     },
     {
-      "file": "lib/email/escapeHtml.ts",
-      "references": 68
+      "file": "lib/content/programSlug.ts",
+      "references": 69
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 67
+      "file": "lib/email/escapeHtml.ts",
+      "references": 68
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
@@ -349,6 +349,10 @@
       "lines": 1282
     },
     {
+      "file": "components/admin/MembersTable.tsx",
+      "lines": 1238
+    },
+    {
       "file": "components/portal/SkillMissionChallenge.tsx",
       "lines": 1235
     },
@@ -359,10 +363,6 @@
     {
       "file": "app/(portal)/dashboard/page.tsx",
       "lines": 1209
-    },
-    {
-      "file": "components/admin/MembersTable.tsx",
-      "lines": 1208
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",

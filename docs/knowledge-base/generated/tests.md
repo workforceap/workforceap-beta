@@ -22,8 +22,9 @@
 | [tests/api/admin-member-erase.spec.ts](../../../tests/api/admin-member-erase.spec.ts) | 181 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
 | [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
-| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 597 | tests |  |
+| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 641 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
+| [tests/api/admin-members-export-columns.spec.ts](../../../tests/api/admin-members-export-columns.spec.ts) | 222 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
 | [tests/api/admin-onet-mappings.spec.ts](../../../tests/api/admin-onet-mappings.spec.ts) | 174 | tests |  |
 | [tests/api/admin-outcomes-snapshot.spec.ts](../../../tests/api/admin-outcomes-snapshot.spec.ts) | 125 | tests |  |
@@ -182,10 +183,11 @@
 | [tests/app/add-member-wizard.spec.tsx](../../../tests/app/add-member-wizard.spec.tsx) | 247 | tests |  |
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
-| [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
+| [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 215 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
+| [tests/app/admin-members-roster-numbers.spec.tsx](../../../tests/app/admin-members-roster-numbers.spec.tsx) | 254 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
 | [tests/app/admin-placement-surveys-page.spec.tsx](../../../tests/app/admin-placement-surveys-page.spec.tsx) | 87 | tests |  |
 | [tests/app/admin-programs-page.spec.tsx](../../../tests/app/admin-programs-page.spec.tsx) | 139 | tests |  |
@@ -323,8 +325,8 @@
 | [tests/components/stat-tile-tones.spec.tsx](../../../tests/components/stat-tile-tones.spec.tsx) | 111 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
-| [tests/components/students-roster-needs-link.spec.tsx](../../../tests/components/students-roster-needs-link.spec.tsx) | 140 | tests |  |
-| [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
+| [tests/components/students-roster-needs-link.spec.tsx](../../../tests/components/students-roster-needs-link.spec.tsx) | 143 | tests |  |
+| [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 87 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
 | [tests/components/training-feedback-handoff.test.tsx](../../../tests/components/training-feedback-handoff.test.tsx) | 100 | tests |  |
 | [tests/components/users-kit-row-menu.spec.tsx](../../../tests/components/users-kit-row-menu.spec.tsx) | 194 | tests |  |
@@ -386,12 +388,14 @@
 | [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 86 | tests |  |
 | [tests/lib/admin-job-match-prisma-scope.spec.ts](../../../tests/lib/admin-job-match-prisma-scope.spec.ts) | 65 | tests |  |
 | [tests/lib/admin-post-commit-notifications.spec.ts](../../../tests/lib/admin-post-commit-notifications.spec.ts) | 30 | communications |  |
+| [tests/lib/admin-roster-health-and-status-filters.spec.ts](../../../tests/lib/admin-roster-health-and-status-filters.spec.ts) | 152 | tests |  |
 | [tests/lib/admin-user-provisioning-tenant-race.spec.ts](../../../tests/lib/admin-user-provisioning-tenant-race.spec.ts) | 145 | tests |  |
 | [tests/lib/agent-knowledge-manifest.spec.ts](../../../tests/lib/agent-knowledge-manifest.spec.ts) | 200 | tests |  |
 | [tests/lib/ai-coach-memory-read.spec.ts](../../../tests/lib/ai-coach-memory-read.spec.ts) | 65 | tests |  |
 | [tests/lib/ai-job-match-cache-scope.spec.ts](../../../tests/lib/ai-job-match-cache-scope.spec.ts) | 42 | tests |  |
 | [tests/lib/ai-tools-cohort-analytics.spec.ts](../../../tests/lib/ai-tools-cohort-analytics.spec.ts) | 89 | tests |  |
 | [tests/lib/ambassador-auto-assign.spec.ts](../../../tests/lib/ambassador-auto-assign.spec.ts) | 144 | tests |  |
+| [tests/lib/analytics-overview-health-inputs.spec.ts](../../../tests/lib/analytics-overview-health-inputs.spec.ts) | 105 | tests |  |
 | [tests/lib/applicant-followup-email.spec.ts](../../../tests/lib/applicant-followup-email.spec.ts) | 84 | tests |  |
 | [tests/lib/applicant-triage.spec.ts](../../../tests/lib/applicant-triage.spec.ts) | 295 | tests |  |
 | [tests/lib/application-review-atomic.spec.ts](../../../tests/lib/application-review-atomic.spec.ts) | 178 | tests |  |
@@ -514,6 +518,7 @@
 | [tests/lib/today-in-portal-timezone.spec.ts](../../../tests/lib/today-in-portal-timezone.spec.ts) | 22 | tests |  |
 | [tests/lib/training-course-practice.spec.ts](../../../tests/lib/training-course-practice.spec.ts) | 47 | tests |  |
 | [tests/lib/training-dashboard-curriculum-cache.spec.ts](../../../tests/lib/training-dashboard-curriculum-cache.spec.ts) | 90 | tests |  |
+| [tests/lib/training-dashboard-stale-activity.spec.ts](../../../tests/lib/training-dashboard-stale-activity.spec.ts) | 146 | tests |  |
 | [tests/lib/training-progress-curriculum-version.spec.ts](../../../tests/lib/training-progress-curriculum-version.spec.ts) | 77 | tests |  |
 | [tests/lib/training-progress-roster.spec.ts](../../../tests/lib/training-progress-roster.spec.ts) | 575 | tests |  |
 | [tests/lib/training-workspace-schedule.spec.ts](../../../tests/lib/training-workspace-schedule.spec.ts) | 47 | tests |  |

@@ -11443,6 +11443,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/api/admin-members-export-columns.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 27
+      },
+      {
+        "file": "app/api/admin/members/export/route.ts",
+        "line": 37
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/api/admin-members.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -18467,24 +18495,28 @@
     ],
     "localReferences": [
       {
+        "file": "lib/admin/healthScore.ts",
+        "line": 26
+      },
+      {
         "file": "app/admin/members/page.tsx",
-        "line": 33
-      },
-      {
-        "file": "app/admin/users/page.tsx",
-        "line": 34
-      },
-      {
-        "file": "app/api/admin/members/export/route.ts",
-        "line": 35
-      },
-      {
-        "file": "components/admin/AdminUsersManager.tsx",
         "line": 36
       },
       {
-        "file": "lib/admin/directorySearch.ts",
+        "file": "app/admin/users/page.tsx",
         "line": 37
+      },
+      {
+        "file": "app/api/admin/members/export/route.ts",
+        "line": 38
+      },
+      {
+        "file": "components/admin/AdminUsersManager.tsx",
+        "line": 39
+      },
+      {
+        "file": "lib/admin/directorySearch.ts",
+        "line": 40
       }
     ],
     "kind": "test-candidate",
@@ -18598,6 +18630,38 @@
       {
         "file": "components/portal/kit/index.ts",
         "line": 123
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 25
+      },
+      {
+        "file": "app/admin/members/page.tsx",
+        "line": 54
+      },
+      {
+        "file": "components/admin/MembersTable.tsx",
+        "line": 55
       }
     ],
     "kind": "test-candidate",
@@ -23225,16 +23289,20 @@
         "line": 3
       },
       {
+        "file": "lib/admin/healthScore.ts",
+        "line": 57
+      },
+      {
         "file": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-        "line": 61
+        "line": 64
       },
       {
         "file": "lib/attention/adminViews.ts",
-        "line": 62
+        "line": 65
       },
       {
         "file": "app/admin/students/page.tsx",
-        "line": 126
+        "line": 129
       }
     ],
     "kind": "test-candidate",
@@ -23262,8 +23330,12 @@
         "line": 3
       },
       {
+        "file": "lib/admin/healthScore.ts",
+        "line": 23
+      },
+      {
         "file": "app/admin/students/page.tsx",
-        "line": 29
+        "line": 32
       }
     ],
     "kind": "test-candidate",
@@ -24932,6 +25004,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/healthScore.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/admin/studentStatus.ts",
+        "line": 9
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/admin-user-provisioning-tenant-race.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -25094,6 +25194,38 @@
       {
         "file": "lib/email.ts",
         "line": 49
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/analytics-overview-health-inputs.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/healthScore.ts",
+        "line": 36
+      },
+      {
+        "file": "lib/admin/analyticsOverview.ts",
+        "line": 40
+      },
+      {
+        "file": "lib/admin/healthScore.ts",
+        "line": 41
       }
     ],
     "kind": "test-candidate",
@@ -28432,6 +28564,30 @@
       {
         "file": "lib/admin/trainingDashboard.ts",
         "line": 25
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/training-dashboard-stale-activity.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/trainingDashboard.ts",
+        "line": 30
       }
     ],
     "kind": "test-candidate",
