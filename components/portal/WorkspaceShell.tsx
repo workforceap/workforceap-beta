@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback, startTransition } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu, ShieldHalf, X } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref } from '@/lib/nav/activeRoute';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 import {
@@ -603,7 +604,7 @@ export default function WorkspaceShell({
                   aria-current={isActive ? 'page' : undefined}
                   onClick={closeDrawer}
                 >
-                  <span className="material-symbols-outlined workspace-tab-icon" aria-hidden>{meta.icon}</span>
+                  <LegacyGlyph name={meta.icon} size={20} className="workspace-tab-icon" />
                   <span className="workspace-tab-label">{translateLabel(meta.label)}</span>
                 </Link>
               );

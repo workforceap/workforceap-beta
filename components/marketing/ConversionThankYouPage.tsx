@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { ArrowRight, Check, Download } from 'lucide-react';
 import LocalizedLink from '@/components/LocalizedLink';
 import Footer from '@/components/Footer';
 import MobileBottomNav from '@/components/MobileBottomNav';
@@ -15,7 +15,7 @@ type ConversionThankYouPageProps = {
 };
 
 function CtaLink({ label, href, variant = 'primary' }: { label: string; href: string; variant?: 'primary' | 'outline' | 'muted' }) {
-  const className = variant === 'primary' ? 'btn btn-primary' : variant === 'outline' ? 'btn btn-outline' : 'btn btn-muted';
+  const className = variant === 'primary' ? 'btn btn-primary' : variant === 'outline' ? 'btn btn-secondary' : 'btn btn-muted';
   return (
     <LocalizedLink href={href} className={className}>
       {label}
@@ -55,12 +55,7 @@ export default function ConversionThankYouPage({
                 boxShadow: '0 20px 40px -12px rgba(140,15,55,0.35)',
               }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ color: '#fff', fontSize: '2.5rem', '--ms-wght': 600 } as CSSProperties}
-              >
-                check
-              </span>
+              <Check size={40} strokeWidth={2.5} color="#fff" aria-hidden="true" />
             </div>
             <h1 className="text-display-sm" style={{ marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>
               {title}
@@ -94,13 +89,11 @@ export default function ConversionThankYouPage({
               <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {bullets.map((item) => (
                   <li key={item.title} style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}>
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ color: 'var(--color-accent)', fontSize: '1.25rem', flexShrink: 0, marginTop: '0.1rem' }}
+                    <ArrowRight
+                      size={20}
                       aria-hidden="true"
-                    >
-                      arrow_forward
-                    </span>
+                      style={{ color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.1rem' }}
+                    />
                     <div>
                       <p style={{ margin: 0, fontWeight: 700, color: 'var(--color-on-surface)' }}>{item.title}</p>
                       <p style={{ margin: '0.35rem 0 0', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>{item.description}</p>
@@ -152,9 +145,7 @@ function ResourceLink({ resource }: { resource: { label: string; href: string; e
         rel="noopener noreferrer"
         download={resource.href.endsWith('.pdf') ? true : undefined}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', marginRight: '0.35rem', verticalAlign: 'middle' }} aria-hidden="true">
-          download
-        </span>
+        <Download size={18} aria-hidden="true" style={{ marginRight: '0.35rem' }} />
         {resource.label}
       </a>
     );
@@ -162,9 +153,7 @@ function ResourceLink({ resource }: { resource: { label: string; href: string; e
 
   return (
     <LocalizedLink href={resource.href} className="btn btn-primary">
-      <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', marginRight: '0.35rem', verticalAlign: 'middle' }} aria-hidden="true">
-        download
-      </span>
+      <Download size={18} aria-hidden="true" style={{ marginRight: '0.35rem' }} />
       {resource.label}
     </LocalizedLink>
   );

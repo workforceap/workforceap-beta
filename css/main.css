@@ -4,7 +4,12 @@
    ============================================= */
 
 /* Material Symbols Outlined — self-hosted to avoid Google Fonts CDN outages (503s).
-   The woff2 is served from /fonts/ so icons never degrade to plain text. */
+   The woff2 is served from /fonts/ so icons never degrade to plain text.
+   WAP-110: legacy portal pages only. Public routes, the apply funnel, the auth
+   screens and the member shell render lucide-react SVGs and must not add new
+   `.material-symbols-outlined` spans (guard: tests/app/public-icon-font-free.spec.ts).
+   Browsers fetch a @font-face lazily, so with no matching element on a page the
+   font is never requested there; the preload lives in the (portal)/admin layouts. */
 @font-face {
     font-family: 'Material Symbols Outlined';
     font-display: swap;
@@ -2543,10 +2548,18 @@ body.mobile-nav-open {
 
 /* =============================================
    BUTTONS — unified system
+   WAP-114 — ONE public CTA class. Every primary submit / primary link on the
+   21 public routes (marketing, auth, apply funnel, employer + mentor + partner
+   intake, enroll) is `.btn.btn-primary`; every secondary is `.btn.btn-secondary`.
+   Page skins (auth-depth, marketing-depth `.mdx`, enroll-school) may recolor
+   those two classes inside their scope but never redraw the geometry, and no
+   page-level primary class (`.mdx-btn--primary`, `.btn--primary`, inline
+   style objects, CSS-module submit buttons) may exist beside them.
+   Guard: tests/app/public-cta-class.spec.ts.
    Numbered step / hero index: `.marketing-btn-num-pill` (+ `lib/marketing/buttonClasses.ts`).
    Base `.btn` sets min-height (`--btn-min-height`, 44px) and default radius md.
    Compose: .btn + variant (.btn-primary | .btn-secondary | .btn-ghost)
-            + optional aliases: .btn-outline → same rules as .btn-secondary
+            + optional aliases: .btn-outline → same rules as .btn-secondary (legacy portal markup only)
             + radius ladder (.btn-radius-sm | .btn-radius-md | .btn-radius-lg | .btn-radius-full)
    Variants:
      — primary: solid brand magenta (--color-accent)
@@ -5526,6 +5539,38 @@ fieldset.apply-fieldset {
     width: 100%;
     padding: 1rem;
     font-size: 1.05rem;
+}
+/* Shared show/hide password control (components/forms/PasswordToggle.tsx).
+   Geometry lives here once: absolute inside a `position: relative` field
+   wrapper, 44px hit target, transparent chrome, decorative Lucide glyph.
+   Page skins (auth-depth, signup-depth) only recolor it. */
+.password-toggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 12px 14px;
+    background: none;
+    border: 0;
+    border-radius: var(--radius-md);
+    color: var(--color-on-surface-variant);
+    line-height: 1;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+.password-toggle:hover {
+    color: var(--color-accent);
+}
+.password-toggle:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
+    color: var(--color-accent);
 }
 .form-disclaimer {
     text-align: center;

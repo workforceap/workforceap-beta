@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ArrowUp } from 'lucide-react';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
 
 /**
@@ -24,9 +25,7 @@ export default function ScrollToTopButton() {
       className="scroll-to-top-btn"
       aria-label="Scroll to top"
     >
-      <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1.25rem' }}>
-        arrow_upward
-      </span>
+      <ArrowUp size={20} aria-hidden="true" />
 
       <style>{`
         .scroll-to-top-btn {

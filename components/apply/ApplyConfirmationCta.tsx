@@ -26,10 +26,10 @@ export default function ApplyConfirmationCta() {
         </p>
       ) : null}
       <div className="afd-confirm__recommend-actions">
-        <LocalizedLink href={createHref} className="btn btn-primary mdx-btn mdx-btn--primary">
+        <LocalizedLink href={createHref} className="btn btn-primary">
           {t('confirmationGuestCreateAccount')}
         </LocalizedLink>
-        <LocalizedLink href="/apply/status" className="btn btn-outline mdx-btn mdx-btn--ghost">
+        <LocalizedLink href="/apply/status" className="btn btn-secondary">
           {t('confirmationCheckStatusShort')}
         </LocalizedLink>
       </div>

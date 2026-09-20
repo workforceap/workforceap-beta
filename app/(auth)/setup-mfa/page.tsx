@@ -2,7 +2,6 @@
 
 import { CircleAlert, CircleCheck, QrCode } from 'lucide-react';
 
-import actionStyles from '@/components/auth/AuthActions.module.css';
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -140,7 +139,7 @@ export default function SetupMfaPage() {
           </p>
           <LocalizedLink
             href={nextPath}
-            className={actionStyles.primary}
+            className="btn btn-primary btn-full-width"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -198,7 +197,7 @@ export default function SetupMfaPage() {
 
             <button type="button"
               onClick={() => setStep('confirm')}
-              className={actionStyles.primary}
+              className="btn btn-primary btn-full-width"
               style={{
                 width: '100%',
                 minHeight: 44,
@@ -267,7 +266,7 @@ export default function SetupMfaPage() {
               type="submit"
               disabled={loading || code.length !== 6}
               aria-busy={loading}
-              className={actionStyles.primary}
+              className="btn btn-primary btn-full-width"
               style={{
                 width: '100%',
                 minHeight: 44,

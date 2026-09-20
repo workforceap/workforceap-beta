@@ -38,7 +38,7 @@ export default async function EmployerOutcomesPage() {
         <div className="wa-max-w-7xl wa-mx-auto wa-px-4 sm:wa-px-6 lg:wa-px-8 wa-py-8">
           <h1>Hiring Outcomes</h1>
           <p>Access is verified without creating production audit-log rows during the release audit.</p>
-          <Link href="/employer" className="btn btn-outline">Employer home</Link>
+          <Link href="/employer" className="btn btn-secondary">Employer home</Link>
         </div>
       </div>
     );

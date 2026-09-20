@@ -1,5 +1,7 @@
 import LocalizedLink from '@/components/LocalizedLink';
 import { Suspense } from 'react';
+import { Lock, ShieldCheck, Zap } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import Footer from '@/components/Footer';
 import ApplyEligibilityClient from './ApplyEligibilityClient';
 import ApplyPageSkeleton from './ApplyPageSkeleton';
@@ -209,7 +211,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
       {/* ── Hero ── */}
       <section className={`apply-hero mdx-stage ${styles.hero}`} style={sPage.hero}>
         <span className="mdx-pill" style={sPage.heroLabel}>
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }} aria-hidden="true">assured_workload</span>
+          <ShieldCheck size={16} aria-hidden="true" />
           {isSchool ? t('schoolHeroLabel') : t('heroLabel')}
         </span>
         <h1 style={sPage.heroHeading}><span className="mdx-grad-accent">{isSchool ? t('schoolHeroHeading') : t('heroHeading')}</span></h1>
@@ -227,7 +229,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           {t('questionsCall')}{' '}
           <a href="tel:+15127771808" className="apply-hero-help-compact__link">(512) 777-1808</a>
         </p>
-        <a href="#apply-form-start" className={`apply-hero-start-cta ${styles.startAction}`}>
+        <a href="#apply-form-start" className={`btn btn-primary apply-hero-start-cta ${styles.startAction}`}>
           {t('startYourApplication')}
         </a>
         <div className="apply-hero-help-desktop">{helpCard}</div>
@@ -261,7 +263,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
                     {i + 1}
                   </span>
                   <div>
-                    <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'middle', marginRight: 4, color: i === 0 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)' }} aria-hidden="true">{step.icon}</span>
+                    <LegacyGlyph name={step.icon} size={16} style={{ verticalAlign: 'middle', marginRight: 4, color: i === 0 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)' }} />
                     <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: i === 0 ? 700 : 500, color: i === 0 ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)' }}>{t(step.labelKey as Parameters<typeof t>[0])}</span>
                   </div>
                 </li>
@@ -358,7 +360,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
       {/* ── Supplemental cards ── */}
       <div className="apply-supp-row" role="region" aria-label={t('ariaProgramInformation')} style={sPage.suppRow}>
         <div className="mdx-card" style={sPage.suppCard}>
-          <span className="material-symbols-outlined" style={{ fontSize: 28, color: 'var(--color-green)', flexShrink: 0, marginTop: 2 }} aria-hidden="true">lock</span>
+          <Lock size={28} aria-hidden="true" style={{ color: 'var(--color-green)', flexShrink: 0, marginTop: 2 }} />
           <div>
             <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>{t('suppCard1Title')}</h3>
             <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)', lineHeight: 'var(--line-height-normal)', margin: 0 }}>
@@ -367,7 +369,7 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           </div>
         </div>
         <div className="mdx-card" style={sPage.suppCard}>
-          <span className="material-symbols-outlined" style={{ fontSize: 28, color: 'var(--color-blue)', flexShrink: 0, marginTop: 2 }} aria-hidden="true">bolt</span>
+          <Zap size={28} aria-hidden="true" style={{ color: 'var(--color-blue)', flexShrink: 0, marginTop: 2 }} />
           <div>
             <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: 'var(--space-1)' }}>{t('suppCard2Title')}</h3>
             <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)', lineHeight: 'var(--line-height-normal)', margin: 0 }}>

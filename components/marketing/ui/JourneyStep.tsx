@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 interface JourneyStepProps {
   number: string;
@@ -26,19 +27,11 @@ export function JourneyStep({ number, icon, title, description }: JourneyStepPro
         {number}
       </div>
       <div style={{ position: 'relative', zIndex: 1, paddingTop: '1.5rem' }}>
-        <span
-          className="material-symbols-outlined"
-          style={{
-            color: 'var(--color-accent)',
-            fontSize: '1.75rem',
-            marginBottom: '0.75rem',
-            display: 'block',
-            '--ms-fill': 1,
-          }}
-          aria-hidden="true"
-        >
-          {icon}
-        </span>
+        <LegacyGlyph
+          name={icon}
+          size={28}
+          style={{ color: 'var(--color-accent)', marginBottom: '0.75rem', display: 'block' }}
+        />
         <h4 style={{ fontWeight: 700, fontSize: '1.125rem', marginBottom: '0.5rem', color: 'var(--color-accent)' }}>
           {title}
         </h4>

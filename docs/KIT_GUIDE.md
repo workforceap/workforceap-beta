@@ -104,6 +104,15 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   `.wa-kit-cta--ghost` (44px, `--wa-type-body`) instead of a 13–14px inline size.
   Lesson-start and other “must look like a button” member actions use
   `.wa-kit-cta--xl` (52px, full-width on mobile) with `.wa-kit-cta--block`.
+  Legacy `.btn` markup that still exists on member routes is retargeted inside
+  `.workspace-shell-root[data-workspace-role='member']` (WAP-105, `css/portal-kit.css`):
+  `.btn-primary` draws as `.wa-kit-cta`, `.btn-secondary` / `.btn-outline` / `.btn-muted` as
+  `.wa-kit-cta--ghost`, `.btn-ghost` / `.btn-tertiary` as `.wa-page-action`, `.btn-large` as
+  `.wa-kit-cta--xl`, and `.btn-sm` / `.btn-small` no longer shrink below 44px or
+  `--wa-type-body`. Card kickers (`.portal-dash-section-header__title`) share the
+  `.wa-kit-stat-label` treatment, card titles share one 1.0625rem/700 size, and member status
+  pills use `.wa-kit-tag--ok` / `--warn` / `--muted` rather than hand-colored badges. New member
+  work should still compose the kit classes directly; the retargeting is for existing markup.
   Solid accent pills pair `--wa-accent` with `--wa-on-accent-control`; the
   foreground adapts in dark mode. `--wa-on-accent` remains white for existing
   gradient/hero contexts and must not be globally replaced with the control
@@ -383,6 +392,13 @@ kit table cells beyond `Token` for Pace.
 ## 7. Icons, styling, and motion
 
 - **lucide-react only.** No other icon set, no inline SVG paths, no emoji-as-icon in kit surfaces.
+  The Material Symbols ligature font is legacy portal-page-only (WAP-110): public routes, the apply
+  funnel, the auth screens, the shared error fallbacks and the member shell must not render a
+  `.material-symbols-outlined` span, and the root layout no longer preloads the font (the
+  `(portal)` and `admin` layouts do, for the pages that still carry ligatures). Data-driven configs
+  that still store a historical ligature name (`NAV_TAB_META`, bottom-nav tabs, apply steps,
+  metric cards) render it through `components/icons/LegacyGlyph.tsx`; direct call sites import
+  the Lucide component. Guard: `tests/app/public-icon-font-free.spec.ts`.
 - Size via the `size` prop to match surrounding text (typ. 14–18 in dense, 18–24 in warm); color
   via `currentColor` or `colorVar(...)` — never a hex literal.
 - Icon-only interactive elements need an accessible name (`aria-label`).

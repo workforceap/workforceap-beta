@@ -42,7 +42,9 @@ describe('Employers Page — honest trust presentation', () => {
     );
     const source = readFileSync(ctaPath, 'utf-8');
 
-    expect(source).toContain('arrow_forward');
-    expect(source).not.toContain('calendar_today');
+    // WAP-110: the hero CTA draws a Lucide arrow, not an icon-font ligature.
+    expect(source).toContain('<ArrowRight');
+    expect(source).not.toContain('material-symbols-outlined');
+    expect(source).not.toMatch(/calendar_today|<Calendar/);
   });
 });
