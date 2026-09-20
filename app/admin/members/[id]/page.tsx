@@ -34,6 +34,7 @@ import AdminMemberEnrollmentFundingForm from '@/components/admin/AdminMemberEnro
 import AdminMemberWorkspaceEmail from '@/components/admin/AdminMemberWorkspaceEmail';
 import { getWorkspaceEmailAvailability } from '@/lib/workspace-email/provider';
 import CreateSuccessToast from './CreateSuccessToast';
+import AdminMemberNotesPanel from './AdminMemberNotesPanel';
 import { formatPhone } from '@/lib/formatPhone';
 import { compactStringIds, getMessageAuthorName, getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -59,6 +60,15 @@ import { deriveCareerPlanSignal } from '@/lib/admin/careerPlanSignal';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import { KitEmptyState, StatusTag, TabPanel, Tabs, type KitTone } from '@/components/portal/kit';
+import { buildMemberActivityRows, MEMBER_ACTIVITY_CAP } from '@/lib/admin/memberActivity';
+import {
+  ADMIN_MEMBER_DETAIL_TABS,
+  ADMIN_MEMBER_DETAIL_TABS_ID_BASE,
+  ADMIN_MEMBER_DETAIL_TAB_PARAM,
+  parseAdminMemberDetailTab,
+} from './memberDetailTabs';
+import styles from './memberDetail.module.css';
 type AdminCourseProgressRow = {
   programSlug: string;
   courseSlug: string;
@@ -93,10 +103,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AdminMemberDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  /** `?tab=overview|program|eligibility|placement|messages|notes|activity` picks the opening record tab (default Overview). */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const workspaceEmailAvailability = getWorkspaceEmailAvailability();
+  const query = searchParams ? await searchParams : {};
+  const initialTab = parseAdminMemberDetailTab(query[ADMIN_MEMBER_DETAIL_TAB_PARAM]);
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/members');
 
@@ -566,6 +581,71 @@ export default async function AdminMemberDetailPage({
     })),
   } : null;
 
+  // Overview chips: derived from data already loaded above (no extra query).
+  const initials = (member.fullName ?? member.email ?? '?')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part: string) => part[0]?.toUpperCase() ?? '')
+    .join('') || '?';
+  const latestApplication = (member.applications ?? [])[0] ?? null;
+  const applicationTone: KitTone = (() => {
+    const status = String(latestApplication?.status ?? '');
+    if (status === 'APPROVED' || status === 'ENROLLED' || status === 'ACCEPTED') return 'ok';
+    if (status === 'REJECTED' || status === 'WITHDRAWN' || status === 'DECLINED') return 'danger';
+    if (status === 'PENDING' || status === 'NEEDS_INFO') return 'warn';
+    return 'muted';
+  })();
+  const wioaTone: KitTone = (() => {
+    const status = String(member.wioaReviewStatus ?? '');
+    if (!status) return 'muted';
+    if (status === 'REJECTED' || status === 'DENIED' || status === 'NOT_ELIGIBLE') return 'danger';
+    return gate.ok ? 'ok' : 'warn';
+  })();
+
+  // Activity tab: staff actions on this record (AuditLog, indexed on
+  // [targetType, targetId]) + the member's own events, both capped. Either
+  // read failing degrades to an empty list, never a broken page.
+  const [activityAuditRows, activityEventRows] = await Promise.all([
+    withAdminPageScope(scope, (db) => db.auditLog.findMany({
+      where: { targetId: member.id, targetType: { in: ['User', 'user'] } },
+      orderBy: { createdAt: 'desc' },
+      take: MEMBER_ACTIVITY_CAP,
+      select: {
+        id: true,
+        action: true,
+        createdAt: true,
+        actorEmailSnapshot: true,
+        actorRoleSnapshot: true,
+        actor: { select: { fullName: true } },
+      },
+    })).catch((error: unknown) => {
+      console.error('[admin/member-detail] activity audit load failed', error);
+      return [];
+    }),
+    withAdminPageScope(scope, (db) => db.memberEvent.findMany({
+      where: { userId: member.id },
+      orderBy: { createdAt: 'desc' },
+      take: MEMBER_ACTIVITY_CAP,
+      select: { id: true, eventName: true, createdAt: true },
+    })).catch((error: unknown) => {
+      console.error('[admin/member-detail] activity events load failed', error);
+      return [];
+    }),
+  ]);
+  const activityRows = buildMemberActivityRows({
+    auditRows: activityAuditRows.map((row) => ({
+      id: row.id,
+      action: row.action,
+      createdAt: row.createdAt,
+      actorName: row.actor?.fullName ?? null,
+      actorEmailSnapshot: row.actorEmailSnapshot,
+      actorRoleSnapshot: row.actorRoleSnapshot,
+    })),
+    eventRows: activityEventRows,
+    limit: MEMBER_ACTIVITY_CAP,
+  });
+
   return (
     <div>
       <Suspense fallback={null}>
@@ -576,632 +656,772 @@ export default async function AdminMemberDetailPage({
         title={member.fullName}
         subtitle={chatTruncated ? `${member.email} · ${chatLabel}` : member.email}
         action={
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch', flexWrap: 'wrap', maxWidth: 430 }}>
-            <Link href={`/admin/members/${id}/stakeholder`} className="btn btn-outline" style={{ flex: '1 1 10rem', justifyContent: 'center', minHeight: 44, textAlign: 'center' }}>Open stakeholder view</Link>
-            <Link href={`/admin/members/${id}/lifecycle`} className="btn btn-outline" style={{ flex: '1 1 8rem', justifyContent: 'center', minHeight: 44 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', marginRight: '0.25rem', verticalAlign: 'middle' }} aria-hidden="true">timeline</span>
+          <div className={styles.headerActions}>
+            <Link href={`/admin/members/${id}/stakeholder`} className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>Open stakeholder view</Link>
+            <Link href={`/admin/members/${id}/lifecycle`} className={`btn btn-outline ${styles.headerAction}`}>
+              <span className={`material-symbols-outlined ${styles.actionIcon}`} aria-hidden="true">timeline</span>
               Lifecycle
             </Link>
-            <Link href={`/admin/members/${id}/readiness`} className="btn btn-outline" style={{ flex: '1 1 8rem', justifyContent: 'center', minHeight: 44 }}>
+            <Link href={`/admin/members/${id}/readiness`} className={`btn btn-outline ${styles.headerAction}`}>
               <ClipboardList size={18} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />
               Readiness
             </Link>
-            <Link href={`/admin/members/${id}/billing`} className="btn btn-outline" style={{ flex: '1 1 10rem', justifyContent: 'center', minHeight: 44, textAlign: 'center' }}>J5 / J6 billing</Link>
-            <Link href="/admin/members" className="btn btn-outline" style={{ flex: '1 1 10rem', justifyContent: 'center', minHeight: 44 }}>Back to Members</Link>
+            <Link href={`/admin/members/${id}/billing`} className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>J5 / J6 billing</Link>
+            <Link href="/admin/members" className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>Back to Members</Link>
           </div>
         }
       />
 
       {/* ── Member journey progress strip ── */}
-      <div style={{ maxWidth: '800px', marginBottom: '1.5rem' }}>
+      <div className={styles.strip}>
         <MemberProgressStrip {...adminProgressStripProps} />
       </div>
 
-      {/* `minmax(0, 1fr)` + `minWidth: 0` on the cards: the auto track otherwise
-          grows to the widest card's min-content (433px at a 390px viewport), the
-          same guard the stakeholder page uses (#2359). */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '1.5rem', maxWidth: '800px' }}>
-        {/* Admin DB actions — password reset, profile edit */}
-        <section className="portal-profile-section-card">
-          <div className="portal-profile-section-card__header">
-            <h2 className="portal-profile-section-card__title">Admin Actions</h2>
-            <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Super admin</span>
-          </div>
-          <div className="portal-profile-section-card__body">
-            <AdminMemberDbActions
-              memberId={id}
-              memberName={member.fullName}
-              memberEmail={member.email}
-              currentFullName={member.fullName}
-              currentPhone={member.phone}
-              currentProfilePhone={member.profile?.profilePhone ?? null}
-              currentProfileAddress={member.profile?.profileAddress ?? null}
-              currentProfileBio={member.profile?.profileBio ?? null}
-              currentProfileLinkedin={member.profile?.profileLinkedin ?? null}
-            />
-            <div style={{ marginTop: '1rem' }}>
-              <AdminMemberQuickSummary memberId={id} />
-            </div>
-            <div style={{ marginTop: '1rem' }}>
-              <p style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant, #555)', margin: '0 0 0.5rem' }}>
-                Send a link to this member
-              </p>
-              <AdminMemberSendLinks memberId={id} />
-            </div>
-          </div>
-        </section>
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Profile</h2>
-          <p><strong>Phone:</strong> {formatPhone(member.phone ?? member.profile?.profilePhone)}</p>
-          <p><strong>Address:</strong> {member.profile?.profileAddress ?? member.profile?.address ?? '—'}</p>
-          <p>
-            <strong>Financial aid interest:</strong>{' '}
-            {member.profile?.financialAidInterest === true
-              ? 'Yes'
-              : member.profile?.financialAidInterest === false
-                ? 'No'
-                : '—'}
-          </p>
-          <p><strong>LinkedIn:</strong> {member.profile?.profileLinkedin ? <a href={member.profile.profileLinkedin} target="_blank" rel="noopener noreferrer">{member.profile.profileLinkedin}</a> : '—'}</p>
-          <p><strong>Bio:</strong> {member.profile?.profileBio ?? '—'}</p>
-          <p>
-            <strong>Employment status at enrollment:</strong>{' '}
-            {member.profile?.employmentStatusAtEnroll
-              ? (member.profile.employmentStatusAtEnroll as string).replace(/_/g, ' ')
-              : '—'}
-          </p>
-          {member.profile?.hasEmploymentBarrier && member.profile.barrierTypes && (member.profile.barrierTypes as string[]).length > 0 && (
-            <div style={{ marginTop: '0.5rem' }}>
-              <strong>Employment barriers:</strong>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginTop: '0.375rem' }}>
-                {(member.profile.barrierTypes as string[]).map((bt: string) => (
-                  <span
-                    key={bt}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 700,
-                      background: 'color-mix(in srgb, #f59e0b 12%, transparent)',
-                      color: '#92400e',
-                      border: '1px solid color-mix(in srgb, #f59e0b 25%, transparent)',
-                    }}
-                  >
-                    {bt.replace(/_/g, ' ')}
-                  </span>
-                ))}
+      {/* ── Record tabs ─────────────────────────────────────────
+          Admin audit gap map (wave 16): the ~20 record sections are grouped
+          under Overview / Program / Eligibility / Placement / Messages /
+          Notes / Activity. Every panel is server-rendered here (no second
+          fetch); the kit Tabs island only toggles `hidden`. `?tab=` picks the
+          opening tab; the `#placed-outcome` deep link opens Placement on load.
+          Every existing panel, server action and route call is preserved —
+          only the grouping and the styling changed. */}
+      <Tabs
+        items={ADMIN_MEMBER_DETAIL_TABS}
+        defaultValue={initialTab}
+        label="Member record"
+        idBase={ADMIN_MEMBER_DETAIL_TABS_ID_BASE}
+        urlParam={ADMIN_MEMBER_DETAIL_TAB_PARAM}
+        className={styles.tabs}
+      >
+        {/* ── Overview ─────────────────────────────────────────── */}
+        <TabPanel value="overview">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-label="Member identity">
+              <div className={styles.identity}>
+                <div className={styles.avatar} aria-hidden="true">{initials}</div>
+                <div className={styles.identityCopy}>
+                  <p title={member.fullName ?? undefined} className={`wa-truncate ${styles.identityName}`}>
+                    {member.fullName}
+                  </p>
+                  <p className={styles.identityMeta}>
+                    {member.email}
+                    {member.phone || member.profile?.profilePhone ? ` · ${formatPhone(member.phone ?? member.profile?.profilePhone)}` : ''}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-        </section>
-
-        {applicantTriage && applicantTriageDisplay && (
-          <ApplicantTriageChecklist
-            triage={applicantTriageDisplay}
-            copy={{
-              title: tAdmin('applicantTriage.title'),
-              description: tAdmin('applicantTriage.description'),
-              reasonsHeading: tAdmin('applicantTriage.reasonsHeading'),
-              checklistHeading: tAdmin('applicantTriage.checklistHeading'),
-              applicationStatusLabel: tAdmin(
-                applicantTriage.applicationStatus === 'NEEDS_INFO'
-                  ? 'applicantTriage.applicationNeedsInfo'
-                  : 'applicantTriage.applicationPending',
-              ),
-            }}
-          />
-        )}
-
-        {wioaSnap && (
-          <AdminMemberWioaReviewPanel
-            memberId={member.id}
-            snapshot={wioaSnap}
-            reviewStatus={(member.wioaReviewStatus as WioaReviewStatus | null) ?? null}
-            reviewedAt={member.wioaReviewedAt?.toISOString() ?? null}
-            reviewerName={wioaReviewerName}
-            reviewNotes={member.wioaReviewNotes}
-            decisionHistory={wioaDecisionHistory}
-          />
-        )}
-
-        {careerPlanSignal && (
-          <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Career-plan signal</h2>
-              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '999px', background: 'rgba(37,99,235,0.1)', color: '#1d4ed8', textTransform: 'capitalize' }}>
-                {careerPlanSignal.stage.replace(/_/g, ' ')}
-              </span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Career type</p>
-                <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.typeLabel ?? '—'}</p>
+              <div className={styles.chips}>
+                <StatusTag tone={activeProgramSlug ? 'ok' : 'muted'}>
+                  {activeProgramSlug ? `Enrolled · ${programDisplayTitle(activeProgramSlug)}` : 'No program enrolled'}
+                </StatusTag>
+                <StatusTag tone={wioaTone}>
+                  {member.wioaReviewStatus ? `WIOA · ${String(member.wioaReviewStatus).replace(/_/g, ' ').toLowerCase()}` : 'WIOA · not reviewed'}
+                </StatusTag>
+                <StatusTag tone={latestApplication ? applicationTone : 'muted'}>
+                  {latestApplication ? `Application · ${String(latestApplication.status).replace(/_/g, ' ').toLowerCase()}` : 'No application on file'}
+                </StatusTag>
+                <StatusTag tone={activeCounselorAssign?.counselor ? 'info' : 'warn'}>
+                  {activeCounselorAssign?.counselor ? `Counselor · ${activeCounselorAssign.counselor.user.fullName}` : 'No counselor assigned'}
+                </StatusTag>
               </div>
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Target career</p>
-                <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.topCareerTitle ?? '—'}</p>
+              <div className={`${styles.statGrid} ${styles.spaced}`}>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Course progress</p>
+                  <p className={styles.statValue}>{programReconciliation ? `${programReconciliation.programPercent}%` : '—'}</p>
+                  <p className={styles.statNote}>{program ? `${completedCount} of ${curriculumCourses.length} complete` : 'No program enrolled'}</p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Coursera courses</p>
+                  <p className={styles.statValue}>{courseraCompletedCount}/{courseraCourseCount}</p>
+                  <p className={styles.statNote}>complete</p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Assessment</p>
+                  <p className={styles.statValue}>{member.assessmentScorePct != null ? `${member.assessmentScorePct}%` : '—'}</p>
+                  <p className={styles.statNote}>{member.assessmentCompleted ? 'completed' : 'not completed'}</p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Messages</p>
+                  <p className={styles.statValue}>{chatMessageTotal}</p>
+                  <p className={styles.statNote}>in counselor thread</p>
+                </div>
               </div>
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>First program</p>
-                <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.selectedProgramSlug ?? '—'}</p>
+            </section>
+
+            {/* Admin DB actions — password reset, profile edit */}
+            <section className="wa-kit-card" aria-labelledby="admin-member-actions-title">
+              <div className={styles.sectionHead}>
+                <h2 id="admin-member-actions-title" className={styles.sectionTitle}>Admin Actions</h2>
+                <StatusTag tone="alert">Super admin</StatusTag>
               </div>
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Shared</p>
-                <p style={{ margin: 0, fontWeight: 700 }}>
-                  {careerPlanSignal.shareCount > 0 ? `Yes · ${careerPlanSignal.shareCount}` : 'No'}
-                  {careerPlanSignal.committedAt ? ` · ${careerPlanSignal.committedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+              <AdminMemberDbActions
+                memberId={id}
+                memberName={member.fullName}
+                memberEmail={member.email}
+                currentFullName={member.fullName}
+                currentPhone={member.phone}
+                currentProfilePhone={member.profile?.profilePhone ?? null}
+                currentProfileAddress={member.profile?.profileAddress ?? null}
+                currentProfileBio={member.profile?.profileBio ?? null}
+                currentProfileLinkedin={member.profile?.profileLinkedin ?? null}
+              />
+              <div className={styles.spaced}>
+                <AdminMemberQuickSummary memberId={id} />
+              </div>
+              <div className={styles.spaced}>
+                <p className={styles.eyebrow}>Send a link to this member</p>
+                <AdminMemberSendLinks memberId={id} />
+              </div>
+            </section>
+
+            <section className="wa-kit-card" aria-labelledby="admin-member-profile-title">
+              <h2 id="admin-member-profile-title" className={styles.sectionTitle}>Profile</h2>
+              <div className={styles.facts}>
+                <p><strong>Phone:</strong> {formatPhone(member.phone ?? member.profile?.profilePhone)}</p>
+                <p><strong>Address:</strong> {member.profile?.profileAddress ?? member.profile?.address ?? '—'}</p>
+                <p>
+                  <strong>Financial aid interest:</strong>{' '}
+                  {member.profile?.financialAidInterest === true
+                    ? 'Yes'
+                    : member.profile?.financialAidInterest === false
+                      ? 'No'
+                      : '—'}
+                </p>
+                <p><strong>LinkedIn:</strong> {member.profile?.profileLinkedin ? <a href={member.profile.profileLinkedin} target="_blank" rel="noopener noreferrer">{member.profile.profileLinkedin}</a> : '—'}</p>
+                <p><strong>Bio:</strong> {member.profile?.profileBio ?? '—'}</p>
+                <p>
+                  <strong>Employment status at enrollment:</strong>{' '}
+                  {member.profile?.employmentStatusAtEnroll
+                    ? (member.profile.employmentStatusAtEnroll as string).replace(/_/g, ' ')
+                    : '—'}
                 </p>
               </div>
-            </div>
-            <div style={{ padding: '0.75rem 0.875rem', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.22)' }}>
-              <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Next counselor action</p>
-              <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.staffAction}</p>
-            </div>
-          </section>
-        )}
-
-        {preScreening && (
-          <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Pre-screening</h2>
-            <p><strong>Employment:</strong> {preScreening.employmentStatus}</p>
-            <p><strong>Primary goal:</strong> {preScreening.primaryGoal}</p>
-            <p><strong>Weekly hours:</strong> {preScreening.weeklyHours}</p>
-            <p><strong>Barrier:</strong> {preScreening.barrier}</p>
-            <p><strong>Heard about us:</strong> {preScreening.hearAbout}{preScreening.hearAboutOther ? ` — ${preScreening.hearAboutOther}` : ''}</p>
-            <p><strong>Workforce assistance:</strong> {preScreening.workforceAssistance ? 'Yes' : 'No'}</p>
-            <p><strong>Submitted:</strong> {preScreening.createdAt.toLocaleString()}</p>
-            <p><strong>Interview eligible:</strong> {member.interviewEligible ? 'Yes' : 'No'}</p>
-            {member.interviewRequestedAt && (
-              <p><strong>Interview requested:</strong> {member.interviewRequestedAt.toLocaleString()}</p>
-            )}
-            {member.interviewCompletedAt && (
-              <p><strong>Interview completed:</strong> {member.interviewCompletedAt.toLocaleString()}</p>
-            )}
-          </section>
-        )}
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Program</h2>
-          <p><strong>Enrolled:</strong> {activeProgramSlug ? programDisplayTitle(activeProgramSlug) : '—'}</p>
-          <p><strong>Enrolled date:</strong> {member.enrolledAt?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
-          {program ? (
-            <p>
-              <strong>Course progress:</strong>{' '}
-              {programReconciliation
-                ? `${programReconciliation.programPercent}% overall · ${completedCount} of ${curriculumCourses.length} complete`
-                : `${completedCount} of ${curriculumCourses.length} complete`}
-            </p>
-          ) : (
-            <p><strong>Course progress:</strong> No program enrolled</p>
-          )}
-          
-          {member.learningProgress && member.learningProgress.length > 0 && (
-            <div style={{ marginTop: '1rem', background: 'var(--surface-container-low)', padding: '1rem', borderRadius: '0.5rem' }}>
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem' }}>Active Training Data (External)</h3>
-              {member.learningProgress.map((lp: any) => (
-                <div key={lp.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{lp.pathwayId}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '100px', height: '6px', background: 'var(--surface-container-highest)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${lp.progress}%`, height: '100%', background: lp.completed ? 'var(--wa-success)' : 'var(--color-accent)' }} />
-                    </div>
-                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{lp.progress}%</span>
+              {member.profile?.hasEmploymentBarrier && member.profile.barrierTypes && (member.profile.barrierTypes as string[]).length > 0 && (
+                <div className={styles.spaced}>
+                  <p className={styles.eyebrow}>Employment barriers</p>
+                  <div className={styles.chips} style={{ marginTop: 0 }}>
+                    {(member.profile.barrierTypes as string[]).map((bt: string) => (
+                      <StatusTag key={bt} tone="warn">{bt.replace(/_/g, ' ')}</StatusTag>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              )}
+            </section>
 
-          <ul style={{ marginTop: '1rem', paddingLeft: '1.25rem', listStyle: 'none' }}>
-            {curriculumCourses.map((c) => {
-              const progress = liveProgressBySlug.get(c.slug);
-              const completed = progress?.status === 'COMPLETED';
-              return (
-                <li key={c.slug} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  {completed ? <CheckCircle size={18} style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }} /> : <span style={{ display: 'inline-block', width: 18, height: 18, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />}
-                  <span style={{ flex: 1 }}>
-                    {c.name}
-                    {progress ? (
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                        {progress.percentComplete}% · {progress.status === 'COMPLETED' ? 'completed' : 'in progress'}
+            <section className="wa-kit-card" aria-labelledby="admin-member-counselor-title">
+              <h2 id="admin-member-counselor-title" className={styles.sectionTitle}>Counselor assignment</h2>
+              {activeCounselorAssign?.counselor ? (
+                <p className={styles.lede} style={{ color: 'var(--wa-text)' }}>
+                  Current: <strong>{activeCounselorAssign.counselor.user.fullName}</strong>
+                </p>
+              ) : (
+                <p className={styles.lede}>
+                  No active counselor assignment.
+                </p>
+              )}
+              <AdminMemberCounselorAssign
+                memberId={member.id}
+                counselors={counselorRows.map((c: any) => ({
+                  userId: c.userId,
+                  fullName: c.user.fullName,
+                  partnerName: c.partner?.name ?? 'WorkforceAP',
+                }))}
+                currentCounselorUserId={activeCounselorAssign?.counselor.userId ?? null}
+              />
+            </section>
+
+            {careerPlanSignal && (
+              <section className="wa-kit-card" aria-labelledby="admin-member-career-plan-title">
+                <div className={styles.sectionHead}>
+                  <h2 id="admin-member-career-plan-title" className={styles.sectionTitle}>Career-plan signal</h2>
+                  <StatusTag tone="info" style={{ textTransform: 'capitalize' }}>
+                    {careerPlanSignal.stage.replace(/_/g, ' ')}
+                  </StatusTag>
+                </div>
+                <div className={styles.statGrid} style={{ marginBottom: '0.75rem' }}>
+                  <div className={styles.stat}>
+                    <p className={styles.statLabel}>Career type</p>
+                    <p className={styles.statText}>{careerPlanSignal.typeLabel ?? '—'}</p>
+                  </div>
+                  <div className={styles.stat}>
+                    <p className={styles.statLabel}>Target career</p>
+                    <p className={styles.statText}>{careerPlanSignal.topCareerTitle ?? '—'}</p>
+                  </div>
+                  <div className={styles.stat}>
+                    <p className={styles.statLabel}>First program</p>
+                    <p className={styles.statText}>{careerPlanSignal.selectedProgramSlug ?? '—'}</p>
+                  </div>
+                  <div className={styles.stat}>
+                    <p className={styles.statLabel}>Shared</p>
+                    <p className={styles.statText}>
+                      {careerPlanSignal.shareCount > 0 ? `Yes · ${careerPlanSignal.shareCount}` : 'No'}
+                      {careerPlanSignal.committedAt ? ` · ${careerPlanSignal.committedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className={`${styles.callout} wa-kit-tone--warn`}>
+                  <p className={styles.statLabel}>Next counselor action</p>
+                  <p className={styles.statText}>{careerPlanSignal.staffAction}</p>
+                </div>
+              </section>
+            )}
+
+            <MemberPartnerSection
+              memberId={member.id}
+              partners={partners}
+              currentPartnerId={partnerReferral?.partnerId ?? null}
+            />
+
+            <MemberSubgroupSection
+              memberId={member.id}
+              subgroups={subgroups}
+              currentSubgroupIds={memberSubgroups.map((ms: any) => ms.subgroupId)}
+            />
+
+            <section className="wa-kit-card" aria-labelledby="admin-member-workspace-email-title">
+              <h2 id="admin-member-workspace-email-title" className={styles.sectionTitle}>Workspace email</h2>
+              <AdminMemberWorkspaceEmail
+                memberId={member.id}
+                workspaceEmail={member.workspaceEmail ?? null}
+                workspaceEmailProvisioned={!!member.workspaceEmailProvisioned}
+                providerAvailable={workspaceEmailAvailability.available}
+                providerHint={workspaceEmailAvailability.reason}
+              />
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Program ──────────────────────────────────────────
+            Both progress feeds ("Program" from the local course-progress
+            rows, "Coursera training" from the B4B / xAPI learner detail)
+            are kept side by side with their source labelled; which one is
+            authoritative is a product decision, not a layout one. */}
+        <TabPanel value="program">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-labelledby="admin-member-program-title">
+              <h2 id="admin-member-program-title" className={styles.sectionTitle}>Program</h2>
+              <p className={styles.lede} data-progress-source="course-progress">
+                Source: WorkforceAP course-progress rows for the assigned curriculum (progress feed 1 of 2).
+              </p>
+              <div className={styles.facts}>
+                <p><strong>Enrolled:</strong> {activeProgramSlug ? programDisplayTitle(activeProgramSlug) : '—'}</p>
+                <p><strong>Enrolled date:</strong> {member.enrolledAt?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
+                {program ? (
+                  <p>
+                    <strong>Course progress:</strong>{' '}
+                    {programReconciliation
+                      ? `${programReconciliation.programPercent}% overall · ${completedCount} of ${curriculumCourses.length} complete`
+                      : `${completedCount} of ${curriculumCourses.length} complete`}
+                  </p>
+                ) : (
+                  <p><strong>Course progress:</strong> No program enrolled</p>
+                )}
+              </div>
+
+              {member.learningProgress && member.learningProgress.length > 0 && (
+                <div className={styles.externalBlock}>
+                  <h3 className={styles.subTitle}>Active Training Data (External)</h3>
+                  {member.learningProgress.map((lp: any) => (
+                    <div key={lp.id} className={styles.externalRow}>
+                      <span className={styles.externalName}>{lp.pathwayId}</span>
+                      <div className={styles.externalBar}>
+                        <div className={styles.track}>
+                          <div className={`${styles.fill} ${lp.completed ? styles.fillDone : ''}`} style={{ width: `${lp.progress}%` }} />
+                        </div>
+                        <span className={styles.pct}>{lp.progress}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <ul className={styles.courseList}>
+                {curriculumCourses.map((c) => {
+                  const progress = liveProgressBySlug.get(c.slug);
+                  const completed = progress?.status === 'COMPLETED';
+                  return (
+                    <li key={c.slug} className={styles.courseRow}>
+                      {completed ? <CheckCircle size={18} className={styles.courseCheck} /> : <span className={styles.courseBox} />}
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        {c.name}
+                        {progress ? (
+                          <span className={styles.courseMeta} style={{ marginLeft: '0.5rem' }}>
+                            {progress.percentComplete}% · {progress.status === 'COMPLETED' ? 'completed' : 'in progress'}
+                          </span>
+                        ) : null}
                       </span>
-                    ) : null}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-
-          {member.userCertifications && member.userCertifications.length > 0 && (
-            <div style={{ marginTop: '1.5rem', background: '#fff3cd', border: '1px solid #ffeeba', padding: '1rem', borderRadius: '0.5rem' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.95rem', fontWeight: 600, marginBottom: '0.5rem', color: '#856404' }}>
-                <AlertTriangle size={16} aria-hidden />
-                Unverified External Certifications
-              </h3>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#856404' }}>
-                {member.userCertifications.map((cert: any) => (
-                  <li key={cert.id}>
-                    <strong>{cert.certName}</strong> (Earned: {new Date(cert.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
-                  </li>
-                ))}
+                    </li>
+                  );
+                })}
               </ul>
-            </div>
-          )}
 
-          <MemberDetailActions
-            userId={member.id}
-            memberName={member.fullName}
-            enrollmentGateBlocked={enrollmentGateBlocked}
-            currentProgramSlug={
-              activeProgramSlug
-                ? getProgramBySlug(activeProgramSlug)?.slug ?? activeProgramSlug
-                : null
-            }
-            assessmentCompleted={member.assessmentCompleted}
-            programOptions={programOptions ?? []}
-          />
+              {member.userCertifications && member.userCertifications.length > 0 && (
+                <div className={`${styles.callout} ${styles.spaced} wa-kit-tone--warn`}>
+                  <h3 className={styles.calloutTitle}>
+                    <AlertTriangle size={16} aria-hidden />
+                    Unverified External Certifications
+                  </h3>
+                  <ul className={styles.calloutList}>
+                    {member.userCertifications.map((cert: any) => (
+                      <li key={cert.id}>
+                        <strong>{cert.certName}</strong> (Earned: {new Date(cert.earnedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-          <AdminMemberConsentPanel
-            memberId={member.id}
-            profile={{
-              isMinor: Boolean(member.profile?.isMinor),
-              parentGuardianName: member.profile?.parentGuardianName ?? null,
-              parentGuardianEmail: member.profile?.parentGuardianEmail ?? null,
-              parentGuardianPhone: member.profile?.parentGuardianPhone ?? null,
-              parentalConsentGiven: Boolean(member.profile?.parentalConsentGiven),
-              parentalConsentDate: member.profile?.parentalConsentDate
-                ? member.profile.parentalConsentDate.toISOString()
-                : null,
-              schoolName: member.profile?.schoolName ?? null,
-              gradeLevel: member.profile?.gradeLevel ?? null,
-            }}
-          />
+              <MemberDetailActions
+                userId={member.id}
+                memberName={member.fullName}
+                enrollmentGateBlocked={enrollmentGateBlocked}
+                currentProgramSlug={
+                  activeProgramSlug
+                    ? getProgramBySlug(activeProgramSlug)?.slug ?? activeProgramSlug
+                    : null
+                }
+                assessmentCompleted={member.assessmentCompleted}
+                programOptions={programOptions ?? []}
+              />
+            </section>
 
-          {/* Coursera enrollment approval — gates the "Enroll in this course"
-              button on the member's training page. Each approval can lead to
-              a paid Coursera seat being consumed. See
-              docs/COURSERA-ENROLLMENT-FLOW.md. */}
-          <MemberCourseraEnrollmentApproval
-            memberId={member.id}
-            memberName={member.fullName}
-            initialApproved={Boolean(member.courseraEnrollmentApproved)}
-            approvedAt={
-              member.courseraEnrollmentApprovedAt
-                ? member.courseraEnrollmentApprovedAt.toISOString()
-                : null
-            }
-            approvedByName={null}
-            consentBlocked={Boolean(member.profile?.isMinor && !member.profile?.parentalConsentGiven)}
-          />
-        </section>
+            <section className="wa-kit-card" aria-labelledby="admin-member-coursera-title">
+              <div className={styles.sectionHead}>
+                <h2 id="admin-member-coursera-title" className={styles.sectionTitle}>Coursera training</h2>
+                <Link href={`/admin/coursera/learners/${member.id}`} className={styles.inlineLink}>
+                  Open full Coursera detail →
+                </Link>
+              </div>
+              <p className={styles.lede} data-progress-source="coursera-learner-detail">
+                Source: Coursera B4B enrollment report, xAPI webhook and CSV import (progress feed 2 of 2).
+              </p>
+              {courseraDetail && (courseraCourseCount > 0 || courseraBadgeCount > 0) ? (
+                <>
+                  <div className={styles.statGrid} style={{ marginBottom: '0.75rem' }}>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Courses</p>
+                      <p className={`${styles.statValue} ${styles.statValueSm}`}>
+                        {courseraCompletedCount}/{courseraCourseCount} <span className={styles.statNote} style={{ display: 'inline' }}>complete</span>
+                      </p>
+                    </div>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Specializations</p>
+                      <p className={`${styles.statValue} ${styles.statValueSm}`}>
+                        {courseraCompletedBadgeCount}/{courseraBadgeCount} <span className={styles.statNote} style={{ display: 'inline' }}>earned</span>
+                      </p>
+                    </div>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Last activity</p>
+                      <p className={styles.statText}>
+                        {courseraLastActivity ? courseraLastActivity.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                      </p>
+                    </div>
+                  </div>
+                  {courseraCourseCount > 0 ? (
+                    <ul className={styles.courseList} style={{ marginTop: 0 }}>
+                      {courseraDetail.courses.slice(0, 5).map((c) => (
+                        <li key={c.id} className={styles.courseRow}>
+                          {c.isCompleted ? (
+                            <CheckCircle size={16} className={styles.courseCheck} />
+                          ) : (
+                            <span className={styles.courseBox} style={{ width: 16, height: 16 }} />
+                          )}
+                          <span className={styles.courseName}>{c.courseName}</span>
+                          <span className={styles.courseMeta}>
+                            {Number(c.overallProgress).toFixed(0)}%
+                          </span>
+                        </li>
+                      ))}
+                      {courseraCourseCount > 5 ? (
+                        <li className={styles.courseMore}>
+                          + {courseraCourseCount - 5} more — see full detail
+                        </li>
+                      ) : null}
+                    </ul>
+                  ) : null}
+                </>
+              ) : (
+                <p className={styles.emptyCopy}>
+                  No Coursera activity recorded yet. Data populates from the B4B sync (every 6h),
+                  xAPI webhook, or manual CSV import on{' '}
+                  <Link href="/admin/coursera/csv-import" className={styles.inlineLink}>
+                    /admin/coursera/csv-import
+                  </Link>.
+                </p>
+              )}
+              <MemberCourseraDiagnoseButton memberId={member.id} />
+            </section>
 
-        {/* Outcomes summary — the same all-time definitions used by
-            /admin/outcomes and /admin/outcomes/board.pdf. Shows the org-level
-            cohort context (placement rate, time-to-placement, recent placement
-            volume) so an admin reviewing one member can see how their case
-            fits the board's headline numbers. Per-member outcome detail is
-            shown when a placement_records row exists. */}
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Outcomes summary</h2>
-            <Link
-              href="/admin/outcomes"
-              style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
-            >
-              Open full outcomes board →
-            </Link>
+            <AdminMemberSkillCheckpointPanel memberId={member.id} summary={skillMissionSummary} />
+
+            <section className="wa-kit-card" aria-labelledby="admin-member-funding-title">
+              <h2 id="admin-member-funding-title" className={styles.sectionTitle}>Enrollment funding &amp; workspace</h2>
+              {!courseEnrollment && (
+                <p className={styles.lede}>
+                  Member is not currently enrolled in a program. Enrollment must be created first.
+                </p>
+              )}
+              <AdminMemberEnrollmentFundingForm
+                memberId={member.id}
+                hasPrimaryEnrollment={Boolean(courseEnrollment)}
+                initial={
+                  courseEnrollment
+                    ? {
+                        fundingSource: courseEnrollment.fundingSource,
+                        fundingNotes: courseEnrollment.fundingNotes,
+                        workspaceEmail: courseEnrollment.workspaceEmail ?? member.workspaceEmail ?? null,
+                        workspaceEmailProvisioned:
+                          courseEnrollment.workspaceEmailProvisioned || member.workspaceEmailProvisioned,
+                      }
+                    : {
+                        fundingSource: null,
+                        fundingNotes: null,
+                        workspaceEmail: member.workspaceEmail ?? null,
+                        workspaceEmailProvisioned: member.workspaceEmailProvisioned,
+                      }
+                }
+              />
+            </section>
+
           </div>
-          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-            Cohort context for this member&apos;s organization, including exact placements over the last 90 days.
-          </p>
-          {outcomesSummary ? (
-            <>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                  gap: '0.75rem',
-                  marginBottom: placedOutcomeRow ? '1rem' : 0,
+        </TabPanel>
+
+        {/* ── Placement ────────────────────────────────────────── */}
+        <TabPanel value="placement">
+          <div className={styles.stack}>
+            {/* Outcomes summary — the same all-time definitions used by
+                /admin/outcomes and /admin/outcomes/board.pdf. Shows the org-level
+                cohort context (placement rate, time-to-placement, recent placement
+                volume) so an admin reviewing one member can see how their case
+                fits the board's headline numbers. Per-member outcome detail is
+                shown when a placement_records row exists. */}
+            <section className="wa-kit-card" aria-labelledby="admin-member-outcomes-title">
+              <div className={styles.sectionHead} style={{ marginBottom: '0.5rem' }}>
+                <h2 id="admin-member-outcomes-title" className={styles.sectionTitle}>Outcomes summary</h2>
+                <Link href="/admin/outcomes" className={styles.inlineLink}>
+                  Open full outcomes board →
+                </Link>
+              </div>
+              <p className={styles.lede}>
+                Cohort context for this member&apos;s organization, including exact placements over the last 90 days.
+              </p>
+              {outcomesSummary ? (
+                <>
+                  <div className={styles.statGrid} style={{ marginBottom: placedOutcomeRow ? '1rem' : 0 }}>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Placed (last 90d)</p>
+                      <p className={styles.statValue}>{placedLast90d}</p>
+                    </div>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Placement rate</p>
+                      <p className={styles.statValue}>
+                        {orgEnrolled < SMALL_SAMPLE_THRESHOLD
+                          ? `N=${orgEnrolled}`
+                          : `${orgPlacementRate ?? 0}%`}
+                      </p>
+                      <p className={styles.statNote}>
+                        {orgPlaced} of {orgEnrolled} enrolled
+                      </p>
+                    </div>
+                    <div className={styles.stat}>
+                      <p className={styles.statLabel}>Avg time to placement</p>
+                      <p className={styles.statValue}>
+                        {orgAvgDaysToPlacement === null ? '—' : `${orgAvgDaysToPlacement} d`}
+                      </p>
+                    </div>
+                  </div>
+                  {placedOutcomeRow ? (
+                    <div className={`${styles.callout} wa-kit-tone--ok`}>
+                      <p className={styles.statLabel}>This member&apos;s placement</p>
+                      <p className={styles.statText}>
+                        {placedOutcomeRow.jobTitle} · {placedOutcomeRow.employerName}
+                      </p>
+                      <p className={styles.statNote}>
+                        Placed{' '}
+                        {placedOutcomeRow.placedAt instanceof Date
+                          ? placedOutcomeRow.placedAt.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })
+                          : new Date(placedOutcomeRow.placedAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                        {placedOutcomeRow.salaryOffered
+                          ? ` · $${placedOutcomeRow.salaryOffered.toLocaleString('en-US')}/yr at placement`
+                          : ''}
+                      </p>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <p className={styles.emptyCopy}>
+                  Outcomes snapshot is unavailable right now.
+                </p>
+              )}
+            </section>
+
+            <section id="placed-outcome" className="wa-kit-card" aria-labelledby="admin-member-placement-title">
+              <h2 id="admin-member-placement-title" className={`portal-section-heading ${styles.sectionTitle}`}>Placement record</h2>
+              {pendingPlacementEvents && pendingPlacementEvents.length > 0 && !placedOutcomeRow && (
+                <div className={`${styles.callout} wa-kit-tone--warn`} style={{ marginBottom: '1rem' }}>
+                  <p className={styles.calloutTitle}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--wa-gold-dark)' }} aria-hidden="true">pending</span>
+                    Pending member-reported placement
+                  </p>
+                  <p className={styles.calloutBody}>
+                    This member self-reported accepting a job offer on{' '}
+                    {new Date(pendingPlacementEvents[0].createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                    . Review and verify to create an official placement record.
+                  </p>
+                </div>
+              )}
+              <AdminMemberPlacedOutcomeForm
+                memberId={member.id}
+                initial={
+                  placedOutcomeRow
+                    ? {
+                        employerName: placedOutcomeRow.employerName,
+                        jobTitle: placedOutcomeRow.jobTitle,
+                        startingSalary: placedOutcomeRow.salaryOffered,
+                        placedAt: placedOutcomeRow.placedAt.toISOString(),
+                        programSlug: (placedOutcomeRow as { programSlug?: string | null }).programSlug ?? null,
+                        notes: placedOutcomeRow.notes,
+                        wageAtFollowUp: (placedOutcomeRow as { wageAtFollowUp?: number | null }).wageAtFollowUp ?? null,
+                        retentionStatus: (placedOutcomeRow as { retentionStatus?: string | null }).retentionStatus ?? null,
+                        startDateVerified: (placedOutcomeRow as { startDateVerified?: boolean }).startDateVerified ?? false,
+                        fundingSource: (placedOutcomeRow as { fundingSource?: string | null }).fundingSource ?? null,
+                        grantReportingNotes: (placedOutcomeRow as { grantReportingNotes?: string | null }).grantReportingNotes ?? null,
+                        retentionDecision: (placedOutcomeRow as { retentionDecision?: string | null }).retentionDecision ?? null,
+                      }
+                    : null
+                }
+                pastOnboardingWindow={
+                  !!(placedOutcomeRow as { onboardingWindowEnd?: Date | null } | null)?.onboardingWindowEnd &&
+                  (placedOutcomeRow as { onboardingWindowEnd?: Date | null }).onboardingWindowEnd! <= new Date()
+                }
+              />
+            </section>
+
+            <AdminMemberAiMatches memberId={member.id} matches={member.aiJobMatches} />
+
+            <section className="wa-kit-card" aria-labelledby="admin-member-resumes-title">
+              <h2 id="admin-member-resumes-title" className={styles.sectionTitle}>Resumes</h2>
+              <AdminMemberResumeSection memberId={member.id} />
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Eligibility (applications, WIOA screening, approvals) ── */}
+        <TabPanel value="eligibility">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-labelledby="admin-member-application-status-title">
+              <div className={styles.sectionHead}>
+                <h2 id="admin-member-application-status-title" className={styles.sectionTitle}>Application status</h2>
+                <StatusTag tone={latestApplication ? applicationTone : 'muted'}>
+                  {latestApplication ? String(latestApplication.status).replace(/_/g, ' ').toLowerCase() : 'none on file'}
+                </StatusTag>
+              </div>
+              {latestApplication ? (
+                <div className={styles.facts}>
+                  <p>
+                    <strong>Submitted:</strong>{' '}
+                    {latestApplication.submittedAt
+                      ? new Date(latestApplication.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                      : 'Not submitted'}
+                  </p>
+                  <p><strong>Recommended career:</strong> {latestApplication.recommendedCareerTitle ?? '—'}</p>
+                  <p>
+                    <strong>Ranked programs:</strong>{' '}
+                    {Array.isArray(latestApplication.programRankedSlugs) && latestApplication.programRankedSlugs.length > 0
+                      ? (latestApplication.programRankedSlugs as string[]).map((slug) => programDisplayTitle(slug)).join(' · ')
+                      : '—'}
+                  </p>
+                  {member.applications.length > 1 ? (
+                    <p className={styles.emptyCopy}>{member.applications.length - 1} earlier application{member.applications.length - 1 === 1 ? '' : 's'} on file.</p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className={styles.emptyCopy}>This member has not submitted a training application.</p>
+              )}
+            </section>
+
+            {applicantTriage && applicantTriageDisplay && (
+              <ApplicantTriageChecklist
+                triage={applicantTriageDisplay}
+                copy={{
+                  title: tAdmin('applicantTriage.title'),
+                  description: tAdmin('applicantTriage.description'),
+                  reasonsHeading: tAdmin('applicantTriage.reasonsHeading'),
+                  checklistHeading: tAdmin('applicantTriage.checklistHeading'),
+                  applicationStatusLabel: tAdmin(
+                    applicantTriage.applicationStatus === 'NEEDS_INFO'
+                      ? 'applicantTriage.applicationNeedsInfo'
+                      : 'applicantTriage.applicationPending',
+                  ),
                 }}
-              >
-                <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
-                    Placed (last 90d)
-                  </p>
-                  <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>{placedLast90d}</p>
-                </div>
-                <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
-                    Placement rate
-                  </p>
-                  <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {orgEnrolled < SMALL_SAMPLE_THRESHOLD
-                      ? `N=${orgEnrolled}`
-                      : `${orgPlacementRate ?? 0}%`}
-                  </p>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0', fontVariantNumeric: 'tabular-nums' }}>
-                    {orgPlaced} of {orgEnrolled} enrolled
-                  </p>
-                </div>
-                <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
-                    Avg time to placement
-                  </p>
-                  <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {orgAvgDaysToPlacement === null ? '—' : `${orgAvgDaysToPlacement} d`}
-                  </p>
-                </div>
-              </div>
-              {placedOutcomeRow ? (
-                <div
-                  style={{
-                    padding: '0.75rem 0.875rem',
-                    borderRadius: 8,
-                    background: 'rgba(46, 125, 50, 0.08)',
-                    border: '1px solid rgba(46, 125, 50, 0.2)',
-                  }}
-                >
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.35rem' }}>
-                    This member&apos;s placement
-                  </p>
-                  <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>
-                    {placedOutcomeRow.jobTitle} · {placedOutcomeRow.employerName}
-                  </p>
-                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
-                    Placed{' '}
-                    {placedOutcomeRow.placedAt instanceof Date
-                      ? placedOutcomeRow.placedAt.toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })
-                      : new Date(placedOutcomeRow.placedAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                    {placedOutcomeRow.salaryOffered
-                      ? ` · $${placedOutcomeRow.salaryOffered.toLocaleString('en-US')}/yr at placement`
-                      : ''}
-                  </p>
-                </div>
-              ) : null}
-            </>
-          ) : (
-            <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
-              Outcomes snapshot is unavailable right now.
-            </p>
-          )}
-        </section>
+              />
+            )}
 
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Coursera training</h2>
-            <Link
-              href={`/admin/coursera/learners/${member.id}`}
-              style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
-            >
-              Open full Coursera detail →
-            </Link>
+            {wioaSnap && (
+              <AdminMemberWioaReviewPanel
+                memberId={member.id}
+                snapshot={wioaSnap}
+                reviewStatus={(member.wioaReviewStatus as WioaReviewStatus | null) ?? null}
+                reviewedAt={member.wioaReviewedAt?.toISOString() ?? null}
+                reviewerName={wioaReviewerName}
+                reviewNotes={member.wioaReviewNotes}
+                decisionHistory={wioaDecisionHistory}
+              />
+            )}
+
+            {preScreening && (
+              <section className="wa-kit-card" aria-labelledby="admin-member-prescreening-title">
+                <h2 id="admin-member-prescreening-title" className={styles.sectionTitle}>Pre-screening</h2>
+                <div className={styles.facts}>
+                  <p><strong>Employment:</strong> {preScreening.employmentStatus}</p>
+                  <p><strong>Primary goal:</strong> {preScreening.primaryGoal}</p>
+                  <p><strong>Weekly hours:</strong> {preScreening.weeklyHours}</p>
+                  <p><strong>Barrier:</strong> {preScreening.barrier}</p>
+                  <p><strong>Heard about us:</strong> {preScreening.hearAbout}{preScreening.hearAboutOther ? ` — ${preScreening.hearAboutOther}` : ''}</p>
+                  <p><strong>Workforce assistance:</strong> {preScreening.workforceAssistance ? 'Yes' : 'No'}</p>
+                  <p><strong>Submitted:</strong> {preScreening.createdAt.toLocaleString()}</p>
+                  <p><strong>Interview eligible:</strong> {member.interviewEligible ? 'Yes' : 'No'}</p>
+                  {member.interviewRequestedAt && (
+                    <p><strong>Interview requested:</strong> {member.interviewRequestedAt.toLocaleString()}</p>
+                  )}
+                  {member.interviewCompletedAt && (
+                    <p><strong>Interview completed:</strong> {member.interviewCompletedAt.toLocaleString()}</p>
+                  )}
+                </div>
+              </section>
+            )}
+
+            <AdminMemberConsentPanel
+              memberId={member.id}
+              profile={{
+                isMinor: Boolean(member.profile?.isMinor),
+                parentGuardianName: member.profile?.parentGuardianName ?? null,
+                parentGuardianEmail: member.profile?.parentGuardianEmail ?? null,
+                parentGuardianPhone: member.profile?.parentGuardianPhone ?? null,
+                parentalConsentGiven: Boolean(member.profile?.parentalConsentGiven),
+                parentalConsentDate: member.profile?.parentalConsentDate
+                  ? member.profile.parentalConsentDate.toISOString()
+                  : null,
+                schoolName: member.profile?.schoolName ?? null,
+                gradeLevel: member.profile?.gradeLevel ?? null,
+              }}
+            />
+
+            {/* Coursera enrollment approval — gates the "Enroll in this course"
+                button on the member's training page. Each approval can lead to
+                a paid Coursera seat being consumed. See
+                docs/COURSERA-ENROLLMENT-FLOW.md. */}
+            <MemberCourseraEnrollmentApproval
+              memberId={member.id}
+              memberName={member.fullName}
+              initialApproved={Boolean(member.courseraEnrollmentApproved)}
+              approvedAt={
+                member.courseraEnrollmentApprovedAt
+                  ? member.courseraEnrollmentApprovedAt.toISOString()
+                  : null
+              }
+              approvedByName={null}
+              consentBlocked={Boolean(member.profile?.isMinor && !member.profile?.parentalConsentGiven)}
+            />
+
+            {member.assessmentCompleted && (
+              <AssessmentAnswersReadonly
+                rows={buildAssessmentReviewRows(assessmentAnswers)}
+                score={member.assessmentScore}
+                scorePct={member.assessmentScorePct}
+                completedAt={member.assessmentCompletedAt}
+                programInterest={member.programInterest}
+              />
+            )}
           </div>
-          {courseraDetail && (courseraCourseCount > 0 || courseraBadgeCount > 0) ? (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <div>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Courses</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {courseraCompletedCount}/{courseraCourseCount} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>complete</span>
-                  </p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Specializations</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {courseraCompletedBadgeCount}/{courseraBadgeCount} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>earned</span>
-                  </p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Last activity</p>
-                  <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
-                    {courseraLastActivity ? courseraLastActivity.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
-                  </p>
-                </div>
+        </TabPanel>
+
+        {/* ── Messages ─────────────────────────────────────────── */}
+        <TabPanel value="messages">
+          <div className={styles.stack}>
+            <section id="admin-member-messages" className="wa-kit-card" aria-labelledby="admin-member-messages-title">
+              <h2 id="admin-member-messages-title" className={styles.sectionTitle}>Counselor conversation</h2>
+              {readOnlyAudit && <span hidden data-portal-audit-suppressed="admin-member-message-thread-create-read-receipt-and-realtime" />}
+              {readOnlyAudit && counselorChatInitial ? (
+                <p className={styles.emptyCopy}>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
+              ) : counselorChatInitial ? (
+                <AdminMemberCounselorChatClient initial={counselorChatInitial} messagingSurface="admin" />
+              ) : (
+                <p className={styles.emptyCopy}>No counselor conversation has started yet.</p>
+              )}
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Notes ────────────────────────────────────────────
+            Staff notes on the existing /api/admin/members/[id]/notes route
+            (counselor notes panel pattern). */}
+        <TabPanel value="notes">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-labelledby="admin-member-notes-title">
+              <h2 id="admin-member-notes-title" className={styles.sectionTitle}>Notes</h2>
+              <p className={styles.lede}>
+                Internal staff notes about this member. Counselors see the same thread on their student record.
+              </p>
+              <AdminMemberNotesPanel memberId={member.id} />
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Activity ─────────────────────────────────────────
+            Staff actions recorded against this member (AuditLog) merged with
+            the member's own recent events, newest first. The full lifecycle
+            timeline keeps its own page. */}
+        <TabPanel value="activity">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-labelledby="admin-member-activity-title">
+              <div className={styles.sectionHead}>
+                <h2 id="admin-member-activity-title" className={styles.sectionTitle}>Recent activity</h2>
+                <StatusTag tone="muted">Latest {activityRows.length} of {MEMBER_ACTIVITY_CAP} max</StatusTag>
               </div>
-              {courseraCourseCount > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: 0, listStyle: 'none', display: 'grid', gap: '0.35rem' }}>
-                  {courseraDetail.courses.slice(0, 5).map((c) => (
-                    <li key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
-                      {c.isCompleted ? (
-                        <CheckCircle size={16} style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }} />
-                      ) : (
-                        <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />
-                      )}
-                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.courseName}</span>
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
-                        {Number(c.overallProgress).toFixed(0)}%
-                      </span>
+              {activityRows.length > 0 ? (
+                <ul className={styles.activityList}>
+                  {activityRows.map((row) => (
+                    <li key={row.id} className={`${styles.activityRow} ${row.kind === 'staff' ? 'wa-kit-tone--info' : 'wa-kit-tone--ok'}`}>
+                      <span className={styles.activityDot} aria-hidden="true" />
+                      <div className={styles.activityCopy}>
+                        <p className={styles.activityLabel}>{row.label}</p>
+                        <p className={styles.activityMeta}>
+                          {row.kind === 'staff' ? `Staff · ${row.actor}` : 'Member'} ·{' '}
+                          {row.at.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </li>
                   ))}
-                  {courseraCourseCount > 5 ? (
-                    <li style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', paddingLeft: '1.6rem' }}>
-                      + {courseraCourseCount - 5} more — see full detail
-                    </li>
-                  ) : null}
                 </ul>
-              ) : null}
-            </>
-          ) : (
-            <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
-              No Coursera activity recorded yet. Data populates from the B4B sync (every 6h),
-              xAPI webhook, or manual CSV import on{' '}
-              <Link href="/admin/coursera/csv-import" style={{ color: 'var(--color-accent)' }}>
-                /admin/coursera/csv-import
-              </Link>.
-            </p>
-          )}
-          <MemberCourseraDiagnoseButton memberId={member.id} />
-        </section>
-
-        <AdminMemberSkillCheckpointPanel memberId={member.id} summary={skillMissionSummary} />
-
-        <MemberPartnerSection
-          memberId={member.id}
-          partners={partners}
-          currentPartnerId={partnerReferral?.partnerId ?? null}
-        />
-
-        <MemberSubgroupSection
-          memberId={member.id}
-          subgroups={subgroups}
-          currentSubgroupIds={memberSubgroups.map((ms: any) => ms.subgroupId)}
-        />
-
-        <AdminMemberAiMatches memberId={member.id} matches={member.aiJobMatches} />
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Counselor assignment</h2>
-          {activeCounselorAssign?.counselor ? (
-            <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem' }}>
-              Current: <strong>{activeCounselorAssign.counselor.user.fullName}</strong>
-            </p>
-          ) : (
-            <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'var(--color-on-surface-variant)' }}>
-              No active counselor assignment.
-            </p>
-          )}
-          <AdminMemberCounselorAssign
-            memberId={member.id}
-            counselors={counselorRows.map((c: any) => ({
-              userId: c.userId,
-              fullName: c.user.fullName,
-              partnerName: c.partner?.name ?? 'WorkforceAP',
-            }))}
-            currentCounselorUserId={activeCounselorAssign?.counselor.userId ?? null}
-          />
-        </section>
-
-        <section id="placed-outcome" style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 className="portal-section-heading">Placement record</h2>
-          {pendingPlacementEvents && pendingPlacementEvents.length > 0 && !placedOutcomeRow && (
-            <div
-              style={{
-                marginBottom: '1rem',
-                padding: '0.875rem 1rem',
-                background: 'rgba(255,193,7,0.08)',
-                border: '1px solid rgba(255,193,7,0.2)',
-                borderRadius: '0.75rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.5rem' }}>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-warning)' }}>pending</span>
-                <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>Pending member-reported placement</span>
+              ) : (
+                <KitEmptyState
+                  headingAs="h3"
+                  title="No activity recorded yet"
+                  description="Staff actions on this record and the member's own events will appear here as they happen."
+                />
+              )}
+              <div className={styles.activityLinks}>
+                <Link href={`/admin/members/${id}/lifecycle`} className={styles.inlineLink}>Open full lifecycle timeline →</Link>
+                {scope.superAdmin ? (
+                  <Link href="/admin/audit-logs" className={styles.inlineLink}>Open platform audit logs →</Link>
+                ) : null}
               </div>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-                This member self-reported accepting a job offer on{' '}
-                {new Date(pendingPlacementEvents[0].createdAt).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-                . Review and verify to create an official placement record.
-              </p>
-            </div>
-          )}
-          <AdminMemberPlacedOutcomeForm
-            memberId={member.id}
-            initial={
-              placedOutcomeRow
-                ? {
-                    employerName: placedOutcomeRow.employerName,
-                    jobTitle: placedOutcomeRow.jobTitle,
-                    startingSalary: placedOutcomeRow.salaryOffered,
-                    placedAt: placedOutcomeRow.placedAt.toISOString(),
-                    programSlug: (placedOutcomeRow as { programSlug?: string | null }).programSlug ?? null,
-                    notes: placedOutcomeRow.notes,
-                    wageAtFollowUp: (placedOutcomeRow as { wageAtFollowUp?: number | null }).wageAtFollowUp ?? null,
-                    retentionStatus: (placedOutcomeRow as { retentionStatus?: string | null }).retentionStatus ?? null,
-                    startDateVerified: (placedOutcomeRow as { startDateVerified?: boolean }).startDateVerified ?? false,
-                    fundingSource: (placedOutcomeRow as { fundingSource?: string | null }).fundingSource ?? null,
-                    grantReportingNotes: (placedOutcomeRow as { grantReportingNotes?: string | null }).grantReportingNotes ?? null,
-                    retentionDecision: (placedOutcomeRow as { retentionDecision?: string | null }).retentionDecision ?? null,
-                  }
-                : null
-            }
-            pastOnboardingWindow={
-              !!(placedOutcomeRow as { onboardingWindowEnd?: Date | null } | null)?.onboardingWindowEnd &&
-              (placedOutcomeRow as { onboardingWindowEnd?: Date | null }).onboardingWindowEnd! <= new Date()
-            }
-          />
-        </section>
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Workspace email</h2>
-          <AdminMemberWorkspaceEmail
-            memberId={member.id}
-            workspaceEmail={member.workspaceEmail ?? null}
-            workspaceEmailProvisioned={!!member.workspaceEmailProvisioned}
-            providerAvailable={workspaceEmailAvailability.available}
-            providerHint={workspaceEmailAvailability.reason}
-          />
-        </section>
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Enrollment funding &amp; workspace</h2>
-          {!courseEnrollment && (
-            <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
-              Member is not currently enrolled in a program. Enrollment must be created first.
-            </p>
-          )}
-          <AdminMemberEnrollmentFundingForm
-            memberId={member.id}
-            hasPrimaryEnrollment={Boolean(courseEnrollment)}
-            initial={
-              courseEnrollment
-                ? {
-                    fundingSource: courseEnrollment.fundingSource,
-                    fundingNotes: courseEnrollment.fundingNotes,
-                    workspaceEmail: courseEnrollment.workspaceEmail ?? member.workspaceEmail ?? null,
-                    workspaceEmailProvisioned:
-                      courseEnrollment.workspaceEmailProvisioned || member.workspaceEmailProvisioned,
-                  }
-                : {
-                    fundingSource: null,
-                    fundingNotes: null,
-                    workspaceEmail: member.workspaceEmail ?? null,
-                    workspaceEmailProvisioned: member.workspaceEmailProvisioned,
-                  }
-            }
-          />
-        </section>
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          {readOnlyAudit && <span hidden data-portal-audit-suppressed="admin-member-message-thread-create-read-receipt-and-realtime" />}
-          {readOnlyAudit && counselorChatInitial ? (
-            <p style={{ margin: 0 }}>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
-          ) : counselorChatInitial ? (
-            <AdminMemberCounselorChatClient initial={counselorChatInitial} messagingSurface="admin" />
-          ) : (
-            <p style={{ margin: 0 }}>No counselor conversation has started yet.</p>
-          )}
-        </section>
-
-        <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-          <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Resumes</h2>
-          <AdminMemberResumeSection memberId={member.id} />
-        </section>
-
-        {member.assessmentCompleted && (
-          <AssessmentAnswersReadonly
-            rows={buildAssessmentReviewRows(assessmentAnswers)}
-            score={member.assessmentScore}
-            scorePct={member.assessmentScorePct}
-            completedAt={member.assessmentCompletedAt}
-            programInterest={member.programInterest}
-          />
-        )}
-      </div>
+            </section>
+          </div>
+        </TabPanel>
+      </Tabs>
     </div>
   );
 }
