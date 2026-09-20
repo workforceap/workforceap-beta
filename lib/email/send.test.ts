@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import { isEmailProviderRateLimitError, sendBrandedEmail, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { buildEmailDedupeKey, type EmailSendLogEntry, type EmailSendLogStore } from '@/lib/email/sendLog';
 
 describe('sendBrandedEmail', () => {
   it('skips reserved and configured fixture recipient domains without calling Resend', async () => {
@@ -414,5 +415,118 @@ describe('isEmailProviderRateLimitError', () => {
     );
     assert.equal(isEmailProviderRateLimitError(new Error('SMTP timeout')), false);
     assert.equal(isEmailProviderRateLimitError(null), false);
+  });
+});
+
+describe('sendBrandedEmail send log', () => {
+  function captureStore() {
+    const entries: EmailSendLogEntry[] = [];
+    const store: EmailSendLogStore = {
+      async record(entry) {
+        entries.push({ ...entry });
+      },
+    };
+    return { entries, store };
+  }
+
+  it('writes one row per send and keeps the same dedupe key across a provider retry', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let attempts = 0;
+    const resend = {
+      emails: {
+        send: async () => {
+          attempts++;
+          return attempts === 1
+            ? { data: null, error: { name: 'rate_limit_exceeded', message: 'Too many requests', retry_after: 1 } }
+            : { data: { id: 'provider-msg-1' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    const { entries, store } = captureStore();
+    const args = {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'Member@workforceap.org',
+      subject: 'Your weekly recap',
+      html: '<p>Hi</p>',
+      templateKey: 'member_weekly_recap',
+      userId: 'user-1',
+    };
+
+    const result = await sendBrandedEmail(resend, args, { sleep: async () => {}, sendLogStore: store, now: () => Date.parse('2026-09-20T12:00:00Z') });
+
+    assert.equal(result.data?.id, 'provider-msg-1');
+    assert.equal(attempts, 2);
+    assert.deepEqual(entries.map((e) => e.status), ['sending', 'sent']);
+    const keys = new Set(entries.map((e) => e.dedupeKey));
+    assert.equal(keys.size, 1, 'every write for one send must target the same row');
+    const sent = entries[entries.length - 1];
+    assert.equal(sent.templateKey, 'member_weekly_recap');
+    assert.equal(sent.providerMessageId, 'provider-msg-1');
+    assert.equal(sent.attempts, 2);
+    assert.equal(sent.userId, 'user-1');
+    assert.equal(sent.recipientDomain, 'workforceap.org');
+    assert.ok(sent.recipientHash && !sent.recipientHash.includes('@'), 'no raw address on the row');
+    assert.ok(sent.dedupeKey.startsWith('member_weekly_recap/'));
+    assert.equal(sent.sentAt?.toISOString(), '2026-09-20T12:00:00.000Z');
+  });
+
+  it('derives the same dedupe key for the same message on the same UTC day and a different one the next day', () => {
+    const args = { to: ['b@x.org', 'A@X.org'], subject: 'Recap', templateKey: 'member_weekly_recap' };
+    const day1 = Date.parse('2026-09-20T01:00:00Z');
+    const day1Later = Date.parse('2026-09-20T23:00:00Z');
+    const day2 = Date.parse('2026-09-21T01:00:00Z');
+    assert.equal(buildEmailDedupeKey(args, day1), buildEmailDedupeKey({ ...args, to: ['a@x.org', 'B@x.org'] }, day1Later));
+    assert.notEqual(buildEmailDedupeKey(args, day1), buildEmailDedupeKey(args, day2));
+    assert.equal(buildEmailDedupeKey({ ...args, idempotencyKey: 'weekly-recap:user-1:2026-09-14' }, day1), 'weekly-recap:user-1:2026-09-14');
+    assert.ok(buildEmailDedupeKey({ to: 'a@x.org', subject: 'x' }, day1).startsWith('untyped/'));
+  });
+
+  it('records a skipped fixture recipient and a failed send with the provider error class', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const { entries, store } = captureStore();
+    const skipped = await sendBrandedEmail(
+      { emails: { send: async () => { throw new Error('must not send'); } } } as unknown as import('resend').Resend,
+      { from: 'WorkforceAP <hello@workforceap.org>', to: 'fixture@example.com', subject: 'Fixture', html: '<p>x</p>' },
+      { sendLogStore: store },
+    );
+    assert.equal('skipped' in skipped && skipped.skipped, true);
+    assert.deepEqual(entries.map((e) => [e.status, e.skipReason]), [['skipped', 'fixture_recipient']]);
+
+    entries.length = 0;
+    await assert.rejects(
+      () => sendBrandedEmail(
+        { emails: { send: async () => ({ data: null, error: { name: 'validation_error', statusCode: 422, message: 'Invalid `to` field' } }) } } as unknown as import('resend').Resend,
+        { from: 'WorkforceAP <hello@workforceap.org>', to: 'member@workforceap.org', subject: 'Bad', html: '<p>x</p>' },
+        { sendLogStore: store, suppressFailureDiagnostic: true },
+      ),
+      /Invalid `to` field/,
+    );
+    assert.deepEqual(entries.map((e) => e.status), ['sending', 'failed']);
+    assert.equal(entries[1].failureClass, 'provider_rejected');
+    assert.equal(entries[1].failureReason, 'Invalid `to` field');
+    assert.equal(entries[1].attempts, 1);
+  });
+
+  it('never lets a send-log store failure change the send outcome', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    let providerCalls = 0;
+    const resend = {
+      emails: { send: async () => { providerCalls++; return { data: { id: 'ok-despite-log' }, error: null }; } },
+    } as unknown as import('resend').Resend;
+    const failingStore: EmailSendLogStore = { async record() { throw new Error('database unavailable'); } };
+    const originalError = console.error;
+    const logged: unknown[] = [];
+    console.error = (...args: unknown[]) => { logged.push(args); };
+    try {
+      const result = await sendBrandedEmail(
+        resend,
+        { from: 'WorkforceAP <hello@workforceap.org>', to: 'member@workforceap.org', subject: 'Log failure', html: '<p>x</p>' },
+        { sendLogStore: failingStore },
+      );
+      assert.equal(result.data?.id, 'ok-despite-log');
+      assert.equal(providerCalls, 1);
+    } finally {
+      console.error = originalError;
+    }
   });
 });

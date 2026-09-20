@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
+import { createDiscordRateLimiter } from '@/lib/notify/discordRateLimit';
 
 /**
  * Fire-and-forget Discord webhook bridge for operator visibility.
@@ -18,9 +19,11 @@ import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
  * - Truncate field values defensively — Discord caps embeds at
  *   well under 6000 chars total, and bulk events can blow past it.
  *
- * Discord webhook rate-limit is 30/min per webhook. We don't try
- * to throttle here; callers should avoid loops that fire one
- * webhook per row. Bulk paths should aggregate into one event.
+ * Discord webhook rate-limit is 30/min per webhook. Bulk paths must
+ * still aggregate into one event (createBulkNotifications, or a cron's
+ * end-of-run summary); the process-local limiter below is the safety
+ * net that turns a would-be 429 storm into dropped posts plus one
+ * recorded diagnostic per window, and it honours Discord's retry_after.
  */
 
 export type DiscordNotificationLevel = 'info' | 'success' | 'warn';
@@ -46,6 +49,24 @@ const LEVEL_COLORS: Record<DiscordNotificationLevel, number> = {
   warn: 0xfee75c,
 };
 
+/** `WorkflowDiagnostic.workflow` for the Discord bridge (health + diagnostics views). */
+export const DISCORD_NOTIFICATION_WORKFLOW = 'discord_notification';
+
+const limiter = createDiscordRateLimiter();
+let droppedSinceDiagnostic = 0;
+let lastDropDiagnosticAtMs = 0;
+const DROP_DIAGNOSTIC_INTERVAL_MS = 60_000;
+
+/** Discord returns `retry_after` seconds in the 429 body; the header is also seconds. */
+function parseDiscordRetryAfterMs(response: Response, body: unknown): number {
+  const record = body !== null && typeof body === 'object' ? body as Record<string, unknown> : null;
+  const fromBody = Number(record?.retry_after);
+  if (Number.isFinite(fromBody) && fromBody > 0) return Math.ceil(fromBody * 1_000);
+  const fromHeader = Number(response.headers.get('retry-after'));
+  if (Number.isFinite(fromHeader) && fromHeader > 0) return Math.ceil(fromHeader * 1_000);
+  return 5_000;
+}
+
 const MAX_TITLE = 240;
 const MAX_BODY = 1800;
 const MAX_FIELD_VALUE = 800;
@@ -69,6 +90,26 @@ function shouldSend(): boolean {
  */
 export async function notifyDiscord(input: DiscordNotificationInput): Promise<void> {
   if (!shouldSend()) return;
+
+  const admission = limiter.tryAcquire();
+  if (!admission.ok) {
+    droppedSinceDiagnostic++;
+    const nowMs = Date.now();
+    if (nowMs - lastDropDiagnosticAtMs >= DROP_DIAGNOSTIC_INTERVAL_MS) {
+      lastDropDiagnosticAtMs = nowMs;
+      const dropped = droppedSinceDiagnostic;
+      droppedSinceDiagnostic = 0;
+      await recordWorkflowDiagnostic({
+        workflow: DISCORD_NOTIFICATION_WORKFLOW,
+        status: 'fallback',
+        provider: 'discord',
+        fallbackPath: 'dropped_rate_limited',
+        summary: `Discord notification dropped: local 30/min limit reached (${dropped} in the last minute)`,
+        metadata: { category: input.category ?? null, retryAfterMs: admission.retryAfterMs, dropped },
+      });
+    }
+    return;
+  }
 
   const url = process.env.DISCORD_NOTIFICATIONS_WEBHOOK_URL!;
   const level: DiscordNotificationLevel = input.level ?? 'info';
@@ -113,13 +154,17 @@ export async function notifyDiscord(input: DiscordNotificationInput): Promise<vo
       signal: AbortSignal.timeout(2500),
     });
     if (!response.ok) {
+      if (response.status === 429) {
+        const body = await response.json().catch(() => null);
+        limiter.blockFor(parseDiscordRetryAfterMs(response, body));
+      }
       throw new Error(`Discord webhook returned HTTP ${response.status}`);
     }
   } catch (error) {
     const failureReason = error instanceof Error ? error.message : String(error);
     console.error('[discord-notify] post failed:', failureReason);
     await recordWorkflowDiagnostic({
-      workflow: 'discord_notification',
+      workflow: DISCORD_NOTIFICATION_WORKFLOW,
       status: 'error',
       provider: 'discord',
       summary: `Discord notification failed: "${truncate(input.title, MAX_TITLE)}"`,

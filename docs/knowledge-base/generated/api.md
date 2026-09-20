@@ -57,7 +57,7 @@
 | [app/api/admin/crons/summary/_cronSummary.ts](../../../app/api/admin/crons/summary/_cronSummary.ts) | 82 | administration | CronSummary:3, JobSummary:12, fetchCronSummary:20 |
 | [app/api/admin/crons/summary/route.test.ts](../../../app/api/admin/crons/summary/route.test.ts) | 75 | administration |  |
 | [app/api/admin/crons/summary/route.ts](../../../app/api/admin/crons/summary/route.ts) | 20 | administration | GET:7 |
-| [app/api/admin/data-retention/route.ts](../../../app/api/admin/data-retention/route.ts) | 164 | administration | dynamic:12, TableStorageInfo:14, RetentionPolicyRow:21, GET:96, POST:132 |
+| [app/api/admin/data-retention/route.ts](../../../app/api/admin/data-retention/route.ts) | 165 | administration | dynamic:12, TableStorageInfo:14, RetentionPolicyRow:21, GET:97, POST:133 |
 | [app/api/admin/email-crons/\[id\]/dry-run/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/dry-run/route.ts) | 250 | communications | POST:20 |
 | [app/api/admin/email-crons/\[id\]/preview/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/preview/route.ts) | 192 | communications | CronPreviewRecipient:11, CronPreviewResponse:11, GET:15 |
 | [app/api/admin/email-crons/\[id\]/template-preview/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/template-preview/route.ts) | 170 | communications | TemplatePreviewResponse:12, GET:21 |
@@ -95,7 +95,7 @@
 | [app/api/admin/feedback/route.ts](../../../app/api/admin/feedback/route.ts) | 97 | administration | GET:97 |
 | [app/api/admin/feedback/summary/route.ts](../../../app/api/admin/feedback/summary/route.ts) | 81 | administration | GET:81 |
 | [app/api/admin/funder-program-summary/route.ts](../../../app/api/admin/funder-program-summary/route.ts) | 51 | partners-funding | GET:16 |
-| [app/api/admin/health/route.ts](../../../app/api/admin/health/route.ts) | 363 | administration | dynamic:9, HealthStatus:11, SubsystemCheck:13, CronHealth:19, WebhookHealth:24, XapiHealth:28, AIToolsHealth:32, EmailHealth:36, HealthChecks:40, HealthResponse:51, HealthHistoryPoint:58, HealthHistoryResponse:63, GET:363 |
+| [app/api/admin/health/route.ts](../../../app/api/admin/health/route.ts) | 511 | administration | dynamic:9, HealthStatus:11, SubsystemCheck:13, CronHealth:19, WebhookHealth:24, XapiHealth:28, AIToolsHealth:32, EmailHealth:36, EmailDeliveryHealth:41, DiscordHealth:50, WebPushHealth:57, HealthChecks:63, HealthResponse:77, HealthHistoryPoint:84, HealthHistoryResponse:89, GET:511 |
 | [app/api/admin/invites/\[id\]/resend/route.ts](../../../app/api/admin/invites/%5Bid%5D/resend/route.ts) | 148 | administration | POST:15 |
 | [app/api/admin/invites/\[id\]/revoke/route.ts](../../../app/api/admin/invites/%5Bid%5D/revoke/route.ts) | 69 | administration | PATCH:10 |
 | [app/api/admin/invites/route.ts](../../../app/api/admin/invites/route.ts) | 319 | administration | GET:69, POST:318 |
@@ -287,7 +287,7 @@
 | [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) | 183 | communications | maxDuration:22, GET:182, POST:183 |
 | [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 59 | communications | runtime:10, maxDuration:11, GET:58, POST:59 |
 | [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 86 | communications | runtime:13, maxDuration:14, GET:85, POST:86 |
-| [app/api/cron/course-accountability/route.ts](../../../app/api/cron/course-accountability/route.ts) | 154 | communications | maxDuration:15, GET:153, POST:154 |
+| [app/api/cron/course-accountability/route.ts](../../../app/api/cron/course-accountability/route.ts) | 166 | communications | maxDuration:16, GET:165, POST:166 |
 | [app/api/cron/coursera-auto-heal/route.ts](../../../app/api/cron/coursera-auto-heal/route.ts) | 136 | learning-coursera | maxDuration:16, GET:135, POST:136 |
 | [app/api/cron/coursera-b4b-sync/route.ts](../../../app/api/cron/coursera-b4b-sync/route.ts) | 92 | learning-coursera | maxDuration:13, GET:91, POST:92 |
 | [app/api/cron/coursera-sync/route.ts](../../../app/api/cron/coursera-sync/route.ts) | 175 | learning-coursera | maxDuration:14, GET:174, POST:175 |
@@ -295,10 +295,10 @@
 | [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 62 | communications | maxDuration:9, GET:61, POST:62 |
 | [app/api/cron/deploy-health/route.ts](../../../app/api/cron/deploy-health/route.ts) | 81 | communications | maxDuration:7, GET:80, POST:81 |
 | [app/api/cron/employer-pending-applicants/route.ts](../../../app/api/cron/employer-pending-applicants/route.ts) | 172 | communications | maxDuration:12, GET:171, POST:172 |
-| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 104 | communications | maxDuration:15, GET:103, POST:104 |
-| [app/api/cron/inactivity-nudge/route.ts](../../../app/api/cron/inactivity-nudge/route.ts) | 96 | communications | maxDuration:14, GET:95, POST:96 |
+| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 116 | communications | maxDuration:16, GET:115, POST:116 |
+| [app/api/cron/inactivity-nudge/route.ts](../../../app/api/cron/inactivity-nudge/route.ts) | 108 | communications | maxDuration:15, GET:107, POST:108 |
 | [app/api/cron/interview-reminders/route.ts](../../../app/api/cron/interview-reminders/route.ts) | 98 | communications | maxDuration:11, GET:98 |
-| [app/api/cron/job-alerts/route.ts](../../../app/api/cron/job-alerts/route.ts) | 133 | communications | maxDuration:12, GET:132, POST:133 |
+| [app/api/cron/job-alerts/route.ts](../../../app/api/cron/job-alerts/route.ts) | 145 | communications | maxDuration:13, GET:144, POST:145 |
 | [app/api/cron/job-expiry/route.ts](../../../app/api/cron/job-expiry/route.ts) | 110 | communications | maxDuration:14, GET:109, POST:110 |
 | [app/api/cron/milestone-cascade-draft/route.ts](../../../app/api/cron/milestone-cascade-draft/route.ts) | 42 | communications | maxDuration:10, GET:41, POST:42 |
 | [app/api/cron/milestone-cascade-expire/route.ts](../../../app/api/cron/milestone-cascade-expire/route.ts) | 30 | communications | maxDuration:10, GET:29, POST:30 |
@@ -522,6 +522,7 @@
 | [app/api/webhooks/learning-completion/_webhook.ts](../../../app/api/webhooks/learning-completion/_webhook.ts) | 82 | api | webhookSchema:5, verifyWebhookSecret:11, buildDedupeKey:27, checkIdempotency:33 |
 | [app/api/webhooks/learning-completion/route.test.ts](../../../app/api/webhooks/learning-completion/route.test.ts) | 236 | api |  |
 | [app/api/webhooks/learning-completion/route.ts](../../../app/api/webhooks/learning-completion/route.ts) | 195 | api | POST:23 |
+| [app/api/webhooks/resend/route.ts](../../../app/api/webhooks/resend/route.ts) | 128 | api | dynamic:30, POST:84 |
 | [app/api/xapi/about/route.ts](../../../app/api/xapi/about/route.ts) | 14 | learning-coursera | GET:3 |
 | [app/api/xapi/config/route.ts](../../../app/api/xapi/config/route.ts) | 43 | learning-coursera | GET:6, POST:31 |
 | [app/api/xapi/oauth/token/route.ts](../../../app/api/xapi/oauth/token/route.ts) | 74 | learning-coursera | GET:7, POST:21 |

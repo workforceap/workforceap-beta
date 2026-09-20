@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyDiscord } from '@/lib/notify/discord';
 import { sendJobAlertDigestEmail } from '@/lib/email';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logCronRun } from '@/lib/admin/logCronRun';
@@ -92,6 +93,8 @@ async function handle(_request: Request) {
       await createNotification({
         userId: member.id,
         type: 'job_match',
+        // One summary embed per run below; per-member posts hit Discord's 30/min limit.
+        notifyOperator: false,
         title: `${jobs.length} new job${jobs.length === 1 ? '' : 's'} match your program`,
         body: `New this week: ${jobListText}.`,
         data: { link: '/dashboard/jobs', jobIds: jobs.map((j) => j.id) },
@@ -111,6 +114,15 @@ async function handle(_request: Request) {
     } catch (err) {
       captureApiError(err, { route: 'cron/job-alerts', extra: { userId: member.id } });
     }
+  }
+
+  if (notificationsCreated > 0) {
+    await notifyDiscord({
+      title: 'Job alert digests sent',
+      body: `${notificationsCreated} member${notificationsCreated === 1 ? '' : 's'} notified of new matching jobs (${emailsAccepted} emails accepted, ${emailFailures} failed).`,
+      category: 'job_match',
+      fields: [{ name: 'cron', value: 'job-alerts' }],
+    });
   }
 
   const runResult = {

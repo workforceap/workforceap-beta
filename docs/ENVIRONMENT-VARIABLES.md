@@ -115,6 +115,7 @@ Still fail-open when Redis is missing (dev, or prod with `RATE_LIMIT_ALLOW_MISSI
 | Name | Badge | Description | Example | Used In |
 |------|-------|-------------|---------|---------|
 | `RESEND_API_KEY` | 🔴 🔒 | Resend API key for transactional email | `re_xxxxxxxx` | `lib/email.ts` |
+| `RESEND_WEBHOOK_SECRET` | 🟡 🔒 | Svix signing secret for the Resend delivery webhook (`/api/webhooks/resend`); route answers 503 until set | `whsec_...` | `app/api/webhooks/resend/route.ts` |
 | `EMAIL_FROM` | 🔴 🔒 | Default sender address | `WorkforceAP <hello@workforceap.org>` | `lib/email.ts` |
 | `SUPPORT_EMAIL` | 🟡 🔒 | Support/contact email fallback | `info@workforceap.org` | `lib/tenant/organizationBranding.ts` |
 | `WORKSPACE_EMAIL_PROVIDER` | 🟢 🔒 | Workspace email provider (`noop`, `google`, `microsoft`) | `noop` | `lib/workspace-email/provider.ts` |

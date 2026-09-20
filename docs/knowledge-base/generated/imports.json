@@ -48009,8 +48009,16 @@
   },
   {
     "from": "app/api/cron/course-accountability/route.ts",
+    "specifier": "@/lib/notify/discord",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/course-accountability/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48018,7 +48026,7 @@
   {
     "from": "app/api/cron/course-accountability/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -48537,8 +48545,16 @@
   },
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
-    "specifier": "@/lib/cron/cronCaps",
+    "specifier": "@/lib/notify/discord",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/inactive-nudge/route.ts",
+    "specifier": "@/lib/cron/cronCaps",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronCaps.ts"
@@ -48546,7 +48562,7 @@
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48554,7 +48570,7 @@
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -48633,8 +48649,16 @@
   },
   {
     "from": "app/api/cron/inactivity-nudge/route.ts",
-    "specifier": "@/lib/cron/cronCaps",
+    "specifier": "@/lib/notify/discord",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/inactivity-nudge/route.ts",
+    "specifier": "@/lib/cron/cronCaps",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronCaps.ts"
@@ -48642,7 +48666,7 @@
   {
     "from": "app/api/cron/inactivity-nudge/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48737,8 +48761,16 @@
   },
   {
     "from": "app/api/cron/job-alerts/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/notify/discord",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/job-alerts/route.ts",
+    "specifier": "@/lib/email",
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -48746,7 +48778,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -48754,7 +48786,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -48762,7 +48794,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -48770,7 +48802,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -48778,7 +48810,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -62806,6 +62838,78 @@
     "kind": "import",
     "external": false,
     "target": "app/api/webhooks/learning-completion/_webhook.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "next/server",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/email/resendWebhook",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendWebhook.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/http/clientIp",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/http/clientIp.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/webhooks/logEvent",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
   },
   {
     "from": "app/api/xapi/about/route.ts",
@@ -96793,8 +96897,24 @@
   },
   {
     "from": "lib/auth/passwordReset.ts",
-    "specifier": "@/lib/observability/logger",
+    "specifier": "@/lib/email/templateKeys",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/auth/passwordReset.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "lib/auth/passwordReset.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/observability/logger.ts"
@@ -103281,8 +103401,16 @@
   },
   {
     "from": "lib/email.ts",
-    "specifier": "@/lib/email/unsubscribeToken",
+    "specifier": "@/lib/email/templateKeys",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/email.ts",
+    "specifier": "@/lib/email/unsubscribeToken",
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/email/unsubscribeToken.ts"
@@ -103290,7 +103418,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/placement-survey/deliveryPayload",
-    "line": 16,
+    "line": 17,
     "kind": "type",
     "external": false,
     "target": "lib/placement-survey/deliveryPayload.ts"
@@ -103298,7 +103426,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/email/template",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -103306,7 +103434,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
@@ -103314,7 +103442,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/tenant/organizationBranding",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organizationBranding.ts"
@@ -103322,7 +103450,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 20,
+    "line": 21,
     "kind": "type",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
@@ -103330,7 +103458,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/emails",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "emails/index.ts"
@@ -103338,7 +103466,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/invitations/loginCode",
-    "line": 78,
+    "line": 79,
     "kind": "import",
     "external": false,
     "target": "lib/invitations/loginCode.ts"
@@ -103528,6 +103656,54 @@
     "target": "lib/email.ts"
   },
   {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "@/lib/email/resendWebhook",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendWebhook.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "@/lib/email/webhookSignature",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/webhookSignature.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.ts",
+    "specifier": "@/lib/webhooks/logEvent",
+    "line": 16,
+    "kind": "type",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.ts",
+    "specifier": "@/lib/email/webhookSignature",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/webhookSignature.ts"
+  },
+  {
     "from": "lib/email/send.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -103561,8 +103737,16 @@
   },
   {
     "from": "lib/email/send.test.ts",
+    "specifier": "@/lib/email/sendLog",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/sendLog.ts"
+  },
+  {
+    "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 20,
+    "line": 21,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103570,7 +103754,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 68,
+    "line": 69,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103578,7 +103762,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 99,
+    "line": 100,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103586,7 +103770,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 136,
+    "line": 137,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103594,7 +103778,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 178,
+    "line": 179,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103602,7 +103786,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 209,
+    "line": 210,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103610,7 +103794,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 237,
+    "line": 238,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103618,7 +103802,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 276,
+    "line": 277,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103626,7 +103810,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 314,
+    "line": 315,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103634,7 +103818,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 361,
+    "line": 362,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103642,7 +103826,39 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 390,
+    "line": 391,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 444,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 488,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 498,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 515,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103689,8 +103905,16 @@
   },
   {
     "from": "lib/email/send.ts",
-    "specifier": "@/lib/email/rateLimitError",
+    "specifier": "@/lib/email/sendLog",
     "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/sendLog.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/rateLimitError",
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
@@ -103698,10 +103922,42 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 37,
+    "line": 42,
     "kind": "re-export",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "node:crypto",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/email/templateKeys",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
   },
   {
     "from": "lib/email/template.ts",
@@ -103726,6 +103982,14 @@
     "kind": "import",
     "external": true,
     "package": "crypto"
+  },
+  {
+    "from": "lib/email/webhookSignature.ts",
+    "specifier": "node:crypto",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
   },
   {
     "from": "lib/employer/aiMatchPipelineLabels.ts",
@@ -109208,6 +109472,38 @@
     "target": "lib/diagnostics.ts"
   },
   {
+    "from": "lib/notify/discord.ts",
+    "specifier": "@/lib/notify/discordRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discordRateLimit.ts"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "@/lib/notify/discordRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discordRateLimit.ts"
+  },
+  {
     "from": "lib/observability/apiErrorScope.ts",
     "specifier": "node:async_hooks",
     "line": 1,
@@ -110606,6 +110902,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/push/sendWebPush.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
   },
   {
     "from": "lib/rate-limit-policy.test.ts",

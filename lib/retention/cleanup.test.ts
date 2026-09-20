@@ -68,6 +68,11 @@ vi.mock('@/lib/db/prisma', () => ({
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
+    emailSendLog: {
+      findMany: (...args: unknown[]) => mockFindMany(...args),
+      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      count: (...args: unknown[]) => mockCount(...args),
+    },
     portalWorkflowEvent: {
       findMany: (...args: unknown[]) => mockFindMany(...args),
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),

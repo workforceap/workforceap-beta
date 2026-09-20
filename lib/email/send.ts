@@ -32,6 +32,11 @@ import {
 } from '@/lib/email/failureRecord';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import { currentBulkEmailDeadlineAtMs } from '@/lib/email/pacing';
+import {
+  createEmailSendLogWriter,
+  prismaEmailSendLogStore,
+  type EmailSendLogStore,
+} from '@/lib/email/sendLog';
 import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
 export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
@@ -54,6 +59,8 @@ export interface SendBrandedEmailRetryOptions {
   deadlineAtMs?: number;
   /** Caller owns an awaited equivalent diagnostic; prevents duplicate writes. */
   suppressFailureDiagnostic?: boolean;
+  /** Test seam; production writes the send log through Prisma. */
+  sendLogStore?: EmailSendLogStore;
 }
 
 export const UNSUBSCRIBE_ADDRESS =
@@ -152,6 +159,15 @@ export interface SendBrandedEmailArgs {
    * resets, login codes, one-time links).
    */
   template?: EmailTemplateRef;
+  /**
+   * Send-log classification (email_send_logs). `templateKey` names the template
+   * for wrappers that are not resendable (defaults to `template.name`); the
+   * member/entity ids let the log answer "what did we send this person".
+   */
+  templateKey?: string | null;
+  userId?: string | null;
+  entityType?: string | null;
+  entityId?: string | null;
 }
 
 /**
@@ -273,9 +289,15 @@ export async function sendBrandedEmail(
   args: SendBrandedEmailArgs,
   retryOptions: SendBrandedEmailRetryOptions = {},
 ): Promise<Awaited<ReturnType<Resend['emails']['send']>> | FixtureSkippedEmailResult> {
+  const now = retryOptions.now ?? Date.now;
+  // One send-log row per send (skipped → sending → sent | failed). Best-effort:
+  // the writer swallows store failures and waits at most a bounded budget.
+  const sendLog = createEmailSendLogWriter(retryOptions.sendLogStore ?? prismaEmailSendLogStore, args, now());
   const recipients = [args.to, args.cc, args.bcc]
     .flatMap((value) => value === undefined ? [] : Array.isArray(value) ? value : [value]);
   if (recipients.some(isFixtureEmailRecipient)) {
+    sendLog.write('skipped', { skipReason: 'fixture_recipient' });
+    await sendLog.settle();
     return { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null };
   }
 
@@ -300,9 +322,9 @@ export async function sendBrandedEmail(
     ...(args.attachments ? { attachments: args.attachments } : {}),
   };
   const sleep = retryOptions.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
-  const now = retryOptions.now ?? Date.now;
   const random = retryOptions.random ?? Math.random;
   let totalRetryWaitMs = 0;
+  sendLog.write('sending', { attempts: 1 });
 
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
     let result: Awaited<ReturnType<Resend['emails']['send']>>;
@@ -324,11 +346,21 @@ export async function sendBrandedEmail(
         continue;
       }
       if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, err);
+      sendLog.fail(err, attempt);
+      await sendLog.settle();
       throw err;
     }
 
     // Resend resolves with { data, error } instead of throwing on API errors.
-    if (!result.error) return result;
+    if (!result.error) {
+      sendLog.write('sent', {
+        attempts: attempt,
+        providerMessageId: result.data?.id ?? null,
+        sentAt: new Date(now()),
+      });
+      await sendLog.settle();
+      return result;
+    }
     const nowMs = now();
     const delayMs = resendRetryDelayMs(result.error, attempt, nowMs, random);
     if (
@@ -343,8 +375,12 @@ export async function sendBrandedEmail(
     }
     const message = result.error.message ?? result.error.name ?? 'Resend API error';
     if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, result.error);
+    sendLog.fail(result.error, attempt);
+    await sendLog.settle();
     throw new Error(message);
   }
+  sendLog.fail('Resend retry budget exhausted', RESEND_MAX_ATTEMPTS);
+  await sendLog.settle();
   throw new Error('Resend retry budget exhausted');
 }
 

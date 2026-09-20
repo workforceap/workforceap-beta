@@ -325,7 +325,7 @@
 | [components/portal/MemberWorkspaceShell.tsx](../../../components/portal/MemberWorkspaceShell.tsx) | 67 | components | default:14 |
 | [components/portal/MentorSessionForm.tsx](../../../components/portal/MentorSessionForm.tsx) | 68 | components | default:5 |
 | [components/portal/MobileProfileSkillsResume.tsx](../../../components/portal/MobileProfileSkillsResume.tsx) | 346 | components | default:50 |
-| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 422 | communications | default:112 |
+| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 438 | communications | default:112 |
 | [components/portal/PageHeader.tsx](../../../components/portal/PageHeader.tsx) | 33 | components | default:4 |
 | [components/portal/PartnerExclusiveServerGate.tsx](../../../components/portal/PartnerExclusiveServerGate.tsx) | 56 | components | default:28 |
 | [components/portal/PartnerInviteMemberButton.tsx](../../../components/portal/PartnerInviteMemberButton.tsx) | 224 | components | default:11 |
@@ -485,7 +485,7 @@
 | [components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx](../../../components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx) | 378 | learning-coursera | SyncHealth:38, UnmatchedLearnerRow:40, CourseraSyncKitProps:53, CourseraSyncKit:137 |
 | [components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx](../../../components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx) | 208 | components | CronDisplayStatus:32, CronJobRow:34, CronsMonitorKitProps:47, CronsMonitorKit:67 |
 | [components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx](../../../components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx) | 361 | components | StorageRow:23, PolicyRow:30, RunRow:38, DataRetentionKitProps:48, DataRetentionKit:73 |
-| [components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx](../../../components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx) | 144 | components | DiagnosticTone:17, DiagnosticTile:19, DiagnosticsKitProps:31, DiagnosticsKit:58 |
+| [components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx](../../../components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx) | 146 | components | DiagnosticTone:17, DiagnosticTile:19, DiagnosticsKitProps:31, DiagnosticsKit:60 |
 | [components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx](../../../components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx) | 44 | components |  |
 | [components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx](../../../components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx) | 183 | components | DuplicateRow:27, DuplicatesKitProps:42, DuplicatesKit:74 |
 | [components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx) | 195 | communications | EmailCronDisplayStatus:31, EmailCronRow:37, EmailCronsKitProps:48, EmailCronsKit:67 |

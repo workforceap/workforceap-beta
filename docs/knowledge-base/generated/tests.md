@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [tests/admin-global-search.test.ts](../../../tests/admin-global-search.test.ts) | 125 | tests |  |
-| [tests/admin-health-dashboard.spec.tsx](../../../tests/admin-health-dashboard.spec.tsx) | 164 | tests |  |
+| [tests/admin-health-dashboard.spec.tsx](../../../tests/admin-health-dashboard.spec.tsx) | 170 | tests |  |
 | [tests/api/admin-ai-efficacy.spec.ts](../../../tests/api/admin-ai-efficacy.spec.ts) | 99 | tests |  |
 | [tests/api/admin-analytics.spec.ts](../../../tests/api/admin-analytics.spec.ts) | 199 | tests |  |
 | [tests/api/admin-coursera-exact-email-match.spec.ts](../../../tests/api/admin-coursera-exact-email-match.spec.ts) | 268 | learning-coursera |  |
@@ -300,7 +300,7 @@
 | [tests/components/password-toggle.spec.tsx](../../../tests/components/password-toggle.spec.tsx) | 81 | tests |  |
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
 | [tests/components/portal-date-inputs-today.spec.tsx](../../../tests/components/portal-date-inputs-today.spec.tsx) | 44 | tests |  |
-| [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 113 | communications |  |
+| [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 127 | communications |  |
 | [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 177 | tests |  |
 | [tests/components/portal-team-chat-read-cursor.spec.tsx](../../../tests/components/portal-team-chat-read-cursor.spec.tsx) | 123 | tests |  |
 | [tests/components/program-outcome-claims.spec.tsx](../../../tests/components/program-outcome-claims.spec.tsx) | 72 | tests |  |

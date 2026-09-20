@@ -61,6 +61,7 @@ export async function buildMemberExport(userId: string) {
     aiJobMatches,
     applicationsAiFeedback,
     portalWorkflowEvents,
+    emailSendLogs,
   ] = await Promise.all([
     prisma.application.findMany({ where: { userId } }),
     prisma.jobApplication.findMany({ where: { userId } }),
@@ -119,6 +120,7 @@ export async function buildMemberExport(userId: string) {
     prisma.aIJobMatch.findMany({ where: { studentId: userId } }),
     prisma.applicationAiFeedback.findMany({ where: { userId } }),
     prisma.portalWorkflowEvent.findMany({ where: { actorUserId: userId } }),
+    prisma.emailSendLog.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
   ]);
 
   const exportData = {
@@ -616,6 +618,22 @@ export async function buildMemberExport(userId: string) {
       id: pwe.id,
       kind: pwe.kind,
       createdAt: pwe.createdAt?.toISOString() ?? null,
+    })),
+    // Emails the platform sent this member (email_send_logs) and what the
+    // provider reported back. No raw recipient address is stored on the row.
+    emailSendLogs: emailSendLogs.map((log) => ({
+      id: log.id,
+      templateKey: log.templateKey,
+      subject: log.subject,
+      status: log.status,
+      attempts: log.attempts,
+      skipReason: log.skipReason,
+      failureReason: log.failureReason,
+      lastEvent: log.lastEvent,
+      lastEventAt: log.lastEventAt?.toISOString() ?? null,
+      bounceType: log.bounceType,
+      sentAt: log.sentAt?.toISOString() ?? null,
+      createdAt: log.createdAt?.toISOString() ?? null,
     })),
   };
 

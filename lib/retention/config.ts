@@ -118,6 +118,12 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     description: 'Workflow/email/cron diagnostic logs',
   },
   {
+    model: 'emailSendLog',
+    dateColumn: 'createdAt',
+    days: 365,
+    description: 'Email send log — one row per provider send with delivery events from the Resend webhook',
+  },
+  {
     model: 'portalWorkflowEvent',
     dateColumn: 'createdAt',
     days: 90,
