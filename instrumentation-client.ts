@@ -1,3 +1,5 @@
+import { createHydrationErrorListener, type HydrationErrorReport } from '@/lib/observability/hydrationTelemetry';
+
 const APP_LOCALES = ['en', 'es', 'fr', 'pt'];
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -106,6 +108,54 @@ function isExtensionStyleHydrationNoise(event: {
   );
 }
 
+/**
+ * WAP-16 per-route hydration telemetry. Next hands React's recoverable errors
+ * to `reportError`, so they surface as window `error` events before Sentry's
+ * lazy chunk has loaded. The listener below is installed synchronously at
+ * module evaluation (before hydration), remembers the error object, and
+ * forwards it tagged with the route once the Sentry client exists. Sentry's
+ * own global handler may also see the same error; `beforeSend` drops that
+ * untagged duplicate so each recovery is counted once, per route.
+ */
+const forwardedHydrationErrors = new WeakSet<object>();
+
+function forwardHydrationReport(report: HydrationErrorReport, error: unknown): void {
+  if (error && typeof error === 'object') forwardedHydrationErrors.add(error);
+  // Same gate as setSentryUser: never pull the Sentry chunk where it is not initialized.
+  if (!dsn || !isProduction || isReadOnlyPortalAuditDocument() || !initPromise) return;
+  void initPromise
+    .then(async () => {
+      const Sentry = await import('@sentry/nextjs');
+      Sentry.withScope((scope) => {
+        scope.setTag('hydration', 'true');
+        scope.setTag('route', report.route);
+        scope.setTag('locale', report.locale ?? 'none');
+        if (report.reactErrorCode) scope.setTag('react_error_code', report.reactErrorCode);
+        scope.setFingerprint(['hydration', report.route, report.reactErrorCode ?? report.message]);
+        Sentry.captureException(error instanceof Error ? error : new Error(report.message));
+      });
+    })
+    .catch(() => {
+      // telemetry must never surface as a page error
+    });
+}
+
+function isUntaggedForwardedHydrationDuplicate(
+  event: { tags?: Record<string, unknown> },
+  hint: { originalException?: unknown } | undefined,
+): boolean {
+  const original = hint?.originalException;
+  if (!original || typeof original !== 'object' || !forwardedHydrationErrors.has(original)) return false;
+  return event.tags?.hydration !== 'true';
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(
+    'error',
+    createHydrationErrorListener({ getPathname: () => window.location.pathname, forward: forwardHydrationReport }),
+  );
+}
+
 async function initSentry() {
   if (!dsn || !isProduction || isReadOnlyPortalAuditDocument()) return;
 
@@ -143,12 +193,14 @@ async function initSentry() {
         blockAllMedia: true,
       }),
     ],
-    beforeSend(event) {
+    beforeSend(event, hint) {
       if (isReadOnlyPortalAuditDocument()) return null;
       // Password managers / form fillers inject caret-color and empty border
       // styles before hydrate. Sentry Replay records these as "Hydration Error"
       // on /admin and other portals (JAVASCRIPT-NEXTJS-1) — not actionable app bugs.
       if (isExtensionStyleHydrationNoise(event)) return null;
+      // The route-tagged copy from forwardHydrationReport is the one we keep.
+      if (isUntaggedForwardedHydrationDuplicate(event, hint)) return null;
       return event;
     },
     beforeSendTransaction(event) {

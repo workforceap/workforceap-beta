@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "dbfcba0115340c23e15c4b794147ed0f57416ca67af6266318937953eae1aea9",
+  "inputTreeSha256": "0be1f9b6e82b7c04ff2604993c65ba3355d3dc3950567ecd3ec9e68165d09851",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4877,
-    "sourceModules": 3539,
-    "importReferences": 17254,
-    "resolvedLocalReferences": 11486,
+    "files": 4883,
+    "sourceModules": 3545,
+    "importReferences": 17274,
+    "resolvedLocalReferences": 11499,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 859,
-    "testCandidates": 851,
+    "testFiles": 862,
+    "testCandidates": 854,
     "testHelpers": 8,
-    "staticallySelectedTests": 848,
+    "staticallySelectedTests": 851,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1038
+      "files": 1041
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 479
+      "files": 482
     }
   ],
   "mostReferenced": [
@@ -232,7 +232,7 @@
     },
     {
       "file": "lib/ai/groq.ts",
-      "references": 42
+      "references": 43
     },
     {
       "file": "lib/admin/logCronRun.ts",
@@ -243,11 +243,11 @@
       "references": 37
     },
     {
-      "file": "lib/auth/ensureUser.ts",
-      "references": 35
+      "file": "lib/i18n/config.ts",
+      "references": 36
     },
     {
-      "file": "lib/db/queryCaps.ts",
+      "file": "lib/auth/ensureUser.ts",
       "references": 35
     }
   ],

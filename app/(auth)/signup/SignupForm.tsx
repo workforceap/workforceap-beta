@@ -20,6 +20,7 @@ import { clearPersistedPartnerRef, readPersistedPartnerRef } from '@/lib/apply/a
 import { readMarketingAttribution, clearMarketingAttribution } from '@/lib/marketing/utmCapture';
 import { sanitizeRedirectPath } from '@/lib/auth/safeRedirectPath';
 import { splitLocalePrefix } from '@/lib/i18n/config';
+import { CONSENT_AWARE_SCREEN_MIN_HEIGHT } from '@/lib/consent/reserve';
 
 const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => m.Turnstile), { ssr: false });
 
@@ -61,7 +62,8 @@ type SignupFormProps = {
 const s = {
   wrapper: {
     display: 'flex',
-    minHeight: '100vh',
+    // Shrinks by the cookie notice's height so the centered form never paints under it.
+    minHeight: CONSENT_AWARE_SCREEN_MIN_HEIGHT,
     fontFamily: 'var(--font-family)',
   } as React.CSSProperties,
 
