@@ -554,10 +554,20 @@ assertContains(
   'loadTrainingDashboardData is org-scoped (super-admin unscoped)',
 );
 
+// The admin "who needs attention" roster (Command Center + Detailed overview
+// digest) is loaded once in lib/attention/admin.ts inside withAdminPageScope
+// over member-role accounts; every relation-less fact query (applications,
+// events, alerts, message SQL) is keyed by that tenant-scoped id set.
+assertContains(
+  'lib/attention/admin.ts',
+  ['withAdminPageScope', 'MEMBER_ONLY_WHERE', 'loadAttentionFacts'],
+  'admin attention queue is org-scoped (super-admin unscoped)',
+);
+
 assertContains(
   'lib/admin/triageDigest.ts',
-  ['withAdminPageScope', 'inheritUserOrg', 'inheritMemberOrg'],
-  'getTriageDigest is org-scoped (super-admin unscoped)',
+  ['getAdminAttention'],
+  'getTriageDigest reads the org-scoped attention queue',
 );
 
 assertContains(
