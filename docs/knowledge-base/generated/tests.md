@@ -122,7 +122,7 @@
 | [tests/api/member-feedback.spec.ts](../../../tests/api/member-feedback.spec.ts) | 346 | tests |  |
 | [tests/api/member-goals.spec.ts](../../../tests/api/member-goals.spec.ts) | 416 | tests |  |
 | [tests/api/member-messages.spec.ts](../../../tests/api/member-messages.spec.ts) | 521 | tests |  |
-| [tests/api/member-nav-badge-unread.spec.ts](../../../tests/api/member-nav-badge-unread.spec.ts) | 141 | tests |  |
+| [tests/api/member-nav-badge-unread.spec.ts](../../../tests/api/member-nav-badge-unread.spec.ts) | 144 | tests |  |
 | [tests/api/member-nba-reliability.spec.ts](../../../tests/api/member-nba-reliability.spec.ts) | 76 | tests |  |
 | [tests/api/member-onboard.spec.ts](../../../tests/api/member-onboard.spec.ts) | 523 | tests |  |
 | [tests/api/member-profile.spec.ts](../../../tests/api/member-profile.spec.ts) | 475 | tests |  |
@@ -217,6 +217,7 @@
 | [tests/app/job-applications-page.spec.tsx](../../../tests/app/job-applications-page.spec.tsx) | 61 | tests |  |
 | [tests/app/member-dashboard-layout.spec.tsx](../../../tests/app/member-dashboard-layout.spec.tsx) | 89 | tests |  |
 | [tests/app/member-messages-inbox-time.spec.tsx](../../../tests/app/member-messages-inbox-time.spec.tsx) | 54 | tests |  |
+| [tests/app/member-messages-unread-marker.spec.tsx](../../../tests/app/member-messages-unread-marker.spec.tsx) | 96 | tests |  |
 | [tests/app/member-referrals-page.spec.tsx](../../../tests/app/member-referrals-page.spec.tsx) | 33 | tests |  |
 | [tests/app/member-training-feedback.spec.tsx](../../../tests/app/member-training-feedback.spec.tsx) | 78 | tests |  |
 | [tests/app/mentor-dashboard-page.spec.tsx](../../../tests/app/mentor-dashboard-page.spec.tsx) | 55 | tests |  |
@@ -296,6 +297,7 @@
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
 | [tests/components/member-jobs-open-roles.spec.tsx](../../../tests/components/member-jobs-open-roles.spec.tsx) | 57 | tests |  |
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
+| [tests/components/member-messages-kit-mark-read.spec.tsx](../../../tests/components/member-messages-kit-mark-read.spec.tsx) | 100 | tests |  |
 | [tests/components/member-nba-persistence.spec.tsx](../../../tests/components/member-nba-persistence.spec.tsx) | 37 | tests |  |
 | [tests/components/member-program-module-links.test.tsx](../../../tests/components/member-program-module-links.test.tsx) | 134 | tests |  |
 | [tests/components/member-progress-timeline.spec.tsx](../../../tests/components/member-progress-timeline.spec.tsx) | 35 | tests |  |
@@ -463,7 +465,7 @@
 | [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 33 | tests |  |
 | [tests/lib/member-export-placement-survey.spec.ts](../../../tests/lib/member-export-placement-survey.spec.ts) | 88 | tests |  |
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
-| [tests/lib/member-progress-parity.spec.ts](../../../tests/lib/member-progress-parity.spec.ts) | 256 | tests |  |
+| [tests/lib/member-progress-parity.spec.ts](../../../tests/lib/member-progress-parity.spec.ts) | 299 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |
 | [tests/lib/member-resume-plain-text-missing-admin-env.spec.ts](../../../tests/lib/member-resume-plain-text-missing-admin-env.spec.ts) | 87 | tests |  |
 | [tests/lib/member-status-text-token-contrast.spec.ts](../../../tests/lib/member-status-text-token-contrast.spec.ts) | 154 | tests |  |

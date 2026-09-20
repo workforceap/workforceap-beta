@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "87dfa5f372ddadeef12cd1ecdb6905cdfdf7ddfb93d7ff2bd10f4d64d33ac7c9",
+  "inputTreeSha256": "05d92359e5a1302c1ae0bf1025d97140b77f524162d7711cea2239e01ffbd521",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -10057,19 +10057,19 @@
       "path": "app/(portal)/dashboard/messages/page.tsx",
       "area": "pages",
       "domain": "communications",
-      "bytes": 9071,
-      "lines": 226,
-      "sha256": "5f0b2f92b2e523dc07f1f0df4e268a93ae1da35773aa6e0fa0d1c57571a01b14",
+      "bytes": 8885,
+      "lines": 221,
+      "sha256": "8cbfdd523c541a423458b3ae4862b718028106e948ba493817e0abe80fd6ee66",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration",
           "localName": "MemberMessagesPage"
         }
@@ -10077,12 +10077,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MemberMessagesPage",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71392,9 +71392,9 @@
       "path": "components/portal/kit/pages/member/MemberMessagesKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 15104,
-      "lines": 373,
-      "sha256": "5c9cdef5939cea4f109ca3b9e7833f0fb8b7eb75e9de6c3af5125ce1987c58fd",
+      "bytes": 15882,
+      "lines": 394,
+      "sha256": "bc77ba2767492a88eb1cb2a432363db99d31c992e3afa83294a36a5d2f0c9624",
       "binary": false,
       "exports": [
         {
@@ -103019,9 +103019,9 @@
       "path": "lib/content/coursera/learningPaths.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 15045,
-      "lines": 334,
-      "sha256": "c172dda8ccbf6a734d038a2664ba3138f6c37efa80d32766035e902ac33e58f7",
+      "bytes": 15565,
+      "lines": 344,
+      "sha256": "2d122e8cbdef02ed2fff472aa152489e8c841415a96e88ed9470d927d96db4e0",
       "binary": false,
       "exports": [
         {
@@ -103086,27 +103086,27 @@
         },
         {
           "name": "COURSERA_UMBRELLA_PROGRAM_ID",
-          "line": 298,
+          "line": 297,
           "kind": "Variable"
         },
         {
           "name": "isUmbrellaB4BProgramId",
-          "line": 300,
+          "line": 299,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isProgramLevelCourseraId",
-          "line": 318,
+          "line": 317,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "KNOWN_LEARNING_PATH_IDS",
-          "line": 325,
+          "line": 335,
           "kind": "Variable"
         },
         {
           "name": "KNOWN_LEARNING_PATH_COLLECTION_IDS",
-          "line": 330,
+          "line": 340,
           "kind": "Variable"
         }
       ],
@@ -103173,32 +103173,32 @@
         },
         {
           "name": "COURSERA_UMBRELLA_PROGRAM_ID",
-          "line": 298,
+          "line": 297,
           "kind": "Variable"
         },
         {
           "name": "isUmbrellaB4BProgramId",
-          "line": 300,
+          "line": 299,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isProgramLevelCourseraId",
-          "line": 318,
+          "line": 317,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "KNOWN_LEARNING_PATH_IDS",
-          "line": 325,
+          "line": 335,
           "kind": "Variable"
         },
         {
           "name": "KNOWN_LEARNING_PATH_COLLECTION_IDS",
-          "line": 330,
+          "line": 340,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_INDEX",
-          "line": 334,
+          "line": 344,
           "kind": "Variable"
         }
       ],
@@ -105482,9 +105482,9 @@
       "path": "lib/content/syllabusCatalogParity.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 9635,
+      "bytes": 10426,
       "lines": 184,
-      "sha256": "89120e0d9150c67933dd230640d10bc7f4a6543a98ff09abc91706cd7b8a22a0",
+      "sha256": "e0333ae63fc46a1b746a2e4048b30804c7c5f2e1c02f132274fbe7985b56b788",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -111061,9 +111061,9 @@
       "path": "lib/coursera/progressMiscount.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 15964,
-      "lines": 312,
-      "sha256": "74f3632e09c495e33c692beeb285995604b70341ced9a37d9c4eb3b75ceb571b",
+      "bytes": 17204,
+      "lines": 331,
+      "sha256": "77278b37f95d8ab6a096eb7d50a99649817e86e80d4263f1b9a3aa5608c75ef1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -111467,76 +111467,76 @@
       "path": "lib/coursera/progressReconciliation.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 5895,
-      "lines": 168,
-      "sha256": "afae37dae4e1e89f374fbfc5a35b8d4026fbe852dfac9553181884e21d039a6f",
+      "bytes": 6233,
+      "lines": 172,
+      "sha256": "71737dff30bec6f8e4d8277be010f5e9a77dc6350e3d09f9d94121949a3363f7",
       "binary": false,
       "exports": [
         {
           "name": "CourseProgressReconcileRow",
-          "line": 4,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LocalCourseProgressFact",
-          "line": 22,
+          "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "B4BCourseProgressFact",
-          "line": 29,
+          "line": 30,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ProgramProgressReconciliation",
-          "line": 34,
+          "line": 35,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "reconcileProgramProgress",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CourseProgressReconcileRow",
-          "line": 4,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LocalCourseProgressFact",
-          "line": 22,
+          "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "B4BCourseProgressFact",
-          "line": 29,
+          "line": 30,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ProgramProgressReconciliation",
-          "line": 34,
+          "line": 35,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LOCAL_STATUS_RANK",
-          "line": 45,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "clampPercent",
-          "line": 51,
+          "line": 52,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mergeLocalFacts",
-          "line": 56,
+          "line": 57,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "reconcileProgramProgress",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -125553,9 +125553,9 @@
       "path": "lib/member/loadMemberDashboardHome.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 24978,
-      "lines": 657,
-      "sha256": "708961376cdfa4a6055019c1e2f513b2d2deecc2d4d1ecd1630b8c8a0ce92e52",
+      "bytes": 25741,
+      "lines": 665,
+      "sha256": "81d07acc52c0e97353ede16e2ca9ffaa0b5ee2d85f6a16d9a2bc58cc80a0a9d9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -128781,6 +128781,50 @@
         {
           "name": "buildEmployerInbox",
           "line": 23,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/messages/memberUnread.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 1240,
+      "lines": 32,
+      "sha256": "aaa02cb7de7cfda3f60017a5a57bd48df2b432458c856d7bb3da75675b378bf0",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ARCHIVED_FIXTURE_MARKER",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "MemberUnreadStaffMessagesWhere",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "memberUnreadStaffMessagesWhere",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ARCHIVED_FIXTURE_MARKER",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "MemberUnreadStaffMessagesWhere",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "memberUnreadStaffMessagesWhere",
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135322,19 +135366,19 @@
       "path": "lib/portal/navBadges.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 9004,
+      "bytes": 8980,
       "lines": 263,
-      "sha256": "73365f19e5bb9402ccf8d71c4863fa5d689ff6772d00084f11bfebad4907eeba",
+      "sha256": "47d5112b75c95a965a5bdcc4af01f8f70621d0fcd11aa2ce075978bf0346fecc",
       "binary": false,
       "exports": [
         {
           "name": "NavBadgeCounts",
-          "line": 14,
+          "line": 15,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getNavBadgeCountsForUser",
-          "line": 18,
+          "line": 19,
           "kind": "FunctionDeclaration"
         },
         {
@@ -135346,22 +135390,22 @@
       "declarations": [
         {
           "name": "NavBadgeCounts",
-          "line": 14,
+          "line": 15,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MILESTONE_LOOKBACK_DAYS",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "getNavBadgeCountsForUser",
-          "line": 18,
+          "line": 19,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getMemberBadgeCounts",
-          "line": 73,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
@@ -162018,9 +162062,9 @@
       "path": "tests/api/member-nav-badge-unread.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6527,
-      "lines": 141,
-      "sha256": "df65b217f6ef1f753d72134d77f7f3e3777d32739207c5fff4dd27b644bfe055",
+      "bytes": 6848,
+      "lines": 144,
+      "sha256": "0b422f7de843303156a0cc8f48ef92c1b5884f4b679df35c33f2bd5a0b7e38ef",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -164501,6 +164545,24 @@
       "directive": null
     },
     {
+      "path": "tests/app/member-messages-unread-marker.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5546,
+      "lines": 96,
+      "sha256": "d46619485a843da90b395bf77c4b5afa3e7dcb5ec13f5b02f84c2592da9e149a",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "STAFF_REPLY",
+          "line": 44,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/member-referrals-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -166762,6 +166824,34 @@
           "name": "savedFromRequest",
           "line": 26,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/member-messages-kit-mark-read.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4371,
+      "lines": 100,
+      "sha256": "7697a3c0e9ea521ea09fa317d7f137fa776ed30d68164e4c4ed4953e52fc9ea2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "realtime",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "mount",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "patchCalls",
+          "line": 47,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -171031,75 +171121,100 @@
       "path": "tests/lib/member-progress-parity.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 10507,
-      "lines": 256,
-      "sha256": "b1ac0118a5d3e308947b174cf311fddf72c2a28bb0e67fc545cd6c65e8abefd6",
+      "bytes": 13390,
+      "lines": 299,
+      "sha256": "c66672ad1b7d2a3d50e94c4dad345173605d94645ce338ff38ae46220e5c6bf0",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "PROGRAM_SLUG",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "INTRO_AI_ID",
-          "line": 15,
-          "kind": "Variable"
-        },
-        {
-          "name": "PROMPT_ENGINEERING_ID",
-          "line": 16,
-          "kind": "Variable"
-        },
-        {
-          "name": "IBM_PATH_ID",
-          "line": 17,
-          "kind": "Variable"
-        },
-        {
-          "name": "LAB_SLOT",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "USER_ID",
-          "line": 19,
-          "kind": "Variable"
-        },
-        {
-          "name": "db",
           "line": 21,
           "kind": "Variable"
         },
         {
+          "name": "INTRO_AI_ID",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROMPT_ENGINEERING_ID",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "IBM_PATH_ID",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "LAB_SLOT",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "USER_ID",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "db",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
           "name": "ProgressRow",
-          "line": 67,
+          "line": 76,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "when",
-          "line": 78,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "row",
-          "line": 79,
+          "line": 88,
+          "kind": "Variable"
+        },
+        {
+          "name": "OTHER_PROGRAM",
+          "line": 104,
+          "kind": "Variable"
+        },
+        {
+          "name": "otherRow",
+          "line": 105,
+          "kind": "Variable"
+        },
+        {
+          "name": "GEN_AI_INTRO_ID",
+          "line": 110,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM_MEMBERSHIP_ROW_ID",
+          "line": 111,
           "kind": "Variable"
         },
         {
           "name": "PROGRESS_ROWS",
-          "line": 95,
+          "line": 114,
+          "kind": "Variable"
+        },
+        {
+          "name": "ROLLUPS",
+          "line": 133,
           "kind": "Variable"
         },
         {
           "name": "STALE_MAPPING_ROWS",
-          "line": 108,
+          "line": 140,
           "kind": "Variable"
         },
         {
           "name": "userRow",
-          "line": 113,
+          "line": 145,
           "kind": "FunctionDeclaration"
         }
       ],

@@ -35,37 +35,37 @@ const UNBOUND_PROVIDER_ROWS: ReadonlyArray<{ program: string; name: string; reas
   {
     program: 'digital-marketing-e-commerce-google',
     name: 'Make the Sale: Build, Launch, and Manage E-commerce Stores',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-analytics-professional-certificate-google',
     name: 'Introduction to Management Consulting',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-analytics-professional-certificate-google',
     name: 'Introduction to Business Analysis',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-analytics-professional-certificate-google',
     name: 'Business Analysis: Preparation Exam for ECBA Certification',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-science-professional-certificate-ibm',
     name: 'Introduction to Data Engineering',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-science-professional-certificate-ibm',
     name: 'Relational Database Administration (DBA)',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
     program: 'data-science-professional-certificate-ibm',
     name: 'Relational Database Administration Capstone Project',
-    reason: 'not in the Coursera catalog for this program',
+    reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
 ];
 

@@ -548,7 +548,7 @@
 | [components/portal/kit/pages/member/MemberMentorProfileKit.tsx](../../../components/portal/kit/pages/member/MemberMentorProfileKit.tsx) | 103 | member-counselor | MentorProfile:16, MemberMentorProfileKitProps:26, MemberMentorProfileKit:39 |
 | [components/portal/kit/pages/member/MemberMentorsKit.tsx](../../../components/portal/kit/pages/member/MemberMentorsKit.tsx) | 142 | member-counselor | MentorSummary:26, MemberMentorsKitProps:34, MemberMentorsKit:68 |
 | [components/portal/kit/pages/member/MemberMessagesEmpty.tsx](../../../components/portal/kit/pages/member/MemberMessagesEmpty.tsx) | 44 | member-counselor | MemberMessagesEmpty:10 |
-| [components/portal/kit/pages/member/MemberMessagesKit.tsx](../../../components/portal/kit/pages/member/MemberMessagesKit.tsx) | 373 | member-counselor | MemberMessagesKitProps:32, MemberMessagesKit:70 |
+| [components/portal/kit/pages/member/MemberMessagesKit.tsx](../../../components/portal/kit/pages/member/MemberMessagesKit.tsx) | 394 | member-counselor | MemberMessagesKitProps:32, MemberMessagesKit:70 |
 | [components/portal/kit/pages/member/MemberProfileKit.tsx](../../../components/portal/kit/pages/member/MemberProfileKit.tsx) | 411 | member-counselor | MemberProfileAccountPassthrough:53, MemberProfileKitProps:66, MemberProfileKit:98 |
 | [components/portal/kit/pages/member/MemberProgramKit.tsx](../../../components/portal/kit/pages/member/MemberProgramKit.tsx) | 376 | member-counselor | MemberProgramKitProps:37, MemberProgramKit:100 |
 | [components/portal/kit/pages/member/MemberProgressKit.tsx](../../../components/portal/kit/pages/member/MemberProgressKit.tsx) | 211 | member-counselor | MemberProgressKitProps:33, MemberProgressKit:58 |

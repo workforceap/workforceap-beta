@@ -194,6 +194,18 @@ describe('progress tiles read the same way for a funder and a member', () => {
 });
 
 describe('member progress miscount: stale program-level mappings and lab rows (number audit M2)', () => {
+  it('credits one course recorded under both spellings of its Coursera id exactly once', () => {
+    const program = ibmProgram();
+    const result = reconcileProgramProgress({
+      validatedCourses: program.courses,
+      localRows: [
+        { courseSlug: 'introduction-to-software-engineering', courseId: 'FkAMrrwEEey8ogoy0lwspQ', percentComplete: 100, status: 'COMPLETED' },
+        { courseSlug: `${PROGRAM_SLUG}-course-1`, courseId: 'Course~FkAMrrwEEey8ogoy0lwspQ', percentComplete: 100, status: 'COMPLETED' },
+      ],
+    });
+    assert.equal(result.completedCount, 1);
+  });
+
   const stubDeps = (mappingRows: Array<{ courseraCourseId: string; canonicalProgramSlug: string; canonicalCourseSlug: string }>) => ({
     loadCourseDbRows: async () => [],
     loadCanonicalMappingRows: async () => mappingRows,
@@ -207,6 +219,13 @@ describe('member progress miscount: stale program-level mappings and lab rows (n
       const pathId = DISCOVERED_COURSERA_PROGRAMS[slug]!.learningPathId;
       if (pathId) assert.equal(isProgramLevelCourseraId(pathId), true, `${slug} path ${pathId}`);
     }
+    // B4B program-membership rows: "<programId>~<suffix>" (live learner 702b1eb6 has one at 31%).
+    assert.equal(isProgramLevelCourseraId(`${COURSERA_UMBRELLA_PROGRAM_ID}~6m4yZ`), true);
+    assert.equal(isProgramLevelCourseraId('TpIlAogTQ8-SJQKIE8PP9w~6m4yZ'), true, 'composite programId~collectionId key of the IBM path');
+    assert.equal(isProgramLevelCourseraId('TpIlAogTQ8-SJQKIE8PP9w'), true, 'bare umbrella id');
+    assert.equal(isProgramLevelCourseraId(`${IBM_PATH_ID}~abc`), true);
+    // Coursera's own "<Type>~<courseId>" spelling of a COURSE id stays a course.
+    assert.equal(isProgramLevelCourseraId(`Course~${INTRO_AI_ID}`), false);
     assert.equal(isProgramLevelCourseraId(INTRO_AI_ID), false);
     assert.equal(isProgramLevelCourseraId(''), false);
     assert.equal(isProgramLevelCourseraId(null), false);

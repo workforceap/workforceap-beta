@@ -6,17 +6,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * (reconcileProgramProgress + summarizeProgramCourseProgress) and on the
  * counselor / partner views (loadMemberProgramTrainingView).
  *
- * Fixture: an IBM Software Developer learner (uid 91c9bf in the 2026-09-20
- * audit) with 5 completed courses, two of them recorded under Coursera ids on
- * the old synthetic slugs, plus the Learning Path row a stale canonical
- * mapping once wrote onto the "Lab, Project, and Test Preparation" slot.
+ * Fixture: synthetic, modelled row-for-row on the real IBM Software Developer
+ * learner 702b1eb6-9795-468a-a5b1-9d49de457059 as of 2026-09-20 (the audit
+ * digest's "91c9bf" does not exist in production): five courses complete
+ * (Generative AI: Introduction and Applications recorded twice, two rows on
+ * old synthetic slugs under Coursera ids), Getting Started with Git and GitHub
+ * at 69%, a 31% program-membership row keyed "<umbrellaId>~6m4yZ" on an alias
+ * program slug, two completions on another program, 4 rollups. Expected on
+ * every surface: 5 of 17, (5x100 + 69) / 17 = 33%, Next = Git and GitHub.
+ * (The learning-path row a stale mapping once wrote onto the lab slot was
+ * removed from prod at 19:38 UTC; it is kept in the second test as the
+ * preventive case.)
  */
 const PROGRAM_SLUG = 'software-developer-professional-certificate-ibm';
 const INTRO_AI_ID = 'mR7MlUaTEemuHQ4HpHozrA';
 const PROMPT_ENGINEERING_ID = 'nI__WUzdEe64qQ7qqom4Rw';
 const IBM_PATH_ID = 'fT-1P-CkT6q_tT_gpM-qJw';
 const LAB_SLOT = `${PROGRAM_SLUG}-course-17`;
-const USER_ID = 'member-91c9bf';
+const USER_ID = 'member-ibm-fixture';
 
 const db = vi.hoisted(() => ({
   userFindUnique: vi.fn(),
@@ -57,6 +64,8 @@ vi.mock('@/lib/coursera/programCourseList', async (importOriginal) => {
 });
 
 import { getProgramBySlug } from '@/lib/content/programs';
+import { isProgramLevelCourseraId } from '@/lib/content/coursera/learningPaths';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { summarizeProgramCourseProgress } from '@/lib/coursera/progressTileSummary';
@@ -92,17 +101,40 @@ const row = (
   lastUpdatedAt: when,
 });
 
+const OTHER_PROGRAM = 'it-support-professional-certificate-ibm';
+const otherRow = (courseSlug: string, courseId: string): ProgressRow => ({
+  ...row(courseSlug, courseId, 'COMPLETED', 100),
+  programSlug: OTHER_PROGRAM,
+});
+
+const GEN_AI_INTRO_ID = 'I3MKFTq0Ee6PABLgKXk5yQ';
+const PROGRAM_MEMBERSHIP_ROW_ID = 'TpIlAogTQ8-SJQKIE8PP9w~6m4yZ';
+
+/** 8 COMPLETED rows across 2 programs, one in-progress course, one program-level row. */
 const PROGRESS_ROWS: ProgressRow[] = [
   row('introduction-to-software-engineering', 'FkAMrrwEEey8ogoy0lwspQ', 'COMPLETED', 100),
   // Written before the id binding: synthetic slot slug, real Coursera id.
   row(`${PROGRAM_SLUG}-course-2`, INTRO_AI_ID, 'COMPLETED', 100),
-  row(`${PROGRAM_SLUG}-course-4`, PROMPT_ENGINEERING_ID, 'COMPLETED', 100),
+  // Recorded twice: once on the Coursera slug, once under the "Course~" id on the slot.
+  row('generative-ai-introduction-and-applications', GEN_AI_INTRO_ID, 'COMPLETED', 100),
+  row(`${PROGRAM_SLUG}-course-3`, `Course~${GEN_AI_INTRO_ID}`, 'COMPLETED', 100),
+  // The stale nI__W mapping pointed at slot 16.
+  row(`${PROGRAM_SLUG}-course-16`, PROMPT_ENGINEERING_ID, 'COMPLETED', 100),
   row('introduction-html-css-javascript', 'yI8fAUhFEe6cKg41IVwGGw', 'COMPLETED', 100),
-  row('getting-started-with-git-and-github', null, 'COMPLETED', 100),
-  // Same course reported twice (7 COMPLETED rows over 5 distinct courses in prod).
-  row('introduction-to-software-engineering', 'FkAMrrwEEey8ogoy0lwspQ', 'COMPLETED', 100),
-  // The Learning Path row promoted onto the lab slot by a stale mapping.
-  row(LAB_SLOT, IBM_PATH_ID, 'IN_PROGRESS', 31),
+  row('getting-started-with-git-and-github', null, 'IN_PROGRESS', 69),
+  // Program membership row on an alias program slug: never a course.
+  { ...row('ai-and-software-developer-professional-certificate-ibm', PROGRAM_MEMBERSHIP_ROW_ID, 'IN_PROGRESS', 31), programSlug: 'ai-and-software-developer-professional-certificate-ibm' },
+  // Two completions on the learner's other program: never counted here.
+  otherRow('introduction-to-technical-support', 'zqCz4RxjEee1_A7-1dHRlQ'),
+  otherRow('introduction-to-hardware-and-operating-systems', 'Hb63C6tfEeuItw5iPAvwgQ'),
+];
+
+/** The four rollups the real record carries; `[0]` is arbitrary and must not drive anything. */
+const ROLLUPS = [
+  { programSlug: PROGRAM_SLUG, averagePercent: 24, coursesCompleted: 3 },
+  { programSlug: OTHER_PROGRAM, averagePercent: 77, coursesCompleted: 2 },
+  { programSlug: 'ai-practitioner-professional-certificate-aws', averagePercent: 6, coursesCompleted: 0 },
+  { programSlug: 'comptia-a-plus', averagePercent: 0, coursesCompleted: 0 },
 ];
 
 const STALE_MAPPING_ROWS = [
@@ -122,7 +154,7 @@ function userRow() {
       { programSlug: PROGRAM_SLUG, curriculumVersion: 'legacy-v1', isPrimary: true, enrolledByAdminId: null },
     ],
     courseProgress: PROGRESS_ROWS,
-    memberProgramProgress: [{ programSlug: PROGRAM_SLUG, averagePercent: 24, coursesCompleted: 3 }],
+    memberProgramProgress: ROLLUPS,
     memberPoints: { totalPoints: 120, currentStreak: 6, longestStreak: 6, lastActiveDate: new Date('2026-06-09T12:00:00.000Z') },
     nextBestActions: [],
     jobApplications: [],
@@ -138,13 +170,20 @@ describe('member progress parity: dashboard, admin view, counselor view', () => 
     db.userFindUnique.mockResolvedValue(userRow());
     db.courseFindMany.mockResolvedValue([]);
     db.mappingFindMany.mockResolvedValue(STALE_MAPPING_ROWS);
-    db.courseProgressFindMany.mockResolvedValue(PROGRESS_ROWS);
+    // Honour the loader's `programSlug: { in: [...] }` filter like Postgres would.
+    db.courseProgressFindMany.mockImplementation(async (args: { where?: { programSlug?: { in?: string[] } } }) => {
+      const slugs = args?.where?.programSlug?.in;
+      return slugs ? PROGRESS_ROWS.filter((r) => slugs.includes(r.programSlug)) : PROGRESS_ROWS;
+    });
     db.rollupFindFirst.mockResolvedValue(null);
   });
 
-  it('reads 5 of 17 (29%) everywhere and names the same next course', async () => {
+  it('reads 5 of 17 (33%) everywhere and names Git and GitHub next', async () => {
     const program = getProgramBySlug(PROGRAM_SLUG)!;
     expect(program.courses).toHaveLength(17);
+    expect(PROGRESS_ROWS.filter((r) => r.status === 'COMPLETED')).toHaveLength(8);
+    expect(ROLLUPS).toHaveLength(4);
+    expect(isProgramLevelCourseraId(PROGRAM_MEMBERSHIP_ROW_ID)).toBe(true);
 
     // Member's own dashboard.
     const home = await loadMemberDashboardHome(
@@ -165,7 +204,7 @@ describe('member progress parity: dashboard, admin view, counselor view', () => 
     });
     const admin = reconcileProgramProgress({
       validatedCourses: validated.courses,
-      localRows: PROGRESS_ROWS.map((r) => ({
+      localRows: PROGRESS_ROWS.filter((r) => programSlugsEquivalent(r.programSlug, PROGRAM_SLUG)).map((r) => ({
         courseSlug: r.courseSlug,
         courseId: r.courseId,
         percentComplete: r.percentComplete,
@@ -189,19 +228,23 @@ describe('member progress parity: dashboard, admin view, counselor view', () => 
     expect(home.programCoursesNote).toBe(
       "17 courses: 16 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path).",
     );
-    expect(home.coursePercent).toBe(29);
-    expect(view!.progressPercentDisplay).toBe(29);
-    expect(admin.programPercent).toBe(29);
+    // (5 x 100 + 69) / 17 = 33.47 -> 33; the 31% membership row adds nothing.
+    expect(home.coursePercent).toBe(33);
+    expect(view!.progressPercentDisplay).toBe(33);
+    expect(admin.programPercent).toBe(33);
+    expect(tile.inProgress).toBe(1);
 
-    // "Next:" is the first unfinished syllabus row on every surface, and it is
-    // not a course the member already finished.
-    const nextName = program.courses[2]!.name;
-    expect(nextName).toBe('Generative AI: Introduction and Applications');
+    // "Next:" is the first unfinished syllabus row on every surface: the 69%
+    // Git course, not "Generative AI: Prompt Engineering" (complete) that the
+    // slug-only rule on master names.
+    const nextName = program.courses[5]!.name;
+    expect(nextName).toBe('Getting Started with Git and GitHub');
     expect(home.nextLesson).toBe(nextName);
     expect(view!.nextIncompleteCourseName).toBe(nextName);
     expect(view!.completedSlugsAuthoritative).toEqual(
-      expect.arrayContaining(['introduction-to-ai', 'generative-ai-prompt-engineering-for-everyone']),
+      expect.arrayContaining(['introduction-to-ai', 'generative-ai-prompt-engineering-for-everyone', 'generative-ai-introduction-and-applications']),
     );
+    expect(view!.completedSlugsAuthoritative).not.toContain('getting-started-with-git-and-github');
   });
 
   it('never lets the Learning Path row read as course progress, whatever the stale mapping says', async () => {
@@ -218,7 +261,7 @@ describe('member progress parity: dashboard, admin view, counselor view', () => 
 
     const reconciled = reconcileProgramProgress({
       validatedCourses: validated.courses,
-      localRows: PROGRESS_ROWS.map((r) => ({
+      localRows: PROGRESS_ROWS.filter((r) => r.programSlug === PROGRAM_SLUG).map((r) => ({
         courseSlug: r.courseSlug,
         courseId: r.courseId,
         percentComplete: r.percentComplete,

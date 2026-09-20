@@ -208,7 +208,7 @@
 | [app/(portal)/dashboard/mentors/loading.tsx](../../../app/%28portal%29/dashboard/mentors/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/dashboard/mentors/page.tsx](../../../app/%28portal%29/dashboard/mentors/page.tsx) | 28 | member-counselor | generateMetadata:8, default:16 |
 | [app/(portal)/dashboard/messages/loading.tsx](../../../app/%28portal%29/dashboard/messages/loading.tsx) | 5 | communications | default:3 |
-| [app/(portal)/dashboard/messages/page.tsx](../../../app/%28portal%29/dashboard/messages/page.tsx) | 226 | communications | generateMetadata:20, default:29 |
+| [app/(portal)/dashboard/messages/page.tsx](../../../app/%28portal%29/dashboard/messages/page.tsx) | 221 | communications | generateMetadata:21, default:30 |
 | [app/(portal)/dashboard/missions/page.tsx](../../../app/%28portal%29/dashboard/missions/page.tsx) | 79 | member-counselor | generateMetadata:14, default:23 |
 | [app/(portal)/dashboard/not-found.tsx](../../../app/%28portal%29/dashboard/not-found.tsx) | 20 | member-counselor | default:3 |
 | [app/(portal)/dashboard/page.tsx](../../../app/%28portal%29/dashboard/page.tsx) | 1210 | member-counselor | maxDuration:99, generateMetadata:101, default:110 |
