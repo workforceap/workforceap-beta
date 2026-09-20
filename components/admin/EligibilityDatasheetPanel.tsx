@@ -197,7 +197,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
       </p>
 
       {feedback ? (
-        <p role="status" style={{ color: 'var(--color-green, #15803d)', fontSize: '0.875rem' }}>
+        <p role="status" style={{ color: 'var(--wa-success-dark)', fontSize: '0.875rem' }}>
           {feedback}
         </p>
       ) : null}

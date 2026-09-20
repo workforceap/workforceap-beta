@@ -36,10 +36,10 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const STATUS_TEXT_COLOR: Record<string, string> = {
-  SUCCESS: 'var(--color-green, #4a9b4f)',
+  SUCCESS: 'var(--wa-success-dark)',
   FAILED: 'var(--color-accent)',
-  RUNNING: 'var(--color-blue, #2b7bb9)',
-  SKIPPED: 'var(--color-gold)',
+  RUNNING: 'var(--wa-info-dark)',
+  SKIPPED: 'var(--wa-gold-dark)',
 };
 
 export default function DataRetentionClient({
@@ -161,7 +161,7 @@ export default function DataRetentionClient({
             padding: '0.75rem 1rem',
             background: 'rgba(74,155,79,0.12)',
             borderRadius: 'var(--radius-lg)',
-            color: 'var(--color-green)',
+            color: 'var(--wa-success-dark)',
             marginBottom: '1rem',
           }}
         >

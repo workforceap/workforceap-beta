@@ -286,7 +286,7 @@ export default function AdminUsersManager({
       <p className="wa-kit-people-count" role="status">{pending ? 'Searching all accounts…' : `${totalCount.toLocaleString()} matching account${totalCount === 1 ? '' : 's'}`}</p>
 
       {message && (
-        <div style={{ padding: '0.75rem 0.9rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.12)' : message.type === 'warn' ? 'rgba(217,119,6,0.12)' : 'rgba(173,44,77,0.12)', color: message.type === 'ok' ? 'var(--color-green, #4a9b4f)' : message.type === 'warn' ? '#b45309' : 'var(--color-accent)', fontWeight: 600 }}>
+        <div style={{ padding: '0.75rem 0.9rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.12)' : message.type === 'warn' ? 'rgba(217,119,6,0.12)' : 'rgba(173,44,77,0.12)', color: message.type === 'ok' ? 'var(--wa-success-dark)' : message.type === 'warn' ? '#b45309' : 'var(--color-accent)', fontWeight: 600 }}>
           {message.text}
         </div>
       )}

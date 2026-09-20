@@ -67009,8 +67009,16 @@
   },
   {
     "from": "app/layout.tsx",
+    "specifier": "@/css/wa-brand-tokens.css",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "css/wa-brand-tokens.css"
+  },
+  {
+    "from": "app/layout.tsx",
     "specifier": "@/css/astryx-brand-bridge.css",
-    "line": 46,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "css/astryx-brand-bridge.css"
@@ -67018,7 +67026,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/DeferredRootChrome",
-    "line": 47,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
@@ -67026,7 +67034,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/observability/SentrySetUser",
-    "line": 48,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/observability/SentrySetUser.tsx"
@@ -67034,7 +67042,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/gucContext",
-    "line": 113,
+    "line": 115,
     "kind": "type",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -82914,7 +82922,7 @@
   {
     "from": "components/portal/kit/pages/VoiceStudioKit.tsx",
     "specifier": "@elevenlabs/client",
-    "line": 698,
+    "line": 707,
     "kind": "dynamic-import",
     "external": true,
     "package": "@elevenlabs/client"
@@ -111280,6 +111288,86 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
+  },
+  {
     "from": "lib/ui/buttonClasses.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -111302,6 +111390,62 @@
     "kind": "import",
     "external": false,
     "target": "lib/ui/buttonClasses.ts"
+  },
+  {
+    "from": "lib/ui/cssTokenContrast.test-helpers.ts",
+    "specifier": "node:fs",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/cssTokenContrast.test-helpers.ts",
+    "specifier": "node:path",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
   },
   {
     "from": "lib/ui/statusColors.test.ts",
