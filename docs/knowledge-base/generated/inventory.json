@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "baacf35ce1a58e1823f88e2933fa98d1cefb0358bb0a3fc3c69b0576c2e53c6a",
+  "inputTreeSha256": "e147e136f93ff954eb3361617a1d9c834b63ff4cf5c1283dac88eec04b8b491a",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3229,9 +3229,9 @@
       "path": "AGENTS.md",
       "area": "root",
       "domain": "root",
-      "bytes": 15961,
+      "bytes": 15972,
       "lines": 210,
-      "sha256": "3b50c57c59d97f5a1c0658b6c7cf46f26a61a4d25b72e5d70672ec55a4b5e44f",
+      "sha256": "10c5d8f6b45ad262c70d41236536a9978084a2ef7b20b88c317d33af8644956d",
       "binary": false
     },
     {
@@ -58662,9 +58662,9 @@
       "path": "components/portal/LearningHubEnrolledCourses.test.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2149,
-      "lines": 53,
-      "sha256": "eaaec92544086c8fad30fa721d6e79093465f47321991f9914848b2639c0557e",
+      "bytes": 2797,
+      "lines": 71,
+      "sha256": "94c3fd4ed34017c4fadb5c5bfe3dc40c1c7b7107ea84e9be3f23adc77471898a",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -58680,9 +58680,9 @@
       "path": "components/portal/LearningHubEnrolledCourses.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7140,
+      "bytes": 7159,
       "lines": 204,
-      "sha256": "5c849290cee586dd989bca7a95a631837470daa35398ad61393acfbc125d4c2a",
+      "sha256": "67346cdab9a49494bfd78a4589eb48ed65b23d142bb1b2e0081bd467775a6819",
       "binary": false,
       "exports": [
         {
@@ -73644,9 +73644,9 @@
       "path": "docs/ENVIRONMENT-VARIABLES.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 31770,
+      "bytes": 31858,
       "lines": 481,
-      "sha256": "7be1eee5f38978ce24f98f8825067986d7d68ba9af20b086632ff2110ee49658",
+      "sha256": "aec4ad7bbd306325d75a01f0dc23833e3377f6c6ebc58846564d11ed7f10bdeb",
       "binary": false
     },
     {
@@ -74157,9 +74157,9 @@
       "path": "docs/UI-DESIGN-SYSTEM.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 9580,
-      "lines": 214,
-      "sha256": "f30ea17064fe8920b1ed582f538faad9734658d755700843896a0d1cb010cc09",
+      "bytes": 9519,
+      "lines": 213,
+      "sha256": "e68c2c3906d3f86d81b2332d578fabbaa16d9f43a3147cbb0e96193fb401150c",
       "binary": false
     },
     {
@@ -94713,44 +94713,6 @@
           "kind": "FunctionDeclaration"
         }
       ],
-      "directive": null
-    },
-    {
-      "path": "lib/attention/index.ts",
-      "area": "libraries",
-      "domain": "libraries",
-      "bytes": 469,
-      "lines": 13,
-      "sha256": "be7063e5b5840b557f781bb4f2ea621fc7996a80cbee86f73dd253e68de05399",
-      "binary": false,
-      "exports": [
-        {
-          "name": "*",
-          "line": 9,
-          "kind": "ReExport"
-        },
-        {
-          "name": "*",
-          "line": 10,
-          "kind": "ReExport"
-        },
-        {
-          "name": "*",
-          "line": 11,
-          "kind": "ReExport"
-        },
-        {
-          "name": "*",
-          "line": 12,
-          "kind": "ReExport"
-        },
-        {
-          "name": "*",
-          "line": 13,
-          "kind": "ReExport"
-        }
-      ],
-      "declarations": [],
       "directive": null
     },
     {
