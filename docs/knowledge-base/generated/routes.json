@@ -9446,12 +9446,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 86,
+        "line": 96,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 94,
+        "line": 104,
         "kind": "FunctionDeclaration",
         "localName": "AdminMemberDetailPage"
       }
@@ -10255,12 +10255,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 30,
+        "line": 31,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 45,
+        "line": 46,
         "kind": "FunctionDeclaration",
         "localName": "AdminTodayPage"
       }

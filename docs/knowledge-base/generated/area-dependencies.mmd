@@ -5,19 +5,19 @@ flowchart LR
   astro_marketing["astro-marketing: 106 files"]
   audit_graph["audit-graph: 81 files"]
   communications["communications: 70 files"]
-  components["components: 603 files"]
+  components["components: 604 files"]
   content["content: 14 files"]
   database["database: 202 files"]
   delivery["delivery: 9 files"]
   documentation["documentation: 357 files"]
-  libraries["libraries: 1024 files"]
+  libraries["libraries: 1026 files"]
   localization["localization: 6 files"]
   operations["operations: 136 files"]
-  pages["pages: 640 files"]
+  pages["pages: 644 files"]
   root["root: 56 files"]
   styles["styles: 17 files"]
   supporting_files["supporting-files: 74 files"]
-  tests["tests: 518 files"]
+  tests["tests: 523 files"]
   api -->|"8 static references"| communications
   api -->|"1 static references"| content
   api -->|"3603 static references"| libraries
@@ -34,7 +34,7 @@ flowchart LR
   database -->|"10 static references"| libraries
   libraries -->|"1 static references"| astro_marketing
   libraries -->|"2 static references"| communications
-  libraries -->|"16 static references"| components
+  libraries -->|"17 static references"| components
   libraries -->|"1 static references"| content
   libraries -->|"1 static references"| database
   libraries -->|"7 static references"| operations
@@ -45,8 +45,8 @@ flowchart LR
   operations -->|"47 static references"| libraries
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
-  pages -->|"1125 static references"| components
-  pages -->|"1364 static references"| libraries
+  pages -->|"1127 static references"| components
+  pages -->|"1368 static references"| libraries
   pages -->|"39 static references"| styles
   root -->|"24 static references"| libraries
   root -->|"2 static references"| operations
@@ -54,9 +54,9 @@ flowchart LR
   tests -->|"390 static references"| api
   tests -->|"5 static references"| astro_marketing
   tests -->|"6 static references"| communications
-  tests -->|"144 static references"| components
-  tests -->|"1086 static references"| libraries
+  tests -->|"148 static references"| components
+  tests -->|"1088 static references"| libraries
   tests -->|"47 static references"| localization
   tests -->|"29 static references"| operations
-  tests -->|"106 static references"| pages
+  tests -->|"109 static references"| pages
   tests -->|"9 static references"| root
