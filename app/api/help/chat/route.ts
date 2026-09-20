@@ -23,7 +23,7 @@ import {
   sanitizeAnswer,
   type HelpAnswer,
 } from '@/lib/help/assistant';
-import { getPersonaKnowledge } from '@/lib/help/knowledge';
+import { currentFeature, getPersonaKnowledge, type HelpPersona } from '@/lib/help/knowledge';
 import { resolveHelpAccess } from '@/lib/help/resolveAccess';
 
 /** Raw body cap (bytes) before JSON parsing; the schema caps each field again. */
@@ -31,10 +31,23 @@ const MAX_BODY_BYTES = 8 * 1024;
 
 const NOT_FOUND = () => NextResponse.json({ error: 'Not found' }, { status: 404 });
 
+/**
+ * Only a plain in-app path reaches the prompt and the events: query dropped,
+ * capped, and limited to path characters. Anything else (whitespace, control
+ * characters, prompt text) is "unknown page" rather than an error.
+ */
+const PATHNAME_PATTERN = /^\/[A-Za-z0-9_\-./]*$/;
+
 function readPathname(raw: unknown): string | null {
   if (typeof raw !== 'string') return null;
-  const value = raw.trim().slice(0, HELP_MAX_PATHNAME_CHARS);
-  return value.startsWith('/') ? value : null;
+  const value = (raw.trim().split('?')[0] ?? '').slice(0, HELP_MAX_PATHNAME_CHARS);
+  return PATHNAME_PATTERN.test(value) ? value : null;
+}
+
+/** The checked-in knowledge-map route to log for this request; never the raw client value. */
+function sourcePageFor(persona: HelpPersona, pathname: string | null): string {
+  const feature = pathname ? currentFeature(persona, pathname) : null;
+  return feature?.route ?? getPersonaKnowledge(persona).homeRoute;
 }
 
 function readLanguage(request: Request, bodyValue: unknown): string {
@@ -124,6 +137,7 @@ export const POST = withApiGuc(async (request: Request) => {
 
     const access = await resolveHelpAccess(user.id);
     const persona = resolveHelpPersona(pathname, access);
+    const sourcePage = sourcePageFor(persona, pathname);
 
     const baseMetadata = {
       toolType: HELP_ASSISTANT_TOOL_TYPE,
@@ -136,7 +150,7 @@ export const POST = withApiGuc(async (request: Request) => {
       userId: user.id,
       eventName: 'ai_tool_run_started',
       entityType: HELP_ASSISTANT_TOOL_TYPE,
-      sourcePage: pathname ?? undefined,
+      sourcePage,
       metadata: baseMetadata,
     });
 
@@ -168,7 +182,7 @@ export const POST = withApiGuc(async (request: Request) => {
       userId: user.id,
       eventName: 'ai_tool_run_completed',
       entityType: HELP_ASSISTANT_TOOL_TYPE,
-      sourcePage: pathname ?? undefined,
+      sourcePage,
       metadata: { ...baseMetadata, source: answer.source, answerLength: answer.text.length, providerFailed },
     });
 

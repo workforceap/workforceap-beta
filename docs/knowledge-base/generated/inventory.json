@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b671555bd08026a3f18bfc0782d33b79cc051241db1deed76c858f5dea5b0c9e",
+  "inputTreeSha256": "02f0578a15b546e42475ab9dcea31e60f19302df44472500a61ffc9594f0302c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -34963,19 +34963,19 @@
       "path": "app/api/help/chat/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 6900,
-      "lines": 180,
-      "sha256": "5fd9206db648a5593ea8d05627819fd8761014324ec24fdb724a31e16350d02a",
+      "bytes": 7573,
+      "lines": 194,
+      "sha256": "65e38b002e9513bd2fc8a507fec39062aa930825053b1f489234017eba47244d",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 52,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 87,
+          "line": 100,
           "kind": "Variable"
         }
       ],
@@ -34991,23 +34991,33 @@
           "kind": "Variable"
         },
         {
+          "name": "PATHNAME_PATTERN",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
           "name": "readPathname",
-          "line": 34,
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sourcePageFor",
+          "line": 48,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readLanguage",
-          "line": 40,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 52,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 87,
+          "line": 100,
           "kind": "Variable"
         }
       ],
@@ -162394,9 +162404,9 @@
       "path": "tests/api/help-chat.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 10120,
-      "lines": 219,
-      "sha256": "d940e5cb1b03c4f83b5263e36664cc5163dc29caf35c446e183ab3ab02b94d88",
+      "bytes": 12650,
+      "lines": 268,
+      "sha256": "a4860ea55bcb5369a633782363b8624cf63b31fe4df2098d3529a6165c06ed1a",
       "binary": false,
       "exports": [],
       "declarations": [

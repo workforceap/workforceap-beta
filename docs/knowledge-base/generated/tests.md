@@ -105,7 +105,7 @@
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 257 | tests |  |
-| [tests/api/help-chat.spec.ts](../../../tests/api/help-chat.spec.ts) | 219 | tests |  |
+| [tests/api/help-chat.spec.ts](../../../tests/api/help-chat.spec.ts) | 268 | tests |  |
 | [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 485 | tests |  |
 | [tests/api/invite-validate.spec.ts](../../../tests/api/invite-validate.spec.ts) | 138 | tests |  |
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
