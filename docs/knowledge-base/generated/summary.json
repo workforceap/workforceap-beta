@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "8b036f9ef1e4a77011a7cc027a3d57b4e7503c1bcd6e3d5400eb5b4a36894a1e",
+  "inputTreeSha256": "08e2abd9a6d071709d8bbfed918a9c1372322712104e5fcb7aca48009a6629a1",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4790,
-    "sourceModules": 3450,
-    "importReferences": 17128,
-    "resolvedLocalReferences": 11435,
+    "files": 4789,
+    "sourceModules": 3449,
+    "importReferences": 17123,
+    "resolvedLocalReferences": 11430,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1026
+      "files": 1025
     },
     {
       "area": "localization",

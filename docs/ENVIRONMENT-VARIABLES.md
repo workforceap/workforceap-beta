@@ -162,7 +162,7 @@ Provider fallback chain: **Anthropic → Groq → Gemini**. At least one is requ
 | `ELEVENLABS_WIOA_PREQUAL_AGENT_ID` | 🟢 🔒 | ConvAI agent: WIOA prequal | `agent_...` | `lib/ai/elevenlabsAgents.ts` |
 | `ELEVENLABS_CAREER_BUSINESS_AGENT_ID` | 🟢 🔒 | Legacy member career/business override; restricted to the reviewed Lilley student agent | `agent_...` | `lib/ai/elevenlabsAgents.ts` |
 | `NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: WIOA | `Sarah` | Portal voice surfaces |
-| `NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID` | 🟢 👁️ | Legacy fallback for the WIOA guide when `NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID` is unset; does not control Lilley or staff ConvAI voices | `...` | `lib/portal/counselorVoice.ts` |
+| `NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID` | 🟢 👁️ | Legacy browser TTS voice ID. No code reads it any more (its only consumer, `lib/portal/counselorVoice.ts`, was removed); it never controlled Lilley or staff ConvAI voices, which are configured on each ElevenLabs agent | `...` | None (listed in `.env.example` only) |
 | `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: female interviewer | `...` | Portal voice surfaces |
 | `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: male interviewer | `...` | Portal voice surfaces |
 
