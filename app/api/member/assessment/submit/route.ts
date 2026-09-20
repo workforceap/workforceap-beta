@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
 import type { QuestionChoice } from '@/lib/assessment/answer-key';
 import { brandedEmailLayout } from '@/lib/email/template';
-import { getAssessmentResultRecipients } from '@/lib/email';
+import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { getAssessmentResultRecipients, getResend } from '@/lib/email';
 import { buildAssessmentReviewRows, formatAssessmentReviewText } from '@/lib/assessment/reviewRows';
 import { trackEvent } from '@/lib/events/track';
 import { awardPoints } from '@/lib/member/points';
@@ -123,24 +125,18 @@ export const POST = withApiGuc(async (request: Request) => {
       || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.workforceap.org');
     const adminLink = `${siteUrl}/admin/assessments?userId=${user.id}`;
   
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
     const dashboardUrl = `${siteUrl}/dashboard`;
   
     let memberEmailSent = false;
     let adminEmailSent = false;
-    if (resendKey) {
-      const resend = new Resend(resendKey);
-  
+    if (resend) {
       try {
         // Ops (9/2/26): staff get the full answer sheet, not just the score, so
         // the WIOA assessment review can start from the email alone.
         const reviewRows = buildAssessmentReviewRows(answersTyped);
-        const result = await resend.emails.send({
-          from: emailFrom,
-          to: getAssessmentResultRecipients(),
-          subject: `Training preassessment submitted — ${firstName} ${lastName} (${pct}%)`,
-          text: [
+        const adminText = [
             `Name: ${firstName} ${lastName}`,
             `Email: ${dbUser.email}`,
             `Phone: ${phone}`,
@@ -152,11 +148,17 @@ export const POST = withApiGuc(async (request: Request) => {
             `All assessments: ${adminLink}`,
             '',
             ...formatAssessmentReviewText(reviewRows),
-          ].join('\n'),
+          ].join('\n');
+        const result = await sendBrandedEmailOrThrowOnSkip(resend, {
+          from: emailFrom,
+          to: getAssessmentResultRecipients(),
+          subject: sanitizeEmailSubjectLine(`Training preassessment submitted — ${firstName} ${lastName} (${pct}%)`),
+          html: plainTextEmailHtml(adminText),
+          text: adminText,
         });
-        if (result.error || !result.data?.id) {
+        if (!result.data?.id) {
           console.error('Assessment admin email was not accepted by the provider', {
-            errorName: result.error?.name ?? 'missing_delivery_id',
+            errorName: 'missing_delivery_id',
           });
         } else {
           adminEmailSent = true;
@@ -169,22 +171,22 @@ export const POST = withApiGuc(async (request: Request) => {
         const memberHtml = brandedEmailLayout({
           title: 'Assessment Complete',
           bodyHtml: `
-            <p>Hi ${firstName},</p>
+            <p>Hi ${escapeHtml(firstName)},</p>
             <p>You've completed your readiness assessment. Your score: <strong>${raw}/${TOTAL_POINTS} (${pct}%)</strong>.</p>
             <p>You're all set to continue to your training. Log in to your dashboard to access your Coursera courses.</p>
           `,
           ctaText: 'Go to Dashboard',
           ctaUrl: dashboardUrl,
         });
-        const result = await resend.emails.send({
+        const result = await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: dbUser.email,
           subject: 'Assessment Complete — Workforce Advancement Project',
           html: memberHtml,
         });
-        if (result.error || !result.data?.id) {
+        if (!result.data?.id) {
           console.error('Assessment member email was not accepted by the provider', {
-            errorName: result.error?.name ?? 'missing_delivery_id',
+            errorName: 'missing_delivery_id',
           });
         } else {
           memberEmailSent = true;

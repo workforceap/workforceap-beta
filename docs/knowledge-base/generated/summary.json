@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "8c1e6d13d339a16e504f87aa8af804879ae0a3f98cff094a2507df94918eb90e",
+  "inputTreeSha256": "a3f09a639ad8e312f669d2071519f9422f9cd3ceb7b5666dfe2975b8040e2fc3",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4912,
-    "sourceModules": 3563,
-    "importReferences": 17694,
-    "resolvedLocalReferences": 11861,
+    "files": 4906,
+    "sourceModules": 3558,
+    "importReferences": 17697,
+    "resolvedLocalReferences": 11877,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1062,
-    "nextRouteFiles": 1029,
-    "apiHandlers": 494,
+    "routeFiles": 1061,
+    "nextRouteFiles": 1028,
+    "apiHandlers": 493,
     "pageFiles": 316,
     "astroPageFiles": 33,
     "configuredCrons": 31,
-    "prismaModels": 113,
+    "prismaModels": 112,
     "prismaEnums": 33,
-    "relationFields": 308,
-    "testFiles": 939,
-    "testCandidates": 930,
+    "relationFields": 306,
+    "testFiles": 938,
+    "testCandidates": 929,
     "testHelpers": 9,
-    "staticallySelectedTests": 928,
+    "staticallySelectedTests": 927,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -38,7 +38,7 @@
     },
     {
       "area": "api",
-      "files": 524
+      "files": 523
     },
     {
       "area": "assets",
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 206
+      "files": 205
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1052
+      "files": 1047
     },
     {
       "area": "localization",
@@ -106,24 +106,24 @@
     },
     {
       "area": "tests",
-      "files": 550
+      "files": 551
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 922
+      "references": 920
     },
     {
       "file": "lib/auth/server.ts",
       "references": 748
     },
     {
-      "file": "lib/db/withRequestGuc.ts",
-      "references": 438
+      "file": "lib/auth/roles.ts",
+      "references": 437
     },
     {
-      "file": "lib/auth/roles.ts",
+      "file": "lib/db/withRequestGuc.ts",
       "references": 437
     },
     {
@@ -160,11 +160,15 @@
     },
     {
       "file": "lib/observability/captureApiError.ts",
-      "references": 119
+      "references": 118
     },
     {
       "file": "lib/rate-limit.ts",
-      "references": 110
+      "references": 109
+    },
+    {
+      "file": "lib/email.ts",
+      "references": 106
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
@@ -173,10 +177,6 @@
     {
       "file": "lib/tenant/withTenantScope.ts",
       "references": 102
-    },
-    {
-      "file": "lib/email.ts",
-      "references": 96
     },
     {
       "file": "lib/content/programTitle.ts",
@@ -191,12 +191,12 @@
       "references": 71
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 67
+      "file": "lib/email/escapeHtml.ts",
+      "references": 68
     },
     {
-      "file": "lib/email/escapeHtml.ts",
-      "references": 64
+      "file": "lib/content/programSlug.ts",
+      "references": 67
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
@@ -258,7 +258,7 @@
     },
     {
       "file": "lib/email.ts",
-      "lines": 2947
+      "lines": 2927
     },
     {
       "file": "lib/content/courseSkillMap.ts",

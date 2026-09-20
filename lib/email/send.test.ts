@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { isEmailProviderRateLimitError, sendBrandedEmail, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import {
+  defaultIdempotencyKey,
+  isEmailProviderRateLimitError,
+  isFixtureEmailRecipient,
+  isTransientProviderError,
+  sendBrandedEmail,
+  sendBrandedEmailOrThrowOnSkip,
+} from '@/lib/email/send';
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { buildEmailDedupeKey, type EmailSendLogEntry, type EmailSendLogStore } from '@/lib/email/sendLog';
 
@@ -11,10 +18,12 @@ describe('sendBrandedEmail', () => {
     const originalFixtureDomains = process.env.EMAIL_FIXTURE_DOMAINS;
     process.env.EMAIL_FIXTURE_DOMAINS = 'fixtures.workforceap.internal, qa.example.org';
     let providerCalls = 0;
+    let captured: { to?: unknown; cc?: unknown; bcc?: unknown } | undefined;
     const resend = {
       emails: {
-        send: async () => {
+        send: async (payload: { to?: unknown; cc?: unknown; bcc?: unknown }) => {
           providerCalls++;
+          captured = payload;
           return { data: { id: 'must-not-send' }, error: null };
         },
       },
@@ -43,21 +52,226 @@ describe('sendBrandedEmail', () => {
           error: null,
         });
       }
-      for (const field of ['to', 'cc', 'bcc'] as const) {
+      assert.equal(providerCalls, 0);
+      // A fixture in cc/bcc is dropped from the envelope; the real `to` still gets the message.
+      for (const field of ['cc', 'bcc'] as const) {
         const result = await sendBrandedEmail(resend, {
           from: 'WorkforceAP <hello@workforceap.org>',
           to: 'member@workforceap.org',
           subject: `Fixture ${field} safety test`,
-          html: '<p>Never send</p>',
+          html: '<p>Send to the real recipient only</p>',
           [field]: `fixture@${field}.test`,
         });
-        assert.equal('skipped' in result && result.skipped, true, `${field} fixture must skip`);
+        assert.equal('skipped' in result, false, `${field} fixture must not skip the real recipient`);
+        assert.equal(captured?.to, 'member@workforceap.org');
+        assert.equal(captured?.[field], undefined, `${field} fixture must be dropped`);
       }
-      assert.equal(providerCalls, 0);
+      assert.equal(providerCalls, 2);
     } finally {
       if (originalFixtureDomains === undefined) delete process.env.EMAIL_FIXTURE_DOMAINS;
       else process.env.EMAIL_FIXTURE_DOMAINS = originalFixtureDomains;
     }
+  });
+
+  it('skips seeded fixture aliases by local-part pattern and by EMAIL_FIXTURE_ADDRESSES', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const originalFrom = process.env.EMAIL_FROM;
+    const originalAddresses = process.env.EMAIL_FIXTURE_ADDRESSES;
+    process.env.EMAIL_FROM = 'WorkforceAP <hello@workforceap.org>';
+    process.env.EMAIL_FIXTURE_ADDRESSES = 'Craig.Test@Partner.example.org, retired-alias@workforceap.org';
+    let providerCalls = 0;
+    const resend = {
+      emails: {
+        send: async () => {
+          providerCalls++;
+          return { data: { id: 'must-not-send' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    try {
+      for (const to of [
+        'admin-test@workforceap.org',
+        'Member Test <member-test@workforceap.org>',
+        'test-smoke-2026-06-17f@workforceap.org',
+        'referral-member-a@workforceap.org',
+        'match-candidate@workforceap.org',
+        'craig.test@partner.example.org',
+        'retired-alias@workforceap.org',
+      ]) {
+        assert.equal(isFixtureEmailRecipient(to), true, `${to} must be a fixture`);
+        const result = await sendBrandedEmail(resend, {
+          from: 'WorkforceAP <hello@workforceap.org>',
+          to,
+          subject: 'Fixture pattern test',
+          html: '<p>Never send</p>',
+        });
+        assert.deepEqual(result, { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null });
+      }
+      // Real staff and members on the sending domain are not fixtures.
+      for (const to of [
+        'michael.brown@workforceap.org', 'test@workforceap.org', 'contest-winner@workforceap.org',
+        'admin-test@partner.example.org', 'my-referral-member-list@workforceap.org', 'no-match-candidate@workforceap.org',
+      ]) {
+        assert.equal(isFixtureEmailRecipient(to), false, `${to} must not be a fixture`);
+      }
+      assert.equal(providerCalls, 0);
+    } finally {
+      if (originalFrom === undefined) delete process.env.EMAIL_FROM; else process.env.EMAIL_FROM = originalFrom;
+      if (originalAddresses === undefined) delete process.env.EMAIL_FIXTURE_ADDRESSES;
+      else process.env.EMAIL_FIXTURE_ADDRESSES = originalAddresses;
+    }
+  });
+
+  it('drops a fixture from a multi-recipient staff list and still sends to the real staff', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const originalFrom = process.env.EMAIL_FROM;
+    process.env.EMAIL_FROM = 'WorkforceAP <hello@workforceap.org>';
+    const sent: Array<{ to: unknown; cc: unknown; bcc: unknown }> = [];
+    const resend = {
+      emails: {
+        send: async (payload: { to: unknown; cc: unknown; bcc: unknown }) => {
+          sent.push({ to: payload.to, cc: payload.cc, bcc: payload.bcc });
+          return { data: { id: 'staff-sheet' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    try {
+      // The production admin distribution list: real inboxes plus the admin-test alias.
+      const result = await sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: ['info@workforceap.org', 'admin-test@workforceap.org', 'michael.brown@workforceap.org'],
+        cc: ['counselor-test@workforceap.org'],
+        subject: 'Training preassessment submitted',
+        html: '<p>Answer sheet</p>',
+      });
+      assert.equal('skipped' in result, false);
+      assert.deepEqual(sent, [{ to: ['info@workforceap.org', 'michael.brown@workforceap.org'], cc: undefined, bcc: undefined }]);
+
+      // Only when every `to` recipient is a fixture is the send skipped.
+      const skipped = await sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: ['admin-test@workforceap.org', 'member-test@workforceap.org'],
+        subject: 'Training preassessment submitted',
+        html: '<p>Answer sheet</p>',
+      });
+      assert.deepEqual(skipped, { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null });
+      assert.equal(sent.length, 1);
+    } finally {
+      if (originalFrom === undefined) delete process.env.EMAIL_FROM; else process.env.EMAIL_FROM = originalFrom;
+    }
+  });
+
+  it('retries a 503 and reuses the idempotency key', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const calls: Array<{ payload: unknown; options: { idempotencyKey?: string } }> = [];
+    const delays: number[] = [];
+    const resend = {
+      emails: {
+        send: async (payload: unknown, options: { idempotencyKey?: string }) => {
+          calls.push({ payload, options });
+          if (calls.length === 1) {
+            return {
+              data: null,
+              error: { name: 'application_error', message: 'Service unavailable', statusCode: 503 },
+            };
+          }
+          return { data: { id: 'accepted-after-503' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+
+    const result = await sendBrandedEmail(
+      resend,
+      {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'applicant@workforceap.org',
+        subject: 'Test',
+        html: '<p>Hi</p>',
+        idempotencyKey: 'applicant-followup:user-1:2026-09-20',
+      },
+      { sleep: async (ms) => { delays.push(ms); }, random: () => 0 },
+    );
+
+    assert.equal(result.data?.id, 'accepted-after-503');
+    assert.equal(calls.length, 2);
+    assert.deepEqual(delays, [500]);
+    assert.equal(calls[0].options.idempotencyKey, 'applicant-followup:user-1:2026-09-20');
+    assert.deepEqual(calls[1], calls[0]);
+  });
+
+  it('assigns a stable default idempotency key and keeps it across a thrown network retry', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const keys: Array<string | undefined> = [];
+    const delays: number[] = [];
+    let attempts = 0;
+    const resend = {
+      emails: {
+        send: async (_payload: unknown, options: { idempotencyKey?: string }) => {
+          keys.push(options?.idempotencyKey);
+          attempts++;
+          if (attempts === 1) {
+            throw Object.assign(new TypeError('fetch failed'), { cause: Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' }) });
+          }
+          return { data: { id: 'accepted-after-reset' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    const args = {
+      from: 'WorkforceAP <hello@workforceap.org>',
+      to: 'member@workforceap.org',
+      subject: 'Network retry',
+      html: '<p>Hi</p>',
+      template: { name: 'course_kickoff', params: { userId: 'u1' } },
+    };
+    const nowMs = Date.UTC(2026, 8, 20, 12, 0, 0);
+
+    const result = await sendBrandedEmail(resend, args, {
+      now: () => nowMs,
+      sleep: async (ms) => { delays.push(ms); },
+      random: () => 0,
+    });
+
+    assert.equal(result.data?.id, 'accepted-after-reset');
+    assert.deepEqual(delays, [500]);
+    assert.equal(keys.length, 2);
+    assert.equal(keys[0], keys[1]);
+    assert.equal(keys[0], defaultIdempotencyKey(args, nowMs));
+    assert.match(keys[0] ?? '', /^course_kickoff\/[0-9a-f]{64}$/);
+    // Same message next day → different key; different body, cc, bcc or reply-to same day → different key.
+    assert.notEqual(defaultIdempotencyKey(args, nowMs + 24 * 60 * 60 * 1000), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, html: '<p>Hello</p>' }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, cc: 'counselor@workforceap.org' }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, bcc: ['audit@workforceap.org'] }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, replyTo: 'mike@workforceap.org' }, nowMs), keys[0]);
+  });
+
+  it('does not retry a permanent provider rejection or the CRLF header defect', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    assert.equal(isTransientProviderError({ name: 'validation_error', message: 'Invalid `to` field', statusCode: 422 }), false);
+    assert.equal(isTransientProviderError(new TypeError('Header keys and values cannot contain carriage return, line feed, or null characters.')), false);
+    assert.equal(isTransientProviderError({ name: 'internal_server_error', message: 'boom', statusCode: 500 }), true);
+    assert.equal(isTransientProviderError({ statusCode: 408 }), true);
+    assert.equal(isTransientProviderError(Object.assign(new Error('getaddrinfo EAI_AGAIN api.resend.com'), { code: 'EAI_AGAIN' })), true);
+
+    let attempts = 0;
+    const resend = {
+      emails: {
+        send: async () => {
+          attempts++;
+          return { data: null, error: { name: 'validation_error', message: 'Invalid `to` field', statusCode: 422 } };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    await assert.rejects(
+      () => sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: 'applicant@workforceap.org',
+        subject: 'Test',
+        html: '<p>Hi</p>',
+      }, { suppressFailureDiagnostic: true, sleep: async () => {} }),
+      /Invalid `to` field/,
+    );
+    assert.equal(attempts, 1);
   });
 
   it('throws when Resend returns an error object instead of throwing', async () => {

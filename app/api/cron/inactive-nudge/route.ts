@@ -16,7 +16,7 @@ import { persistEvent } from '@/lib/events/track';
 export const maxDuration = 300;
 /**
  * Cron endpoint to send inactive member nudge emails.
- * Weekly nudge to members inactive for 7+ days.
+ * Weekly nudge to members (role `member` only) inactive for 7+ days.
  * Runs Monday 10 AM UTC. Deduplicates against memberEvents from the
  * last 7 days so no one receives more than one nudge per week, AND against
  * `MemberNudgeLog` so a member doesn't also get double-nudged by
@@ -36,6 +36,10 @@ async function handle(_request: Request) {
     where: {
       deletedAt: null,
       notificationsReminders: true,
+      // Re-engagement copy is written for members. Staff, partner, employer
+      // and role-less accounts (106 nudges in the 2026-09 audit) are not
+      // inactive learners and must not be asked to "resume learning".
+      userRoles: { some: { role: { name: 'member' } } },
       AND: [
         { memberEvents: { none: { createdAt: { gte: sevenDaysAgo } } } },
         { memberEvents: { none: { eventName: 'inactive_nudge_sent', createdAt: { gte: sevenDaysAgo } } } },

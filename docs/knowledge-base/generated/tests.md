@@ -22,7 +22,7 @@
 | [tests/api/admin-member-erase.spec.ts](../../../tests/api/admin-member-erase.spec.ts) | 181 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
 | [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
-| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 588 | tests |  |
+| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 597 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
 | [tests/api/admin-onet-mappings.spec.ts](../../../tests/api/admin-onet-mappings.spec.ts) | 174 | tests |  |
@@ -51,8 +51,8 @@
 | [tests/api/application-messages.spec.ts](../../../tests/api/application-messages.spec.ts) | 179 | tests |  |
 | [tests/api/apply-confirmation-clarity.spec.ts](../../../tests/api/apply-confirmation-clarity.spec.ts) | 66 | tests |  |
 | [tests/api/apply-status-lookup.spec.ts](../../../tests/api/apply-status-lookup.spec.ts) | 164 | tests |  |
-| [tests/api/assessment.spec.ts](../../../tests/api/assessment.spec.ts) | 583 | tests |  |
-| [tests/api/at-risk-alert.spec.ts](../../../tests/api/at-risk-alert.spec.ts) | 695 | tests |  |
+| [tests/api/assessment.spec.ts](../../../tests/api/assessment.spec.ts) | 589 | tests |  |
+| [tests/api/at-risk-alert.spec.ts](../../../tests/api/at-risk-alert.spec.ts) | 740 | tests |  |
 | [tests/api/at-risk-api.spec.ts](../../../tests/api/at-risk-api.spec.ts) | 312 | tests |  |
 | [tests/api/auth-boundaries.spec.ts](../../../tests/api/auth-boundaries.spec.ts) | 216 | tests |  |
 | [tests/api/auth-read-recovery.spec.ts](../../../tests/api/auth-read-recovery.spec.ts) | 155 | tests |  |
@@ -61,7 +61,7 @@
 | [tests/api/bulk-email-fixture-accounting.spec.ts](../../../tests/api/bulk-email-fixture-accounting.spec.ts) | 89 | tests |  |
 | [tests/api/careers-occupation-program-title.spec.ts](../../../tests/api/careers-occupation-program-title.spec.ts) | 86 | tests |  |
 | [tests/api/concordia-enroll-page.spec.ts](../../../tests/api/concordia-enroll-page.spec.ts) | 86 | tests |  |
-| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 94 | tests |  |
+| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 101 | tests |  |
 | [tests/api/counselor-analytics.spec.ts](../../../tests/api/counselor-analytics.spec.ts) | 232 | tests |  |
 | [tests/api/counselor-application-review.spec.ts](../../../tests/api/counselor-application-review.spec.ts) | 289 | tests |  |
 | [tests/api/counselor-dashboard.spec.ts](../../../tests/api/counselor-dashboard.spec.ts) | 609 | tests |  |
@@ -82,7 +82,7 @@
 | [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 157 | tests |  |
 | [tests/api/cron-course-accountability.spec.ts](../../../tests/api/cron-course-accountability.spec.ts) | 71 | tests |  |
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
-| [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 205 | tests |  |
+| [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 207 | tests |  |
 | [tests/api/cron-interview-reminders.spec.ts](../../../tests/api/cron-interview-reminders.spec.ts) | 124 | tests |  |
 | [tests/api/cron-settings-namespace.spec.ts](../../../tests/api/cron-settings-namespace.spec.ts) | 53 | tests |  |
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
@@ -147,7 +147,7 @@
 | [tests/api/partner-message-history.spec.ts](../../../tests/api/partner-message-history.spec.ts) | 129 | tests |  |
 | [tests/api/partner-payout.spec.ts](../../../tests/api/partner-payout.spec.ts) | 380 | tests |  |
 | [tests/api/partner-routes.spec.ts](../../../tests/api/partner-routes.spec.ts) | 718 | tests |  |
-| [tests/api/partner-signup.spec.ts](../../../tests/api/partner-signup.spec.ts) | 526 | tests |  |
+| [tests/api/partner-signup.spec.ts](../../../tests/api/partner-signup.spec.ts) | 532 | tests |  |
 | [tests/api/password-recovery-destination.spec.ts](../../../tests/api/password-recovery-destination.spec.ts) | 172 | tests |  |
 | [tests/api/pathway-progress.spec.ts](../../../tests/api/pathway-progress.spec.ts) | 713 | tests |  |
 | [tests/api/placement-survey.spec.ts](../../../tests/api/placement-survey.spec.ts) | 1454 | tests |  |
@@ -370,6 +370,7 @@
 | [tests/email/failure-alert.spec.ts](../../../tests/email/failure-alert.spec.ts) | 99 | communications |  |
 | [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 157 | communications |  |
 | [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 196 | communications |  |
+| [tests/email/send-hardening.spec.ts](../../../tests/email/send-hardening.spec.ts) | 183 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
 | [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |
@@ -466,7 +467,7 @@
 | [tests/lib/milestone-delivery-queue.spec.ts](../../../tests/lib/milestone-delivery-queue.spec.ts) | 34 | member-counselor |  |
 | [tests/lib/milestone-dispatch-reliability.spec.ts](../../../tests/lib/milestone-dispatch-reliability.spec.ts) | 198 | member-counselor |  |
 | [tests/lib/milestone-draft-program-snapshot.spec.ts](../../../tests/lib/milestone-draft-program-snapshot.spec.ts) | 50 | member-counselor |  |
-| [tests/lib/milestone-email-provider.spec.ts](../../../tests/lib/milestone-email-provider.spec.ts) | 39 | member-counselor |  |
+| [tests/lib/milestone-email-provider.spec.ts](../../../tests/lib/milestone-email-provider.spec.ts) | 48 | member-counselor |  |
 | [tests/lib/mssc-curriculum-accuracy.spec.ts](../../../tests/lib/mssc-curriculum-accuracy.spec.ts) | 207 | tests |  |
 | [tests/lib/nextBestActions.test.ts](../../../tests/lib/nextBestActions.test.ts) | 270 | tests |  |
 | [tests/lib/notification-triggers-course.spec.ts](../../../tests/lib/notification-triggers-course.spec.ts) | 412 | communications |  |
