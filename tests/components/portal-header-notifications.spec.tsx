@@ -88,7 +88,7 @@ describe('one active header notification source', () => {
     vi.mocked(fetch).mockImplementation(async () => ({
       ok: true,
       json: async () => ({ notifications: [{ id: 'n1', type: 'task_assigned', title: 'Review Jane', body: 'Assigned to you', data: null, readAt: null, createdAt: '2026-09-19T11:00:00Z' }], unreadCount: 1 }),
-    }) as unknown as typeof fetch);
+    }) as unknown as Response);
     render(<NotificationBell badges={{ counselor_messages_unread: 2 }} />);
     await flush();
     await act(() => vi.advanceTimersByTimeAsync(600_000));

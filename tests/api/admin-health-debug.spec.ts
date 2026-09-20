@@ -25,10 +25,12 @@ vi.mock('@/lib/db/prisma', () => ({
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),
     $queryRaw: vi.fn(),
     cronExecution: { findFirst: vi.fn(), count: vi.fn() },
-    webhookEvent: { count: vi.fn() },
+    webhookEvent: { count: vi.fn(), findFirst: vi.fn() },
     xapiStatement: { count: vi.fn() },
     aIToolResult: { count: vi.fn() },
     workflowDiagnostic: { count: vi.fn() },
+    emailSendLog: { count: vi.fn() },
+    pushSubscription: { count: vi.fn() },
   },
 }));
 
@@ -49,6 +51,7 @@ describe('debug', () => {
     process.env.UPSTASH_REDIS_REST_URL = 'https://redis.test';
     process.env.UPSTASH_REDIS_REST_TOKEN = 'token';
     process.env.RESEND_API_KEY = 'resend-key';
+    process.env.RESEND_WEBHOOK_SECRET = 'whsec_test';
   });
 
   it('logs body', async () => {
@@ -61,6 +64,9 @@ describe('debug', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health/debug'));
     const body = await res.json();
