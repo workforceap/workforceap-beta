@@ -16,7 +16,7 @@
 | [css/mobile-dashboard-fixes.css](../../../css/mobile-dashboard-fixes.css) | 160 | styles |  |
 | [css/portal-a11y.css](../../../css/portal-a11y.css) | 32 | styles |  |
 | [css/portal-kit.css](../../../css/portal-kit.css) | 1480 | styles |  |
-| [css/portal-main-extracted.css](../../../css/portal-main-extracted.css) | 10067 | styles |  |
+| [css/portal-main-extracted.css](../../../css/portal-main-extracted.css) | 10069 | styles |  |
 | [css/portal-tokens.css](../../../css/portal-tokens.css) | 239 | styles |  |
 | [css/portal-ui-kit.css](../../../css/portal-ui-kit.css) | 282 | styles |  |
 | [css/portal.css](../../../css/portal.css) | 3403 | styles |  |

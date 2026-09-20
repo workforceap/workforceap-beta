@@ -191,11 +191,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 151
+          "line": 268
         },
         {
           "file": "eslint.config.mjs",
-          "line": 178
+          "line": 293
         },
         {
           "file": "playwright.config.ts",
@@ -1941,32 +1941,12 @@
         {
           "file": "app/employers/signup/page.tsx",
           "line": 15
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 46
         }
       ]
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
     },
     {
       "name": "NEXT_PUBLIC_EMPLOYER_CALENDLY_URL",
@@ -2792,59 +2772,59 @@
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 118
+          "line": 119
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 122
+          "line": 123
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 228
+          "line": 229
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 232
+          "line": 233
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 406
+          "line": 407
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 412
+          "line": 413
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 579
+          "line": 580
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 583
+          "line": 584
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 689
+          "line": 697
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 693
+          "line": 701
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 890
+          "line": 898
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 919
+          "line": 927
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1258
+          "line": 1266
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1262
+          "line": 1270
         },
         {
           "file": "tests/api/testimonials.spec.ts",
@@ -3434,6 +3414,10 @@
         {
           "file": "tests/api/admin-health.spec.ts",
           "line": 222
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 45
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
@@ -4648,11 +4632,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 151
+          "line": 268
         },
         {
           "file": "eslint.config.mjs",
-          "line": 178
+          "line": 293
         }
       ]
     },
@@ -5004,10 +4988,6 @@
     "GEMINI_API_KEY",
     "GROQ_API_KEY",
     "NEXT_PUBLIC_CAPTCHA_ENABLED",
-    "NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID",
     "NEXT_PUBLIC_GTM_ID",
     "NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD",
     "NEXT_PUBLIC_SENTRY_DSN",
