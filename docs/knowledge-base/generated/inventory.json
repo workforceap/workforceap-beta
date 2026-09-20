@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "921a176132564c99fd24534fc6f2a61e8db883c6df9642bf192dca57deaea289",
+  "inputTreeSha256": "4433822aee3ed884d92e9b57d8975ff5a000bbe74c3f32b9abdb4e3ef7e7479e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -75925,6 +75925,15 @@
       "binary": false
     },
     {
+      "path": "css/wa-brand-tokens.css",
+      "area": "styles",
+      "domain": "styles",
+      "bytes": 3819,
+      "lines": 70,
+      "sha256": "9c2d628666c66cbf7874408789aade72ffafe162c2418ea49a1dddb4a657b5b6",
+      "binary": false
+    },
+    {
       "path": "data/api-docs/catalog.json",
       "area": "supporting-files",
       "domain": "supporting-files",
@@ -137843,6 +137852,112 @@
       "directive": null
     },
     {
+      "path": "lib/ui/adminSemanticTokens.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4383,
+      "lines": 92,
+      "sha256": "e3d4f64ffbd517deb34006b7d599a5e27aaca34679cd209d2ac8f97c5ed55d5e",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "LEGACY",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tokens",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "legacyDark",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "legacyLight",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
+          "name": "adminSurfaces",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ui/brandTokens.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 7337,
+      "lines": 143,
+      "sha256": "06cf4bc3435ca0136b6fa1ff98a089f412a0bf5cf61ee9d8ca7224047816de36",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "BRAND_CSS",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "BRIDGE_CSS",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "PORTAL_CSS",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "LAYOUT_TSX",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "brand",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "bridgeReferences",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "norm",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicRoutePages",
+          "line": 86,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/ui/buttonClasses.test.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -137984,6 +138099,208 @@
           "name": "buttonPresets",
           "line": 102,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ui/cssTokenContrast.test-helpers.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 5301,
+      "lines": 144,
+      "sha256": "17f6ba309e0be5fb72d55c2f381128b51f21fdf6c334cad638b79bfb83a15562",
+      "binary": false,
+      "exports": [
+        {
+          "name": "Rgba",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Scheme",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ROOT",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "readCss",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadRootTokens",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadBlockTokens",
+          "line": 40,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "splitTopLevel",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolve",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseColor",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "over",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "luminance",
+          "line": 126,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contrast",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "colorOf",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "Rgba",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Scheme",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ROOT",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "readCss",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "stripComments",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadRootTokens",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadBlockTokens",
+          "line": 40,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "splitTopLevel",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolve",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseColor",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toCss",
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "over",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "luminance",
+          "line": 126,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contrast",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "colorOf",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ui/portalCanvas.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4835,
+      "lines": 73,
+      "sha256": "578d6eeb43846018ac909692fe5df2efb4b51877534e1f2ed166ba160719b61b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "KIT_CSS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "BRIDGE_CSS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "tokens",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "SHELL_TSX",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEV_DASHBOARD",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ruleBody",
+          "line": 21,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null

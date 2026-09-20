@@ -20,3 +20,4 @@
 | [css/portal-tokens.css](../../../css/portal-tokens.css) | 239 | styles |  |
 | [css/portal-ui-kit.css](../../../css/portal-ui-kit.css) | 268 | styles |  |
 | [css/portal.css](../../../css/portal.css) | 3397 | styles |  |
+| [css/wa-brand-tokens.css](../../../css/wa-brand-tokens.css) | 70 | styles |  |
