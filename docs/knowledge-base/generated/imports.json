@@ -95850,7 +95850,7 @@
   {
     "from": "lib/attention/admin.ts",
     "specifier": "react",
-    "line": 13,
+    "line": 20,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -95858,7 +95858,7 @@
   {
     "from": "lib/attention/admin.ts",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 14,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -95866,7 +95866,7 @@
   {
     "from": "lib/attention/admin.ts",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 15,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -95874,7 +95874,7 @@
   {
     "from": "lib/attention/admin.ts",
     "specifier": "./evaluate",
-    "line": 16,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/attention/evaluate.ts"
@@ -95882,7 +95882,7 @@
   {
     "from": "lib/attention/admin.ts",
     "specifier": "./loadFacts",
-    "line": 17,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/attention/loadFacts.ts"

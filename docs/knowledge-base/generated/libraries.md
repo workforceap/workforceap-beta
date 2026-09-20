@@ -217,7 +217,7 @@
 | [lib/assessment/answer-key.ts](../../../lib/assessment/answer-key.ts) | 76 | libraries | QuestionChoice:18, AssessmentQuestion:20, ASSESSMENT_QUESTIONS:28, TOTAL_POINTS:66, scoreAssessment:68 |
 | [lib/assessment/questions.ts](../../../lib/assessment/questions.ts) | 61 | libraries | QuestionChoice:14, AssessmentQuestionPublic:16, ASSESSMENT_QUESTIONS_PUBLIC:23, TOTAL_POINTS_PUBLIC:61 |
 | [lib/assessment/reviewRows.ts](../../../lib/assessment/reviewRows.ts) | 62 | libraries | AssessmentReviewRow:9, buildAssessmentReviewRows:35, formatAssessmentReviewText:52 |
-| [lib/attention/admin.ts](../../../lib/attention/admin.ts) | 39 | libraries | ADMIN_ATTENTION_ROSTER_CAP:20, getAdminAttention:37 |
+| [lib/attention/admin.ts](../../../lib/attention/admin.ts) | 46 | libraries | ADMIN_ATTENTION_ROSTER_CAP:27, getAdminAttention:44 |
 | [lib/attention/adminAgreement.test.ts](../../../lib/attention/adminAgreement.test.ts) | 71 | libraries |  |
 | [lib/attention/adminViews.ts](../../../lib/attention/adminViews.ts) | 183 | libraries | ADMIN_ATTENTION_TILES:22, AdminAttentionTileKey:28, AdminAttentionTile:30, ADMIN_ATTENTION_HREF:39, buildAdminAttentionTiles:45, AdminAttentionQueueItem:56, buildCommandCenterAttentionRows:70, buildAttentionDigest:126 |
 | [lib/attention/counselor.ts](../../../lib/attention/counselor.ts) | 66 | libraries | CounselorAttentionOptions:14, resolveCounselorMemberIds:27, getCounselorAttention:57 |
