@@ -9,7 +9,7 @@
   --mdx-gold:#a47f38; --mdx-gold-dark:#7d5f26;
   --mdx-bg:#f7f4f1; --mdx-surface:#fff; --mdx-text:#1a1414; --mdx-muted:#6e6a66; --mdx-border:#ece5e0;
   --mdx-grad:linear-gradient(135deg,#ad2c4d 0%,#8c0f37 52%,#6d1437 100%);
-  --mdx-grad-text:linear-gradient(100deg,#ad2c4d,#a47f38);
+  --mdx-grad-text:linear-gradient(100deg,#ad2c4d,#7d5f26); /* gold-as-text uses gold-dark (WAP-100) */
 }
 
 /* depth stage hero (compact, for inner Next pages) */
@@ -73,7 +73,7 @@
   --depthnav-gold:#a47f38; --depthnav-bg:#f7f4f1; --depthnav-surface:#fff;
   --depthnav-surface-2:#fbf8f6; --depthnav-text:#1a1414; --depthnav-muted:#6e6a66; --depthnav-border:#ece5e0;
   --depthnav-grad:linear-gradient(135deg,#ad2c4d 0%,#8c0f37 52%,#6d1437 100%);
-  --depthnav-grad-text:linear-gradient(100deg,#ad2c4d,#a47f38);
+  --depthnav-grad-text:linear-gradient(100deg,#ad2c4d,#7d5f26);
 }
 
 /* ---- bar: light blurred sticky surface (matches nav.top) ---- */

@@ -61,7 +61,7 @@
 | [tests/api/bulk-email-fixture-accounting.spec.ts](../../../tests/api/bulk-email-fixture-accounting.spec.ts) | 89 | tests |  |
 | [tests/api/careers-occupation-program-title.spec.ts](../../../tests/api/careers-occupation-program-title.spec.ts) | 86 | tests |  |
 | [tests/api/concordia-enroll-page.spec.ts](../../../tests/api/concordia-enroll-page.spec.ts) | 86 | tests |  |
-| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 101 | tests |  |
+| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 182 | tests |  |
 | [tests/api/counselor-analytics.spec.ts](../../../tests/api/counselor-analytics.spec.ts) | 232 | tests |  |
 | [tests/api/counselor-application-review.spec.ts](../../../tests/api/counselor-application-review.spec.ts) | 289 | tests |  |
 | [tests/api/counselor-dashboard.spec.ts](../../../tests/api/counselor-dashboard.spec.ts) | 609 | tests |  |
@@ -86,7 +86,7 @@
 | [tests/api/cron-interview-reminders.spec.ts](../../../tests/api/cron-interview-reminders.spec.ts) | 124 | tests |  |
 | [tests/api/cron-settings-namespace.spec.ts](../../../tests/api/cron-settings-namespace.spec.ts) | 53 | tests |  |
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
-| [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 232 | tests |  |
+| [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
@@ -104,7 +104,7 @@
 | [tests/api/gdpr-delete-route.spec.ts](../../../tests/api/gdpr-delete-route.spec.ts) | 213 | tests |  |
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
-| [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 233 | tests |  |
+| [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 257 | tests |  |
 | [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 485 | tests |  |
 | [tests/api/invite-validate.spec.ts](../../../tests/api/invite-validate.spec.ts) | 138 | tests |  |
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
@@ -155,7 +155,7 @@
 | [tests/api/portal-nav-badges.spec.ts](../../../tests/api/portal-nav-badges.spec.ts) | 69 | tests |  |
 | [tests/api/program-enrollment.spec.ts](../../../tests/api/program-enrollment.spec.ts) | 409 | tests |  |
 | [tests/api/public-abuse-hardening.spec.ts](../../../tests/api/public-abuse-hardening.spec.ts) | 253 | tests |  |
-| [tests/api/public-api-hardening-batch4.spec.ts](../../../tests/api/public-api-hardening-batch4.spec.ts) | 310 | tests |  |
+| [tests/api/public-api-hardening-batch4.spec.ts](../../../tests/api/public-api-hardening-batch4.spec.ts) | 312 | tests |  |
 | [tests/api/public-api-hardening-followups.spec.ts](../../../tests/api/public-api-hardening-followups.spec.ts) | 292 | tests |  |
 | [tests/api/public-route-error-handling.spec.ts](../../../tests/api/public-route-error-handling.spec.ts) | 286 | tests |  |
 | [tests/api/public-wioa-qualification.spec.ts](../../../tests/api/public-wioa-qualification.spec.ts) | 183 | tests |  |
@@ -242,6 +242,7 @@
 | [tests/components/admin-directory-results.spec.tsx](../../../tests/components/admin-directory-results.spec.tsx) | 129 | tests |  |
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
+| [tests/components/admin-legacy-dialogs.spec.tsx](../../../tests/components/admin-legacy-dialogs.spec.tsx) | 125 | tests |  |
 | [tests/components/admin-member-notes-panel.spec.tsx](../../../tests/components/admin-member-notes-panel.spec.tsx) | 81 | tests |  |
 | [tests/components/admin-overview-page.spec.tsx](../../../tests/components/admin-overview-page.spec.tsx) | 149 | tests |  |
 | [tests/components/admin-pipeline-funnel-order.spec.tsx](../../../tests/components/admin-pipeline-funnel-order.spec.tsx) | 68 | tests |  |
@@ -282,6 +283,7 @@
 | [tests/components/feature-flags-kit.spec.tsx](../../../tests/components/feature-flags-kit.spec.tsx) | 124 | tests |  |
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
+| [tests/components/heading-outline-wap123.spec.tsx](../../../tests/components/heading-outline-wap123.spec.tsx) | 47 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
@@ -298,7 +300,7 @@
 | [tests/components/member-resume-upload-failure.spec.tsx](../../../tests/components/member-resume-upload-failure.spec.tsx) | 98 | tests |  |
 | [tests/components/member-signup-form.spec.tsx](../../../tests/components/member-signup-form.spec.tsx) | 147 | tests |  |
 | [tests/components/member-training-workspace.test.tsx](../../../tests/components/member-training-workspace.test.tsx) | 338 | tests |  |
-| [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 93 | tests |  |
+| [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 117 | tests |  |
 | [tests/components/mfa-status-banner.spec.tsx](../../../tests/components/mfa-status-banner.spec.tsx) | 31 | tests |  |
 | [tests/components/notification-bell.spec.tsx](../../../tests/components/notification-bell.spec.tsx) | 201 | communications |  |
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
@@ -379,6 +381,7 @@
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
 | [tests/gdpr/anonymize-member.spec.ts](../../../tests/gdpr/anonymize-member.spec.ts) | 142 | tests |  |
 | [tests/hello.txt](../../../tests/hello.txt) | 1 | tests |  |
+| [tests/helpers/nativeDialogStub.ts](../../../tests/helpers/nativeDialogStub.ts) | 36 | tests | installNativeDialogStub:9 |
 | [tests/instrumentation-client-hydration-filter.test.ts](../../../tests/instrumentation-client-hydration-filter.test.ts) | 13 | tests |  |
 | [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 86 | tests |  |
 | [tests/lib/admin-job-match-prisma-scope.spec.ts](../../../tests/lib/admin-job-match-prisma-scope.spec.ts) | 65 | tests |  |

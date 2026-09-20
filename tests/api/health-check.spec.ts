@@ -40,6 +40,7 @@ vi.mock('@/lib/http/publicApiCors', () => ({
 
 vi.mock('@/lib/rate-limit', () => ({
   checkPublicHealthRateLimit: vi.fn(),
+  getRateLimiterMode: vi.fn(() => 'redis'),
 }));
 
 vi.mock('@/lib/db/withRequestGuc', () => ({
@@ -51,7 +52,7 @@ import { GET as healthGET, OPTIONS as healthOPTIONS } from '@/app/api/health/rou
 import { GET as readyGET, OPTIONS as readyOPTIONS } from '@/app/api/health/ready/route';
 import { __resetReadyCache } from '@/app/api/health/ready/_readyCache';
 import { prisma } from '@/lib/db/prisma';
-import { checkPublicHealthRateLimit } from '@/lib/rate-limit';
+import { checkPublicHealthRateLimit, getRateLimiterMode } from '@/lib/rate-limit';
 
 describe('GET /api/health', () => {
   const OLD_ENV = process.env;
@@ -162,6 +163,7 @@ describe('GET /api/health/ready', () => {
     __resetReadyCache();
     vi.mocked(checkPublicHealthRateLimit).mockResolvedValue({ success: true });
     vi.mocked(prisma.organization.findUnique).mockResolvedValue({ id: 'org-1' } as never);
+    vi.mocked(getRateLimiterMode).mockReturnValue('redis');
 
     process.env = {
       ...OLD_ENV,
@@ -187,6 +189,28 @@ describe('GET /api/health/ready', () => {
     expect(body.checks.organization.responseTimeMs).toBeGreaterThanOrEqual(0);
     expect(prisma.$transaction).toHaveBeenCalled();
   });
+
+  it('reports the rate limiter mode so operators can prove production is on Redis (WAP-13)', async () => {
+    const res = await readyGET(new Request('http://localhost:3000/api/health/ready'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.rateLimiter).toBe('redis');
+    expect(body.checks.rateLimiter).toEqual({ status: 'ok', mode: 'redis' });
+  });
+
+  it.each(['fail-open', 'fail-closed'] as const)(
+    'flags a %s limiter as a warning without failing readiness (the smoke cron enforces it)',
+    async (mode) => {
+      vi.mocked(getRateLimiterMode).mockReturnValue(mode);
+      const res = await readyGET(new Request('http://localhost:3000/api/health/ready'));
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.status).toBe('ok');
+      expect(body.rateLimiter).toBe(mode);
+      expect(body.checks.rateLimiter).toEqual({ status: 'warn', mode });
+      expect(body.checks.database.status).toBe('ok');
+    },
+  );
 
   it('returns 503 when Prisma cannot reach the org', async () => {
     vi.mocked(prisma.organization.findUnique).mockRejectedValue(new Error('Connection refused'));

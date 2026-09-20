@@ -22,6 +22,7 @@ export function SkillMissionEmpty({
   return (
     <div className="wa-kit-card">
       <KitEmptyState
+        headingAs="h2"
         title={empty.title}
         description={empty.description}
         action={

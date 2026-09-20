@@ -1,4 +1,5 @@
 export {
+  GOLD_TEXT_GRADIENT,
   readinessVoiceSurface,
   resumeCoachVoiceSurface,
   counselorStaffVoiceSurface,

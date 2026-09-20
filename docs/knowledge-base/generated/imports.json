@@ -71896,6 +71896,14 @@
     "target": "components/admin/EmailTemplatesClient.tsx"
   },
   {
+    "from": "components/admin/EmailTemplatesClient.test.tsx",
+    "specifier": "@/tests/helpers/nativeDialogStub",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "tests/helpers/nativeDialogStub.ts"
+  },
+  {
     "from": "components/admin/EmailTemplatesClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -71905,16 +71913,32 @@
   },
   {
     "from": "components/admin/EmailTemplatesClient.tsx",
-    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 4,
     "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/EmailTemplatesClient.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/EmailTemplatesClient.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/EmailTemplatesClient.tsx",
     "specifier": "@/components/portal/kit/KitEmptyState",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/KitEmptyState.tsx"
@@ -72033,11 +72057,27 @@
   },
   {
     "from": "components/admin/InviteForm.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 5,
     "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/InviteForm.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/InviteForm.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/InvitePartnerUserButton.tsx",
@@ -72729,11 +72769,11 @@
   },
   {
     "from": "components/admin/PartnerPayoutsPanel.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@/components/admin/ConfirmDialog",
     "line": 5,
     "kind": "import",
     "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "target": "components/admin/ConfirmDialog.tsx"
   },
   {
     "from": "components/admin/PartnerPayoutsPanel.tsx",
@@ -111856,6 +111896,30 @@
     "target": "lib/member/nextBestActions.ts"
   },
   {
+    "from": "lib/referralSources.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/referralSources.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/referralSources.test.ts",
+    "specifier": "./referralSources",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/referralSources.ts"
+  },
+  {
     "from": "lib/reporting/programCompletion.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -121264,6 +121328,14 @@
     "target": "lib/rate-limit.ts"
   },
   {
+    "from": "tests/api/contact-route.spec.ts",
+    "specifier": "@/lib/turnstile/verifyTurnstile",
+    "line": 166,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/turnstile/verifyTurnstile.ts"
+  },
+  {
     "from": "tests/api/counselor-analytics.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -123690,7 +123762,7 @@
   {
     "from": "tests/api/health-check.spec.ts",
     "specifier": "@/app/api/health/route",
-    "line": 50,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "app/api/health/route.ts"
@@ -123698,7 +123770,7 @@
   {
     "from": "tests/api/health-check.spec.ts",
     "specifier": "@/app/api/health/ready/route",
-    "line": 51,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "app/api/health/ready/route.ts"
@@ -123706,7 +123778,7 @@
   {
     "from": "tests/api/health-check.spec.ts",
     "specifier": "@/app/api/health/ready/_readyCache",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "app/api/health/ready/_readyCache.ts"
@@ -123714,7 +123786,7 @@
   {
     "from": "tests/api/health-check.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 53,
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -123722,7 +123794,7 @@
   {
     "from": "tests/api/health-check.spec.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -126882,7 +126954,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "@/app/api/health/ready/route",
-    "line": 82,
+    "line": 84,
     "kind": "import",
     "external": false,
     "target": "app/api/health/ready/route.ts"
@@ -126890,7 +126962,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "@/app/api/health/ready/_readyCache",
-    "line": 83,
+    "line": 85,
     "kind": "import",
     "external": false,
     "target": "app/api/health/ready/_readyCache.ts"
@@ -126898,7 +126970,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "@/app/api/invite/validate/route",
-    "line": 84,
+    "line": 86,
     "kind": "import",
     "external": false,
     "target": "app/api/invite/validate/route.ts"
@@ -126906,7 +126978,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "@/app/api/org/[slug]/outcomes/route",
-    "line": 85,
+    "line": 87,
     "kind": "import",
     "external": false,
     "target": "app/api/org/[slug]/outcomes/route.ts"
@@ -126914,7 +126986,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "@/app/api/apply/confirmation-email/route",
-    "line": 86,
+    "line": 88,
     "kind": "import",
     "external": false,
     "target": "app/api/apply/confirmation-email/route.ts"
@@ -126922,7 +126994,7 @@
   {
     "from": "tests/api/public-api-hardening-batch4.spec.ts",
     "specifier": "next/server",
-    "line": 88,
+    "line": 90,
     "kind": "type",
     "external": true,
     "package": "next"
@@ -131624,6 +131696,54 @@
     "package": "path"
   },
   {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "@/components/admin/InviteForm",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/InviteForm.tsx"
+  },
+  {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "@/components/admin/PartnerPayoutsPanel",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/PartnerPayoutsPanel.tsx"
+  },
+  {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "@/app/admin/employers/EmployerStatusButton",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/employers/EmployerStatusButton.tsx"
+  },
+  {
+    "from": "tests/components/admin-legacy-dialogs.spec.tsx",
+    "specifier": "@/tests/helpers/nativeDialogStub",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "tests/helpers/nativeDialogStub.ts"
+  },
+  {
     "from": "tests/components/admin-member-notes-panel.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -133456,6 +133576,54 @@
     "target": "app/(auth)/signup/SignupForm.tsx"
   },
   {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "@/components/portal/SkillMissionEmpty",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/SkillMissionEmpty.tsx"
+  },
+  {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "@/components/portal/InterviewPrepBundle",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/InterviewPrepBundle.tsx"
+  },
+  {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "@/components/portal/VoiceAgentSurface",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/VoiceAgentSurface.tsx"
+  },
+  {
+    "from": "tests/components/heading-outline-wap123.spec.tsx",
+    "specifier": "@/components/portal/kit/MemberProfilePhotoEditor",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/MemberProfilePhotoEditor.tsx"
+  },
+  {
     "from": "tests/components/inbox-zero-reassignment-receipt.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -134222,6 +134390,22 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/VoiceStudioKit.tsx"
+  },
+  {
+    "from": "tests/components/member-visual-contracts.spec.tsx",
+    "specifier": "@/components/portal/MemberDashboardVoiceSection",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/MemberDashboardVoiceSection.tsx"
+  },
+  {
+    "from": "tests/components/member-visual-contracts.spec.tsx",
+    "specifier": "@/components/portal/VoiceCoachesPromo",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/VoiceCoachesPromo.tsx"
   },
   {
     "from": "tests/components/mfa-status-banner.spec.tsx",
@@ -136678,6 +136862,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/deletedEmail.ts"
+  },
+  {
+    "from": "tests/helpers/nativeDialogStub.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
   },
   {
     "from": "tests/instrumentation-client-hydration-filter.test.ts",

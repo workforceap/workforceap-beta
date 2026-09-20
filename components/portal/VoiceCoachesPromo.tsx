@@ -3,6 +3,7 @@
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
 import { Mic, Zap } from 'lucide-react';
 import {
+  GOLD_TEXT_GRADIENT,
   careerBusinessVoiceSurface,
   mockInterviewVoiceSurface,
   readinessVoiceSurface,
@@ -51,7 +52,7 @@ export default function VoiceCoachesPromo() {
             badge="10–20 SEC"
             icon={<Zap size={22} aria-hidden />}
             glowColor="#a47f38"
-            gradient="linear-gradient(135deg, #a47f38, #7d5f26)"
+            gradient={GOLD_TEXT_GRADIENT}
             title="Elevator Introduction"
             description="Not a voice coach: writes a 10 to 20 second intro from your profile, saves it, and emails it to you to rehearse."
             href="/dashboard/ai-tools/elevator-pitch?prefill=true"

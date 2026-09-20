@@ -1043,6 +1043,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /careers | astro-page |  | [marketing/src/pages/careers.astro](../../../marketing/src/pages/careers.astro) |  |
 | /careers/thank-you | astro-page |  | [marketing/src/pages/careers/thank-you.astro](../../../marketing/src/pages/careers/thank-you.astro) |  |
 | /contact | astro-page |  | [marketing/src/pages/contact.astro](../../../marketing/src/pages/contact.astro) |  |
+| /contact/thanks | astro-page |  | [marketing/src/pages/contact/thanks.astro](../../../marketing/src/pages/contact/thanks.astro) |  |
 | /donate | astro-page |  | [marketing/src/pages/donate.astro](../../../marketing/src/pages/donate.astro) |  |
 | /employers | astro-page |  | [marketing/src/pages/employers.astro](../../../marketing/src/pages/employers.astro) |  |
 | /faq | astro-page |  | [marketing/src/pages/faq.astro](../../../marketing/src/pages/faq.astro) |  |

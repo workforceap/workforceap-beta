@@ -1,6 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import EmailTemplatesClient from './EmailTemplatesClient';
+import { installNativeDialogStub } from '@/tests/helpers/nativeDialogStub';
+
+// The edit modal is an Astryx Dialog (native <dialog>); JSDOM needs showModal/close.
+installNativeDialogStub();
 
 const mockTemplates = [
   {
@@ -49,10 +53,21 @@ describe('EmailTemplatesClient', () => {
 
   it('opens edit modal when edit is clicked', () => {
     render(<EmailTemplatesClient templates={mockTemplates} adminEmail="admin@example.com" />);
+    const closed = document.querySelector('dialog');
+    expect(closed).not.toBeNull();
+    expect(closed).not.toHaveAttribute('open');
     fireEvent.click(screen.getByText('Welcome Member'));
     fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    const dialog = screen.getByRole('dialog', { name: 'Edit email template' });
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveAttribute('open');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(screen.getByText('Edit Template')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Welcome Member')).toBeInTheDocument();
+    // WAP-137: no hand-rolled fixed scrim — stacking is owned by the native dialog.
+    expect(document.querySelector('[style*="rgba(0,0,0"]')).toBeNull();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(dialog).not.toHaveAttribute('open');
   });
 
   it('shows empty state when search matches nothing', () => {

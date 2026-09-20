@@ -8,6 +8,44 @@ import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 const CONTACT_EMAIL_TO = 'info@workforceap.org';
 
+/**
+ * Native (no-JavaScript) form posts from marketing/src/pages/contact.astro.
+ * The page's inline script posts JSON via fetch when it has bound; when it has
+ * not (slow network, blocked JS, reader modes), the browser submits the form
+ * itself as application/x-www-form-urlencoded to this route (WAP-13). Those
+ * submissions get a 303 to a real page instead of a JSON body they cannot show.
+ */
+export const CONTACT_FORM_THANKS_PATH = '/contact/thanks';
+export const CONTACT_FORM_ERROR_PATH = '/contact#contact-form-error';
+const NATIVE_FORM_CONTENT_TYPES = ['application/x-www-form-urlencoded', 'multipart/form-data'];
+
+export function isNativeFormPost(request: Request): boolean {
+  const contentType = request.headers.get('content-type')?.toLowerCase() ?? '';
+  return NATIVE_FORM_CONTENT_TYPES.some((type) => contentType.startsWith(type));
+}
+
+function formDataToBody(formData: FormData): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  formData.forEach((value, key) => {
+    if (typeof value !== 'string') return;
+    // Turnstile injects its token as cf-turnstile-response; the JSON contract
+    // (and the fetch path) call it cf_turnstile_response.
+    body[key === 'cf-turnstile-response' ? 'cf_turnstile_response' : key] = value;
+  });
+  return body;
+}
+
+/** JSON for fetch clients; a 303 to the confirmation or error anchor for native form posts. */
+function respond(nativeForm: boolean, body: Record<string, unknown>, status: number): NextResponse {
+  if (nativeForm) {
+    return new NextResponse(null, {
+      status: 303,
+      headers: { Location: status < 400 ? CONTACT_FORM_THANKS_PATH : CONTACT_FORM_ERROR_PATH },
+    });
+  }
+  return NextResponse.json(body, { status });
+}
+
 function getClientIp(request: NextRequest): string {
   return (
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -17,26 +55,24 @@ function getClientIp(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
+  const nativeForm = isNativeFormPost(request);
   try {
     const ip = getClientIp(request);
     const { success: rateOk } = await checkContactRateLimit(ip);
     if (!rateOk) {
-      return NextResponse.json(
-        { error: 'Too many submissions. Please try again in an hour.' },
-        { status: 429 }
-      );
+      return respond(nativeForm, { error: 'Too many submissions. Please try again in an hour.' }, 429);
     }
   
     let body: unknown;
     try {
-      body = await request.json();
+      body = nativeForm ? formDataToBody(await request.formData()) : await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+      return respond(nativeForm, { error: 'Invalid request' }, 400);
     }
   
     const parsed = parseBody(body);
     if (!parsed) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return respond(nativeForm, { error: 'Missing required fields' }, 400);
     }
   
     const { firstName, lastName, email, phone, topic, message, smsPreferred, turnstileToken } = parsed;
@@ -46,28 +82,22 @@ export async function POST(request: NextRequest) {
       const secret = process.env.TURNSTILE_SECRET_KEY;
       if (!secret?.trim()) {
         console.error('TURNSTILE_SECRET_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
-          { error: 'Contact form is temporarily unavailable. Please try again later.' },
-          { status: 503 }
-        );
+        return respond(nativeForm, { error: 'Contact form is temporarily unavailable. Please try again later.' }, 503);
       }
       // Clients only render the Turnstile widget when the SITE key is set, so
       // 'enabled + missing site key' means no request can ever carry a token —
       // fail closed as a config error, not an unpassable 400.
       if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
         console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
-          { error: 'Contact form is temporarily unavailable. Please try again later.' },
-          { status: 503 }
-        );
+        return respond(nativeForm, { error: 'Contact form is temporarily unavailable. Please try again later.' }, 503);
       }
       const tok = turnstileToken?.trim() ?? '';
       if (!tok) {
-        return NextResponse.json({ error: 'Please complete the security check.' }, { status: 400 });
+        return respond(nativeForm, { error: 'Please complete the security check.' }, 400);
       }
       const ok = await verifyTurnstileResponse(secret, tok, ip !== 'unknown' ? ip : undefined);
       if (!ok) {
-        return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 400 });
+        return respond(nativeForm, { error: 'Security check failed. Please try again.' }, 400);
       }
     }
   
@@ -76,10 +106,7 @@ export async function POST(request: NextRequest) {
   
     if (!resend) {
       console.error('RESEND_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'Email service is not configured. Please try again later.' },
-        { status: 503 }
-      );
+      return respond(nativeForm, { error: 'Email service is not configured. Please try again later.' }, 503);
     }
   
     const subject = `Contact Form: ${topic} — ${firstName} ${lastName}`;
@@ -122,16 +149,13 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       console.error('Contact form email failed:', err);
-      return NextResponse.json(
-        { error: 'Failed to send message. Please try again later.' },
-        { status: 500 }
-      );
+      return respond(nativeForm, { error: 'Failed to send message. Please try again later.' }, 500);
     }
   
-    return NextResponse.json({ ok: true });
+    return respond(nativeForm, { ok: true }, 200);
   } catch (error) {
     console.error('/contact:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return respond(nativeForm, { error: 'Internal server error' }, 500);
   }
 }
 

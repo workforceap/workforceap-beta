@@ -51,7 +51,7 @@
   mask-image:linear-gradient(90deg,transparent 0%,transparent 38%,#000 100%);opacity:.18}
 
 .enroll-school .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-  background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
+  background:linear-gradient(135deg,#e3bd6a,#c79a45);color:#3a2c10;font-weight:800;font-size:13px;
   letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
   box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
 .enroll-school .pill__star{font-size:13px;opacity:.95;display:inline-flex}
@@ -151,7 +151,7 @@
 .enroll-school .dbtn,.enroll-school .bbtn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:12px 22px;border-radius:999px;font-weight:800;text-decoration:none}
 .enroll-school .dbtn--solid{background:var(--color-on-accent);color:#3a2c10}
 .enroll-school .dbtn--glass{background:color-mix(in srgb, var(--color-on-accent) 12%, transparent);color:var(--color-on-accent);border:1px solid color-mix(in srgb, var(--color-on-accent) 28%, transparent)}
-.enroll-school .bbtn--gold{background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10}
+.enroll-school .bbtn--gold{background:linear-gradient(135deg,#e3bd6a,#c79a45);color:#3a2c10}
 .enroll-school .bbtn--outline{background:transparent;color:var(--color-on-accent);border:1px solid color-mix(in srgb, var(--color-on-accent) 45%, transparent)}
 .enroll-school .wrap{width:min(1120px, calc(100% - 48px));margin:0 auto}
 

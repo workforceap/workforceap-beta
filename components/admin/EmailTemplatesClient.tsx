@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, HStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 type Template = {
@@ -43,8 +45,12 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
   const [testSending, setTestSending] = useState(false);
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [customVars, setCustomVars] = useState<Record<string, string>>({});
-  // Kit trap for the edit modal: Tab containment + Escape + focus restore.
-  const editDialogRef = useFocusTrap<HTMLDivElement>(!!editingId, { onEscape: () => setEditingId(null) });
+  // Edit modal is an Astryx Dialog (native <dialog>): scrim, focus trap,
+  // Escape, focus restore and --z-* stacking come from the design system
+  // (WAP-137). Dismissal is blocked while a save is in flight.
+  const handleEditOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && !saving) setEditingId(null);
+  };
   const [search, setSearch] = useState('');
 
   const selected = templates.find((t) => t.id === selectedId);
@@ -571,65 +577,12 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
       </div>
 
       {/* Edit modal */}
-      {editingId && (
-        <div
-          ref={editDialogRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Edit email template"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem',
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setEditingId(null);
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--surface)',
-              borderRadius: '1rem',
-              width: '100%',
-              maxWidth: '42rem',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <div
-              style={{
-                padding: '1.25rem 1.5rem',
-                borderBottom: '1px solid var(--outline-variant)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: '1.0625rem' }}>Edit Template</h3>
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => setEditingId(null)}
-                aria-label="Close"
-              >
-                <span className="material-symbols-outlined" aria-hidden="true">close</span>
-              </button>
-            </div>
-
-            <div
-              style={{
-                padding: '1.25rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-              }}
-            >
+      <Dialog isOpen={!!editingId} onOpenChange={handleEditOpenChange} purpose="form" width={672} maxHeight="90dvh" aria-label="Edit email template">
+        <Layout
+          header={<DialogHeader title="Edit Template" onOpenChange={saving ? undefined : handleEditOpenChange} />}
+          content={
+            <LayoutContent>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }} aria-busy={saving}>
               <div>
                 <label
                   style={{
@@ -781,41 +734,24 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                 />
                 Active
               </label>
-            </div>
-
-            <div
-              style={{
-                padding: '1rem 1.5rem',
-                borderTop: '1px solid var(--outline-variant)',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-                gap: '0.75rem',
-              }}
-            >
-              {saveError ? (
-                <p role="alert" style={{ margin: 0, marginRight: 'auto', fontSize: '0.85rem', color: 'rgb(153,27,27)' }}>
-                  {saveError}
-                </p>
-              ) : null}
-              <button
-                className="btn btn-outline"
-                onClick={() => setEditingId(null)}
-                disabled={saving}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? 'Saving…' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </div>
+            </LayoutContent>
+          }
+          footer={
+            <LayoutFooter hasDivider>
+              <HStack gap={2} hAlign="end">
+                {saveError ? (
+                  <p role="alert" style={{ margin: 0, marginRight: 'auto', fontSize: '0.85rem', color: 'var(--wa-danger)' }}>
+                    {saveError}
+                  </p>
+                ) : null}
+                <Button type="button" label="Cancel" variant="secondary" isDisabled={saving} onClick={() => setEditingId(null)} />
+                <Button type="button" label={saving ? 'Saving…' : 'Save Changes'} variant="primary" isDisabled={saving} isLoading={saving} onClick={() => void handleSave()} />
+              </HStack>
+            </LayoutFooter>
+          }
+        />
+      </Dialog>
     </div>
   );
 }

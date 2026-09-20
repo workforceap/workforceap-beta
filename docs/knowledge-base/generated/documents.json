@@ -8052,12 +8052,12 @@
       {
         "level": 2,
         "title": "TODO-089: Soft-404 on all dynamic content routes (programs, blog) — returns 200, not 404",
-        "line": 973
+        "line": 975
       },
       {
         "level": 2,
         "title": "Completed",
-        "line": 994
+        "line": 996
       }
     ],
     "datedFilename": false,

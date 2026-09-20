@@ -968,6 +968,8 @@ remove the `lib/**/*.test.ts` line from `vitest.config.ts`'s `exclude` array and
 
 **Found:** 2026-06-18, overnight QA loop (functional test of `/api/contact` validation; auth rate-limit probe). User-facing P1 (contact dead) + security (auth rate limiting disabled) — both resolved by configuring Upstash.
 
+**Status 2026-09-20 (WAP-13, code side):** `/api/health/ready` now reports `rateLimiter: redis | fail-open | fail-closed` and `/api/cron/smoke-test` fails its readiness probe unless it is `redis`, so the production posture is observable instead of inferred. The marketing contact form posts natively to `action="/api/contact"` when its script has not bound; the API answers native posts with a 303 to `/contact/thanks` (or `/contact#contact-form-error`), which removes the `POST /contact 405`s. Still open, production-only: confirm `UPSTASH_REDIS_REST_URL/TOKEN` on the prod Vercel project, remove any `RATE_LIMIT_ALLOW_MISSING_UPSTASH`, then verify `curl -sS https://www.workforceap.org/api/health/ready | jq .rateLimiter` prints `"redis"`, 10 rapid bad logins return a 429, and a normal contact POST succeeds. Close this TODO with that evidence.
+
 ---
 
 ## TODO-089: Soft-404 on all dynamic content routes (programs, blog) — returns 200, not 404

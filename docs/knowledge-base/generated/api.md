@@ -251,7 +251,7 @@
 | [app/api/careers/program-matches/\[programSlug\]/route.ts](../../../app/api/careers/program-matches/%5BprogramSlug%5D/route.ts) | 68 | api | GET:10 |
 | [app/api/careers/recommend/route.ts](../../../app/api/careers/recommend/route.ts) | 46 | api | POST:14 |
 | [app/api/consent/\[token\]/route.ts](../../../app/api/consent/%5Btoken%5D/route.ts) | 116 | learning-coursera | POST:35 |
-| [app/api/contact/route.ts](../../../app/api/contact/route.ts) | 161 | api | POST:19 |
+| [app/api/contact/route.ts](../../../app/api/contact/route.ts) | 185 | api | CONTACT_FORM_THANKS_PATH:18, CONTACT_FORM_ERROR_PATH:19, isNativeFormPost:22, POST:57 |
 | [app/api/counselor/analytics/route.ts](../../../app/api/counselor/analytics/route.ts) | 219 | member-counselor | GET:8 |
 | [app/api/counselor/bulk-followup/route.ts](../../../app/api/counselor/bulk-followup/route.ts) | 214 | member-counselor | POST:214 |
 | [app/api/counselor/counselors/route.ts](../../../app/api/counselor/counselors/route.ts) | 49 | member-counselor | GET:12 |
@@ -307,7 +307,7 @@
 | [app/api/cron/partner-outcome-digest/route.ts](../../../app/api/cron/partner-outcome-digest/route.ts) | 195 | communications | maxDuration:16, GET:194, POST:195 |
 | [app/api/cron/placement-survey/route.ts](../../../app/api/cron/placement-survey/route.ts) | 49 | communications | maxDuration:7, GET:48, POST:49 |
 | [app/api/cron/retention-decisions/route.ts](../../../app/api/cron/retention-decisions/route.ts) | 197 | communications | maxDuration:11, GET:196, POST:197 |
-| [app/api/cron/smoke-test/route.ts](../../../app/api/cron/smoke-test/route.ts) | 183 | communications | maxDuration:9, GET:182, POST:183 |
+| [app/api/cron/smoke-test/route.ts](../../../app/api/cron/smoke-test/route.ts) | 191 | communications | maxDuration:9, GET:190, POST:191 |
 | [app/api/cron/stale-training-check/route.ts](../../../app/api/cron/stale-training-check/route.ts) | 37 | communications | maxDuration:11, GET:37 |
 | [app/api/cron/verification/route.ts](../../../app/api/cron/verification/route.ts) | 97 | communications | maxDuration:9, GET:96, POST:97 |
 | [app/api/cron/weekly-recap-email/route.ts](../../../app/api/cron/weekly-recap-email/route.ts) | 77 | communications | maxDuration:11, GET:76, POST:77 |
@@ -348,7 +348,7 @@
 | [app/api/gdpr/delete/route.ts](../../../app/api/gdpr/delete/route.ts) | 145 | api | POST:20 |
 | [app/api/gdpr/export/route.ts](../../../app/api/gdpr/export/route.ts) | 81 | api | GET:6 |
 | [app/api/health/ready/_readyCache.ts](../../../app/api/health/ready/_readyCache.ts) | 20 | api | CACHE_TTL_MS:6, ReadyCacheEntry:8, readyCache:15, __resetReadyCache:18 |
-| [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | 139 | api | dynamic:12, OPTIONS:77, GET:86 |
+| [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | 149 | api | dynamic:12, OPTIONS:81, GET:90 |
 | [app/api/health/route.ts](../../../app/api/health/route.ts) | 95 | api | dynamic:8, OPTIONS:55, GET:64 |
 | [app/api/health/slo/route.ts](../../../app/api/health/slo/route.ts) | 388 | api | dynamic:40, GET:388 |
 | [app/api/interview/history/route.ts](../../../app/api/interview/history/route.ts) | 242 | jobs-employers | GET:104, POST:242 |

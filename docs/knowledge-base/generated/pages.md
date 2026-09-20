@@ -351,7 +351,7 @@
 | [app/admin/blog/new/loading.tsx](../../../app/admin/blog/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/blog/new/page.tsx](../../../app/admin/blog/new/page.tsx) | 19 | administration | default:6 |
 | [app/admin/blog/page.tsx](../../../app/admin/blog/page.tsx) | 224 | administration | generateMetadata:20, default:42 |
-| [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) | 168 | administration | default:11 |
+| [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) | 170 | administration | default:11 |
 | [app/admin/board/loading.tsx](../../../app/admin/board/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | 195 | administration | generateMetadata:21, default:33 |
 | [app/admin/board/print/page.tsx](../../../app/admin/board/print/page.tsx) | 97 | administration | generateMetadata:13, default:31 |

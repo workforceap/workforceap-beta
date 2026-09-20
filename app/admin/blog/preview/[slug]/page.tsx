@@ -33,8 +33,8 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
       {!post.published && (
         <div
           style={{
-            background: '#fef3c7',
-            color: '#92400e',
+            background: 'var(--wa-gold-soft)',
+            color: 'var(--wa-gold-dark)',
             padding: '0.5rem 1rem',
             textAlign: 'center',
             fontWeight: 600,
@@ -79,7 +79,9 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
               borderRadius: '8px',
               overflow: 'hidden',
               aspectRatio: '16/9',
-              background: '#0f172a',
+              // Light logo artwork needs a dark brand fill in both themes (was a
+              // hardcoded slate slab that ignored light mode — WAP-137).
+              background: 'linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

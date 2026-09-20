@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, HStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
 
 type InvitePostResponse = {
   ok?: boolean;
@@ -36,7 +38,12 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
   const [error, setError] = useState<string | null>(null);
   const [manualLink, setManualLink] = useState<{ url: string; message: string } | null>(null);
   const [copied, setCopied] = useState(false);
-  const trapRef = useFocusTrap(true, onClose);
+  // Parent mounts this component only while the modal is open; the Astryx
+  // Dialog (native <dialog>) owns the scrim, focus trap, Escape and --z-*
+  // stacking (WAP-137). Dismissal is blocked while a request is in flight.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && !sending) onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,41 +102,12 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
   const labelStyle = { display: 'block', marginBottom: '0.25rem', fontWeight: 500 } as const;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="invite-modal-title"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '1rem',
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        ref={trapRef as React.RefObject<HTMLDivElement>}
-        style={{
-          background: 'white',
-          borderRadius: '12px',
-          maxWidth: '480px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflow: 'auto',
-          boxShadow: 'var(--shadow-lg)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div style={{ padding: '1.5rem' }}>
-          <h2 id="invite-modal-title" style={{ margin: '0 0 1rem', fontSize: '1.25rem' }}>
-            Send Invite
-          </h2>
-
-          <form onSubmit={handleSubmit}>
+    <Dialog isOpen onOpenChange={handleOpenChange} purpose="form" width={480} maxHeight="90dvh" aria-label="Send Invite">
+      <Layout
+        header={<DialogHeader title="Send Invite" onOpenChange={sending ? undefined : handleOpenChange} />}
+        content={
+          <LayoutContent>
+            <form id="admin-invite-form" onSubmit={handleSubmit} aria-busy={sending}>
             {error && (
               <div
                 style={{
@@ -339,18 +317,18 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
                 style={{ ...inputStyle, resize: 'vertical' }}
               />
             </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button type="button" onClick={onClose} className="btn btn-outline">
-                {manualLink ? 'Done' : 'Cancel'}
-              </button>
-              <button type="submit" disabled={sending || !!manualLink} className="btn btn-primary">
-                {sending ? 'Sending...' : 'Send Invite'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+            </form>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter hasDivider>
+            <HStack gap={2} hAlign="end">
+              <Button type="button" label={manualLink ? 'Done' : 'Cancel'} variant="secondary" isDisabled={sending} onClick={() => onClose()} />
+              <Button type="submit" form="admin-invite-form" label={sending ? 'Sending...' : 'Send Invite'} variant="primary" isDisabled={sending || !!manualLink} />
+            </HStack>
+          </LayoutFooter>
+        }
+      />
+    </Dialog>
   );
 }

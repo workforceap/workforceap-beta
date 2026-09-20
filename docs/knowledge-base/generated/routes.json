@@ -21306,8 +21306,23 @@
     "routing": "filesystem",
     "exports": [
       {
-        "name": "POST",
+        "name": "CONTACT_FORM_THANKS_PATH",
+        "line": 18,
+        "kind": "Variable"
+      },
+      {
+        "name": "CONTACT_FORM_ERROR_PATH",
         "line": 19,
+        "kind": "Variable"
+      },
+      {
+        "name": "isNativeFormPost",
+        "line": 22,
+        "kind": "FunctionDeclaration"
+      },
+      {
+        "name": "POST",
+        "line": 57,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -23264,12 +23279,12 @@
       },
       {
         "name": "GET",
-        "line": 182,
+        "line": 190,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 183,
+        "line": 191,
         "kind": "Variable"
       }
     ],
@@ -24576,12 +24591,12 @@
       },
       {
         "name": "OPTIONS",
-        "line": 77,
+        "line": 81,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "GET",
-        "line": 86,
+        "line": 90,
         "kind": "Variable"
       }
     ],
@@ -33313,6 +33328,19 @@
     "file": "marketing/src/pages/contact.astro",
     "kind": "astro-page",
     "path": "/contact",
+    "groups": [],
+    "routing": "astro-filesystem-unexpanded",
+    "note": "Active static-build source pattern. getStaticPaths expansion, locale expansion, middleware/static/Next precedence and current deployed serving are not proven.",
+    "exports": [],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": [],
+    "extraction": "Filename route pattern only; Astro frontmatter and template imports are not AST-indexed."
+  },
+  {
+    "file": "marketing/src/pages/contact/thanks.astro",
+    "kind": "astro-page",
+    "path": "/contact/thanks",
     "groups": [],
     "routing": "astro-filesystem-unexpanded",
     "note": "Active static-build source pattern. getStaticPaths expansion, locale expansion, middleware/static/Next precedence and current deployed serving are not proven.",

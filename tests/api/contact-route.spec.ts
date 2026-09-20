@@ -23,7 +23,7 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({
 // signs List-Unsubscribe tokens; keep both inert here.
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
 
-import { POST } from '@/app/api/contact/route';
+import { CONTACT_FORM_ERROR_PATH, CONTACT_FORM_THANKS_PATH, POST } from '@/app/api/contact/route';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 
 function makeRequest(body: Record<string, unknown> = {}) {
@@ -38,6 +38,29 @@ function makeRequest(body: Record<string, unknown> = {}) {
       message: 'How do I enroll?',
       ...body,
     }),
+  }) as any;
+}
+
+/** A browser submitting the marketing form itself (no JavaScript bound). */
+function makeNativeFormRequest(overrides: Record<string, string> = {}) {
+  const fields = new URLSearchParams({
+    first_name: 'Ada',
+    last_name: 'Lovelace',
+    email: 'ada@example.com',
+    phone: '',
+    topic: 'Programs',
+    message: 'How do I enroll?',
+    sms_preferred: 'true',
+    ...overrides,
+  });
+  return new Request('http://localhost:3000/api/contact', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      accept: 'text/html,application/xhtml+xml',
+      'x-forwarded-for': '203.0.113.9',
+    },
+    body: fields.toString(),
   }) as any;
 }
 
@@ -97,5 +120,63 @@ describe('POST /api/contact', () => {
     const res = await POST(makeRequest());
     expect(res.status).toBe(429);
     expect(resend.send).not.toHaveBeenCalled();
+  });
+
+  // WAP-13: marketing/src/pages/contact.astro posts natively when its script has
+  // not bound. Those submissions must land on a page, not a JSON body.
+  describe('native (no-JavaScript) form posts', () => {
+    it('sends the same email and answers with a 303 to the confirmation page', async () => {
+      resend.send.mockResolvedValueOnce({ data: { id: 'email-2' } });
+      const res = await POST(makeNativeFormRequest());
+      expect(res.status).toBe(303);
+      expect(res.headers.get('location')).toBe(CONTACT_FORM_THANKS_PATH);
+      expect(CONTACT_FORM_THANKS_PATH).toBe('/contact/thanks');
+      expect(resend.send).toHaveBeenCalledTimes(1);
+      expect(resend.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'info@workforceap.org',
+          replyTo: 'ada@example.com',
+          subject: expect.stringContaining('Programs'),
+          text: expect.stringContaining('Prefer SMS: Yes'),
+        }),
+        expect.anything(),
+      );
+    });
+
+    it('redirects an incomplete native post back to the visible error notice without touching Resend', async () => {
+      const res = await POST(makeNativeFormRequest({ message: '' }));
+      expect(res.status).toBe(303);
+      expect(res.headers.get('location')).toBe(CONTACT_FORM_ERROR_PATH);
+      expect(CONTACT_FORM_ERROR_PATH).toBe('/contact#contact-form-error');
+      expect(resend.send).not.toHaveBeenCalled();
+    });
+
+    it('still rate-limits native posts, redirecting instead of returning JSON', async () => {
+      vi.mocked(checkContactRateLimit).mockResolvedValueOnce({ success: false });
+      const res = await POST(makeNativeFormRequest());
+      expect(res.status).toBe(303);
+      expect(res.headers.get('location')).toBe(CONTACT_FORM_ERROR_PATH);
+      expect(resend.send).not.toHaveBeenCalled();
+    });
+
+    it('maps the Turnstile field name from the native form to the captcha check', async () => {
+      process.env.NEXT_PUBLIC_CAPTCHA_ENABLED = 'true';
+      process.env.TURNSTILE_SECRET_KEY = 'secret';
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY = 'site';
+      const { verifyTurnstileResponse } = await import('@/lib/turnstile/verifyTurnstile');
+      resend.send.mockResolvedValueOnce({ data: { id: 'email-3' } });
+      const res = await POST(makeNativeFormRequest({ 'cf-turnstile-response': 'tok-123' }));
+      expect(vi.mocked(verifyTurnstileResponse)).toHaveBeenCalledWith('secret', 'tok-123', '203.0.113.9');
+      expect(res.status).toBe(303);
+      expect(res.headers.get('location')).toBe(CONTACT_FORM_THANKS_PATH);
+    });
+
+    it('keeps JSON responses for fetch clients', async () => {
+      resend.send.mockResolvedValueOnce({ data: { id: 'email-4' } });
+      const res = await POST(makeRequest());
+      expect(res.status).toBe(200);
+      expect(res.headers.get('location')).toBeNull();
+      expect(await res.json()).toEqual({ ok: true });
+    });
   });
 });

@@ -51,7 +51,10 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
         <div class="formpanel">
           <h2>Send Us a Message</h2>
           <p class="footnote" style="text-align:left;margin-bottom:4px">Fields marked * are required.</p>
-          <form class="cform" id="contact-form" method="post" novalidate>
+          <!-- action is the no-JS fallback (WAP-13): if the script below has not
+               bound, the browser posts the fields itself and /api/contact answers
+               with a 303 to /contact/thanks (or back here at #contact-form-error). -->
+          <form class="cform" id="contact-form" method="post" action="/api/contact" novalidate>
             <div class="frow">
               <div class="fgroup">
                 <label for="first_name">First Name <span aria-hidden="true">*</span></label>
@@ -100,6 +103,9 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
               </div>
             )}
             <p class="form-status form-status--err" id="contact-error" role="alert" hidden></p>
+            <p class="form-status form-status--err form-status--nojs" id="contact-form-error" role="alert" hidden>
+              We couldn't send your message. Please check the required fields and try again, or email info@workforceap.org / call (512) 777-1808.
+            </p>
             <button type="submit" class="btn btn--primary">Send Message</button>
             <p class="footnote">A WorkforceAP team member responds within 1–2 business days.</p>
           </form>
@@ -343,6 +349,8 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
   .form-status{font-size:15px;font-weight:600;line-height:1.5;border-radius:12px;padding:12px 16px;margin:0}
   .form-status--ok{background:rgba(74,155,79,.12);color:#2f6b34;border:1px solid rgba(74,155,79,.3);margin-top:14px}
   .form-status--err{background:rgba(173,44,77,.1);color:var(--crimson);border:1px solid rgba(173,44,77,.3)}
+  /* No-JS error: /api/contact redirects a failed native post back to #contact-form-error. */
+  .form-status--nojs:target{display:block}
 
   /* info tiles */
   .infostack{display:flex;flex-direction:column;gap:20px}

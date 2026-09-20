@@ -5,6 +5,12 @@ import type { ReactNode } from 'react';
 export type VoiceAgentSurfaceProps = {
   badge: string;
   headline?: string;
+  /**
+   * Heading level for `headline`. Defaults to h3 (a surface inside an h2
+   * section). Pass 'h2' when the surface is the first thing under the page
+   * h1 so the outline never skips a level (WAP-123).
+   */
+  headlineAs?: 'h2' | 'h3';
   subtext?: string;
   /**
    * Icon tile content. Prefer a lucide-react SVG element (no emoji as icons).
@@ -27,6 +33,7 @@ export type VoiceAgentSurfaceProps = {
 export default function VoiceAgentSurface({
   badge,
   headline,
+  headlineAs: HeadlineTag = 'h3',
   subtext,
   icon,
   glowColor,
@@ -108,7 +115,7 @@ export default function VoiceAgentSurface({
               {badge}
             </p>
             {headline ? (
-              <h3
+              <HeadlineTag
                 style={{
                   margin: 0,
                   fontSize: '1.05rem',
@@ -118,7 +125,7 @@ export default function VoiceAgentSurface({
                 }}
               >
                 {headline}
-              </h3>
+              </HeadlineTag>
             ) : null}
             {subtext ? (
               <p
