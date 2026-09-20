@@ -24,9 +24,10 @@ test('pool enforcement is opt-in and its CLI output never includes credentials',
   assert.equal((strict.stdout + strict.stderr).includes('DO_NOT_LOG'), false);
   assert.match(strict.stderr, /connection_limit=1/);
 });
-// WAP-17: every real Vercel build reports the pool parameters and warns loudly
-// on an off-runbook contract, but none blocks yet (POOL_CONTRACT_ENFORCED_VERCEL_ENVS
-// is empty until one preview build has logged parameters that match).
+// WAP-17: every real Vercel build reports the pool parameters. Production
+// BLOCKS on an off-runbook contract (its URL was proven on-contract by
+// deployment dpl_FmbefGN4GHD8z2qvUEMfRiV5EQmB); preview only warns until one
+// preview build has logged parameters that match.
 const runGuard = (extraEnv) => {
   const script = resolve(__dirname, '../check-supabase-env.mjs');
   const result = spawnSync(process.execPath, [script], {
@@ -58,13 +59,16 @@ test('--check-pool-contract still enforces regardless of env', () => {
   assert.doesNotMatch(run.stderr, /WARNING — runtime pool contract/);
 });
 
-test('a Vercel production build reports the pool parameters and warns instead of blocking', () => {
+test('a Vercel production build fails on an off-runbook pool contract', () => {
   const run = runGuard({ VERCEL: '1', VERCEL_ENV: 'production' });
-  // The parameters land in the build log — this is the evidence the
-  // enforcement flip is waiting on — without the URL, user or password.
+  assert.equal(run.status, 1);
+  // Still reported, so the build log shows what was wrong — without the URL,
+  // user or password — and the pool lines are in the BLOCKED block, not a WARNING.
   assert.match(run.stdout, /runtime pool parameters/);
-  assert.match(run.stderr, /WARNING — runtime pool contract is off-runbook for VERCEL_ENV="production"/);
-  assert.match(run.stderr, /POOL_CONTRACT_ENFORCED_VERCEL_ENVS/);
+  assert.match(run.stderr, /BLOCKED/);
+  const blocked = run.stderr.split('BLOCKED')[1] ?? '';
+  assert.match(blocked, /connection_limit=1/);
+  assert.doesNotMatch(run.stderr, /WARNING — runtime pool contract/);
   assert.equal(run.all.includes('DO_NOT_LOG'), false);
 });
 
