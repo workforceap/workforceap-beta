@@ -32,6 +32,8 @@ export const PORTAL_CLIENT_NAMESPACES = [
   // components/portal/WioaQualificationClient — /dashboard/learning/wioa-qualification
   // and /dev/member/wioa-qualification render it under the portal provider.
   'wioa',
+  // components/portal/MemberApprovalStatusCard — the /dashboard approval card.
+  'memberApproval',
 ] as const;
 
 /**

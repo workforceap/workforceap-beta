@@ -19503,6 +19503,14 @@
       {
         "file": "lib/formatDate.ts",
         "line": 8
+      },
+      {
+        "file": "lib/i18n/pickRootClientMessages.ts",
+        "line": 9
+      },
+      {
+        "file": "messages/es.json",
+        "line": 10
       }
     ],
     "kind": "test-candidate",

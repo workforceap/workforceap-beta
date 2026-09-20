@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "39e5968a21cb0f33b3180b4daad02627eb973f36e39de8225616e78902b5a2b8",
+  "inputTreeSha256": "6007dc23f11e52723fe75e0c587f04cfa0e688e34492c9586893577ce458c05c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -118415,9 +118415,9 @@
       "path": "lib/i18n/pickRootClientMessages.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 7355,
-      "lines": 147,
-      "sha256": "f391abba6a7749ae36c3773a291982b725fe5892129e0295404264c6239acc0a",
+      "bytes": 8204,
+      "lines": 163,
+      "sha256": "1d352a9c57174bb9e2ff8fcaf2178c484c47cccae421587cf995f6b52871f606",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -118443,9 +118443,9 @@
       "path": "lib/i18n/pickRootClientMessages.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 6738,
-      "lines": 208,
-      "sha256": "2a642abaf038097462535f3e4242e60ca7a0a8127e02eb4c6aa15b4ca403ff0c",
+      "bytes": 6840,
+      "lines": 210,
+      "sha256": "9637b629a0e9ecaa208880d9dce2a431479c79e78e5860ed8eb05c3d83b263e4",
       "binary": false,
       "exports": [
         {
@@ -118465,62 +118465,62 @@
         },
         {
           "name": "WIOA_CLIENT_NAMESPACES",
-          "line": 43,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 51,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 63,
+          "line": 65,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 99,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 103,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 107,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 115,
+          "line": 117,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickWioaClientMessages",
-          "line": 119,
+          "line": 121,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 123,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 168,
+          "line": 170,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 173,
+          "line": 175,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -118547,77 +118547,77 @@
         },
         {
           "name": "WIOA_CLIENT_NAMESPACES",
-          "line": 43,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 51,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 63,
+          "line": 65,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickNamespaces",
-          "line": 65,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminDashboardClientSlice",
-          "line": 75,
+          "line": 77,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickMarketingClientSlice",
-          "line": 82,
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 99,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 103,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 107,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 115,
+          "line": 117,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickWioaClientMessages",
-          "line": 119,
+          "line": 121,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 123,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 168,
+          "line": 170,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 173,
+          "line": 175,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -160407,9 +160407,9 @@
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2239,
-      "lines": 33,
-      "sha256": "c27da054c9ba6cea3f084543c75978d51cf210ecbd89a31c3ae150f5470a49ae",
+      "bytes": 3395,
+      "lines": 50,
+      "sha256": "eb0c0bbc782c1b105c319a1eb88825c2d725f1f41619cf5676a7ab8e9beb1d43",
       "binary": false,
       "exports": [],
       "declarations": [],

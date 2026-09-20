@@ -243,7 +243,7 @@
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
-| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 33 | tests |  |
+| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 50 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
 | [tests/components/member-nba-persistence.spec.tsx](../../../tests/components/member-nba-persistence.spec.tsx) | 37 | tests |  |

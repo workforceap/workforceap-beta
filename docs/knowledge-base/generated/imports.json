@@ -128608,6 +128608,22 @@
     "target": "lib/formatDate.ts"
   },
   {
+    "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
+    "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "@/messages/es.json",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "messages/es.json"
+  },
+  {
     "from": "tests/components/member-form-connection-failure.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 8,

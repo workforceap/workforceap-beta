@@ -123,6 +123,22 @@ test('wioa slice carries the screening catalog plus chrome, and root/apply/auth 
   assert.equal(ns(pickPortalClientMessages(catalog), 'wioa').title, ns(catalog, 'wioa').title);
 });
 
+test('portal slice carries every namespace a portal client component reads', () => {
+  // components/portal/MemberApprovalStatusCard (/dashboard) rendered raw
+  // `memberApproval.*` keys for the same reason the public WIOA page did.
+  for (const locale of ['en', 'es', 'fr', 'pt']) {
+    const localeCatalog = JSON.parse(
+      readFileSync(join(root, `messages/${locale}.json`), 'utf8'),
+    ) as AbstractIntlMessages;
+    const portal = pickPortalClientMessages(localeCatalog);
+    for (const key of ['title', 'intro', 'contact']) {
+      assert.equal(typeof ns(portal, 'memberApproval')[key], 'string', `${locale}: memberApproval.${key}`);
+    }
+    assert.equal(typeof ns(portal, 'wioa').title, 'string', `${locale}: wioa.title`);
+  }
+  assert.equal((pickRootClientMessages(catalog) as Record<string, unknown>).memberApproval, undefined);
+});
+
 test('wioa slice resolves in every shipped locale', () => {
   for (const locale of ['en', 'es', 'fr', 'pt']) {
     const localeCatalog = JSON.parse(
