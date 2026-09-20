@@ -8,6 +8,8 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { getProgramEnrollmentSteps } from '@/lib/content/programEnrollmentSteps';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
 import { programStartAccessFromDashboardView } from '@/lib/member/programStartEnrollment';
+import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import ProgramCommitmentPanel from '@/components/portal/ProgramCommitmentPanel';
@@ -55,10 +57,20 @@ export default async function ProgramStartPage() {
   });
 
   const steps = getProgramEnrollmentSteps(enrolledSlug);
-  const screeningPack = await prisma.employerScreeningPack.findFirst({
-    where: { programSlug: enrolledSlug, isActive: true },
-    select: { id: true, packTitle: true, employerLabel: true },
-  });
+  const [screeningPack, trainingView] = await Promise.all([
+    prisma.employerScreeningPack.findFirst({
+      where: { programSlug: enrolledSlug, isActive: true },
+      select: { id: true, packTitle: true, employerLabel: true },
+    }),
+    // Same completion source as /dashboard/program. This page is guidance,
+    // so a progress read failure degrades to the in-progress narrative
+    // rather than a 500.
+    loadMemberProgramTrainingView({ userId: user.id, programSlug: enrolledSlug }).catch(() => null),
+  ]);
+  // Completed state: every course in the assigned curriculum is done. An
+  // empty course list is "not started", never "complete".
+  const pathComplete =
+    !!trainingView && trainingView.totalCourses > 0 && trainingView.allCoursesComplete;
 
   const courseraReady =
     !!enrollment &&
@@ -85,7 +97,29 @@ export default async function ProgramStartPage() {
         />
 
         <div style={{ display: 'grid', gap: '1.25rem', maxWidth: '720px' }}>
-          {courseraReady ? (
+          {pathComplete ? (
+            <PortalCard className="wa-kit-tone--ok wa-kit-tone-edge">
+              <div role="status" style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                <span className="wa-kit-tone-icon" aria-hidden>
+                  <LegacyGlyph name="check_circle" size={20} />
+                </span>
+                <div>
+                  <p className="wa-kit-tone-text" style={{ margin: '0 0 0.35rem' }}>Path complete</p>
+                  <p style={{ fontWeight: 700, margin: '0 0 0.5rem' }}>
+                    You have finished every course in {program?.title ?? 'your program'}
+                  </p>
+                  <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
+                    All {trainingView.totalCourses} courses are complete and nothing on this path is waiting on
+                    you. Your counselor confirms any exam or credential step from here, and the{' '}
+                    <Link href="/dashboard/jobs" className="wa-text-[var(--color-accent-dark)] wa-font-semibold">
+                      Job Board
+                    </Link>{' '}
+                    is open for your search.
+                  </p>
+                </div>
+              </div>
+            </PortalCard>
+          ) : courseraReady ? (
             <PortalCard>
               <p style={{ fontWeight: 700, color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>You are on file for training access</p>
               <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -121,27 +155,41 @@ export default async function ProgramStartPage() {
               <li key={step.id}>
                 <PortalCard>
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                    <span
-                      aria-hidden
-                      style={{
-                        flexShrink: 0,
-                        width: '2rem',
-                        height: '2rem',
-                        borderRadius: '999px',
-                        background: 'var(--color-accent)',
-                        color: 'var(--color-on-accent, #fff)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 800,
-                        fontSize: '0.875rem',
-                      }}
-                    >
-                      {i + 1}
-                    </span>
+                    {pathComplete ? (
+                      <span
+                        aria-hidden
+                        className="wa-kit-tone--ok wa-kit-tone-icon"
+                        style={{ width: '2rem', height: '2rem', borderRadius: '999px' }}
+                      >
+                        <LegacyGlyph name="check" size={18} />
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden
+                        style={{
+                          flexShrink: 0,
+                          width: '2rem',
+                          height: '2rem',
+                          borderRadius: '999px',
+                          background: 'var(--color-accent)',
+                          color: 'var(--color-on-accent, #fff)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                    )}
                     <div>
-                      <h2 className="portal-section-heading" style={{ fontSize: '1rem', margin: '0 0 0.35rem' }}>
+                      <h2
+                        className="portal-section-heading"
+                        style={{ fontSize: '1rem', margin: '0 0 0.35rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}
+                      >
                         {step.title}
+                        {pathComplete ? <span className="wa-kit-tag wa-kit-tag--ok">Done</span> : null}
                       </h2>
                       <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
                         {step.description}
@@ -168,12 +216,25 @@ export default async function ProgramStartPage() {
           ) : null}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <Link href="/dashboard/program" className="wa-kit-cta wa-kit-focus">
-              Back to My Program
-            </Link>
-            <Link href="/dashboard" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
-              Open My Classes
-            </Link>
+            {pathComplete ? (
+              <>
+                <Link href="/dashboard/jobs" className="wa-kit-cta wa-kit-focus">
+                  Open Job Board
+                </Link>
+                <Link href="/dashboard/program" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                  Back to My Program
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard/program" className="wa-kit-cta wa-kit-focus">
+                  Back to My Program
+                </Link>
+                <Link href="/dashboard" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                  Open My Classes
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>    </>

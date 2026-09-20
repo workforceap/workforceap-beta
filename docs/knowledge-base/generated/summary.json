@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "a7ccf6ede84e0136ff08fa69702cb46e6ab76b8814ab9ee6df5d9d71cef2848d",
+  "inputTreeSha256": "42332ca17314f10a125123512ed8eed1eb5a98688642799b82cb4f7a19620def",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4828,
-    "sourceModules": 3485,
-    "importReferences": 17316,
-    "resolvedLocalReferences": 11596,
+    "files": 4829,
+    "sourceModules": 3486,
+    "importReferences": 17330,
+    "resolvedLocalReferences": 11608,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,14 +22,14 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 901,
-    "testCandidates": 893,
+    "testFiles": 902,
+    "testCandidates": 894,
     "testHelpers": 8,
-    "staticallySelectedTests": 891,
+    "staticallySelectedTests": 892,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 201
+    "environmentNames": 197
   },
   "areas": [
     {
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 517
+      "files": 518
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 740
+      "references": 741
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -124,7 +124,7 @@
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 431
+      "references": 432
     },
     {
       "file": "lib/content/programs.ts",
@@ -136,7 +136,7 @@
     },
     {
       "file": "lib/audit.ts",
-      "references": 225
+      "references": 226
     },
     {
       "file": "components/portal/kit/index.ts",
@@ -148,7 +148,7 @@
     },
     {
       "file": "lib/audit/log.ts",
-      "references": 193
+      "references": 194
     },
     {
       "file": "components/portal/PageHeader.tsx",

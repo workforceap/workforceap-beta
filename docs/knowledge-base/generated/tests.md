@@ -227,7 +227,7 @@
 | [tests/app/partner-settings-dates.spec.tsx](../../../tests/app/partner-settings-dates.spec.tsx) | 48 | tests |  |
 | [tests/app/portal-h1-ownership.spec.ts](../../../tests/app/portal-h1-ownership.spec.ts) | 164 | tests |  |
 | [tests/app/portal-page-outlines.spec.tsx](../../../tests/app/portal-page-outlines.spec.tsx) | 62 | tests |  |
-| [tests/app/program-start-page.spec.tsx](../../../tests/app/program-start-page.spec.tsx) | 91 | tests |  |
+| [tests/app/program-start-page.spec.tsx](../../../tests/app/program-start-page.spec.tsx) | 163 | tests |  |
 | [tests/app/public-cta-class.spec.ts](../../../tests/app/public-cta-class.spec.ts) | 97 | tests |  |
 | [tests/app/public-icon-font-free.spec.ts](../../../tests/app/public-icon-font-free.spec.ts) | 120 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
@@ -520,4 +520,5 @@
 | [tests/server-only-stub.cjs](../../../tests/server-only-stub.cjs) | 8 | tests |  |
 | [tests/setup.ts](../../../tests/setup.ts) | 1 | tests |  |
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
+| [tests/webhook-retries-audit-noise.spec.ts](../../../tests/webhook-retries-audit-noise.spec.ts) | 108 | tests |  |
 | [tests/well-known-icon-paths.spec.ts](../../../tests/well-known-icon-paths.spec.ts) | 77 | tests |  |

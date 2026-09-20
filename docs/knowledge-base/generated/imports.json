@@ -10441,8 +10441,24 @@
   },
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/lib/member/memberProgramTrainingView",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramTrainingView.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/program/start/page.tsx",
+    "specifier": "@/components/icons/LegacyGlyph",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/icons/LegacyGlyph.tsx"
+  },
+  {
+    "from": "app/(portal)/dashboard/program/start/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -10450,7 +10466,7 @@
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -10458,7 +10474,7 @@
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
     "specifier": "@/components/portal/ProgramCommitmentPanel",
-    "line": 13,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/ProgramCommitmentPanel.tsx"
@@ -128970,7 +128986,7 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/app/(portal)/dashboard/program/start/page",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/program/start/page.tsx"
@@ -128978,7 +128994,7 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -128986,18 +129002,34 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 30,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
   },
   {
     "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/content/programEnrollmentSteps",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programEnrollmentSteps.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/member/getActiveProgramForDashboard",
-    "line": 31,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/member/getActiveProgramForDashboard.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/member/memberProgramTrainingView",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramTrainingView.ts"
   },
   {
     "from": "tests/app/public-cta-class.spec.ts",
@@ -138446,6 +138478,86 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "next/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/app/api/admin/webhooks/process-retries/route",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/webhooks/process-retries/route.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/webhooks/retry",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/retry.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/app/api/admin/webhooks/process-retries/_processRetries",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/webhooks/process-retries/_processRetries.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/audit",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/cron/authorizeCronRequest",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/authorizeCronRequest.ts"
   },
   {
     "from": "tests/well-known-icon-paths.spec.ts",
