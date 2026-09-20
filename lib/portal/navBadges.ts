@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
-import { countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
+import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
@@ -86,13 +86,15 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
     // A member who has never opened Messages has read nothing, so every
     // staff-authored message is unread. (Treating the missing read marker as
     // "nothing unread" hid an 81-day-old staff reply behind no badge at all.)
-    counselor_messages_unread = await prisma.message.count({
+    const unreadStaffMessages = await prisma.message.count({
       where: {
         threadId: thread.id,
         authorId: { not: userId },
         ...(thread.memberLastReadAt ? { createdAt: { gt: thread.memberLastReadAt } } : {}),
       },
     });
+    // Unread badges count threads: a member has one thread, so 0 or 1.
+    counselor_messages_unread = countThreadsWithUnread(new Map([[thread.id, unreadStaffMessages]]));
   }
 
   return {
@@ -185,9 +187,9 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
   if (threads.length === 0) return { counselor_notifications_unread };
 
   // One batched query shared with the counselor inbox, so the rail badge and
-  // the inbox rows count the same unread messages (never-opened threads included).
+  // the inbox "Unread" tab count the same unread THREADS (never-opened threads
+  // included).
   const unreadMap = await countUnreadMemberMessagesByThread(threads.map((t) => t.id));
-  const unreadCounts = threads.map((t) => unreadMap.get(t.id) ?? 0);
 
   const slaRows = await getSlaStatusForThreads(threads.map((thread) => thread.id));
   let counselor_sla_breach_48h = 0;
@@ -196,7 +198,7 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
   }
 
   return {
-    counselor_messages_unread: unreadCounts.reduce((sum, count) => sum + count, 0),
+    counselor_messages_unread: countThreadsWithUnread(unreadMap),
     counselor_notifications_unread,
     counselor_sla_breach_48h,
   };

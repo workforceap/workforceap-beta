@@ -67,6 +67,18 @@ export async function countUnreadMemberMessagesByThread(
   return counts;
 }
 
+/**
+ * Unread badges count THREADS, not messages (Mike, 2026-09-20 "Unreads as
+ * threads"): a thread is unread when it holds at least one unread message.
+ * The counselor rail badge, the inbox "Unread" tab and the member Messages
+ * badge all apply this to the same per-thread counts.
+ */
+export function countThreadsWithUnread(unreadByThread: ReadonlyMap<string, number>): number {
+  let threads = 0;
+  for (const count of unreadByThread.values()) if (count > 0) threads += 1;
+  return threads;
+}
+
 export async function buildCounselorInboxRows(
   memberIds: string[],
   opts: { readOnlyAudit?: boolean } = {},

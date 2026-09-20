@@ -48,7 +48,7 @@ vi.mock('@/lib/milestoneCascade/queries', () => ({
 }));
 
 import { getNavBadgeCountsForUser } from '@/lib/portal/navBadges';
-import { countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
+import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
 
 describe('member counselor_messages_unread badge', () => {
   beforeEach(() => {
@@ -57,7 +57,7 @@ describe('member counselor_messages_unread badge', () => {
     db.messageCount.mockResolvedValue(0);
   });
 
-  it('counts every staff-authored message when the member has never opened Messages', async () => {
+  it('shows the unread thread when the member has never opened Messages (every staff message unread)', async () => {
     db.messageThreadFindUnique.mockResolvedValue({ id: 'thread-1', memberLastReadAt: null });
     db.messageCount.mockResolvedValue(1);
 
@@ -70,19 +70,26 @@ describe('member counselor_messages_unread badge', () => {
     expect(where.createdAt).toBeUndefined();
   });
 
-  it('counts only messages after the read marker once the member has read the thread', async () => {
+  it('counts threads, not messages: several unread staff replies after the read marker read as 1', async () => {
     const readAt = new Date('2026-09-01T00:00:00.000Z');
     db.messageThreadFindUnique.mockResolvedValue({ id: 'thread-1', memberLastReadAt: readAt });
     db.messageCount.mockResolvedValue(2);
 
     const counts = await getNavBadgeCountsForUser('member', 'member-1');
 
-    expect(counts.counselor_messages_unread).toBe(2);
+    expect(counts.counselor_messages_unread).toBe(1);
     expect(db.messageCount.mock.calls[0]![0].where).toEqual({
       threadId: 'thread-1',
       authorId: { not: 'member-1' },
       createdAt: { gt: readAt },
     });
+  });
+
+  it('is 0 once every staff message is read', async () => {
+    db.messageThreadFindUnique.mockResolvedValue({ id: 'thread-1', memberLastReadAt: new Date() });
+    db.messageCount.mockResolvedValue(0);
+    const counts = await getNavBadgeCountsForUser('member', 'member-1');
+    expect(counts.counselor_messages_unread).toBe(0);
   });
 
   it('is 0 with no thread at all, without querying messages', async () => {
@@ -99,17 +106,21 @@ describe('counselor rail badge shares the inbox unread query', () => {
     db.notificationCount.mockResolvedValue(0);
   });
 
-  it('counts member messages in threads the counselor has never opened', async () => {
-    db.counselorAssignmentFindMany.mockResolvedValue([{ memberId: 'member-1' }, { memberId: 'member-2' }]);
+  it('counts unread THREADS, including threads the counselor has never opened', async () => {
+    db.counselorAssignmentFindMany.mockResolvedValue([{ memberId: 'member-1' }, { memberId: 'member-2' }, { memberId: 'member-3' }]);
     db.messageThreadFindMany.mockResolvedValue([
       { id: 'thread-1', memberId: 'member-1', counselorLastReadAt: null },
       { id: 'thread-2', memberId: 'member-2', counselorLastReadAt: new Date() },
+      { id: 'thread-3', memberId: 'member-3', counselorLastReadAt: new Date() },
     ]);
-    db.queryRaw.mockResolvedValue([{ threadId: 'thread-1', unread: 4 }, { threadId: 'thread-2', unread: 2 }]);
+    // 4 + 2 unread messages across two threads, one fully read thread.
+    db.queryRaw.mockResolvedValue([{ threadId: 'thread-1', unread: 4 }, { threadId: 'thread-2', unread: 2 }, { threadId: 'thread-3', unread: 0 }]);
 
     const counts = await getNavBadgeCountsForUser('counselor', 'counselor-user-1');
 
-    expect(counts.counselor_messages_unread).toBe(6);
+    expect(counts.counselor_messages_unread).toBe(2);
+    // Same rule the inbox "Unread" tab applies to its rows (rows.filter(r => r.unreadCount > 0).length).
+    expect(countThreadsWithUnread(new Map([['thread-1', 4], ['thread-2', 2], ['thread-3', 0]]))).toBe(2);
     expect(db.queryRaw).toHaveBeenCalledTimes(1);
     const sql = (db.queryRaw.mock.calls[0]![0] as TemplateStringsArray).join('?');
     expect(sql).toContain('t.counselor_last_read_at IS NULL');
@@ -121,6 +132,7 @@ describe('counselor rail badge shares the inbox unread query', () => {
     db.queryRaw.mockResolvedValue([{ threadId: 'b', unread: 3 }]);
     const map = await countUnreadMemberMessagesByThread(['a', 'b', 'a']);
     expect([...map.entries()]).toEqual([['a', 0], ['b', 3]]);
+    expect(countThreadsWithUnread(map)).toBe(1);
 
     db.queryRaw.mockClear();
     expect(await countUnreadMemberMessagesByThread([])).toEqual(new Map());

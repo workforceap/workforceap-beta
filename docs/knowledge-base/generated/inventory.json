@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "6878e02321731ed6354cb329d706301b7c49e14395d6193d1fe3f05164177f51",
+  "inputTreeSha256": "87dfa5f372ddadeef12cd1ecdb6905cdfdf7ddfb93d7ff2bd10f4d64d33ac7c9",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -128533,9 +128533,9 @@
       "path": "lib/messages/counselorInbox.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 8406,
-      "lines": 247,
-      "sha256": "c892fec68e166c760f436e29f0d9ba2cad119c2beb140593f1d7a8a9f92b2093",
+      "bytes": 8906,
+      "lines": 259,
+      "sha256": "682915f858dbdd12f892da8129d0880973d77de9a58aebec3b325d13c62359ec",
       "binary": false,
       "exports": [
         {
@@ -128549,8 +128549,13 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "countThreadsWithUnread",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildCounselorInboxRows",
-          "line": 70,
+          "line": 82,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128571,8 +128576,13 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "countThreadsWithUnread",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildCounselorInboxRows",
-          "line": 70,
+          "line": 82,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135312,9 +135322,9 @@
       "path": "lib/portal/navBadges.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 8882,
-      "lines": 261,
-      "sha256": "8e6dc906152583054e0cc9c02abd1d8ea6511e8c7209ae6cdf0f72722fc4cda8",
+      "bytes": 9004,
+      "lines": 263,
+      "sha256": "73365f19e5bb9402ccf8d71c4863fa5d689ff6772d00084f11bfebad4907eeba",
       "binary": false,
       "exports": [
         {
@@ -135329,7 +135339,7 @@
         },
         {
           "name": "isValidPortalBadgeRole",
-          "line": 259,
+          "line": 261,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135356,22 +135366,22 @@
         },
         {
           "name": "getEmployerBadgeCounts",
-          "line": 105,
+          "line": 107,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCounselorBadgeCounts",
-          "line": 153,
+          "line": 155,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getPartnerBadgeCounts",
-          "line": 205,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isValidPortalBadgeRole",
-          "line": 259,
+          "line": 261,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -162008,9 +162018,9 @@
       "path": "tests/api/member-nav-badge-unread.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5654,
-      "lines": 129,
-      "sha256": "7e601a6989e3292c1a3a5f9f7732169bd573036418fd37a45e4d54774b90e16c",
+      "bytes": 6527,
+      "lines": 141,
+      "sha256": "df65b217f6ef1f753d72134d77f7f3e3777d32739207c5fff4dd27b644bfe055",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167921,9 +167931,9 @@
       "path": "tests/counselor-notifications-nav-badge.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 5763,
-      "lines": 129,
-      "sha256": "b09fc9d309b3703c6e687b44ead9c934eb130b5d81ee050c7e6a20001643b91d",
+      "bytes": 5841,
+      "lines": 130,
+      "sha256": "5786143eca3374e1455ac5e88820618b63f5f71d39d67b8c792bf64c831b4b5b",
       "binary": false,
       "exports": [],
       "declarations": [

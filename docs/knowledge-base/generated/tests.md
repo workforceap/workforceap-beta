@@ -122,7 +122,7 @@
 | [tests/api/member-feedback.spec.ts](../../../tests/api/member-feedback.spec.ts) | 346 | tests |  |
 | [tests/api/member-goals.spec.ts](../../../tests/api/member-goals.spec.ts) | 416 | tests |  |
 | [tests/api/member-messages.spec.ts](../../../tests/api/member-messages.spec.ts) | 521 | tests |  |
-| [tests/api/member-nav-badge-unread.spec.ts](../../../tests/api/member-nav-badge-unread.spec.ts) | 129 | tests |  |
+| [tests/api/member-nav-badge-unread.spec.ts](../../../tests/api/member-nav-badge-unread.spec.ts) | 141 | tests |  |
 | [tests/api/member-nba-reliability.spec.ts](../../../tests/api/member-nba-reliability.spec.ts) | 76 | tests |  |
 | [tests/api/member-onboard.spec.ts](../../../tests/api/member-onboard.spec.ts) | 523 | tests |  |
 | [tests/api/member-profile.spec.ts](../../../tests/api/member-profile.spec.ts) | 475 | tests |  |
@@ -335,7 +335,7 @@
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
-| [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 129 | communications |  |
+| [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 130 | communications |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
