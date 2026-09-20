@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "44f0e21c7d67e79a5f11679e77f549aedcb3e1698866d74de672b5353cdb2f9e",
+  "inputTreeSha256": "80d983aa8e6f57cdb908bcbe15a55b7a59f4b34862f91c95f092094aeabf6ff4",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3599,14 +3599,14 @@
       "path": "app/(auth)/login/LoginForm.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 24997,
-      "lines": 650,
-      "sha256": "3d5b89fe99b655d6ff639b3fc783c7d2b2741d885ba080f8ea5de078bf799968",
+      "bytes": 25183,
+      "lines": 652,
+      "sha256": "7c6bf69a6384f87be9ca5578892e2a0c6b55ff1093b9a966de681ef1e9606d93",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 216,
+          "line": 218,
           "kind": "FunctionDeclaration",
           "localName": "LoginForm"
         }
@@ -3614,32 +3614,32 @@
       "declarations": [
         {
           "name": "PORTAL_DESTINATIONS",
-          "line": 17,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "canonicalPortalPath",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "portalAudienceForPath",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "s",
-          "line": 36,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "LoginFormProps",
-          "line": 210,
+          "line": 212,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LoginForm",
-          "line": 216,
+          "line": 218,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -3899,14 +3899,14 @@
       "path": "app/(auth)/signup/SignupForm.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 24405,
-      "lines": 610,
-      "sha256": "ae4e500dce80b40273f6318ed031bc965a5ea2b107cbf8a986d1296330987060",
+      "bytes": 24591,
+      "lines": 612,
+      "sha256": "48c70083d89a97355727ffe04504aa0732ae83c6e158fad20892c29865644ef0",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 221,
+          "line": 223,
           "kind": "FunctionDeclaration",
           "localName": "SignupForm"
         }
@@ -3914,62 +3914,62 @@
       "declarations": [
         {
           "name": "Turnstile",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "CAPTCHA_ENABLED",
-          "line": 26,
-          "kind": "Variable"
-        },
-        {
-          "name": "TURNSTILE_SITE_KEY",
           "line": 27,
           "kind": "Variable"
         },
         {
+          "name": "TURNSTILE_SITE_KEY",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
           "name": "EMPLOYMENT_OPTIONS",
-          "line": 33,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYMENT_OPTION_KEYS",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "VETERAN_OPTIONS",
-          "line": 49,
-          "kind": "Variable"
-        },
-        {
-          "name": "VETERAN_OPTION_KEYS",
           "line": 50,
           "kind": "Variable"
         },
         {
+          "name": "VETERAN_OPTION_KEYS",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
           "name": "SignupFormProps",
-          "line": 56,
+          "line": 57,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "s",
-          "line": 61,
+          "line": 62,
           "kind": "Variable"
         },
         {
           "name": "getPasswordStrength",
-          "line": 204,
+          "line": 206,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "strengthColor",
-          "line": 214,
+          "line": 216,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SignupForm",
-          "line": 221,
+          "line": 223,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -47287,49 +47287,49 @@
       "path": "components/CookieConsentBanner.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 1641,
-      "lines": 67,
-      "sha256": "31cef54d2d6682d4cb0c3e38fb5485597564ac4bfcf9c15f766b9dce6d5176ec",
+      "bytes": 1915,
+      "lines": 75,
+      "sha256": "e1a5c0b0e3416b096905e12f5560271bab3471908824f5dd24f36fd63fe25925",
       "binary": false
     },
     {
       "path": "components/CookieConsentBanner.test.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8221,
-      "lines": 178,
-      "sha256": "6aae05ab70ee652f18965e12e8c57640b4faae20745267993f3e22a702404290",
+      "bytes": 11975,
+      "lines": 241,
+      "sha256": "1f6d18a14a2e0e74aa2f32d80af48ab32b9e0669b60d7bc900a5b2eb50bcb92b",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "pathname",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "bannerHeight",
           "line": 15,
           "kind": "Variable"
         },
         {
-          "name": "navHeight",
+          "name": "bannerHeight",
           "line": 16,
           "kind": "Variable"
         },
         {
-          "name": "measurements",
+          "name": "navHeight",
           "line": 17,
           "kind": "Variable"
         },
         {
-          "name": "gtag",
+          "name": "measurements",
           "line": 18,
           "kind": "Variable"
         },
         {
+          "name": "gtag",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
           "name": "view",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -47339,14 +47339,14 @@
       "path": "components/CookieConsentBanner.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4139,
-      "lines": 104,
-      "sha256": "6dc74cfa26ec1a2bd5bf42555fed1acf5af6c705498f9fa010606df56606fa36",
+      "bytes": 5977,
+      "lines": 136,
+      "sha256": "048b86a343ab824554a69780638be664bfc438983a1e251c3bba57adb3a536f9",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 21,
+          "line": 44,
           "kind": "FunctionDeclaration",
           "localName": "CookieConsentBanner"
         }
@@ -47354,17 +47354,37 @@
       "declarations": [
         {
           "name": "PORTAL_PREFIXES",
-          "line": 11,
+          "line": 14,
           "kind": "Variable"
         },
         {
+          "name": "AUTH_PREFIXES",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "matchesPrefix",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isPortalPath",
-          "line": 16,
+          "line": 33,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ConsentPlacement",
+          "line": 37,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "consentPlacementFor",
+          "line": 40,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CookieConsentBanner",
-          "line": 21,
+          "line": 44,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -75645,9 +75665,9 @@
       "path": "docs/knowledge-base/operations.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 28351,
+      "bytes": 28757,
       "lines": 172,
-      "sha256": "361710df19fbb173cf31d96ebedbf527968d52c633507afe2f1487c12b0e96da",
+      "sha256": "68fb8396b6fd67e158988caab9e64d7f6ef7c5f3edd23f8f55ce4c354ea3155b",
       "binary": false
     },
     {
@@ -80160,96 +80180,101 @@
       "path": "instrumentation-client.ts",
       "area": "root",
       "domain": "root",
-      "bytes": 8267,
-      "lines": 225,
-      "sha256": "0d0fd19de62e6cda1282af86ff31bde9e76fc33e30564d9d60b6e3aa3f99b715",
+      "bytes": 10262,
+      "lines": 270,
+      "sha256": "586d45de29ee39deb1f34dec2a2b7a6fb2b291db06005b709c9601be49afa3ae",
       "binary": false,
       "exports": [
         {
           "name": "onRouterTransitionStart",
-          "line": 194,
+          "line": 239,
           "kind": "Variable"
         },
         {
           "name": "setSentryUser",
-          "line": 213,
+          "line": 258,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "APP_LOCALES",
-          "line": 1,
+          "line": 7,
           "kind": "Variable"
         },
         {
           "name": "dsn",
-          "line": 3,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "isProduction",
-          "line": 4,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "isReadOnlyPortalAuditDocument",
-          "line": 6,
+          "line": 12,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "stripLocalePrefix",
-          "line": 16,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isPortalRoute",
-          "line": 25,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "captureRouterTransitionStart",
-          "line": 43,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "initPromise",
-          "line": 44,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "PII_QUERY_KEYS",
-          "line": 48,
+          "line": 54,
           "kind": "Variable"
         },
         {
           "name": "scrubUrlForBreadcrumb",
-          "line": 62,
+          "line": 68,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isExtensionStyleHydrationNoise",
-          "line": 79,
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "forwardHydrationReport",
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initSentry",
-          "line": 109,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "maybeInitSentry",
-          "line": 184,
+          "line": 229,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "onRouterTransitionStart",
-          "line": 194,
+          "line": 239,
           "kind": "Variable"
         },
         {
           "name": "setSentryUser",
-          "line": 213,
+          "line": 258,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -88268,126 +88293,136 @@
       "path": "lib/ai/groq.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 7790,
-      "lines": 220,
-      "sha256": "c1f9cc7aa804dc788a7e554818837a9e87939d606218713da0e0352478cb65a5",
+      "bytes": 8500,
+      "lines": 237,
+      "sha256": "6637318bef7739161d702e746066857050fad6376afa2f23eb575b1fe097c469",
       "binary": false,
       "exports": [
         {
           "name": "isAIConfigured",
-          "line": 6,
+          "line": 7,
           "kind": "ReExport"
         },
         {
           "name": "orderGroqModels",
-          "line": 53,
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolveGroqModelOverride",
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_resetGroqModelCacheForTesting",
-          "line": 92,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isGroqConfigured",
-          "line": 96,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "groqChatCompletion",
-          "line": 101,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "chatCompletion",
-          "line": 162,
+          "line": 179,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "providerKey",
-          "line": 14,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "groqKey",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "anthropicKey",
           "line": 19,
           "kind": "Variable"
         },
         {
-          "name": "groq",
+          "name": "anthropicKey",
           "line": 20,
           "kind": "Variable"
         },
         {
-          "name": "anthropic",
+          "name": "groq",
           "line": 21,
           "kind": "Variable"
         },
         {
+          "name": "anthropic",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
           "name": "PREFERRED_MODELS",
-          "line": 30,
+          "line": 31,
           "kind": "Variable"
         },
         {
           "name": "MODELS",
-          "line": 42,
+          "line": 43,
           "kind": "Variable"
         },
         {
           "name": "NON_CHAT_MODEL_PATTERN",
-          "line": 45,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "orderGroqModels",
-          "line": 53,
+          "line": 55,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MODEL_LIST_TTL_MS",
-          "line": 64,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "modelCache",
-          "line": 65,
+          "line": 67,
           "kind": "Variable"
         },
         {
           "name": "resolveGroqModels",
-          "line": 72,
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolveGroqModelOverride",
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_resetGroqModelCacheForTesting",
-          "line": 92,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isGroqConfigured",
-          "line": 96,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "groqChatCompletion",
-          "line": 101,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "splitSystemUser",
-          "line": 143,
+          "line": 160,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "chatCompletion",
-          "line": 162,
+          "line": 179,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -88397,12 +88432,52 @@
       "path": "lib/ai/groqModels.test.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 1369,
-      "lines": 37,
-      "sha256": "ef20197799b18b642ebd0cb80cbbde16d6a6eb7fa08dcec1b75716d07a26106c",
+      "bytes": 4198,
+      "lines": 96,
+      "sha256": "16465c9a479afcff3511b6b145b9475a9de44049a05b5e951bb2e27c2f632892",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "RETIRED",
+          "line": 47,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ai/groqRetiredModels.ts",
+      "area": "libraries",
+      "domain": "ai-voice",
+      "bytes": 777,
+      "lines": 17,
+      "sha256": "b69f6460cb7bfaedf8a744df960ca5a7ea1a72eaff50cfec201b239fa24a9e78",
+      "binary": false,
+      "exports": [
+        {
+          "name": "RETIRED_GROQ_MODEL_IDS",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "isRetiredGroqModel",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "RETIRED_GROQ_MODEL_IDS",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "isRetiredGroqModel",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -98786,6 +98861,40 @@
           "name": "persistGuardianConsent",
           "line": 18,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/consent/reserve.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 672,
+      "lines": 12,
+      "sha256": "a7f81666b0e0cd5f9b0bc406db5ba4b9a49f00b57d55589abf1c5af546ca282b",
+      "binary": false,
+      "exports": [
+        {
+          "name": "COOKIE_CONSENT_RESERVE_VAR",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONSENT_AWARE_SCREEN_MIN_HEIGHT",
+          "line": 12,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "COOKIE_CONSENT_RESERVE_VAR",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONSENT_AWARE_SCREEN_MIN_HEIGHT",
+          "line": 12,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -126313,6 +126422,135 @@
       "directive": null
     },
     {
+      "path": "lib/observability/hydrationTelemetry.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 5492,
+      "lines": 117,
+      "sha256": "d26732052ec608179f9a134cb20ee7f3e7f3beb601f6476c3fd58e00eb811fb6",
+      "binary": false,
+      "exports": [
+        {
+          "name": "REACT_HYDRATION_ERROR_CODES",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "HydrationErrorReport",
+          "line": 27,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "extractReactErrorCode",
+          "line": 39,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isHydrationError",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "redactRouteIds",
+          "line": 66,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tagHydrationError",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HydrationErrorListenerOptions",
+          "line": 85,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "createHydrationErrorListener",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SentryEventLike",
+          "line": 100,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isUntaggedGlobalHandlerHydrationEvent",
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "REACT_HYDRATION_ERROR_CODES",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "HYDRATION_MESSAGE_PATTERN",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "HydrationErrorReport",
+          "line": 27,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "extractReactErrorCode",
+          "line": 39,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "messageOf",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isHydrationError",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ID_SEGMENT",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactRouteIds",
+          "line": 66,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tagHydrationError",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HydrationErrorListenerOptions",
+          "line": 85,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "createHydrationErrorListener",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SentryEventLike",
+          "line": 100,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isUntaggedGlobalHandlerHydrationEvent",
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/observability/logger.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -141835,9 +142073,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 7860,
+      "bytes": 7915,
       "lines": 147,
-      "sha256": "bb0bad4af4e5a66f3f6d2777a32c33c7a92bfef293ba0949cb2e997e6da3922c",
+      "sha256": "e4b5c73d7fe0ed7dcdaf9baa81be355a9308e745458216ba649adce48e3e6c4f",
       "binary": false
     },
     {
@@ -150083,6 +150321,69 @@
           "name": "load",
           "line": 5,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/lint/verify-no-retired-groq-models.mjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 3590,
+      "lines": 81,
+      "sha256": "266cffca63179015363b5574a5da6aa940586bc0a27683fef1a3d08d206e5d52",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "ROOT",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "RETIRED_GROQ_MODEL_IDS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_ROOTS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "ALLOWED",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "SOURCE_FILE",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "TEST_FILE",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "SKIP_DIRS",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 36,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findRetiredGroqModelReferences",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 62,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -160474,6 +160775,29 @@
       "directive": null
     },
     {
+      "path": "tests/components/partner-signup-redirect.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 1626,
+      "lines": 36,
+      "sha256": "1024c3d146a3ce4f859dccb063c5ce76ab72e6a5605a9eeac33589fe37358c7f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "replace",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "originalLocation",
+          "line": 14,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/partner-status-pill.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -161169,9 +161493,9 @@
       "path": "tests/e2e/README.md",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2600,
-      "lines": 72,
-      "sha256": "a5033ad1eb546a578fdac43c33f39f483926de858c9a459182b705f9a443a0cd",
+      "bytes": 2777,
+      "lines": 73,
+      "sha256": "8410d276d54be5c5316301057b8fd7af18173528bb4a4977586d1337d80964c8",
       "binary": false
     },
     {
@@ -161676,6 +162000,24 @@
         {
           "name": "MOBILE_VIEWPORT",
           "line": 4,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/e2e/partner-signup-viewports.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2146,
+      "lines": 47,
+      "sha256": "a0b4d771704e5299a057cffde9c8c378c891608907ccee3a625b1f307dc36e7c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "VIEWPORTS",
+          "line": 14,
           "kind": "Variable"
         }
       ],
@@ -163576,6 +163918,29 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/hydration-telemetry.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5854,
+      "lines": 107,
+      "sha256": "86cb8a874ac35759da537f58bcc2603ef0daa29be57a6011b2ca8b8a2cfca59c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "MINIFIED_418",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEV_HYDRATION",
+          "line": 13,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {

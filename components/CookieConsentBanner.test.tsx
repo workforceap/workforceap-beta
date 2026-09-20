@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import CookieConsentBanner from './CookieConsentBanner';
 import { COOKIE_CONSENT_KEY } from '@/lib/consent/state';
 import { pickRootClientMessages } from '@/lib/i18n/pickRootClientMessages';
+import { CONSENT_AWARE_SCREEN_MIN_HEIGHT, COOKIE_CONSENT_RESERVE_VAR } from '@/lib/consent/reserve';
 import en from '@/messages/en.json';
 import es from '@/messages/es.json';
 import fr from '@/messages/fr.json';
@@ -69,8 +70,9 @@ describe('CookieConsentBanner', () => {
     expect(screen.getByRole('region', { name: 'Cookie preferences' })).not.toHaveAttribute('aria-modal');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(document.querySelector('[inert]')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy');
-    expect(screen.getByRole('link', { name: 'Terms of Service' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('region', { name: 'Cookie preferences' })).toHaveAttribute('data-placement', 'fixed');
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/en/privacy');
+    expect(screen.getByRole('link', { name: 'Terms of Service' })).toHaveAttribute('href', '/en/terms');
   });
 
   it.each([
@@ -168,11 +170,72 @@ describe('CookieConsentBanner', () => {
     ['es', 'Aceptar', 'Rechazar'],
     ['fr', 'Accepter', 'Refuser'],
     ['pt', 'Aceitar', 'Recusar'],
-  ] as const)('renders %s consent copy and keeps Astro legal destinations valid', (locale, accept, decline) => {
+  ] as const)('renders %s consent copy and localizes the Astro legal destinations', (locale, accept, decline) => {
+    // WAP-148 (c): /es/login used to link the English /privacy and /terms.
     pathname = `/${locale}/apply`;
     render(view(locale));
     expect(screen.getByRole('button', { name: accept })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: decline })).toBeInTheDocument();
-    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/privacy', '/terms']);
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href')))
+      .toEqual([`/${locale}/privacy`, `/${locale}/terms`]);
+  });
+
+  it.each([
+    ['/en/login', 'Cookie preferences', '/en/privacy'],
+    ['/es/login', 'Preferencias de cookies', '/es/privacy'],
+    ['/en/signup', 'Cookie preferences', '/en/privacy'],
+    ['/es/forgot-password', 'Preferencias de cookies', '/es/privacy'],
+  ] as const)('renders in flow on auth screen %s so no control paints under it', (route, label, privacyHref) => {
+    // WAP-148 (a): at 1280x900 the fixed bar covered 23% of Sign In and at 390x844 the whole
+    // remember-me checkbox, because body padding cannot move a 100vh-centered form. On auth
+    // routes the notice is in flow after the page and only publishes the reserve the screens
+    // subtract from their min-height; the body is not padded a second time.
+    const reserve = () => document.documentElement.style.getPropertyValue(COOKIE_CONSENT_RESERVE_VAR);
+    const nav = document.createElement('nav');
+    nav.id = 'mobile-bottom-nav';
+    document.body.appendChild(nav);
+    bannerHeight = 81;
+    navHeight = 68;
+    pathname = route;
+    render(view(route.startsWith('/es') ? 'es' : 'en'));
+    const region = screen.getByRole('region', { name: label });
+    expect(region).toHaveAttribute('data-placement', 'in-flow');
+    expect(region.style.getPropertyValue('--cookie-consent-bottom')).toBe('0px');
+    expect(reserve()).toBe('81px');
+    expect(document.body.style.paddingBottom).toBe('32px');
+    expect(screen.getAllByRole('link')[0]).toHaveAttribute('href', privacyHref);
+    fireEvent.click(screen.getAllByRole('button').find((b) => b.textContent === 'Accept' || b.textContent === 'Aceptar')!);
+    expect(screen.queryByRole('region')).not.toBeInTheDocument();
+    expect(reserve()).toBe('');
+    expect(document.body.style.paddingBottom).toBe('32px');
+  });
+
+  it('keeps the reserve current when the in-flow notice rewraps, and pads the body again off auth routes', () => {
+    pathname = '/en/login';
+    bannerHeight = 81;
+    const { rerender } = render(view());
+    expect(document.documentElement.style.getPropertyValue(COOKIE_CONSENT_RESERVE_VAR)).toBe('81px');
+    bannerHeight = 120;
+    act(() => measurements[0]([], {} as ResizeObserver));
+    expect(document.documentElement.style.getPropertyValue(COOKIE_CONSENT_RESERVE_VAR)).toBe('120px');
+    expect(document.body.style.paddingBottom).toBe('32px');
+    pathname = '/en/apply';
+    rerender(view());
+    expect(screen.getByRole('region')).toHaveAttribute('data-placement', 'fixed');
+    expect(document.body.style.paddingBottom).toBe('152px'); // base 32 + banner 120
+  });
+
+  it('is placed in flow by the stylesheet and subtracted from the 100vh auth screens', () => {
+    const moduleCss = readFileSync(path.resolve(__dirname, './CookieConsentBanner.module.css'), 'utf8');
+    const inFlowRule = moduleCss.match(/\.banner\[data-placement='in-flow'\]\s*\{([^}]*)\}/)?.[1];
+    expect(inFlowRule).toBeTruthy();
+    expect(inFlowRule).toContain('position: static');
+    expect(CONSENT_AWARE_SCREEN_MIN_HEIGHT).toBe(`calc(100vh - var(${COOKIE_CONSENT_RESERVE_VAR}, 0px))`);
+    for (const screenFile of ['../app/(auth)/login/LoginForm.tsx', '../app/(auth)/signup/SignupForm.tsx']) {
+      const source = readFileSync(path.resolve(__dirname, screenFile), 'utf8');
+      expect(source).toContain("from '@/lib/consent/reserve'");
+      expect(source).toContain('minHeight: CONSENT_AWARE_SCREEN_MIN_HEIGHT,');
+      expect(source).not.toMatch(/minHeight:\s*'100vh'/);
+    }
   });
 });

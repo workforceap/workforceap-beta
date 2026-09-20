@@ -2,6 +2,7 @@ import Groq from 'groq-sdk';
 import Anthropic from '@anthropic-ai/sdk';
 import { isAIConfigured } from '@/lib/ai/configured';
 import { geminiChat, isGeminiConfigured } from '@/lib/ai/geminiChat';
+import { isRetiredGroqModel } from '@/lib/ai/groqRetiredModels';
 
 export { isAIConfigured } from '@/lib/ai/configured';
 
@@ -45,7 +46,8 @@ const MODELS = PREFERRED_MODELS;
 const NON_CHAT_MODEL_PATTERN = /whisper|tts|playai|guard|embed|prompt-guard|orpheus|compound/i;
 
 /**
- * Pure: order the live model ids by preference, dropping non-chat models.
+ * Pure: order the live model ids by preference, dropping non-chat models and
+ * ids Groq has decommissioned (`lib/ai/groqRetiredModels.ts`).
  * Preferred ids that exist come first in preference order; every other
  * chat-capable id follows so the chain still has a model when the whole
  * preferred set has been retired.
@@ -54,7 +56,7 @@ export function orderGroqModels(
   liveIds: readonly string[],
   preferred: readonly string[] = PREFERRED_MODELS,
 ): string[] {
-  const chat = liveIds.filter((id) => id && !NON_CHAT_MODEL_PATTERN.test(id));
+  const chat = liveIds.filter((id) => id && !NON_CHAT_MODEL_PATTERN.test(id) && !isRetiredGroqModel(id));
   const live = new Set(chat);
   const head = preferred.filter((id) => live.has(id));
   const tail = chat.filter((id) => !head.includes(id)).sort();
@@ -88,6 +90,21 @@ async function resolveGroqModels(): Promise<readonly string[]> {
   return MODELS;
 }
 
+/**
+ * Pure: the `GROQ_MODEL` override to try first, or undefined when it is unset
+ * or names a decommissioned model. A retired override would otherwise put the
+ * production outage id back at the head of every chain.
+ */
+export function resolveGroqModelOverride(raw: string | undefined): string | undefined {
+  const id = raw?.trim();
+  if (!id) return undefined;
+  if (isRetiredGroqModel(id)) {
+    console.warn(`[ai] GROQ_MODEL override names a decommissioned Groq model; ignoring it`);
+    return undefined;
+  }
+  return id;
+}
+
 /** Test-only: drop the cached model list. */
 export function _resetGroqModelCacheForTesting(): void {
   modelCache = null;
@@ -106,7 +123,7 @@ export async function groqChatCompletion(
 
   const maxTokens = Math.min(options?.maxTokens ?? 4000, 8192);
   const temperature = options?.temperature ?? 0.7;
-  const modelOverride = process.env.GROQ_MODEL?.trim();
+  const modelOverride = resolveGroqModelOverride(process.env.GROQ_MODEL);
   const available = await resolveGroqModels();
   const modelsToTry = modelOverride ? [modelOverride, ...available] : available;
   let lastError: Error | null = null;

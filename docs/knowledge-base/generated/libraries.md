@@ -137,8 +137,9 @@
 | [lib/ai/elevenlabsSession.test.ts](../../../lib/ai/elevenlabsSession.test.ts) | 118 | ai-voice |  |
 | [lib/ai/geminiChat.ts](../../../lib/ai/geminiChat.ts) | 47 | ai-voice | isGeminiConfigured:9, geminiChat:13 |
 | [lib/ai/geminiEmbed.ts](../../../lib/ai/geminiEmbed.ts) | 84 | ai-voice | isGeminiEmbedConfigured:8, EmbedResult:12, embedTexts:49, cosineSimilarity:68, _resetCacheForTests:82 |
-| [lib/ai/groq.ts](../../../lib/ai/groq.ts) | 220 | ai-voice | isAIConfigured:6, orderGroqModels:53, _resetGroqModelCacheForTesting:92, isGroqConfigured:96, groqChatCompletion:101, chatCompletion:162 |
-| [lib/ai/groqModels.test.ts](../../../lib/ai/groqModels.test.ts) | 37 | ai-voice |  |
+| [lib/ai/groq.ts](../../../lib/ai/groq.ts) | 237 | ai-voice | isAIConfigured:7, orderGroqModels:55, resolveGroqModelOverride:98, _resetGroqModelCacheForTesting:109, isGroqConfigured:113, groqChatCompletion:118, chatCompletion:179 |
+| [lib/ai/groqModels.test.ts](../../../lib/ai/groqModels.test.ts) | 96 | ai-voice |  |
+| [lib/ai/groqRetiredModels.ts](../../../lib/ai/groqRetiredModels.ts) | 17 | ai-voice | RETIRED_GROQ_MODEL_IDS:9, isRetiredGroqModel:15 |
 | [lib/ai/interviewVoiceGreeting.test.ts](../../../lib/ai/interviewVoiceGreeting.test.ts) | 11 | ai-voice |  |
 | [lib/ai/interviewVoiceGreeting.ts](../../../lib/ai/interviewVoiceGreeting.ts) | 10 | ai-voice | INTERVIEW_VOICE_GREETING_EN:1, INTERVIEW_VOICE_GREETING_ES:4, getInterviewVoiceGreeting:8 |
 | [lib/ai/jobTailor.ts](../../../lib/ai/jobTailor.ts) | 166 | ai-voice | JobTailorResult:7, JobTailorResponse:15, JobTailorUnavailableError:21, tailorResumeForJob:117 |
@@ -302,6 +303,7 @@
 | [lib/coach/memorySafety.test.ts](../../../lib/coach/memorySafety.test.ts) | 78 | libraries |  |
 | [lib/coach/memorySafety.ts](../../../lib/coach/memorySafety.ts) | 94 | libraries | CoachMemoryFields:1, MAX_COACH_MEMORY_SUMMARY_CHARS:7, sanitizeCoachMemoryText:48, sanitizeCoachMemoryFields:58, getSafeCoachMemoryTopic:76, minimizeCoachMemoryTurns:87 |
 | [lib/consent/guardianConsentPersistence.ts](../../../lib/consent/guardianConsentPersistence.ts) | 121 | learning-coursera | GuardianConsentInput:6, GuardianConsentOutcome:14, persistGuardianConsent:18 |
+| [lib/consent/reserve.ts](../../../lib/consent/reserve.ts) | 12 | learning-coursera | COOKIE_CONSENT_RESERVE_VAR:9, CONSENT_AWARE_SCREEN_MIN_HEIGHT:12 |
 | [lib/consent/state.ts](../../../lib/consent/state.ts) | 104 | learning-coursera | COOKIE_CONSENT_KEY:14, CONSENT_EVENT:15, ConsentDecision:17, ConsentRecord:19, detectGpc:30, readConsent:36, writeConsent:62, subscribeConsent:73, pushConsentToGtag:87 |
 | [lib/content/benefitsCliff.test.ts](../../../lib/content/benefitsCliff.test.ts) | 182 | public-experience |  |
 | [lib/content/benefitsCliff.ts](../../../lib/content/benefitsCliff.ts) | 390 | public-experience | CliffSource:16, BENEFITS_CLIFF_RULES_VERSION:25, FPL_SOURCE:31, monthlyFpl:43, SNAP_SOURCE:52, SNAP_RULES:61, MEDICAID_ADULT_SOURCE:88, MEDICAID_CHILD_SOURCE:97, MEDICAID_RULES:106, TANF_SOURCE:123, TANF_RULES:132, ALL_CLIFF_SOURCES:145, CliffProgramId:157, CliffInput:159, CliffProgramResult:178, CliffVerdict:192, CliffResult:194, ABOUT_THE_SAME_BAND:211, clampHouseholdSize:215, monthlyEarnings:228, estimateSnapMonthly:249, isAdultMedicaidEligible:272, isChildCoverageEligible:277, estimateTanfMonthly:282, computeCliff:293 |
@@ -791,6 +793,7 @@
 | [lib/notify/discord.ts](../../../lib/notify/discord.ts) | 130 | communications | DiscordNotificationLevel:26, DiscordNotificationInput:28, notifyDiscord:70 |
 | [lib/observability/apiErrorScope.ts](../../../lib/observability/apiErrorScope.ts) | 48 | libraries | runWithApiErrorScope:7, markApiErrorReported:11, hasReportedApiError:20, apiRouteLabel:25 |
 | [lib/observability/captureApiError.ts](../../../lib/observability/captureApiError.ts) | 44 | libraries | captureApiError:9, captureApiResponseError:39 |
+| [lib/observability/hydrationTelemetry.ts](../../../lib/observability/hydrationTelemetry.ts) | 117 | libraries | REACT_HYDRATION_ERROR_CODES:19, HydrationErrorReport:27, extractReactErrorCode:39, isHydrationError:55, redactRouteIds:66, tagHydrationError:72, HydrationErrorListenerOptions:85, createHydrationErrorListener:91, SentryEventLike:100, isUntaggedGlobalHandlerHydrationEvent:112 |
 | [lib/observability/logger.ts](../../../lib/observability/logger.ts) | 110 | libraries | LogLevel:20, LogContext:22, logger:97 |
 | [lib/observability/requestId.ts](../../../lib/observability/requestId.ts) | 97 | libraries | REQUEST_ID_HEADER:24, resolveRequestId:38, runWithRequestId:63, getRequestId:68, readRequestIdFromHeaders:77 |
 | [lib/observability/sentryScrubber.ts](../../../lib/observability/sentryScrubber.ts) | 178 | libraries | sentryBeforeSend:119, sentryBeforeBreadcrumb:164 |
