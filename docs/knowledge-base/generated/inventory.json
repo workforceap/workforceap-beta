@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "41f045a51151442906fc9128f6486c26ebbc1c5ca3220d69e6ac5631510377a7",
+  "inputTreeSha256": "0ea92fab23b78a97cc41016c7c6d787e380197f86132881c2c2094b8894ff37c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -16207,9 +16207,9 @@
       "path": "app/admin/data-retention/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 4766,
-      "lines": 145,
-      "sha256": "09cdb5a59eb25303cca5e966290952824fe7f9d926dcf49109fbf1e7eb83cab0",
+      "bytes": 4870,
+      "lines": 147,
+      "sha256": "bf3cc1080d69c877308b2f0b6a12e81f4410f0f697273baf6134a75d6d59aa32",
       "binary": false,
       "exports": [
         {
@@ -16219,7 +16219,7 @@
         },
         {
           "name": "default",
-          "line": 83,
+          "line": 85,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataRetentionPage"
         }
@@ -16242,12 +16242,12 @@
         },
         {
           "name": "fetchPolicies",
-          "line": 64,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDataRetentionPage",
-          "line": 83,
+          "line": 85,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -16282,9 +16282,9 @@
       "path": "app/admin/diagnostics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 31048,
-      "lines": 630,
-      "sha256": "e9dbe7a1c413db86f568660af141587391838a687b84018e4119dde3dd9c53fd",
+      "bytes": 31306,
+      "lines": 636,
+      "sha256": "51562eb10fb4ffaed4ed8f473798db4613044bc9c794883a6a9aa542ab563f80",
       "binary": false,
       "exports": [
         {
@@ -16294,7 +16294,7 @@
         },
         {
           "name": "default",
-          "line": 207,
+          "line": 213,
           "kind": "FunctionDeclaration",
           "localName": "AdminDiagnosticsPage"
         }
@@ -16372,17 +16372,17 @@
         },
         {
           "name": "WARN_STATUSES",
-          "line": 182,
+          "line": 188,
           "kind": "Variable"
         },
         {
           "name": "deriveSubsystemTile",
-          "line": 188,
+          "line": 194,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDiagnosticsPage",
-          "line": 207,
+          "line": 213,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -18198,19 +18198,19 @@
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 68910,
-      "lines": 1427,
-      "sha256": "4824d07324dc8d56f5f55f68415e4b3ee24da41205619ccfae9dfd3c717c1de8",
+      "bytes": 71013,
+      "lines": 1467,
+      "sha256": "5ab180c59232e1f291a2da22e544e6f1787d1ccbbac8ae1a213965f884216465",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 96,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 104,
+          "line": 111,
           "kind": "FunctionDeclaration",
           "localName": "AdminMemberDetailPage"
         }
@@ -18218,27 +18218,27 @@
       "declarations": [
         {
           "name": "AdminCourseProgressRow",
-          "line": 72,
+          "line": 79,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AdminMemberProgramProgressRow",
-          "line": 81,
+          "line": 88,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CAREER_PLAN_EVENT_NAMES",
-          "line": 88,
+          "line": 95,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 96,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminMemberDetailPage",
-          "line": 104,
+          "line": 111,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -23482,9 +23482,9 @@
       "path": "app/api/admin/data-retention/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 5286,
-      "lines": 165,
-      "sha256": "f19d1ada1f7e86a897b0fea13e6db8eff1d2f452cb97678bf58c4403c5eb5b72",
+      "bytes": 5341,
+      "lines": 166,
+      "sha256": "b2c5b741f94bf7d9c623bdf9f61caa444e27673f438bc2f7c9fb445b69d2a80c",
       "binary": false,
       "exports": [
         {
@@ -23504,12 +23504,12 @@
         },
         {
           "name": "GET",
-          "line": 97,
+          "line": 98,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 133,
+          "line": 134,
           "kind": "Variable"
         }
       ],
@@ -23541,17 +23541,17 @@
         },
         {
           "name": "fetchPolicyRows",
-          "line": 75,
+          "line": 76,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 97,
+          "line": 98,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 133,
+          "line": 134,
           "kind": "Variable"
         }
       ],
@@ -23779,9 +23779,9 @@
       "path": "app/api/admin/email-failures/[id]/resend/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 5541,
-      "lines": 149,
-      "sha256": "d8041c9a6e49eb178fcd170e83e4a75ee4566a065423148a4f33afbf15f52cb9",
+      "bytes": 5551,
+      "lines": 148,
+      "sha256": "ac7383c0855e4181433ac5282b99bb7d9b2b95faf552813bd49a1ac318f30019",
       "binary": false,
       "exports": [
         {
@@ -74421,7 +74421,7 @@
       "domain": "supporting-files",
       "bytes": 12280,
       "lines": 266,
-      "sha256": "215988867d0682211bfdcc8ec937a27698f5c73a0e52f6d0e2e92f8fc5e1cbf5",
+      "sha256": "f143944ad7eac590f34116bfde1675bd1e7f9f3491a494f3fdcb39706711099e",
       "binary": false
     },
     {
@@ -104617,9 +104617,9 @@
       "path": "lib/content/programs.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 41186,
-      "lines": 682,
-      "sha256": "36584d1b96b722e47057e6faaad467fd769417083eabfb2059c77b42886ceb41",
+      "bytes": 42008,
+      "lines": 698,
+      "sha256": "5ec67704eaba5a196ce1b496514fe0f790aa05d7709476f425ed738549b59d3d",
       "binary": false,
       "exports": [
         {
@@ -104629,329 +104629,329 @@
         },
         {
           "name": "FUNDING_SOURCES",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "FundingSource",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupportLevel",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupport",
-          "line": 52,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "formatFundingSourceLabel",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FUNDING_COLORS",
-          "line": 64,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "ProgramCourse",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "Program",
-          "line": 113,
+          "line": 114,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "getDiscoveredProgram",
-          "line": 168,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayTitle",
-          "line": 195,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayPartner",
-          "line": 203,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_CATEGORY_COLORS",
-          "line": 210,
+          "line": 211,
           "kind": "Variable"
         },
         {
           "name": "PROGRAMS",
-          "line": 386,
+          "line": 402,
           "kind": "Variable"
         },
         {
           "name": "WORKFORCEAP_PROGRAM_CATALOG_SIZE",
-          "line": 446,
+          "line": 462,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_AXIS_MAP",
-          "line": 453,
+          "line": 469,
           "kind": "Variable"
         },
         {
           "name": "RadarAxis",
-          "line": 523,
+          "line": 539,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "RADAR_AXES",
-          "line": 524,
+          "line": 540,
           "kind": "Variable"
         },
         {
           "name": "ProgramRecommendation",
-          "line": 526,
+          "line": 542,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recommendProgramsForGaps",
-          "line": 542,
+          "line": 558,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_TITLES",
-          "line": 596,
+          "line": 612,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_PROGRAM_TITLE_VALUES",
-          "line": 613,
+          "line": 629,
           "kind": "Variable"
         },
         {
           "name": "SUPPORTED_PROGRAM_STORAGE_VALUES",
-          "line": 626,
+          "line": 642,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_CODE",
-          "line": 634,
+          "line": 650,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_MESSAGE",
-          "line": 635,
+          "line": 651,
           "kind": "Variable"
         },
         {
           "name": "isCurriculumMigrationPending",
-          "line": 644,
+          "line": 660,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramByInterestValue",
-          "line": 650,
+          "line": 666,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramBySlug",
-          "line": 670,
+          "line": 686,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAllPrograms",
-          "line": 675,
+          "line": 691,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invalidateProgramCache",
-          "line": 680,
+          "line": 696,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "FUNDING_SOURCES",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "FundingSource",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupportLevel",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupport",
-          "line": 52,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "formatFundingSourceLabel",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FUNDING_COLORS",
-          "line": 64,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "slugify",
-          "line": 72,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ProgramCourse",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "Program",
-          "line": 113,
+          "line": 114,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "normalizeDiscoveredProgramTitle",
-          "line": 164,
+          "line": 165,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getDiscoveredProgram",
-          "line": 168,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "inferDiscoveredPartnerLabel",
-          "line": 173,
+          "line": 174,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayTitle",
-          "line": 195,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayPartner",
-          "line": 203,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_CATEGORY_COLORS",
-          "line": 210,
+          "line": 211,
           "kind": "Variable"
         },
         {
           "name": "OperationalCourseSnapshot",
-          "line": 220,
+          "line": 221,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_OPERATIONAL_COURSES",
-          "line": 236,
+          "line": 237,
           "kind": "Variable"
         },
         {
           "name": "mkProgram",
-          "line": 265,
+          "line": 266,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DIGITAL_LITERACY_PROGRAM_DURATION",
-          "line": 384,
+          "line": 400,
           "kind": "Variable"
         },
         {
           "name": "PROGRAMS",
-          "line": 386,
+          "line": 402,
           "kind": "Variable"
         },
         {
           "name": "WORKFORCEAP_PROGRAM_CATALOG_SIZE",
-          "line": 446,
+          "line": 462,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_AXIS_MAP",
-          "line": 453,
+          "line": 469,
           "kind": "Variable"
         },
         {
           "name": "RadarAxis",
-          "line": 523,
+          "line": 539,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "RADAR_AXES",
-          "line": 524,
+          "line": 540,
           "kind": "Variable"
         },
         {
           "name": "ProgramRecommendation",
-          "line": 526,
+          "line": 542,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recommendProgramsForGaps",
-          "line": 542,
+          "line": 558,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_TITLES",
-          "line": 596,
+          "line": 612,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_PROGRAM_TITLE_VALUES",
-          "line": 613,
+          "line": 629,
           "kind": "Variable"
         },
         {
           "name": "SUPPORTED_PROGRAM_STORAGE_VALUES",
-          "line": 626,
+          "line": 642,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_CODE",
-          "line": 634,
+          "line": 650,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_MESSAGE",
-          "line": 635,
+          "line": 651,
           "kind": "Variable"
         },
         {
           "name": "isCurriculumMigrationPending",
-          "line": 644,
+          "line": 660,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramByInterestValue",
-          "line": 650,
+          "line": 666,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramBySlug",
-          "line": 670,
+          "line": 686,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAllPrograms",
-          "line": 675,
+          "line": 691,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invalidateProgramCache",
-          "line": 680,
+          "line": 696,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -108906,9 +108906,9 @@
       "path": "lib/coursera/csvImport.server.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 44406,
-      "lines": 1343,
-      "sha256": "35bd4ff27177548e86ae0035b7b2ac2014f7450c6f91313ae2f139f8ea20063b",
+      "bytes": 44837,
+      "lines": 1351,
+      "sha256": "46b2366722f0065b86f137cd06d047f32a55b237609f5715fe3d45703fe11fd1",
       "binary": false,
       "exports": [
         {
@@ -108953,7 +108953,7 @@
         },
         {
           "name": "promoteCsvProgressToCanonical",
-          "line": 1166,
+          "line": 1168,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -109050,32 +109050,32 @@
         },
         {
           "name": "emptyCourseraProgressPromotionResult",
-          "line": 1129,
+          "line": 1131,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CanonicalPair",
-          "line": 1133,
+          "line": 1135,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "staticMappingsByCourseId",
-          "line": 1135,
+          "line": 1137,
           "kind": "Variable"
         },
         {
           "name": "getStaticMappingsByCourseId",
-          "line": 1137,
+          "line": 1139,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "uniqueStaticMappingForCourseId",
-          "line": 1155,
+          "line": 1157,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "promoteCsvProgressToCanonical",
-          "line": 1166,
+          "line": 1168,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -109320,111 +109320,111 @@
       "path": "lib/coursera/curriculumMapping.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 12820,
-      "lines": 348,
-      "sha256": "17599ca2ceac25bd0cd849ba6a36a8b01454489944f797a9d5aa37015e8e3946",
+      "bytes": 13317,
+      "lines": 355,
+      "sha256": "c1e60b3d429f960660f87652f65bcf9a4c45b600dc06392c23bc60adc4cb6d0c",
       "binary": false,
       "exports": [
         {
           "name": "CurriculumMappingRow",
-          "line": 23,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CurriculumMappingIndex",
-          "line": 31,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "emptyCurriculumMappingIndex",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMissingCurriculumMappingTableError",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildCurriculumMappingIndex",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCurriculumMappingsForCourseraIds",
-          "line": 114,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveCurriculumMappingsForCourse",
-          "line": 150,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyCandidatesForProviderCourse",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveProviderCourseMappings",
-          "line": 250,
+          "line": 257,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CurriculumMappingRow",
-          "line": 23,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CurriculumMappingIndex",
-          "line": 31,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "emptyCurriculumMappingIndex",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMissingCurriculumMappingTableError",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildCurriculumMappingIndex",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "appendUnique",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCurriculumMappingsForCourseraIds",
-          "line": 114,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveCurriculumMappingsForCourse",
-          "line": 150,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "curriculumCandidatesForProvider",
-          "line": 171,
+          "line": 172,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyCandidatesForProviderCourse",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveProviderCourseMappings",
-          "line": 250,
+          "line": 257,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -110302,9 +110302,9 @@
       "path": "lib/coursera/mapIdentityAndProgress.server.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 5374,
+      "bytes": 5392,
       "lines": 178,
-      "sha256": "b76ebf310cdecf733bf3e750a3e8abd563bc1749fd0002b20430a16eb9c361a0",
+      "sha256": "6b72db57be9c04003330f7bc91946b23721ee919d8c0d413d23a65f22ea0f3a2",
       "binary": false,
       "exports": [
         {
@@ -110966,6 +110966,49 @@
       "directive": null
     },
     {
+      "path": "lib/coursera/progressMiscount.test.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 8743,
+      "lines": 190,
+      "sha256": "0b1d20db365ae151b311b5101177b541165b8e29fa20c9dd7d836b57daccea2c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "PROGRAM_SLUG",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "INTRO_AI_ID",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROMPT_ENGINEERING_ID",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "IBM_PATH_ID",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "LAB_SLOT",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "ibmProgram",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/coursera/progressPromotion.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
@@ -110981,61 +111024,71 @@
       "path": "lib/coursera/progressPromotion.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 2777,
-      "lines": 89,
-      "sha256": "0077a662b0c629f3009a9ffe52935311da3ca14dbefd03e231045a313ab9d4e2",
+      "bytes": 3602,
+      "lines": 108,
+      "sha256": "ecc5db78de705f7230e0a6cb36cc8131fb643e1532ce93454451d18d45fea913",
       "binary": false,
       "exports": [
         {
           "name": "CanonicalCourseProgressMapping",
-          "line": 10,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraProgressPromotionRow",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlannedCourseraProgressPromotion",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "isLearningPathProgressRow",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "parseCourseraGradeScore",
-          "line": 39,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planCourseraProgressPromotion",
-          "line": 53,
+          "line": 67,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CanonicalCourseProgressMapping",
-          "line": 10,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraProgressPromotionRow",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlannedCourseraProgressPromotion",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "isLearningPathProgressRow",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "parseCourseraGradeScore",
-          "line": 39,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planCourseraProgressPromotion",
-          "line": 53,
+          "line": 67,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111045,9 +111098,9 @@
       "path": "lib/coursera/progressQueries.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 38950,
-      "lines": 1055,
-      "sha256": "9ee257f39ee5ffcf05ae1ac4bcca2e6391e5634d3502bef0753654148f7cc25a",
+      "bytes": 41238,
+      "lines": 1106,
+      "sha256": "d71e7d78a5823f99283266b6b46939101eb5bae92aac1fc4b9c2c115f6a0f098",
       "binary": false,
       "exports": [
         {
@@ -111107,42 +111160,52 @@
         },
         {
           "name": "loadLearnerProgressByUserId",
-          "line": 516,
+          "line": 522,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isLearningPathCourseRow",
+          "line": 640,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "partitionLearnerCourseRows",
+          "line": 644,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadLearnerProgressByExternalEmail",
-          "line": 658,
+          "line": 707,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UnmatchedXapiEventRow",
-          "line": 752,
+          "line": 803,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmail",
-          "line": 785,
+          "line": 836,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countUnmatchedXapiEventsByExternalEmail",
-          "line": 833,
+          "line": 884,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmailPaginated",
-          "line": 868,
+          "line": 919,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SuggestedUserMatch",
-          "line": 913,
+          "line": 964,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "suggestUserMatchesForExternalEmail",
-          "line": 948,
+          "line": 999,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111209,67 +111272,82 @@
         },
         {
           "name": "loadLearnerProgressByUserId",
-          "line": 516,
+          "line": 522,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CourseProgressBaseRow",
-          "line": 540,
+          "line": 548,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "COURSE_PROGRESS_SELECT_COLUMNS",
-          "line": 558,
+          "line": 566,
           "kind": "Variable"
         },
         {
           "name": "mapCourseProgressRow",
-          "line": 576,
+          "line": 584,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCoursesForUserId",
-          "line": 596,
+          "line": 611,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadLearningPathRowsForUserId",
+          "line": 623,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isLearningPathCourseRow",
+          "line": 640,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "partitionLearnerCourseRows",
+          "line": 644,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadBadgesForUserId",
-          "line": 606,
+          "line": 655,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadLearnerProgressByExternalEmail",
-          "line": 658,
+          "line": 707,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UnmatchedXapiEventRow",
-          "line": 752,
+          "line": 803,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmail",
-          "line": 785,
+          "line": 836,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countUnmatchedXapiEventsByExternalEmail",
-          "line": 833,
+          "line": 884,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmailPaginated",
-          "line": 868,
+          "line": 919,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SuggestedUserMatch",
-          "line": 913,
+          "line": 964,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "suggestUserMatchesForExternalEmail",
-          "line": 948,
+          "line": 999,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111367,6 +111445,80 @@
         {
           "name": "reconcileProgramProgress",
           "line": 73,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/coursera/progressTileSummary.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 3266,
+      "lines": 84,
+      "sha256": "5685f2dc2e9e5e37e28c020265e875aff2b5742d712c5927219990b7d9169881",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ProgramCourseProgressSummary",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isCourseraDeliveredCourse",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeProgramCourseProgress",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "learningPathPercent",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatProgramCoursesNote",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatLearningPathLine",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ProgramCourseProgressSummary",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isCourseraDeliveredCourse",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeProgramCourseProgress",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "learningPathPercent",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatProgramCoursesNote",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatLearningPathLine",
+          "line": 80,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116114,9 +116266,9 @@
       "path": "lib/email/failureRecord.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 7618,
-      "lines": 176,
-      "sha256": "450cded450921bc30c2dbd81058ae760838b1b9c4d149950846a46bc86991cf7",
+      "bytes": 8938,
+      "lines": 201,
+      "sha256": "5f4c1578f626674457b151618f18234c0f0efb1196cb109ffbba5ad35a35ffad",
       "binary": false,
       "exports": [
         {
@@ -116151,22 +116303,27 @@
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 86,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 112,
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientDomain",
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 122,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 152,
+          "line": 174,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116203,47 +116360,149 @@
         },
         {
           "name": "asRecord",
-          "line": 60,
+          "line": 68,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "statusOf",
-          "line": 66,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "messageOf",
-          "line": 73,
+          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 86,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 112,
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientDomain",
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "jsonSafe",
-          "line": 118,
+          "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 122,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FAILURE_CLASSES",
-          "line": 143,
+          "line": 165,
           "kind": "Variable"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 152,
+          "line": 174,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/email/failureSnapshot.test.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 3980,
+      "lines": 91,
+      "sha256": "30afc3ecc3bc66e1ed999914de9e6a48fef87cd5ef4846c1ef1cbfa7a338bb8d",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "CRLF",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "diagnostic",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/email/failureSnapshot.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 3679,
+      "lines": 106,
+      "sha256": "8f8c1a75023b2f6712e4ad01ccb9db7e0dd36ebf53423e1b3dfdbc1a10dcdd4f",
+      "binary": false,
+      "exports": [
+        {
+          "name": "EMAIL_FAILURE_STATUSES",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "EmailFailureDiagnosticSource",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotRow",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isEmailFailureDiagnostic",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotRow",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "snapshotRunLabel",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "EMAIL_FAILURE_STATUSES",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "EmailFailureDiagnosticSource",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotRow",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isEmailFailureDiagnostic",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotRow",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "snapshotRunLabel",
+          "line": 104,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116740,9 +116999,9 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 25283,
-      "lines": 601,
-      "sha256": "ca1cbc18a7f807c048f6715577a52ae717f06301fdcdde869479fa5bc84bbb6c",
+      "bytes": 25415,
+      "lines": 602,
+      "sha256": "335e3003fe8ba31c733500f226d2138623673118bea98a113a10c6b78c8c9105",
       "binary": false,
       "exports": [
         {
@@ -116797,42 +117056,42 @@
         },
         {
           "name": "sendingDomain",
-          "line": 278,
+          "line": 279,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 302,
+          "line": 303,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTransientProviderError",
-          "line": 325,
+          "line": 326,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 353,
+          "line": 354,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 364,
+          "line": 365,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 434,
+          "line": 435,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 445,
+          "line": 446,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 590,
+          "line": 591,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116909,117 +117168,117 @@
         },
         {
           "name": "asRecord",
-          "line": 221,
+          "line": 222,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readHeader",
-          "line": 225,
+          "line": 226,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRetryAfterMs",
-          "line": 233,
+          "line": 234,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRateLimitResetMs",
-          "line": 244,
+          "line": 245,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientDomain",
-          "line": 252,
+          "line": 253,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fixtureDomains",
-          "line": 257,
+          "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientAddress",
-          "line": 265,
+          "line": 266,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientLocalPart",
-          "line": 271,
+          "line": 272,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendingDomain",
-          "line": 278,
+          "line": 279,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FIXTURE_LOCAL_PART_PATTERNS",
-          "line": 287,
+          "line": 288,
           "kind": "Variable"
         },
         {
           "name": "fixtureAddresses",
-          "line": 293,
+          "line": 294,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 302,
+          "line": 303,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TRANSIENT_NETWORK_CODES",
-          "line": 313,
+          "line": 314,
           "kind": "Variable"
         },
         {
           "name": "TRANSIENT_PROVIDER_ERROR_NAMES",
-          "line": 317,
+          "line": 318,
           "kind": "Variable"
         },
         {
           "name": "isTransientProviderError",
-          "line": 325,
+          "line": 326,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 353,
+          "line": 354,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 364,
+          "line": 365,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecipientField",
-          "line": 387,
+          "line": 388,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "withoutRecipients",
-          "line": 390,
+          "line": 391,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 399,
+          "line": 400,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 434,
+          "line": 435,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 445,
+          "line": 446,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 590,
+          "line": 591,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138483,9 +138742,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4927,
-      "lines": 149,
-      "sha256": "29683d0dc12400d0f1283ec837768fd2111c8114b288d5bca8ff6ba407ad4aa6",
+      "bytes": 5461,
+      "lines": 163,
+      "sha256": "8912c9b7e35b6d96b948876735ec766d0b8c7922e97aaae5d73ebaa0377822b6",
       "binary": false,
       "exports": [
         {
@@ -138514,18 +138773,23 @@
           "kind": "Variable"
         },
         {
+          "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
+          "line": 88,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 83,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 141,
+          "line": 155,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 144,
+          "line": 158,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138556,18 +138820,23 @@
           "kind": "Variable"
         },
         {
+          "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
+          "line": 88,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 83,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 141,
+          "line": 155,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 144,
+          "line": 158,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -148612,6 +148881,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260920200000_email_failure_snapshots/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 1800,
+      "lines": 41,
+      "sha256": "90962345bf67fedfc067c411b6165fafd1aacfecbd364e20f07506d54164b331",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -148624,9 +148902,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 138404,
-      "lines": 3257,
-      "sha256": "d75b1a310e33e2dbcf365086efd338ddec2246bf79076ec0ae56d8a8547bd62a",
+      "bytes": 140224,
+      "lines": 3295,
+      "sha256": "4e1f622d1c389b4a9f75952821180bffeaec6337ad9f580de70866ae40c96f68",
       "binary": false
     },
     {
@@ -156101,6 +156379,34 @@
       "directive": null
     },
     {
+      "path": "scripts/snapshot-email-failures.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 4826,
+      "lines": 116,
+      "sha256": "c5a5d91116abca550f3ec8bc3932062e50008fc2977df211128d8a2421d866a1",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "prisma",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "readFlag",
+          "line": 29,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "scripts/source-text-tests-baseline.json",
       "area": "operations",
       "domain": "operations",
@@ -157770,9 +158076,9 @@
       "path": "shared/programSyllabi.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 60479,
-      "lines": 1010,
-      "sha256": "d89b21b404961eb7160410eb764680c6200573654435fedc29618de46f8bc902",
+      "bytes": 60970,
+      "lines": 1020,
+      "sha256": "a012fa1249969a3dfe142f83c28192039a1d52278c3554598b601abae595c534",
       "binary": false,
       "exports": [
         {
@@ -157782,22 +158088,22 @@
         },
         {
           "name": "ProgramSyllabus",
-          "line": 18,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PROGRAM_SYLLABI",
-          "line": 38,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "ProgramSyllabusSlug",
-          "line": 1006,
+          "line": 1016,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getProgramSyllabus",
-          "line": 1008,
+          "line": 1018,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -157809,22 +158115,22 @@
         },
         {
           "name": "ProgramSyllabus",
-          "line": 18,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PROGRAM_SYLLABI",
-          "line": 38,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "ProgramSyllabusSlug",
-          "line": 1006,
+          "line": 1016,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getProgramSyllabus",
-          "line": 1008,
+          "line": 1018,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -168243,15 +168549,15 @@
       "path": "tests/email/failure-record.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 7782,
-      "lines": 157,
-      "sha256": "39f1a2ff9aa32f5686766aea16cf14849ed9534bb67471256d0c8aff3aa17829",
+      "bytes": 9013,
+      "lines": 178,
+      "sha256": "90406d45dc47aea98abe0f46cbe2861dc92f88a28b534c7af423b60b72c241bc",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "CRLF",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         }
       ],
@@ -169583,9 +169889,9 @@
       "path": "tests/lib/coursera-progress-promotion.spec.ts",
       "area": "tests",
       "domain": "learning-coursera",
-      "bytes": 9810,
-      "lines": 292,
-      "sha256": "daac923e4d06fa3a72fa9146478491d0d3c7e6467f2901d81152078a6ec0b7c6",
+      "bytes": 9858,
+      "lines": 294,
+      "sha256": "2354b073097aab2c06c5e907d8f0ff771195cfe2f7471c0bf1404cd5495d49c6",
       "binary": false,
       "exports": [],
       "declarations": [

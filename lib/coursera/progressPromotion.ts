@@ -5,6 +5,7 @@ import {
   type ExistingCourseProgress,
   type MergedCourseProgress,
 } from '@/lib/coursera/b4bSync';
+import { findLearningPathById } from '@/lib/content/coursera/learningPaths';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 
 export type CanonicalCourseProgressMapping = {
@@ -34,6 +35,19 @@ export type PlannedCourseraProgressPromotion = {
   startedAt: Date | null;
   updateStartedAt: Date | null;
 };
+
+/**
+ * A raw `coursera_course_progress` row whose id is a registered Learning Path
+ * carries Coursera's program-level percentage. Promotion must skip it: the
+ * only course slot it could ever land in is a synthetic one such as
+ * "Lab, Project, and Test Preparation", which would then display the path
+ * percentage as progress on a WorkforceAP course.
+ */
+export function isLearningPathProgressRow(
+  row: Pick<CourseraProgressPromotionRow, 'courseraCourseId'>,
+): boolean {
+  return findLearningPathById(row.courseraCourseId) !== null;
+}
 
 /** Parse Coursera CSV/B4B grades into CourseProgress's 0..1 score scale. */
 export function parseCourseraGradeScore(raw: string | null | undefined): number | null {
@@ -66,6 +80,11 @@ export function planCourseraProgressPromotion(args: {
 
   if (!programSlug || !courseSlug || !courseId) {
     throw new Error('Canonical Coursera promotion requires program, course, and Coursera ids');
+  }
+  if (isLearningPathProgressRow(row)) {
+    throw new Error(
+      `Coursera Learning Path ${courseId} is program-level progress and cannot be promoted onto course ${programSlug}/${courseSlug}`,
+    );
   }
 
   const merged = computeCourseProgressUpdate(existing, {

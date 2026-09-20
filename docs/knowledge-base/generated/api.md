@@ -57,7 +57,7 @@
 | [app/api/admin/crons/summary/_cronSummary.ts](../../../app/api/admin/crons/summary/_cronSummary.ts) | 82 | administration | CronSummary:3, JobSummary:12, fetchCronSummary:20 |
 | [app/api/admin/crons/summary/route.test.ts](../../../app/api/admin/crons/summary/route.test.ts) | 75 | administration |  |
 | [app/api/admin/crons/summary/route.ts](../../../app/api/admin/crons/summary/route.ts) | 20 | administration | GET:7 |
-| [app/api/admin/data-retention/route.ts](../../../app/api/admin/data-retention/route.ts) | 165 | administration | dynamic:12, TableStorageInfo:14, RetentionPolicyRow:21, GET:97, POST:133 |
+| [app/api/admin/data-retention/route.ts](../../../app/api/admin/data-retention/route.ts) | 166 | administration | dynamic:12, TableStorageInfo:14, RetentionPolicyRow:21, GET:98, POST:134 |
 | [app/api/admin/email-crons/\[id\]/dry-run/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/dry-run/route.ts) | 250 | communications | POST:20 |
 | [app/api/admin/email-crons/\[id\]/preview/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/preview/route.ts) | 192 | communications | CronPreviewRecipient:11, CronPreviewResponse:11, GET:15 |
 | [app/api/admin/email-crons/\[id\]/template-preview/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/template-preview/route.ts) | 170 | communications | TemplatePreviewResponse:12, GET:21 |
@@ -65,7 +65,7 @@
 | [app/api/admin/email-crons/\[id\]/trigger/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/trigger/route.ts) | 108 | communications | POST:11 |
 | [app/api/admin/email-crons/activate-all/route.ts](../../../app/api/admin/email-crons/activate-all/route.ts) | 73 | communications | POST:12 |
 | [app/api/admin/email-crons/route.ts](../../../app/api/admin/email-crons/route.ts) | 66 | communications | GET:9 |
-| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 149 | communications | maxDuration:17, POST:32 |
+| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 148 | communications | maxDuration:17, POST:32 |
 | [app/api/admin/email-templates/\[id\]/preview/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.test.ts) | 6 | communications |  |
 | [app/api/admin/email-templates/\[id\]/preview/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.ts) | 43 | communications | POST:9 |
 | [app/api/admin/email-templates/\[id\]/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/route.test.ts) | 6 | communications |  |

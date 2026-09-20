@@ -1070,7 +1070,7 @@
       "references": [
         {
           "file": "app/admin/diagnostics/page.tsx",
-          "line": 599
+          "line": 605
         },
         {
           "file": "app/api/admin/health/route.ts",
@@ -1524,7 +1524,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 295
+          "line": 296
         }
       ]
     },
@@ -1551,7 +1551,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 258
+          "line": 259
         }
       ]
     },
@@ -1658,7 +1658,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 279
+          "line": 280
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -2647,7 +2647,7 @@
       "references": [
         {
           "file": "app/admin/diagnostics/page.tsx",
-          "line": 604
+          "line": 610
         },
         {
           "file": "app/api/admin/health/route.ts",
@@ -4872,7 +4872,7 @@
       "references": [
         {
           "file": "app/admin/diagnostics/page.tsx",
-          "line": 604
+          "line": 610
         },
         {
           "file": "app/api/admin/health/route.ts",

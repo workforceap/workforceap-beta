@@ -370,7 +370,7 @@
 | [tests/e2e/visual-regression-smoke.spec.ts](../../../tests/e2e/visual-regression-smoke.spec.ts) | 144 | tests |  |
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
 | [tests/email/failure-alert.spec.ts](../../../tests/email/failure-alert.spec.ts) | 99 | communications |  |
-| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 157 | communications |  |
+| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 178 | communications |  |
 | [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 196 | communications |  |
 | [tests/email/send-hardening.spec.ts](../../../tests/email/send-hardening.spec.ts) | 183 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
@@ -425,7 +425,7 @@
 | [tests/lib/coursera-map-identity-atomic.spec.ts](../../../tests/lib/coursera-map-identity-atomic.spec.ts) | 135 | learning-coursera |  |
 | [tests/lib/coursera-org-configuration.spec.ts](../../../tests/lib/coursera-org-configuration.spec.ts) | 45 | learning-coursera |  |
 | [tests/lib/coursera-org-scoped-urls.spec.ts](../../../tests/lib/coursera-org-scoped-urls.spec.ts) | 128 | learning-coursera |  |
-| [tests/lib/coursera-progress-promotion.spec.ts](../../../tests/lib/coursera-progress-promotion.spec.ts) | 292 | learning-coursera |  |
+| [tests/lib/coursera-progress-promotion.spec.ts](../../../tests/lib/coursera-progress-promotion.spec.ts) | 294 | learning-coursera |  |
 | [tests/lib/coursera-provisioning-state.spec.ts](../../../tests/lib/coursera-provisioning-state.spec.ts) | 250 | learning-coursera |  |
 | [tests/lib/coursera-raw-insert-guard.spec.ts](../../../tests/lib/coursera-raw-insert-guard.spec.ts) | 66 | learning-coursera |  |
 | [tests/lib/coursera-raw-progress-keys.spec.ts](../../../tests/lib/coursera-raw-progress-keys.spec.ts) | 40 | learning-coursera |  |

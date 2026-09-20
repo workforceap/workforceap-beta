@@ -9,7 +9,7 @@ import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCa
 import { getProgramBySlug } from '@/lib/content/programs';
 import { upsertMergedCourseProgress } from '@/lib/coursera/upsertMergedCourseProgress';
 import { refreshMemberProgramProgressRollup } from '@/lib/member/courseProgress';
-import { planCourseraProgressPromotion } from '@/lib/coursera/progressPromotion';
+import { isLearningPathProgressRow, planCourseraProgressPromotion } from '@/lib/coursera/progressPromotion';
 import {
   ensureBadgeProgressTenantKeys,
   ensureCourseProgressTenantKeys,
@@ -1122,12 +1122,14 @@ const COURSERA_PROMOTION_BATCH_SIZE = 500;
 export type CourseraProgressPromotionResult = {
   upserted: number;
   unmapped: number;
+  /** Learning Path rows (program-level progress) left in the raw table, never promoted to a course. */
+  learningPaths: number;
   rollupsRefreshed: number;
   errors: number;
 };
 
 function emptyCourseraProgressPromotionResult(): CourseraProgressPromotionResult {
-  return { upserted: 0, unmapped: 0, rollupsRefreshed: 0, errors: 0 };
+  return { upserted: 0, unmapped: 0, learningPaths: 0, rollupsRefreshed: 0, errors: 0 };
 }
 
 type CanonicalPair = { programSlug: string; courseSlug: string };
@@ -1229,6 +1231,12 @@ export async function promoteCsvProgressToCanonical(
     );
     const promotable = rows.flatMap((row) => {
       if (!row.userId) return [];
+      if (isLearningPathProgressRow(row)) {
+        // Coursera's path percentage stays a raw row; a stale canonical
+        // mapping must not turn it into progress on a synthetic course slot.
+        result.learningPaths += 1;
+        return [];
+      }
       if (!activeUserIds.has(row.userId)) {
         result.errors += 1;
         console.error(
