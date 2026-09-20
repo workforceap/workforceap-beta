@@ -204,12 +204,13 @@
 | [tests/app/mentor-dashboard-page.spec.tsx](../../../tests/app/mentor-dashboard-page.spec.tsx) | 55 | tests |  |
 | [tests/app/organic-apply-presentation.spec.tsx](../../../tests/app/organic-apply-presentation.spec.tsx) | 90 | tests |  |
 | [tests/app/partner-contextual-messages.spec.tsx](../../../tests/app/partner-contextual-messages.spec.tsx) | 139 | tests |  |
-| [tests/app/partner-dashboard-dates.spec.tsx](../../../tests/app/partner-dashboard-dates.spec.tsx) | 84 | tests |  |
+| [tests/app/partner-dashboard-dates.spec.tsx](../../../tests/app/partner-dashboard-dates.spec.tsx) | 85 | tests |  |
 | [tests/app/partner-outcomes-dates.spec.tsx](../../../tests/app/partner-outcomes-dates.spec.tsx) | 52 | tests |  |
 | [tests/app/partner-pageheader-kit.spec.ts](../../../tests/app/partner-pageheader-kit.spec.ts) | 63 | tests |  |
-| [tests/app/partner-referral-pages.spec.tsx](../../../tests/app/partner-referral-pages.spec.tsx) | 75 | tests |  |
+| [tests/app/partner-referral-pages.spec.tsx](../../../tests/app/partner-referral-pages.spec.tsx) | 76 | tests |  |
 | [tests/app/partner-referred-member-times.spec.tsx](../../../tests/app/partner-referred-member-times.spec.tsx) | 76 | tests |  |
 | [tests/app/partner-settings-dates.spec.tsx](../../../tests/app/partner-settings-dates.spec.tsx) | 48 | tests |  |
+| [tests/app/portal-h1-ownership.spec.ts](../../../tests/app/portal-h1-ownership.spec.ts) | 164 | tests |  |
 | [tests/app/portal-page-outlines.spec.tsx](../../../tests/app/portal-page-outlines.spec.tsx) | 62 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
@@ -219,7 +220,7 @@
 | [tests/components/admin-directory-results.spec.tsx](../../../tests/components/admin-directory-results.spec.tsx) | 129 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
-| [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 86 | tests |  |
+| [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
 | [tests/components/admin-training-progress-roster.test.tsx](../../../tests/components/admin-training-progress-roster.test.tsx) | 275 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
@@ -237,7 +238,7 @@
 | [tests/components/coursera-provisioning-queue-last-activity.spec.tsx](../../../tests/components/coursera-provisioning-queue-last-activity.spec.tsx) | 134 | learning-coursera |  |
 | [tests/components/employer-action-connection-failure.spec.tsx](../../../tests/components/employer-action-connection-failure.spec.tsx) | 154 | tests |  |
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
-| [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 74 | tests |  |
+| [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 68 | tests |  |
@@ -260,7 +261,7 @@
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
 | [tests/components/portal-date-inputs-today.spec.tsx](../../../tests/components/portal-date-inputs-today.spec.tsx) | 44 | tests |  |
 | [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 113 | communications |  |
-| [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 137 | tests |  |
+| [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 177 | tests |  |
 | [tests/components/portal-team-chat-read-cursor.spec.tsx](../../../tests/components/portal-team-chat-read-cursor.spec.tsx) | 123 | tests |  |
 | [tests/components/program-outcome-claims.spec.tsx](../../../tests/components/program-outcome-claims.spec.tsx) | 72 | tests |  |
 | [tests/components/public-staff-form-connection-failure.spec.tsx](../../../tests/components/public-staff-form-connection-failure.spec.tsx) | 160 | tests |  |

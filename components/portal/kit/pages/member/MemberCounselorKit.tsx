@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { MessagesSquare, ArrowRight } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { DesignSurface } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 
 /**
  * Member Portal — LILLEY AI CAREER COACH view.
@@ -32,31 +32,12 @@ export function MemberCounselorKit({ title, subtitle, voiceSurface, pastSessions
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }} className="wa-space-y-6">
-        {/* Page opener */}
-        <div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: 'var(--wa-type-meta)',
-              fontWeight: 700,
-              color: 'var(--wa-accent)',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-            }}
-          >
-            <MessagesSquare size={13} aria-hidden="true" />
-            <span>AI career coach</span>
-          </div>
-          <h1
-            className="h-font"
-            style={{ fontSize: 'clamp(22px, 6vw, 30px)', marginTop: 4, fontWeight: 800, letterSpacing: '-0.03em', textWrap: 'balance' }}
-          >
-            {title}
-          </h1>
-          <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', marginTop: 4 }}>{subtitle}</p>
-        </div>
+        <PageOpener
+          kicker="AI career coach"
+          icon={<MessagesSquare size={13} aria-hidden="true" />}
+          title={title}
+          lede={subtitle}
+        />
 
         <div style={{ maxWidth: 640, margin: '0 auto', width: '100%' }}>{voiceSurface}</div>
 

@@ -95,10 +95,6 @@ export default async function EmployerApplicationsPage({
             <span className="wa-hidden md:wa-block">{t('reviewCandidatesDesktop')}</span>
           </>
         }
-        breadcrumbs={[
-          { label: t('employerPortal'), href: '/employer' },
-          { label: t('applicantsMetaTitle') },
-        ]}
         action={
           <>
             <div className="md:wa-hidden">

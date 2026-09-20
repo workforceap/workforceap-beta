@@ -9,7 +9,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DataTable,
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   StatSparkTile,
   StageTrack,
   StatusTag,
@@ -30,7 +30,7 @@ import {
  * employer persona: open roles, pipeline volume, and the candidate table are
  * the hero — an employer's first question on landing is "who do I need to
  * look at today," not a KPI wall. Layout, top to bottom:
- *   1. Page opener (SectionHeader "Hiring" + employer name eyebrow) with a
+ *   1. Page opener (PageOpener "Hiring" + employer name eyebrow) with a
  *      "Post a role" CTA.
  *   2. A 4-up KPI row: open roles / in pipeline / interviews / hires, each
  *      with an optional sparkline + delta chip.
@@ -289,14 +289,12 @@ export function EmployerHomeKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <h1 className="wa-sr-only">Employer overview</h1>
-
       <div className="wa-space-y-6">
         {/* 1. Page opener — "Hiring" + employer-name eyebrow, with a Post a role CTA. */}
-        <SectionHeader
+        <PageOpener
           kicker={companyName}
           title="Hiring"
-          goal="Open roles, pipeline, and where every candidate stands right now."
+          lede="Open roles, pipeline, and where every candidate stands right now."
           action={
             <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
               <Button
