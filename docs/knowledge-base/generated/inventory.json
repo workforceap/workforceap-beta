@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "274a19cc55ada9f77fbced3fbd361386c7b8d06adb8af8c140d6c53f1f49050a",
+  "inputTreeSha256": "0f47d8589a049b1bc838198385f676250b8540e8077522ffebe060fb5862c08d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -71510,9 +71510,9 @@
       "path": "components/portal/kit/pages/member/MemberProgramKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 16594,
-      "lines": 376,
-      "sha256": "8699d51efa0a6887f762cacc71bdfa3c1e498169cd50b03547208b712ae938d7",
+      "bytes": 16733,
+      "lines": 377,
+      "sha256": "91929e8db3e226269fe4f261898654a93af49009e3b9dd4401f56acfa9bb9ffa",
       "binary": false,
       "exports": [
         {
@@ -71628,9 +71628,9 @@
       "path": "components/portal/kit/pages/member/MemberTrainingWorkspace.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 27388,
-      "lines": 335,
-      "sha256": "8c509746b8384b9188dcbecf8c1061fa960dac939f8e52088241805ca3f58a44",
+      "bytes": 27679,
+      "lines": 338,
+      "sha256": "bcda55e51eeedb7862c5642937e44dbec0109622ac02dd447bb8296b04a19dc0",
       "binary": false,
       "exports": [
         {
@@ -71650,7 +71650,7 @@
         },
         {
           "name": "MemberTrainingWorkspace",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71677,22 +71677,22 @@
         },
         {
           "name": "Draft",
-          "line": 89,
+          "line": 91,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "dateLabel",
-          "line": 90,
+          "line": 92,
           "kind": "Variable"
         },
         {
           "name": "addDays",
-          "line": 91,
+          "line": 93,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MemberTrainingWorkspace",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167682,9 +167682,9 @@
       "path": "tests/components/member-training-workspace.test.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 20109,
-      "lines": 338,
-      "sha256": "f74d16113daae66b1da87803240fe7a3b457d444099f480639ef7d95099567f4",
+      "bytes": 21162,
+      "lines": 357,
+      "sha256": "ede0ae47a62797b493f4844073c9191119784f4ff4e71043d9274536c8c80802",
       "binary": false,
       "exports": [],
       "declarations": [

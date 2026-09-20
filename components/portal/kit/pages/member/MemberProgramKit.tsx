@@ -115,7 +115,8 @@ export function MemberProgramKit({
   missionsSummary,
   missionsHref = '#',
 }: MemberProgramKitProps) {
-  if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} {...trainingWorkspace} />;
+  // The page states the course denominator once; the workspace view must show it where it states the count too.
+  if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} />;
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
