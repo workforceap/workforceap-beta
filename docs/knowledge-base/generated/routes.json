@@ -29962,6 +29962,76 @@
     "boundaryReferences": []
   },
   {
+    "file": "app/api/tours/[tourKey]/route.ts",
+    "kind": "route",
+    "path": "/api/tours/[tourKey]",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "POST",
+        "line": 29,
+        "kind": "Variable"
+      }
+    ],
+    "methods": [
+      "POST"
+    ],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 5,
+        "kind": "import"
+      }
+    ]
+  },
+  {
+    "file": "app/api/tours/state/route.ts",
+    "kind": "route",
+    "path": "/api/tours/state",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "TourStateRow",
+        "line": 14,
+        "kind": "InterfaceDeclaration"
+      },
+      {
+        "name": "GET",
+        "line": 30,
+        "kind": "Variable"
+      }
+    ],
+    "methods": [
+      "GET"
+    ],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 2,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/roles",
+        "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 5,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/api/unsubscribe/route.ts",
     "kind": "route",
     "path": "/api/unsubscribe",
