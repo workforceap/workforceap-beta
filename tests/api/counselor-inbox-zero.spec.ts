@@ -48,6 +48,7 @@ vi.mock('@/lib/db/withRequestGuc', () => ({
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { getInboxZeroQueue } from '@/lib/counselor/inboxZero';
+import { emptyReasonCounts } from '@/lib/attention/reasons';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { auditLog } from '@/lib/audit';
 import { prisma } from '@/lib/db/prisma';
@@ -75,7 +76,7 @@ describe('GET /api/counselor/inbox-zero', () => {
       totals: {
         total: 0,
         dismissedToday: 0,
-        byFlag: { doc_missing: 0, application_stalled: 0, at_risk: 0, last_contact: 0 },
+        byFlag: emptyReasonCounts(),
       },
     });
 
@@ -112,7 +113,7 @@ describe('POST /api/counselor/inbox-zero/dismiss', () => {
         body: JSON.stringify({
           memberId: MEMBER_ID,
           reason: 'Called member — resume uploaded',
-          flags: ['doc_missing'],
+          flags: ['resume_missing_3d'],
         }),
       }),
     );

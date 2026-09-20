@@ -65,7 +65,7 @@
 | [tests/api/counselor-feedback.spec.ts](../../../tests/api/counselor-feedback.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-handoff-atomicity.spec.ts](../../../tests/api/counselor-handoff-atomicity.spec.ts) | 56 | tests |  |
 | [tests/api/counselor-inbox-zero-bulk.spec.ts](../../../tests/api/counselor-inbox-zero-bulk.spec.ts) | 187 | tests |  |
-| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 148 | tests |  |
+| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 149 | tests |  |
 | [tests/api/counselor-notes-author-gate.spec.ts](../../../tests/api/counselor-notes-author-gate.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-routes.spec.ts](../../../tests/api/counselor-routes.spec.ts) | 1751 | tests |  |
 | [tests/api/counselor-thread-access-gate.spec.ts](../../../tests/api/counselor-thread-access-gate.spec.ts) | 139 | tests |  |
@@ -186,7 +186,7 @@
 | [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 177 | tests |  |
 | [tests/app/apply-school-recovery.spec.tsx](../../../tests/app/apply-school-recovery.spec.tsx) | 65 | tests |  |
 | [tests/app/counselor-contextual-messages.spec.tsx](../../../tests/app/counselor-contextual-messages.spec.tsx) | 97 | tests |  |
-| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 74 | tests |  |
+| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 75 | tests |  |
 | [tests/app/counselor-member-pageheader.spec.ts](../../../tests/app/counselor-member-pageheader.spec.ts) | 30 | tests |  |
 | [tests/app/counselor-roster-failure.spec.tsx](../../../tests/app/counselor-roster-failure.spec.tsx) | 26 | tests |  |
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
@@ -248,7 +248,7 @@
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
-| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 68 | tests |  |
+| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
@@ -321,6 +321,7 @@
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
+| [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |
 | [tests/fixtures/boardSnapshot.ts](../../../tests/fixtures/boardSnapshot.ts) | 28 | tests | boardSnapshotFixture:4 |
 | [tests/fixtures/member-message-rls-baseline.json](../../../tests/fixtures/member-message-rls-baseline.json) | 204 | tests |  |
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |

@@ -3384,6 +3384,130 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/attention/adminAgreement.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/attention/reasons.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/attention/adminViews.ts",
+        "line": 5
+      },
+      {
+        "file": "tests/fixtures/attentionRoster.ts",
+        "line": 11
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/attention/counselorAgreement.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/attention/counselorViews.ts",
+        "line": 4
+      },
+      {
+        "file": "tests/fixtures/attentionRoster.ts",
+        "line": 11
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/attention/evaluate.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 3
+      },
+      {
+        "file": "tests/fixtures/attentionRoster.ts",
+        "line": 10
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/attention/rules.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/attention/reasons.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/attention/rules.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/audit.test.ts",
     "area": "libraries",
     "domain": "libraries",
@@ -4702,7 +4826,7 @@
     "localReferences": [
       {
         "file": "lib/counselor/inboxZero.ts",
-        "line": 34
+        "line": 36
       }
     ],
     "kind": "test-candidate",
@@ -4716,30 +4840,6 @@
       {
         "runner": "vitest",
         "source": "vitest.config.ts",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
-    "file": "lib/counselor/inboxZero.test.ts",
-    "area": "libraries",
-    "domain": "member-counselor",
-    "frameworkImports": [
-      "node:test"
-    ],
-    "localReferences": [
-      {
-        "file": "lib/counselor/inboxZero.ts",
-        "line": 3
-      }
-    ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "node-unit",
-        "source": "scripts/test-unit.mjs",
         "status": "selected"
       }
     ],
@@ -4866,30 +4966,6 @@
       {
         "runner": "vitest",
         "source": "vitest.config.ts",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
-    "file": "lib/counselor/triageFlags.test.ts",
-    "area": "libraries",
-    "domain": "member-counselor",
-    "frameworkImports": [
-      "node:test"
-    ],
-    "localReferences": [
-      {
-        "file": "lib/counselor/triageFlags.ts",
-        "line": 3
-      }
-    ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "node-unit",
-        "source": "scripts/test-unit.mjs",
         "status": "selected"
       }
     ],
@@ -12678,24 +12754,28 @@
         "line": 50
       },
       {
-        "file": "lib/counselor/staffMemberAccess.ts",
+        "file": "lib/attention/reasons.ts",
         "line": 51
       },
       {
-        "file": "lib/audit.ts",
+        "file": "lib/counselor/staffMemberAccess.ts",
         "line": 52
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/audit.ts",
         "line": 53
       },
       {
-        "file": "app/api/counselor/inbox-zero/route.ts",
+        "file": "lib/db/prisma.ts",
         "line": 54
       },
       {
-        "file": "app/api/counselor/inbox-zero/dismiss/route.ts",
+        "file": "app/api/counselor/inbox-zero/route.ts",
         "line": 55
+      },
+      {
+        "file": "app/api/counselor/inbox-zero/dismiss/route.ts",
+        "line": 56
       }
     ],
     "kind": "test-candidate",
@@ -18007,27 +18087,27 @@
     "localReferences": [
       {
         "file": "app/(portal)/counselor/queue/page.tsx",
-        "line": 39
-      },
-      {
-        "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
         "line": 40
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
         "line": 41
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 42
       },
       {
-        "file": "lib/counselor/staffMemberAccess.ts",
+        "file": "lib/db/prisma.ts",
         "line": 43
       },
       {
-        "file": "lib/counselor/workQueue.ts",
+        "file": "lib/counselor/staffMemberAccess.ts",
         "line": 44
+      },
+      {
+        "file": "lib/counselor/workQueue.ts",
+        "line": 45
       }
     ],
     "kind": "test-candidate",
@@ -20019,8 +20099,12 @@
         "line": 3
       },
       {
+        "file": "lib/attention/reasons.ts",
+        "line": 4
+      },
+      {
         "file": "components/portal/counselor/InboxZeroClient.tsx",
-        "line": 11
+        "line": 12
       }
     ],
     "kind": "test-candidate",
@@ -22251,6 +22335,22 @@
       }
     ],
     "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/fixtures/attentionRoster.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [],
+    "localReferences": [
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 6
+      }
+    ],
+    "kind": "test-helper",
+    "declaredRunners": [],
+    "collectionStatus": "helper-not-a-suite",
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
