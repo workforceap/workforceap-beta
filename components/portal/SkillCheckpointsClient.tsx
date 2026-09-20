@@ -158,7 +158,7 @@ function ProofCard({
       <div className="wa-flex wa-items-center" style={{ gap: '0.6rem', marginBottom: '0.75rem' }}>
         <ShieldCheck size={28} aria-hidden="true" style={{ color: 'var(--wa-accent)', flexShrink: 0 }} />
         <div>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--wa-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Skill Demonstrated
           </div>
           <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--wa-text)', lineHeight: 1.25 }}>
@@ -183,7 +183,7 @@ function ProofCard({
       </div>
 
       {/* Footer */}
-      <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', borderTop: '1px solid var(--wa-border)', paddingTop: '0.75rem' }}>
+      <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', borderTop: '1px solid var(--wa-border)', paddingTop: '0.75rem' }}>
         Verified by WorkforceAP · {today}
       </div>
 
@@ -216,10 +216,10 @@ export default function SkillCheckpointsClient({ userId: _userId }: { userId: st
             <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--wa-text)', marginBottom: '0.4rem' }}>
               {pack.programTitle}
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--wa-muted)', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', lineHeight: 1.5 }}>
               {pack.whyItMatters}
             </div>
-            <div className="wa-flex wa-items-center" style={{ gap: 4, marginTop: '0.6rem', fontSize: '0.75rem', color: 'var(--wa-accent)', fontWeight: 700 }}>
+            <div className="wa-flex wa-items-center" style={{ gap: 4, marginTop: '0.6rem', fontSize: '0.8125rem', color: 'var(--wa-accent)', fontWeight: 700 }}>
               {pack.courses.length} course{pack.courses.length !== 1 ? 's' : ''}
               <ChevronRight size={14} aria-hidden="true" />
             </div>
@@ -272,7 +272,7 @@ export default function SkillCheckpointsClient({ userId: _userId }: { userId: st
               <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--wa-text)' }}>
                 {course.courseName}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>
                 {course.checkpoints.length} checkpoint{course.checkpoints.length !== 1 ? 's' : ''}
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function SkillCheckpointsClient({ userId: _userId }: { userId: st
             />
           </div>
 
-          <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', marginBottom: '1rem', fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', marginBottom: '1rem', fontVariantNumeric: 'tabular-nums' }}>
             Checkpoint {index + 1} of {course.checkpoints.length}
           </div>
 
@@ -352,7 +352,7 @@ export default function SkillCheckpointsClient({ userId: _userId }: { userId: st
           >
             <ClipboardList size={18} aria-hidden="true" style={{ flexShrink: 0, marginTop: '0.1rem', color: 'var(--wa-muted)' }} />
             <div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--wa-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>
                 Scenario
               </div>
               <div style={{ fontSize: '0.88rem', color: 'var(--wa-text)', lineHeight: 1.6 }}>
@@ -425,7 +425,7 @@ export default function SkillCheckpointsClient({ userId: _userId }: { userId: st
                       borderRadius: '50%',
                       background: isSelected || (revealed && isRight) ? borderColor : 'var(--wa-surface-2)',
                       color: isSelected || (revealed && isRight) ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       flexShrink: 0,
                     }}

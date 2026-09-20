@@ -60,7 +60,7 @@ export default function ApplicantTriageChecklist({ triage, copy }: ApplicantTria
                 borderRadius: '4px',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 800,
                 color: item.ok ? 'light-dark(#166534, var(--wa-success))' : 'var(--color-on-surface-variant)',
                 background: item.ok ? 'rgba(22,163,74,0.14)' : 'var(--surface-container)',

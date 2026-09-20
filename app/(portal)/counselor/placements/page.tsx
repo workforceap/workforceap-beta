@@ -184,9 +184,9 @@ export default function PlacementsPage() {
         <>
           <div style={{ fontWeight: 700 }}>{p.member_name || p.member_email}</div>
           {p.member_name && p.member_name !== p.member_email ? (
-            <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)' }}>{p.member_email}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>{p.member_email}</div>
           ) : null}
-          <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)' }}>{p.program_title || t('noProgram')}</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>{p.program_title || t('noProgram')}</div>
         </>
       ),
     },
@@ -365,7 +365,7 @@ export default function PlacementsPage() {
                         </div>
                         <div
                           style={{
-                            fontSize: 11,
+                            fontSize: 13,
                             color: 'var(--wa-muted)',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -395,7 +395,7 @@ export default function PlacementsPage() {
                         alignItems: 'baseline',
                         justifyContent: 'space-between',
                         gap: 8,
-                        fontSize: 11,
+                        fontSize: 13,
                         color: 'var(--wa-muted)',
                         marginTop: 12,
                       }}

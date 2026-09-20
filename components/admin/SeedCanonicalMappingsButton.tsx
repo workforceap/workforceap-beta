@@ -94,7 +94,7 @@ export default function SeedCanonicalMappingsButton() {
       {result ? (
         <div
           style={{
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             color: 'var(--color-on-surface-variant)',
             lineHeight: 1.5,
           }}
@@ -110,7 +110,7 @@ export default function SeedCanonicalMappingsButton() {
         </div>
       ) : null}
       {error ? (
-        <div style={{ fontSize: '0.8rem', color: 'var(--color-error, #dc2626)' }}>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--color-error, #dc2626)' }}>
           Error: {error}
         </div>
       ) : null}

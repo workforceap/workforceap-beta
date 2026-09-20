@@ -23,3 +23,13 @@ it('shows distinct search-empty guidance and hides unavailable page links', () =
   expect(screen.queryByRole('link', { name: 'Previous page' })).not.toBeInTheDocument();
   expect(screen.queryByRole('link', { name: 'Next page' })).not.toBeInTheDocument();
 });
+it('keeps categorical KPI totals neutral and derives the only hue from at-risk state', () => {
+  const { unmount } = render(<CounselorsRosterKit counselors={[]} total={12} avgCaseload={8} atRiskOwned={0} avgResponse="2.1h" />);
+  const valueOf = (label: string) => screen.getByText(label).closest('.wa-kit-card')!.querySelector<HTMLElement>('.wa-kit-stat-value')!;
+  expect(valueOf('Avg Caseload').style.color).toBe('var(--wa-text)');
+  expect(valueOf('Avg Response').style.color).toBe('var(--wa-text)');
+  expect(valueOf('At-Risk Owned').style.color).toBe('var(--wa-text)');
+  unmount();
+  render(<CounselorsRosterKit counselors={[]} total={12} avgCaseload={8} atRiskOwned={3} avgResponse="2.1h" />);
+  expect(valueOf('At-Risk Owned').style.color).toBe('var(--wa-accent)');
+});

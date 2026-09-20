@@ -44,12 +44,12 @@ export default function MobileRecentActivity({
                       {AI_TOOL_LABELS[r.toolType] ?? r.toolType}
                     </p>
                     {r.inputSummary && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.1rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.1rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {stripMarkdownForPreview(r.inputSummary)}
                       </p>
                     )}
                   </div>
-                  <span style={{ fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)', flexShrink: 0, marginLeft: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0, marginLeft: '0.5rem' }}>
                     {formatPortalDate(r.createdAt)}
                   </span>
                 </div>

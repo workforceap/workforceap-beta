@@ -163,12 +163,12 @@ export default function ElevatorPitchDeploymentLogger() {
                       {meta?.employer ?? 'Unknown employer'}
                     </span>
                     {outcomeInfo && (
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: outcomeInfo.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: outcomeInfo.color, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                         {outcomeInfo.label}
                       </span>
                     )}
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
                     Used {meta?.usedAt ? formatDate(meta.usedAt) : formatDate(d.createdAt)}
                   </p>
                 </div>

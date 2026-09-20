@@ -80,7 +80,7 @@ export default async function EmployerMatchesPage() {
         }
       />
       {isListTruncated(matches.length, EMPLOYER_LIST_CAP, matchTotal) && (
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>
           {showingFirstLabel(matches.length, matchTotal, 'matches')}
         </p>
       )}

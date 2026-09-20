@@ -63,8 +63,8 @@ export default function ResourceCard({ resource, progress }: ResourceCardProps) 
         <span className="resource-card-type">{resource.type}</span>
         {(isCompleted || isSaved) && (
           <span className="resource-card-badges">
-            {isCompleted && <span className="resource-badge completed">Completed</span>}
-            {isSaved && <span className="resource-badge saved">Saved</span>}
+            {isCompleted && <span className="wa-kit-tag wa-kit-tag--ok">Completed</span>}
+            {isSaved && <span className="wa-kit-tag wa-kit-tag--warn">Saved</span>}
           </span>
         )}
       </div>
@@ -81,7 +81,7 @@ export default function ResourceCard({ resource, progress }: ResourceCardProps) 
       ) : null}
       <div className="resource-card-footer">
         {downloadError && (
-          <span role="alert" style={{ fontSize: '0.75rem', color: 'var(--color-error, #dc2626)' }}>
+          <span role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-error, #dc2626)' }}>
             Couldn&rsquo;t download — try again
           </span>
         )}

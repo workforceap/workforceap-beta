@@ -18,6 +18,8 @@ import {
 import { readAccountDraft, writeAccountDraft, readSavedEligibility, readApplyDraft, readSelectedPrograms, clearApplyBrowserState, sameEligibility, type SavedEligibility, type AccountDraft, type ApplyDraft } from '@/lib/apply/applyBrowserState';
 import { applyRecoveryHref, type ApplyRecoveryContext } from '@/lib/apply/applyRecoveryHref';
 import { ApplyReadyContent, ApplyResumeGate } from '@/components/apply/ApplyReadiness';
+import PasswordToggle from '@/components/forms/PasswordToggle';
+import { MailOpen } from 'lucide-react';
 import { getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
@@ -512,7 +514,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
   if (verifyEmailMode) {
     return (
       <div className="apply-form" style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 56, color: 'var(--color-accent)', display: 'block', marginBottom: '1rem' }} aria-hidden="true">mark_email_unread</span>
+        <MailOpen size={56} aria-hidden="true" style={{ color: 'var(--color-accent)', display: 'block', margin: '0 auto 1rem' }} />
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{t('accountVerifyTitle')}</h2>
         <p style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6, marginBottom: '0.5rem' }}>
           {t('accountVerifySentTo')}
@@ -813,7 +815,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
             <strong>{t('accountSmsLabel')}</strong> {t('accountSmsBody')}
           </span>
         </label>
-        <p id="sms-opt-in-hint" style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>{t('accountSmsFinePrint')}</p>
+        <p id="sms-opt-in-hint" style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>{t('accountSmsFinePrint')}</p>
       </div>
       <div className="form-group">
         <label htmlFor="password">{t('accountPasswordLabel')}</label>
@@ -833,16 +835,14 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
             aria-describedby={fieldErrors.password ? 'password-error' : 'password-hint'}
             style={{ paddingRight: '2.5rem' }}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? t('accountHidePassword') : t('accountShowPassword')}
-            style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: '0.25rem', lineHeight: 1, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem' }} aria-hidden="true">
-              {showPassword ? 'visibility_off' : 'visibility'}
-            </span>
-          </button>
+          <PasswordToggle
+            visible={showPassword}
+            onToggle={() => setShowPassword((v) => !v)}
+            showLabel={t('accountShowPassword')}
+            hideLabel={t('accountHidePassword')}
+            controls="password"
+            style={{ right: '0.25rem' }}
+          />
         </div>
         <p id="password-hint" className="apply-field-hint">{t('accountPasswordHint')}</p>
         {password.length > 0 ? (
@@ -876,7 +876,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
                 );
               })}
             </div>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               <strong>{t('accountPasswordStrengthLabel')}:</strong> {passwordStrengthTone}
             </p>
           </div>
@@ -901,16 +901,14 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
             aria-describedby={fieldErrors.confirmPassword ? 'confirm-password-error' : undefined}
             style={{ paddingRight: '2.5rem' }}
           />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword((v) => !v)}
-            aria-label={showConfirmPassword ? t('accountHidePassword') : t('accountShowPassword')}
-            style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', padding: '0.25rem', lineHeight: 1, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '1.25rem' }} aria-hidden="true">
-              {showConfirmPassword ? 'visibility_off' : 'visibility'}
-            </span>
-          </button>
+          <PasswordToggle
+            visible={showConfirmPassword}
+            onToggle={() => setShowConfirmPassword((v) => !v)}
+            showLabel={t('accountShowPassword')}
+            hideLabel={t('accountHidePassword')}
+            controls="confirmPassword"
+            style={{ right: '0.25rem' }}
+          />
         </div>
         {fieldErrors.confirmPassword ? <p id="confirm-password-error" className="form-error" role="alert">{fieldErrors.confirmPassword}</p> : null}
       </div>

@@ -116,8 +116,8 @@ export default function EmployerPipelineClient({
                 <Avatar initials={getInitials(m.student.fullName)} size={32} />
                 <div style={{ minWidth: 0 }}>
                   <strong style={{ fontSize: 13, color: 'var(--wa-text)' }}>{m.student.fullName}</strong>
-                  <div style={{ fontSize: 11.5, color: 'var(--wa-muted)' }}>{m.student.email}</div>
-                  <div className="wa-flex wa-items-center wa-gap-1" style={{ fontSize: 11.5, marginTop: 3 }}>
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{m.student.email}</div>
+                  <div className="wa-flex wa-items-center wa-gap-1" style={{ fontSize: 13, marginTop: 3 }}>
                     <span style={{ fontWeight: 800, color: scoreColor(score), fontVariantNumeric: 'tabular-nums' }}>{score}%</span>
                     {m.matchReasons?.length ? (
                       <span style={{ color: 'var(--wa-muted)' }}> · {m.matchReasons.slice(0, 2).join(' · ')}</span>
@@ -138,7 +138,7 @@ export default function EmployerPipelineClient({
                     border: '1px solid var(--wa-border)',
                     background: 'var(--wa-surface)',
                     color: 'var(--wa-text)',
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                   }}
                 >

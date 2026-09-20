@@ -13,7 +13,7 @@ export default function DecisionJourneyNotFound() {
       <p
         style={{
           margin: 0,
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
@@ -47,7 +47,7 @@ export default function DecisionJourneyNotFound() {
         <LocalizedLink href="/programs" className="btn btn-primary">
           Browse programs
         </LocalizedLink>
-        <LocalizedLink href="/find-your-path" className="btn btn-outline">
+        <LocalizedLink href="/find-your-path" className="btn btn-secondary">
           Restart the quiz
         </LocalizedLink>
         <LocalizedLink href="/program-comparison" className="btn btn-ghost">

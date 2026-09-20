@@ -250,7 +250,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                 {!t.active && (
                   <span
                     style={{
-                      fontSize: '0.625rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       padding: '0.1rem 0.4rem',
                       borderRadius: '9999px',
@@ -274,7 +274,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
               </div>
               <div
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.8125rem',
                   color: 'var(--color-on-surface-variant)',
                   display: 'flex',
                   gap: '0.5rem',
@@ -289,7 +289,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                         background: 'var(--surface-container)',
                         padding: '0.05rem 0.3rem',
                         borderRadius: '0.25rem',
-                        fontSize: '0.7rem',
+                        fontSize: '0.8125rem',
                       }}
                     >
                       {'{'}{v}{'}'}
@@ -418,7 +418,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                       <div key={v}>
                         <label
                           style={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.8125rem',
                             fontWeight: 600,
                             color: 'var(--color-on-surface-variant)',
                             display: 'block',
@@ -499,7 +499,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                     <div>
                       <span
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 600,
                           color: 'var(--color-on-surface-variant)',
                         }}
@@ -519,7 +519,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                     <div>
                       <span
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 600,
                           color: 'var(--color-on-surface-variant)',
                         }}
@@ -754,7 +754,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                 />
                 <p
                   style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     color: 'var(--color-on-surface-variant)',
                     margin: '0.375rem 0 0',
                   }}

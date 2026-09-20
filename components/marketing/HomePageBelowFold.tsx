@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { BadgeCheck, Building2, CircleCheck, Clock, Handshake, User } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import LocalizedLinkServer from '@/components/LocalizedLinkServer';
 import { MARKETING_JOURNEY_STEPS, type MarketingJourneyStep } from '@/lib/content/marketingJourneySteps';
 import { getProgramExtra } from '@/lib/content/programExtras';
@@ -153,7 +155,7 @@ export default async function HomePageBelowFold({
                     background: 'rgba(0,0,0,0.6)',
                     backdropFilter: 'blur(4px)',
                     color: 'white',
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -192,19 +194,15 @@ export default async function HomePageBelowFold({
                       padding: '0.2rem 0.6rem',
                       borderRadius: 'var(--radius-full, 50px)',
                       background: 'var(--surface-container-lowest)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">
-                      schedule
-                    </span>
+                    <Clock size={14} aria-hidden="true" />
                     {p.duration ?? p.static?.duration ?? '3-5 months'}
                   </span>
                   <span className="marketing-cert-badge">
-                    <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">
-                      verified
-                    </span>
+                    <BadgeCheck size={14} aria-hidden="true" />
                     {t('programsCertBadge')}
                   </span>
                 </div>
@@ -242,7 +240,7 @@ export default async function HomePageBelowFold({
               color: 'var(--color-on-surface-variant)',
               marginBottom: '1.25rem',
               letterSpacing: '0.12em',
-              fontSize: '0.625rem',
+              fontSize: '0.8125rem',
             }}
           >
             {t('contrastEyebrow')}
@@ -277,18 +275,11 @@ export default async function HomePageBelowFold({
                     border: '1px solid rgba(0,0,0,0.06)',
                   }}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: '1.25rem',
-                      color: 'var(--color-accent)',
-                      flexShrink: 0,
-                      marginTop: '0.05rem',
-                    }}
-                    aria-hidden="true"
-                  >
-                    {row.icon}
-                  </span>
+                  <LegacyGlyph
+                    name={row.icon}
+                    size={20}
+                    style={{ color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.05rem' }}
+                  />
                   <p
                     style={{
                       margin: 0,
@@ -314,7 +305,7 @@ export default async function HomePageBelowFold({
               opacity: 0.7,
               marginTop: 'clamp(2rem, 4vw, 2.75rem)',
               marginBottom: '1.25rem',
-              fontSize: '0.625rem',
+              fontSize: '0.8125rem',
               letterSpacing: '0.2em',
             }}
           >
@@ -379,34 +370,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  person
-                </span>
+                <User size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('memberCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardNoCost')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardCount')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardResume')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardJobs')}
                 </li>
               </ul>
@@ -434,34 +415,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  handshake
-                </span>
+                <Handshake size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('partnerCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardSharing')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardRefer')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardImpact')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardSystem')}
                 </li>
               </ul>
@@ -489,34 +460,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  business
-                </span>
+                <Building2 size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('employerCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardCandidates')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardTraining')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardBenefit')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardGrads')}
                 </li>
               </ul>
@@ -558,7 +519,7 @@ export default async function HomePageBelowFold({
               </span>
               <span
                 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.8125rem',
                   color: 'var(--color-on-surface-variant)',
                   marginTop: '0.5rem',
                   fontWeight: 600,
@@ -573,7 +534,7 @@ export default async function HomePageBelowFold({
               <span style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-accent)', lineHeight: 1 }}>{programCount}</span>
               <span
                 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.8125rem',
                   color: 'var(--color-on-surface-variant)',
                   marginTop: '0.5rem',
                   fontWeight: 600,
@@ -586,10 +547,10 @@ export default async function HomePageBelowFold({
             </div>
             <div className="portal-card portal-card--flat" style={{ gridColumn: '1 / -1', background: 'var(--color-accent)', color: 'white', padding: '1.5rem', textAlign: 'center' }}>
               <span style={{ fontSize: '1.6rem', fontWeight: 900, lineHeight: 1.15 }}>{t('statNoUpfrontCost')}</span>
-              <span style={{ display: 'block', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', marginTop: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
                 {t('statMemberCost')}
               </span>
-              <span style={{ display: 'block', fontSize: '0.7rem', marginTop: '0.35rem', opacity: 0.75, fontWeight: 400, textTransform: 'none', letterSpacing: 'normal' }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', marginTop: '0.35rem', opacity: 0.75, fontWeight: 400, textTransform: 'none', letterSpacing: 'normal' }}>
                 {t('statQualifyingMembers')}
               </span>
             </div>
@@ -659,7 +620,7 @@ export default async function HomePageBelowFold({
               }}
             >
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.02em' }}>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.02em' }}>
                   {journeyPhaseLabel(step.homePhase)}
                 </span>
                 <h3 style={{ fontWeight: 700, marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '1.125rem' }}>{step.title}</h3>

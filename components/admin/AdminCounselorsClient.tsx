@@ -72,7 +72,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
     <div>
       {/* Add counselor form */}
       <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.5rem', maxWidth: '560px' }}>
-        <h2 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
+        <h2 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
           Add Counselor
         </h2>
         <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem', lineHeight: 1.55 }}>
@@ -89,13 +89,13 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
             { label: 'Title (optional)', value: title, set: setTitle, placeholder: 'e.g. Career Coach', type: 'text' },
           ].map(({ label, value, set, placeholder, type }) => (
             <div key={label}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>{label}</label>
+              <label style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>{label}</label>
               <input type={type} value={value} onChange={(e) => set(e.target.value)} placeholder={placeholder}
                 style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem', boxSizing: 'border-box' as const }} />
             </div>
           ))}
           <div>
-            <label htmlFor="admincounselorsclient-affiliation-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>Affiliation</label>
+            <label htmlFor="admincounselorsclient-affiliation-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>Affiliation</label>
             <select id="admincounselorsclient-affiliation-field" value={affiliation} onChange={(e) => {
               const a = e.target.value as Affiliation;
               setAffiliation(a);
@@ -110,7 +110,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           </div>
           {affiliation === 'partner' && (
             <div>
-              <label htmlFor="admincounselorsclient-partner-organization-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>Partner Organization</label>
+              <label htmlFor="admincounselorsclient-partner-organization-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>Partner Organization</label>
               <select id="admincounselorsclient-partner-organization-field" value={partnerId} onChange={(e) => setPartnerId(e.target.value)}
                 style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem' }}>
                 <option value="">Select a partner…</option>
@@ -139,7 +139,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
             All Counselors
           </h2>
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             {loading ? '…' : `${rows.length} total`}
           </span>
         </div>
@@ -162,16 +162,16 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{r.fullName}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {r.email} · {r.affiliation === 'independent' ? 'Independent Advisor' : (r.partnerName ?? 'WorkforceAP')}{r.title ? ` · ${r.title}` : ''}
                       </p>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                    <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.affiliation === 'independent' ? 'rgba(30,58,138,0.12)' : 'var(--surface-container-high)', color: r.affiliation === 'independent' ? '#1e3a8a' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.affiliation === 'independent' ? 'rgba(30,58,138,0.12)' : 'var(--surface-container-high)', color: r.affiliation === 'independent' ? '#1e3a8a' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {r.affiliation === 'independent' ? 'Advisor' : 'Counselor'}
                     </span>
-                    <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.active ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)', color: r.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.active ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)', color: r.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {r.active ? 'Active' : 'Inactive'}
                     </span>
                   </div>

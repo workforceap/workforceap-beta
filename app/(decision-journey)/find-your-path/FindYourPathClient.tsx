@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ArrowLeft, Clock } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import LocalizedLink from '@/components/LocalizedLink';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { PROGRAMS, getProgramBySlug } from '@/lib/content/programs';
@@ -220,7 +222,7 @@ function QuizResultsView({
             font-size: 0.95rem !important;
           }
           .fyp-retake-sticky p:last-child {
-            font-size: 0.8rem !important;
+            font-size: 0.8125rem !important;
           }
           .fyp-retake-sticky button {
             padding: 0.5rem 0.75rem !important;
@@ -253,7 +255,7 @@ function QuizResultsView({
             background: 'var(--surface-container-low)',
           }}
         >
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-accent)' }}>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-accent)' }}>
             YOUR STRONGEST ROLE MATCH
           </p>
           {headlineTitle ? (
@@ -311,7 +313,7 @@ function QuizResultsView({
             background: 'linear-gradient(135deg, var(--surface-container-low), rgba(173, 44, 77, 0.08))',
           }}
         >
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.08em', color: 'var(--color-accent)' }}>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', color: 'var(--color-accent)' }}>
             YOUR CAREER WRAPPED
           </p>
           <h3 style={{ margin: '0 0 0.75rem', fontSize: '1.35rem' }}>
@@ -346,7 +348,7 @@ function QuizResultsView({
                 <button type="button" className="btn btn-primary" onClick={handleShareResults}>
                   Share my career match
                 </button>
-                <LocalizedLink href={topApplyHref} className="btn btn-outline">
+                <LocalizedLink href={topApplyHref} className="btn btn-secondary">
                   Get matched / apply
                 </LocalizedLink>
                 {shareStatus && <span role="status" style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>{shareStatus}</span>}
@@ -408,7 +410,7 @@ function QuizResultsView({
                     color: 'white',
                     padding: '0.2rem 0.6rem',
                     borderRadius: '50px',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                   }}
                 >
@@ -426,7 +428,7 @@ function QuizResultsView({
                 <p className="quiz-result-ramp-note">{extra.rampNote}</p>
               )}
               <div style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }} aria-hidden="true">schedule</span>
+                <Clock size={18} aria-hidden="true" />
                 {program.duration}
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 600, marginBottom: '0.5rem' }}>
@@ -471,7 +473,7 @@ function QuizResultsView({
             <LocalizedLink href={topApplyHref} className="btn btn-primary btn-large">
               Start {topProgram.title} Application →
             </LocalizedLink>
-            <LocalizedLink href="/contact" className="btn btn-outline btn-large">
+            <LocalizedLink href="/contact" className="btn btn-secondary btn-large">
               Talk to an advisor first
             </LocalizedLink>
           </div>
@@ -534,7 +536,7 @@ function QuizResultsView({
         ) : (
           <>
             <p>Not seeing what you expected?</p>
-            <LocalizedLink href="/programs" className="btn btn-outline">
+            <LocalizedLink href="/programs" className="btn btn-secondary">
               Browse All 20 Programs →
             </LocalizedLink>
           </>
@@ -801,7 +803,7 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
           display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem',
         }}>
           <span style={{
-            fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-accent)',
+            fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)',
             whiteSpace: 'nowrap', letterSpacing: '0.04em',
           }}>
             Step {stepLabel}/{String(QUESTIONS.length).padStart(2, '0')}
@@ -817,7 +819,7 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
               transition: 'width 0.35s ease',
             }} />
           </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             {Math.round(progressPct)}%
           </span>
         </div>
@@ -877,10 +879,11 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
                     style={{ display: 'none' }}
                   />
                   {icon && (
-                    <span className="material-symbols-outlined" style={{
-                      fontSize: '1.25rem',
-                      color: isSelected ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
-                    }} aria-hidden="true">{icon}</span>
+                    <LegacyGlyph
+                      name={icon}
+                      size={20}
+                      style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', flexShrink: 0 }}
+                    />
                   )}
                   <span className="radio-dot" aria-hidden style={{ display: 'none' }} />
                   <span style={{ fontSize: '0.9rem' }}>{a.label}</span>
@@ -929,11 +932,11 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
                 onClick={handleBack}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">arrow_back</span>
+                <ArrowLeft size={16} aria-hidden="true" />
                 Back
               </button>
             ) : <span />}
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {pendingChoice === null ? 'Select an option, then confirm below' : 'Confirm your answer to continue'}
             </span>
           </div>
@@ -951,13 +954,13 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
               <div style={{
                 width: '1.5rem', height: '1.5rem', borderRadius: '50%',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '0.7rem', fontWeight: 700,
+                fontSize: '0.8125rem', fontWeight: 700,
                 background: i <= step ? 'var(--color-accent)' : 'var(--surface-container-highest)',
                 color: i <= step ? 'white' : 'var(--color-on-surface-variant)',
                 transition: 'all 0.2s ease',
               }}>{i + 1}</div>
               <span style={{
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 color: i === step ? 'var(--color-on-surface)' : 'var(--color-on-surface-variant)',
                 fontWeight: i === step ? 700 : 400,
               }}>{label}</span>

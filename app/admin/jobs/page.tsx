@@ -355,7 +355,7 @@ async function renderLegacy({
                       ...pendingAgeBadgeStyle(daysSince(job.updatedAt)),
                       padding: '0.1rem 0.5rem',
                       borderRadius: '999px',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       whiteSpace: 'nowrap',
                     }}
@@ -368,13 +368,13 @@ async function renderLegacy({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem' }}>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                   Applications
                 </p>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', fontWeight: 700 }}>{job._count?.applications ?? 0}</p>
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                   Queue
                 </p>
                 <p style={{ margin: '0.25rem 0 0', fontSize: '0.95rem', color: 'var(--color-on-surface)' }}>

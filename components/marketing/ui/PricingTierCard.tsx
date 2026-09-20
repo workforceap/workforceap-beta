@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { CircleCheck } from 'lucide-react';
 import LocalizedLink from '@/components/LocalizedLink';
 
 interface PricingTierCardProps {
@@ -44,7 +45,7 @@ export function PricingTierCard({ title, features, ctaText, ctaHref, variant = '
             color: '#fff',
             padding: '0.25rem 1rem',
             borderRadius: 'var(--radius-full)',
-            fontSize: '0.65rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',
@@ -57,7 +58,7 @@ export function PricingTierCard({ title, features, ctaText, ctaHref, variant = '
       <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
         {features.map((f, i) => (
           <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)', '--ms-fill': 1 }}>check_circle</span>
+            <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
             {f}
           </li>
         ))}

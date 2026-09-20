@@ -105,7 +105,7 @@ export default function LearningHubEnrolledCourses({
           <div style={{ flex: 1, minWidth: 0 }}>
             <p
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
@@ -122,7 +122,7 @@ export default function LearningHubEnrolledCourses({
               {completedInProgram} of {courses.length} courses marked complete
             </p>
             {languageSupportLine ? (
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.3rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.3rem' }}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '0.9rem', verticalAlign: '-0.15em', marginRight: '0.25rem' }}>
                   translate
                 </span>

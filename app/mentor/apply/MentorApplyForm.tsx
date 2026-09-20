@@ -76,7 +76,7 @@ export default function MentorApplyForm() {
             Thanks for applying to mentor with WorkforceAP. We&rsquo;ll review your application
             and reach out within a few business days.
           </p>
-          <LocalizedLink href="/" className="mdx-btn mdx-btn--primary">
+          <LocalizedLink href="/" className="btn btn-primary">
             Back to Home
           </LocalizedLink>
         </div>
@@ -177,7 +177,7 @@ export default function MentorApplyForm() {
         <button
           type="submit"
           disabled={loading}
-          className={`mdx-btn mdx-btn--primary ${styles.submit}`}
+          className={`btn btn-primary btn-full-width ${styles.submit}`}
         >
           {loading ? 'Submitting…' : 'Submit Application'}
         </button>

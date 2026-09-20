@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Clock } from 'lucide-react';
 import LocalizedLink from '@/components/LocalizedLink';
 import { PROGRAMS, getProgramBySlug, type Program } from '@/lib/content/programs';
 import { readApplyDraft, readSavedEligibility, saveSelectedPrograms, type SavedEligibility, type ApplyDraft } from '@/lib/apply/applyBrowserState';
@@ -347,7 +348,7 @@ export default function ApplyResultsClient({
                       position: 'absolute',
                       top: '0.5rem',
                       left: '0.5rem',
-                      fontSize: '0.65rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
@@ -366,7 +367,7 @@ export default function ApplyResultsClient({
                       position: 'absolute',
                       top: '0.5rem',
                       right: '0.5rem',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
@@ -383,7 +384,7 @@ export default function ApplyResultsClient({
                       color: 'white',
                       padding: '0.2rem 0.6rem',
                       borderRadius: '50px',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                     }}
                   >
@@ -396,7 +397,7 @@ export default function ApplyResultsClient({
                 <p className="apply-results-program-card-title">{p.title}</p>
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">schedule</span>
+                    <Clock size={16} aria-hidden="true" />
                     {p.duration}
                   </div>
                 </div>
@@ -416,7 +417,7 @@ export default function ApplyResultsClient({
         </button>
         <button
           type="button"
-          className="btn btn-outline"
+          className="btn btn-secondary"
           style={{ marginTop: '0.75rem' }}
           onClick={handleShareLink}
           disabled={selectedSlugs.length === 0}

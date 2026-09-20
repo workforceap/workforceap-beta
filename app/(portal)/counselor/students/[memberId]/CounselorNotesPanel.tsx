@@ -154,7 +154,7 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
               border: '1px solid var(--outline-variant)',
               borderRadius: '0.5rem',
               padding: '0.5rem 0.75rem',
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               fontFamily: 'inherit',
               resize: 'vertical',
               background: 'var(--surface-container-low)',
@@ -162,7 +162,7 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
               boxSizing: 'border-box',
             }}
           />
-          {error && <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.75rem', margin: '0.25rem 0' }}>{error}</p>}
+          {error && <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', margin: '0.25rem 0' }}>{error}</p>}
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
             <button type="button"
               onClick={handleAdd}
@@ -186,13 +186,13 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
       {saveStatus && <p role="status" style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>{saveStatus}</p>}
 
       {deleteError && (
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
           {deleteError}
         </p>
       )}
 
       {fetchError && (
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-accent, #b00020)', margin: '0 0 0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent, #b00020)', margin: '0 0 0.5rem' }}>
           Couldn’t load notes.{' '}
           <button type="button" className={styles.addButton} onClick={() => void fetchNotes()} disabled={loading}>
             {loading ? 'Loading…' : 'Try again'}
@@ -200,10 +200,10 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
         </p>
       )}
 
-      {loading && <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>Loading notes…</p>}
+      {loading && <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Loading notes…</p>}
 
       {!loading && !fetchError && notes.length === 0 && !adding && (
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
           No notes yet. Add one to track progress.
         </p>
       )}
@@ -212,7 +212,7 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
         {notes.map((note) => (
           <div key={note.id} style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                 {new Date(note.createdAt).toLocaleDateString('en-US')} · {note.author.fullName ?? note.author.email}
               </p>
               {note.canDelete ? (
@@ -226,7 +226,7 @@ export default function CounselorNotesPanel({ memberId }: { memberId: string }) 
                 </button>
               ) : null}
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface)', margin: 0, whiteSpace: 'pre-wrap' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0, whiteSpace: 'pre-wrap' }}>
               {note.content}
             </p>
           </div>

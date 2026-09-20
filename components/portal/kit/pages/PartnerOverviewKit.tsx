@@ -187,12 +187,12 @@ export function PartnerAssistantAccordion({
           color: 'var(--wa-text)',
         }}
       >
-        <span aria-hidden style={{ fontSize: 10, color: 'var(--wa-accent)' }}>
+        <span aria-hidden style={{ fontSize: 13, color: 'var(--wa-accent)' }}>
           ▶
         </span>
         <span>{title}</span>
         {hint ? (
-          <span style={{ fontSize: 12, color: 'var(--wa-muted)', marginLeft: 'auto', fontWeight: 400 }}>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)', marginLeft: 'auto', fontWeight: 400 }}>
             {hint}
           </span>
         ) : null}
@@ -259,7 +259,7 @@ export function PartnerQuickActions({ actions }: { actions: PartnerQuickAction[]
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)' }}>{a.title}</div>
-            <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>{a.body}</div>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{a.body}</div>
           </div>
         </Link>
       ))}

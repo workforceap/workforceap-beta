@@ -196,7 +196,7 @@ export default function AssessmentsTable({
                 </div>
                 <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
                   <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{u.fullName}</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {u.programInterest ?? 'No program'} · {u.assessmentCompletedAt?.toLocaleDateString() ?? '—'}
                   </p>
                 </div>
@@ -211,24 +211,24 @@ export default function AssessmentsTable({
                 <div id={`assessment-details-${u.id}`} style={{ padding: '0 1rem 1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem', margin: '0.875rem 0' }}>
                     <div>
-                      <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Email</p>
+                      <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Email</p>
                       <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0, wordBreak: 'break-all' }}>{u.email}</p>
                     </div>
                     <div>
-                      <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Phone</p>
+                      <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Phone</p>
                       <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', margin: 0 }}>{formatPhone(u.phone) || '—'}</p>
                     </div>
                   </div>
-                  <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0.5rem' }}>Answer Breakdown</p>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0.5rem' }}>Answer Breakdown</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                     {ASSESSMENT_QUESTIONS.map((q) => {
                       const ans = userAnswers[q.id];
                       const correct = correctnessByUserId[u.id]?.[q.id] === true;
                       return (
                         <div key={q.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.375rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
                           <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>{ans ?? '—'}</span>
+                          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>{ans ?? '—'}</span>
                         </div>
                       );
                     })}
@@ -322,7 +322,7 @@ export default function AssessmentsTable({
                       justifyContent: 'center',
                       color: '#fff',
                       fontWeight: 700,
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       flexShrink: 0,
                     }}
                   >

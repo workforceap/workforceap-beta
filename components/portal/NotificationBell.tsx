@@ -301,7 +301,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
           notifications
         </span>
         {totalUnread > 0 && (
-          <span style={{ position: 'absolute', top: '-2px', right: '-2px', minWidth: '1.125rem', height: '1.125rem', borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff', fontSize: '0.65rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.25rem', lineHeight: 1, border: '2px solid var(--surface-container-low, #1a1c1e)' }}>
+          <span style={{ position: 'absolute', top: '-2px', right: '-2px', minWidth: '1.125rem', height: '1.125rem', borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff', fontSize: '0.8125rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.25rem', lineHeight: 1, border: '2px solid var(--surface-container-low, #1a1c1e)' }}>
             {totalUnread > 9 ? '9+' : totalUnread}
           </span>
         )}
@@ -314,13 +314,13 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
             {isDbMode && dbUnreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
+                style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
               >
                 Mark all read
               </button>
             )}
             {!isDbMode && badgeTotal > 0 && (
-              <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {badgeTotal} new
               </span>
             )}
@@ -359,22 +359,22 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <a href={getNotificationLink(n)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{n.title}</p>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.body}</p>
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.body}</p>
                       </a>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.375rem' }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>{formatTimeAgo(n.createdAt)}</span>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>{formatTimeAgo(n.createdAt)}</span>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           {!n.readAt && (
                             <button
                               onClick={(e) => { e.stopPropagation(); void markRead(n.id); }}
-                              style={{ fontSize: '0.7rem', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                              style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                             >
                               Mark read
                             </button>
                           )}
                           <button
                             onClick={(e) => { e.stopPropagation(); void dismiss(n.id); }}
-                            style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           >
                             Dismiss
                           </button>
@@ -408,7 +408,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                       <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</p>
                     </div>
                     {n.count > 0 && (
-                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-accent)', flexShrink: 0 }}>{n.count}</span>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--color-accent)', flexShrink: 0 }}>{n.count}</span>
                     )}
                   </a>
                 ))}

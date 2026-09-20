@@ -14,7 +14,7 @@
 
    GOAL 2 — crimson depth feel: light form surface (#fff / #1a1414
    text), crimson accents, crimson primary button — matching the
-   marketing .mdx-stage / .mdx-btn--primary language.
+   marketing .mdx-stage / `.mdx .btn-primary` language.
 
    VISUAL ONLY. No selector here changes layout structure, focus
    behaviour, or any handler — it only retargets colour/shadow/shape.
@@ -121,10 +121,10 @@ html.dark .auth-depth,
 .auth-depth select:focus,
 .auth-depth textarea:focus,
 .auth-depth .login-field:focus {
-  outline: 2px solid var(--ad-crimson);
-  outline-offset: 2px;
   border-color: var(--ad-crimson) !important;
-  box-shadow: 0 0 0 4px rgba(173, 44, 77, 0.12);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* ============================================================
@@ -185,7 +185,7 @@ html.dark .auth-depth,
 }
 
 /* Crimson primary button — the kit's primary-action treatment, matching
-   marketing .mdx-btn--primary. The gold gradient it replaced put white
+   marketing `.mdx .btn-primary` skin. The gold gradient it replaced put white
    text at 2.6:1 on its lightest stop; white on --ad-grad's lightest stop
    (#ad2c4d) is 6.5:1. Crimson hero CTAs (.btn on the page-hero) still
    read as glass on crimson below. */

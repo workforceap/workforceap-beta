@@ -53,7 +53,7 @@
 | [sentry.edge.config.ts](../../../sentry.edge.config.ts) | 40 | root |  |
 | [sentry.server.config.ts](../../../sentry.server.config.ts) | 44 | root |  |
 | [sprint-10-health-check-summary.md](../../../sprint-10-health-check-summary.md) | 76 | root |  |
-| [tailwind.config.ts](../../../tailwind.config.ts) | 71 | root | default:71 |
+| [tailwind.config.ts](../../../tailwind.config.ts) | 78 | root | default:78 |
 | [tsconfig.json](../../../tsconfig.json) | 26 | root |  |
 | [tsconfig.tests.json](../../../tsconfig.tests.json) | 16 | root |  |
 | [tsconfig.vitest.json](../../../tsconfig.vitest.json) | 7 | root |  |

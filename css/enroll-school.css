@@ -51,10 +51,10 @@
   mask-image:linear-gradient(90deg,transparent 0%,transparent 38%,#000 100%);opacity:.18}
 
 .enroll-school .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-  background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:12.5px;
+  background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
   letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
   box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
-.enroll-school .pill__star{font-size:11px;opacity:.95;display:inline-flex}
+.enroll-school .pill__star{font-size:13px;opacity:.95;display:inline-flex}
 @media(max-width:430px){.enroll-school .pill{white-space:normal;text-align:left}}
 
 .enroll-school .lede h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(34px,4.8vw,54px);
@@ -70,7 +70,7 @@
 .enroll-school .hero-glass{position:relative;border-radius:22px;padding:28px;
   background:color-mix(in srgb, var(--color-on-accent) 13%, transparent);border:1px solid var(--glass-line);backdrop-filter:blur(18px);
   box-shadow:var(--shadow-glass);color:var(--color-on-accent)}
-.enroll-school .hg-tag{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-bottom:16px}
+.enroll-school .hg-tag{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72);margin-bottom:16px}
 .enroll-school .hg-meter{display:flex;align-items:center;gap:14px;justify-content:space-between;padding:14px 16px;border-radius:13px;
   background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.12);margin-bottom:16px}
 .enroll-school .hg-meter span{font-size:13px;color:rgba(255,255,255,.8);line-height:1.4}
@@ -78,7 +78,7 @@
 .enroll-school .hg-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
 .enroll-school .hg-row{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.9)}
 .enroll-school .hg-chips{display:flex;flex-wrap:wrap;gap:8px}
-.enroll-school .hg-chips span{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;
+.enroll-school .hg-chips span{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;
   background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
 
 .enroll-school .band{padding:var(--sec-pad, 72px) 0}
@@ -108,24 +108,24 @@
 .enroll-school .pcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
 .enroll-school .pcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .enroll-school .ptags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.enroll-school .cat-pill{color:var(--color-on-accent);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}
+.enroll-school .cat-pill{color:var(--color-on-accent);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:700}
 .enroll-school .cat--c{background:var(--crimson, var(--color-accent))}.enroll-school .cat--g{background:var(--gold-dark, #8c6a2a)}
-.enroll-school .fund-pill{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:color-mix(in srgb, var(--color-green) 12%, transparent);color:var(--color-green)}
+.enroll-school .fund-pill{font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:color-mix(in srgb, var(--color-green) 12%, transparent);color:var(--color-green)}
 .enroll-school .picon{color:var(--crimson, var(--color-accent))}
 .enroll-school .pcard h3{font-size:18px;font-weight:700;margin-bottom:10px;min-height:3.6em}
 .enroll-school .pmeta{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--muted);margin-bottom:8px}
 .enroll-school .pmeta span{display:inline-flex;align-items:center;gap:6px}
 .enroll-school .prange-inline b{color:var(--crimson, var(--color-accent))}
-.enroll-school .pdisc{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.45}
+.enroll-school .pdisc{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.45}
 .enroll-school .pskills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
 .enroll-school .stag{background:var(--surface-2, #fff);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:6px;font-size:13px}
 .enroll-school .pcard-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:12px}
 .enroll-school .ppartner{font-size:13px;color:var(--muted);font-weight:600}
-.enroll-school .pcert{font-size:12px;color:var(--muted)}
+.enroll-school .pcert{font-size:13px;color:var(--muted)}
 .enroll-school .pcard h3 a{color:inherit;text-decoration:none}
 .enroll-school .pcard h3 a:hover{text-decoration:underline}
 .enroll-school .pacts{display:flex;flex-wrap:wrap;gap:8px}
-.enroll-school .btn--sm{padding:12px 16px;font-size:14px;min-height:44px;justify-content:center}
+.enroll-school .btn-sm{justify-content:center}
 
 .enroll-school .faq{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .enroll-school .faq-item{background:var(--surface, #fff);color:var(--text);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s}
@@ -184,7 +184,7 @@
 .enroll-school .school-picker__card:hover,
 .enroll-school .school-picker__card:focus-visible{
   border-color:color-mix(in srgb, var(--wa-accent,var(--color-accent,#ad2c4d)) 45%, var(--wa-border,var(--border)));
-  transform:translateY(-2px);outline:none;
+  transform:translateY(-2px);
 }
 .enroll-school .school-picker__name{
   font-weight:800;font-size:var(--wa-type-body,1.05rem);line-height:1.25;

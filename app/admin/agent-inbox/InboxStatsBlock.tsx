@@ -40,7 +40,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
     >
       <div
         style={{
-          fontSize: '0.72rem',
+          fontSize: '0.8125rem',
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
           color: 'var(--color-on-surface-variant)',
@@ -52,7 +52,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
       {hint && (
         <div
           style={{
-            fontSize: '0.7rem',
+            fontSize: '0.8125rem',
             color: 'var(--color-on-surface-variant)',
             marginTop: '0.15rem',
           }}

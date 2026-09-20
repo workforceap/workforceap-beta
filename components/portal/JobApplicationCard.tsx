@@ -179,7 +179,7 @@ export default function JobApplicationCard({
         </h4>
         {application.curatedJobId && (
           <span
-            className="wa-shrink-0 wa-text-[10px] wa-font-bold wa-uppercase wa-tracking-wide wa-px-2 wa-py-0.5 wa-rounded"
+            className="wa-shrink-0 wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-wide wa-px-2 wa-py-0.5 wa-rounded"
             style={{
               background: 'color-mix(in srgb, var(--color-amber) 16%, transparent)',
               color: 'var(--color-amber)',

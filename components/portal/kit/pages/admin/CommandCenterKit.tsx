@@ -265,7 +265,7 @@ const memberColumns: Column<CommandCenterMemberRow>[] = [
   {
     key: 'program',
     header: 'Program',
-    render: (row) => <span style={{ fontSize: 12, color: 'var(--wa-muted)' }}>{row.program}</span>,
+    render: (row) => <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{row.program}</span>,
   },
   {
     key: 'progress',
@@ -277,7 +277,7 @@ const memberColumns: Column<CommandCenterMemberRow>[] = [
           <div className="wa-kit-bar-track" style={{ width: 80 }}>
             <div className="wa-kit-bar-fill" style={{ width: `${pct}%` }} />
           </div>
-          <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
         </div>
       );
     },
@@ -292,7 +292,7 @@ const memberColumns: Column<CommandCenterMemberRow>[] = [
     header: 'Last active',
     align: 'right',
     render: (row) => (
-      <span style={{ fontSize: 12, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
+      <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
         {row.lastActive}
       </span>
     ),

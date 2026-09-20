@@ -3,6 +3,7 @@ import {
   isEmployerHiringPartnerCtaExternal,
 } from '@/lib/marketing/employerLanding';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
+import { CalendarDays } from 'lucide-react';
 
 type EmployerHiringPartnerCtaProps = {
   label: string;
@@ -31,9 +32,7 @@ export default function EmployerHiringPartnerCta({
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {label}
-      <span className="material-symbols-outlined" style={{ fontSize: '1.125rem' }} aria-hidden="true">
-        calendar_month
-      </span>
+      <CalendarDays size={18} aria-hidden="true" />
     </a>
   );
 }

@@ -252,7 +252,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
                       {counselorName ?? 'Your Counselor'}
                     </h3>
                     {displayLastTime && (
-                      <span style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
+                      <span style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)' }}>
                         {displayLastTime}
                       </span>
                     )}
@@ -294,7 +294,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
             {counselorName ?? 'Your Counselor'}
           </p>
           {thread.counselorUserId && (
-            <p className="wa-text-[11px]" style={{ color: 'var(--color-on-surface-variant)' }}>
+            <p className="wa-text-[13px]" style={{ color: 'var(--color-on-surface-variant)' }}>
               Replies within 2 business days
             </p>
           )}
@@ -339,7 +339,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
                   {m.body}
                 </div>
                 <time
-                  className="wa-text-[10px] wa-mt-1 wa-px-1"
+                  className="wa-text-[13px] wa-mt-1 wa-px-1"
                   style={{ color: 'var(--color-on-surface-variant)', opacity: 0.75 }}
                 >
                   {timeStr}

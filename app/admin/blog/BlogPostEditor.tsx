@@ -307,7 +307,7 @@ export default function BlogPostEditor({
               >
                 <span
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                     color: 'var(--color-accent)',
@@ -508,7 +508,7 @@ export default function BlogPostEditor({
             style={{ padding: '0.4rem 0.6rem', borderRadius: '6px', fontSize: '0.9rem', maxWidth: '240px' }}
           />
           {scheduledAt && (
-            <small style={{ color: '#2563eb', fontSize: '0.8rem' }}>
+            <small style={{ color: '#2563eb', fontSize: '0.8125rem' }}>
               Will auto-publish on {new Date(scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </small>
           )}

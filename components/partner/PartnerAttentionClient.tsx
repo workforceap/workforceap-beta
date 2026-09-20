@@ -67,7 +67,7 @@ const kitFieldStyle: React.CSSProperties = {
 };
 
 const kitSmallSelectStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 13,
   border: '1px solid var(--wa-border)',
   borderRadius: 'var(--wa-radius-sm)',
   padding: '5px 8px',
@@ -288,7 +288,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
         <p style={{ color: 'var(--wa-muted)', fontSize: 13, marginTop: -8, marginBottom: 16, lineHeight: 1.5 }}>
           Sorted by time since the member record was last updated, with the longest gaps first. Assign owners and log outreach so nothing slips through the cracks.
         </p>
-        <p style={{ color: 'var(--wa-muted)', fontSize: 12 }}>
+        <p style={{ color: 'var(--wa-muted)', fontSize: 13 }}>
           Counts use the same reference time across these pages. Member updates can change the order; refresh for the current queue.
         </p>
         {(['members', 'team'] as const).map(kind => resourceErrors[kind] ? (
@@ -307,7 +307,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                 className="wa-kit-focus"
                 style={{
                   textTransform: 'capitalize',
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 700,
                   padding: '6px 14px',
                   borderRadius: 999,
@@ -362,11 +362,11 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                       </Link>
                     }
                   />
-                  <div style={{ paddingLeft: 50, fontSize: 12, color: 'var(--wa-text)' }}>
+                  <div style={{ paddingLeft: 50, fontSize: 13, color: 'var(--wa-text)' }}>
                     <strong>Next:</strong> <span style={{ color: 'var(--wa-muted)' }}>{m.nextBestAction}</span>
                   </div>
                   <div style={{ paddingLeft: 50, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--wa-muted)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--wa-muted)' }}>
                       Owner
                       <select
                         aria-label={`Assign owner for ${m.fullName}`}
@@ -387,7 +387,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                         ))}
                       </select>
                     </label>
-                    <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>
+                    <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
                       Last touch: {m.lastTouchName ?? '—'}
                     </span>
                     <button type="button" className="btn btn-outline btn-sm" onClick={() => { draftRevision.current += 1; setMemberId(m.memberId); setSelectedMember({ id: m.memberId, fullName: m.fullName }); }}>
@@ -480,10 +480,10 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{l.memberName}</span>
                   <StatusTag tone="muted">{l.channel}</StatusTag>
-                  <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{new Date(l.createdAt).toLocaleString()}</span>
+                  <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{new Date(l.createdAt).toLocaleString()}</span>
                 </div>
                 <div style={{ color: 'var(--wa-muted)', marginTop: 4, fontSize: 13 }}>{l.note}</div>
-                <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>By {l.createdByName}</div>
+                <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>By {l.createdByName}</div>
               </li>
             ))}
           </ul>

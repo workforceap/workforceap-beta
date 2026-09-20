@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
@@ -55,9 +56,7 @@ function MetricCard({
   return (
     <div className="portal-metric-card">
       <div className={`portal-metric-card__icon-wrap portal-metric-card__icon-wrap--${accent}`}>
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}>
-          {icon}
-        </span>
+        <LegacyGlyph name={icon} size={16} />
       </div>
       <p className="portal-metric-card__value">{value}</p>
       <p className="portal-metric-card__label">{label}</p>
@@ -289,7 +288,7 @@ export default function OrgOutcomesClient({
             >
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -314,7 +313,7 @@ export default function OrgOutcomesClient({
           )}
 
           {/* Footer */}
-          <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: '#999' }}>
+          <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8125rem', color: '#999' }}>
             <p>Powered by WorkforceAP — workforceap.org</p>
             <p>Report generated: {new Date(data!.generatedAt).toLocaleString()}</p>
           </div>

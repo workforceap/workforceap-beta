@@ -82,7 +82,7 @@ const DEFAULT_KPIS: KpiItem[] = [
 ];
 
 const EMPTY_HINT = (
-  <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}>No data for this period yet.</p>
+  <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>No data for this period yet.</p>
 );
 
 const UTM_COLUMNS: Column<GrowthUtmRow>[] = [
@@ -97,7 +97,7 @@ const APPLY_COLUMNS: Column<GrowthApplyEventRow>[] = [
   {
     key: 'eventName',
     header: 'Event name',
-    render: (r) => <code style={{ fontSize: 12 }}>{r.eventName}</code>,
+    render: (r) => <code style={{ fontSize: 13 }}>{r.eventName}</code>,
   },
   {
     key: 'count',
@@ -111,7 +111,7 @@ const CONVERSION_COLUMNS: Column<GrowthConversionValueRow>[] = [
   {
     key: 'name',
     header: 'Conversion',
-    render: (r) => <code style={{ fontSize: 12 }}>{r.name}</code>,
+    render: (r) => <code style={{ fontSize: 13 }}>{r.name}</code>,
   },
   {
     key: 'valueUsd',
@@ -157,7 +157,7 @@ export function GrowthKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 2 }}>
             Signups by source
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
             last 7 days · apply_signup_completed
           </p>
           {signupsBySource && signupsBySource.length > 0 ? (
@@ -172,7 +172,7 @@ export function GrowthKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 2 }}>
             Apply events
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
             last 24h · every server-recorded apply_* event
           </p>
           <DataTable<GrowthApplyEventRow>
@@ -192,7 +192,7 @@ export function GrowthKit({
         <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 2 }}>
           Signups by UTM breakdown
         </h3>
-        <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
           last 7 days · grouped by source / medium / campaign
         </p>
         <DataTable<GrowthUtmRow>

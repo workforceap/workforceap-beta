@@ -58,7 +58,7 @@ export default function ResumeMobileQuickActions() {
         <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-accent)', '--ms-fill': 1 }} aria-hidden="true">
           auto_fix_high
         </span>
-        <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>AI Rewrite</span>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>AI Rewrite</span>
       </Link>
       <button
         type="button"
@@ -81,7 +81,7 @@ export default function ResumeMobileQuickActions() {
         <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-blue)' }} aria-hidden="true">
           {copied ? 'check' : 'share'}
         </span>
-        <span aria-live="polite" style={{ fontSize: '0.75rem', fontWeight: 600 }}>{copied ? 'Copied!' : 'Share'}</span>
+        <span aria-live="polite" style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{copied ? 'Copied!' : 'Share'}</span>
       </button>
       {downloadUrl ? (
         <a
@@ -106,7 +106,7 @@ export default function ResumeMobileQuickActions() {
           <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-green)' }} aria-hidden="true">
             picture_as_pdf
           </span>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Download</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Download</span>
         </a>
       ) : (
         <div
@@ -126,7 +126,7 @@ export default function ResumeMobileQuickActions() {
           <span className="material-symbols-outlined" style={{ fontSize: '1.375rem', color: 'var(--color-green)' }} aria-hidden="true">
             picture_as_pdf
           </span>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Download</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600 }}>Download</span>
         </div>
       )}
     </div>

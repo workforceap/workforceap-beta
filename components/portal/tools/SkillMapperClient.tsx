@@ -133,19 +133,19 @@ function AxisLegend({ axes }: { axes: string[] }) {
             return (
               <div key={axis} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start' }}>
                 <span style={{
-                  fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.5rem',
+                  fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.5rem',
                   borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
                   color: 'var(--color-accent)', flexShrink: 0, lineHeight: '1.6'}}>
                   {axis}
                 </span>
                 <div>
                   <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{info.plain}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}> — {info.examples}</span>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}> — {info.examples}</span>
                 </div>
               </div>
             );
           })}
-          <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.5 }}>
             Scores come from O*NET occupational data. Higher means that skill area matters more for this job.
           </p>
         </div>
@@ -186,7 +186,7 @@ function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
       {data.map((d, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="11" fill="var(--color-on-surface-variant)">{d.axis}</text>;
+          fontSize="13" fill="var(--color-on-surface-variant)">{d.axis}</text>;
       })}
     </svg>
   );
@@ -231,7 +231,7 @@ function DualRadarChart({ memberData, targetData }: { memberData: { axis: string
       {axes.map((axis, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="11" fill="var(--color-on-surface-variant)">{axis}</text>;
+          fontSize="13" fill="var(--color-on-surface-variant)">{axis}</text>;
       })}
     </svg>
   );
@@ -288,7 +288,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
               padding: '0.5rem 0.75rem',
               background: 'color-mix(in srgb, var(--color-accent) 8%, transparent)',
               borderBottom: '1px solid var(--surface-container-highest)',
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
               color: 'var(--color-accent)',
               display: 'flex',
@@ -320,7 +320,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.625rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     flexShrink: 0,
                     marginTop: '0.125rem'
@@ -332,12 +332,12 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       {item.course.courseName}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <Clock size={10} />
                         {item.course.estimatedHours} hrs
                       </span>
                       <span style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.8125rem',
                         background: 'var(--surface-container-highest)',
                         color: 'var(--color-on-surface-variant)',
                         padding: '0.1rem 0.4rem',
@@ -347,7 +347,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       </span>
                       {idx === 0 && (
                         <span style={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.8125rem',
                           background: 'color-mix(in srgb, var(--color-green) 15%, transparent)',
                           color: 'var(--color-green, #4a9b4f)',
                           padding: '0.1rem 0.4rem',
@@ -368,7 +368,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                         <div style={{ marginTop: '0.375rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                           {specificSkills.slice(0, 3).map(skill => (
                             <span key={skill} style={{
-                              fontSize: '0.65rem',
+                              fontSize: '0.8125rem',
                               color: 'var(--color-on-surface-variant)',
                               background: 'var(--surface-container-highest)',
                               padding: '0.125rem 0.375rem',
@@ -391,7 +391,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       borderRadius: '0.375rem',
                       background: 'var(--color-accent)',
                       color: 'var(--wa-on-accent)',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                       textDecoration: 'none',
                       flexShrink: 0,
@@ -780,7 +780,7 @@ export default function SkillMapperClient() {
                     border: '1px solid var(--wa-border)',
                     background: 'var(--wa-surface)'}}>
                   <strong style={{ color: 'var(--wa-text)' }}>{occ.title}</strong>
-                  <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} — {occ.description?.slice(0, 120)}</span>
+                  <span style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} — {occ.description?.slice(0, 120)}</span>
                 </button>
               ))}
             </div>
@@ -806,7 +806,7 @@ export default function SkillMapperClient() {
                   <p style={{ margin: 0, lineHeight: 1.5 }}>
                     {demoFallbackReason || 'Showing sample skill ranges for demonstration purposes. This is not real occupational data from O*NET.'}
                   </p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'var(--wa-muted)' }}>
+                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
                     For accurate skill mapping, try again later or upload your resume for personalized results.
                   </p>
                 </div>
@@ -891,7 +891,7 @@ export default function SkillMapperClient() {
                             <span style={{
                               background: `color-mix(in srgb, ${mp.categoryColor} 12%, transparent)`,
                               color: mp.categoryColor,
-                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.65rem', fontWeight: 600}}>{mp.categoryLabel}</span>
+                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.8125rem', fontWeight: 600}}>{mp.categoryLabel}</span>
                             <span style={{
                               background: mp.recommendationType === 'primary'
                                 ? 'color-mix(in srgb, var(--color-green) 12%, transparent)'
@@ -903,20 +903,20 @@ export default function SkillMapperClient() {
                                 : mp.recommendationType === 'bridge'
                                 ? 'var(--color-blue, #2b7bb9)'
                                 : 'var(--color-gold, #a47f38)',
-                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.65rem', fontWeight: 600, textTransform: 'capitalize'}}>{mp.recommendationType}</span>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)' }}>
+                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.8125rem', fontWeight: 600, textTransform: 'capitalize'}}>{mp.recommendationType}</span>
+                            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                               {mp.experienceBand.replace(/_/g, ' ')}
                             </span>
                           </div>
                           {mp.whyRecommended && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem', lineHeight: 1.4 }}>
+                            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem', lineHeight: 1.4 }}>
                               {mp.whyRecommended}
                             </div>
                           )}
                         </div>
                         <Link href={`/programs/${mp.programSlug}`} style={{
                           background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', borderRadius: 'var(--wa-radius-sm)',
-                          padding: '0.35rem 0.625rem', fontSize: '0.75rem', fontWeight: 600,
+                          padding: '0.35rem 0.625rem', fontSize: '0.8125rem', fontWeight: 600,
                           textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => trackFunnelEvent('skill_mapper', 'program_recommendation_viewed', { program_slug: mp.programSlug, recommendation_type: mp.recommendationType })}>View →</Link>
                       </div>
                     ))}
@@ -964,7 +964,7 @@ export default function SkillMapperClient() {
                 <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: '0 0 0.2rem' }}>
                   Analyzing your resume with AI…
                 </p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.4 }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.4 }}>
                   Extracting skills and mapping them to your profile. Takes about 10 seconds.
                 </p>
               </div>
@@ -997,7 +997,7 @@ export default function SkillMapperClient() {
                       disabled={exportingComparison}
                       aria-busy={exportingComparison}
                       className="wa-kit-focus"
-                      style={{ ...outlinePillStyleSm, fontSize: '0.8rem', cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
+                      style={{ ...outlinePillStyleSm, fontSize: '0.8125rem', cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
                     >
                       {exportingComparison ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                       <span aria-live="polite">
@@ -1005,7 +1005,7 @@ export default function SkillMapperClient() {
                       </span>
                     </button>
                   </div>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.5 }}>
                     Your profile reflects what we found in your resume and certifications.
                     {' '}<a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>Complete the Interest Profiler</a> or{' '}
                     <a href="/dashboard/resume" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>update your resume</a> to show more of your experience.
@@ -1021,7 +1021,7 @@ export default function SkillMapperClient() {
                     <div style={{ flex: '1 1 200px', minWidth: 180, paddingTop: '0.25rem' }}>
                       {memberProfile.map(d => (
                         <div key={d.axis} style={{ marginBottom: '0.625rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.2rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.2rem' }}>
                             <span style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}>{d.axis}</span>
                             <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{Math.round(d.value * 100)}%</span>
                           </div>
@@ -1062,7 +1062,7 @@ export default function SkillMapperClient() {
               )}
 
               {memberCerts.length === 0 && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', marginTop: '-0.25rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', marginTop: '-0.25rem' }}>
                   No certifications on file —{' '}
                   <a href="/dashboard/certifications" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>add certs in Verification Vault</a>
                   {' '}to strengthen your radar.
@@ -1118,12 +1118,12 @@ export default function SkillMapperClient() {
                             <span style={{
                               background: `color-mix(in srgb, ${rec.program.categoryColor} 12%, transparent)`,
                               color: rec.program.categoryColor,
-                              borderRadius: '999px', padding: '0.125rem 0.5rem', fontSize: '0.7rem', fontWeight: 600}}>{rec.program.categoryLabel}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                              borderRadius: '999px', padding: '0.125rem 0.5rem', fontSize: '0.8125rem', fontWeight: 600}}>{rec.program.categoryLabel}</span>
+                            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                               {rec.reason}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.375rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             <span>{rec.program.duration}</span>
                             <span>{rec.program.partner}</span>
                           </div>
@@ -1234,7 +1234,7 @@ export default function SkillMapperClient() {
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.35rem 0.75rem', borderRadius: 999,
                       background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
-                      fontWeight: 700, fontSize: '0.75rem', border: 'none',
+                      fontWeight: 700, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
                   >
@@ -1252,7 +1252,7 @@ export default function SkillMapperClient() {
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.45rem 0.9rem', borderRadius: 999,
                       background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
-                      fontWeight: 800, fontSize: '0.78rem', border: 'none',
+                      fontWeight: 800, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
                   >
@@ -1260,7 +1260,7 @@ export default function SkillMapperClient() {
                     {extractingResume ? 'Re-analyzing…' : 'Reanalyze resume skills'}
                   </button>
                 )}
-                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ color: 'var(--color-accent)', fontWeight: 700, fontSize: '0.78rem' }}>Update resume</a>
+                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ color: 'var(--color-accent)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
               </div>
             </div>
           )}
@@ -1281,7 +1281,7 @@ export default function SkillMapperClient() {
                     display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                     padding: '0.35rem 0.75rem', borderRadius: 999,
                     background: 'var(--wa-accent)', color: 'var(--wa-on-accent)',
-                    fontWeight: 700, fontSize: '0.75rem', textDecoration: 'none'}}>
+                    fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}}>
                     <UploadCloud size={14} aria-hidden="true" />
                     Upload resume
                   </a>

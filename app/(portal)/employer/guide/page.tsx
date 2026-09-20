@@ -152,7 +152,7 @@ export default async function EmployerGuidePage() {
                 </Link>
               )}
               {i === 2 && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic', marginTop: '0.75rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic', marginTop: '0.75rem' }}>
                   Optional but appreciated — it funds the next candidate's training.
                 </p>
               )}

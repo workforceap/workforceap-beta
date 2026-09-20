@@ -229,7 +229,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
             </div>
             <div style={{ minWidth: 0 }}>
               <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.2 }}>{member.name}</h2>
-              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {member.email}
                 {member.phone ? ` · ${member.phone}` : ''}
               </p>
@@ -263,7 +263,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 gap: '0.35rem',
                 padding: '0.35rem 0.75rem',
                 borderRadius: '999px',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 fontWeight: 700,
                 background: `color-mix(in srgb, ${riskColor} 12%, transparent)`,
                 color: riskColor,
@@ -281,14 +281,14 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 gap: '0.35rem',
                 padding: '0.35rem 0.75rem',
                 borderRadius: '999px',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
                 background: 'var(--surface-container-high)',
                 color: 'var(--color-on-surface-variant)'}}
             >
               Status: {member.status}
             </span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
               Alerted {new Date(member.alertCreatedAt).toLocaleDateString()}
             </span>
           </div>
@@ -298,7 +298,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
             <Link
               href={`/counselor/students/${member.userId}`}
               className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8125rem' }}
             >
               <ArrowUpRight size={14} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />
               Full profile
@@ -306,7 +306,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
             <Link
               href={`/counselor/messages?memberId=${encodeURIComponent(member.userId)}`}
               className="btn btn-outline btn-sm"
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8125rem' }}
             >
               <MessageSquare size={14} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />
               Message
@@ -348,7 +348,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                     <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{f.description}</span>
                     <span
                       style={{
-                        fontSize: '0.78rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         color: 'var(--color-on-surface-variant)',
                         whiteSpace: 'nowrap',
@@ -402,12 +402,12 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                     <div>
                       <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{ev.eventName}</span>
                       {ev.sourcePage && (
-                        <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginLeft: '0.5rem' }}>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: '0.5rem' }}>
                           {ev.sourcePage}
                         </span>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                       <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />
                       {new Date(ev.createdAt).toLocaleDateString()}
                     </span>
@@ -486,7 +486,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                       background: 'var(--surface-container-high)'}}
                   >
                     <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', lineHeight: 1.45 }}>{note.content}</p>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {note.author ?? 'Counselor'} · {new Date(note.createdAt).toLocaleDateString()}
                     </p>
                   </div>

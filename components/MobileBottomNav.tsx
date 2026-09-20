@@ -4,6 +4,7 @@ import LocalizedLink from '@/components/LocalizedLink';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 /**
  * Responsive breakpoint for mobile nav visibility
@@ -136,15 +137,7 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
             {...(tourTarget ? { 'data-tour': tourTarget } : {})}
           >
             <span style={{ position: 'relative', display: 'inline-flex' }}>
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: '28px',
-                  lineHeight: 1,
-                }}
-               aria-hidden="true">
-                {icon}
-              </span>
+              <LegacyGlyph name={icon} size={28} strokeWidth={isActive ? 2.5 : 2} />
               {b > 0 ? (
                 <span
                   aria-label={tNav('unreadCount', { count: b })}
@@ -158,7 +151,7 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
                     background: 'var(--color-accent, #ad2c4d)',
                     border: '1.5px solid var(--color-white, #fff)',
                     color: '#fff',
-                    fontSize: '0.65rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',

@@ -143,7 +143,7 @@ export default async function TestimonialsCarousel({ limit = 6 }: { limit?: numb
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{testimonial.member.fullName}</div>
               {enrolledProgramTitle ? (
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   {enrolledProgramTitle}
                 </div>
               ) : null}

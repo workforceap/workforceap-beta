@@ -102,7 +102,7 @@ export default function VoiceAgentSurface({
           </div>
           <div style={{ minWidth: 0 }}>
             <p
-              className="wa-text-[10px] wa-uppercase wa-tracking-[0.14em] wa-font-semibold"
+              className="wa-text-[13px] wa-uppercase wa-tracking-[0.14em] wa-font-semibold"
               style={{ color: badgeColor ?? glowColor, marginBottom: '0.35rem' }}
             >
               {badge}

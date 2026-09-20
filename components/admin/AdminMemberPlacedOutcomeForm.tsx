@@ -185,7 +185,7 @@ export default function AdminMemberPlacedOutcomeForm({
           retention decision is due (past onboardingWindowEnd) so it isn't
           missed behind a click. */}
       <details open={pastOnboardingWindow} style={{ marginTop: '0.5rem', borderTop: '1px solid var(--outline-variant)', paddingTop: '0.75rem' }}>
-        <summary style={{ cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+        <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
           Grant reporting (WIOA){pastOnboardingWindow ? ' — retention decision due' : ''}
         </summary>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>

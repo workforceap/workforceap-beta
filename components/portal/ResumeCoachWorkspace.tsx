@@ -74,7 +74,7 @@ function CopyDraftButton({ text }: { text: string }) {
         }).catch(() => {});
       }}
       style={{
-        fontSize: '0.72rem',
+        fontSize: '0.8125rem',
         fontWeight: 600,
         color: copied ? 'var(--color-green)' : 'var(--color-on-surface-variant)',
         background: 'none',
@@ -165,7 +165,7 @@ function ResumeDraftPendingPreview({
           {suggested}
         </mark>
         {context ? (
-          <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             {context}
           </p>
         ) : null}
@@ -223,7 +223,7 @@ function ResumeDraftPendingPreview({
       </mark>
       {resumeText.slice(idx + original.length)}
       {context ? (
-        <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {context}
         </p>
       ) : null}
@@ -611,7 +611,7 @@ export default function ResumeCoachWorkspace() {
                     background: 'none',
                     padding: 0,
                     color: 'var(--color-accent)',
-                    fontSize: '0.72rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     cursor: saveStatus === 'saving' ? 'wait' : 'pointer',
                   }}
@@ -624,7 +624,7 @@ export default function ResumeCoachWorkspace() {
                 role={saveStatus === 'error' ? 'alert' : 'status'}
                 aria-live="polite"
                 style={{
-                  fontSize: '0.72rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 600,
                   color:
                     saveStatus === 'error'
@@ -650,7 +650,7 @@ export default function ResumeCoachWorkspace() {
             <p
               style={{
                 margin: '0 0 1rem',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 color: 'var(--color-on-surface-variant)',
                 fontStyle: 'italic',
               }}
@@ -664,7 +664,7 @@ export default function ResumeCoachWorkspace() {
               <p
                 style={{
                   margin: '0 0 0.5rem',
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
@@ -725,7 +725,7 @@ export default function ResumeCoachWorkspace() {
               <p
                 style={{
                   margin: 0,
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
@@ -752,7 +752,7 @@ export default function ResumeCoachWorkspace() {
                     <p
                       style={{
                         margin: '0 0 0.4rem',
-                        fontSize: '0.65rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         letterSpacing: '0.06em',
                         textTransform: 'uppercase',
@@ -766,7 +766,7 @@ export default function ResumeCoachWorkspace() {
                     <p
                       style={{
                         margin: '0 0 0.35rem',
-                        fontSize: '0.78rem',
+                        fontSize: '0.8125rem',
                         color: 'var(--color-on-surface-variant)',
                       }}
                     >
@@ -779,7 +779,7 @@ export default function ResumeCoachWorkspace() {
                   ) : (
                     <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem' }}>{s.suggested}</p>
                   )}
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {s.context}
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>

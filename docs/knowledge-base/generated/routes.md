@@ -18,12 +18,12 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /reset-password | page |  | [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | @/lib/auth/client:9, @/lib/auth/postLoginRedirect:10 |
 | /setup-mfa | layout |  | [app/(auth)/setup-mfa/layout.tsx](../../../app/%28auth%29/setup-mfa/layout.tsx) |  |
 | /setup-mfa | loading |  | [app/(auth)/setup-mfa/loading.tsx](../../../app/%28auth%29/setup-mfa/loading.tsx) |  |
-| /setup-mfa | page |  | [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | @/components/auth/AuthActions.module.css:5, @/lib/auth/safeRedirectPath:11 |
+| /setup-mfa | page |  | [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | @/lib/auth/safeRedirectPath:10 |
 | /signup | loading |  | [app/(auth)/signup/loading.tsx](../../../app/%28auth%29/signup/loading.tsx) |  |
 | /signup | page |  | [app/(auth)/signup/page.tsx](../../../app/%28auth%29/signup/page.tsx) | @/lib/auth/safeRedirectPath:4 |
 | /verify-mfa | layout |  | [app/(auth)/verify-mfa/layout.tsx](../../../app/%28auth%29/verify-mfa/layout.tsx) |  |
 | /verify-mfa | loading |  | [app/(auth)/verify-mfa/loading.tsx](../../../app/%28auth%29/verify-mfa/loading.tsx) |  |
-| /verify-mfa | page |  | [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | @/components/auth/AuthActions.module.css:5, @/lib/auth/safeRedirectPath:10 |
+| /verify-mfa | page |  | [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | @/lib/auth/safeRedirectPath:9 |
 | / | error |  | [app/(decision-journey)/error.tsx](../../../app/%28decision-journey%29/error.tsx) |  |
 | /find-your-path | loading |  | [app/(decision-journey)/find-your-path/loading.tsx](../../../app/%28decision-journey%29/find-your-path/loading.tsx) |  |
 | / | layout |  | [app/(decision-journey)/layout.tsx](../../../app/%28decision-journey%29/layout.tsx) |  |
@@ -347,7 +347,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/jobs/\[id\] | page |  | [app/admin/jobs/\[id\]/page.tsx](../../../app/admin/jobs/%5Bid%5D/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/jobs | loading |  | [app/admin/jobs/loading.tsx](../../../app/admin/jobs/loading.tsx) |  |
 | /admin/jobs | page |  | [app/admin/jobs/page.tsx](../../../app/admin/jobs/page.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7 |
-| /admin | layout |  | [app/admin/layout.tsx](../../../app/admin/layout.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/auth/portalRoleSwitcher:7 |
+| /admin | layout |  | [app/admin/layout.tsx](../../../app/admin/layout.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7, @/lib/auth/portalRoleSwitcher:8 |
 | /admin | loading |  | [app/admin/loading.tsx](../../../app/admin/loading.tsx) |  |
 | /admin/members/\[id\]/billing | page |  | [app/admin/members/\[id\]/billing/page.tsx](../../../app/admin/members/%5Bid%5D/billing/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
 | /admin/members/\[id\]/lifecycle | page |  | [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7, @/lib/tenant/organization:8 |
@@ -909,7 +909,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/xapi | route | POST | [app/api/xapi/route.ts](../../../app/api/xapi/route.ts) |  |
 | /api/xapi/statements | route | POST, GET | [app/api/xapi/statements/route.ts](../../../app/api/xapi/statements/route.ts) | @/lib/rate-limit:15, @/lib/db/withRequestGuc:27, @/lib/tenant/resolveOrgFromRequest:28 |
 | /apply/confirmation | loading |  | [app/apply/confirmation/loading.tsx](../../../app/apply/confirmation/loading.tsx) |  |
-| /apply/confirmation | page |  | [app/apply/confirmation/page.tsx](../../../app/apply/confirmation/page.tsx) | @/lib/auth/server:12 |
+| /apply/confirmation | page |  | [app/apply/confirmation/page.tsx](../../../app/apply/confirmation/page.tsx) | @/lib/auth/server:14 |
 | /apply/create-account | error |  | [app/apply/create-account/error.tsx](../../../app/apply/create-account/error.tsx) |  |
 | /apply/create-account | loading |  | [app/apply/create-account/loading.tsx](../../../app/apply/create-account/loading.tsx) |  |
 | /apply/create-account | page |  | [app/apply/create-account/page.tsx](../../../app/apply/create-account/page.tsx) |  |

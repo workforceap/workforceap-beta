@@ -3,6 +3,7 @@
 import LocalizedLink from '@/components/LocalizedLink';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 export type ProgramsJourneyStep = 'quiz' | 'programs' | 'detail' | 'compare' | 'salary';
 
@@ -77,13 +78,7 @@ export default function ProgramsDecisionJourneyNav({
                   resolved !== 'detail' && (isQuizInProgress ? s.id === 'quiz' : resolved === s.id) ? 'step' : undefined
                 }
               >
-                <span
-                  className="material-symbols-outlined pdj-nav__icon"
-                  style={{ '--ms-fill': isHere ? 1 : 0 } as React.CSSProperties}
-                  aria-hidden
-                >
-                  {s.icon}
-                </span>
+                <LegacyGlyph name={s.icon} size={20} strokeWidth={isHere ? 2.5 : 2} className="pdj-nav__icon" />
                 <span className="pdj-nav__label pdj-nav__label--desktop">{s.label}</span>
                 <span className="pdj-nav__label pdj-nav__label--mobile">{s.mobileLabel}</span>
               </LocalizedLink>
@@ -168,7 +163,8 @@ export default function ProgramsDecisionJourneyNav({
         }
 
         .pdj-nav__icon {
-          font-size: 1.25rem;
+          width: 1.25rem;
+          height: 1.25rem;
           flex-shrink: 0;
         }
 
@@ -182,7 +178,7 @@ export default function ProgramsDecisionJourneyNav({
 
         .pdj-nav__hint {
           margin: 0.5rem 0.5rem 0;
-          font-size: 0.8rem;
+          font-size: 0.8125rem;
           color: var(--color-on-surface-variant);
           line-height: 1.4;
           text-align: center;
@@ -213,7 +209,7 @@ export default function ProgramsDecisionJourneyNav({
           }
 
           .pdj-nav__label {
-            font-size: 0.65rem;
+            font-size: 0.8125rem;
             letter-spacing: 0;
           }
 
@@ -231,11 +227,12 @@ export default function ProgramsDecisionJourneyNav({
             min-width: auto;
             flex-direction: column;
             gap: 0.2rem;
-            font-size: 0.65rem;
+            font-size: 0.8125rem;
           }
 
           .pdj-nav__icon {
-            font-size: 1.125rem;
+            width: 1.125rem;
+            height: 1.125rem;
           }
         }
       `}</style>

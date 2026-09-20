@@ -37,7 +37,7 @@ export default function DevComparePage() {
 
   return (
     <main style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px', fontFamily: 'system-ui, sans-serif' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#ad2c4d' }}>
+      <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: '#ad2c4d' }}>
         WAP 2.0 · Preview only
       </p>
       <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-.03em', margin: '8px 0 12px' }}>
@@ -80,7 +80,7 @@ export default function DevComparePage() {
         ))}
       </div>
 
-      <p style={{ marginTop: 32, fontSize: 12, color: '#888' }}>
+      <p style={{ marginTop: 32, fontSize: 13, color: '#888' }}>
         Mock screenshot: <Link href="/.qa/portal-mockup/wap2-member-dashboard.png">wap2-member-dashboard.png</Link>
         {' · '}
         Preview base: {PREVIEW_BASE}
