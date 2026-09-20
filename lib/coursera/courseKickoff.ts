@@ -2,6 +2,7 @@ import 'server-only';
 import { prisma } from '@/lib/db/prisma';
 import { sendCourseKickoffEmail } from '@/lib/email';
 import { getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
+import { persistEvent } from '@/lib/events/track';
 
 /**
  * Fire-and-forget program-next-steps email after an assignment is saved.
@@ -48,16 +49,13 @@ export async function maybeSendCourseKickoffEmail(args: {
     if (result.ok) {
       // Record after a successful send so a Resend outage doesn't permanently
       // skip the email for this enrollment — next retry will resend.
-      await prisma.memberEvent
-        .create({
-          data: {
-            userId: args.userId,
-            eventName: 'course_kickoff_email_sent',
-            entityType: 'course_enrollment',
-            entityId: args.enrollmentId,
-            metadata: { programSlug: args.programSlug, programName },
-          },
-        })
+      await persistEvent({
+        userId: args.userId,
+        eventName: 'course_kickoff_email_sent',
+        entityType: 'course_enrollment',
+        entityId: args.enrollmentId,
+        metadata: { programSlug: args.programSlug, programName },
+      }, prisma)
         .catch(() => {
           /* non-fatal — at worst we resend on a follow-up call */
         });

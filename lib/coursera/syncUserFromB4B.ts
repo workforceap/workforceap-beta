@@ -1,5 +1,5 @@
 import 'server-only';
-import { normalizeCourseraCourseId } from '@/lib/content/programCurriculumManifest';
+import { LEGACY_CURRICULUM_VERSION, normalizeCourseraCourseId } from '@/lib/content/programCurriculumManifest';
 
 import { CourseProgressStatus } from '@prisma/client';
 
@@ -38,7 +38,7 @@ import { refreshMemberProgramProgressRollup } from '@/lib/member/courseProgress'
 import { invalidateLearnerProgressCacheForEmail } from '@/lib/coursera/learnerProgress';
 import { getMilestonesCrossed, trackLearningMilestoneServer } from '@/lib/analytics/track';
 import { extractGradebookCourseScoreScaled } from '@/lib/coursera/courseGradeDisplay';
-import { programSlugReadCandidates } from '@/lib/content/programSlug';
+import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import {
   matchLearningPathReport,
   resolveReportCollection,
@@ -504,52 +504,34 @@ export async function syncUserFromB4B(args: {
     for (const [slug] of candidates) {
       enrolledProgramSlugs.push(slug);
       const isPrimary = slug === chosenProgramSlug;
-        const equivalentRows = await withTenantScope(args.orgId, (db) =>
-          db.courseEnrollment.findMany({
-            where: {
-              userId: args.wapUserId,
-              programSlug: { in: programSlugReadCandidates(slug) },
-            },
-            select: { id: true, programSlug: true, isPrimary: true },
-          }),
-        );
-        const existingRow = equivalentRows.sort((a, b) => {
-          const aCanonical = a.programSlug === slug ? 1 : 0;
-          const bCanonical = b.programSlug === slug ? 1 : 0;
-          if (aCanonical !== bCanonical) return bCanonical - aCanonical;
-          return Number(b.isPrimary) - Number(a.isPrimary);
-        })[0];
-
-      if (!existingRow) {
-        await withTenantScope(args.orgId, (db) =>
-          db.courseEnrollment.create({
-            data: {
-              organizationId: args.orgId,
-              userId: args.wapUserId,
-              programSlug: slug,
-              // A raw provider course signal cannot prove which immutable
-              // learning-path version the learner was assigned to.
-              curriculumVersion: 'legacy-v1',
-              isPrimary,
-              enrolledAt,
-              enrolledByAdminId: args.enrolledByAdmin,
-            },
-          }),
-        );
+      // WAP-174: the canonical writer resolves retired-alias rows, pins the
+      // immutable curriculumVersion and is the only module allowed to create
+      // CourseEnrollment rows. A raw provider course signal cannot prove which
+      // learning-path version the learner was assigned to, so new rows stay on
+      // legacy; existing rows keep their stored version.
+      const assignment = await withTenantScope(args.orgId, (db) =>
+        upsertEquivalentCourseEnrollment(db, {
+          userId: args.wapUserId,
+          programSlug: slug,
+          create: {
+            organizationId: args.orgId,
+            curriculumVersion: LEGACY_CURRICULUM_VERSION,
+            isPrimary,
+            enrolledAt,
+            enrolledByAdminId: args.enrolledByAdmin,
+          },
+          update: {
+            isPrimary,
+            // Only stamp enrolledByAdminId when an admin is explicitly
+            // doing the sync; auto-sync (null) shouldn't pretend an
+            // admin enrolled them.
+            ...(args.enrolledByAdmin ? { enrolledByAdminId: args.enrolledByAdmin } : {}),
+          },
+        }),
+      );
+      if (assignment.assignmentOutcome === 'created') {
         seededEnrollments += 1;
       } else {
-          await withTenantScope(args.orgId, (db) =>
-            db.courseEnrollment.update({
-              where: { id: existingRow.id },
-            data: {
-              isPrimary,
-              // Only stamp enrolledByAdminId when an admin is explicitly
-              // doing the sync; auto-sync (null) shouldn't pretend an
-              // admin enrolled them.
-              ...(args.enrolledByAdmin ? { enrolledByAdminId: args.enrolledByAdmin } : {}),
-            },
-          }),
-        );
         updatedEnrollments += 1;
       }
     }

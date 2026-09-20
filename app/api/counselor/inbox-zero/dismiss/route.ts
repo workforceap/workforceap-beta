@@ -8,6 +8,7 @@ import { INBOX_ZERO_DISMISS_ACTION } from '@/lib/counselor/inboxZero';
 import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { persistEvent } from '@/lib/events/track';
 
 const bodySchema = z.object({
   memberId: z.string().uuid(),
@@ -63,18 +64,15 @@ export const POST = withApiGuc(async (request: Request) => {
       request: auditRequestMeta(request),
     }).catch(() => {});
 
-    await prisma.memberEvent
-      .create({
-        data: {
-          userId: memberId,
-          eventName: 'counselor_inbox_zero_dismissed',
-          metadata: {
-            dismissedBy: user.id,
-            reason: trimmedReason,
-            flags: flags ?? [],
-          },
-        },
-      })
+    await persistEvent({
+      userId: memberId,
+      eventName: 'counselor_inbox_zero_dismissed',
+      metadata: {
+        dismissedBy: user.id,
+        reason: trimmedReason,
+        flags: flags ?? [],
+      },
+    }, prisma)
       .catch((err) => console.error('[inbox-zero dismiss] memberEvent failed:', err));
 
     return NextResponse.json({ ok: true, memberId });

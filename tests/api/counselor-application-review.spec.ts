@@ -155,7 +155,7 @@ describe('PATCH /api/admin/members/[id]/status — counselor approvals', () => {
   it('refuses a counselor when the application is not in their org (404, nothing changed)', async () => {
     asCounselor();
     vi.mocked(prisma.application.findFirst).mockResolvedValue(null as never);
-    const res = await patchStatus(statusRequest(APP_IN_SCOPE, { status: 'DENIED' }), paramsFor(APP_IN_SCOPE));
+    const res = await patchStatus(statusRequest(APP_IN_SCOPE, { status: 'DENIED', notes: 'Outside our service area.' }), paramsFor(APP_IN_SCOPE));
     expect(res.status).toBe(404);
     expect(assertStaffCanAccessMemberRecord).not.toHaveBeenCalled();
     expect(changeApplicationStatus).not.toHaveBeenCalled();
@@ -168,6 +168,21 @@ describe('PATCH /api/admin/members/[id]/status — counselor approvals', () => {
     expect(changeApplicationStatus).not.toHaveBeenCalled();
   });
 
+  it('rejects a denial without a written reason before calling the review core (WAP-184 G-3)', async () => {
+    asAdmin();
+    for (const body of [{ status: 'DENIED' }, { status: 'DENIED', notes: '' }, { status: 'DENIED', notes: '   ' }]) {
+      const res = await patchStatus(statusRequest(APP_IN_SCOPE, body), paramsFor(APP_IN_SCOPE));
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toMatch(/written reason/i);
+    }
+    expect(changeApplicationStatus).not.toHaveBeenCalled();
+  });
+  it('surfaces the review core\'s own denial-reason refusal as 400, not 404', async () => {
+    asAdmin();
+    vi.mocked(changeApplicationStatus).mockResolvedValueOnce({ ok: false, applicationId: APP_IN_SCOPE, error: 'A written reason is required when recording a denial or not-eligible decision.', status: 400 });
+    const res = await patchStatus(statusRequest(APP_IN_SCOPE, { status: 'DENIED', notes: 'placeholder' }), paramsFor(APP_IN_SCOPE));
+    expect(res.status).toBe(400);
+  });
   it('keeps the admin path unchanged (org-scoped, no caseload check)', async () => {
     asAdmin();
     const res = await patchStatus(statusRequest(APP_OUT_OF_SCOPE, { status: 'APPROVED' }), paramsFor(APP_OUT_OF_SCOPE));
@@ -191,7 +206,7 @@ describe('PATCH /api/admin/members/[id]/status — counselor approvals', () => {
 describe('POST /api/admin/applications/bulk-review — counselor approvals', () => {
   it('processes the counselor\'s own members and reports the rest as not found', async () => {
     asCounselor();
-    const res = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED' }));
+    const res = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED', notes: 'Program prerequisites not met.' }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.processedCount).toBe(1);
@@ -210,6 +225,13 @@ describe('POST /api/admin/applications/bulk-review — counselor approvals', () 
     expect(changeApplicationStatus).not.toHaveBeenCalled();
   });
 
+  it('rejects a bulk denial without a written reason before processing any application (WAP-184 G-3)', async () => {
+    asAdmin();
+    const res = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED', notes: '  ' }));
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toMatch(/written reason/i);
+    expect(changeApplicationStatus).not.toHaveBeenCalled();
+  });
   it('keeps the admin path unchanged', async () => {
     asAdmin();
     const res = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'APPROVED', verified: true }));
@@ -260,7 +282,7 @@ it('returns committed IDs and per-item failures while continuing the bulk batch'
 it('preserves successful results if a later per-item permission lookup fails', async () => {
   asCounselor();
   vi.mocked(prisma.application.findFirst).mockResolvedValueOnce({ userId: MEMBER_IN_SCOPE } as never).mockRejectedValueOnce(new Error('lookup unavailable'));
-  const response = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED' }));
+  const response = await bulkReview(bulkRequest({ applicationIds: [APP_IN_SCOPE, APP_OUT_OF_SCOPE], status: 'DENIED', notes: 'Program prerequisites not met.' }));
   expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({ processedCount: 1, processedApplicationIds: [APP_IN_SCOPE], failedCount: 1,
     failures: [{ applicationId: APP_OUT_OF_SCOPE, status: 500 }] });

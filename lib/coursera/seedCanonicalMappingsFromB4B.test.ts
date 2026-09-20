@@ -16,7 +16,6 @@ function mkProgram(slug: string, title: string, courseNames: string[]): Program 
     borderColor: '#000',
     icon: '🧪',
     duration: '—',
-    salary: '—',
     skills: [],
     courses: courseNames.map((name, i) => ({
       slug: `${slug}-course-${i + 1}`,

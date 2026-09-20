@@ -24,6 +24,7 @@ import SkillsetProgressList from '@/components/portal/SkillsetProgressList';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 type Props = {
   params: Promise<{ memberId: string }>;
@@ -136,7 +137,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
       },
     }),
     prisma.memberEvent.findMany({
-      where: { userId: memberId, eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED' },
+      where: { userId: memberId, eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') } },
       orderBy: { createdAt: 'desc' },
       take: 1,
       select: { metadata: true, createdAt: true },

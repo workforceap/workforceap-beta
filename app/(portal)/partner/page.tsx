@@ -57,6 +57,7 @@ import {
   type PartnerPayoutLedgerRow,
 } from '@/components/portal/kit/pages/PartnerOverviewKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('partner');
@@ -203,7 +204,7 @@ export default async function PartnerDashboardPage({
         }),
         prisma.memberEvent.findMany({
           where: {
-            eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED',
+            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
             user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
           },
           orderBy: { createdAt: 'desc' },
@@ -222,7 +223,7 @@ export default async function PartnerDashboardPage({
         }),
         prisma.memberEvent.findMany({
           where: {
-            eventName: 'PARTNER_PAYOUT_SENT',
+            eventName: { in: eventNameReadCandidates('partner_payout_sent') },
             user: { partnerReferrals: { some: { partnerId: ctx.partnerId } } },
           },
           orderBy: { createdAt: 'desc' },

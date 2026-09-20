@@ -10,6 +10,7 @@ import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThr
 import { createNotification } from '@/lib/notifications/create';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { persistEvent } from '@/lib/events/track';
 
 export const maxDuration = 300;
 /**
@@ -96,16 +97,13 @@ async function handle(_request: Request) {
 
       if (result.ok) {
         sent++;
-        await prisma.memberEvent
-          .create({
-            data: {
-              userId: enrollment.userId,
-              eventName: 'course_accountability_sent',
-              entityType: 'course_enrollment',
-              entityId: enrollment.id,
-              metadata: { programSlug: enrollment.programSlug, programName },
-            },
-          })
+        await persistEvent({
+          userId: enrollment.userId,
+          eventName: 'course_accountability_sent',
+          entityType: 'course_enrollment',
+          entityId: enrollment.id,
+          metadata: { programSlug: enrollment.programSlug, programName },
+        }, prisma)
           .catch(() => { /* non-fatal */ });
 
         await recordNudgeSent({ userId: enrollment.userId, tier: 'yellow', kind: 'funding_update' });
@@ -119,20 +117,17 @@ async function handle(_request: Request) {
         });
 
         // Counselor follow-up queue: audit event the counselor view subscribes to.
-        await prisma.memberEvent
-          .create({
-            data: {
-              userId: enrollment.userId,
-              eventName: 'counselor_followup_needed',
-              entityType: 'course_enrollment',
-              entityId: enrollment.id,
-              metadata: {
-                reason: 'funding_enrollment_followup',
-                programSlug: enrollment.programSlug,
-                programName,
-              },
-            },
-          })
+        await persistEvent({
+          userId: enrollment.userId,
+          eventName: 'counselor_followup_needed',
+          entityType: 'course_enrollment',
+          entityId: enrollment.id,
+          metadata: {
+            reason: 'funding_enrollment_followup',
+            programSlug: enrollment.programSlug,
+            programName,
+          },
+        }, prisma)
           .then(() => { counselorFollowups++; })
           .catch(() => { /* non-fatal */ });
       }
