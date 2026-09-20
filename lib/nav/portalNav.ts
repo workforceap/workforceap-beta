@@ -306,7 +306,7 @@ export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     tourTarget: 'tour-messages',
     badgeKey: 'employer_messages_unread',
   },
-  { href: '/employer/settings', label: 'Company settings', group: 'manage', Icon: Settings },
+  { href: '/employer/settings', label: 'Company settings', group: 'manage', Icon: Settings, tourTarget: 'tour-settings' },
   { href: '/employer/guide', label: 'How it works', group: 'manage', Icon: HelpCircle },
 ];
 
@@ -338,7 +338,7 @@ export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/partner/guide', label: 'Referral guide', group: 'workflows', Icon: ClipboardList },
   { href: '/partner/outcomes', label: 'Outcomes snapshot', group: 'insights', Icon: BarChart3, tourTarget: 'tour-outcomes' },
   { href: '/partner/resources', label: 'Partner resources', group: 'manage', Icon: Layers },
-  { href: '/partner/exports', label: 'Exports', group: 'manage', Icon: Download },
+  { href: '/partner/exports', label: 'Exports', group: 'manage', Icon: Download, tourTarget: 'tour-exports' },
   {
     href: '/partner/messages',
     label: 'Messages',

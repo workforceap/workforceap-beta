@@ -29529,6 +29529,83 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/tours/employer-overview-anchors.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/employer/page.tsx",
+        "line": 37
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 38
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 40
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/employer-tour.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/EmployerPortalShell.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/onboarding/TourContext.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/portal/kit/GuidedTour.tsx",
+        "line": 7
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/tours/get-tour-offer.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -29636,6 +29713,71 @@
       {
         "file": "lib/db/prisma.ts",
         "line": 34
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/partner-overview-anchors.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/partner/page.tsx",
+        "line": 32
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/partner-tour.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/PartnerPortalShell.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/onboarding/TourContext.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/portal/kit/GuidedTour.tsx",
+        "line": 7
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 8
       }
     ],
     "kind": "test-candidate",

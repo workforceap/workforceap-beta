@@ -296,14 +296,17 @@ export function EmployerHomeKit({
           title="Hiring"
           lede="Open roles, pipeline, and where every candidate stands right now."
           action={
-            <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
-              <Button
-                label="Post a role"
-                variant="primary"
-                size="sm"
-                icon={<SquarePen size={14} aria-hidden />}
-              />
-            </AstryxLink>
+            /* `tour-post-job`: step 2 of the employer guided tour (lib/tours/registry.ts). */
+            <span data-tour="tour-post-job" style={{ display: 'inline-flex' }}>
+              <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
+                <Button
+                  label="Post a role"
+                  variant="primary"
+                  size="sm"
+                  icon={<SquarePen size={14} aria-hidden />}
+                />
+              </AstryxLink>
+            </span>
           }
         />
 
