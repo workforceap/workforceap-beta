@@ -2131,39 +2131,23 @@ html.dark .workspace-sidebar-group-label {
 .workspace-sidebar-home-link:hover {
     text-decoration: underline;
 }
-.workspace-sidebar-signout {
+/* Sidebar Sign out is a kit ghost CTA (`.wa-kit-cta.wa-kit-cta--ghost`) on the
+   dark rail (WAP-145 / member audit Broken 0). Border and label read from the
+   sidebar tokens, which are dark chrome in both modes, so no html.dark
+   override is needed; the two-class selector outranks the ghost's accent text
+   and light-mode control border. */
+.workspace-shell-root .workspace-sidebar-signout {
     align-self: stretch;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
     width: 100%;
-    min-height: 44px;
-    padding: 0.65rem 1rem;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(185, 28, 28, 0.28);
-    background: rgba(185, 28, 28, 0.06);
-    color: #b91c1c;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
+    border: 1px solid var(--wa-sidebar-muted);
+    background: transparent;
+    color: var(--wa-sidebar-muted);
     transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
-.workspace-sidebar-signout:hover {
-    background: rgba(185, 28, 28, 0.11);
-    border-color: rgba(185, 28, 28, 0.4);
-    color: #991b1b;
-}
-html.dark .workspace-sidebar-signout {
-    /* WAP-145 dark: a 35% tint measured 1.84:1 against the rail; the solid danger token clears 3:1. */
-    border-color: var(--wa-danger);
-    background: rgba(248, 113, 113, 0.1);
-    color: #fecaca;
-}
-html.dark .workspace-sidebar-signout:hover {
-    background: rgba(248, 113, 113, 0.16);
-    border-color: rgba(248, 113, 113, 0.5);
-    color: #fff;
+.workspace-shell-root .workspace-sidebar-signout:hover {
+    background: color-mix(in srgb, var(--wa-sidebar-text) 10%, transparent);
+    border-color: var(--wa-sidebar-text);
+    color: var(--wa-sidebar-text);
 }
 .workspace-shell-main {
     flex: 1;

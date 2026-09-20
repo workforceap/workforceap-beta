@@ -161,17 +161,17 @@ export default async function ProgramStartPage() {
               <p style={{ margin: '0.35rem 0 0', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
                 {screeningPack.packTitle} — review the questions your training partner may ask near completion.
               </p>
-              <Link href="/dashboard/program/employer-screening" className="btn btn-outline" style={{ marginTop: '0.75rem' }}>
+              <Link href="/dashboard/program/employer-screening" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ marginTop: '0.75rem' }}>
                 View screening questions
               </Link>
             </PortalCard>
           ) : null}
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <Link href="/dashboard/program" className="btn btn-primary">
+            <Link href="/dashboard/program" className="wa-kit-cta wa-kit-focus">
               Back to My Program
             </Link>
-            <Link href="/dashboard" className="btn btn-outline">
+            <Link href="/dashboard" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
               Open My Classes
             </Link>
           </div>

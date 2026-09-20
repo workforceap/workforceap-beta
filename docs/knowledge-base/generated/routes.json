@@ -3771,12 +3771,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 18,
+        "line": 23,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 27,
+        "line": 32,
         "kind": "FunctionDeclaration",
         "localName": "JobsPage"
       }

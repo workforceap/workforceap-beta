@@ -42,3 +42,39 @@ test('member upload returns the server extraction warning to the UI', async () =
     globalThis.fetch = previousFetch;
   }
 });
+
+test('a 5xx answer with a non-JSON body becomes a plain-language error, not an unchanged page', async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('<!doctype html><title>500</title>', {
+    status: 500,
+    statusText: 'Internal Server Error',
+    headers: { 'content-type': 'text/html' },
+  });
+
+  try {
+    const result = await uploadMemberResumeFile(fakeFile('resume.txt'));
+    assert.equal(result.ok, false);
+    assert.match(result.ok ? '' : result.error, /temporarily unavailable/i);
+    assert.doesNotMatch(result.ok ? '' : result.error, /500|Internal Server Error/);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test('a 4xx validation answer keeps the server sentence and a network failure names the connection', async () => {
+  const previousFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({ error: 'Provide a file' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    });
+    assert.deepEqual(await uploadMemberResumeFile(fakeFile('resume.txt')), { ok: false, error: 'Provide a file' });
+
+    globalThis.fetch = async () => { throw new TypeError('Failed to fetch'); };
+    const offline = await uploadMemberResumeFile(fakeFile('resume.txt'));
+    assert.equal(offline.ok, false);
+    assert.match(offline.ok ? '' : offline.error, /could not reach/i);
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});

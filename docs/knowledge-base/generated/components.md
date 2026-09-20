@@ -301,7 +301,7 @@
 | [components/portal/MemberCounselorChatClient.tsx](../../../components/portal/MemberCounselorChatClient.tsx) | 241 | components | default:41 |
 | [components/portal/MemberDashboardVoiceSection.tsx](../../../components/portal/MemberDashboardVoiceSection.tsx) | 75 | components | default:17 |
 | [components/portal/MemberDashboardVoiceSectionLazy.tsx](../../../components/portal/MemberDashboardVoiceSectionLazy.tsx) | 21 | components | default:15 |
-| [components/portal/MemberDoThisNextCard.tsx](../../../components/portal/MemberDoThisNextCard.tsx) | 246 | components | default:37 |
+| [components/portal/MemberDoThisNextCard.tsx](../../../components/portal/MemberDoThisNextCard.tsx) | 245 | components | default:37 |
 | [components/portal/MemberFeedbackButton.tsx](../../../components/portal/MemberFeedbackButton.tsx) | 44 | components | default:6 |
 | [components/portal/MemberFeedbackModal.tsx](../../../components/portal/MemberFeedbackModal.tsx) | 258 | components | default:22 |
 | [components/portal/MemberFirstCertProgressBar.tsx](../../../components/portal/MemberFirstCertProgressBar.tsx) | 133 | components | FirstCertProgress:5, default:24 |
@@ -371,7 +371,7 @@
 | [components/portal/ResumeMobileResumeTools.tsx](../../../components/portal/ResumeMobileResumeTools.tsx) | 244 | components | default:21 |
 | [components/portal/ResumeStudioClient.tsx](../../../components/portal/ResumeStudioClient.tsx) | 214 | components | ResumeStudioView:34, normalizeStudioView:42, default:86 |
 | [components/portal/SettingsForm.tsx](../../../components/portal/SettingsForm.tsx) | 102 | components | default:12 |
-| [components/portal/SignOutButton.tsx](../../../components/portal/SignOutButton.tsx) | 62 | components | SignOutButton:15 |
+| [components/portal/SignOutButton.tsx](../../../components/portal/SignOutButton.tsx) | 66 | components | SignOutButton:15 |
 | [components/portal/SkillCheckpointsClient.test.tsx](../../../components/portal/SkillCheckpointsClient.test.tsx) | 75 | components |  |
 | [components/portal/SkillCheckpointsClient.tsx](../../../components/portal/SkillCheckpointsClient.tsx) | 532 | components | default:197 |
 | [components/portal/SkillMissionChallenge.tsx](../../../components/portal/SkillMissionChallenge.tsx) | 1235 | components | default:1076, SkillMissionChallengePreview:1216 |
@@ -402,7 +402,7 @@
 | [components/portal/WorkforceApModuleCompleteButton.test.tsx](../../../components/portal/WorkforceApModuleCompleteButton.test.tsx) | 57 | components |  |
 | [components/portal/WorkforceApModuleCompleteButton.tsx](../../../components/portal/WorkforceApModuleCompleteButton.tsx) | 63 | components | default:6 |
 | [components/portal/WorkforceApModuleLessons.tsx](../../../components/portal/WorkforceApModuleLessons.tsx) | 58 | components | WorkforceApLesson:3, lessonCtaLabel:11, default:15 |
-| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 806 | components | default:93 |
+| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 809 | components | default:93 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
 | [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1062 | member-counselor | AtRiskFactor:51, AtRiskMember:57, AtRiskDashboardViewProps:187, AtRiskDashboardView:202, default:734 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
@@ -534,7 +534,7 @@
 | [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 925 | member-counselor | StatSpark:85, WeeklyActivityPoint:95, PointsLedgerEntry:101, MemberHomeKitProps:107, MemberHomeKit:547 |
 | [components/portal/kit/pages/member/MemberJobDetail.tsx](../../../components/portal/kit/pages/member/MemberJobDetail.tsx) | 193 | member-counselor | JobDetailScreeningQuestion:15, MemberJobDetailProps:21, MemberJobDetail:52 |
 | [components/portal/kit/pages/member/MemberJobsBoard.tsx](../../../components/portal/kit/pages/member/MemberJobsBoard.tsx) | 154 | member-counselor | BoardJob:19, MemberJobsBoardProps:30, MemberJobsBoard:59 |
-| [components/portal/kit/pages/member/MemberJobsKit.tsx](../../../components/portal/kit/pages/member/MemberJobsKit.tsx) | 194 | member-counselor | MemberJobsKitProps:38, MemberJobsKit:72 |
+| [components/portal/kit/pages/member/MemberJobsKit.tsx](../../../components/portal/kit/pages/member/MemberJobsKit.tsx) | 270 | member-counselor | JOBS_OPEN_ROLES_ANCHOR:27, OpenRoleRow:48, MemberJobsKitProps:59, MemberJobsKit:98 |
 | [components/portal/kit/pages/member/MemberMentorProfileKit.tsx](../../../components/portal/kit/pages/member/MemberMentorProfileKit.tsx) | 103 | member-counselor | MentorProfile:16, MemberMentorProfileKitProps:26, MemberMentorProfileKit:39 |
 | [components/portal/kit/pages/member/MemberMentorsKit.tsx](../../../components/portal/kit/pages/member/MemberMentorsKit.tsx) | 142 | member-counselor | MentorSummary:26, MemberMentorsKitProps:34, MemberMentorsKit:68 |
 | [components/portal/kit/pages/member/MemberMessagesEmpty.tsx](../../../components/portal/kit/pages/member/MemberMessagesEmpty.tsx) | 44 | member-counselor | MemberMessagesEmpty:10 |
@@ -558,7 +558,8 @@
 | [components/portal/tools/CareerCounselor.test.tsx](../../../components/portal/tools/CareerCounselor.test.tsx) | 128 | components |  |
 | [components/portal/tools/CareerCounselor.tsx](../../../components/portal/tools/CareerCounselor.tsx) | 512 | components | default:47 |
 | [components/portal/tools/CoverLetterForm.tsx](../../../components/portal/tools/CoverLetterForm.tsx) | 271 | components | default:60 |
-| [components/portal/tools/ElevatorPitchClient.tsx](../../../components/portal/tools/ElevatorPitchClient.tsx) | 510 | components | default:71 |
+| [components/portal/tools/ElevatorPitchClient.test.tsx](../../../components/portal/tools/ElevatorPitchClient.test.tsx) | 100 | components |  |
+| [components/portal/tools/ElevatorPitchClient.tsx](../../../components/portal/tools/ElevatorPitchClient.tsx) | 529 | components | default:78 |
 | [components/portal/tools/ElevatorPitchDeploymentLogger.tsx](../../../components/portal/tools/ElevatorPitchDeploymentLogger.tsx) | 325 | components | default:26 |
 | [components/portal/tools/ExportPdfButton.tsx](../../../components/portal/tools/ExportPdfButton.tsx) | 104 | components | default:28 |
 | [components/portal/tools/GapAnalyzerForm.tsx](../../../components/portal/tools/GapAnalyzerForm.tsx) | 255 | components | default:30 |
