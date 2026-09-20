@@ -3528,5 +3528,104 @@
       "legacy": "Saved explanation (original language): {text}",
       "unavailable": "No explanation was saved with this assessment."
     }
+  },
+  "tours": {
+    "chrome": {
+      "close": "Close tour",
+      "stepOf": "Step {current} of {total}",
+      "back": "Back",
+      "skip": "Skip tour",
+      "next": "Next",
+      "done": "Done",
+      "announceStep": "Tour step {current} of {total}: {title}"
+    },
+    "member": {
+      "home": {
+        "dashboard": {
+          "title": "Dashboard",
+          "body": "Your overview: applications, interviews, and shortcuts. Open My program in the menu for your course list, Coursera, and training progress."
+        },
+        "aiTools": {
+          "title": "AI Career Tools",
+          "body": "Power up your job search with AI — resume help, cover letters, interview practice, and more."
+        },
+        "learning": {
+          "title": "Learning",
+          "body": "Access your courses, training materials, and skill-building resources."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Stay connected with your counselor and the WorkforceAP team."
+        },
+        "profile": {
+          "title": "Profile",
+          "body": "Keep your profile up to date so we can match you with the best opportunities."
+        }
+      }
+    },
+    "employer": {
+      "home": {
+        "overview": {
+          "title": "Your dashboard",
+          "body": "See active job stats, pending work, and alerts at a glance."
+        },
+        "workQueue": {
+          "title": "Work queue",
+          "body": "Daily action items — candidates to review, interviews to schedule, stale postings."
+        },
+        "jobs": {
+          "title": "Job postings",
+          "body": "Post new roles, import from your job board or LinkedIn, and manage live postings."
+        },
+        "applicants": {
+          "title": "Applicants",
+          "body": "Review every candidate who applied. Filter by program, status, or match score."
+        },
+        "pipeline": {
+          "title": "Hiring pipeline",
+          "body": "Track candidates from reviewed → interviewed → offered on a visual board."
+        },
+        "matches": {
+          "title": "AI matches",
+          "body": "AI-suggested candidates for your open roles based on skills and program fit."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Chat with the WorkforceAP team about postings, applicants, and hiring."
+        },
+        "postJob": {
+          "title": "Post your first job",
+          "body": "Takes about 2 minutes. We'll match you with qualified candidates automatically."
+        }
+      }
+    },
+    "partner": {
+      "home": {
+        "overview": {
+          "title": "Partner dashboard",
+          "body": "Your referred members and their current status — all in one view."
+        },
+        "members": {
+          "title": "Your members",
+          "body": "Everyone you've referred. Click any member to see their full journey."
+        },
+        "attention": {
+          "title": "Needs attention",
+          "body": "Members who may need a nudge — stalled applications, inactive, at risk."
+        },
+        "outcomes": {
+          "title": "Outcomes",
+          "body": "Track placements and employment outcomes for your referrals."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Reach the WorkforceAP team about referrals, milestones, and partner support."
+        },
+        "referralLink": {
+          "title": "Your referral link",
+          "body": "Share this link with community members to track their journey back to you."
+        }
+      }
+    }
   }
 }

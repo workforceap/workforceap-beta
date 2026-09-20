@@ -535,5 +535,9 @@
 | [tests/server-only-stub.cjs](../../../tests/server-only-stub.cjs) | 8 | tests |  |
 | [tests/setup.ts](../../../tests/setup.ts) | 1 | tests |  |
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
+| [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 265 | tests |  |
+| [tests/tours/tour-auto-start.spec.tsx](../../../tests/tours/tour-auto-start.spec.tsx) | 71 | tests |  |
+| [tests/tours/tours-key-route.spec.ts](../../../tests/tours/tours-key-route.spec.ts) | 159 | tests |  |
+| [tests/tours/tours-state-route.spec.ts](../../../tests/tours/tours-state-route.spec.ts) | 199 | tests |  |
 | [tests/webhook-retries-audit-noise.spec.ts](../../../tests/webhook-retries-audit-noise.spec.ts) | 108 | tests |  |
 | [tests/well-known-icon-paths.spec.ts](../../../tests/well-known-icon-paths.spec.ts) | 77 | tests |  |

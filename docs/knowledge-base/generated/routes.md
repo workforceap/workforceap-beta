@@ -905,6 +905,8 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/subgroup/members/\[id\] | route | GET | [app/api/subgroup/members/\[id\]/route.ts](../../../app/api/subgroup/members/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:12 |
 | /api/subgroup/members | route | GET | [app/api/subgroup/members/route.ts](../../../app/api/subgroup/members/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:11 |
 | /api/test/xapi-access-token | route | GET | [app/api/test/xapi-access-token/route.ts](../../../app/api/test/xapi-access-token/route.ts) |  |
+| /api/tours/\[tourKey\] | route | POST | [app/api/tours/\[tourKey\]/route.ts](../../../app/api/tours/%5BtourKey%5D/route.ts) | @/lib/auth/server:3, @/lib/db/withRequestGuc:5 |
+| /api/tours/state | route | GET | [app/api/tours/state/route.ts](../../../app/api/tours/state/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:5 |
 | /api/unsubscribe | route | POST, GET | [app/api/unsubscribe/route.ts](../../../app/api/unsubscribe/route.ts) | @/lib/db/withRequestGuc:14, @/lib/rate-limit:18 |
 | /api/webhooks/coursera | route | POST | [app/api/webhooks/coursera/route.ts](../../../app/api/webhooks/coursera/route.ts) | @/lib/rate-limit:4, @/lib/coursera/webhookAuth:9, @/lib/db/withRequestGuc:19, @/lib/tenant/resolveOrgFromRequest:20 |
 | /api/webhooks/learning-completion | route | POST | [app/api/webhooks/learning-completion/route.ts](../../../app/api/webhooks/learning-completion/route.ts) | @/lib/rate-limit:2, @/lib/db/withRequestGuc:10 |

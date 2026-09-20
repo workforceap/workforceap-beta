@@ -3528,5 +3528,104 @@
       "legacy": "Explicación guardada (idioma original): {text}",
       "unavailable": "No se guardó ninguna explicación con esta evaluación."
     }
+  },
+  "tours": {
+    "chrome": {
+      "close": "Cerrar el recorrido",
+      "stepOf": "Paso {current} de {total}",
+      "back": "Atrás",
+      "skip": "Omitir el recorrido",
+      "next": "Siguiente",
+      "done": "Listo",
+      "announceStep": "Paso {current} de {total} del recorrido: {title}"
+    },
+    "member": {
+      "home": {
+        "dashboard": {
+          "title": "Panel",
+          "body": "Tu resumen: solicitudes, entrevistas y accesos directos. Abre Mi programa en el menú para ver tu lista de cursos, Coursera y el progreso de tu formación."
+        },
+        "aiTools": {
+          "title": "AI Career Tools",
+          "body": "Impulsa tu búsqueda de empleo con IA: ayuda con el currículum, cartas de presentación, práctica de entrevistas y más."
+        },
+        "learning": {
+          "title": "Aprendizaje",
+          "body": "Accede a tus cursos, materiales de formación y recursos para desarrollar habilidades."
+        },
+        "messages": {
+          "title": "Mensajes",
+          "body": "Mantente en contacto con tu consejero y el equipo de WorkforceAP."
+        },
+        "profile": {
+          "title": "Perfil",
+          "body": "Mantén tu perfil actualizado para que podamos conectarte con las mejores oportunidades."
+        }
+      }
+    },
+    "employer": {
+      "home": {
+        "overview": {
+          "title": "Tu panel",
+          "body": "Consulta de un vistazo las estadísticas de empleos activos, el trabajo pendiente y las alertas."
+        },
+        "workQueue": {
+          "title": "Cola de trabajo",
+          "body": "Tareas diarias: candidatos por revisar, entrevistas por programar y publicaciones sin actividad."
+        },
+        "jobs": {
+          "title": "Ofertas de empleo",
+          "body": "Publica nuevos puestos, importa desde tu bolsa de trabajo o LinkedIn y gestiona las publicaciones activas."
+        },
+        "applicants": {
+          "title": "Candidatos",
+          "body": "Revisa a cada persona que se postuló. Filtra por programa, estado o puntuación de compatibilidad."
+        },
+        "pipeline": {
+          "title": "Proceso de contratación",
+          "body": "Sigue a los candidatos de revisado → entrevistado → con oferta en un tablero visual."
+        },
+        "matches": {
+          "title": "Coincidencias de IA",
+          "body": "Candidatos sugeridos por IA para tus puestos abiertos según sus habilidades y su encaje con el programa."
+        },
+        "messages": {
+          "title": "Mensajes",
+          "body": "Habla con el equipo de WorkforceAP sobre publicaciones, candidatos y contratación."
+        },
+        "postJob": {
+          "title": "Publica tu primer empleo",
+          "body": "Toma unos 2 minutos. Te conectaremos automáticamente con candidatos calificados."
+        }
+      }
+    },
+    "partner": {
+      "home": {
+        "overview": {
+          "title": "Panel de socios",
+          "body": "Los miembros que has referido y su estado actual, todo en una sola vista."
+        },
+        "members": {
+          "title": "Tus miembros",
+          "body": "Todas las personas que has referido. Haz clic en cualquier miembro para ver su recorrido completo."
+        },
+        "attention": {
+          "title": "Necesitan atención",
+          "body": "Miembros que pueden necesitar un empujón: solicitudes estancadas, inactividad o riesgo."
+        },
+        "outcomes": {
+          "title": "Resultados",
+          "body": "Sigue las colocaciones y los resultados de empleo de tus referidos."
+        },
+        "messages": {
+          "title": "Mensajes",
+          "body": "Contacta al equipo de WorkforceAP sobre referidos, hitos y apoyo para socios."
+        },
+        "referralLink": {
+          "title": "Tu enlace de referido",
+          "body": "Comparte este enlace con miembros de la comunidad para seguir su recorrido hasta ti."
+        }
+      }
+    }
   }
 }

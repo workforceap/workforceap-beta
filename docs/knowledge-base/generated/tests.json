@@ -8429,6 +8429,10 @@
       {
         "file": "lib/onboarding/portalTourSteps.ts",
         "line": 3
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 8
       }
     ],
     "kind": "test-candidate",
@@ -9669,6 +9673,30 @@
       {
         "file": "lib/tenant/scopeProxy.ts",
         "line": 20
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/tours/registry.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -28519,6 +28547,168 @@
       {
         "file": "scripts/vitest-library-specs.mjs",
         "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/guided-tour.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "messages/es.json",
+        "line": 5
+      },
+      {
+        "file": "components/onboarding/TourContext.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/portal/kit/GuidedTour.tsx",
+        "line": 7
+      },
+      {
+        "file": "components/onboarding/PortalTour.tsx",
+        "line": 8
+      },
+      {
+        "file": "lib/onboarding/portalTourSteps.ts",
+        "line": 9
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/tour-auto-start.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/onboarding/TourProviderWrapper.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/onboarding/TourAutoStart.tsx",
+        "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/tours-key-route.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 25
+      },
+      {
+        "file": "app/api/tours/[tourKey]/route.ts",
+        "line": 36
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 37
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 38
+      },
+      {
+        "file": "lib/events/track.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/events/names.ts",
+        "line": 40
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/tours-state-route.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 32
+      },
+      {
+        "file": "app/api/tours/state/route.ts",
+        "line": 43
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 44
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 45
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 46
       }
     ],
     "kind": "test-candidate",
