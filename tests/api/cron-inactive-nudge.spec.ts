@@ -82,6 +82,8 @@ describe('GET /api/cron/inactive-nudge', () => {
     const findManyArgs = (prisma.user.findMany as any).mock.calls[0][0];
     expect(findManyArgs.where.notificationsReminders).toBe(true);
     expect(findManyArgs.where.deletedAt).toBeNull();
+    // Re-engagement mail is for members only (not staff/partner/employer or role-less accounts).
+    expect(findManyArgs.where.userRoles).toEqual({ some: { role: { name: 'member' } } });
     expect(findManyArgs.where.AND).toEqual([
       { memberEvents: { none: { createdAt: { gte: expect.any(Date) } } } },
       {

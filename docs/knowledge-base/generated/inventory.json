@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b7d4458a83a4bbc37acf3337c1f5e58d456d8eebecb9c1e5e58f7bec501d0ab7",
+  "inputTreeSha256": "1506146d597287dfbdd2bd392ef3f0645ee39460eb1f5d37a56bb987a20c1bb3",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -23922,31 +23922,26 @@
       "path": "app/api/admin/email-templates/[id]/test/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 2991,
-      "lines": 76,
-      "sha256": "d0fc0bdf2e6b457182cdf4cc665445e25689ca11b79bc976821164f93d3306d3",
+      "bytes": 3426,
+      "lines": 80,
+      "sha256": "5a4379234f45fd73ef54373bbfd424a5b69633ddd8d0e10de16c427b4cbb283d",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 23,
+          "line": 18,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
-          "name": "getResend",
-          "line": 13,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "getFrom",
-          "line": 19,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 23,
+          "line": 18,
           "kind": "Variable"
         }
       ],
@@ -26377,56 +26372,56 @@
       "path": "app/api/admin/members/bulk-email/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 7117,
-      "lines": 199,
-      "sha256": "0cda216aefa44da99a9f7b0ec00c7317515e98ac99a3ddec26cd56d4c12d3fb8",
+      "bytes": 7772,
+      "lines": 211,
+      "sha256": "6e774dafa6a7a29ee4df421382cf6086a89a4ff2bda3f1bb6800728b1c14d35b",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 199,
+          "line": 211,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_MEMBERS",
-          "line": 19,
-          "kind": "Variable"
-        },
-        {
-          "name": "MAX_SUBJECT",
-          "line": 20,
-          "kind": "Variable"
-        },
-        {
-          "name": "MAX_BODY",
-          "line": 21,
-          "kind": "Variable"
-        },
-        {
-          "name": "bodySchema",
           "line": 23,
           "kind": "Variable"
         },
         {
-          "name": "getFrom",
-          "line": 31,
-          "kind": "FunctionDeclaration"
+          "name": "MAX_SUBJECT",
+          "line": 24,
+          "kind": "Variable"
         },
         {
-          "name": "substituteVars",
+          "name": "MAX_BODY",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "bodySchema",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "getFrom",
           "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "_POST",
+          "name": "substituteVars",
           "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "_POST",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "POST",
-          "line": 199,
+          "line": 211,
           "kind": "Variable"
         }
       ],
@@ -27622,21 +27617,21 @@
       "path": "app/api/admin/partners/[id]/approve/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 4483,
-      "lines": 117,
-      "sha256": "962472de756ae39994e70ed5ae0dc175d9f39f78ecad5bd93846b9b04be1de9e",
+      "bytes": 4637,
+      "lines": 120,
+      "sha256": "4d5f04454718745a8c4f7c2dd10ec2f054f33672e02635f159df5c17a6b89769",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 16,
+          "line": 18,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 16,
+          "line": 18,
           "kind": "Variable"
         }
       ],
@@ -27777,21 +27772,21 @@
       "path": "app/api/admin/partners/[id]/reject/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 4048,
-      "lines": 121,
-      "sha256": "753ca2b5f5b494f41b65a7b667560b4673c0ffb25f60328c98b87c191a079b2c",
+      "bytes": 4202,
+      "lines": 124,
+      "sha256": "5772738b387e2847d82c3f4b78b94ff4acbb8447f2228e222d98d01d866b214b",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 14,
+          "line": 16,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 14,
+          "line": 16,
           "kind": "Variable"
         }
       ],
@@ -27859,9 +27854,9 @@
       "path": "app/api/admin/partners/invite/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 3237,
+      "bytes": 3265,
       "lines": 92,
-      "sha256": "98640cb07d16fd8351cbd2a005e39b066f2cc5352dbd313a1ae84b0494357a82",
+      "sha256": "b06fdf0281c19ab33ba14f846eee1ff98da98f4940f0a022ce58ac5d2df238c9",
       "binary": false,
       "exports": [
         {
@@ -27873,17 +27868,17 @@
       "declarations": [
         {
           "name": "SITE_URL",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "bodySchema",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "_POST",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
@@ -30576,31 +30571,31 @@
       "path": "app/api/contact/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 6127,
+      "bytes": 6155,
       "lines": 161,
-      "sha256": "0391ace469735db5cbca64e9a23948e0efa374a6717d2b3332a33e2b4176e94d",
+      "sha256": "7dbfa04da9d1b9f9117eae6da5784c394170ca4c8227c056a8dcda086f4ad6a3",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 18,
+          "line": 19,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CONTACT_EMAIL_TO",
-          "line": 8,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "getClientIp",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 18,
+          "line": 19,
           "kind": "FunctionDeclaration"
         },
         {
@@ -31567,91 +31562,86 @@
       "path": "app/api/counselor/sessions/email-packet/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 16131,
-      "lines": 382,
-      "sha256": "3628f8e29563e28387f329f333a395e8a435203bf08b73e7cfe01c76143f6f1d",
+      "bytes": 16195,
+      "lines": 379,
+      "sha256": "d616a821962a284d68d20565fa0c1eab7c794b099085e6c4085f01e2ee428bec",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 161,
+          "line": 158,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "SITE_URL",
-          "line": 29,
+          "line": 31,
           "kind": "Variable"
         },
         {
-          "name": "getResend",
-          "line": 31,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "getFrom",
-          "line": 36,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bodySchema",
-          "line": 40,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "ACCENT",
-          "line": 46,
+          "line": 43,
           "kind": "Variable"
         },
         {
           "name": "DARK_TEXT",
-          "line": 47,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "MUTED",
-          "line": 48,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "RULE",
-          "line": 49,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "HEADER_H",
-          "line": 51,
+          "line": 48,
           "kind": "Variable"
         },
         {
           "name": "FOOTER_H",
-          "line": 52,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "MARGIN",
-          "line": 53,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "PAGE_W",
-          "line": 54,
+          "line": 51,
           "kind": "Variable"
         },
         {
           "name": "PAGE_H",
-          "line": 55,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "generatePdfBuffer",
-          "line": 57,
+          "line": 54,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 161,
+          "line": 158,
           "kind": "Variable"
         }
       ],
@@ -31924,9 +31914,9 @@
       "path": "app/api/cron/at-risk-alerts/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 2972,
+      "bytes": 2996,
       "lines": 59,
-      "sha256": "c4ce1fdf6d3a391d4eb15fd1e3b0a1648e53f4dea2a7d700425c84f23a0a3ea1",
+      "sha256": "c3e74f172374242c6843291a3ffd7ce6ddb6336a59ae616ccd6b835cfcf2d27b",
       "binary": false,
       "exports": [
         {
@@ -32489,9 +32479,9 @@
       "path": "app/api/cron/inactive-nudge/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 3968,
-      "lines": 104,
-      "sha256": "516eb43f386a41bdb5fd4eed4c7f6d862022af6851dd8ecf249139a39bcc72ee",
+      "bytes": 4268,
+      "lines": 108,
+      "sha256": "8191ef386b9f6873cde1ed520e6176518afe62a2d473bbd8e91ebcfe340c1425",
       "binary": false,
       "exports": [
         {
@@ -32501,12 +32491,12 @@
         },
         {
           "name": "GET",
-          "line": 103,
+          "line": 107,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 104,
+          "line": 108,
           "kind": "Variable"
         }
       ],
@@ -32523,12 +32513,12 @@
         },
         {
           "name": "GET",
-          "line": 103,
+          "line": 107,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 104,
+          "line": 108,
           "kind": "Variable"
         }
       ],
@@ -32891,101 +32881,101 @@
       "path": "app/api/cron/onboarding-stalls/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 7441,
-      "lines": 193,
-      "sha256": "d38f4bdafd2ba55f06fe9222d6a91a91eec3b3cfe2e26d66b13336ff374433c3",
+      "bytes": 7771,
+      "lines": 197,
+      "sha256": "f3fefc44f63a343491ada9e9aed48715e218c631fce58eaeb7d54971a939a74b",
       "binary": false,
       "exports": [
         {
           "name": "maxDuration",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 192,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 193,
+          "line": 197,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "maxDuration",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "JOB_NAME",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "SITE_URL",
           "line": 15,
           "kind": "Variable"
         },
         {
-          "name": "MS_PER_DAY",
+          "name": "SITE_URL",
           "line": 16,
           "kind": "Variable"
         },
         {
-          "name": "STALL_DAYS",
+          "name": "MS_PER_DAY",
           "line": 17,
           "kind": "Variable"
         },
         {
-          "name": "NO_PROGRAM_DAYS",
+          "name": "STALL_DAYS",
           "line": 18,
           "kind": "Variable"
         },
         {
-          "name": "MAX_NAMED_PER_BUCKET",
+          "name": "NO_PROGRAM_DAYS",
           "line": 19,
           "kind": "Variable"
         },
         {
-          "name": "INTERVIEW_QUEUE_LINK",
-          "line": 21,
+          "name": "MAX_NAMED_PER_BUCKET",
+          "line": 20,
           "kind": "Variable"
         },
         {
-          "name": "WIOA_QUEUE_LINK",
+          "name": "INTERVIEW_QUEUE_LINK",
           "line": 22,
           "kind": "Variable"
         },
         {
-          "name": "MEMBERS_QUEUE_LINK",
+          "name": "WIOA_QUEUE_LINK",
           "line": 23,
           "kind": "Variable"
         },
         {
+          "name": "MEMBERS_QUEUE_LINK",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
           "name": "NamedMember",
-          "line": 25,
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "toNamedMember",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "handle",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 192,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 193,
+          "line": 197,
           "kind": "Variable"
         }
       ],
@@ -33434,9 +33424,9 @@
       "path": "app/api/cron/weekly-recap/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 5655,
-      "lines": 147,
-      "sha256": "202f4d6d1f60d03c2137c33d3b6e0282d60de53eca1f878e4da1fe6b67492b9a",
+      "bytes": 5751,
+      "lines": 148,
+      "sha256": "6dfd89abfa87b37714289e242ac5bd007509381e39b7e8536b279edd253cc731",
       "binary": false,
       "exports": [
         {
@@ -33446,12 +33436,12 @@
         },
         {
           "name": "GET",
-          "line": 146,
+          "line": 147,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 147,
+          "line": 148,
           "kind": "Variable"
         }
       ],
@@ -33468,12 +33458,12 @@
         },
         {
           "name": "GET",
-          "line": 146,
+          "line": 147,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 147,
+          "line": 148,
           "kind": "Variable"
         }
       ],
@@ -35309,31 +35299,31 @@
       "path": "app/api/leads/careers/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 5703,
+      "bytes": 5731,
       "lines": 159,
-      "sha256": "8f7ae09515e02cf3aa099d99ff27217c47e7c4d33a628678d4a6d553fdbc7ee1",
+      "sha256": "656125c3a2a07b856e12b9bb5bec37456ff5669cdb4509364ebbaf409f91efc2",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CAREERS_EMAIL_TO",
-          "line": 9,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "getClientIp",
-          "line": 11,
+          "line": 12,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
@@ -35635,26 +35625,26 @@
       "path": "app/api/member/assessment/submit/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 8903,
-      "lines": 236,
-      "sha256": "db0d422a488d2d9d3f91caaac4aeaab0523b36e27dece3674f955f79582856e0",
+      "bytes": 9107,
+      "lines": 238,
+      "sha256": "8a2a16dc6fa0f27c4effe6c5b2149ca669910cc5e49266d07100411591168a73",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 16,
+          "line": 18,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 16,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "parseBody",
-          "line": 211,
+          "line": 213,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -37809,31 +37799,31 @@
       "path": "app/api/member/request-help/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 3352,
+      "bytes": 3400,
       "lines": 93,
-      "sha256": "a36f82d75835a29d280cd000f2d70253506a7a2be03e08a859c0851e75a66527",
+      "sha256": "eaa256ee67b6abb22494dbf90c6efea022315730c0e9d2e4ca7c66181ef0c848",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "SITE_URL",
-          "line": 11,
-          "kind": "Variable"
-        },
-        {
-          "name": "FALLBACK_EMAIL",
           "line": 12,
           "kind": "Variable"
         },
         {
+          "name": "FALLBACK_EMAIL",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
           "name": "POST",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         }
       ],
@@ -40037,51 +40027,51 @@
       "path": "app/api/partner/signup/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 14442,
-      "lines": 401,
-      "sha256": "1b425a9e224ead142d8e423d9fd74b0a2b65bc0ea1d2c39a2da8ae87ae2a9f37",
+      "bytes": 14804,
+      "lines": 406,
+      "sha256": "01fada8bbdbfd6e9db35dc7cf01f92e87029d59381920af12022a098db805a03",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 72,
+          "line": 74,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "ADMIN_EMAIL",
-          "line": 12,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "getClientIp",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "slugify",
-          "line": 22,
+          "line": 24,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "generateUniqueSlug",
-          "line": 29,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "generateUniqueReferralCode",
-          "line": 41,
+          "line": 43,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "signupSchema",
-          "line": 58,
+          "line": 60,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 72,
+          "line": 74,
           "kind": "Variable"
         }
       ],
@@ -76591,9 +76581,9 @@
       "path": "docs/knowledge-base/integrations.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 37600,
+      "bytes": 38484,
       "lines": 143,
-      "sha256": "d825604ef89a944ae271264cfd11dfebe7056835c75fe4d24c4c911cdb629090",
+      "sha256": "31f903286d7a9a9b31b4fc7a9424a09b488595c57d58c46af583c2ec8ce96d74",
       "binary": false
     },
     {
@@ -80210,14 +80200,14 @@
       "path": "eslint.config.mjs",
       "area": "root",
       "domain": "root",
-      "bytes": 15266,
-      "lines": 334,
-      "sha256": "23303b6ce8fbf72c59b2e2b547b0dd087656dc5b099729cde4be7a6022542e48",
+      "bytes": 16584,
+      "lines": 362,
+      "sha256": "b32e83dd56e003df423e9842129097f20828462a37ceb7b4a137bf9c06a65789",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 334,
+          "line": 362,
           "kind": "ExportAssignment"
         }
       ],
@@ -80308,13 +80298,23 @@
           "kind": "Variable"
         },
         {
+          "name": "NO_DIRECT_PROVIDER_SEND_MESSAGE",
+          "line": 116,
+          "kind": "Variable"
+        },
+        {
+          "name": "DIRECT_PROVIDER_SEND_BAN",
+          "line": 121,
+          "kind": "Variable"
+        },
+        {
           "name": "PRODUCTION_BANS",
-          "line": 120,
+          "line": 131,
           "kind": "Variable"
         },
         {
           "name": "config",
-          "line": 122,
+          "line": 133,
           "kind": "Variable"
         }
       ],
@@ -85724,31 +85724,31 @@
       "path": "lib/admin/mentorStatusUpdate.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1724,
-      "lines": 48,
-      "sha256": "2a1583906a5597ec6b21cac9b140ed485926d9b6f301b73b895bbfbf35beaef1",
+      "bytes": 1835,
+      "lines": 49,
+      "sha256": "f688c4eb3227ee0df138b9e1f932719df545cab2db95500f6581002d23819572",
       "binary": false,
       "exports": [
         {
           "name": "MentorAdminAction",
-          "line": 4,
+          "line": 6,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMentorStatusUpdate",
-          "line": 9,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MentorAdminAction",
-          "line": 4,
+          "line": 6,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMentorStatusUpdate",
-          "line": 9,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111660,111 +111660,111 @@
       "path": "lib/cron/at-risk-alerts.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 17932,
-      "lines": 576,
-      "sha256": "e034eeb8889ff80595721265d7fac4358f9c05eecd571a51623a6598a63dc4a0",
+      "bytes": 18209,
+      "lines": 579,
+      "sha256": "a1d765fc5393321bccb2233b3f8c6167be2fca18d9626ad20c042f7aaf698027",
       "binary": false,
       "exports": [
         {
           "name": "RetentionNudgeResult",
-          "line": 83,
+          "line": 84,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMemberRetentionNudges",
-          "line": 103,
+          "line": 104,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorAlertResult",
-          "line": 297,
+          "line": 300,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DailyAtRiskAlertRunResult",
-          "line": 306,
+          "line": 309,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAFF_FALLBACK_COUNSELOR_ID",
-          "line": 321,
+          "line": 324,
           "kind": "Variable"
         },
         {
           "name": "runAtRiskCounselorAlerts",
-          "line": 328,
+          "line": 331,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "BulkEmailCronPacer",
-          "line": 41,
+          "line": 42,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SITE_URL",
-          "line": 43,
-          "kind": "Variable"
-        },
-        {
-          "name": "NUDGE_COOLDOWN_DAYS",
           "line": 44,
           "kind": "Variable"
         },
         {
-          "name": "NUDGE_COOLDOWN_MS",
+          "name": "NUDGE_COOLDOWN_DAYS",
           "line": 45,
           "kind": "Variable"
         },
         {
+          "name": "NUDGE_COOLDOWN_MS",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
           "name": "NUDGE_BATCH_SIZE",
-          "line": 52,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "NudgeKind",
-          "line": 54,
+          "line": 55,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "firstNameOf",
-          "line": 56,
+          "line": 57,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "chooseNudge",
-          "line": 62,
+          "line": 63,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RetentionNudgeResult",
-          "line": 83,
+          "line": 84,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMemberRetentionNudges",
-          "line": 103,
+          "line": 104,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorAlertResult",
-          "line": 297,
+          "line": 300,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DailyAtRiskAlertRunResult",
-          "line": 306,
+          "line": 309,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAFF_FALLBACK_COUNSELOR_ID",
-          "line": 321,
+          "line": 324,
           "kind": "Variable"
         },
         {
           "name": "runAtRiskCounselorAlerts",
-          "line": 328,
+          "line": 331,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -115462,6 +115462,30 @@
       "directive": null
     },
     {
+      "path": "lib/email/plainTextEmail.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 594,
+      "lines": 11,
+      "sha256": "5b9b237c03923e535827be3fbbf3deafa94039e4290e4ce97f7f3385630f9aee",
+      "binary": false,
+      "exports": [
+        {
+          "name": "plainTextEmailHtml",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "plainTextEmailHtml",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/email/rateLimitError.ts",
       "area": "libraries",
       "domain": "communications",
@@ -115578,9 +115602,9 @@
       "path": "lib/email/send.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 13837,
-      "lines": 418,
-      "sha256": "60ca334873c22d6c537bb8574916ae1bfbb2c913030f3bc410d66b9f1221878a",
+      "bytes": 20675,
+      "lines": 581,
+      "sha256": "72bcbf96a684338c4b5f69c79ae7cfcc5d1d61a17697cbeed97bb214de785439",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -115590,186 +115614,450 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 14223,
-      "lines": 364,
-      "sha256": "ec7cffedfb491dd2718fcbae3ef247adfc22f6858554319903c57f811300fbae",
+      "bytes": 21147,
+      "lines": 512,
+      "sha256": "89d551e166d3d593ff2e71060acfb60aa305f650033b0110e033a32be5b2127d",
       "binary": false,
       "exports": [
         {
           "name": "isEmailProviderRateLimitError",
-          "line": 37,
+          "line": 44,
           "kind": "ReExport"
         },
         {
           "name": "SendBrandedEmailRetryOptions",
-          "line": 46,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UNSUBSCRIBE_ADDRESS",
-          "line": 59,
+          "line": 73,
           "kind": "Variable"
         },
         {
           "name": "htmlToPlainText",
-          "line": 69,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sanitizeHeaders",
-          "line": 99,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildDeliverabilityHeaders",
-          "line": 108,
+          "line": 122,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SkippedEmailReason",
+          "line": 143,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isRecipientSkipReason",
+          "line": 145,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureSkippedEmailResult",
-          "line": 124,
+          "line": 149,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailArgs",
-          "line": 132,
+          "line": 157,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "sendingDomain",
+          "line": 261,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isFixtureEmailRecipient",
-          "line": 223,
+          "line": 285,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isTransientProviderError",
+          "line": 308,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "defaultIdempotencyKey",
+          "line": 328,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 261,
+          "line": 379,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 271,
+          "line": 390,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 353,
+          "line": 501,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "RESEND_MAX_ATTEMPTS",
-          "line": 39,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "RESEND_RETRY_BASE_DELAY_MS",
-          "line": 40,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "RESEND_RETRY_MAX_TOTAL_WAIT_MS",
-          "line": 42,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "Sleep",
-          "line": 44,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailRetryOptions",
-          "line": 46,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UNSUBSCRIBE_ADDRESS",
-          "line": 59,
+          "line": 73,
           "kind": "Variable"
         },
         {
           "name": "htmlToPlainText",
-          "line": 69,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sanitizeHeaders",
-          "line": 99,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildDeliverabilityHeaders",
-          "line": 108,
+          "line": 122,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SkippedEmailReason",
+          "line": 143,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isRecipientSkipReason",
+          "line": 145,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureSkippedEmailResult",
-          "line": 124,
+          "line": 149,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailArgs",
-          "line": 132,
+          "line": 157,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recordEmailFailure",
-          "line": 165,
+          "line": 190,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "asRecord",
-          "line": 179,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readHeader",
-          "line": 183,
+          "line": 208,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRetryAfterMs",
-          "line": 191,
+          "line": 216,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRateLimitResetMs",
-          "line": 202,
+          "line": 227,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientDomain",
-          "line": 210,
+          "line": 235,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fixtureDomains",
-          "line": 215,
+          "line": 240,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizedRecipientAddress",
+          "line": 248,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientLocalPart",
+          "line": 254,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sendingDomain",
+          "line": 261,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "FIXTURE_LOCAL_PART_PATTERNS",
+          "line": 270,
+          "kind": "Variable"
+        },
+        {
+          "name": "fixtureAddresses",
+          "line": 276,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 223,
+          "line": 285,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TRANSIENT_NETWORK_CODES",
+          "line": 296,
+          "kind": "Variable"
+        },
+        {
+          "name": "TRANSIENT_PROVIDER_ERROR_NAMES",
+          "line": 300,
+          "kind": "Variable"
+        },
+        {
+          "name": "isTransientProviderError",
+          "line": 308,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "defaultIdempotencyKey",
+          "line": 328,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 229,
+          "line": 344,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 261,
+          "line": 379,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 271,
+          "line": 390,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 353,
+          "line": 501,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/email/suppressions.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 7460,
+      "lines": 191,
+      "sha256": "a99cb3c7e905b069b1bf39f76bb4350d70cf288b54e73524504582b839cda295",
+      "binary": false,
+      "exports": [
+        {
+          "name": "SUPPRESSION_CACHE_TTL_MS",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSION_FETCH_TIMEOUT_MS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSED_SKIP_METHOD",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SuppressionLookupOptions",
+          "line": 40,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "bareEmailAddress",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadProviderSuppressions",
+          "line": 102,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SuppressionPartition",
+          "line": 130,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "partitionSuppressedRecipients",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetProviderSuppressionCache",
+          "line": 153,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recordSuppressedRecipientSkip",
+          "line": 169,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "SUPPRESSION_CACHE_TTL_MS",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSION_FETCH_TIMEOUT_MS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSED_SKIP_METHOD",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSIONS_URL",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSION_PAGE_SIZE",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPPRESSION_MAX_PAGES",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "WARN_INTERVAL_MS",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "SuppressionCache",
+          "line": 35,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "cache",
+          "line": 36,
+          "kind": "Variable"
+        },
+        {
+          "name": "inflight",
+          "line": 37,
+          "kind": "Variable"
+        },
+        {
+          "name": "lastWarnAtMs",
+          "line": 38,
+          "kind": "Variable"
+        },
+        {
+          "name": "SuppressionLookupOptions",
+          "line": 40,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "apiKeyFromEnv",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "bareEmailAddress",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SuppressionRow",
+          "line": 61,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "SuppressionPage",
+          "line": 62,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchAllSuppressions",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "warnLookupFailed",
+          "line": 88,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadProviderSuppressions",
+          "line": 102,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SuppressionPartition",
+          "line": 130,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "partitionSuppressedRecipients",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetProviderSuppressionCache",
+          "line": 153,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientDomains",
+          "line": 159,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recordSuppressedRecipientSkip",
+          "line": 169,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140872,56 +141160,61 @@
       "path": "lib/wioa/wioaNotification.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 4087,
-      "lines": 107,
-      "sha256": "fdff3cf86fb74c13dde96e4f141b44a391c3fd040442d46562624b15fbc1ed5e",
+      "bytes": 4822,
+      "lines": 118,
+      "sha256": "2353c031d466bd1779592850e315f06f12317c82cea9dab6adff347e381769fd",
       "binary": false,
       "exports": [
         {
           "name": "getWioaScreeningNotificationRecipients",
-          "line": 9,
+          "line": 7,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WioaScreeningNotificationContact",
-          "line": 20,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WioaEmailSender",
-          "line": 26,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "sendWioaScreeningNotification",
-          "line": 34,
+          "line": 48,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "getWioaScreeningNotificationRecipients",
-          "line": 9,
+          "line": 7,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WioaScreeningNotificationContact",
-          "line": 20,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WioaEmailSender",
-          "line": 26,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WioaNotificationDependencies",
-          "line": 30,
+          "line": 28,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "sendThroughBrandedWrapper",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
           "name": "sendWioaScreeningNotification",
-          "line": 34,
+          "line": 48,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156175,25 +156468,25 @@
       "path": "tests/api/admin-members-bulk.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 25760,
-      "lines": 588,
-      "sha256": "8020562626e68218899a01b163e435467e6872cf122332bc0da1f6fe55dbde81",
+      "bytes": 26467,
+      "lines": 597,
+      "sha256": "dd7210c78d0b5f2773372da17b6e95be1dc749e6c74777fbe3a99793e5fe8ef2",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mockTx",
-          "line": 75,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "uid",
-          "line": 145,
+          "line": 149,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 147,
+          "line": 151,
           "kind": "Variable"
         }
       ],
@@ -157202,9 +157495,9 @@
       "path": "tests/api/assessment.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 21056,
-      "lines": 583,
-      "sha256": "cc4500f4908a43260ff68f119e387dc5b9cf52e60c1a6d486131eb281b4959d7",
+      "bytes": 21446,
+      "lines": 589,
+      "sha256": "de653c908329eda5e49b1c126e47bd9253b159277d2dfce6842414726daee605",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -157215,12 +157508,12 @@
         },
         {
           "name": "UUIDS",
-          "line": 124,
+          "line": 130,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 130,
+          "line": 136,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -157230,9 +157523,9 @@
       "path": "tests/api/at-risk-alert.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 30496,
-      "lines": 695,
-      "sha256": "1f1c4386328719ef6128f2e263bd6ff4f531cc6b1b2494de3e5a153ed99c7bf9",
+      "bytes": 33480,
+      "lines": 740,
+      "sha256": "7e3a9160fac492c7248e2f71186161f5591abd82917f570ab3a790a3285a5111",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -157521,9 +157814,9 @@
       "path": "tests/api/contact-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3151,
-      "lines": 94,
-      "sha256": "f1caa7f068343b0e4979c71df07e06f2ea6dded5363e087057615295562a2793",
+      "bytes": 3649,
+      "lines": 101,
+      "sha256": "f7ce4d0a02424251d03888896bcad6fd8fe648870d2783612962c20695f94d73",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -157534,7 +157827,7 @@
         },
         {
           "name": "makeRequest",
-          "line": 25,
+          "line": 29,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -158153,9 +158446,9 @@
       "path": "tests/api/cron-inactive-nudge.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8343,
-      "lines": 205,
-      "sha256": "514acb1a172b09ba91c80cdf1b699f775a9186ba0bfc020aff41d9634b8f330f",
+      "bytes": 8531,
+      "lines": 207,
+      "sha256": "522906e3cd568bfe140fce9b7b37c880647ff4589e3ca8d129dbad58a9a0b02d",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -159838,9 +160131,9 @@
       "path": "tests/api/partner-signup.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 17761,
-      "lines": 526,
-      "sha256": "ba297c17fb20a57fceffb5ab67290973347277943b341025292b858f23210c80",
+      "bytes": 18155,
+      "lines": 532,
+      "sha256": "c8e3c4c1bb7e8948dfa60060c7a48e45d035b7bf2d4d7c34897098a49f90bb2e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159856,17 +160149,17 @@
         },
         {
           "name": "supabaseAdmin",
-          "line": 138,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "UUIDS",
-          "line": 165,
+          "line": 171,
           "kind": "Variable"
         },
         {
           "name": "makeSignupRequest",
-          "line": 171,
+          "line": 177,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165650,6 +165943,39 @@
         {
           "name": "replayable",
           "line": 54,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/email/send-hardening.spec.ts",
+      "area": "tests",
+      "domain": "communications",
+      "bytes": 8032,
+      "lines": 183,
+      "sha256": "c3e668b685a2a7c83699fa4a76dede12510300d3960cf253aaad0f503f115ca9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "SUPPRESSED",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "suppressionPage",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fakeResend",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "baseArgs",
+          "line": 45,
           "kind": "Variable"
         }
       ],

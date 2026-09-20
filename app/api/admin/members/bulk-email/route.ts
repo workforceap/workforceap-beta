@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUser } from '@/lib/auth/server';
@@ -8,6 +10,8 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getResend } from '@/lib/email';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { BULK_EMAIL_CRON_INTERVAL_MS, createBoundedPacer } from '@/lib/email/pacing';
+import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getOrCreateMemberCounselorThread } from '@/lib/messages/counselorThread';
 import { createNotification } from '@/lib/notifications/create';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -97,6 +101,11 @@ async function _POST(request: NextRequest) {
     let sentCount = 0;
     let messageCount = 0;
     const errors: string[] = [];
+    // Up to 100 provider sends per call: pace them like the crons do (Resend
+    // allows 10 rps account-wide) and key each one so a retry cannot deliver
+    // the same campaign message to the same member twice.
+    const campaignId = randomUUID();
+    const waitForSendSlot = createBoundedPacer({ intervalMs: BULK_EMAIL_CRON_INTERVAL_MS });
 
     for (const member of members) {
       const firstName = member.fullName.trim().split(/\s+/)[0] || 'there';
@@ -120,13 +129,14 @@ async function _POST(request: NextRequest) {
             branding,
           });
 
-          const { error: sendError } = await resend.emails.send({
+          await waitForSendSlot();
+          await sendBrandedEmailOrThrowOnSkip(resend, {
             from: getFrom(),
             to: member.email,
             subject: sanitizeEmailSubjectLine(subject),
             html,
+            idempotencyKey: `bulk-email/${campaignId}/${member.id}`,
           });
-          if (sendError) throw new Error(sendError.message || 'Email provider rejected the request.');
           sentCount++;
         }
 
@@ -179,7 +189,9 @@ async function _POST(request: NextRequest) {
           orgId,
         });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
+        const msg = err instanceof FixtureRecipientSkippedError
+          ? `skipped (${err.reason})`
+          : err instanceof Error ? err.message : String(err);
         errors.push(`${member.fullName} (${member.email}): ${msg}`);
         console.error(`[bulk-email] failed for ${member.id}:`, err);
       }

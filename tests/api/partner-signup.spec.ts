@@ -127,6 +127,12 @@ vi.mock('resend', () => ({
   },
 }));
 
+// Sends go through lib/email/send.ts: sign unsubscribe tokens and keep the
+// failure diagnostic inert. Recipients below avoid reserved fixture domains
+// (example.com is skipped by the wrapper) where the test asserts a send.
+process.env.UNSUBSCRIBE_TOKEN_SECRET ??= 'test-unsubscribe-secret';
+vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+
 // ─── Imports after mocks ───
 import { POST as signupPost } from '@/app/api/partner/signup/route';
 import { POST as approvePost } from '@/app/api/admin/partners/[id]/approve/route';
@@ -282,7 +288,7 @@ describe('POST /api/partner/signup', () => {
       makeSignupRequest({
         organizationName: 'New Org',
         contactName: 'Jane Doe',
-        contactEmail: 'new@example.com',
+        contactEmail: 'new@example.org',
         password: 'securePass123',
         contactPhone: '512-555-1234',
         orgType: 'nonprofit',
@@ -299,7 +305,7 @@ describe('POST /api/partner/signup', () => {
     expect(body.message).toContain('verify your address');
     expect(supabaseAdmin.auth.admin.createUser).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: 'new@example.com',
+        email: 'new@example.org',
         password: 'securePass123',
       })
     );
@@ -311,7 +317,7 @@ describe('POST /api/partner/signup', () => {
     expect(supabaseAdmin.auth.admin.generateLink).toHaveBeenCalledWith(
       expect.objectContaining({
         type: 'signup',
-        email: 'new@example.com',
+        email: 'new@example.org',
       })
     );
   });

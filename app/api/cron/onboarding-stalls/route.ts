@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { sendOnboardingStallsDigestEmail } from '@/lib/email';
+import { isFixtureEmailRecipient } from '@/lib/email/send';
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
@@ -149,9 +150,12 @@ async function handle(_request: Request) {
       }
     }
 
+    // One fixture alias in the admin list must not skip the digest for the
+    // real admins (the shared sender skips a send when ANY recipient is a
+    // fixture), so drop fixtures here rather than at the envelope.
     const recipientEmails = Array.from(
       new Set(adminUsers.map((a) => a.email?.trim()).filter((e): e is string => !!e))
-    );
+    ).filter((email) => !isFixtureEmailRecipient(email));
     if (recipientEmails.length > 0) {
       try {
         const result = await sendOnboardingStallsDigestEmail({

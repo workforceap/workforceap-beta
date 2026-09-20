@@ -3,18 +3,13 @@ import { getUser } from '@/lib/auth/server';
 import { requireAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { renderTemplate, getDefaultSampleData } from '@/lib/admin/emailTemplate';
-import { Resend } from 'resend';
+import { getResend } from '@/lib/email';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { FixtureRecipientSkippedError, sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
-
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  return new Resend(key);
-}
 
 function getFrom(): string {
   return process.env.EMAIL_FROM || 'WorkforceAP <hello@workforceap.org>';
@@ -52,13 +47,22 @@ export const POST = withApiGuc(async (
     }
 
     try {
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: getFrom(),
         to,
         subject: sanitizeEmailSubjectLine(rendered.subject),
         html: rendered.html,
+        // An admin re-sending the same test the same day expects a fresh
+        // message, so opt out of the wrapper's content-based dedupe key.
+        idempotencyKey: `email-template-test/${id}/${Date.now()}`,
       });
     } catch (err) {
+      if (err instanceof FixtureRecipientSkippedError) {
+        return NextResponse.json(
+          { error: 'That recipient is a fixture/test address; the test email was not sent.' },
+          { status: 422 }
+        );
+      }
       console.error('Test email send failed:', err);
       return NextResponse.json(
         { error: err instanceof Error ? err.message : 'Send failed' },

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "b7d4458a83a4bbc37acf3337c1f5e58d456d8eebecb9c1e5e58f7bec501d0ab7",
+  "inputTreeSha256": "1506146d597287dfbdd2bd392ef3f0645ee39460eb1f5d37a56bb987a20c1bb3",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4875,
-    "sourceModules": 3529,
-    "importReferences": 17525,
-    "resolvedLocalReferences": 11748,
+    "files": 4878,
+    "sourceModules": 3532,
+    "importReferences": 17565,
+    "resolvedLocalReferences": 11791,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1061,
     "nextRouteFiles": 1028,
@@ -22,14 +22,14 @@
     "prismaModels": 112,
     "prismaEnums": 33,
     "relationFields": 306,
-    "testFiles": 922,
-    "testCandidates": 914,
+    "testFiles": 923,
+    "testCandidates": 915,
     "testHelpers": 8,
-    "staticallySelectedTests": 912,
+    "staticallySelectedTests": 913,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 197
+    "environmentNames": 198
   },
   "areas": [
     {
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1036
+      "files": 1038
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 537
+      "files": 538
     }
   ],
   "mostReferenced": [
@@ -167,16 +167,16 @@
       "references": 109
     },
     {
+      "file": "lib/email.ts",
+      "references": 106
+    },
+    {
       "file": "lib/tenant/adminPageScope.ts",
       "references": 103
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
       "references": 102
-    },
-    {
-      "file": "lib/email.ts",
-      "references": 96
     },
     {
       "file": "lib/content/programTitle.ts",
@@ -191,12 +191,12 @@
       "references": 71
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 67
+      "file": "lib/email/escapeHtml.ts",
+      "references": 68
     },
     {
-      "file": "lib/email/escapeHtml.ts",
-      "references": 64
+      "file": "lib/content/programSlug.ts",
+      "references": 67
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",

@@ -180,11 +180,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 268
+          "line": 296
         },
         {
           "file": "eslint.config.mjs",
-          "line": 293
+          "line": 321
         },
         {
           "file": "playwright.config.ts",
@@ -867,39 +867,55 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 9
+          "line": 16
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 63
+          "line": 70
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 83
+          "line": 116
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 120
+          "line": 154
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 158
+          "line": 197
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 220
+          "line": 226
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 258
+          "line": 246
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 340
+          "line": 283
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 381
+          "line": 321
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 383
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 421
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 503
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 544
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
@@ -915,11 +931,11 @@
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 512
+          "line": 557
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 516
+          "line": 561
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
@@ -1451,29 +1467,56 @@
       ]
     },
     {
+      "name": "EMAIL_FIXTURE_ADDRESSES",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 72
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 74
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 110
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 111
+        },
+        {
+          "file": "lib/email/send.ts",
+          "line": 278
+        }
+      ]
+    },
+    {
       "name": "EMAIL_FIXTURE_DOMAINS",
       "publicPrefix": false,
       "declaredInRootExample": false,
       "references": [
         {
           "file": "lib/email/send.test.ts",
-          "line": 10
+          "line": 17
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 11
+          "line": 18
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 57
+          "line": 64
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 58
+          "line": 65
         },
         {
           "file": "lib/email/send.ts",
-          "line": 216
+          "line": 241
         }
       ]
     },
@@ -1484,39 +1527,39 @@
       "references": [
         {
           "file": "app/api/admin/email-templates/[id]/test/route.ts",
-          "line": 20
+          "line": 15
         },
         {
           "file": "app/api/admin/members/bulk-email/route.ts",
-          "line": 32
+          "line": 36
         },
         {
           "file": "app/api/admin/partners/[id]/approve/route.ts",
-          "line": 78
+          "line": 80
         },
         {
           "file": "app/api/admin/partners/[id]/reject/route.ts",
-          "line": 67
+          "line": 69
         },
         {
           "file": "app/api/admin/partners/invite/route.ts",
-          "line": 44
+          "line": 45
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 74
+          "line": 75
         },
         {
           "file": "app/api/counselor/sessions/email-packet/route.ts",
-          "line": 37
+          "line": 34
         },
         {
           "file": "app/api/leads/careers/route.ts",
-          "line": 78
+          "line": 79
         },
         {
           "file": "app/api/member/assessment/submit/route.ts",
-          "line": 127
+          "line": 129
         },
         {
           "file": "app/api/member/request-help/route.ts",
@@ -1524,15 +1567,15 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 298
+          "line": 313
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 333
+          "line": 337
         },
         {
           "file": "lib/admin/mentorStatusUpdate.ts",
-          "line": 28
+          "line": 29
         },
         {
           "file": "lib/auth/passwordReset.ts",
@@ -1545,6 +1588,26 @@
         {
           "file": "lib/email.ts",
           "line": 139
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 71
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 73
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 109
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 109
+        },
+        {
+          "file": "lib/email/send.ts",
+          "line": 262
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -1564,7 +1627,7 @@
         },
         {
           "file": "lib/wioa/wioaNotification.ts",
-          "line": 48
+          "line": 59
         }
       ]
     },
@@ -1622,7 +1685,7 @@
       "references": [
         {
           "file": "lib/email/send.ts",
-          "line": 60
+          "line": 74
         }
       ]
     },
@@ -1897,7 +1960,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 43
+          "line": 44
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -1905,7 +1968,7 @@
         },
         {
           "file": "app/api/leads/careers/route.ts",
-          "line": 47
+          "line": 48
         },
         {
           "file": "app/api/member/signup/route.ts",
@@ -1913,7 +1976,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 111
+          "line": 113
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
@@ -1933,7 +1996,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 46
+          "line": 51
         }
       ]
     },
@@ -2054,7 +2117,7 @@
         },
         {
           "file": "app/api/admin/partners/[id]/approve/route.ts",
-          "line": 82
+          "line": 83
         },
         {
           "file": "app/api/admin/partners/[id]/invite/route.ts",
@@ -2062,7 +2125,7 @@
         },
         {
           "file": "app/api/admin/partners/invite/route.ts",
-          "line": 12
+          "line": 13
         },
         {
           "file": "app/api/admin/placement-surveys/resend/route.ts",
@@ -2074,7 +2137,7 @@
         },
         {
           "file": "app/api/counselor/sessions/email-packet/route.ts",
-          "line": 29
+          "line": 31
         },
         {
           "file": "app/api/counselor/sessions/walk-in/route.ts",
@@ -2090,7 +2153,7 @@
         },
         {
           "file": "app/api/cron/onboarding-stalls/route.ts",
-          "line": 15
+          "line": 16
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
@@ -2110,11 +2173,11 @@
         },
         {
           "file": "app/api/member/assessment/submit/route.ts",
-          "line": 122
+          "line": 124
         },
         {
           "file": "app/api/member/request-help/route.ts",
-          "line": 11
+          "line": 12
         },
         {
           "file": "app/api/member/wioa-qualification/route.ts",
@@ -2130,15 +2193,15 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 281
+          "line": 283
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 350
+          "line": 348
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 379
+          "line": 383
         },
         {
           "file": "app/api/public/wioa-qualification/route.ts",
@@ -2186,7 +2249,7 @@
         },
         {
           "file": "lib/admin/mentorStatusUpdate.ts",
-          "line": 31
+          "line": 32
         },
         {
           "file": "lib/audit/log.ts",
@@ -2198,7 +2261,7 @@
         },
         {
           "file": "lib/cron/at-risk-alerts.ts",
-          "line": 43
+          "line": 44
         },
         {
           "file": "lib/cron/placement-surveys.ts",
@@ -2214,19 +2277,19 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 342
+          "line": 505
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 343
+          "line": 506
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 371
+          "line": 534
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 372
+          "line": 535
         },
         {
           "file": "lib/email/template.ts",
@@ -2305,7 +2368,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 154
+          "line": 156
         },
         {
           "file": "lib/auth/passwordReset.ts",
@@ -2345,7 +2408,7 @@
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
-          "line": 185
+          "line": 191
         },
         {
           "file": "tests/lib/password-reset-self-heal.spec.ts",
@@ -2380,7 +2443,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 153
+          "line": 155
         },
         {
           "file": "lib/auth/passwordReset.ts",
@@ -2452,7 +2515,7 @@
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
-          "line": 184
+          "line": 190
         },
         {
           "file": "tests/lib/password-reset-self-heal.spec.ts",
@@ -2475,7 +2538,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 56
+          "line": 57
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2483,7 +2546,7 @@
         },
         {
           "file": "app/api/leads/careers/route.ts",
-          "line": 60
+          "line": 61
         },
         {
           "file": "app/api/member/signup/route.ts",
@@ -2491,7 +2554,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 124
+          "line": 126
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
@@ -3313,60 +3376,16 @@
       "declaredInRootExample": true,
       "references": [
         {
-          "file": "app/api/admin/email-templates/[id]/test/route.ts",
-          "line": 14
-        },
-        {
           "file": "app/api/admin/health/route.ts",
           "line": 233
         },
         {
-          "file": "app/api/admin/partners/[id]/approve/route.ts",
-          "line": 77
-        },
-        {
-          "file": "app/api/admin/partners/[id]/reject/route.ts",
-          "line": 66
-        },
-        {
-          "file": "app/api/admin/partners/invite/route.ts",
-          "line": 43
-        },
-        {
-          "file": "app/api/contact/route.ts",
-          "line": 73
-        },
-        {
-          "file": "app/api/counselor/sessions/email-packet/route.ts",
-          "line": 32
-        },
-        {
-          "file": "app/api/leads/careers/route.ts",
-          "line": 77
-        },
-        {
-          "file": "app/api/member/assessment/submit/route.ts",
-          "line": 126
-        },
-        {
-          "file": "app/api/member/request-help/route.ts",
-          "line": 54
-        },
-        {
-          "file": "app/api/partner/signup/route.ts",
-          "line": 294
-        },
-        {
-          "file": "app/api/partner/signup/route.ts",
-          "line": 332
-        },
-        {
-          "file": "lib/admin/mentorStatusUpdate.ts",
-          "line": 24
-        },
-        {
           "file": "lib/email.ts",
           "line": 130
+        },
+        {
+          "file": "lib/email/suppressions.ts",
+          "line": 50
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -3398,7 +3417,7 @@
         },
         {
           "file": "lib/wioa/wioaNotification.ts",
-          "line": 41
+          "line": 55
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
@@ -3414,11 +3433,11 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 45
+          "line": 49
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
-          "line": 187
+          "line": 193
         }
       ]
     },
@@ -3719,7 +3738,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 155
+          "line": 157
         },
         {
           "file": "lib/auth/passwordReset.ts",
@@ -3743,7 +3762,7 @@
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
-          "line": 186
+          "line": 192
         },
         {
           "file": "tests/lib/password-reset-self-heal.spec.ts",
@@ -3810,7 +3829,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 45
+          "line": 46
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -3818,7 +3837,7 @@
         },
         {
           "file": "app/api/leads/careers/route.ts",
-          "line": 49
+          "line": 50
         },
         {
           "file": "app/api/member/signup/route.ts",
@@ -3826,7 +3845,7 @@
         },
         {
           "file": "app/api/partner/signup/route.ts",
-          "line": 113
+          "line": 115
         }
       ]
     },
@@ -3933,6 +3952,22 @@
         {
           "file": "lib/email/unsubscribeToken.ts",
           "line": 29
+        },
+        {
+          "file": "tests/api/admin-members-bulk.spec.ts",
+          "line": 52
+        },
+        {
+          "file": "tests/api/assessment.spec.ts",
+          "line": 111
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 50
+        },
+        {
+          "file": "tests/api/partner-signup.spec.ts",
+          "line": 133
         }
       ]
     },
@@ -4426,11 +4461,11 @@
       "references": [
         {
           "file": "app/api/member/assessment/submit/route.ts",
-          "line": 123
+          "line": 125
         },
         {
           "file": "app/api/member/assessment/submit/route.ts",
-          "line": 123
+          "line": 125
         },
         {
           "file": "app/api/member/wioa-qualification/route.ts",
@@ -4629,11 +4664,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 268
+          "line": 296
         },
         {
           "file": "eslint.config.mjs",
-          "line": 293
+          "line": 321
         }
       ]
     },
@@ -4796,7 +4831,7 @@
         },
         {
           "file": "lib/wioa/wioaNotification.ts",
-          "line": 10
+          "line": 8
         }
       ]
     },

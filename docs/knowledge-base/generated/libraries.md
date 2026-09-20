@@ -77,7 +77,7 @@
 | [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 71 | administration |  |
 | [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 42 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:4, STAFF_PROFILE_ROLES:15, MEMBER_ONLY_WHERE:24, MEMBER_OR_DOGFOOD_WHERE:39 |
 | [lib/admin/memberOutcomesSummary.ts](../../../lib/admin/memberOutcomesSummary.ts) | 35 | administration | getMemberOutcomesSummary:8 |
-| [lib/admin/mentorStatusUpdate.ts](../../../lib/admin/mentorStatusUpdate.ts) | 48 | administration | MentorAdminAction:4, runMentorStatusUpdate:9 |
+| [lib/admin/mentorStatusUpdate.ts](../../../lib/admin/mentorStatusUpdate.ts) | 49 | administration | MentorAdminAction:6, runMentorStatusUpdate:11 |
 | [lib/admin/metrics.test.ts](../../../lib/admin/metrics.test.ts) | 99 | administration |  |
 | [lib/admin/metrics.ts](../../../lib/admin/metrics.ts) | 478 | administration | getAdminMetrics:357 |
 | [lib/admin/overviewOrgFilter.test.ts](../../../lib/admin/overviewOrgFilter.test.ts) | 47 | administration |  |
@@ -485,7 +485,7 @@
 | [lib/coursera/webhookAuth.ts](../../../lib/coursera/webhookAuth.ts) | 85 | learning-coursera | CourseraRestWebhookAuthResult:51, verifyCourseraRestWebhookAuth:55 |
 | [lib/cron/applicantAging.ts](../../../lib/cron/applicantAging.ts) | 91 | communications | ApplicantAgeBucketDef:8, APPLICANT_AGE_BUCKETS:16, APPLICANT_AGING_SCAN_CAP:24, AgingApplicationInput:26, ApplicantAgingSummary:39, daysWaiting:56, summarizeApplicationAging:61 |
 | [lib/cron/applicantChase.ts](../../../lib/cron/applicantChase.ts) | 73 | communications | ApplicantChaseStageId:16, ApplicantChaseStage:18, APPLICANT_CHASE_STAGES:26, APPLICANT_CHASE_EVENT:32, APPLICATION_ENTITY_TYPE:33, chaseWindow:38, stageForAgeDays:46, chaseLedgerKey:51, chaseLedgerFromEvents:60 |
-| [lib/cron/at-risk-alerts.ts](../../../lib/cron/at-risk-alerts.ts) | 576 | communications | RetentionNudgeResult:83, runMemberRetentionNudges:103, CounselorAlertResult:297, DailyAtRiskAlertRunResult:306, STAFF_FALLBACK_COUNSELOR_ID:321, runAtRiskCounselorAlerts:328 |
+| [lib/cron/at-risk-alerts.ts](../../../lib/cron/at-risk-alerts.ts) | 579 | communications | RetentionNudgeResult:84, runMemberRetentionNudges:104, CounselorAlertResult:300, DailyAtRiskAlertRunResult:309, STAFF_FALLBACK_COUNSELOR_ID:324, runAtRiskCounselorAlerts:331 |
 | [lib/cron/authorizeCronRequest.ts](../../../lib/cron/authorizeCronRequest.ts) | 46 | communications | authorizeCronRequest:28 |
 | [lib/cron/courseraHealQueue.ts](../../../lib/cron/courseraHealQueue.ts) | 35 | learning-coursera | CourseraHealQueueCounts:3, countCourseraHealQueue:12 |
 | [lib/cron/cronCaps.test.ts](../../../lib/cron/cronCaps.test.ts) | 79 | communications |  |
@@ -545,10 +545,12 @@
 | [lib/email/failureRecord.ts](../../../lib/email/failureRecord.ts) | 176 | communications | EMAIL_SEND_WORKFLOW:22, EMAIL_TEMPLATE_ENTITY_TYPE:24, EMAIL_RESEND_METHOD:26, EmailFailureClass:28, EmailTemplateRef:36, EmailFailureMetadata:43, classifyEmailSendFailure:86, recipientHash:112, buildEmailFailureMetadata:122, parseEmailFailureMetadata:152 |
 | [lib/email/pacing.test.ts](../../../lib/email/pacing.test.ts) | 196 | communications |  |
 | [lib/email/pacing.ts](../../../lib/email/pacing.ts) | 160 | communications | BoundedPacerOptions:5, PaceResult:14, boundedPacingCapacity:22, createBoundedPacer:39, BULK_EMAIL_CRON_INTERVAL_MS:86, BULK_EMAIL_CRON_ACCOUNTING_RESERVE_MS:87, BulkEmailCronPacerOptions:89, BulkEmailPacingSkipped:98, createBulkEmailCronPacer:105, withBulkEmailCronPacer:144, runBulkEmailOperation:152, currentBulkEmailDeadlineAtMs:158 |
+| [lib/email/plainTextEmail.ts](../../../lib/email/plainTextEmail.ts) | 11 | communications | plainTextEmailHtml:9 |
 | [lib/email/rateLimitError.ts](../../../lib/email/rateLimitError.ts) | 20 | communications | isEmailProviderRateLimitError:10 |
 | [lib/email/resendRegistry.ts](../../../lib/email/resendRegistry.ts) | 106 | communications | ResendResult:21, ResendableTemplate:25, RESENDABLE_TEMPLATE_NAMES:83, getResendableTemplate:85, validateResendParams:101 |
-| [lib/email/send.test.ts](../../../lib/email/send.test.ts) | 418 | communications |  |
-| [lib/email/send.ts](../../../lib/email/send.ts) | 364 | communications | isEmailProviderRateLimitError:37, SendBrandedEmailRetryOptions:46, UNSUBSCRIBE_ADDRESS:59, htmlToPlainText:69, sanitizeHeaders:99, buildDeliverabilityHeaders:108, FixtureSkippedEmailResult:124, SendBrandedEmailArgs:132, isFixtureEmailRecipient:223, FixtureRecipientSkippedError:261, sendBrandedEmail:271, sendBrandedEmailOrThrowOnSkip:353 |
+| [lib/email/send.test.ts](../../../lib/email/send.test.ts) | 581 | communications |  |
+| [lib/email/send.ts](../../../lib/email/send.ts) | 512 | communications | isEmailProviderRateLimitError:44, SendBrandedEmailRetryOptions:53, UNSUBSCRIBE_ADDRESS:73, htmlToPlainText:83, sanitizeHeaders:113, buildDeliverabilityHeaders:122, SkippedEmailReason:143, isRecipientSkipReason:145, FixtureSkippedEmailResult:149, SendBrandedEmailArgs:157, sendingDomain:261, isFixtureEmailRecipient:285, isTransientProviderError:308, defaultIdempotencyKey:328, FixtureRecipientSkippedError:379, sendBrandedEmail:390, sendBrandedEmailOrThrowOnSkip:501 |
+| [lib/email/suppressions.ts](../../../lib/email/suppressions.ts) | 191 | communications | SUPPRESSION_CACHE_TTL_MS:25, SUPPRESSION_FETCH_TIMEOUT_MS:26, SUPPRESSED_SKIP_METHOD:28, SuppressionLookupOptions:40, bareEmailAddress:55, loadProviderSuppressions:102, SuppressionPartition:130, partitionSuppressedRecipients:138, resetProviderSuppressionCache:153, recordSuppressedRecipientSkip:169 |
 | [lib/email/template.ts](../../../lib/email/template.ts) | 135 | communications | safeEmailCtaHref:35, brandedEmailLayout:58 |
 | [lib/email/unsubscribeToken.ts](../../../lib/email/unsubscribeToken.ts) | 91 | communications | usesUnsubscribeSecretFallback:24, buildUnsubscribeToken:52, verifyUnsubscribeToken:57, stripHeaderUnsafe:72, buildUnsubscribeUrl:87 |
 | [lib/employer/aiMatchPipelineLabels.ts](../../../lib/employer/aiMatchPipelineLabels.ts) | 35 | jobs-employers | employerMatchPipelineLabel:14, employerAiMatchStatusBadgeVariant:19 |
@@ -1011,7 +1013,7 @@
 | [lib/wioa/wioaAvailability.test.ts](../../../lib/wioa/wioaAvailability.test.ts) | 67 | partners-funding |  |
 | [lib/wioa/wioaAvailability.ts](../../../lib/wioa/wioaAvailability.ts) | 11 | partners-funding | isWioaPortalAvailable:7 |
 | [lib/wioa/wioaNotification.test.ts](../../../lib/wioa/wioaNotification.test.ts) | 157 | communications |  |
-| [lib/wioa/wioaNotification.ts](../../../lib/wioa/wioaNotification.ts) | 107 | communications | getWioaScreeningNotificationRecipients:9, WioaScreeningNotificationContact:20, WioaEmailSender:26, sendWioaScreeningNotification:34 |
+| [lib/wioa/wioaNotification.ts](../../../lib/wioa/wioaNotification.ts) | 118 | communications | getWioaScreeningNotificationRecipients:7, WioaScreeningNotificationContact:18, WioaEmailSender:24, sendWioaScreeningNotification:48 |
 | [lib/wioa/wioaQualification.test.ts](../../../lib/wioa/wioaQualification.test.ts) | 201 | partners-funding |  |
 | [lib/wioa/wioaQualification.ts](../../../lib/wioa/wioaQualification.ts) | 322 | partners-funding | WioaBarrier:12, WioaQualificationAnswers:22, WioaEligibilitySignal:51, WioaReason:53, WioaQualificationSnapshot:64, parseWioaQualificationSnapshot:69, barrierLabel:105, publicAssistanceLabel:110, publicAssistanceProgramsLabel:117, publicAssistanceHelpLabel:124, formatWioaReasons:174, computeWioaSignal:196, parseWioaAnswers:262 |
 | [lib/wioa/wioaReview.ts](../../../lib/wioa/wioaReview.ts) | 50 | partners-funding | WIOA_REVIEW_STATUSES:2, WioaReviewStatus:10, WIOA_REVIEW_LABELS:12, wioaReviewLabel:20, COUNSELOR_WIOA_REVIEW_STATUSES:31, CounselorWioaReviewStatus:38, COUNSELOR_WIOA_INTAKE_LABELS:41, isCounselorWioaReviewStatus:48 |

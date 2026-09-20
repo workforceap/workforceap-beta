@@ -1,9 +1,7 @@
-import {
-  Resend,
-  type CreateEmailOptions,
-  type CreateEmailResponse,
-} from 'resend';
-import { getAdminAlertRecipients } from '@/lib/email';
+import type { CreateEmailOptions, CreateEmailResponse } from 'resend';
+import { getAdminAlertRecipients, getResend } from '@/lib/email';
+import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 export function getWioaScreeningNotificationRecipients(): string[] {
@@ -31,6 +29,22 @@ type WioaNotificationDependencies = {
   sendEmail?: WioaEmailSender;
 };
 
+/** Production sender: the shared wrapper (retry, guards, diagnostics), not the raw SDK. */
+const sendThroughBrandedWrapper: WioaEmailSender = async (payload) => {
+  const resend = getResend();
+  if (!resend) throw new Error('RESEND_API_KEY not set');
+  const text = 'text' in payload && typeof payload.text === 'string' ? payload.text : '';
+  const html = 'html' in payload && typeof payload.html === 'string' ? payload.html : plainTextEmailHtml(text);
+  return sendBrandedEmailOrThrowOnSkip(resend, {
+    from: payload.from,
+    to: payload.to,
+    subject: payload.subject,
+    html,
+    ...(text ? { text } : {}),
+    ...(typeof payload.replyTo === 'string' ? { replyTo: payload.replyTo } : {}),
+  });
+};
+
 export async function sendWioaScreeningNotification(params: {
   source: 'member_portal' | 'public_page';
   contact: WioaScreeningNotificationContact;
@@ -41,10 +55,7 @@ export async function sendWioaScreeningNotification(params: {
   const resendKey = process.env.RESEND_API_KEY;
   if (!resendKey) return false;
 
-  const sendEmail = dependencies.sendEmail ?? ((payload: CreateEmailOptions) => {
-    const resend = new Resend(resendKey);
-    return resend.emails.send(payload);
-  });
+  const sendEmail = dependencies.sendEmail ?? sendThroughBrandedWrapper;
   const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
   const { source, contact, snapshot, userId, adminUrl } = params;
   const { answers, signal, submittedAt } = snapshot;
