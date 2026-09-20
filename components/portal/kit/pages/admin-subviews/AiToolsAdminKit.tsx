@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   colorVar,
   type KpiItem,
@@ -163,10 +163,10 @@ export function AiToolsAdminKit({ usage = [], tools = DEFAULT_TOOLS }: AiToolsAd
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="AI tools"
         kicker="Toolkit"
-        goal="Admin view of member AI toolkit usage & config"
+        lede="Admin view of member AI toolkit usage & config"
       />
 
       <div className="wa-mb-5">

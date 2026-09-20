@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "75b09be3db7f0e287b43b92a5b05fddc53401d00f6c0b54dd7443627c19bcd2d",
+  "inputTreeSha256": "ebf96721746206c8a198e65c828a2a987925891763cfd68cc722a491f0c6f2bd",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -4698,19 +4698,19 @@
       "path": "app/(portal)/counselor/guide/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 14373,
-      "lines": 285,
-      "sha256": "9a2fe90a4da6d71fcebdc2469654c8248f4adb68aba87ab2a977e55f684b7723",
+      "bytes": 13682,
+      "lines": 276,
+      "sha256": "18dc1ffca46905f7a0f4eb50fa1d3a00207285b5b148976c26bc0eb947e75159",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration",
           "localName": "CounselorGuidePage"
         }
@@ -4718,32 +4718,32 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CAPABILITIES",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "JOURNEY_STAGES",
-          "line": 27,
+          "line": 28,
           "kind": "Variable"
         },
         {
           "name": "QUICK_ACTIONS",
-          "line": 36,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "FAQS",
-          "line": 43,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "CounselorGuidePage",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -7837,9 +7837,9 @@
       "path": "app/(portal)/dashboard/ai-tools/skill-checkpoints/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 1529,
+      "bytes": 1523,
       "lines": 41,
-      "sha256": "6bcbd90c49d8f53150306b034404d60f29ededa6738948ca3560c9fa07bd4bc8",
+      "sha256": "51445363029bb8d07c9ffe350b53c9ceeec8f493c26861875df258c74381cc31",
       "binary": false,
       "exports": [
         {
@@ -7897,9 +7897,9 @@
       "path": "app/(portal)/dashboard/ai-tools/skill-mapper/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2283,
+      "bytes": 2277,
       "lines": 70,
-      "sha256": "1400b8740e6d700f954b3145ea62eaf6bcf12fb9a417e2b6a6537b9dd6d22a63",
+      "sha256": "2a66b1e05b102caf11fbd21a61fdca8461203f6bc1462492f877981f495b7d9c",
       "binary": false,
       "exports": [
         {
@@ -7987,9 +7987,9 @@
       "path": "app/(portal)/dashboard/ai-tools/training-bridge/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3549,
+      "bytes": 3543,
       "lines": 99,
-      "sha256": "2b3297d2101d587bb72da3084fcd8eec3cf49267cec49025530538f60a58dbf6",
+      "sha256": "a2d8c401e3cf34b20dcff2c2ecc8c40d2938433f7d46b7f9e9cfd3ddb84f2888",
       "binary": false,
       "exports": [
         {
@@ -8052,9 +8052,9 @@
       "path": "app/(portal)/dashboard/ai-tools/voice-interview/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3500,
+      "bytes": 3494,
       "lines": 92,
-      "sha256": "9a4f180944489780815a11c8f2333b55f3bafa70b65bb62348f395d1591e9621",
+      "sha256": "35cd23806eac85e17206541397237c718b7e0d67e95b826d2528db95a6c9ecff",
       "binary": false,
       "exports": [
         {
@@ -8192,19 +8192,19 @@
       "path": "app/(portal)/dashboard/career-brief/[slug]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3459,
-      "lines": 99,
-      "sha256": "3f0b41489a26476461250341d8ce5b2abaf5620a1f56daa7d74b8a777fda6bdd",
+      "bytes": 3668,
+      "lines": 105,
+      "sha256": "b184cdd09f9f5a3553959285d183c1b81997efbf8b2ebba39d90001dad875609",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 28,
+          "line": 29,
           "kind": "FunctionDeclaration",
           "localName": "CareerBriefDetailPage"
         }
@@ -8212,17 +8212,17 @@
       "declarations": [
         {
           "name": "Props",
-          "line": 14,
+          "line": 15,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CareerBriefDetailPage",
-          "line": 28,
+          "line": 29,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -8292,9 +8292,9 @@
       "path": "app/(portal)/dashboard/career-library/[id]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5602,
-      "lines": 139,
-      "sha256": "1857a494a79d6d7a6b5b0ca694950005dfb68984ec59f9de08e5e23c372e4d9e",
+      "bytes": 5284,
+      "lines": 131,
+      "sha256": "e318690e8f96a344f591b089bc2225d09a3457e088b0fbb88f3b6d0a528c5be8",
       "binary": false,
       "exports": [
         {
@@ -8727,19 +8727,19 @@
       "path": "app/(portal)/dashboard/eligibility/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4503,
-      "lines": 118,
-      "sha256": "5f35f512b513688c3305c4ea350cf9836b3ba25be9a5e6cd170585c648acd8b0",
+      "bytes": 4789,
+      "lines": 125,
+      "sha256": "07a15531f820a3a2cbb10ee69629760174a8a649a0375b608d903de0c3750d73",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration",
           "localName": "EligibilityPage"
         }
@@ -8747,22 +8747,22 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AGE_GROUP_VALUES",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "AgeGroupValue",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EligibilityPage",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -9460,19 +9460,19 @@
       "path": "app/(portal)/dashboard/learning/interest-profiler/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 1719,
-      "lines": 48,
-      "sha256": "f04e2a7f195be88492c8b473351a90ec4256acf97dd9c7af8054d610fa4ac770",
+      "bytes": 2055,
+      "lines": 55,
+      "sha256": "49a487727a94ad1698890c02f4b06f79ae6751c2f60cf5f5c79ebe022e5c9714",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration",
           "localName": "InterestProfilerPage"
         }
@@ -9480,12 +9480,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "InterestProfilerPage",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -9665,19 +9665,19 @@
       "path": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 2466,
+      "bytes": 2479,
       "lines": 60,
-      "sha256": "101484efb7d03fe8f1d546c9bb98845512d1dea03c247ce4bc95a2d2ef4eb96c",
+      "sha256": "7bd2fd2562ae33d44ce732f77d28ae48554f763b247ddfc341c7427a15bf8577",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 26,
+          "line": 27,
           "kind": "FunctionDeclaration",
           "localName": "WioaQualificationPage"
         }
@@ -9685,17 +9685,17 @@
       "declarations": [
         {
           "name": "WioaQualificationClient",
-          "line": 13,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WioaQualificationPage",
-          "line": 26,
+          "line": 27,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -10732,19 +10732,19 @@
       "path": "app/(portal)/dashboard/resume/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7033,
-      "lines": 218,
-      "sha256": "14ca200e11bdf396fbd7bdb771193d10fc028de07ba922adbe2b4bad351f47a4",
+      "bytes": 4996,
+      "lines": 146,
+      "sha256": "b938c936372de2d4cac18434b5e091c635f9556dd104b8ff1e57c9d4d1b51822",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 38,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 46,
+          "line": 44,
           "kind": "FunctionDeclaration",
           "localName": "DashboardResumePage"
         }
@@ -10752,17 +10752,17 @@
       "declarations": [
         {
           "name": "ResumeClient",
-          "line": 18,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 38,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DashboardResumePage",
-          "line": 46,
+          "line": 44,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -11232,9 +11232,9 @@
       "path": "app/(portal)/employer/applications/[id]/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 10226,
-      "lines": 237,
-      "sha256": "0782cd4076cbd6dc2696ffbc30a2bfee0daccb7d0a3ed182e1965b16080cb952",
+      "bytes": 10016,
+      "lines": 232,
+      "sha256": "850374224d6a7b0be6baf406b17a236738eca3c8592407c7d65a04c93867bdf9",
       "binary": false,
       "exports": [
         {
@@ -11292,9 +11292,9 @@
       "path": "app/(portal)/employer/applications/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 5646,
-      "lines": 156,
-      "sha256": "8b0585f528c808a3852c2812108e408b71936f7c5681507885369281c1e13a5c",
+      "bytes": 5504,
+      "lines": 152,
+      "sha256": "dc866be2c2b42c9f0b33101474ddd878990a8556a5f3e67493c9fe677064fc51",
       "binary": false,
       "exports": [
         {
@@ -11567,19 +11567,19 @@
       "path": "app/(portal)/employer/guide/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 14783,
-      "lines": 321,
-      "sha256": "d5ad4f7cec99a66e1002faf9175b4af829f065a58160b12bec8f5af83acf2947",
+      "bytes": 14127,
+      "lines": 313,
+      "sha256": "8f0fc29c247a122861406cf0e7821682df4b420384f7650a5ee77a0e25135dec",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 57,
+          "line": 58,
           "kind": "FunctionDeclaration",
           "localName": "EmployerGuidePage"
         }
@@ -11587,27 +11587,27 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DIFFERENTIATORS",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "QUICK_NAV",
-          "line": 26,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "FAQS",
-          "line": 34,
+          "line": 35,
           "kind": "Variable"
         },
         {
           "name": "EmployerGuidePage",
-          "line": 57,
+          "line": 58,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -11642,9 +11642,9 @@
       "path": "app/(portal)/employer/jobs/[id]/applicants/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 3982,
-      "lines": 111,
-      "sha256": "668abe59d757613ebbe75fa0ce18a9f69c7ae8ecbe35db7ce9e83c2eb65008a5",
+      "bytes": 3776,
+      "lines": 106,
+      "sha256": "5f1b3609b0a94ae40c539228f4bd0486af1adce59805537f947ad711b8d0cc61",
       "binary": false,
       "exports": [
         {
@@ -11707,9 +11707,9 @@
       "path": "app/(portal)/employer/jobs/[id]/edit/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 5432,
-      "lines": 141,
-      "sha256": "6b4430a0d94c3db1d48a9b6f1e3e5fadf134929b828a78df02e8bbae13295d88",
+      "bytes": 5241,
+      "lines": 136,
+      "sha256": "dda1d7c95a1cd4cee99ea5f3be994c6cedda6a6e82194e51e6cd10a379a6d0b3",
       "binary": false,
       "exports": [
         {
@@ -11817,9 +11817,9 @@
       "path": "app/(portal)/employer/jobs/import/ImportJobClient.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 17534,
-      "lines": 428,
-      "sha256": "381162a9615372489268d936f16a4afe081a03f1bdb28f1d4cd6730fe7b02a9d",
+      "bytes": 17283,
+      "lines": 424,
+      "sha256": "1585bfabe555229670974c6491e0a025c4bcd3a9cc62f9a47bf4127778c1bdc0",
       "binary": false,
       "exports": [
         {
@@ -11872,19 +11872,19 @@
       "path": "app/(portal)/employer/jobs/import/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 1830,
-      "lines": 48,
-      "sha256": "231a6074377b29c4b06429f3366912a70b51e466dcc5fbd4578c767f27179c2c",
+      "bytes": 2405,
+      "lines": 56,
+      "sha256": "6384edf846dabe1a2abfe7aa453bf8ae8c9ae33008d5c54b0827d45706da00d8",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 23,
+          "line": 25,
           "kind": "FunctionDeclaration",
           "localName": "ImportJobPage"
         }
@@ -11892,12 +11892,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ImportJobPage",
-          "line": 23,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -11957,9 +11957,9 @@
       "path": "app/(portal)/employer/jobs/new/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 3217,
-      "lines": 82,
-      "sha256": "1801edb916abc79ee0de71d75fae1c841416e58c0756732e7e80af070b5260a8",
+      "bytes": 3076,
+      "lines": 78,
+      "sha256": "43bd8e4c574452a631c431a0691e18ddaf9ae04f08b5ca5499259bd24ec472a0",
       "binary": false,
       "exports": [
         {
@@ -11992,19 +11992,19 @@
       "path": "app/(portal)/employer/jobs/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 13091,
-      "lines": 282,
-      "sha256": "b08393a0b02a1a5b91dc7c637279cd2eb3d2dd3507cc242ce298e23979619598",
+      "bytes": 11699,
+      "lines": 269,
+      "sha256": "d6e7b62d3376eb535f5f5b0ec4f78876cc90e6208bec2e95844d18cf2e946a06",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration",
           "localName": "EmployerJobsPage"
         }
@@ -12012,17 +12012,17 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SearchProps",
-          "line": 36,
+          "line": 37,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmployerJobsPage",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -12057,9 +12057,9 @@
       "path": "app/(portal)/employer/jobs/post/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 3974,
-      "lines": 104,
-      "sha256": "8b67ea25e2626d38e3c761516213ecccd10098c570e4c029d25410fa827f3eee",
+      "bytes": 3836,
+      "lines": 100,
+      "sha256": "53d90b9cf767d05d50f3bb60fcbb4c54a6caa0f8e6a296d31d7538d9b45da496",
       "binary": false,
       "exports": [
         {
@@ -12177,9 +12177,9 @@
       "path": "app/(portal)/employer/matches/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 3484,
-      "lines": 94,
-      "sha256": "4f2527929def6a2e2dcfbcbd57b5d3bc230828621313e0fc48f2dfca02fd2741",
+      "bytes": 3349,
+      "lines": 90,
+      "sha256": "d45df918b1521b7c6aeea1ff2e4937a51e40aa4607d91329a1e0dab7aacae04a",
       "binary": false,
       "exports": [
         {
@@ -12237,9 +12237,9 @@
       "path": "app/(portal)/employer/messages/page.tsx",
       "area": "pages",
       "domain": "communications",
-      "bytes": 4810,
-      "lines": 132,
-      "sha256": "1325aef353af6fdf306e184769a8575d73934e3dce4a839a53dfb24d73bb3e65",
+      "bytes": 4695,
+      "lines": 128,
+      "sha256": "bfb69cd53203073d0ef4af13943e72e1e9d429df4a699318aa0d5fe56f71ff43",
       "binary": false,
       "exports": [
         {
@@ -12249,7 +12249,7 @@
         },
         {
           "name": "default",
-          "line": 56,
+          "line": 52,
           "kind": "FunctionDeclaration",
           "localName": "EmployerMessagesPage"
         }
@@ -12267,7 +12267,7 @@
         },
         {
           "name": "EmployerMessagesPage",
-          "line": 56,
+          "line": 52,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -12302,9 +12302,9 @@
       "path": "app/(portal)/employer/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 37549,
-      "lines": 739,
-      "sha256": "543667e694622b5b2400498cd6b0f8398c2d200f5a672c55f8fb3ff0c77f9b4d",
+      "bytes": 37213,
+      "lines": 728,
+      "sha256": "0dd9b539d222a8ec2a040bb6d8a76f307cd90890fc8a528e848451f818b3b489",
       "binary": false,
       "exports": [
         {
@@ -12362,19 +12362,19 @@
       "path": "app/(portal)/employer/pipeline/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 12745,
+      "bytes": 11365,
       "lines": 230,
-      "sha256": "4c7496a3c3be7dc1e11e5edb3bc6ae95641b973f1a4236a2fee8ac86b9acff47",
+      "sha256": "156cbb477ff1927d9cbbf500437f72289f6a8ad33a123d00fd83e408fae25eaf",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 30,
+          "line": 31,
           "kind": "FunctionDeclaration",
           "localName": "EmployerPipelinePage"
         }
@@ -12382,12 +12382,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerPipelinePage",
-          "line": 30,
+          "line": 31,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -12422,9 +12422,9 @@
       "path": "app/(portal)/employer/settings/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 4764,
-      "lines": 106,
-      "sha256": "f6e27b5184128ecfef47bff96bf31c5e1df57bfef7834a10531430f1d6ad3738",
+      "bytes": 4662,
+      "lines": 105,
+      "sha256": "ce1f846694494e2805e0415e7b97fd785051ddda885775e89b28fb1e0d284941",
       "binary": false,
       "exports": [
         {
@@ -12482,9 +12482,9 @@
       "path": "app/(portal)/employer/work-queue/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 3240,
-      "lines": 94,
-      "sha256": "f31412cf307abbc5c4f54f552026f921af83dc268a66652a0ab34a750aeff8a0",
+      "bytes": 3108,
+      "lines": 90,
+      "sha256": "5e5595cf42cbb91f2216a202e21a9c36b3fa8f96355409eeaab16e9eefa48e75",
       "binary": false,
       "exports": [
         {
@@ -12917,19 +12917,19 @@
       "path": "app/(portal)/partner/guide/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 12976,
-      "lines": 260,
-      "sha256": "77000ae0f733243b95565a12565c1135052b153b5e61bc2dbfcfa72926bdeb1b",
+      "bytes": 12289,
+      "lines": 251,
+      "sha256": "9e7b208080112ac9fb6e4a81fc2edb5b1884b20ef0ed26118d59a7945e03cbff",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration",
           "localName": "PartnerGuidePage"
         }
@@ -12937,17 +12937,17 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FAQS",
-          "line": 21,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "PartnerGuidePage",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -13292,19 +13292,19 @@
       "path": "app/(portal)/partner/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 62034,
+      "bytes": 61983,
       "lines": 1389,
-      "sha256": "9a4108db3d4651a82d79f2fd56a831d6e28bd785ee7cada246cb737ee8dcecf8",
+      "sha256": "7da53a0223e7821f6f92e59c7262dc2c3bd100bf26020ea475c275634b63f540",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 60,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 71,
+          "line": 72,
           "kind": "FunctionDeclaration",
           "localName": "PartnerDashboardPage"
         }
@@ -13312,17 +13312,17 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 60,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "JOURNEY_STAGES",
-          "line": 69,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "PartnerDashboardPage",
-          "line": 71,
+          "line": 72,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -14844,19 +14844,19 @@
       "path": "app/admin/career-mappings/CareerMappingsClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 39268,
-      "lines": 715,
-      "sha256": "350ee0e83b5d4d9468a242aeef4a61772b8c97421c67e98e7e4a0e51e32dceb2",
+      "bytes": 38998,
+      "lines": 711,
+      "sha256": "892868a07b1f92f6c182b3db271964541acca2925fdb8eeb29028e5e7615f1d7",
       "binary": false,
       "exports": [
         {
           "name": "AuditEntry",
-          "line": 33,
+          "line": 34,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 98,
+          "line": 99,
           "kind": "FunctionDeclaration",
           "localName": "CareerMappingsClient"
         }
@@ -14864,72 +14864,72 @@
       "declarations": [
         {
           "name": "MappingRow",
-          "line": 7,
+          "line": 8,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "OnetOccupation",
-          "line": 18,
+          "line": 19,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AutoMatchResult",
-          "line": 24,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AuditEntry",
-          "line": 33,
+          "line": 34,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Props",
-          "line": 42,
+          "line": 43,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ACTION_LABEL",
-          "line": 46,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "ACTION_COLOR",
-          "line": 54,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "describeMappingChange",
-          "line": 62,
+          "line": 63,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatTimestamp",
-          "line": 73,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EXPERIENCE_BANDS",
-          "line": 83,
-          "kind": "Variable"
-        },
-        {
-          "name": "REC_TYPES",
           "line": 84,
           "kind": "Variable"
         },
         {
+          "name": "REC_TYPES",
+          "line": 85,
+          "kind": "Variable"
+        },
+        {
           "name": "REC_TYPE_COLOR",
-          "line": 86,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "BAND_LABEL",
-          "line": 92,
+          "line": 93,
           "kind": "Variable"
         },
         {
           "name": "CareerMappingsClient",
-          "line": 98,
+          "line": 99,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -15944,14 +15944,14 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13839,
-      "lines": 415,
-      "sha256": "6197df6314d04587272fcbd2edecdb4c59a8b087e36d013e18eae9671d3f91d9",
+      "bytes": 13118,
+      "lines": 399,
+      "sha256": "babc438eb75e957f5ae520ddb4ec79657f155cbbda4e7b7b5faf1ba07c0fb89d",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 82,
+          "line": 83,
           "kind": "FunctionDeclaration",
           "localName": "ExecutiveDashboardPage"
         }
@@ -15979,17 +15979,17 @@
         },
         {
           "name": "ExecutiveDashboardPage",
-          "line": 82,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SummaryCard",
-          "line": 339,
+          "line": 323,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueCard",
-          "line": 370,
+          "line": 354,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -17913,19 +17913,19 @@
       "path": "app/admin/members/[id]/readiness/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 2197,
-      "lines": 58,
-      "sha256": "2a4a47b6741df601d7e5c97185d22fa8ace487db20b75e45ac9cf2c829866240",
+      "bytes": 2370,
+      "lines": 64,
+      "sha256": "9fa24595c5a2f54cf0090b27602efb28bdaaa9ead8f47636932cf33705068928",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 12,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDeclaration",
           "localName": "AdminMemberReadinessPage"
         }
@@ -17933,12 +17933,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 12,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminMemberReadinessPage",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19327,14 +19327,14 @@
       "path": "app/admin/pipeline/PipelineLegacyView.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 8827,
+      "bytes": 8831,
       "lines": 167,
-      "sha256": "57eb09c6ab61abaa3c2393381751e93bb95c36b9764ad59c611d7990e73ca954",
+      "sha256": "418e8266a62790278a40d6bbed9363d96fa6111613030461040c941ba9fe569b",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 23,
+          "line": 24,
           "kind": "FunctionDeclaration",
           "localName": "PipelineLegacyView"
         }
@@ -19342,17 +19342,17 @@
       "declarations": [
         {
           "name": "STAGES",
-          "line": 7,
+          "line": 8,
           "kind": "Variable"
         },
         {
           "name": "AtRiskStats",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PipelineLegacyView",
-          "line": 23,
+          "line": 24,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -50207,9 +50207,9 @@
       "path": "components/admin/ConfirmDialog.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 2623,
-      "lines": 80,
-      "sha256": "0243f792d2b960dcafa2835672b8fdb4fb4d9ff483b8672526d89a1eb36e673f",
+      "bytes": 2648,
+      "lines": 81,
+      "sha256": "3abb2281c25c315127beb7bd51e9087d7f00803198ffe1a95200de1216ee5b4e",
       "binary": false,
       "exports": [
         {
@@ -51093,14 +51093,14 @@
       "path": "components/admin/EmailTemplatesClient.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 27882,
-      "lines": 842,
-      "sha256": "8957b6616951c7fd2b7cf389649b4802ff8d867192ee0a8e73da402a4c9630ff",
+      "bytes": 27291,
+      "lines": 821,
+      "sha256": "d5643e7174974d4ea687b61510ad12de62e0af23cf5ae4e4bbdbf509a712e208",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration",
           "localName": "EmailTemplatesClient"
         }
@@ -51108,22 +51108,22 @@
       "declarations": [
         {
           "name": "Template",
-          "line": 6,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PreviewResponse",
-          "line": 18,
+          "line": 19,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Props",
-          "line": 28,
+          "line": 29,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailTemplatesClient",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -51403,9 +51403,9 @@
       "path": "components/admin/InvitesTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 17457,
-      "lines": 456,
-      "sha256": "e1b1910e4489254211f1abd33ecd478e7d189b2799dbee4d14c105aa686fd994",
+      "bytes": 16680,
+      "lines": 442,
+      "sha256": "4d67623c4292fe09e0ad2bf0b407e7d7f6948d029695b854dbdd4a993d106d50",
       "binary": false,
       "exports": [
         {
@@ -51923,9 +51923,9 @@
       "path": "components/admin/MembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 51897,
-      "lines": 1205,
-      "sha256": "d84f3ff16cb1accd51ddbb3672c3b06e664623b5019e78aaee50467151c39a02",
+      "bytes": 51936,
+      "lines": 1206,
+      "sha256": "3addec99a441b44e10a8195ea36c65965fb3097cefcf2e34f011d57c567c4fdd",
       "binary": false,
       "exports": [
         {
@@ -52313,14 +52313,14 @@
       "path": "components/admin/PartnerDeactivateDialog.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 4919,
-      "lines": 130,
-      "sha256": "4f8cd37b6b947bf6a8c6dbd5ffe58d008a345c7966ab907802618886bc94babd",
+      "bytes": 4844,
+      "lines": 128,
+      "sha256": "2f0661311f4fb9f9328a2b49b5e941b80cbbdfd0c99d3bfc2b3e9e906cd22762",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 14,
+          "line": 17,
           "kind": "FunctionDeclaration",
           "localName": "PartnerDeactivateDialog"
         }
@@ -52328,12 +52328,12 @@
       "declarations": [
         {
           "name": "Props",
-          "line": 8,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerDeactivateDialog",
-          "line": 14,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -52383,19 +52383,19 @@
       "path": "components/admin/PartnerEditModal.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 15121,
-      "lines": 355,
-      "sha256": "8bee54d37823a7382af9059b2de51086463f024aec20d46df632f60da9fc8149",
+      "bytes": 14300,
+      "lines": 333,
+      "sha256": "de363d2dbb5d865cd64478ae06c604cc8805ac1a2cc7f6497165eb15da84bb49",
       "binary": false,
       "exports": [
         {
           "name": "PartnerForEdit",
-          "line": 11,
+          "line": 12,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration",
           "localName": "PartnerEditModal"
         }
@@ -52403,27 +52403,27 @@
       "declarations": [
         {
           "name": "PartnerForEdit",
-          "line": 11,
+          "line": 12,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "HEX_COLOR_RE",
-          "line": 35,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "SubgroupOpt",
-          "line": 37,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Props",
-          "line": 39,
+          "line": 40,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerEditModal",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -52976,14 +52976,14 @@
       "path": "components/admin/SubgroupMembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13369,
-      "lines": 351,
-      "sha256": "5ace093144e9520397a823f44ba25d6ecf39217b1a1502dbddb8d999174296a4",
+      "bytes": 11556,
+      "lines": 306,
+      "sha256": "46e1ab872dcadfb5e89ecc143d6f3d946310bcfd93e9c16e36c4c1ff9eaa0020",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 28,
+          "line": 30,
           "kind": "FunctionDeclaration",
           "localName": "SubgroupMembersTable"
         }
@@ -52991,17 +52991,17 @@
       "declarations": [
         {
           "name": "Member",
-          "line": 10,
+          "line": 12,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Props",
-          "line": 23,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SubgroupMembersTable",
-          "line": 28,
+          "line": 30,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -54338,19 +54338,19 @@
       "path": "components/employer/EmployerJobsBoard.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 46826,
-      "lines": 1204,
-      "sha256": "895e75366136914623051e166efe25c437504c5ae0b214961eb9ac71d7e41f75",
+      "bytes": 46244,
+      "lines": 1187,
+      "sha256": "14ec49051d6d8ecc58f348587961a4d65401a37b3c8fd55f47a60ea2ac69046d",
       "binary": false,
       "exports": [
         {
           "name": "EmployerJobBoardItem",
-          "line": 37,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 221,
+          "line": 222,
           "kind": "FunctionDeclaration",
           "localName": "EmployerJobsBoard"
         }
@@ -54358,87 +54358,87 @@
       "declarations": [
         {
           "name": "chunkIds",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerJobBoardItem",
-          "line": 37,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "FILTERS",
-          "line": 57,
+          "line": 58,
           "kind": "Variable"
         },
         {
           "name": "BADGE_VARIANT_TONE",
-          "line": 67,
+          "line": 68,
           "kind": "Variable"
         },
         {
           "name": "statusTone",
-          "line": 75,
+          "line": 76,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatCompensation",
-          "line": 79,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatWorkStyle",
-          "line": 88,
+          "line": 89,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "nextStepHint",
-          "line": 96,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canBulkDelete",
-          "line": 110,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canBulkClose",
-          "line": 114,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BULK_DELETE_FLASH_KEY",
-          "line": 118,
-          "kind": "Variable"
-        },
-        {
-          "name": "BULK_CLOSE_FLASH_KEY",
           "line": 119,
           "kind": "Variable"
         },
         {
+          "name": "BULK_CLOSE_FLASH_KEY",
+          "line": 120,
+          "kind": "Variable"
+        },
+        {
           "name": "BulkRow",
-          "line": 121,
+          "line": 122,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Banner",
-          "line": 127,
+          "line": 128,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pillBase",
-          "line": 189,
+          "line": 190,
           "kind": "Variable"
         },
         {
           "name": "FilterPill",
-          "line": 204,
+          "line": 205,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerJobsBoard",
-          "line": 221,
+          "line": 222,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -54448,14 +54448,14 @@
       "path": "components/employer/EmployerKanban.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 12382,
-      "lines": 284,
-      "sha256": "7220003b3225d34a0ac0bc3d47707a8cbf8179fbb25897a584a1e25711ae1637",
+      "bytes": 11899,
+      "lines": 274,
+      "sha256": "3ea5673e6c6e0ddaac33ce1b2819134ebd1d7503a963cb8b6041d57923fb03dd",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 60,
+          "line": 61,
           "kind": "FunctionDeclaration",
           "localName": "EmployerKanban"
         }
@@ -54463,37 +54463,37 @@
       "declarations": [
         {
           "name": "MatchRow",
-          "line": 16,
+          "line": 17,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "COLUMNS",
-          "line": 26,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "STATUS_FOR_COLUMN",
-          "line": 34,
+          "line": 35,
           "kind": "Variable"
         },
         {
           "name": "scoreColor",
-          "line": 42,
+          "line": 43,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getInitials",
-          "line": 48,
+          "line": 49,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchColumnId",
-          "line": 53,
+          "line": 54,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerKanban",
-          "line": 60,
+          "line": 61,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -54528,19 +54528,19 @@
       "path": "components/employer/EmployerMatchHistoryClient.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 10418,
-      "lines": 303,
-      "sha256": "7a5482c015372156dd2981d879c2e58e7b5efce97310aa7552126e37b3d4d8cb",
+      "bytes": 9848,
+      "lines": 289,
+      "sha256": "2533d9addab6381aa58367005c3eb61a6335ba3e3dcc79b463492766774932bd",
       "binary": false,
       "exports": [
         {
           "name": "EmployerMatchHistoryRow",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 104,
+          "line": 105,
           "kind": "FunctionDeclaration",
           "localName": "EmployerMatchHistoryClient"
         }
@@ -54548,42 +54548,42 @@
       "declarations": [
         {
           "name": "EmployerMatchHistoryRow",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STATUSES",
-          "line": 25,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "initialsFor",
-          "line": 35,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fitScoreColor",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FitBadge",
-          "line": 53,
+          "line": 54,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "STATUS_UPDATE_FAILED",
-          "line": 65,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "StatusSelect",
-          "line": 67,
+          "line": 68,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerMatchHistoryClient",
-          "line": 104,
+          "line": 105,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -54668,23 +54668,23 @@
       "path": "components/employer/EmployerPageOpener.module.css",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 355,
-      "lines": 27,
-      "sha256": "46c2cd976510243d9b78eb25482e404e2e1055024e5f746186ec768bab3eb674",
+      "bytes": 314,
+      "lines": 23,
+      "sha256": "8f5676222490bab8430ac77d71db0bd6671afc00067b5c599943f3159546d413",
       "binary": false
     },
     {
       "path": "components/employer/EmployerPageOpener.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 1165,
-      "lines": 35,
-      "sha256": "235963982ed8760a326fad253fb2b41e04859b8482a6cfbbd0334395567921a4",
+      "bytes": 1073,
+      "lines": 34,
+      "sha256": "53084aac70f5fec516fc9b40621a559418b133561528e97ed6f6683e3439c472",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 7,
+          "line": 11,
           "kind": "FunctionDeclaration",
           "localName": "EmployerPageOpener"
         }
@@ -54692,7 +54692,7 @@
       "declarations": [
         {
           "name": "EmployerPageOpener",
-          "line": 7,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -59589,7 +59589,7 @@
       "domain": "components",
       "bytes": 21335,
       "lines": 539,
-      "sha256": "7bd9a68a857643c8d78d350e65c5ae0eb25bcdb3593ce28162395f52c01ade9d",
+      "sha256": "a29e69d546216b2c03e5a5dd1029c1a2f30b63feba5740e82030e81d6acc1426",
       "binary": false,
       "exports": [
         {
@@ -68085,91 +68085,91 @@
       "path": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10953,
-      "lines": 370,
-      "sha256": "08e1049edac244099d0afb259b06b231bd2fe687c5cd0f65dd8f098c23caffb9",
+      "bytes": 10984,
+      "lines": 371,
+      "sha256": "23654f1ce2680b5d482b910dfdc63ba33a0efedcd394ea061d722b6d5fc8b5df",
       "binary": false,
       "exports": [
         {
           "name": "AdminDashboardFunnel",
-          "line": 65,
+          "line": 66,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardTrendPoint",
-          "line": 73,
+          "line": 74,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardSummary",
-          "line": 78,
+          "line": 79,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardWorkItem",
-          "line": 96,
+          "line": 97,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKitProps",
-          "line": 105,
+          "line": 106,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKit",
-          "line": 124,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 370,
+          "line": 371,
           "kind": "ExportAssignment"
         }
       ],
       "declarations": [
         {
           "name": "ExecutiveTrendCharts",
-          "line": 36,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "AdminDashboardFunnel",
-          "line": 65,
+          "line": 66,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardTrendPoint",
-          "line": 73,
+          "line": 74,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardSummary",
-          "line": 78,
+          "line": 79,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardWorkItem",
-          "line": 96,
+          "line": 97,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKitProps",
-          "line": 105,
+          "line": 106,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "funnelColor",
-          "line": 116,
+          "line": 117,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "numStyle",
-          "line": 122,
+          "line": 123,
           "kind": "Variable"
         },
         {
           "name": "AdminDashboardKit",
-          "line": 124,
+          "line": 125,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -68179,9 +68179,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6809,
+      "bytes": 6823,
       "lines": 225,
-      "sha256": "e3fce92cbb974868a180ae18580953c1b8b75f22c7f7d796809b1a97451037d0",
+      "sha256": "24f71cc69bc7570ba093ace39869fd09af6ffa399a0d48dfa57102b05967d254",
       "binary": false,
       "exports": [
         {
@@ -68223,9 +68223,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4089,
+      "bytes": 4103,
       "lines": 118,
-      "sha256": "afaef1bac292a45735f6fa4403a63ab6f8101d2c0254e6058dadb8df1cb0aa6f",
+      "sha256": "c4ea10886113ca6653a12a83a467ff0cedb0e58bddfb79b8b61e1eae15ecb6bd",
       "binary": false,
       "exports": [
         {
@@ -68262,9 +68262,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AiToolsAdminKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7716,
+      "bytes": 7730,
       "lines": 196,
-      "sha256": "a33b01ea282d8e792fc4dcd53db6305cc297e601f340c9e9213409ed069a96ae",
+      "sha256": "bde6ac8f5802d7170a71219efe3ef00c39d3c6b8aaef1ef8581eea007ab24eca",
       "binary": false,
       "exports": [
         {
@@ -68351,9 +68351,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3070,
+      "bytes": 3095,
       "lines": 90,
-      "sha256": "1bc3a408ff4df36446ef524b43d01b6f17acce770ce6173b32323c5d5fde6ecc",
+      "sha256": "c570c3ffe8c2e235631ffd240582cf6d37b703549a47df5696e698a6e0487deb",
       "binary": false,
       "exports": [
         {
@@ -68395,9 +68395,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AssessmentsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6667,
+      "bytes": 6681,
       "lines": 223,
-      "sha256": "b50c133a10b75a81c736538ab46826fe8d66fa7cacc4ed0c6fa6b3c95df45aaf",
+      "sha256": "c00f2c4122de7b35c9793c61e3c4c33552ad15f2e3a111d9157466c29cfb3e62",
       "binary": false,
       "exports": [
         {
@@ -68459,9 +68459,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AuditLogsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6202,
+      "bytes": 6216,
       "lines": 222,
-      "sha256": "80f670dacbe183583167b6e330844cddac37134358f0263bd7aea99bb90a5e3d",
+      "sha256": "0b3b30b1767871eafdd204dee2e23f78594c7f4156d145dc9ca58ce8bed55baf",
       "binary": false,
       "exports": [
         {
@@ -68508,9 +68508,9 @@
       "path": "components/portal/kit/pages/admin-subviews/BlogKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5459,
+      "bytes": 5473,
       "lines": 193,
-      "sha256": "4abd48e8e725088aa3050f36e248f10ad03405d34ace6cea67fc678ae30a593d",
+      "sha256": "a5ded54cec2525d7e0ea10cbaeff93a849aa62059427f5672d79b80ad1d5c351",
       "binary": false,
       "exports": [
         {
@@ -68572,9 +68572,9 @@
       "path": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7216,
+      "bytes": 7241,
       "lines": 195,
-      "sha256": "ca333ef9ea5a14516ce021c7f44a730ba76d80f9c6c33887a78cfe6e18bc5a99",
+      "sha256": "6c954c9c0395ddda00634755ab7700178d173e7af3cda6d75dadf3d1bb03119f",
       "binary": false,
       "exports": [
         {
@@ -68631,9 +68631,9 @@
       "path": "components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7069,
+      "bytes": 7083,
       "lines": 193,
-      "sha256": "7c8bd7e92f6e11d2728317c1ecd80bee5e6b8bc4876b0df6e3e343153b57d7f6",
+      "sha256": "75161d50980335f9f7eab07b15ddb26b91708843d5b074617be6342103435125",
       "binary": false,
       "exports": [
         {
@@ -68695,9 +68695,9 @@
       "path": "components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 12175,
+      "bytes": 12189,
       "lines": 344,
-      "sha256": "5c17fb495da85ad09598947f9b321a13f7561e309e7e60dd336b2fb9ae4c13fc",
+      "sha256": "a28387ab13409cd5970f01b9e4251fc57f28a3e54fea3e393089a2e1ba297e56",
       "binary": false,
       "exports": [
         {
@@ -68798,9 +68798,9 @@
       "path": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 13531,
+      "bytes": 13545,
       "lines": 378,
-      "sha256": "51132375477ba6ed49647aa4a4f408a1045bc572cc007760f45ab9a6fa140bd5",
+      "sha256": "1f7785d251e33c5399c87cc8e5d67872de2cff6f3b04fd071d229565029dbcf2",
       "binary": false,
       "exports": [
         {
@@ -68931,9 +68931,9 @@
       "path": "components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10944,
+      "bytes": 10958,
       "lines": 361,
-      "sha256": "0cc0e17be2e22d48981b09528fd935b8503bef2e9f87e9ada2311e9cba83d1ac",
+      "sha256": "7b2f1fa0330ab5ffd4afdcabdcbfa37fffe77287e5ea5bf87af460a06dbae328",
       "binary": false,
       "exports": [
         {
@@ -69010,9 +69010,9 @@
       "path": "components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4927,
+      "bytes": 4941,
       "lines": 140,
-      "sha256": "bfee37986a38725b06b10c8395e59eb114b374bbde2cb5c398a5db86106e25f1",
+      "sha256": "1dabba2298a678d9000b5985a2da8fd5f400ebfaf0d8d2d83a4cf909bbbe9293",
       "binary": false,
       "exports": [
         {
@@ -69074,9 +69074,9 @@
       "path": "components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5754,
+      "bytes": 5768,
       "lines": 183,
-      "sha256": "b358e9083ef43934a1f65fa0244f17a642989f5ae89a7c02b7f5defb99cc3d8c",
+      "sha256": "bc83e4cbd37786f74d39e4ed2417aefa191fe13cc5071eb17271c01bef5b849c",
       "binary": false,
       "exports": [
         {
@@ -69128,9 +69128,9 @@
       "path": "components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 5619,
+      "bytes": 5633,
       "lines": 195,
-      "sha256": "be3b48c4a0d5809d9afd27a77533c388fad2f61fd774d59de1ec26804aef018a",
+      "sha256": "0153bac4939152d2551fe499a66a850a6e93ace00776047443cebded23c096f3",
       "binary": false,
       "exports": [
         {
@@ -69187,9 +69187,9 @@
       "path": "components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 6713,
+      "bytes": 6727,
       "lines": 237,
-      "sha256": "153d9ba54dedd3e83213497cf1c81191feada38f1794de2d33cf37646bbd033f",
+      "sha256": "4148039af598186a382b170039e447ab0befce89042e592899a37a0d78a9bb4c",
       "binary": false,
       "exports": [
         {
@@ -69236,9 +69236,9 @@
       "path": "components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8796,
+      "bytes": 8790,
       "lines": 233,
-      "sha256": "09b6f5aa8d503c3f0fa01e22c56d2d04470abf39a7458f527351ae981abbcbc6",
+      "sha256": "0330a53269c41118c0eee4f96db54102ab9eeb4171e4f2fa2eb270bee0ae5ed3",
       "binary": false,
       "exports": [
         {
@@ -69315,9 +69315,9 @@
       "path": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6149,
+      "bytes": 6163,
       "lines": 195,
-      "sha256": "3bb6227376e496475a7adccdb870d5ba50bffa71ed978a154380e2152f916283",
+      "sha256": "d374958d99dfa7e93f00a2faf88e2a41fe277b02394a1cf77f7f0784da4147ac",
       "binary": false,
       "exports": [
         {
@@ -69394,9 +69394,9 @@
       "path": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5951,
+      "bytes": 5965,
       "lines": 219,
-      "sha256": "119ee84e22f8767a5099ea82b47e0292f722998449b13568b8d4601608371604",
+      "sha256": "fe2dcf46d4ae6c1797397cf93005b9c76db9cb44ac00661800f049a6be14f9a2",
       "binary": false,
       "exports": [
         {
@@ -69438,9 +69438,9 @@
       "path": "components/portal/kit/pages/admin-subviews/FeedbackKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6945,
+      "bytes": 6959,
       "lines": 252,
-      "sha256": "12bc44505489800059b9e391978e9a2a80a180ace93106f7308b7b04252f67b6",
+      "sha256": "a0cd6bc63f0fe4d31eb617bd9b1df3e961453f1926c30c73112172050d863bbd",
       "binary": false,
       "exports": [
         {
@@ -69507,9 +69507,9 @@
       "path": "components/portal/kit/pages/admin-subviews/GrowthKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7316,
+      "bytes": 7341,
       "lines": 213,
-      "sha256": "ef18037679163257e35d869cc0d6df52aa145d4c1f53042169c3ce79b33ddab0",
+      "sha256": "8460c9bae35ea9cf8205ea5d05a5d0b1681e0063589d5e39d91f209d204c67eb",
       "binary": false,
       "exports": [
         {
@@ -69596,9 +69596,9 @@
       "path": "components/portal/kit/pages/admin-subviews/InvitesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5233,
+      "bytes": 5247,
       "lines": 198,
-      "sha256": "aa0fd8254d786dabcbfc21ee44cd4815bf118d65dcfc2fa9df8dfc363d561c07",
+      "sha256": "d676e328780972566c85d8fa40201e5a0b7ee4a60a664b081656c0a0e4681d94",
       "binary": false,
       "exports": [
         {
@@ -69714,9 +69714,9 @@
       "path": "components/portal/kit/pages/admin-subviews/MentorsDirectoryKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4987,
+      "bytes": 5001,
       "lines": 132,
-      "sha256": "36f0c7472ead543d1de9b941916fcfb670db3fcdeac59369117d5a12e5a3228f",
+      "sha256": "c19234621a9714cce3e24848d714dc2cba51428250df6d785e40a75e2568e7b7",
       "binary": false,
       "exports": [
         {
@@ -69768,9 +69768,9 @@
       "path": "components/portal/kit/pages/admin-subviews/MessagesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5676,
+      "bytes": 5690,
       "lines": 200,
-      "sha256": "36c14e4222a6c7940f031e2ee5cf416825d9860c73631d72c303be85eefd2209",
+      "sha256": "47efe72c50a43ba98c8e605ccc7cb0ab4d322986dec462cd6b3f8fc80a3728cc",
       "binary": false,
       "exports": [
         {
@@ -69842,9 +69842,9 @@
       "path": "components/portal/kit/pages/admin-subviews/MetricsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2899,
+      "bytes": 2924,
       "lines": 85,
-      "sha256": "37caeffbc8aa039c3f239d86e23b69c54f6fac92dc24dc7bd430eca7a8599bb7",
+      "sha256": "e73500b2e4b6ce7c4fd2545eae39da9c9e043693b6649557fa414b0139094a96",
       "binary": false,
       "exports": [
         {
@@ -69886,9 +69886,9 @@
       "path": "components/portal/kit/pages/admin-subviews/PartnersDirectoryKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9253,
-      "lines": 220,
-      "sha256": "f584942271308096922ddc0e9ee62056b73311bd6ab6bb8c445060e1891b01d4",
+      "bytes": 9293,
+      "lines": 221,
+      "sha256": "1cb0aecdfb883486250191cd58c0caf76ecb73704bfcd435ca50f90e5b41b8bd",
       "binary": false,
       "exports": [
         {
@@ -69994,9 +69994,9 @@
       "path": "components/portal/kit/pages/admin-subviews/PlacementSurveysKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5529,
+      "bytes": 5543,
       "lines": 186,
-      "sha256": "283ecf9f4d87d013dc399120c149b99096ff2d5ffcae19d51d582d0b0f5daf1e",
+      "sha256": "257987e41a66dbe4988a29df8c7798b017b3397e20bb56fa2bc0124218f500bf",
       "binary": false,
       "exports": [
         {
@@ -70117,9 +70117,9 @@
       "path": "components/portal/kit/pages/admin-subviews/ProgramChangeRequestsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5657,
+      "bytes": 5671,
       "lines": 193,
-      "sha256": "c735d640cd016287dea37186b17c04b0c0210646902e0821b4af159a41c9f589",
+      "sha256": "b177975ae57fdf7f6e58c3eb611c7e824dc9b9fff3a857075701231757332084",
       "binary": false,
       "exports": [
         {
@@ -70181,9 +70181,9 @@
       "path": "components/portal/kit/pages/admin-subviews/ProgramsCatalogKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9209,
+      "bytes": 9203,
       "lines": 257,
-      "sha256": "94e0c8651e4d944b38a265395ec46f64cf8b4994a52d85eab030725508cd2cf4",
+      "sha256": "482bbfdb5784229f93bbb877f168df35c12a7ed588b5d469d30bb138840510bb",
       "binary": false,
       "exports": [
         {
@@ -70255,9 +70255,9 @@
       "path": "components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5417,
+      "bytes": 5431,
       "lines": 185,
-      "sha256": "1ec14f936e7270fef8b8da976e1d4f64bee06ba4aa269d8741cc933239ab308a",
+      "sha256": "bf812b2c41362b4a0f5c3a0246edeb07f93be215417e407b0e308731f115f178",
       "binary": false,
       "exports": [
         {
@@ -70304,9 +70304,9 @@
       "path": "components/portal/kit/pages/admin-subviews/SessionsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6637,
+      "bytes": 6651,
       "lines": 228,
-      "sha256": "f7d0fd833a1224e3979b60d5ca940cbf0561d863aa9179fa1fbccf5b6992c9c5",
+      "sha256": "4c5c041fb99df80e19b2ed9cc7d4b800f1924f5d5382bfba1e72a4f91815230f",
       "binary": false,
       "exports": [
         {
@@ -70368,9 +70368,9 @@
       "path": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 14452,
+      "bytes": 14466,
       "lines": 428,
-      "sha256": "debcbd1b297f1ed3ed6f20f09b9d26a0ddea75e057dacced2262b17fb9e7ee9e",
+      "sha256": "d7fb8b6b77ffd06497a4746b1006b95d42aead71c30c8c51dc6eb90b923772b1",
       "binary": false,
       "exports": [
         {
@@ -70467,9 +70467,9 @@
       "path": "components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6800,
+      "bytes": 6794,
       "lines": 190,
-      "sha256": "d72779bc3afd19ce7e04128c684dc48cd2972f511609d7534dadfea8d3518cd0",
+      "sha256": "2257cf7e842f9c731dc06eb6d52d15ae5555d64998b8e7de43c412f233d1cc82",
       "binary": false,
       "exports": [
         {
@@ -70541,9 +70541,9 @@
       "path": "components/portal/kit/pages/admin-subviews/SystemHealthKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6301,
+      "bytes": 6326,
       "lines": 201,
-      "sha256": "29c749e5a7f4a0578028fcb6f119523debeff3deb93f1821fc8b97709e827816",
+      "sha256": "d95e7899f56e5de75658de35e556394a1e94e62fac2a8fe400efc65c4f679d99",
       "binary": false,
       "exports": [
         {
@@ -70625,9 +70625,9 @@
       "path": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 12503,
+      "bytes": 12517,
       "lines": 390,
-      "sha256": "02f88fc56fc5d7767a1c66ecba652f701ddb714d7f763c4bce9e1040468c64ad",
+      "sha256": "39b8523a13c2a8407ea9faeea00ff5fa0a2cd72ae9bf68589666fdf5d8620c20",
       "binary": false,
       "exports": [
         {
@@ -70753,9 +70753,9 @@
       "path": "components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3653,
+      "bytes": 3667,
       "lines": 113,
-      "sha256": "070866a1c97b272b0bf0a9790171c784e23e338a808d93d42a0e4acc78c36196",
+      "sha256": "f93f6a02456610091155998b7ad9f0119ece256e6dd0c5cc1817746637f3dafe",
       "binary": false,
       "exports": [
         {
@@ -70792,9 +70792,9 @@
       "path": "components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 7022,
+      "bytes": 7036,
       "lines": 232,
-      "sha256": "433b1aeb002e9d00478376518ebb4e3c6ab8cd352511c5eb90db3e6f4bc00897",
+      "sha256": "f1c9c65e09143af1be982ca17f07877da69bafdb9e4d1f4fd2aa1dbdfc1ca901",
       "binary": false,
       "exports": [
         {
@@ -71068,34 +71068,34 @@
       "path": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 16116,
+      "bytes": 16088,
       "lines": 414,
-      "sha256": "138cbc625694c70ed88d93c93f7dda5c4e84897e81f92618831d80afe7558bdb",
+      "sha256": "b107991706abf351419e5ebc3602a0dc28907dcdeb1f90c576c52b17a6738c53",
       "binary": false,
       "exports": [
         {
           "name": "CounselorQueueBucket",
-          "line": 56,
+          "line": 57,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CounselorQueueRow",
-          "line": 58,
+          "line": 59,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorSessionRow",
-          "line": 74,
+          "line": 75,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorHomeKitProps",
-          "line": 103,
+          "line": 104,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorHomeKit",
-          "line": 243,
+          "line": 244,
           "kind": "FunctionDeclaration"
         },
         {
@@ -71107,67 +71107,67 @@
       "declarations": [
         {
           "name": "CounselorQueueBucket",
-          "line": 56,
+          "line": 57,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CounselorQueueRow",
-          "line": 58,
+          "line": 59,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorSessionRow",
-          "line": 74,
+          "line": 75,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "BUCKET_TONE",
-          "line": 85,
+          "line": 86,
           "kind": "Variable"
         },
         {
           "name": "BUCKET_ICON",
-          "line": 91,
+          "line": 92,
           "kind": "Variable"
         },
         {
           "name": "BUCKET_FLAG",
-          "line": 97,
+          "line": 98,
           "kind": "Variable"
         },
         {
           "name": "CounselorHomeKitProps",
-          "line": 103,
+          "line": 104,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "queueRowMeta",
-          "line": 145,
+          "line": 146,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatRelativeShort",
-          "line": 157,
+          "line": 158,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SideCardHead",
-          "line": 171,
+          "line": 172,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmptyQueueState",
-          "line": 179,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SessionListRow",
-          "line": 195,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorHomeKit",
-          "line": 243,
+          "line": 244,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71177,9 +71177,9 @@
       "path": "components/portal/kit/pages/employer/EmployerHomeKit.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 15717,
-      "lines": 389,
-      "sha256": "a8dd679a986b6aafdae1669d4252c07d9b3fea368c1434706822bd839c0c47ac",
+      "bytes": 15651,
+      "lines": 387,
+      "sha256": "0d96f067540d185ade10d02e1bd0194f5044e8e52ee28f01df244d3bc96555e0",
       "binary": false,
       "exports": [
         {
@@ -71619,9 +71619,9 @@
       "path": "components/portal/kit/pages/member/MemberCounselorKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 3678,
-      "lines": 95,
-      "sha256": "a52e048cf1376271a7902f0b733a1dcb31d5402b6d735a6f14e5aa48b0fdc397",
+      "bytes": 3002,
+      "lines": 76,
+      "sha256": "e72d25f6a4de6ab9ec7f755834c0849602bf084ef6dcb22fae7f8b9ff1036b38",
       "binary": false,
       "exports": [
         {
@@ -72021,9 +72021,9 @@
       "path": "components/portal/kit/pages/member/MemberMentorProfileKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 4275,
-      "lines": 102,
-      "sha256": "884a02a9679ca3b0506d4965579307b91e00d6b844d956f1593791abfa8520e7",
+      "bytes": 4349,
+      "lines": 103,
+      "sha256": "90537a9ac374885c37ceab79a39cb5bd02e6657eef2867494022be57fe5cd534",
       "binary": false,
       "exports": [
         {
@@ -74457,9 +74457,9 @@
       "path": "components/portal/ui/DataTable.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 12207,
-      "lines": 328,
-      "sha256": "6c9e46ed7ace33a9aeb2b35fca8bdfed44c300ae9edcfb79c0376ceaafc6a5c6",
+      "bytes": 13224,
+      "lines": 349,
+      "sha256": "6f712e3da673aa8e1034f83b3f31894268f84d3f8f6dcce678e2cb6fadf2c0d8",
       "binary": false,
       "exports": [
         {
@@ -74473,8 +74473,13 @@
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "headerTextForDataLabel",
+          "line": 134,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "default",
-          "line": 135,
+          "line": 156,
           "kind": "FunctionDeclaration",
           "localName": "DataTable"
         }
@@ -74501,13 +74506,18 @@
           "kind": "Variable"
         },
         {
+          "name": "headerTextForDataLabel",
+          "line": 134,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "dataLabelForColumn",
-          "line": 128,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DataTable",
-          "line": 135,
+          "line": 156,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -75897,9 +75907,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 273659,
-      "lines": 10136,
-      "sha256": "1a582fae369f085702dc15b830630bbc1319d7c78408c84d20ac8dacc8bc08d7",
+      "bytes": 272455,
+      "lines": 10081,
+      "sha256": "4c131de0da454345461ba85d25d8d0a8638bf177a68b35abab034e7d2a19bca1",
       "binary": false
     },
     {
@@ -75924,9 +75934,9 @@
       "path": "css/portal.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 80286,
+      "bytes": 80277,
       "lines": 3397,
-      "sha256": "f8c88740c6ba1861ab72b1ed97853b997e34617c022852463ac82c5b98c1fe8c",
+      "sha256": "fb50144f5526d0e5d130cbf782ea54ab6e49d6d5df2d2cec9276ef44e565a4e9",
       "binary": false
     },
     {
@@ -159402,9 +159412,9 @@
       "path": "tests/app/employer-remaining-pageheader.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1898,
+      "bytes": 1906,
       "lines": 42,
-      "sha256": "8b917aef5b0abe4f4ed466d9fcb9117c1bf65e7bd63451a66c5f984210ce23f5",
+      "sha256": "08a5990d939ad0d10a35d41bac7317d96d0ae0290a9f947f331bf1e378d76370",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159548,9 +159558,9 @@
       "path": "tests/app/partner-dashboard-dates.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4551,
-      "lines": 79,
-      "sha256": "13b21f232bb9cfd94c2694ded6b69f758f8c3361801c7473d07fa735a4e12536",
+      "bytes": 4617,
+      "lines": 80,
+      "sha256": "eb026d961de7028cae4e4d977acaafc7a71eaa7c645c7c4a2525174af21fcbf1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159561,7 +159571,7 @@
         },
         {
           "name": "INSTANT",
-          "line": 47,
+          "line": 48,
           "kind": "Variable"
         }
       ],
@@ -159617,9 +159627,9 @@
       "path": "tests/app/partner-referral-pages.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4758,
-      "lines": 75,
-      "sha256": "adb73f54a5de6fae91abacab23fd980b34618462ca7b05ac4e6502f4cad5856b",
+      "bytes": 4824,
+      "lines": 76,
+      "sha256": "c3ffdf335ba777d7357d5037f0a7c7c308f1c9e5591ede8f7682736655e3efe7",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159662,6 +159672,84 @@
         {
           "name": "INSTANT",
           "line": 27,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/portal-h1-ownership.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6737,
+      "lines": 164,
+      "sha256": "6d052a6aa8f844a34163d94932a05d47fc8150a06991e21ad08191b4851d21b2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "read",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RESOLVE_EXTS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveImport",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HEADER_COMPONENT",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "RAW_H1",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "reachesHeader",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isPassThrough",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "RAW_H1_ALLOWLIST",
+          "line": 62,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEGACY_SR_ONLY_H1",
+          "line": 70,
+          "kind": "Variable"
+        },
+        {
+          "name": "portalPages",
+          "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "ROUTE_KIT_DIRS",
+          "line": 107,
           "kind": "Variable"
         }
       ],
@@ -159891,30 +159979,40 @@
       "path": "tests/components/admin-subgroup-members-table.test.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3104,
-      "lines": 86,
-      "sha256": "7b272f7e46ab216c7bc0c3047649b70ce2789cc9078af1a913ab89cffbdc47f7",
+      "bytes": 4431,
+      "lines": 108,
+      "sha256": "e201537be05ce1836ef756b850e359eb865ddbf5622d7f9843372b223ebc6766",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "dialogMethods",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "originalMethods",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
           "name": "router",
-          "line": 4,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "member",
-          "line": 9,
+          "line": 28,
           "kind": "Variable"
         },
         {
           "name": "settleFocus",
-          "line": 23,
+          "line": 42,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "renderTable",
-          "line": 29,
+          "line": 48,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -160512,9 +160610,9 @@
       "path": "tests/components/employer-page-opener.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5341,
-      "lines": 74,
-      "sha256": "4285a0ebd634e179a0e230f14fbf780d1ec73ae936d9bd2591e0163b0bc4fb62",
+      "bytes": 5320,
+      "lines": 76,
+      "sha256": "29a3edd31db3a3fb11494bbca1658db2229b2857f0b8ba6ff78930c925ec41f9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -161196,15 +161294,15 @@
       "path": "tests/components/portal-semantics.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 9953,
-      "lines": 137,
-      "sha256": "4f9bd6d24192ef1f0e2b8b6df05393a69b2fd28852db1ee0b313253e66e3f140",
+      "bytes": 13307,
+      "lines": 177,
+      "sha256": "46c0917f97ad8425d3b2abb3420f5b2d95ee2e6d28297a4d5623359fbc990176",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mocks",
-          "line": 19,
+          "line": 22,
           "kind": "Variable"
         }
       ],

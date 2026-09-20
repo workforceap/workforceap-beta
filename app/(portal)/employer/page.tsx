@@ -8,7 +8,7 @@ import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
 import { formatPortalDate } from '@/lib/formatDate';
-import PageHeader from '@/components/portal/PageHeader';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { EMPLOYER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
@@ -382,19 +382,21 @@ export default async function EmployerDashboardPage({
           </div>
         </div>
       )}
-      <h1 className="wa-sr-only">
-        {t('employerOverview')} — {employerRow.companyName}
-      </h1>
+      <EmployerPageOpener
+        kicker={t('employerPortal')}
+        title={t('employerOverview')}
+        subtitle={t('manageJobPostings')}
+        action={
+          <div className="wa-hidden md:wa-flex" style={{ gap: '0.75rem' }}>
+            <Link href="/employer/jobs/import" className="btn btn-outline">{t('importJobs')}</Link>
+            <Link href="/employer/jobs/new" data-tour="tour-post-job" className="btn btn-primary">{t('postAJob')}</Link>
+          </div>
+        }
+      />
       {/* ── Mobile Employer Dashboard (≤640px) ── */}
       <div className="wa-block md:wa-hidden portal-mobile-content">
         {/* Hero */}
         <div style={{ paddingLeft:"1.5rem", paddingRight:"1.5rem", paddingTop:"1.5rem", paddingBottom:"0.5rem" }}>
-          <p
-            className="wa-text-[11px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold"
-            style={{ marginBottom:"0.25rem", color: 'var(--color-accent)' }}
-          >
-            {t('employerPortal')}
-          </p>
           <h2 className="wa-text-2xl wa-font-extrabold wa-tracking-tight text-on-surface wa-leading-tight">
             {t('heroHeadline', { count: totalApplications })}
           </h2>
@@ -542,19 +544,6 @@ export default async function EmployerDashboardPage({
 
       {/* ── Desktop View ── */}
       <div className="wa-hidden md:wa-block">
-      {/* ── Header ── */}
-      <PageHeader
-        title={t('employerOverview')}
-        titleHeadingLevel={2}
-        subtitle={t('manageJobPostings')}
-        action={
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Link href="/employer/jobs/import" className="btn btn-outline">{t('importJobs')}</Link>
-            <Link href="/employer/jobs/new" data-tour="tour-post-job" className="btn btn-primary">{t('postAJob')}</Link>
-          </div>
-        }
-      />
-
       <section style={{ marginBottom: '2rem' }}>
         <VoiceAgentSurface {...employerVoiceSurface}>
           <PortalVoiceSessionLazy

@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, HStack, VStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
+import { Text } from '@astryxdesign/core/Text';
 
 type Props = {
   partner: { id: string; name: string; _count?: { referrals: number } };
@@ -19,7 +22,9 @@ export default function PartnerDeactivateDialog({ partner, partners, onClose }: 
 
   const activePartners = partners.filter((p) => p.active && p.id !== partner.id);
   const referralCount = partner._count?.referrals ?? 0;
-  const trapRef = useFocusTrap(true, onClose);
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && !loading) onClose();
+  };
 
   async function handleConfirm() {
     setLoading(true);
@@ -47,84 +52,77 @@ export default function PartnerDeactivateDialog({ partner, partners, onClose }: 
   }
 
   return (
-    <div className="partner-modal-overlay" onClick={onClose} role="presentation" tabIndex={-1}>
-      <div
-        ref={trapRef as React.RefObject<HTMLDivElement>}
-        className="partner-modal"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="deactivate-title"
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1rem' }}>
-          <div style={{ color: 'var(--color-accent)', flexShrink: 0 }}>
-            <AlertTriangle size={24} />
-          </div>
-          <div>
-            <h2 id="deactivate-title" style={{ margin: '0 0 0.5rem', fontSize: '1.25rem' }}>
-              Deactivate Partner
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
-              This will prevent <strong>{partner.name}</strong> from accessing the partner portal. Their data will be preserved.
-            </p>
-          </div>
-        </div>
+    <Dialog isOpen onOpenChange={handleOpenChange} purpose="form" width={480} aria-label="Deactivate Partner">
+      <Layout
+        header={
+          <DialogHeader
+            title="Deactivate Partner"
+            startContent={<AlertTriangle size={20} style={{ color: 'var(--wa-danger)', flexShrink: 0 }} aria-hidden />}
+            onOpenChange={loading ? undefined : handleOpenChange}
+          />
+        }
+        content={
+          <LayoutContent>
+            <VStack gap={3}>
+              <Text color="secondary">
+                This will prevent <strong>{partner.name}</strong> from accessing the partner portal. Their data will be preserved.
+              </Text>
 
-        {referralCount > 0 && activePartners.length > 0 && (
-          <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'var(--color-light)', borderRadius: '6px' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.9rem' }}>
-              Reassign their {referralCount} referred member{referralCount !== 1 ? 's' : ''} to another partner
-            </label>
-            <select
-              value={reassignToPartnerId}
-              onChange={(e) => setReassignToPartnerId(e.target.value)}
-              style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid var(--outline-variant)', borderRadius: '6px' }}
-              disabled={loading}
-            >
-              <option value="">— Don&rsquo;t reassign —</option>
-              {activePartners.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+              {referralCount > 0 && activePartners.length > 0 && (
+                <div style={{ padding: '0.75rem', background: 'var(--wa-surface-2)', borderRadius: 'var(--wa-radius-sm)' }}>
+                  <label htmlFor="partner-deactivate-reassign" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, fontSize: '0.9rem' }}>
+                    Reassign their {referralCount} referred member{referralCount !== 1 ? 's' : ''} to another partner
+                  </label>
+                  <select
+                    id="partner-deactivate-reassign"
+                    value={reassignToPartnerId}
+                    onChange={(e) => setReassignToPartnerId(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid var(--outline-variant)', borderRadius: '6px' }}
+                    disabled={loading}
+                  >
+                    <option value="">— Don&rsquo;t reassign —</option>
+                    {activePartners.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-        {error && (
-          <div
-            style={{
-              padding: '0.75rem',
-              marginBottom: '1rem',
-              background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
-              borderRadius: '6px',
-              color: 'var(--color-accent)',
-              fontSize: '0.9rem',
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            style={{ padding: '0.5rem 1rem', background: 'var(--surface-container)', border: '1px solid var(--outline-variant)', borderRadius: '6px', cursor: loading ? 'not-allowed' : 'pointer' }}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleConfirm()}
-            disabled={loading}
-            style={{ padding: '0.5rem 1.25rem', background: 'var(--color-accent)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}
-          >
-            {loading ? 'Deactivating…' : 'Deactivate'}
-          </button>
-        </div>
-      </div>
-    </div>
+              {error && (
+                <div
+                  role="alert"
+                  style={{
+                    padding: '0.75rem',
+                    background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
+                    borderRadius: '6px',
+                    color: 'var(--color-accent)',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+            </VStack>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter>
+            <HStack gap={2} justify="end">
+              <Button type="button" label="Cancel" variant="ghost" onClick={onClose} isDisabled={loading} />
+              <Button
+                type="button"
+                label={loading ? 'Deactivating…' : 'Deactivate'}
+                variant="destructive"
+                onClick={() => void handleConfirm()}
+                isDisabled={loading}
+                isLoading={loading}
+              />
+            </HStack>
+          </LayoutFooter>
+        }
+      />
+    </Dialog>
   );
 }

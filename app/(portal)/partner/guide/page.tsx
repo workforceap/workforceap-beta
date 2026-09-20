@@ -9,6 +9,7 @@ import { prisma } from '@/lib/db/prisma';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
 import PartnerReferralResourcesSection from '@/components/partner/PartnerReferralResourcesSection';
 import { buildPartnerReferralLink } from '@/lib/partner/referralLink';
+import PageHeader from '@/components/portal/PageHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -73,25 +74,15 @@ export default async function PartnerGuidePage() {
 
   return (
     <div style={{ maxWidth: '56rem', margin: '0 auto', paddingBottom: '6rem' }} className="md:wa-pb-12">
-      {/* Breadcrumb */}
-      <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/partner" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
-          ← Back to dashboard
-        </Link>
-      </nav>
-
-      {/* Header */}
-      <header style={{ marginBottom: '2.5rem' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
-          Referral Guide
-        </p>
-        <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15 }}>
-          How to Refer Members to WorkforceAP
-        </h1>
-        <p style={{ fontSize: '1.0625rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.65, maxWidth: '40rem' }}>
-          A practical guide for {partnerName} staff.
-        </p>
-      </header>
+      <PageHeader
+        title="How to Refer Members to WorkforceAP"
+        subtitle={`A practical guide for ${partnerName} staff.`}
+        action={
+          <Link href="/partner" className="btn btn-outline btn-sm">
+            Back to dashboard
+          </Link>
+        }
+      />
 
       <PartnerReferralShare url={referralApplyUrl} referralCode={referralCode} />
 

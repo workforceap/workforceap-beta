@@ -55,6 +55,7 @@ export default function ConfirmDialog({
       }}
       width={maxWidth}
       purpose="info"
+      aria-label={title}
     >
       <VStack gap={3}>
         <DialogHeader

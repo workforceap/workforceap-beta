@@ -1,7 +1,7 @@
 import {
   DesignSurface,
   KpiStrip,
-  SectionHeader,
+  PageOpener,
   RankBars,
   type KpiItem,
   type RankDatum,
@@ -55,7 +55,7 @@ export function AnalyticsKit({
 }: AnalyticsKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title={title} kicker={kicker} goal={goal} />
+      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} />
 
       <KpiStrip cols={4} items={kpis} />
 
