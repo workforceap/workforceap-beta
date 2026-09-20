@@ -169,7 +169,7 @@ export default async function SessionsIndexBody({
           style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '2px solid var(--color-accent)', boxShadow: '0 8px 24px rgba(173,44,77,0.12)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <span style={{ background: 'rgba(173,44,77,0.12)', color: 'var(--color-accent)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>
+            <span style={{ background: 'var(--wa-accent-soft)', color: 'var(--wa-accent)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>
               <UserPlus size={22} />
             </span>
             <h2 className="portal-section-heading" style={{ margin: 0 }}>Walk-in</h2>
@@ -188,7 +188,7 @@ export default async function SessionsIndexBody({
           style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '1px solid var(--outline-variant)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <span style={{ background: 'rgba(43,123,185,0.12)', color: 'var(--color-blue, #2b7bb9)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>
+            <span style={{ background: 'var(--wa-accent-soft)', color: 'var(--wa-accent)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>
               <Users size={22} />
             </span>
             <h2 className="portal-section-heading" style={{ margin: 0 }}>Existing member</h2>
@@ -196,7 +196,7 @@ export default async function SessionsIndexBody({
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Pick someone from your roster. Update their profile, then run the same 4-step build &mdash; outputs save to their portal and email.
           </p>
-          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-blue, #2b7bb9)' }}>
+          <div style={{ marginTop: '1rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-accent)' }}>
             Pick a member &rarr;
           </div>
         </Link>

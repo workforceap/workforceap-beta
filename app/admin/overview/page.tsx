@@ -27,7 +27,7 @@ import { isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { loadTrainingDashboardData } from '@/lib/admin/trainingDashboard';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { countThreadsWithSlaBreach } from '@/lib/messages/superAdminMessageQueries';
 import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
@@ -151,8 +151,10 @@ export default async function AdminOverviewPage() {
       db.user.count({
         where: { assessmentCompleted: true, deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE },
       }),
+      // Recent signups are members only; staff/dogfood accounts are not
+      // "pending enrollment" (admin audit 2026-09-20, 4.1).
       db.user.findMany({
-        where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE },
+        where: { deletedAt: null, ...MEMBER_ONLY_WHERE },
         orderBy: { createdAt: 'desc' },
         take: 10,
         select: {

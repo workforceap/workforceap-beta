@@ -46,8 +46,9 @@ type FormData = {
   educationLevel: string;
   referralSource: string;
   notes: string;
-  usCitizen: boolean;
-  authorizedToWork: boolean;
+  /** Eligibility answers start unanswered; an admin must choose Yes or No (audit 2026-09-20). */
+  usCitizen: boolean | null;
+  authorizedToWork: boolean | null;
   hasDisability: boolean;
   ethnicity: string;
   programSlug: string;
@@ -72,8 +73,8 @@ const initialForm: FormData = {
   educationLevel: '',
   referralSource: '',
   notes: '',
-  usCitizen: false,
-  authorizedToWork: false,
+  usCitizen: null,
+  authorizedToWork: null,
   hasDisability: false,
   ethnicity: '',
   programSlug: '',
@@ -272,8 +273,8 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
     try {
       const payload = {
         ...form,
-        usCitizen: form.usCitizen,
-        authorizedToWork: form.authorizedToWork,
+        usCitizen: form.usCitizen === true,
+        authorizedToWork: form.authorizedToWork === true,
         hasDisability: form.hasDisability,
         partnerId: form.partnerId || undefined,
         subgroupId: form.subgroupId || undefined,
@@ -353,7 +354,7 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
   };
 
   const canProceedStep1 = form.firstName && form.email && form.employmentStatus && form.educationLevel &&
-    form.usCitizen && form.authorizedToWork;
+    form.usCitizen === true && form.authorizedToWork === true;
   const selectedProgram = programs.find((program) => program.slug === form.programSlug);
   const canProceedStep2 = Boolean(form.programSlug && !selectedProgram?.curriculumMigrationPending);
   const maxStep = 6;
@@ -463,15 +464,15 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
               <div className="wizard-toggle-row">
                 <label>US Citizen or Permanent Resident? *</label>
                 <div className="wizard-toggle">
-                  <button type="button" className={form.usCitizen ? 'active' : ''} onClick={() => update('usCitizen', true)}>Yes</button>
-                  <button type="button" className={!form.usCitizen ? 'active' : ''} onClick={() => update('usCitizen', false)}>No</button>
+                  <button type="button" aria-pressed={form.usCitizen === true} className={form.usCitizen === true ? 'active' : ''} onClick={() => update('usCitizen', true)}>Yes</button>
+                  <button type="button" aria-pressed={form.usCitizen === false} className={form.usCitizen === false ? 'active' : ''} onClick={() => update('usCitizen', false)}>No</button>
                 </div>
               </div>
               <div className="wizard-toggle-row">
                 <label>Authorized to work in US? *</label>
                 <div className="wizard-toggle">
-                  <button type="button" className={form.authorizedToWork ? 'active' : ''} onClick={() => update('authorizedToWork', true)}>Yes</button>
-                  <button type="button" className={!form.authorizedToWork ? 'active' : ''} onClick={() => update('authorizedToWork', false)}>No</button>
+                  <button type="button" aria-pressed={form.authorizedToWork === true} className={form.authorizedToWork === true ? 'active' : ''} onClick={() => update('authorizedToWork', true)}>Yes</button>
+                  <button type="button" aria-pressed={form.authorizedToWork === false} className={form.authorizedToWork === false ? 'active' : ''} onClick={() => update('authorizedToWork', false)}>No</button>
                 </div>
               </div>
               <div className="wizard-toggle-row">
@@ -754,7 +755,7 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
           <h2 className="wizard-section-title"><CheckCircle size={22} className="wizard-icon" /> Review & Create</h2>
           <div className="wizard-summary-card">
             <p><strong>Personal:</strong> {form.firstName} {form.lastName}, {form.email}, {formatPhone(form.phone)}</p>
-            <p><strong>WIOA:</strong> Citizen {form.usCitizen ? 'Yes' : 'No'}, Authorized {form.authorizedToWork ? 'Yes' : 'No'}, Disability {form.hasDisability ? 'Yes' : 'No'}, Ethnicity: {form.ethnicity || '—'}</p>
+            <p><strong>WIOA:</strong> Citizen {form.usCitizen === null ? '—' : form.usCitizen ? 'Yes' : 'No'}, Authorized {form.authorizedToWork === null ? '—' : form.authorizedToWork ? 'Yes' : 'No'}, Disability {form.hasDisability ? 'Yes' : 'No'}, Ethnicity: {form.ethnicity || '—'}</p>
             <p><strong>Program:</strong> {programs.find((p) => p.slug === form.programSlug)?.title ?? programDisplayTitle(form.programSlug)}</p>
             <p>
               <strong>Partner referral:</strong>{' '}

@@ -304,7 +304,7 @@ export default function ProgramPicker({ programs, wioaScreeningSubmittedAt, prev
                     padding: '8px 10px',
                     borderRadius: 'var(--wa-radius-sm)',
                     background: 'var(--wa-info-soft)',
-                    color: 'var(--wa-info)',
+                    color: 'var(--wa-info-dark)',
                     fontSize: 13,
                     fontWeight: 600,
                     lineHeight: 1.45,

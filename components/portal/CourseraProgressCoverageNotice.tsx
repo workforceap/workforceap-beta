@@ -9,8 +9,8 @@ export default function CourseraProgressCoverageNotice({
   return (
     <p className="wa-kit-training-notice" role="status">
       {coverage === 'capped'
-        ? 'Coursera’s latest update is incomplete.'
-        : 'Coursera could not be fully refreshed.'}{' '}
+        ? 'Your latest Coursera progress is still syncing.'
+        : 'Progress may be a few hours behind.'}{' '}
       Progress shown uses available course records.
     </p>
   );
