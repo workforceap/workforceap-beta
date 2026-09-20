@@ -23,23 +23,27 @@
  *     password or options). That is the evidence the enforcement below was
  *     waiting on, and it is safe: reporting cannot fail a deploy.
  *   - Enforcement per Vercel env is a one-word flip in
- *     POOL_CONTRACT_ENFORCED_VERCEL_ENVS. It is empty today (report-only
- *     everywhere) — see the note on that constant for the order to flip it in.
- *     Production must never be added before the parameters are set on the
- *     production POSTGRES_PRISMA_URL, or the next deploy is blocked by an env
- *     var only an operator can fix.
+ *     POOL_CONTRACT_ENFORCED_VERCEL_ENVS. Production is enforced (see the
+ *     note on that constant for the evidence); preview stays report-only
+ *     until one preview build has logged on-contract parameters. Never add an
+ *     env before its POSTGRES_PRISMA_URL has been seen on-contract in a build
+ *     log, or the next deploy is blocked by an env var only an operator can fix.
  */
 
 import guard from './lib/supabase-project-guard.cjs';
 import poolContract from './lib/runtime-pool-contract.cjs';
 
-// Never rewrites URLs. Report-only on EVERY Vercel env for now: the contract
-// requires four params (port, connection_limit, pool_timeout, pgbouncer) and
-// the runbook shape in docs/HANDOFF.md:40 names three, so nothing yet shows
+// Never rewrites URLs. Enforced on production since the production
+// POSTGRES_PRISMA_URL was brought on-contract (Mike, 2026-09-20 21:57 UTC) and
+// the first production build after #2424 — Vercel deployment
+// dpl_FmbefGN4GHD8z2qvUEMfRiV5EQmB, commit 87e60a12 — logged, verbatim:
+//   [supabase-env-guard] runtime pool parameters: { port: 6543, connectionLimit: 1, poolTimeout: 10, pgbouncer: true }
+// with no off-runbook WARNING. Preview stays report-only: the contract wants
+// four params (port, connection_limit, pool_timeout, pgbouncer) and the
+// runbook shape in docs/HANDOFF.md:40 names three, so nothing yet shows
 // preview's URL carries all four. Add 'preview' after one preview build has
-// logged the parameters line below and they match; add 'production' only in
-// the same change that sets the production POSTGRES_PRISMA_URL (WAP-17).
-const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set([]);
+// logged the parameters line below and they match (WAP-17).
+const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set(['production']);
 const checkPoolContract = process.argv.includes('--check-pool-contract');
 
 const {

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "832abd884b4344c63608d68f34f98ea75d3be9208242a31767cac3fbdfe52d3e",
+  "inputTreeSha256": "bdd0a5e1acf37f9af9b9e513eccc2e99d1c62b75b5ec02834f8958278ee58007",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -151875,85 +151875,85 @@
       "path": "scripts/check-supabase-env.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5686,
-      "lines": 129,
-      "sha256": "fe4a0ffba9de9744dba08ee1253ea28cc1fddf14ae5137e0d2f6e6dbc5e6f6da",
+      "bytes": 6048,
+      "lines": 133,
+      "sha256": "d1b822af16a2dcbeba630bad59fe78064f9e11d5ddb7fa3a3293e3128aff4d16",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "POOL_CONTRACT_ENFORCED_VERCEL_ENVS",
-          "line": 42,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "checkPoolContract",
-          "line": 43,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "DEMO_REF",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "PROD_REF",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "formatSupabaseEnvGuardFailure",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "inspectSupabaseEnvironment",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "projectForAnonKey",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "projectForUrl",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "env",
-          "line": 65,
+          "line": 69,
           "kind": "Variable"
         },
         {
           "name": "urls",
-          "line": 67,
+          "line": 71,
           "kind": "Variable"
         },
         {
           "name": "expected",
-          "line": 74,
+          "line": 78,
           "kind": "Variable"
         },
         {
           "name": "errors",
-          "line": 75,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "seen",
-          "line": 76,
+          "line": 80,
           "kind": "Variable"
         },
         {
           "name": "onVercel",
-          "line": 99,
+          "line": 103,
           "kind": "Variable"
         },
         {
           "name": "enforcePoolContract",
-          "line": 100,
+          "line": 104,
           "kind": "Variable"
         }
       ],
@@ -155324,9 +155324,9 @@
       "path": "scripts/lib/runtime-pool-contract.test.cjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4982,
-      "lines": 86,
-      "sha256": "08cf1d06286cc2cf247d31195af9252d5e10b0a8ab29d0b9c397704cfba1d7cc",
+      "bytes": 5091,
+      "lines": 90,
+      "sha256": "74efccaee61140661d364adce2e2be7d1252a24c6a26d85090a56c7467f0383a",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -155367,7 +155367,7 @@
         },
         {
           "name": "runGuard",
-          "line": 30,
+          "line": 31,
           "kind": "Variable"
         }
       ],
