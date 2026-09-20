@@ -10,15 +10,25 @@ const read = (rel: string) => readFileSync(path.join(root, rel), 'utf8');
 describe('admin count agreement (audit 2026-09-20, 4.1/4.2)', () => {
   // The overview tiles, the students roster and the Command Center program
   // health must all count the same roster: member-role profiles only.
+  // The roster and training-progress presets of /admin/students share their
+  // where-clauses through these loaders (one roster, admin audit §7 item 2).
   const rosterSources = [
     'app/admin/overview/page.tsx',
-    'app/admin/students/page.tsx',
+    'lib/admin/studentsRosterLoad.ts',
+    'lib/admin/trainingRosterLoad.ts',
     'lib/admin/commandCenter.ts',
   ];
 
   it.each(rosterSources)('%s counts members with MEMBER_ONLY_WHERE, never the dogfood filter', (rel) => {
     const src = read(rel);
     expect(src).toMatch(/\.\.\.MEMBER_ONLY_WHERE/);
+    expect(src).not.toContain('MEMBER_OR_DOGFOOD_WHERE');
+  });
+
+  it('the students route renders only through those loaders and never names the dogfood filter', () => {
+    const src = read('app/admin/students/page.tsx');
+    expect(src).toContain('loadStudentsRoster(');
+    expect(src).toContain('loadTrainingRoster(');
     expect(src).not.toContain('MEMBER_OR_DOGFOOD_WHERE');
   });
 
