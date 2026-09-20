@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "3268cbcb9e9d887a7e9532996311db95be7f78d5ff785fc316512f9cafc5d4d1",
+  "inputTreeSha256": "c83f55337ccccc8450a59db0db2bf88cc6641de2a0d37ac3e1046d9f0547afcd",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -18188,19 +18188,19 @@
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 68910,
-      "lines": 1427,
-      "sha256": "4824d07324dc8d56f5f55f68415e4b3ee24da41205619ccfae9dfd3c717c1de8",
+      "bytes": 71013,
+      "lines": 1467,
+      "sha256": "5ab180c59232e1f291a2da22e544e6f1787d1ccbbac8ae1a213965f884216465",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 96,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 104,
+          "line": 111,
           "kind": "FunctionDeclaration",
           "localName": "AdminMemberDetailPage"
         }
@@ -18208,27 +18208,27 @@
       "declarations": [
         {
           "name": "AdminCourseProgressRow",
-          "line": 72,
+          "line": 79,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AdminMemberProgramProgressRow",
-          "line": 81,
+          "line": 88,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CAREER_PLAN_EVENT_NAMES",
-          "line": 88,
+          "line": 95,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 96,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminMemberDetailPage",
-          "line": 104,
+          "line": 111,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -104413,9 +104413,9 @@
       "path": "lib/content/programs.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 41186,
-      "lines": 682,
-      "sha256": "36584d1b96b722e47057e6faaad467fd769417083eabfb2059c77b42886ceb41",
+      "bytes": 42008,
+      "lines": 698,
+      "sha256": "5ec67704eaba5a196ce1b496514fe0f790aa05d7709476f425ed738549b59d3d",
       "binary": false,
       "exports": [
         {
@@ -104425,329 +104425,329 @@
         },
         {
           "name": "FUNDING_SOURCES",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "FundingSource",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupportLevel",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupport",
-          "line": 52,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "formatFundingSourceLabel",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FUNDING_COLORS",
-          "line": 64,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "ProgramCourse",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "Program",
-          "line": 113,
+          "line": 114,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "getDiscoveredProgram",
-          "line": 168,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayTitle",
-          "line": 195,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayPartner",
-          "line": 203,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_CATEGORY_COLORS",
-          "line": 210,
+          "line": 211,
           "kind": "Variable"
         },
         {
           "name": "PROGRAMS",
-          "line": 386,
+          "line": 402,
           "kind": "Variable"
         },
         {
           "name": "WORKFORCEAP_PROGRAM_CATALOG_SIZE",
-          "line": 446,
+          "line": 462,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_AXIS_MAP",
-          "line": 453,
+          "line": 469,
           "kind": "Variable"
         },
         {
           "name": "RadarAxis",
-          "line": 523,
+          "line": 539,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "RADAR_AXES",
-          "line": 524,
+          "line": 540,
           "kind": "Variable"
         },
         {
           "name": "ProgramRecommendation",
-          "line": 526,
+          "line": 542,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recommendProgramsForGaps",
-          "line": 542,
+          "line": 558,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_TITLES",
-          "line": 596,
+          "line": 612,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_PROGRAM_TITLE_VALUES",
-          "line": 613,
+          "line": 629,
           "kind": "Variable"
         },
         {
           "name": "SUPPORTED_PROGRAM_STORAGE_VALUES",
-          "line": 626,
+          "line": 642,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_CODE",
-          "line": 634,
+          "line": 650,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_MESSAGE",
-          "line": 635,
+          "line": 651,
           "kind": "Variable"
         },
         {
           "name": "isCurriculumMigrationPending",
-          "line": 644,
+          "line": 660,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramByInterestValue",
-          "line": 650,
+          "line": 666,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramBySlug",
-          "line": 670,
+          "line": 686,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAllPrograms",
-          "line": 675,
+          "line": 691,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invalidateProgramCache",
-          "line": 680,
+          "line": 696,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "FUNDING_SOURCES",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "FundingSource",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupportLevel",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LanguageSupport",
-          "line": 52,
+          "line": 53,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "formatFundingSourceLabel",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FUNDING_COLORS",
-          "line": 64,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "slugify",
-          "line": 72,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ProgramCourse",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "Program",
-          "line": 113,
+          "line": 114,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "normalizeDiscoveredProgramTitle",
-          "line": 164,
+          "line": 165,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getDiscoveredProgram",
-          "line": 168,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "inferDiscoveredPartnerLabel",
-          "line": 173,
+          "line": 174,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayTitle",
-          "line": 195,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramDisplayPartner",
-          "line": 203,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_CATEGORY_COLORS",
-          "line": 210,
+          "line": 211,
           "kind": "Variable"
         },
         {
           "name": "OperationalCourseSnapshot",
-          "line": 220,
+          "line": 221,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_OPERATIONAL_COURSES",
-          "line": 236,
+          "line": 237,
           "kind": "Variable"
         },
         {
           "name": "mkProgram",
-          "line": 265,
+          "line": 266,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DIGITAL_LITERACY_PROGRAM_DURATION",
-          "line": 384,
+          "line": 400,
           "kind": "Variable"
         },
         {
           "name": "PROGRAMS",
-          "line": 386,
+          "line": 402,
           "kind": "Variable"
         },
         {
           "name": "WORKFORCEAP_PROGRAM_CATALOG_SIZE",
-          "line": 446,
+          "line": 462,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_AXIS_MAP",
-          "line": 453,
+          "line": 469,
           "kind": "Variable"
         },
         {
           "name": "RadarAxis",
-          "line": 523,
+          "line": 539,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "RADAR_AXES",
-          "line": 524,
+          "line": 540,
           "kind": "Variable"
         },
         {
           "name": "ProgramRecommendation",
-          "line": 526,
+          "line": 542,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recommendProgramsForGaps",
-          "line": 542,
+          "line": 558,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PROGRAM_TITLES",
-          "line": 596,
+          "line": 612,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_PROGRAM_TITLE_VALUES",
-          "line": 613,
+          "line": 629,
           "kind": "Variable"
         },
         {
           "name": "SUPPORTED_PROGRAM_STORAGE_VALUES",
-          "line": 626,
+          "line": 642,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_CODE",
-          "line": 634,
+          "line": 650,
           "kind": "Variable"
         },
         {
           "name": "CURRICULUM_MIGRATION_PENDING_MESSAGE",
-          "line": 635,
+          "line": 651,
           "kind": "Variable"
         },
         {
           "name": "isCurriculumMigrationPending",
-          "line": 644,
+          "line": 660,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramByInterestValue",
-          "line": 650,
+          "line": 666,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getProgramBySlug",
-          "line": 670,
+          "line": 686,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAllPrograms",
-          "line": 675,
+          "line": 691,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invalidateProgramCache",
-          "line": 680,
+          "line": 696,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -108702,9 +108702,9 @@
       "path": "lib/coursera/csvImport.server.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 44406,
-      "lines": 1343,
-      "sha256": "35bd4ff27177548e86ae0035b7b2ac2014f7450c6f91313ae2f139f8ea20063b",
+      "bytes": 44837,
+      "lines": 1351,
+      "sha256": "46b2366722f0065b86f137cd06d047f32a55b237609f5715fe3d45703fe11fd1",
       "binary": false,
       "exports": [
         {
@@ -108749,7 +108749,7 @@
         },
         {
           "name": "promoteCsvProgressToCanonical",
-          "line": 1166,
+          "line": 1168,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -108846,32 +108846,32 @@
         },
         {
           "name": "emptyCourseraProgressPromotionResult",
-          "line": 1129,
+          "line": 1131,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CanonicalPair",
-          "line": 1133,
+          "line": 1135,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "staticMappingsByCourseId",
-          "line": 1135,
+          "line": 1137,
           "kind": "Variable"
         },
         {
           "name": "getStaticMappingsByCourseId",
-          "line": 1137,
+          "line": 1139,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "uniqueStaticMappingForCourseId",
-          "line": 1155,
+          "line": 1157,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "promoteCsvProgressToCanonical",
-          "line": 1166,
+          "line": 1168,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -109116,111 +109116,111 @@
       "path": "lib/coursera/curriculumMapping.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 12820,
-      "lines": 348,
-      "sha256": "17599ca2ceac25bd0cd849ba6a36a8b01454489944f797a9d5aa37015e8e3946",
+      "bytes": 13317,
+      "lines": 355,
+      "sha256": "c1e60b3d429f960660f87652f65bcf9a4c45b600dc06392c23bc60adc4cb6d0c",
       "binary": false,
       "exports": [
         {
           "name": "CurriculumMappingRow",
-          "line": 23,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CurriculumMappingIndex",
-          "line": 31,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "emptyCurriculumMappingIndex",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMissingCurriculumMappingTableError",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildCurriculumMappingIndex",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCurriculumMappingsForCourseraIds",
-          "line": 114,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveCurriculumMappingsForCourse",
-          "line": 150,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyCandidatesForProviderCourse",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveProviderCourseMappings",
-          "line": 250,
+          "line": 257,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CurriculumMappingRow",
-          "line": 23,
+          "line": 24,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CurriculumMappingIndex",
-          "line": 31,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "emptyCurriculumMappingIndex",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMissingCurriculumMappingTableError",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildCurriculumMappingIndex",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "appendUnique",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCurriculumMappingsForCourseraIds",
-          "line": 114,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveCurriculumMappingsForCourse",
-          "line": 150,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "curriculumCandidatesForProvider",
-          "line": 171,
+          "line": 172,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyCandidatesForProviderCourse",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveProviderCourseMappings",
-          "line": 250,
+          "line": 257,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -110098,9 +110098,9 @@
       "path": "lib/coursera/mapIdentityAndProgress.server.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 5374,
+      "bytes": 5392,
       "lines": 178,
-      "sha256": "b76ebf310cdecf733bf3e750a3e8abd563bc1749fd0002b20430a16eb9c361a0",
+      "sha256": "6b72db57be9c04003330f7bc91946b23721ee919d8c0d413d23a65f22ea0f3a2",
       "binary": false,
       "exports": [
         {
@@ -110762,6 +110762,49 @@
       "directive": null
     },
     {
+      "path": "lib/coursera/progressMiscount.test.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 8743,
+      "lines": 190,
+      "sha256": "0b1d20db365ae151b311b5101177b541165b8e29fa20c9dd7d836b57daccea2c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "PROGRAM_SLUG",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "INTRO_AI_ID",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROMPT_ENGINEERING_ID",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "IBM_PATH_ID",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "LAB_SLOT",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "ibmProgram",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/coursera/progressPromotion.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
@@ -110777,61 +110820,71 @@
       "path": "lib/coursera/progressPromotion.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 2777,
-      "lines": 89,
-      "sha256": "0077a662b0c629f3009a9ffe52935311da3ca14dbefd03e231045a313ab9d4e2",
+      "bytes": 3602,
+      "lines": 108,
+      "sha256": "ecc5db78de705f7230e0a6cb36cc8131fb643e1532ce93454451d18d45fea913",
       "binary": false,
       "exports": [
         {
           "name": "CanonicalCourseProgressMapping",
-          "line": 10,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraProgressPromotionRow",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlannedCourseraProgressPromotion",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "isLearningPathProgressRow",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "parseCourseraGradeScore",
-          "line": 39,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planCourseraProgressPromotion",
-          "line": 53,
+          "line": 67,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CanonicalCourseProgressMapping",
-          "line": 10,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraProgressPromotionRow",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlannedCourseraProgressPromotion",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "isLearningPathProgressRow",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "parseCourseraGradeScore",
-          "line": 39,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planCourseraProgressPromotion",
-          "line": 53,
+          "line": 67,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -110841,9 +110894,9 @@
       "path": "lib/coursera/progressQueries.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 38950,
-      "lines": 1055,
-      "sha256": "9ee257f39ee5ffcf05ae1ac4bcca2e6391e5634d3502bef0753654148f7cc25a",
+      "bytes": 41238,
+      "lines": 1106,
+      "sha256": "d71e7d78a5823f99283266b6b46939101eb5bae92aac1fc4b9c2c115f6a0f098",
       "binary": false,
       "exports": [
         {
@@ -110903,42 +110956,52 @@
         },
         {
           "name": "loadLearnerProgressByUserId",
-          "line": 516,
+          "line": 522,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isLearningPathCourseRow",
+          "line": 640,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "partitionLearnerCourseRows",
+          "line": 644,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadLearnerProgressByExternalEmail",
-          "line": 658,
+          "line": 707,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UnmatchedXapiEventRow",
-          "line": 752,
+          "line": 803,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmail",
-          "line": 785,
+          "line": 836,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countUnmatchedXapiEventsByExternalEmail",
-          "line": 833,
+          "line": 884,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmailPaginated",
-          "line": 868,
+          "line": 919,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SuggestedUserMatch",
-          "line": 913,
+          "line": 964,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "suggestUserMatchesForExternalEmail",
-          "line": 948,
+          "line": 999,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111005,67 +111068,82 @@
         },
         {
           "name": "loadLearnerProgressByUserId",
-          "line": 516,
+          "line": 522,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CourseProgressBaseRow",
-          "line": 540,
+          "line": 548,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "COURSE_PROGRESS_SELECT_COLUMNS",
-          "line": 558,
+          "line": 566,
           "kind": "Variable"
         },
         {
           "name": "mapCourseProgressRow",
-          "line": 576,
+          "line": 584,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCoursesForUserId",
-          "line": 596,
+          "line": 611,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadLearningPathRowsForUserId",
+          "line": 623,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isLearningPathCourseRow",
+          "line": 640,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "partitionLearnerCourseRows",
+          "line": 644,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadBadgesForUserId",
-          "line": 606,
+          "line": 655,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadLearnerProgressByExternalEmail",
-          "line": 658,
+          "line": 707,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UnmatchedXapiEventRow",
-          "line": 752,
+          "line": 803,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmail",
-          "line": 785,
+          "line": 836,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countUnmatchedXapiEventsByExternalEmail",
-          "line": 833,
+          "line": 884,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadUnmatchedXapiEventsByExternalEmailPaginated",
-          "line": 868,
+          "line": 919,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SuggestedUserMatch",
-          "line": 913,
+          "line": 964,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "suggestUserMatchesForExternalEmail",
-          "line": 948,
+          "line": 999,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -111163,6 +111241,80 @@
         {
           "name": "reconcileProgramProgress",
           "line": 73,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/coursera/progressTileSummary.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 3266,
+      "lines": 84,
+      "sha256": "5685f2dc2e9e5e37e28c020265e875aff2b5742d712c5927219990b7d9169881",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ProgramCourseProgressSummary",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isCourseraDeliveredCourse",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeProgramCourseProgress",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "learningPathPercent",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatProgramCoursesNote",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatLearningPathLine",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ProgramCourseProgressSummary",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isCourseraDeliveredCourse",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeProgramCourseProgress",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "learningPathPercent",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatProgramCoursesNote",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatLearningPathLine",
+          "line": 80,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156486,9 +156638,9 @@
       "path": "shared/programSyllabi.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 60479,
-      "lines": 1010,
-      "sha256": "d89b21b404961eb7160410eb764680c6200573654435fedc29618de46f8bc902",
+      "bytes": 60970,
+      "lines": 1020,
+      "sha256": "a012fa1249969a3dfe142f83c28192039a1d52278c3554598b601abae595c534",
       "binary": false,
       "exports": [
         {
@@ -156498,22 +156650,22 @@
         },
         {
           "name": "ProgramSyllabus",
-          "line": 18,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PROGRAM_SYLLABI",
-          "line": 38,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "ProgramSyllabusSlug",
-          "line": 1006,
+          "line": 1016,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getProgramSyllabus",
-          "line": 1008,
+          "line": 1018,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156525,22 +156677,22 @@
         },
         {
           "name": "ProgramSyllabus",
-          "line": 18,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PROGRAM_SYLLABI",
-          "line": 38,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "ProgramSyllabusSlug",
-          "line": 1006,
+          "line": 1016,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getProgramSyllabus",
-          "line": 1008,
+          "line": 1018,
           "kind": "FunctionDeclaration"
         }
       ],

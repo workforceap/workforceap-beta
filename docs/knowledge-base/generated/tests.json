@@ -5593,6 +5593,54 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/coursera/progressMiscount.test.ts",
+    "area": "libraries",
+    "domain": "learning-coursera",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/content/programs.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/content/coursera/learningPaths.ts",
+        "line": 5
+      },
+      {
+        "file": "lib/coursera/canonicalMapping.ts",
+        "line": 6
+      },
+      {
+        "file": "lib/coursera/curriculumMapping.ts",
+        "line": 7
+      },
+      {
+        "file": "lib/coursera/progressPromotion.ts",
+        "line": 8
+      },
+      {
+        "file": "lib/coursera/progressReconciliation.ts",
+        "line": 9
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 10
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/coursera/progressPromotion.test.ts",
     "area": "libraries",
     "domain": "learning-coursera",

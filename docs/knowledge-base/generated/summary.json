@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "3268cbcb9e9d887a7e9532996311db95be7f78d5ff785fc316512f9cafc5d4d1",
+  "inputTreeSha256": "c83f55337ccccc8450a59db0db2bf88cc6641de2a0d37ac3e1046d9f0547afcd",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4903,
-    "sourceModules": 3555,
-    "importReferences": 17656,
-    "resolvedLocalReferences": 11834,
+    "files": 4905,
+    "sourceModules": 3557,
+    "importReferences": 17671,
+    "resolvedLocalReferences": 11847,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1061,
     "nextRouteFiles": 1028,
@@ -22,10 +22,10 @@
     "prismaModels": 112,
     "prismaEnums": 33,
     "relationFields": 306,
-    "testFiles": 937,
-    "testCandidates": 928,
+    "testFiles": 938,
+    "testCandidates": 929,
     "testHelpers": 9,
-    "staticallySelectedTests": 926,
+    "staticallySelectedTests": 927,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1045
+      "files": 1047
     },
     {
       "area": "localization",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 244
+      "references": 246
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -301,12 +301,12 @@
       "lines": 1478
     },
     {
-      "file": "tests/api/placement-survey.spec.ts",
-      "lines": 1454
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1467
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1427
+      "file": "tests/api/placement-survey.spec.ts",
+      "lines": 1454
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -321,12 +321,12 @@
       "lines": 1353
     },
     {
-      "file": "components/portal/sessions/SessionRunClient.tsx",
-      "lines": 1350
+      "file": "lib/coursera/csvImport.server.ts",
+      "lines": 1351
     },
     {
-      "file": "lib/coursera/csvImport.server.ts",
-      "lines": 1343
+      "file": "components/portal/sessions/SessionRunClient.tsx",
+      "lines": 1350
     },
     {
       "file": "lib/content/checkpoints/businessAndDesign.ts",
@@ -385,12 +385,12 @@
       "lines": 1116
     },
     {
-      "file": "components/admin/CourseraMappingsAdmin.tsx",
-      "lines": 1091
+      "file": "lib/coursera/progressQueries.ts",
+      "lines": 1106
     },
     {
-      "file": "app/api/apply/signup/route.ts",
-      "lines": 1082
+      "file": "components/admin/CourseraMappingsAdmin.tsx",
+      "lines": 1091
     }
   ]
 }

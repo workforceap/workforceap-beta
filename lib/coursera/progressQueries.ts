@@ -3,7 +3,7 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { parseCourseGradeString } from '@/lib/coursera/courseGradeDisplay';
-import { KNOWN_LEARNING_PATH_IDS } from '@/lib/content/coursera/learningPaths';
+import { KNOWN_LEARNING_PATH_IDS, findLearningPathById } from '@/lib/content/coursera/learningPaths';
 
 // Heuristic re-exported from a server-only-free module so it can be unit-
 // tested in isolation. See lib/coursera/testAccountHeuristic.ts for the
@@ -509,7 +509,13 @@ export type LearnerProgressDetail = {
   externalEmail: string | null;
   externalName: string | null;
   user: { id: string; fullName: string; email: string } | null;
+  /** Coursera course rows only; never a Learning Path's own row. */
   courses: LearnerCourseRow[];
+  /**
+   * Learning Path rows (Coursera's program-level percentage), kept apart from
+   * `courses` so the UI can show them on their own line and never count them.
+   */
+  learningPaths: LearnerCourseRow[];
   badges: LearnerBadgeRow[];
 };
 
@@ -522,6 +528,7 @@ export async function loadLearnerProgressByUserId(userId: string): Promise<Learn
     if (!user) return null;
 
     const courses = await loadCoursesForUserId(userId);
+    const learningPaths = await loadLearningPathRowsForUserId(userId);
     const badges = await loadBadgesForUserId(userId);
 
     return {
@@ -529,6 +536,7 @@ export async function loadLearnerProgressByUserId(userId: string): Promise<Learn
       externalName: null,
       user,
       courses,
+      learningPaths,
       badges,
     };
   } catch (error) {
@@ -593,14 +601,55 @@ function mapCourseProgressRow(row: CourseProgressBaseRow): LearnerCourseRow {
   };
 }
 
+/**
+ * Coursera course rows for a linked member. A Learning Path's own row (the
+ * program-level percentage B4B reports under the path id) lives in the same
+ * table; it is excluded here, consistently with the roster and grade queries
+ * above, so "N of M" only ever counts courses. `loadLearningPathRowsForUserId`
+ * returns those rows for display on their own line.
+ */
 async function loadCoursesForUserId(userId: string): Promise<LearnerCourseRow[]> {
+  const learningPathIds = [...KNOWN_LEARNING_PATH_IDS];
   const rows = await prisma.$queryRaw<CourseProgressBaseRow[]>`
     SELECT ${COURSE_PROGRESS_SELECT_COLUMNS}
     FROM coursera_course_progress
     WHERE user_id = ${userId}
+      AND coursera_course_id <> ALL(${learningPathIds}::text[])
+    ORDER BY last_activity_time DESC NULLS LAST, enrollment_time DESC NULLS LAST
+  `;
+  return rows.map(mapCourseProgressRow).filter((row) => !isLearningPathCourseRow(row));
+}
+
+async function loadLearningPathRowsForUserId(userId: string): Promise<LearnerCourseRow[]> {
+  const learningPathIds = [...KNOWN_LEARNING_PATH_IDS];
+  if (learningPathIds.length === 0) return [];
+  const rows = await prisma.$queryRaw<CourseProgressBaseRow[]>`
+    SELECT ${COURSE_PROGRESS_SELECT_COLUMNS}
+    FROM coursera_course_progress
+    WHERE user_id = ${userId}
+      AND coursera_course_id = ANY(${learningPathIds}::text[])
     ORDER BY last_activity_time DESC NULLS LAST, enrollment_time DESC NULLS LAST
   `;
   return rows.map(mapCourseProgressRow);
+}
+
+/**
+ * Pure partition used by every learner-detail loader: registered path ids
+ * (with or without B4B's `Course~` prefix) are never courses.
+ */
+export function isLearningPathCourseRow(row: Pick<LearnerCourseRow, 'courseraCourseId'>): boolean {
+  return findLearningPathById(row.courseraCourseId) !== null;
+}
+
+export function partitionLearnerCourseRows<T extends Pick<LearnerCourseRow, 'courseraCourseId'>>(
+  rows: readonly T[],
+): { courses: T[]; learningPaths: T[] } {
+  const courses: T[] = [];
+  const learningPaths: T[] = [];
+  for (const row of rows) {
+    (isLearningPathCourseRow(row) ? learningPaths : courses).push(row);
+  }
+  return { courses, learningPaths };
 }
 
 async function loadBadgesForUserId(userId: string): Promise<LearnerBadgeRow[]> {
@@ -711,12 +760,14 @@ export async function loadLearnerProgressByExternalEmail(
     if (courses.length === 0 && badges.length === 0) return null;
 
     const externalName = courses[0]?.externalName ?? badges[0]?.externalName ?? null;
+    const partitioned = partitionLearnerCourseRows(courses.map(mapCourseProgressRow));
 
     return {
       externalEmail: lower,
       externalName,
       user: null,
-      courses: courses.map(mapCourseProgressRow),
+      courses: partitioned.courses,
+      learningPaths: partitioned.learningPaths,
       badges: badges.map((row) => ({
         id: row.id,
         badgeTitle: row.badgeTitle,
