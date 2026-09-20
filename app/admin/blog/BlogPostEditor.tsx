@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Sparkles, ChevronDown, ChevronRight } from 'lucide-react';
 import { BLOG_TOPIC_SUGGESTIONS } from '@/lib/content/blogTopicSuggestions';
+import { collectInvalidFieldLabels, describeMissingRequired, focusFirstInvalid } from '@/lib/forms/requiredFields';
 
 
 const MarkdownPreview = dynamic(async () => {
@@ -66,6 +67,7 @@ export default function BlogPostEditor({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const editorFormRef = useRef<HTMLFormElement>(null);
   const [review, setReview] = useState<{
     overallScore?: number;
     summary?: string;
@@ -148,6 +150,18 @@ export default function BlogPostEditor({
   };
 
   const handleSave = async (publish: boolean) => {
+    // Both "Save & Publish" (type=button) and the submit button land here, so
+    // the required-field summary lives here rather than in the browser
+    // tooltip (audit 2026-09-20).
+    const formEl = editorFormRef.current;
+    if (formEl) {
+      const missing = collectInvalidFieldLabels(formEl);
+      if (missing.length > 0) {
+        setError(describeMissingRequired(missing, { leadIn: publish ? 'Before you can publish' : 'Before you can save' }));
+        focusFirstInvalid(formEl);
+        return;
+      }
+    }
     setSaving(true);
     setError(null);
     try {
@@ -203,13 +217,15 @@ export default function BlogPostEditor({
 
   return (
     <form
+      ref={editorFormRef}
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         handleSave(published);
       }}
       style={{ maxWidth: '800px' }}
     >
-      {error && <div className="admin-error-banner" style={{ padding: '0.75rem', marginBottom: '1rem', borderRadius: '6px' }}>{error}</div>}
+      {error && <div role="alert" className="admin-error-banner" style={{ padding: '0.75rem', marginBottom: '1rem', borderRadius: '6px' }}>{error}</div>}
       <div style={{ marginBottom: '1rem' }}>
         <label htmlFor="blogposteditor-title-field" style={labelStyle}>Title</label>
         <input id="blogposteditor-title-field"

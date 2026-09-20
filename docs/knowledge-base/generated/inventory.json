@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "5d3fa088c27c3f2842d20a18cd001775dbb226a42315f0cfd53856f4179d649e",
+  "inputTreeSha256": "71048578da192a4359ffa5cf002a2d3ce40471629b8594ad5f4f111dd9ae05ab",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -14444,14 +14444,14 @@
       "path": "app/admin/blog/BlogPostEditor.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 23006,
-      "lines": 623,
-      "sha256": "dea7620b5c1cc68d4bfc5cdf8255ff9865da6c67fb23e842dfffe3adf14be72a",
+      "bytes": 23757,
+      "lines": 639,
+      "sha256": "8e5182840522ebb2f4763dd77e8013dceed0c08502e73ec9cedcc8f58705d367",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration",
           "localName": "BlogPostEditor"
         }
@@ -14459,22 +14459,22 @@
       "declarations": [
         {
           "name": "MarkdownPreview",
-          "line": 11,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "BlogPost",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "slugify",
-          "line": 39,
+          "line": 40,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlogPostEditor",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -15979,14 +15979,14 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13149,
-      "lines": 399,
-      "sha256": "66ee74ca812550bf3a0bfbf467ea07c6fa645d8410f9ca3309a532951e7672b9",
+      "bytes": 16658,
+      "lines": 509,
+      "sha256": "5bef6a524b654e344ca61663f8a0e00fd555ca92573dbb4e66e1f4bde25b2488",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 83,
+          "line": 191,
           "kind": "FunctionDeclaration",
           "localName": "ExecutiveDashboardPage"
         }
@@ -16013,18 +16013,43 @@
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "ADMIN_METRICS_TIMEOUT_MS",
+          "line": 84,
+          "kind": "Variable"
+        },
+        {
+          "name": "DashboardFrame",
+          "line": 86,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "DashboardLoading",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "useAdminMetrics",
+          "line": 140,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "ExecutiveDashboardPage",
-          "line": 83,
+          "line": 191,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ExecutiveDashboardContent",
+          "line": 201,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SummaryCard",
-          "line": 323,
+          "line": 433,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueCard",
-          "line": 354,
+          "line": 464,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -16464,14 +16489,14 @@
       "path": "app/admin/employers/CreateEmployerAccountClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 8383,
-      "lines": 221,
-      "sha256": "5ba31f86f8bf56bf613b55082a6dbaa95870db08d708465f20bd63d824005617",
+      "bytes": 9141,
+      "lines": 231,
+      "sha256": "9b56d8afc0e0f8c9e51f078d678b1e183a50712768f7a5a3822084c2e518380f",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration",
           "localName": "CreateEmployerAccountClient"
         }
@@ -16479,12 +16504,12 @@
       "declarations": [
         {
           "name": "MemberRow",
-          "line": 6,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CreateEmployerAccountClient",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -16884,19 +16909,19 @@
       "path": "app/admin/feature-flags/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 3039,
-      "lines": 91,
-      "sha256": "5218074cea637d9671325900ad8569e18bc51434428dd513b66621e2ca2de5a3",
+      "bytes": 3329,
+      "lines": 95,
+      "sha256": "63df65fea4ac4a6d2fc291e836631c375782be5c09d8d79798f3a8248d120a50",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 15,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 35,
+          "line": 36,
           "kind": "FunctionDeclaration",
           "localName": "AdminFeatureFlagsPage"
         }
@@ -16904,22 +16929,22 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 15,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RECENT_WINDOW_DAYS",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "formatUpdated",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminFeatureFlagsPage",
-          "line": 35,
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -18273,14 +18298,14 @@
       "path": "app/admin/members/new/AddMemberWizard.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 35786,
-      "lines": 785,
-      "sha256": "2ea5815239a2e66eff89e6ea48266b8e76dc85ecb381866a9dbe6846a6b151df",
+      "bytes": 36840,
+      "lines": 805,
+      "sha256": "1c03993ca1363e4d49df9269910a082821b0397350852f67dbb4568e3633c895",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 93,
+          "line": 95,
           "kind": "FunctionDeclaration",
           "localName": "AddMemberWizard"
         }
@@ -18288,67 +18313,67 @@
       "declarations": [
         {
           "name": "FUNDING_SOURCE_OPTIONS",
-          "line": 18,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYMENT",
-          "line": 26,
-          "kind": "Variable"
-        },
-        {
-          "name": "VETERAN",
-          "line": 27,
-          "kind": "Variable"
-        },
-        {
-          "name": "INCOME",
           "line": 28,
           "kind": "Variable"
         },
         {
-          "name": "EDUCATION",
+          "name": "VETERAN",
           "line": 29,
           "kind": "Variable"
         },
         {
-          "name": "REFERRAL",
+          "name": "INCOME",
           "line": 30,
           "kind": "Variable"
         },
         {
-          "name": "ETHNICITY",
+          "name": "EDUCATION",
           "line": 31,
           "kind": "Variable"
         },
         {
+          "name": "REFERRAL",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "ETHNICITY",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
           "name": "FormData",
-          "line": 36,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "initialForm",
-          "line": 63,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "PartnerOption",
-          "line": 89,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "SubgroupOption",
-          "line": 90,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "Props",
           "line": 91,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "AddMemberWizard",
+          "name": "SubgroupOption",
+          "line": 92,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Props",
           "line": 93,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AddMemberWizard",
+          "line": 95,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19222,9 +19247,9 @@
       "path": "app/admin/partners/new/NewPartnerForm.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 7737,
+      "bytes": 7738,
       "lines": 204,
-      "sha256": "3413315c64fa1d79c3032d572a1269faf97dbcc757e0517b16a3b1e531862631",
+      "sha256": "8324a1741f9c36ec6bd87b02e36f4245441b8a0c0235427538dbb59bb5fd3101",
       "binary": false,
       "exports": [
         {
@@ -20256,19 +20281,19 @@
       "path": "app/admin/settings/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 1907,
-      "lines": 44,
-      "sha256": "afaad98f71d727d0648c75d22926f093ee873dc03aa4ea489580eeaf0cf81828",
+      "bytes": 2058,
+      "lines": 46,
+      "sha256": "268a2f015337a154b0497c49f7c2be9d979208fd1dbbfb05ef71adff1707348a",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration",
           "localName": "AdminSettingsPage"
         }
@@ -20276,12 +20301,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminSettingsPage",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -27326,41 +27351,41 @@
       "path": "app/api/admin/partners/[id]/invite/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 6628,
-      "lines": 166,
-      "sha256": "6273feb1649bc882020162eea58dbc84fd60c628bc5b88b4e990afe79560b831",
+      "bytes": 8648,
+      "lines": 206,
+      "sha256": "c6ace071ffecb48ccbfeb68995b9cbb2982b69ff465b0db5f2af488b7a4443e4",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 95,
+          "line": 101,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "bodySchema",
-          "line": 15,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "PartnerInviteConflictError",
-          "line": 19,
+          "line": 25,
           "kind": "ClassDeclaration"
         },
         {
           "name": "ensurePartnerUserLink",
-          "line": 21,
+          "line": 27,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ensurePartnerInviteUser",
-          "line": 56,
+          "line": 62,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 95,
+          "line": 101,
           "kind": "Variable"
         }
       ],
@@ -28737,46 +28762,46 @@
       "path": "app/api/admin/users/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 8709,
-      "lines": 236,
-      "sha256": "371cf7b1b23ff13d0dfaa544ae7e9e984ebf32a85f15503560425d468dd82c38",
+      "bytes": 9681,
+      "lines": 258,
+      "sha256": "3a821143015353afdc5c91121ca3cd2cb59dc9479e7ef2704977a8cd9ec5252e",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 49,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 236,
+          "line": 258,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "_GET",
-          "line": 24,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 49,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "createSchema",
-          "line": 51,
+          "line": 57,
           "kind": "Variable"
         },
         {
           "name": "_POST",
-          "line": 56,
+          "line": 62,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 236,
+          "line": 258,
           "kind": "Variable"
         }
       ],
@@ -48434,9 +48459,9 @@
       "path": "components/admin/AdminCounselorsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11392,
-      "lines": 186,
-      "sha256": "fbe1edf8075618bd951548d1655ffce0c6dc1dbb988ee861f24f71acb8b2ba97",
+      "bytes": 11652,
+      "lines": 187,
+      "sha256": "610739d60ba8739af298f64e05c2b5a911d38cc8ec5f7495f65d5729bb3936db",
       "binary": false,
       "exports": [
         {
@@ -48577,9 +48602,9 @@
       "path": "components/admin/AdminFeatureFlagsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 21320,
-      "lines": 511,
-      "sha256": "5018ca7b840cc9b0ab7a858f4b0c2ef7e15aa45f473b64c4eafd0b676dcb7f9b",
+      "bytes": 21380,
+      "lines": 512,
+      "sha256": "cc1313b6919f5694af1e8ff2191da634f83152a8aedcc956fc90541dfac93a4d",
       "binary": false,
       "exports": [
         {
@@ -49693,14 +49718,14 @@
       "path": "components/admin/AdminUsersManager.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 23229,
-      "lines": 529,
-      "sha256": "d10d3563d50e7ec0d9ecf704737b83af5ee24016c69105c76fe02f1aebffa47c",
+      "bytes": 24499,
+      "lines": 562,
+      "sha256": "e0d688f5fe2eddd05702c2387d4ddc04dda03795a2683eb3d14c8feb6491d36b",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration",
           "localName": "AdminUsersManager"
         }
@@ -49708,22 +49733,22 @@
       "declarations": [
         {
           "name": "UserRow",
-          "line": 13,
+          "line": 14,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Props",
-          "line": 22,
+          "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ROLE_OPTIONS",
-          "line": 32,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "AdminUsersManager",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -51399,22 +51424,37 @@
       "path": "components/admin/InvitePartnerUserButton.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 2325,
-      "lines": 63,
-      "sha256": "d3467d54822e65a1b4372874f4e4a1ca17f741d8d82476d84f8e76fc14b1438c",
+      "bytes": 3517,
+      "lines": 88,
+      "sha256": "2afa592b18a5a37405b1539f347fda7103ed0fdd8af4f77762370a65a173beda",
       "binary": false,
       "exports": [
         {
+          "name": "inviteFailureText",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "default",
-          "line": 5,
+          "line": 23,
           "kind": "FunctionDeclaration",
           "localName": "InvitePartnerUserButton"
         }
       ],
       "declarations": [
         {
-          "name": "InvitePartnerUserButton",
+          "name": "INVITE_NOT_SENT",
           "line": 5,
+          "kind": "Variable"
+        },
+        {
+          "name": "inviteFailureText",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "InvitePartnerUserButton",
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -52114,6 +52154,31 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/admin/OrgWideChangeNotice.tsx",
+      "area": "components",
+      "domain": "administration",
+      "bytes": 1420,
+      "lines": 37,
+      "sha256": "56a0bb9a69b685f00787b04d82364ef45f4a1783d4a3d9a91cfc44e14e9dd284",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 9,
+          "kind": "FunctionDeclaration",
+          "localName": "OrgWideChangeNotice"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "OrgWideChangeNotice",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/admin/OutcomesDashboard.tsx",
@@ -52957,14 +53022,14 @@
       "path": "components/admin/SubgroupForm.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6975,
-      "lines": 184,
-      "sha256": "2f5a82dbf9c93418d94036eedfe50706beaaabdcade64f692f9e331b154eaa9a",
+      "bytes": 7562,
+      "lines": 193,
+      "sha256": "4eda0d89c3b1bf774f4e658e9cc9d28de980028177f241449316b78ff5adc285",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration",
           "localName": "SubgroupForm"
         }
@@ -52972,22 +53037,22 @@
       "declarations": [
         {
           "name": "UserOpt",
-          "line": 6,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "PartnerOpt",
           "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "PartnerOpt",
+          "line": 8,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "Props",
-          "line": 9,
+          "line": 10,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SubgroupForm",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65877,6 +65942,30 @@
       "binary": false
     },
     {
+      "path": "components/portal/forms/RequiredFieldsHint.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 931,
+      "lines": 30,
+      "sha256": "7a90ae84ff72da3b232187dc18ed1f1dedeefd438ac429ac3dec66ba88729bc9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "RequiredFieldsHint",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "RequiredFieldsHint",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/jobs/LogExternalApplicationButton.tsx",
       "area": "components",
       "domain": "jobs-employers",
@@ -69501,41 +69590,41 @@
       "path": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5965,
-      "lines": 219,
-      "sha256": "25cfab1c4d949b93ebf753cc74535fa5050f8179346f41e562887c591cdc3179",
+      "bytes": 6141,
+      "lines": 225,
+      "sha256": "3e5cffcf7e975dfb43fa3c17bed37b3f5ef552ab610aa7ae492cb62e75bfcdaa",
       "binary": false,
       "exports": [
         {
           "name": "FeatureFlagRow",
-          "line": 25,
+          "line": 26,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKitProps",
-          "line": 40,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKit",
-          "line": 52,
+          "line": 55,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "FeatureFlagRow",
-          "line": 25,
+          "line": 26,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKitProps",
-          "line": 40,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKit",
-          "line": 52,
+          "line": 55,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -72918,14 +73007,14 @@
       "path": "components/portal/sessions/WalkInSessionClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7044,
-      "lines": 184,
-      "sha256": "4099c005dc99f0f8a02753e574e23f3c7be57672a2ecce17d4540927337ca395",
+      "bytes": 7726,
+      "lines": 194,
+      "sha256": "6ed6a69552e87ed636512f10a7abe40e280241082c962bc0d309006ecd089d12",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 18,
+          "line": 20,
           "kind": "FunctionDeclaration",
           "localName": "WalkInSessionClient"
         }
@@ -72933,7 +73022,7 @@
       "declarations": [
         {
           "name": "WalkInSessionClient",
-          "line": 18,
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76017,9 +76106,9 @@
       "path": "css/portal-ui-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 7373,
-      "lines": 270,
-      "sha256": "9a1637329bcb362b2a9c9c787a079a6122cc4619189204206eb40bce21489664",
+      "bytes": 7651,
+      "lines": 282,
+      "sha256": "c6f81b76770271cf21aae771dd36bfcbca00cc1b4852cbd36ecafd0518654c18",
       "binary": false
     },
     {
@@ -96688,6 +96777,107 @@
         {
           "name": "resolveActOnBehalf",
           "line": 30,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/auth/authProviderError.test.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 2944,
+      "lines": 53,
+      "sha256": "ee58c25dff5c2063c6ac8080b55e8faf8fc1068ea4aba2ede3365ceaa2a4464d",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/auth/authProviderError.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 4091,
+      "lines": 110,
+      "sha256": "ebf20190fb54a2cd60e4122211372b5bb1b2d66db9ddab8dda9bfbd121254669",
+      "binary": false,
+      "exports": [
+        {
+          "name": "isAuthProviderConfigError",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "classifyAuthProviderError",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "authProviderFailureStatus",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeAuthProviderFailure",
+          "line": 94,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AuthProviderFailureKind",
+          "line": 12,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ProviderErrorShape",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "DUPLICATE_CODES",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "VALIDATION_CODES",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "UNAVAILABLE_STATUSES",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "readString",
+          "line": 33,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isAuthProviderConfigError",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "classifyAuthProviderError",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AuthProviderAction",
+          "line": 73,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "authProviderFailureStatus",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeAuthProviderFailure",
+          "line": 94,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -117635,6 +117825,112 @@
         {
           "name": "formatPhone",
           "line": 6,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/forms/requiredFields.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1291,
+      "lines": 32,
+      "sha256": "813a0d50ce54708f6d94f865626b2e650a4b1c11d476224019ad6a1dd7c42c5d",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/forms/requiredFields.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 3836,
+      "lines": 102,
+      "sha256": "0d9e7b3a69ece823b444837ca01d29a2e6e18b4827e1285c970e6987bf4cdf3f",
+      "binary": false,
+      "exports": [
+        {
+          "name": "missingRequiredLabels",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeMissingRequired",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "cleanFieldLabel",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fieldLabelFor",
+          "line": 61,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "collectInvalidFieldLabels",
+          "line": 92,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "focusFirstInvalid",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "RequiredFieldCheck",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "missingRequiredLabels",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeMissingRequired",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "cleanFieldLabel",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ValidatableControl",
+          "line": 50,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isValidatable",
+          "line": 52,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fieldLabelFor",
+          "line": 61,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "invalidControls",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "collectInvalidFieldLabels",
+          "line": 92,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "focusFirstInvalid",
+          "line": 97,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -155703,40 +155999,40 @@
       "path": "tests/api/admin-partner-invite-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4289,
-      "lines": 128,
-      "sha256": "402539d5e8d6b4809191de11b0a7672a18cabab7bd2ed3d1db779015c2933f44",
+      "bytes": 8410,
+      "lines": 208,
+      "sha256": "34383515d626c3af7a7ebbe5c52e710a062571071cd9f092d3c8f770383e9d21",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "ADMIN_ID",
-          "line": 73,
-          "kind": "Variable"
-        },
-        {
-          "name": "USER_ID",
-          "line": 74,
-          "kind": "Variable"
-        },
-        {
-          "name": "PARTNER_ID",
-          "line": 75,
-          "kind": "Variable"
-        },
-        {
-          "name": "ORG_ID",
-          "line": 76,
-          "kind": "Variable"
-        },
-        {
-          "name": "OTHER_ORG_ID",
           "line": 77,
           "kind": "Variable"
         },
         {
-          "name": "makeRequest",
+          "name": "USER_ID",
+          "line": 78,
+          "kind": "Variable"
+        },
+        {
+          "name": "PARTNER_ID",
           "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORG_ID",
+          "line": 80,
+          "kind": "Variable"
+        },
+        {
+          "name": "OTHER_ORG_ID",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
+          "name": "makeRequest",
+          "line": 83,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156003,6 +156299,54 @@
           "name": "transactionStore",
           "line": 78,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/api/admin-user-create-provider-failure.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5046,
+      "lines": 104,
+      "sha256": "65148025f3628658a178722a204f7bd45351226a3245f160094f548135a985cb",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "createAuthUser",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "getSupabaseAdmin",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "captureApiError",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "getUser",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "getActorOrganizationId",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "request",
+          "line": 43,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -161070,6 +161414,29 @@
       "directive": null
     },
     {
+      "path": "tests/components/admin-functional-audit-fixes.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6649,
+      "lines": 123,
+      "sha256": "eefb1a64c0c070fcce9e69808f4c0c4cddec2049286bc3a9eccd37f1abb3a431",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "fetchMock",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "jsonResponse",
+          "line": 20,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/admin-hydration-hardening.test.ts",
       "area": "tests",
       "domain": "tests",
@@ -162753,6 +163120,44 @@
           "name": "renderChallenge",
           "line": 16,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/staff-shell-auth-reads.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5796,
+      "lines": 115,
+      "sha256": "51c498fcc8ed1e44f982620f8f55d3ca8273e5c110fb9b87babd07fa436146d0",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "fetchMock",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "jsonResponse",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "requestsTo",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "mount",
+          "line": 44,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -166504,6 +166909,24 @@
       "directive": null
     },
     {
+      "path": "tests/lib/required-fields-dom.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2458,
+      "lines": 53,
+      "sha256": "efe559f74be26b91630c3473deaf5e719e651f6ba9c8c07b9c273f078027c386",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "buildForm",
+          "line": 4,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/retention-window-evidence.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -167434,6 +167857,29 @@
           "name": "assertFollowOnColumns",
           "line": 82,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/next-config-csp-form-action.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 1230,
+      "lines": 28,
+      "sha256": "c3f5064bd24af4ea3ccdbc2e9415d9f80359eb94da1436f63b064134f033e1b9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "Header",
+          "line": 5,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "HeaderRule",
+          "line": 6,
+          "kind": "TypeAliasDeclaration"
         }
       ],
       "directive": null
