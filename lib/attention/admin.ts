@@ -8,6 +8,13 @@ import 'server-only';
  * Roster: member-role accounts only (`MEMBER_ONLY_WHERE`). Staff, admin and
  * dogfood accounts are never members or applicants on these pages (admin
  * audit 2026-09-20, §4.1).
+ *
+ * Tenant scope: the roster query runs inside `withAdminPageScope`, so an org
+ * admin only sees their organisation's members (super-admin is unscoped by
+ * design). Every fact the loader then reads — applications, events, alerts,
+ * assignments, message SQL — is keyed by that id set, which is how the
+ * models without an `organizationId` column stay inside the tenant
+ * (scripts/verify-high-risk-tenant-routes.cjs guards this file).
  */
 
 import { cache } from 'react';
