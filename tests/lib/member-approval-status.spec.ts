@@ -20,7 +20,13 @@ describe('saved member approval facts', () => {
     const result = buildMemberApprovalStatus({ applications: [{ status: 'APPROVED', submittedAt: date }],
       wioaReviewStatus: 'verified', wioaReviewedAt: date,
       courseraEnrollmentApproved: true, courseraEnrollmentApprovedAt: date });
-    expect(result).toEqual({ application: 'approved', submittedAt: date.toISOString(), intake: 'verified', reviewedAt: date.toISOString(), training: 'approved', approvedAt: date.toISOString(), providerAccess: 'unknown' });
+    expect(result).toMatchObject({ application: 'approved', submittedAt: date.toISOString(), intake: 'verified', reviewedAt: date.toISOString(), training: 'approved', approvedAt: date.toISOString(), providerAccess: 'unknown' });
+    // WAP-91 stage view: every date is a stored one; nothing is inferred for provider acceptance.
+    expect(result.currentStage).toBe('complete');
+    expect(result.counselorName).toBeNull();
+    expect(result.stages.application).toMatchObject({ state: 'complete', startedAt: date.toISOString(), completedAt: null });
+    expect(result.stages.intake).toMatchObject({ state: 'complete', startedAt: null, completedAt: date.toISOString() });
+    expect(result.stages.training).toMatchObject({ state: 'complete', startedAt: null, completedAt: date.toISOString(), owner: 'member' });
     expect(buildMemberApprovalStatus({}).training).toBe('unknown');
     expect(buildMemberApprovalStatus({ applications: [] }).application).toBe('not_submitted');
   });

@@ -14,7 +14,7 @@ export default function AdminFooter() {
       © {new Date().getFullYear()} Workforce Advancement Project
       <span style={{ margin: '0 0.35rem', color: 'var(--outline-variant)' }}>|</span>
       Support:{' '}
-      <a href="mailto:info@workforceap.org" style={{ color: 'var(--color-blue)', textDecoration: 'none' }}>
+      <a href="mailto:info@workforceap.org" style={{ color: 'var(--wa-info-dark)', textDecoration: 'none' }}>
         info@workforceap.org
       </a>
     </footer>

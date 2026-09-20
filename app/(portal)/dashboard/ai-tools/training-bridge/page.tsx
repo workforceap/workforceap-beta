@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
-import { DesignSurface, SectionHeader, StatusTag } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, StatusTag } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import TrainingBridgeClient, {
   type SavedAssessment,
@@ -82,14 +82,14 @@ export default async function TrainingBridgePage() {
         ) : null}
         <PortalBreadcrumb
           items={[
-            { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: t('title') },
           ]}
         />
-        <SectionHeader
-          kicker="AI Career Toolkit"
+        <PageOpener
+          kicker="AI Career Tools"
           title={t('title')}
-          goal={t('subtitle')}
+          lede={t('subtitle')}
           action={<StatusTag tone="info">{t('betaTag')}</StatusTag>}
         />
         <TrainingBridgeClient assessment={assessment} />

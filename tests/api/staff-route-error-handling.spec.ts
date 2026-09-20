@@ -240,7 +240,7 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
 }));
 vi.mock('@/lib/referralSources', () => ({ ADMIN_REFERRAL_SOURCE_ACCEPTED_VALUES: [] }));
 vi.mock('@/lib/notifications/partner-notify', () => ({ sendPartnerMilestoneEmail: vi.fn(async () => undefined) }));
-vi.mock('@/lib/events/track', () => ({ trackEvent: vi.fn(async () => undefined) }));
+vi.mock('@/lib/events/track', () => ({ trackEvent: vi.fn(async () => undefined), persistEvent: vi.fn(async () => ({ id: 'event' })) }));
 vi.mock('@/lib/auth/passwordReset', () => ({ sendPasswordResetEmail: vi.fn(async () => undefined) }));
 vi.mock('@/lib/coursera/courseKickoff', () => ({ maybeSendCourseKickoffEmail: vi.fn(async () => undefined) }));
 vi.mock('@/lib/member/curriculumAssignment', () => ({ activeCurriculumVersion: vi.fn(() => 'v1') }));

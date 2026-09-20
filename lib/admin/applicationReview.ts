@@ -7,6 +7,7 @@ import { sendEnrollmentConfirmationEmail, sendApplicationRejectedEmail } from '@
 import { getProgramByInterestValue } from '@/lib/content/programs';
 import { trackEvent } from '@/lib/events/track';
 import { recordWioaReviewSnapshot } from '@/lib/wioa/reviewSnapshot';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 import { lockMemberForReview } from '@/lib/counselor/lockMemberForReview';
 import { Prisma, type ApplicationStatus } from '@prisma/client';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
@@ -60,6 +61,11 @@ export async function changeApplicationStatus(args: {
     if (!statusChanged && nextNotes === application.notes) {
       return { application, changed: false, statusChanged };
     }
+    // WAP-184 G-3: a denial must carry a written reason. Checked against the
+    // notes that will actually be stored, before any write.
+    if (isMissingDenialReason('application_decision', status, nextNotes)) {
+      return { application, changed: false, statusChanged, denialReasonMissing: true as const };
+    }
     const updated = await tx.application.updateMany({
       where: {
         id, status: application.status, notes: application.notes,
@@ -95,6 +101,9 @@ export async function changeApplicationStatus(args: {
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   if (!outcome) {
     return { ok: false, applicationId: id, error: 'Application not found' };
+  }
+  if ('denialReasonMissing' in outcome && outcome.denialReasonMissing) {
+    return { ok: false, applicationId: id, error: DENIAL_REASON_REQUIRED_MESSAGE, status: 400 };
   }
   const { application, changed, statusChanged } = outcome;
   const previousStatus = application.status;

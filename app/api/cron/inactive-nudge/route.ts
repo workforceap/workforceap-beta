@@ -10,6 +10,7 @@ import { createNotification } from '@/lib/notifications/create';
 import { CRON_NUDGE_CANDIDATE_CAP } from '@/lib/cron/cronCaps';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { persistEvent } from '@/lib/events/track';
 
 export const maxDuration = 300;
 /**
@@ -63,14 +64,12 @@ async function handle(_request: Request) {
       if (result.ok) {
         sent++;
         // Record that we sent a nudge so we don't email again this week.
-        await prisma.memberEvent.create({
-          data: {
-            userId: member.id,
-            eventName: 'inactive_nudge_sent',
-            entityType: 'cron',
-            metadata: { source: 'inactive-nudge', weekOf: sevenDaysAgo.toISOString() },
-          },
-        }).catch(() => { /* non-fatal */ });
+        await persistEvent({
+          userId: member.id,
+          eventName: 'inactive_nudge_sent',
+          entityType: 'cron',
+          metadata: { source: 'inactive-nudge', weekOf: sevenDaysAgo.toISOString() },
+        }, prisma).catch(() => { /* non-fatal */ });
 
         await recordNudgeSent({ userId: member.id, tier: 'yellow', kind: 'inactive' });
 

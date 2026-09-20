@@ -9,6 +9,7 @@ import { changeApplicationStatus } from '@/lib/admin/applicationReview';
 import { canReviewActorActOnApplication, resolveReviewActor } from '@/lib/counselor/applicationReviewAccess';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -61,6 +62,11 @@ export const PATCH = withApiGuc(async (
     }
 
     const { status, notes } = parsed.data;
+    // WAP-184 G-3: a denial needs a written reason. The shared core re-checks
+    // against the stored notes; this rejects the obvious case before any lookup.
+    if (isMissingDenialReason('application_decision', status, notes)) {
+      return NextResponse.json({ error: DENIAL_REASON_REQUIRED_MESSAGE }, { status: 400 });
+    }
     const orgId = await getActorOrganizationId(user.id);
     if (!(await canReviewActorActOnApplication(actor, id, orgId))) {
       // Same shape as the not-in-org case so the response never confirms
@@ -79,7 +85,7 @@ export const PATCH = withApiGuc(async (
     });
 
     if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: 404 });
+      return NextResponse.json({ error: result.error }, { status: result.status ?? 404 });
     }
 
     return NextResponse.json({ success: true });

@@ -78,10 +78,6 @@ export default async function EmployerMatchesPage() {
             <span className="wa-hidden md:wa-block">{t('matchHistorySubtitleDesktop')}</span>
           </>
         }
-        breadcrumbs={[
-          { label: t('employerPortal'), href: '/employer' },
-          { label: t('matchHistory') },
-        ]}
       />
       {isListTruncated(matches.length, EMPLOYER_LIST_CAP, matchTotal) && (
         <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>

@@ -1,4 +1,4 @@
-import { DesignSurface, SectionHeader, KpiStrip, type KpiItem } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, KpiStrip, type KpiItem } from '@/components/portal/kit';
 import { Card } from '@astryxdesign/core/Card';
 
 /**
@@ -82,10 +82,10 @@ export function WeeklyRecapKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Weekly recap"
         kicker="Reporting"
-        goal="Auto-generated weekly summary"
+        lede="Auto-generated weekly summary"
       />
 
       <div className="wa-mb-5">

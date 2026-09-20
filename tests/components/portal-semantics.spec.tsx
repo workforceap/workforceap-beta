@@ -12,6 +12,9 @@ import { SectionHeader } from '@/components/portal/kit/SectionHeader';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import DataTable from '@/components/portal/ui/DataTable';
 import AssessmentsTable from '@/components/admin/AssessmentsTable';
+import PlacementsTableClient from '@/components/admin/PlacementsTableClient';
+import InvitesTable from '@/components/admin/InvitesTable';
+import EmployersTableClient from '@/components/admin/EmployersTableClient';
 import { statusToneToKitTone, badgeVariantToStatusTone } from '@/lib/ui/statusToneAdapters';
 import { toneToTokenColor } from '@/components/portal/kit/astryxMap';
 import { statusColor, type StatusTone } from '@/lib/ui/statusColors';
@@ -108,6 +111,43 @@ describe('mobile data labels', () => {
     render(<DataTable rows={[{ id: 'category' }, { id: 'record' }]} rowKey={(row) => row.id} columns={[{ key: 'value', header: 'Value', cell: () => 'unused' }]} renderBodyRow={(row) => row.id === 'category' ? <tr><td colSpan={1}>Category heading</td></tr> : <tr><td data-label="Custom detail">Record</td></tr>} />);
     expect(screen.getByRole('cell', { name: 'Record' })).toHaveAttribute('data-label', 'Custom detail');
     expect(screen.getByRole('cell', { name: 'Category heading' })).not.toHaveAttribute('data-label');
+  });
+
+  it('infers stacked-row labels from rich headers through their label prop or nested text', () => {
+    const SortLabel = ({ label }: { label: string }) => <button type="button">{label} ↕</button>;
+    render(<DataTable variant="admin" tableClassName="admin-table" rows={[{ id: '1' }]} rowKey={(row) => row.id} columns={[
+      { key: 'labelled', header: <SortLabel label="Start date" />, cell: () => 'Jan 5' },
+      { key: 'nested', header: <span><strong>Wage</strong> <em>(USD)</em></span>, cell: () => '$21' },
+      { key: 'control', header: <input type="checkbox" aria-label="Select all" />, cell: () => 'row control' },
+    ]} />);
+    expect(screen.getByRole('cell', { name: 'Jan 5' })).toHaveAttribute('data-label', 'Start date');
+    expect(screen.getByRole('cell', { name: '$21' })).toHaveAttribute('data-label', 'Wage (USD)');
+    // A bare control header has no text to infer; callers must pass cellDataLabel (as MembersTable does).
+    expect(screen.getByRole('cell', { name: 'row control' })).not.toHaveAttribute('data-label');
+  });
+
+  it('keeps column labels on legacy admin tables whose headers are sort controls (WAP-131)', () => {
+    const { unmount } = render(<PlacementsTableClient placements={[{ id: 'p1', employerName: 'Acme Logistics', jobTitle: 'Dispatcher', startDate: '2026-09-01T00:00:00.000Z', startDateVerified: true, salaryOffered: 52000, placedAt: '2026-08-20T00:00:00.000Z', user: { id: 'u1', fullName: 'Taylor Example', email: 'taylor@example.test', enrolledProgram: 'it-support' } }]} />);
+    let table = screen.getByRole('table');
+    expect(table).toHaveClass('admin-table');
+    for (const label of ['Member', 'Employer', 'Role', 'Start date', 'Wage', 'Status']) {
+      expect(table.querySelector(`tbody [data-label="${label}"]`)).not.toBeNull();
+    }
+    expect(table.querySelectorAll('tbody td:not([data-label])')).toHaveLength(0);
+    unmount();
+
+    render(<InvitesTable invites={[{ id: 'i1', email: 'invitee@example.test', role: 'member', status: 'pending', personalMessage: null, expiresAt: '2999-01-01T00:00:00.000Z', createdAt: '2026-09-01T00:00:00.000Z', acceptedAt: null, invitedBy: { id: 'a1', fullName: 'Admin Example', email: 'admin@example.test' }, subgroup: null, partner: null }]} />);
+    table = screen.getByRole('table');
+    for (const label of ['Email', 'Role', 'Status', 'Invited By', 'Date']) {
+      expect(table.querySelector(`tbody [data-label="${label}"]`)).not.toBeNull();
+    }
+    cleanup();
+
+    render(<EmployersTableClient superAdmin={false} totalCount={1} currentPage={1} pageSize={50} employers={[{ id: 'e1', companyName: 'Acme Logistics', contactName: 'Jordan Example', contactEmail: 'jordan@example.test', status: 'active', tier: 'standard', placementAgreementSigned: true, hiringPipelineActive: true, user: { email: 'jordan@example.test', fullName: 'Jordan Example', lastLoginAt: '2026-09-15T00:00:00.000Z' }, _count: { jobs: 3 } }]} />);
+    table = screen.getByRole('table');
+    for (const label of ['Company', 'Contact', 'Status', 'Jobs', 'Last Active']) {
+      expect(table.querySelector(`tbody [data-label="${label}"]`)).not.toBeNull();
+    }
   });
 
   it('provides meaningful rich-header labels in the actual assessment table without breaking sorting', () => {

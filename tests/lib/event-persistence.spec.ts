@@ -28,6 +28,12 @@ describe('event persistence contracts', () => {
     await expect(trackEvent({ userId: 'member', eventName: 'ai_tool_opened' })).resolves.toBeUndefined();
     expect(logger.error).toHaveBeenCalledOnce();
   });
+  it('stores a historical alias spelling under its canonical name (WAP-39)', async () => {
+    const create = vi.fn().mockResolvedValue({ id: 'event' });
+    const tx = { memberEvent: { create } } as unknown as Prisma.TransactionClient;
+    await persistEvent({ userId: 'member', eventName: 'PARTNER_PAYOUT_SENT' as unknown as TrackEventParams['eventName'], entityType: 'PlacementRecord', entityId: 'placement' }, tx);
+    expect(create).toHaveBeenCalledWith({ data: expect.objectContaining({ eventName: 'partner_payout_sent', entityType: 'PlacementRecord', entityId: 'placement' }) });
+  });
   it('rejects unknown event names at runtime before touching storage', async () => {
     const create = vi.fn();
     const tx = { memberEvent: { create } } as unknown as Prisma.TransactionClient;

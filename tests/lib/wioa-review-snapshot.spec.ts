@@ -52,6 +52,25 @@ describe('WIOA decision snapshot', () => {
     await expect(recordWioaReviewSnapshot(args, db as unknown as Prisma.TransactionClient)).rejects.toBe(error);
     expect(captureApiError).toHaveBeenCalledWith(error, { route: 'lib/wioa/reviewSnapshot' });
   });
+  it.each([
+    ['application_decision' as const, 'DENIED'],
+    ['wioa_review' as const, 'not_eligible'],
+  ])('refuses a %s %s without a written reason and writes nothing (WAP-184 G-3)', async (source, decision) => {
+    const db = makeDb();
+    for (const notes of [undefined, null, '', '   ']) {
+      await expect(recordWioaReviewSnapshot({ ...args, source, decision, notes }, db as unknown as Prisma.TransactionClient))
+        .rejects.toThrow('DENIAL_REASON_REQUIRED');
+    }
+    expect(db.wioaReviewSnapshot.create).not.toHaveBeenCalled();
+  });
+  it('records a denial once a reason is written, and never demands one for a non-denial', async () => {
+    const db = makeDb();
+    await recordWioaReviewSnapshot({ ...args, decision: 'DENIED', notes: 'Outside the service area.' }, db as unknown as Prisma.TransactionClient);
+    await recordWioaReviewSnapshot({ ...args, decision: 'APPROVED', notes: null }, db as unknown as Prisma.TransactionClient);
+    await recordWioaReviewSnapshot({ ...args, source: 'wioa_review', decision: 'needs_info', notes: undefined }, db as unknown as Prisma.TransactionClient);
+    expect(db.wioaReviewSnapshot.create).toHaveBeenCalledTimes(3);
+    expect(db.wioaReviewSnapshot.create.mock.calls[0][0].data).toMatchObject({ decision: 'DENIED', notes: 'Outside the service area.' });
+  });
   it('does not silently lose an unavailable actor identity', async () => {
     const db = makeDb();
     vi.mocked(resolveActorSnapshot).mockResolvedValue({ email: null, role: null, exists: null });

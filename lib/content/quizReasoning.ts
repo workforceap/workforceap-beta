@@ -30,7 +30,7 @@ const REASON_BY_ANSWER: Record<string, Partial<Record<string, string>>> = {
     employed_switch: "You're switching careers while employed - this program's pace suits that.",
   },
   q4: {
-    salary: 'You prioritized earning potential - this track has strong salary outcomes.',
+    salary: 'You prioritized earning potential - research pay for the roles this track prepares you for before you commit.',
     stability: 'You want job stability - this field has steady demand.',
     remote: "You're interested in remote work - many roles in this path support it.",
     community: 'You care about community impact - this path connects you to local employers.',

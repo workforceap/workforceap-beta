@@ -45,10 +45,6 @@ function EmployerMessagesHeader({
           <span className="wa-hidden md:wa-block">{subtitleDesktop}</span>
         </>
       }
-      breadcrumbs={[
-        { label: employerPortalLabel, href: '/employer' },
-        { label: title },
-      ]}
     />
   );
 }

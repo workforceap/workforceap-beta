@@ -16,6 +16,7 @@ const LIGHT_SURFACE = '#ffffff'; // --wa-surface light value
 function lightTokens(): Map<string, string> {
   const out = new Map<string, string>();
   const css = readFileSync(path.join(ROOT, 'css/main.css'), 'utf8')
+    + '\n' + readFileSync(path.join(ROOT, 'css/wa-brand-tokens.css'), 'utf8')
     + '\n' + readFileSync(path.join(ROOT, 'css/portal-tokens.css'), 'utf8');
   for (const m of css.matchAll(/(--[\w-]+):\s*light-dark\(\s*(#[0-9a-fA-F]{6})\s*,/g)) out.set(m[1], m[2].toLowerCase());
   for (const m of css.matchAll(/(--[\w-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)) if (!out.has(m[1])) out.set(m[1], m[2].toLowerCase());

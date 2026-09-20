@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * VoiceStudioKit — Voice AI + Career Studio (HIGHEST-PRIORITY page).
+ * VoiceStudioKit — Voice AI + AI Career Tools hub (HIGHEST-PRIORITY page).
  *
  * Faithful port of docs/mockups/workforceap-voice-studio.html onto the portal
  * design kit (warm surface + tokens + wa-kit-* + wa- utilities + lucide icons),
@@ -256,7 +256,7 @@ export function VoiceStudioKit({
         className="wa-space-y-6"
       >
         <PageOpener
-          kicker="Career studio"
+          kicker="Tools & careers"
           title="AI Career Tools"
           lede="Voice coaches and the AI toolkit."
           icon={<AudioLines size={13} aria-hidden="true" />}
@@ -538,12 +538,21 @@ type SessionPhase = 'idle' | 'connecting' | 'active' | 'ended';
 type TranscriptLine = { speaker: 'agent' | 'user'; text: string };
 
 /** Always-dark session stage — tint from `--wa-sidebar-*`, never raw white. */
+/* Live-session chrome is --wa-sidebar-bg (dark in both themes). White at 40%
+   over it measures ~3.8:1, so SESSION_FAINT is reserved for non-text (the idle
+   status dot, dividers). Text on the chrome uses SESSION_MUTED or stronger:
+   60% white over #161616 is ~7:1 (WAP-100). */
 const SESSION_FAINT = 'color-mix(in srgb, var(--wa-sidebar-text) 40%, transparent)';
 const SESSION_SOFT = 'color-mix(in srgb, var(--wa-sidebar-text) 50%, transparent)';
 const SESSION_MUTED = 'color-mix(in srgb, var(--wa-sidebar-text) 60%, transparent)';
 const SESSION_INK = 'color-mix(in srgb, var(--wa-sidebar-text) 90%, transparent)';
 const SESSION_CHIP = 'color-mix(in srgb, var(--wa-sidebar-text) 10%, transparent)';
 const SESSION_CHIP_STRONG = 'color-mix(in srgb, var(--wa-sidebar-text) 12%, transparent)';
+/** Agent accent as a text/icon foreground on the dark session chrome. The
+ *  light-mode accents (#ad2c4d crimson 2.8:1, #a47f38 gold 4.9:1 on #161616)
+ *  are fills, not foregrounds, there; lifting them 40% toward the chrome text
+ *  colour keeps the agent identity and clears 4.5:1 in both themes (WAP-100). */
+const sessionAccentText = (accent: string) => `color-mix(in srgb, ${accent} 60%, var(--wa-sidebar-text))`;
 
 function formatClock(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -934,7 +943,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                     <option value="general">General / screening</option>
                   </select>
                 </label>
-                <p style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_FAINT, margin: 0 }}>
+                <p style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_MUTED, margin: 0 }}>
                   Leave the role blank for a general practice interview.
                 </p>
               </div>
@@ -1059,10 +1068,10 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <h3 style={{ fontWeight: 700, color: 'var(--wa-sidebar-text)', fontSize: 'var(--wa-type-body)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Captions size={15} color={accent} aria-hidden="true" />
+                <Captions size={15} color={sessionAccentText(accent)} aria-hidden="true" />
                 Live Transcript
               </h3>
-              <span style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_FAINT, fontWeight: 700 }}>
+              <span style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_MUTED, fontWeight: 700 }}>
                 {isLive ? 'LIVE' : phase === 'ended' ? 'NOT SAVED TO WAP' : 'IDLE'}
               </span>
             </div>
@@ -1074,7 +1083,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
               style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', fontSize: 'var(--wa-type-meta)', minHeight: 0 }}
             >
               {lines.length === 0 ? (
-                <p style={{ color: SESSION_FAINT, fontStyle: 'italic', margin: 0 }}>
+                <p style={{ color: SESSION_MUTED, fontStyle: 'italic', margin: 0 }}>
                   {phase === 'active'
                     ? 'Waiting for speech — your conversation will appear here.'
                     : phase === 'connecting'
@@ -1085,7 +1094,7 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                 lines.map((line, i) =>
                   line.speaker === 'agent' ? (
                     <div key={`${i}-${line.text.slice(0, 16)}`}>
-                      <div style={{ ...transcriptLabelCoach, color: accent }}>Coach</div>
+                      <div style={{ ...transcriptLabelCoach, color: sessionAccentText(accent) }}>Coach</div>
                       <div style={{ ...bubble, background: 'var(--wa-sidebar-bg)', color: SESSION_INK, borderTopLeftRadius: 4 }}>
                         {line.text}
                       </div>
@@ -1123,8 +1132,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
               }}
             >
               <SessionStat value={String(lines.length)} label="Exchanges" color="var(--wa-sidebar-text)" />
-              <SessionStat value={String(userTurns)} label="Your turns" color="var(--wa-success)" />
-              <SessionStat value={formatClock(elapsed)} label="Duration" color="var(--wa-gold)" />
+              <SessionStat value={String(userTurns)} label="Your turns" color={sessionAccentText('var(--wa-success)')} />
+              <SessionStat value={formatClock(elapsed)} label="Duration" color={sessionAccentText('var(--wa-gold)')} />
             </div>
           </div>
         </div>
@@ -1141,7 +1150,7 @@ function SessionStat({ value, label, color }: { value: string; label: string; co
   return (
     <div>
       <div style={{ fontSize: 18, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-      <div style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_FAINT, fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: 'var(--wa-type-meta)', color: SESSION_MUTED, fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
     </div>
   );
 }
@@ -1188,8 +1197,9 @@ const transcriptLabelYou: React.CSSProperties = {
 
 /** Color band for the real structural score ring. */
 function scoreBand(score: number): { color: string; label: string } {
-  if (score >= 85) return { color: 'var(--wa-success)', label: 'Interview-ready structure' };
-  if (score >= 70) return { color: 'var(--wa-gold)', label: 'Solid — a few fixes to go' };
+  // Text-grade tokens: the band colours the 36px score and the ring on a light card (WAP-100).
+  if (score >= 85) return { color: 'var(--wa-success-dark)', label: 'Interview-ready structure' };
+  if (score >= 70) return { color: 'var(--wa-gold-dark)', label: 'Solid — a few fixes to go' };
   return { color: 'var(--wa-accent)', label: 'Needs work — start with the fixes below' };
 }
 
@@ -1279,7 +1289,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                     cy="60"
                     r={ringR}
                     fill="none"
-                    stroke={band?.color ?? 'var(--wa-gold)'}
+                    stroke={band?.color ?? 'var(--wa-gold-dark)'}
                     strokeWidth="11"
                     strokeLinecap="round"
                     strokeDasharray={ringC.toFixed(1)}
@@ -1288,7 +1298,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                   />
                 </svg>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 36, fontWeight: 800, color: band?.color ?? 'var(--wa-gold)', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
+                  <span style={{ fontSize: 36, fontWeight: 800, color: band?.color ?? 'var(--wa-gold-dark)', fontVariantNumeric: 'tabular-nums' }}>{score}</span>
                   <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-muted)', letterSpacing: '0.08em' }}>OF 100</span>
                 </div>
               </div>

@@ -7,7 +7,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Token } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
@@ -107,10 +107,10 @@ export function ScreeningPacksKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Employer screening"
         kicker="Employers"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/employer-screening-packs?ui=legacy" as={NextLink as never} isStandalone>
             <Button label="Manage packs" variant="secondary" size="sm" />

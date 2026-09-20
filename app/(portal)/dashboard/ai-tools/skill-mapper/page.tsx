@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 
@@ -46,14 +46,14 @@ export default async function SkillMapperPage() {
         <div className="wa-space-y-5" style={{ marginBottom: 20 }}>
           <PortalBreadcrumb
             items={[
-              { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+              { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
               { label: 'Skill Mapper' },
             ]}
           />
-          <SectionHeader
-            kicker="AI Career Toolkit"
+          <PageOpener
+            kicker="AI Career Tools"
             title="Skill Mapper"
-            goal="Search any occupation to see its top skills and competency radar chart."
+            lede="Search any occupation to see its top skills and competency radar chart."
           />
         </div>
         <div className="wa-kit-card skill-mapper-card">

@@ -14,6 +14,7 @@ import {
 } from '@/lib/gdpr/deleteUserStorage';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { persistEvent } from '@/lib/events/track';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -118,14 +119,12 @@ export const POST = withApiGuc(async (request: Request) => {
   // Mark as deleted. (This used to be a raw INSERT that bound the metadata
   // as text into the jsonb column, which PostgreSQL rejects with 42804 — so
   // every deletion 500'd here, after the rows above were already anonymized.)
-  await prisma.memberEvent.create({
-    data: {
-      userId,
-      eventName: 'account_deleted',
-      entityType: 'gdpr',
-      metadata: { deletedAt: new Date().toISOString(), reason: 'user_requested' },
-    },
-  });
+  await persistEvent({
+    userId,
+    eventName: 'account_deleted',
+    entityType: 'gdpr',
+    metadata: { deletedAt: new Date().toISOString(), reason: 'user_requested' },
+  }, prisma);
 
   // Delete Supabase auth user (irreversible — prevents re-login with old credentials)
   let deleteAuthError: unknown = null;

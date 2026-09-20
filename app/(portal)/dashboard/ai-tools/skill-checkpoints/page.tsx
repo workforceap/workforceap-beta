@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import SkillCheckpointsClient from '@/components/portal/SkillCheckpointsClient';
 
@@ -25,14 +25,14 @@ export default async function SkillCheckpointsPage() {
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.25rem 1rem 3rem' }} className="wa-space-y-5">
         <PortalBreadcrumb
           items={[
-            { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: 'Skill Checkpoints' },
           ]}
         />
-        <SectionHeader
-          kicker="AI Career Toolkit"
+        <PageOpener
+          kicker="AI Career Tools"
           title="Skill Checkpoints"
-          goal="Short workplace scenarios that prove you can use a skill — not just study it"
+          lede="Short workplace scenarios that prove you can use a skill — not just study it"
         />
         <SkillCheckpointsClient userId={user.id} />
       </div>

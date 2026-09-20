@@ -67,10 +67,6 @@ export default async function EmployerWorkQueuePage({
         kicker={t('employerPortal')}
         title={t('workQueue')}
         subtitle={t('employerWorkQueueSubtitle')}
-        breadcrumbs={[
-          { label: t('employerPortal'), href: '/employer' },
-          { label: t('workQueue') },
-        ]}
       />
 
       <div className="wa-pb-24 md:wa-pb-0 wa-space-y-6">

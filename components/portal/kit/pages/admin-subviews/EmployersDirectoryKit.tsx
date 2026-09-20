@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Building2, Plus } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   KitEmptyState,
   colorVar,
@@ -191,10 +191,10 @@ export function EmployersDirectoryKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener
         title="Employers"
         kicker="Partners"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/employers?ui=legacy#create" as={Link as never} isStandalone>
             <Button label="Add Employer" variant="primary" size="sm" icon={<Plus className="h-4 w-4" aria-hidden />} />

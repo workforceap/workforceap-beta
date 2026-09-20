@@ -1528,6 +1528,14 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "app/(portal)/counselor/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/(portal)/counselor/inactive-members/error.tsx",
     "specifier": "@/components/error/RouteErrorFallback",
     "line": 3,
@@ -5888,6 +5896,14 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/(portal)/dashboard/career-brief/[slug]/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/career-brief/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -6089,16 +6105,8 @@
   },
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
-    "specifier": "@/components/portal/PortalBreadcrumb",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PortalBreadcrumb.tsx"
-  },
-  {
-    "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceViewTracker",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceViewTracker.tsx"
@@ -6106,7 +6114,7 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceProgressActions",
-    "line": 14,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceProgressActions.tsx"
@@ -6114,7 +6122,7 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceDownloadButton",
-    "line": 15,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceDownloadButton.tsx"
@@ -6122,10 +6130,18 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 16,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
@@ -6744,6 +6760,14 @@
     "target": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx"
   },
   {
+    "from": "app/(portal)/dashboard/eligibility/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/error.tsx",
     "specifier": "@/components/error/RouteErrorFallback",
     "line": 3,
@@ -6798,6 +6822,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/counselorEscalation.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/first90DaysAction.ts",
+    "specifier": "@/lib/events/track",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/(portal)/dashboard/guide/loading.tsx",
@@ -7505,8 +7537,24 @@
   },
   {
     "from": "app/(portal)/dashboard/layout.tsx",
-    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/portal/memberProfilePhotoUrl",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberProfilePhotoUrl.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
@@ -7514,7 +7562,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "next-intl/server",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -7522,7 +7570,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -7662,6 +7710,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/InterestProfilerClient.tsx"
+  },
+  {
+    "from": "app/(portal)/dashboard/learning/interest-profiler/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/(portal)/dashboard/learning/labs/[labId]/page.tsx",
@@ -8137,8 +8193,16 @@
   },
   {
     "from": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
     "specifier": "@/components/portal/WioaQualificationClient",
-    "line": 13,
+    "line": 14,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/WioaQualificationClient.tsx"
@@ -9230,6 +9294,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/portal/workflowEvents.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/placementAction.ts",
+    "specifier": "@/lib/events/track",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/(portal)/dashboard/points/ReferralShareCard.tsx",
@@ -10665,16 +10737,8 @@
   },
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
-    "specifier": "lucide-react",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/app/seo",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -10682,7 +10746,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -10690,7 +10754,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -10698,7 +10762,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -10706,7 +10770,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/member/ensureAppUser",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/member/ensureAppUser.ts"
@@ -10714,23 +10778,15 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PageHeader.tsx"
-  },
-  {
-    "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "next-intl/server",
-    "line": 15,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -10738,7 +10794,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 16,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -10746,7 +10802,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "./ResumeClient",
-    "line": 18,
+    "line": 16,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/resume/ResumeClient.tsx"
@@ -11760,6 +11816,14 @@
     "target": "lib/auth/roles.ts"
   },
   {
+    "from": "app/(portal)/employer/guide/page.tsx",
+    "specifier": "@/components/employer/EmployerPageOpener",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/employer/EmployerPageOpener.tsx"
+  },
+  {
     "from": "app/(portal)/employer/jobs/[id]/applicants/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -12329,8 +12393,24 @@
   },
   {
     "from": "app/(portal)/employer/jobs/import/page.tsx",
-    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "specifier": "@/components/employer/EmployerPageOpener",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/employer/EmployerPageOpener.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/import/page.tsx",
+    "specifier": "@/components/portal/PortalPageFrame",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalPageFrame.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/import/page.tsx",
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -12553,8 +12633,16 @@
   },
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
-    "specifier": "@/lib/employer/jobReadiness",
+    "specifier": "@/components/portal/PortalEmptyState",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalEmptyState.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/page.tsx",
+    "specifier": "@/lib/employer/jobReadiness",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/employer/jobReadiness.ts"
@@ -12562,7 +12650,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -12570,7 +12658,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "next-intl/server",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -12578,7 +12666,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -12586,7 +12674,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/employer/employerJobsListQuery",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/employer/employerJobsListQuery.ts"
@@ -12594,7 +12682,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -12602,7 +12690,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/employer/jobStatusDisplay",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/employer/jobStatusDisplay.ts"
@@ -13129,11 +13217,11 @@
   },
   {
     "from": "app/(portal)/employer/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/components/employer/EmployerPageOpener",
     "line": 11,
     "kind": "import",
     "external": false,
-    "target": "components/portal/PageHeader.tsx"
+    "target": "components/employer/EmployerPageOpener.tsx"
   },
   {
     "from": "app/(portal)/employer/page.tsx",
@@ -13422,6 +13510,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
+  },
+  {
+    "from": "app/(portal)/employer/pipeline/page.tsx",
+    "specifier": "@/components/portal/PortalEmptyState",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalEmptyState.tsx"
   },
   {
     "from": "app/(portal)/employer/settings/loading.tsx",
@@ -14158,6 +14254,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/partner/referralLink.ts"
+  },
+  {
+    "from": "app/(portal)/partner/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/(portal)/partner/layout.tsx",
@@ -15002,7 +15106,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/kit/pages/PartnerOverviewKit",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/PartnerOverviewKit.tsx"
@@ -15010,10 +15114,18 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 58,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/partner/page.tsx",
+    "specifier": "@/lib/events/names",
+    "line": 60,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
   },
   {
     "from": "app/(portal)/partner/referred-members/[memberId]/page.tsx",
@@ -15214,6 +15326,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "app/(portal)/partner/referred-members/[memberId]/page.tsx",
+    "specifier": "@/lib/events/names",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
   },
   {
     "from": "app/(portal)/partner/referred-members/loading.tsx",
@@ -17040,6 +17160,14 @@
     "target": "lib/content/programTitle.ts"
   },
   {
+    "from": "app/admin/career-mappings/CareerMappingsClient.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/admin/career-mappings/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -18638,6 +18766,14 @@
     "kind": "import",
     "external": false,
     "target": "components/error/ErrorBoundary.tsx"
+  },
+  {
+    "from": "app/admin/dashboard/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 81,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/admin/data-retention/page.tsx",
@@ -20912,6 +21048,14 @@
     "target": "lib/audit/log.ts"
   },
   {
+    "from": "app/admin/members/[id]/introduceAction.ts",
+    "specifier": "@/lib/events/track",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/admin/members/[id]/lifecycle/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -21456,6 +21600,14 @@
     "target": "lib/coursera/progressReconciliation.ts"
   },
   {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/lib/events/names",
+    "line": 61,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
     "from": "app/admin/members/[id]/readiness/ReadinessCounselorClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -21566,6 +21718,14 @@
     "kind": "import",
     "external": false,
     "target": "app/admin/members/[id]/readiness/ReadinessCounselorClient.tsx"
+  },
+  {
+    "from": "app/admin/members/[id]/readiness/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/admin/members/[id]/stakeholder/page.tsx",
@@ -23648,6 +23808,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/admin/partners/[id]/page.tsx",
+    "specifier": "@/lib/events/names",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
     "from": "app/admin/partners/[id]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -23976,6 +24144,14 @@
     "target": "app/admin/pipeline/StaleApplicationsBanner.tsx"
   },
   {
+    "from": "app/admin/pipeline/PipelineLegacyView.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/admin/pipeline/PlacementRecordedToast.tsx",
     "specifier": "react",
     "line": 3,
@@ -24190,6 +24366,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
+  },
+  {
+    "from": "app/admin/pipeline/remindAction.ts",
+    "specifier": "@/lib/events/track",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/admin/placement-surveys/page.tsx",
@@ -27336,6 +27520,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/admin/applications/bulk-review/route.ts",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
     "from": "app/api/admin/blog/[id]/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -29230,6 +29422,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "app/api/admin/coursera/reconcile/add-to-wap/route.ts",
+    "specifier": "@/lib/content/programCurriculumManifest",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programCurriculumManifest.ts"
+  },
+  {
+    "from": "app/api/admin/coursera/reconcile/add-to-wap/route.ts",
+    "specifier": "@/lib/member/courseEnrollmentAssignment",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/courseEnrollmentAssignment.ts"
   },
   {
     "from": "app/api/admin/coursera/reconcile/route.ts",
@@ -35112,6 +35320,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/admin/members/[id]/status/route.ts",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
     "from": "app/api/admin/members/[id]/subgroup/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -35449,8 +35665,16 @@
   },
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
-    "specifier": "@/lib/audit/log",
+    "specifier": "@/lib/wioa/denialReason",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/wioa-review/route.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -35458,7 +35682,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -35466,7 +35690,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@/lib/audit",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -35474,7 +35698,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -35482,7 +35706,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@prisma/client",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -35490,7 +35714,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@/lib/counselor/lockMemberForReview",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/lockMemberForReview.ts"
@@ -35498,7 +35722,7 @@
   {
     "from": "app/api/admin/members/[id]/wioa-review/route.ts",
     "specifier": "@/lib/db/transactionPolicy",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/db/transactionPolicy.ts"
@@ -36137,8 +36361,16 @@
   },
   {
     "from": "app/api/admin/members/create/route.ts",
-    "specifier": "@/lib/content/programSlug",
+    "specifier": "@/lib/member/courseEnrollmentAssignment",
     "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/courseEnrollmentAssignment.ts"
+  },
+  {
+    "from": "app/api/admin/members/create/route.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -36146,7 +36378,7 @@
   {
     "from": "app/api/admin/members/create/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -44472,6 +44704,14 @@
     "target": "lib/audit/log.ts"
   },
   {
+    "from": "app/api/counselor/bulk-followup/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/counselor/counselors/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -44888,6 +45128,14 @@
     "target": "lib/tenant/withTenantScope.ts"
   },
   {
+    "from": "app/api/counselor/inbox-zero/bulk/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/counselor/inbox-zero/dismiss/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -44966,6 +45214,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
+  },
+  {
+    "from": "app/api/counselor/inbox-zero/dismiss/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/api/counselor/inbox-zero/route.ts",
@@ -45854,6 +46110,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/counselor/staffMemberAccess.ts"
+  },
+  {
+    "from": "app/api/counselor/nudge/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/api/counselor/placements/route.ts",
@@ -46928,6 +47192,14 @@
     "target": "lib/email/pacing.ts"
   },
   {
+    "from": "app/api/cron/course-accountability/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/cron/coursera-auto-heal/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -47440,6 +47712,14 @@
     "target": "lib/email/pacing.ts"
   },
   {
+    "from": "app/api/cron/inactive-nudge/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/cron/inactivity-nudge/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -47910,6 +48190,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "app/api/cron/milestone-celebration/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/api/cron/onboarding-stalls/route.ts",
@@ -50750,6 +51038,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/gdpr/delete/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/api/gdpr/export/route.ts",
@@ -54872,6 +55168,14 @@
     "target": "lib/observability/captureApiError.ts"
   },
   {
+    "from": "app/api/member/nba/[id]/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/member/notifications/[id]/read/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -55294,6 +55598,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
+  },
+  {
+    "from": "app/api/member/pitch-deployments/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "app/api/member/pre-screening/draft/route.ts",
@@ -57712,6 +58024,14 @@
     "target": "lib/audit/log.ts"
   },
   {
+    "from": "app/api/member/voice-interview/transcript/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "app/api/member/voice-session/checkpoint/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -59334,6 +59654,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/partner/payout/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "app/api/partner/payout/route.ts",
+    "specifier": "@/lib/events/names",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
   },
   {
     "from": "app/api/partner/referral-members/route.ts",
@@ -66841,8 +67177,16 @@
   },
   {
     "from": "app/layout.tsx",
+    "specifier": "@/css/wa-brand-tokens.css",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "css/wa-brand-tokens.css"
+  },
+  {
+    "from": "app/layout.tsx",
     "specifier": "@/css/astryx-brand-bridge.css",
-    "line": 46,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "css/astryx-brand-bridge.css"
@@ -66850,7 +67194,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/DeferredRootChrome",
-    "line": 47,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
@@ -66858,7 +67202,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/observability/SentrySetUser",
-    "line": 48,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/observability/SentrySetUser.tsx"
@@ -66866,7 +67210,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/gucContext",
-    "line": 113,
+    "line": 115,
     "kind": "type",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -68209,8 +68553,16 @@
   },
   {
     "from": "components/MainNav.tsx",
-    "specifier": "react",
+    "specifier": "@/lib/auth/currentUserClient",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
+  },
+  {
+    "from": "components/MainNav.tsx",
+    "specifier": "react",
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -68542,6 +68894,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/counselor/lastActivity.ts"
+  },
+  {
+    "from": "components/admin/AdminCommandCenterClient.tsx",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
   },
   {
     "from": "components/admin/AdminCounselorsClient.tsx",
@@ -69041,8 +69401,16 @@
   },
   {
     "from": "components/admin/AdminMemberWioaReviewPanel.tsx",
-    "specifier": "@/lib/wioa/wioaReview",
+    "specifier": "@/lib/wioa/denialReason",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
+    "from": "components/admin/AdminMemberWioaReviewPanel.tsx",
+    "specifier": "@/lib/wioa/wioaReview",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaReview.ts"
@@ -69050,7 +69418,7 @@
   {
     "from": "components/admin/AdminMemberWioaReviewPanel.tsx",
     "specifier": "@/lib/wioa/reviewSnapshot",
-    "line": 7,
+    "line": 8,
     "kind": "type",
     "external": false,
     "target": "lib/wioa/reviewSnapshot.ts"
@@ -70128,6 +70496,14 @@
     "target": "components/portal/kit/hooks/useFocusTrap.ts"
   },
   {
+    "from": "components/admin/EmailTemplatesClient.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/admin/EmployersTableClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -70289,11 +70665,11 @@
   },
   {
     "from": "components/admin/InvitesTable.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@/components/admin/ConfirmDialog",
     "line": 7,
     "kind": "import",
     "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "target": "components/admin/ConfirmDialog.tsx"
   },
   {
     "from": "components/admin/InvitesTable.tsx",
@@ -70582,6 +70958,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
+  },
+  {
+    "from": "components/admin/MemberReviewTable.tsx",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
   },
   {
     "from": "components/admin/MemberSubgroupSection.tsx",
@@ -70881,11 +71265,35 @@
   },
   {
     "from": "components/admin/PartnerDeactivateDialog.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 6,
     "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Text",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerDetailActions.tsx",
@@ -70945,24 +71353,32 @@
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
-    "specifier": "lucide-react",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 5,
     "kind": "import",
     "external": true,
-    "package": "lucide-react"
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Layout",
     "line": 6,
     "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerEditModal.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
     "specifier": "@/components/admin/PartnerSchoolEnrollmentFields",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/admin/PartnerSchoolEnrollmentFields.tsx"
@@ -71313,11 +71729,27 @@
   },
   {
     "from": "components/admin/SubgroupMembersTable.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@/components/admin/ConfirmDialog",
     "line": 8,
     "kind": "import",
     "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "target": "components/admin/ConfirmDialog.tsx"
+  },
+  {
+    "from": "components/admin/SubgroupMembersTable.tsx",
+    "specifier": "@astryxdesign/core/Dialog",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/SubgroupMembersTable.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/TestimonialsAdminClient.tsx",
@@ -71992,6 +72424,14 @@
     "target": "lib/wioa/wioaReview.ts"
   },
   {
+    "from": "components/counselor/CounselorIntakeReviewPanel.tsx",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
     "from": "components/counselor/StaffMemberResumePanel.tsx",
     "specifier": "react",
     "line": 3,
@@ -72392,6 +72832,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/employer/EmployerJobsBoard.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/employer/EmployerKanban.tsx",
     "specifier": "react",
     "line": 3,
@@ -72430,6 +72878,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/employer/EmployerKanban.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
   },
   {
     "from": "components/employer/EmployerLoiForm.tsx",
@@ -72552,6 +73008,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/employer/EmployerMatchHistoryClient.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/employer/EmployerMatchStatusSelect.tsx",
     "specifier": "react",
     "line": 3,
@@ -72625,16 +73089,8 @@
   },
   {
     "from": "components/employer/EmployerPageOpener.tsx",
-    "specifier": "@/components/portal/PortalBreadcrumb",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PortalBreadcrumb.tsx"
-  },
-  {
-    "from": "components/employer/EmployerPageOpener.tsx",
     "specifier": "@/components/portal/kit/PageOpener",
-    "line": 3,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/PageOpener.tsx"
@@ -72642,7 +73098,7 @@
   {
     "from": "components/employer/EmployerPageOpener.tsx",
     "specifier": "./EmployerPageOpener.module.css",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "components/employer/EmployerPageOpener.module.css"
@@ -75952,6 +76408,14 @@
     "package": "next"
   },
   {
+    "from": "components/portal/DevViewToggle.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
+  },
+  {
     "from": "components/portal/DownloadMyDataButton.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -76937,8 +77401,16 @@
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "@/lib/i18n/date",
+    "specifier": "@/components/portal/kit/StatusTag",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/StatusTag.tsx"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "@/lib/i18n/date",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/date.ts"
@@ -76946,7 +77418,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
@@ -76954,7 +77426,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/member/memberApprovalStatus",
-    "line": 9,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
@@ -77704,6 +78176,14 @@
     "target": "lib/auth/portalRoleSwitcher.ts"
   },
   {
+    "from": "components/portal/MemberWorkspaceShell.tsx",
+    "specifier": "@/lib/member/memberIdentity",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
     "from": "components/portal/MentorSessionForm.tsx",
     "specifier": "react",
     "line": 3,
@@ -78366,6 +78846,14 @@
     "kind": "type",
     "external": false,
     "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "components/portal/PortalShell.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
   },
   {
     "from": "components/portal/PortalTeamChatClient.test.tsx",
@@ -79278,6 +79766,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/resume/pendingResumeDraft.ts"
+  },
+  {
+    "from": "components/portal/SignOutButton.tsx",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "components/portal/SkillCheckpointsClient.test.tsx",
@@ -80417,8 +80913,24 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/components/portal/LanguageToggle",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 33,
+    "kind": "type",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/kit/Avatar",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/Avatar.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/LanguageToggle",
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
@@ -80426,7 +80938,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 34,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -80434,7 +80946,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -80442,7 +80954,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 36,
+    "line": 38,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -80450,7 +80962,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 37,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
@@ -82698,7 +83210,7 @@
   {
     "from": "components/portal/kit/pages/VoiceStudioKit.tsx",
     "specifier": "@elevenlabs/client",
-    "line": 698,
+    "line": 707,
     "kind": "dynamic-import",
     "external": true,
     "package": "@elevenlabs/client"
@@ -82722,14 +83234,6 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 16,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/Button",
     "line": 17,
     "kind": "import",
     "external": true,
@@ -82737,7 +83241,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/Token",
+    "specifier": "@astryxdesign/core/Button",
     "line": 18,
     "kind": "import",
     "external": true,
@@ -82745,7 +83249,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/ClickableCard",
+    "specifier": "@astryxdesign/core/Token",
     "line": 19,
     "kind": "import",
     "external": true,
@@ -82753,7 +83257,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/EmptyState",
+    "specifier": "@astryxdesign/core/ClickableCard",
     "line": 20,
     "kind": "import",
     "external": true,
@@ -82761,8 +83265,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@/components/admin/MfaStatusBanner",
+    "specifier": "@astryxdesign/core/EmptyState",
     "line": 21,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
+    "specifier": "@/components/admin/MfaStatusBanner",
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/admin/MfaStatusBanner.tsx"
@@ -82770,7 +83282,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@/components/error/ErrorBoundary",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/error/ErrorBoundary.tsx"
@@ -82778,7 +83290,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@/components/admin/ExecutiveTrendCharts",
-    "line": 37,
+    "line": 38,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/admin/ExecutiveTrendCharts.tsx"
@@ -88296,6 +88808,14 @@
     "package": "lucide-react"
   },
   {
+    "from": "components/super-admin-view-switcher.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
+  },
+  {
     "from": "components/theme/ThemeSelector.tsx",
     "specifier": "lucide-react",
     "line": 3,
@@ -90088,6 +90608,22 @@
     "package": "react"
   },
   {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
+  },
+  {
     "from": "hooks/useDraftAutosave.ts",
     "specifier": "react",
     "line": 3,
@@ -90673,8 +91209,16 @@
   },
   {
     "from": "lib/admin/applicationReview.ts",
-    "specifier": "@/lib/counselor/lockMemberForReview",
+    "specifier": "@/lib/wioa/denialReason",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
+  },
+  {
+    "from": "lib/admin/applicationReview.ts",
+    "specifier": "@/lib/counselor/lockMemberForReview",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/lockMemberForReview.ts"
@@ -90682,7 +91226,7 @@
   {
     "from": "lib/admin/applicationReview.ts",
     "specifier": "@prisma/client",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -90690,7 +91234,7 @@
   {
     "from": "lib/admin/applicationReview.ts",
     "specifier": "@/lib/db/transactionPolicy",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/db/transactionPolicy.ts"
@@ -90698,7 +91242,7 @@
   {
     "from": "lib/admin/applicationReview.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -95048,6 +95592,30 @@
     "target": "lib/supabase/env.ts"
   },
   {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "./currentUserClient",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
+  },
+  {
     "from": "lib/auth/ensureUser.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -97240,22 +97808,6 @@
     "target": "prisma/seed-onet-career.ts"
   },
   {
-    "from": "lib/content/programSalaryOutcomes.ts",
-    "specifier": "./programs",
-    "line": 8,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "lib/content/programSalaryOutcomes.ts",
-    "specifier": "./programs",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
     "from": "lib/content/programSlug.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -98848,6 +99400,14 @@
     "target": "lib/content/programs.ts"
   },
   {
+    "from": "lib/coursera/courseKickoff.ts",
+    "specifier": "@/lib/events/track",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
     "from": "lib/coursera/courseTitle.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -100074,7 +100634,7 @@
   {
     "from": "lib/coursera/seedCanonicalMappingsFromB4B.test.ts",
     "specifier": "./seedCanonicalMappingsFromB4B",
-    "line": 70,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/seedCanonicalMappingsFromB4B.ts"
@@ -100377,11 +100937,11 @@
   },
   {
     "from": "lib/coursera/syncUserFromB4B.ts",
-    "specifier": "@/lib/content/programSlug",
+    "specifier": "@/lib/member/courseEnrollmentAssignment",
     "line": 41,
     "kind": "import",
     "external": false,
-    "target": "lib/content/programSlug.ts"
+    "target": "lib/member/courseEnrollmentAssignment.ts"
   },
   {
     "from": "lib/coursera/syncUserFromB4B.ts",
@@ -102536,6 +103096,46 @@
     "target": "lib/events/track.ts"
   },
   {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "node:test",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "./names",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
     "from": "lib/events/track.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -104608,6 +105208,14 @@
     "target": "lib/member/first90Days.ts"
   },
   {
+    "from": "lib/member/first90Days.ts",
+    "specifier": "@/lib/events/names",
+    "line": 20,
+    "kind": "type",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
     "from": "lib/member/firstValueActions.ts",
     "specifier": "@/lib/content/programs",
     "line": 1,
@@ -105456,6 +106064,30 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "./memberApprovalStatus",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
     "from": "lib/member/memberEngagementSignals.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -105470,6 +106102,30 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/recap/generate.ts"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "./memberIdentity",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "lib/member/memberProgramHref.test.ts",
@@ -106353,8 +107009,16 @@
   },
   {
     "from": "lib/member/skillMissions.ts",
-    "specifier": "@/lib/content/programs",
+    "specifier": "@/lib/events/names",
     "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
+    "from": "lib/member/skillMissions.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -106362,7 +107026,7 @@
   {
     "from": "lib/member/skillMissions.ts",
     "specifier": "@/lib/content/skillMissionCatalog",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/content/skillMissionCatalog.ts"
@@ -106370,7 +107034,7 @@
   {
     "from": "lib/member/skillMissions.ts",
     "specifier": "@/lib/member/missionCourseUnlock",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/member/missionCourseUnlock.ts"
@@ -106378,10 +107042,18 @@
   {
     "from": "lib/member/skillMissions.ts",
     "specifier": "@/lib/member/skillMissionCurriculum",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissionCurriculum.ts"
+  },
+  {
+    "from": "lib/member/skillMissions.ts",
+    "specifier": "@/lib/events/track",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "lib/member/staffTrainingProgramFallback.ts",
@@ -108366,6 +109038,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/partner/referralBundle.ts",
+    "specifier": "@/lib/events/names",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
   },
   {
     "from": "lib/partner/sponsoredEnrollment.test.ts",
@@ -110872,6 +111552,86 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/adminSemanticTokens.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/brandTokens.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
+  },
+  {
     "from": "lib/ui/buttonClasses.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -110894,6 +111654,62 @@
     "kind": "import",
     "external": false,
     "target": "lib/ui/buttonClasses.ts"
+  },
+  {
+    "from": "lib/ui/cssTokenContrast.test-helpers.ts",
+    "specifier": "node:fs",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/cssTokenContrast.test-helpers.ts",
+    "specifier": "node:path",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/ui/portalCanvas.test.ts",
+    "specifier": "./cssTokenContrast.test-helpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/cssTokenContrast.test-helpers.ts"
   },
   {
     "from": "lib/ui/statusColors.test.ts",
@@ -111264,6 +112080,14 @@
     "target": "lib/webhooks/logEvent.ts"
   },
   {
+    "from": "lib/wioa/denialReason.ts",
+    "specifier": "./reviewSnapshot",
+    "line": 1,
+    "kind": "type",
+    "external": false,
+    "target": "lib/wioa/reviewSnapshot.ts"
+  },
+  {
     "from": "lib/wioa/eligibilityForm.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -111318,6 +112142,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "lib/wioa/reviewSnapshot.ts",
+    "specifier": "@/lib/wioa/denialReason",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/denialReason.ts"
   },
   {
     "from": "lib/wioa/wioaAvailability.test.ts",
@@ -112542,6 +113374,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/demo/demoProgressPlan.ts"
+  },
+  {
+    "from": "prisma/seed-demo.ts",
+    "specifier": "../lib/member/courseEnrollmentAssignment",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/courseEnrollmentAssignment.ts"
+  },
+  {
+    "from": "prisma/seed-demo.ts",
+    "specifier": "../lib/events/track",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "prisma/seed-email-templates.ts",
@@ -124616,6 +125464,46 @@
     "target": "lib/email/unsubscribeToken.ts"
   },
   {
+    "from": "tests/api/upload-body-fidelity.spec.ts",
+    "specifier": "node:buffer",
+    "line": 12,
+    "kind": "import",
+    "external": true,
+    "package": "node:buffer"
+  },
+  {
+    "from": "tests/api/upload-body-fidelity.spec.ts",
+    "specifier": "vitest",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/upload-body-fidelity.spec.ts",
+    "specifier": "@/app/api/member/certifications/upload/route",
+    "line": 70,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/member/certifications/upload/route.ts"
+  },
+  {
+    "from": "tests/api/upload-body-fidelity.spec.ts",
+    "specifier": "@/app/api/admin/organization/logo/route",
+    "line": 71,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/organization/logo/route.ts"
+  },
+  {
+    "from": "tests/api/upload-body-fidelity.spec.ts",
+    "specifier": "@/app/api/employer/logo/route",
+    "line": 72,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/employer/logo/route.ts"
+  },
+  {
     "from": "tests/api/voice-session-boundaries.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -126690,7 +127578,7 @@
   {
     "from": "tests/app/partner-dashboard-dates.spec.tsx",
     "specifier": "@/app/(portal)/partner/page",
-    "line": 45,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/page.tsx"
@@ -126786,7 +127674,7 @@
   {
     "from": "tests/app/partner-referral-pages.spec.tsx",
     "specifier": "@/app/(portal)/partner/page",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/page.tsx"
@@ -126794,7 +127682,7 @@
   {
     "from": "tests/app/partner-referral-pages.spec.tsx",
     "specifier": "@/app/(portal)/partner/guide/page",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/guide/page.tsx"
@@ -126894,6 +127782,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "node:fs",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "node:path",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
   },
   {
     "from": "tests/app/portal-page-outlines.spec.tsx",
@@ -127330,7 +128242,7 @@
   {
     "from": "tests/components/admin-subgroup-members-table.test.tsx",
     "specifier": "@/components/admin/SubgroupMembersTable",
-    "line": 7,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "components/admin/SubgroupMembersTable.tsx"
@@ -129361,8 +130273,32 @@
   },
   {
     "from": "tests/components/portal-semantics.spec.tsx",
-    "specifier": "@/lib/ui/statusToneAdapters",
+    "specifier": "@/components/admin/PlacementsTableClient",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/PlacementsTableClient.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/components/admin/InvitesTable",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/InvitesTable.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/components/admin/EmployersTableClient",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/EmployersTableClient.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/lib/ui/statusToneAdapters",
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusToneAdapters.ts"
@@ -129370,7 +130306,7 @@
   {
     "from": "tests/components/portal-semantics.spec.tsx",
     "specifier": "@/components/portal/kit/astryxMap",
-    "line": 16,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/astryxMap.ts"
@@ -129378,7 +130314,7 @@
   {
     "from": "tests/components/portal-semantics.spec.tsx",
     "specifier": "@/lib/ui/statusColors",
-    "line": 17,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusColors.ts"
@@ -134425,8 +135361,16 @@
   },
   {
     "from": "tests/next-config-redirect-destinations.spec.ts",
-    "specifier": "../next.config",
+    "specifier": "../lib/content/programs",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "tests/next-config-redirect-destinations.spec.ts",
+    "specifier": "../next.config",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "next.config.ts"
@@ -134958,6 +135902,38 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "../next.config",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
   },
   {
     "from": "types/job-application.ts",

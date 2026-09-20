@@ -36,12 +36,12 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const STATUS_TEXT_COLOR: Record<string, string> = {
-  ok: 'var(--color-green, #4a9b4f)',
-  success: 'var(--color-green, #4a9b4f)',
-  inspection: 'var(--color-blue, #2b7bb9)',
-  fallback: 'var(--color-gold)',
-  fallback_used: 'var(--color-gold)',
-  warn: 'var(--color-gold)',
+  ok: 'var(--wa-success-dark)',
+  success: 'var(--wa-success-dark)',
+  inspection: 'var(--wa-info-dark)',
+  fallback: 'var(--wa-gold-dark)',
+  fallback_used: 'var(--wa-gold-dark)',
+  warn: 'var(--wa-gold-dark)',
   error: 'var(--color-accent)',
   errored: 'var(--color-accent)',
   failed: 'var(--color-accent)',
@@ -296,7 +296,7 @@ export default async function AdminDiagnosticsPage({
           </div>
           {driftRecords.length === 0 ? (
             <div className="portal-card portal-card--flat portal-card--padded" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span className="material-symbols-outlined" style={{ color: 'var(--color-green)', fontSize: '1.25rem' }}>check_circle</span>
+              <span className="material-symbols-outlined" style={{ color: 'var(--wa-success-dark)', fontSize: '1.25rem' }}>check_circle</span>
               <span style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>
                 No enrollment drift detected. User.enrolledProgram and CourseEnrollment are in sync for all {enrolledUsersForDrift.length} enrolled members.
               </span>

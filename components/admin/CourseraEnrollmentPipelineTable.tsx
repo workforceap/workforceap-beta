@@ -379,7 +379,7 @@ export default function CourseraEnrollmentPipelineTable({
             header: 'Approved?',
             cell: (row) => (
               <div>
-                <span style={{ fontWeight: 600, color: row.approved ? 'var(--color-green, #16a34a)' : 'var(--color-on-surface-variant)' }}>
+                <span style={{ fontWeight: 600, color: row.approved ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)' }}>
                   {row.approved ? 'Yes' : 'No'}
                 </span>
                 {row.approved && row.approvedAt ? (

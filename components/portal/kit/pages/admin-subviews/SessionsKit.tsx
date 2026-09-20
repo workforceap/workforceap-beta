@@ -4,7 +4,7 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   Avatar,
   type Column,
@@ -149,10 +149,10 @@ export function SessionsKit({ sessions = DEFAULT_SESSIONS, total }: SessionsKitP
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="In-office sessions"
         kicker="Counselors"
-        goal="Walk-in & scheduled counselor sessions"
+        lede="Walk-in & scheduled counselor sessions"
       />
 
       <DataTable<SessionKitRow>

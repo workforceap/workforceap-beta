@@ -9,6 +9,7 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { changeApplicationStatus, type ApplicationReviewResult } from '@/lib/admin/applicationReview';
 import { canReviewActorActOnApplication, resolveReviewActor } from '@/lib/counselor/applicationReviewAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 // Same cap the existing member bulk-update route uses (app/api/admin/members/bulk-update).
 const MAX_APPLICATIONS = 100;
@@ -70,6 +71,10 @@ async function _POST(request: NextRequest) {
         { error: 'Confirm you reviewed intake for these applicants before bulk-approving.' },
         { status: 400 },
       );
+    }
+    // WAP-184 G-3: one written reason covers the batch, but it must exist.
+    if (isMissingDenialReason('application_decision', status, notes)) {
+      return NextResponse.json({ error: DENIAL_REASON_REQUIRED_MESSAGE }, { status: 400 });
     }
 
     const orgId = await getActorOrganizationId(user.id);

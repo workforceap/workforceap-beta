@@ -438,7 +438,7 @@ export default async function AdminMemberStakeholderPage({
                       {c.isCompleted ? (
                         <CheckCircle
                           size={16}
-                          style={{ color: 'var(--color-green)', flexShrink: 0 }}
+                          style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }}
                         />
                       ) : (
                         <span
@@ -521,7 +521,7 @@ export default async function AdminMemberStakeholderPage({
                     {completed ? (
                       <CheckCircle
                         size={18}
-                        style={{ color: 'var(--color-green)', flexShrink: 0 }}
+                        style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }}
                       />
                     ) : (
                       <span

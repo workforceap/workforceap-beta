@@ -71,11 +71,6 @@ export default async function EmployerJobEditPage({ params }: Props) {
         kicker={t('employerPortal')}
         title={t('editJobPosting')}
         subtitle={t('updateDetails')}
-        breadcrumbs={[
-          { label: t('jobPostings'), href: '/employer/jobs' },
-          { label: job.title, href: `/employer/jobs/${id}` },
-          { label: t('edit') },
-        ]}
         action={
           <Link href={`/employer/jobs/${id}`} className="btn btn-outline btn-sm">
             {t('backToJob')}

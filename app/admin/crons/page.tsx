@@ -244,7 +244,7 @@ async function renderLegacy() {
           <div className="portal-metric-card__icon-wrap portal-metric-card__icon-wrap--gold">
             <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}>play_circle</span>
           </div>
-          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: currentlyRunning > 0 ? 'var(--color-blue)' : undefined }}>{currentlyRunning}</p>
+          <p className="portal-metric-card__value" style={{ fontVariantNumeric: 'tabular-nums', color: currentlyRunning > 0 ? 'var(--wa-info-dark)' : undefined }}>{currentlyRunning}</p>
           <p className="portal-metric-card__label">Running</p>
         </div>
         <div className="portal-metric-card">
