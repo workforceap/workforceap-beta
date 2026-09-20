@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "42332ca17314f10a125123512ed8eed1eb5a98688642799b82cb4f7a19620def",
+  "inputTreeSha256": "d556d13e5607334bb52a03986616548c373562648dc882a06312bd942b984531",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4829,
-    "sourceModules": 3486,
-    "importReferences": 17330,
-    "resolvedLocalReferences": 11608,
+    "files": 4841,
+    "sourceModules": 3497,
+    "importReferences": 17394,
+    "resolvedLocalReferences": 11653,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1057,
-    "nextRouteFiles": 1024,
-    "apiHandlers": 489,
+    "routeFiles": 1059,
+    "nextRouteFiles": 1026,
+    "apiHandlers": 491,
     "pageFiles": 316,
     "astroPageFiles": 33,
     "configuredCrons": 30,
-    "prismaModels": 111,
+    "prismaModels": 112,
     "prismaEnums": 33,
-    "relationFields": 304,
-    "testFiles": 902,
-    "testCandidates": 894,
+    "relationFields": 306,
+    "testFiles": 907,
+    "testCandidates": 899,
     "testHelpers": 8,
-    "staticallySelectedTests": 892,
+    "staticallySelectedTests": 897,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -38,7 +38,7 @@
     },
     {
       "area": "api",
-      "files": 519
+      "files": 521
     },
     {
       "area": "assets",
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 603
+      "files": 605
     },
     {
       "area": "content",
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 202
+      "files": 203
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1024
+      "files": 1027
     },
     {
       "area": "localization",
@@ -106,25 +106,25 @@
     },
     {
       "area": "tests",
-      "files": 518
+      "files": 522
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 901
+      "references": 908
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 741
+      "references": 745
     },
     {
       "file": "lib/db/withRequestGuc.ts",
-      "references": 434
+      "references": 436
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 432
+      "references": 435
     },
     {
       "file": "lib/content/programs.ts",
@@ -184,7 +184,7 @@
     },
     {
       "file": "lib/events/track.ts",
-      "references": 75
+      "references": 77
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
@@ -224,18 +224,18 @@
     },
     {
       "file": "lib/analytics/events.ts",
-      "references": 44
+      "references": 45
     },
     {
       "file": "lib/ai/groq.ts",
       "references": 43
     },
     {
-      "file": "lib/admin/logCronRun.ts",
-      "references": 40
+      "file": "messages/en.json",
+      "references": 42
     },
     {
-      "file": "messages/en.json",
+      "file": "lib/admin/logCronRun.ts",
       "references": 40
     },
     {

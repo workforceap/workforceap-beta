@@ -216,10 +216,11 @@
 | [components/onboarding/OnboardingWizard.tsx](../../../components/onboarding/OnboardingWizard.tsx) | 241 | applications-enrollment | OnboardingStep:5, OnboardingWizardProps:11, default:25 |
 | [components/onboarding/PartnerOnboardingWizard.tsx](../../../components/onboarding/PartnerOnboardingWizard.tsx) | 166 | applications-enrollment | PartnerOnboardingWizardProps:16, default:26 |
 | [components/onboarding/PortalEntryClient.tsx](../../../components/onboarding/PortalEntryClient.tsx) | 133 | applications-enrollment | default:69 |
-| [components/onboarding/PortalTour.tsx](../../../components/onboarding/PortalTour.tsx) | 297 | applications-enrollment | TourStep:7, default:81 |
-| [components/onboarding/StartTourButton.tsx](../../../components/onboarding/StartTourButton.tsx) | 61 | applications-enrollment | default:12 |
-| [components/onboarding/TourContext.tsx](../../../components/onboarding/TourContext.tsx) | 118 | applications-enrollment | useTour:40, TourProvider:49 |
-| [components/onboarding/TourProviderWrapper.tsx](../../../components/onboarding/TourProviderWrapper.tsx) | 13 | applications-enrollment | default:6 |
+| [components/onboarding/PortalTour.tsx](../../../components/onboarding/PortalTour.tsx) | 9 | applications-enrollment | default:8, TourStep:9 |
+| [components/onboarding/StartTourButton.tsx](../../../components/onboarding/StartTourButton.tsx) | 60 | applications-enrollment | default:11 |
+| [components/onboarding/TourAutoStart.tsx](../../../components/onboarding/TourAutoStart.tsx) | 34 | applications-enrollment | TOUR_QUERY_PARAM:9, TOUR_DEEP_LINK_DELAY_MS:11, default:18 |
+| [components/onboarding/TourContext.tsx](../../../components/onboarding/TourContext.tsx) | 229 | applications-enrollment | TourStep:16, useTour:59, TourProvider:95 |
+| [components/onboarding/TourProviderWrapper.tsx](../../../components/onboarding/TourProviderWrapper.tsx) | 18 | applications-enrollment | default:8 |
 | [components/partner/CopyReferralLink.tsx](../../../components/partner/CopyReferralLink.tsx) | 51 | partners-funding | default:11 |
 | [components/partner/PartnerAttentionClient.tsx](../../../components/partner/PartnerAttentionClient.tsx) | 494 | partners-funding | default:87 |
 | [components/partner/PartnerConnectPayoutButton.tsx](../../../components/partner/PartnerConnectPayoutButton.tsx) | 55 | partners-funding | default:5 |
@@ -435,6 +436,7 @@
 | [components/portal/kit/DesignSurface.tsx](../../../components/portal/kit/DesignSurface.tsx) | 40 | components | SurfaceMode:17, useSurface:21, DesignSurface:32 |
 | [components/portal/kit/FeatureTile.tsx](../../../components/portal/kit/FeatureTile.tsx) | 70 | components | FeatureTile:28 |
 | [components/portal/kit/FormField.tsx](../../../components/portal/kit/FormField.tsx) | 79 | components | FormField:27, Toggle:62 |
+| [components/portal/kit/GuidedTour.tsx](../../../components/portal/kit/GuidedTour.tsx) | 348 | components | GuidedTour:149 |
 | [components/portal/kit/JobListingRow.tsx](../../../components/portal/kit/JobListingRow.tsx) | 170 | components | JobListingRow:25, JobListingRowSkeleton:125 |
 | [components/portal/kit/Kanban.tsx](../../../components/portal/kit/Kanban.tsx) | 57 | components | KanbanCardData:9, KanbanColumnData:15, KanbanBoard:26, KanbanColumnHeader:55 |
 | [components/portal/kit/KitEmptyState.tsx](../../../components/portal/kit/KitEmptyState.tsx) | 30 | components | KitEmptyState:4 |

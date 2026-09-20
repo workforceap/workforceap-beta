@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "42332ca17314f10a125123512ed8eed1eb5a98688642799b82cb4f7a19620def",
+  "inputTreeSha256": "d556d13e5607334bb52a03986616548c373562648dc882a06312bd942b984531",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -40501,6 +40501,74 @@
       "directive": null
     },
     {
+      "path": "app/api/tours/[tourKey]/route.ts",
+      "area": "api",
+      "domain": "api",
+      "bytes": 2917,
+      "lines": 83,
+      "sha256": "21f86993712c916f3f2c5991fa02673aec4f153be20d5bb44742086768c41f01",
+      "binary": false,
+      "exports": [
+        {
+          "name": "POST",
+          "line": 29,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "bodySchema",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "EVENT_FOR_STATUS",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 29,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/api/tours/state/route.ts",
+      "area": "api",
+      "domain": "api",
+      "bytes": 3429,
+      "lines": 96,
+      "sha256": "b4336fea880d56c2dae80f07bde84b8ffe5a5e4dedf0a3bf9d15f18e495d2ae9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "TourStateRow",
+          "line": 14,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "GET",
+          "line": 30,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TourStateRow",
+          "line": 14,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "GET",
+          "line": 30,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "app/api/unsubscribe/route.ts",
       "area": "api",
       "domain": "api",
@@ -56053,59 +56121,37 @@
       "path": "components/onboarding/PortalTour.tsx",
       "area": "components",
       "domain": "applications-enrollment",
-      "bytes": 10304,
-      "lines": 297,
-      "sha256": "a960235d6668ede1b1fac0aef2d31f60fad9421e102f59529b82873493848423",
+      "bytes": 349,
+      "lines": 9,
+      "sha256": "caac29d5f6907116a7feb2ffa085ebe22c1b249f77be332f9e8419dd86fe2344",
       "binary": false,
       "exports": [
         {
-          "name": "TourStep",
-          "line": 7,
-          "kind": "InterfaceDeclaration"
-        },
-        {
           "name": "default",
-          "line": 81,
-          "kind": "FunctionDeclaration",
-          "localName": "PortalTour"
-        }
-      ],
-      "declarations": [
+          "line": 8,
+          "kind": "ReExport"
+        },
         {
           "name": "TourStep",
-          "line": 7,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "PopoverLayout",
-          "line": 14,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "layoutPopover",
-          "line": 16,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "PortalTour",
-          "line": 81,
-          "kind": "FunctionDeclaration"
+          "line": 9,
+          "kind": "ReExport"
         }
       ],
+      "declarations": [],
       "directive": "use client"
     },
     {
       "path": "components/onboarding/StartTourButton.tsx",
       "area": "components",
       "domain": "applications-enrollment",
-      "bytes": 1707,
-      "lines": 61,
-      "sha256": "5f389d1774a218786faf7e6e939d82fa4a9c8a034d9f138df1284062960cb4e7",
+      "bytes": 1601,
+      "lines": 60,
+      "sha256": "ff025cfb7c968409e179cfceee9cb5e404ce317f20d1ca50538829ee98d41599",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 12,
+          "line": 11,
           "kind": "FunctionDeclaration",
           "localName": "StartTourButton"
         }
@@ -56113,12 +56159,57 @@
       "declarations": [
         {
           "name": "StartTourButtonProps",
-          "line": 6,
+          "line": 5,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StartTourButton",
-          "line": 12,
+          "line": 11,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/onboarding/TourAutoStart.tsx",
+      "area": "components",
+      "domain": "applications-enrollment",
+      "bytes": 1273,
+      "lines": 34,
+      "sha256": "7971e87297aa656f4f2f6a5b58027929af141ff5f9e24e6506a95eb2204cb1f6",
+      "binary": false,
+      "exports": [
+        {
+          "name": "TOUR_QUERY_PARAM",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR_DEEP_LINK_DELAY_MS",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "default",
+          "line": 18,
+          "kind": "FunctionDeclaration",
+          "localName": "TourAutoStart"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TOUR_QUERY_PARAM",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR_DEEP_LINK_DELAY_MS",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "TourAutoStart",
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -56128,56 +56219,76 @@
       "path": "components/onboarding/TourContext.tsx",
       "area": "components",
       "domain": "applications-enrollment",
-      "bytes": 3054,
-      "lines": 118,
-      "sha256": "fbbbba6d79521bc7ce76c262ca0260887aec2862c23e034e7ff93be64b669dad",
+      "bytes": 7097,
+      "lines": 229,
+      "sha256": "743dddfe7f7b143c11f249848d1ed4a01b895addfa4367d86eddbcf89fd6ca4d",
       "binary": false,
       "exports": [
         {
+          "name": "TourStep",
+          "line": 16,
+          "kind": "ReExport"
+        },
+        {
           "name": "useTour",
-          "line": 40,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TourProvider",
-          "line": 49,
+          "line": 95,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "PortalType",
-          "line": 7,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "TourContextValue",
-          "line": 9,
+          "line": 20,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "TourContext",
-          "line": 22,
+          "line": 39,
           "kind": "Variable"
         },
         {
           "name": "noopTourValue",
-          "line": 25,
+          "line": 42,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "useTour",
-          "line": 40,
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tourStateEndpoint",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "persistTourState",
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TourProviderProps",
-          "line": 45,
+          "line": 84,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "RunningTour",
+          "line": 88,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "TourProvider",
-          "line": 49,
+          "line": 95,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -56187,14 +56298,14 @@
       "path": "components/onboarding/TourProviderWrapper.tsx",
       "area": "components",
       "domain": "applications-enrollment",
-      "bytes": 287,
-      "lines": 13,
-      "sha256": "a4a5f58f4983e48871fea6664999a56b854c17c53d64a97d24b93dc0401e4819",
+      "bytes": 469,
+      "lines": 18,
+      "sha256": "a4b0f3f48906621dc94fca4a394741b1586a443f1537365d3d64ae00832bd6ff",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration",
           "localName": "TourProviderWrapper"
         }
@@ -56202,7 +56313,7 @@
       "declarations": [
         {
           "name": "TourProviderWrapper",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64412,6 +64523,90 @@
         {
           "name": "Toggle",
           "line": 62,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/kit/GuidedTour.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 12313,
+      "lines": 348,
+      "sha256": "8a074414516aeb6b982a3dc140916a842767ddc13ad6b14997bf4060db31d346",
+      "binary": false,
+      "exports": [
+        {
+          "name": "GuidedTour",
+          "line": 149,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PopoverLayout",
+          "line": 33,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "layoutPopover",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findAnchor",
+          "line": 95,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SPOTLIGHT_PAD",
+          "line": 99,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCRIM",
+          "line": 102,
+          "kind": "Variable"
+        },
+        {
+          "name": "overlayStyle",
+          "line": 104,
+          "kind": "Variable"
+        },
+        {
+          "name": "popoverBaseStyle",
+          "line": 109,
+          "kind": "Variable"
+        },
+        {
+          "name": "headerStyle",
+          "line": 118,
+          "kind": "Variable"
+        },
+        {
+          "name": "titleStyle",
+          "line": 125,
+          "kind": "Variable"
+        },
+        {
+          "name": "counterStyle",
+          "line": 132,
+          "kind": "Variable"
+        },
+        {
+          "name": "bodyStyle",
+          "line": 139,
+          "kind": "Variable"
+        },
+        {
+          "name": "footerStyle",
+          "line": 145,
+          "kind": "Variable"
+        },
+        {
+          "name": "GuidedTour",
+          "line": 149,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76028,9 +76223,9 @@
       "path": "docs/knowledge-base/features.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 18032,
+      "bytes": 18183,
       "lines": 49,
-      "sha256": "266d05b91113fb2b39c7a2b6c6ea9e8391d7e9870462fe8c030b98666105c5e6",
+      "sha256": "08860ce337bb3e9379e75d51ed7d4978904e8f1f1dadbeaf1420f3e14688454d",
       "binary": false
     },
     {
@@ -91530,9 +91725,9 @@
       "path": "lib/analytics/events.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 5690,
-      "lines": 256,
-      "sha256": "16c976f004b3c1b7b1e3b13591088c26d6132e7c50beaeab1837962420ed641b",
+      "bytes": 6143,
+      "lines": 273,
+      "sha256": "c2340acc10b9ee945c3caf3494a86b286dd23a257b822d71ae4cb845301f2f65",
       "binary": false,
       "exports": [
         {
@@ -91658,6 +91853,11 @@
         {
           "name": "trackThankYouViewed",
           "line": 251,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "trackTourEvent",
+          "line": 263,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -91795,6 +91995,11 @@
         {
           "name": "trackThankYouViewed",
           "line": 251,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "trackTourEvent",
+          "line": 263,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -115786,9 +115991,9 @@
       "path": "lib/events/names.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 5445,
-      "lines": 158,
-      "sha256": "1c69b86dab63470a2b5c2d290f4ed2868999ff916329a3d961c44969e7c18bac",
+      "bytes": 5591,
+      "lines": 162,
+      "sha256": "ae0d5a69d5ab0f8c7392c81ec073a42dc72e998912a956c58c456481a21cfc90",
       "binary": false,
       "exports": [
         {
@@ -115798,47 +116003,47 @@
         },
         {
           "name": "EventName",
-          "line": 95,
+          "line": 99,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isEventName",
-          "line": 97,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LEGACY_EVENT_NAME_ALIASES",
-          "line": 108,
+          "line": 112,
           "kind": "Variable"
         },
         {
           "name": "LegacyEventNameAlias",
-          "line": 115,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isLegacyEventNameAlias",
-          "line": 121,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canonicalEventName",
-          "line": 129,
+          "line": 133,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "eventNameReadCandidates",
-          "line": 140,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CLIENT_EVENT_NAMES",
-          "line": 149,
+          "line": 153,
           "kind": "Variable"
         },
         {
           "name": "ClientEventName",
-          "line": 158,
+          "line": 162,
           "kind": "TypeAliasDeclaration"
         }
       ],
@@ -115850,57 +116055,57 @@
         },
         {
           "name": "EventName",
-          "line": 95,
+          "line": 99,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "eventNames",
-          "line": 96,
+          "line": 100,
           "kind": "Variable"
         },
         {
           "name": "isEventName",
-          "line": 97,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LEGACY_EVENT_NAME_ALIASES",
-          "line": 108,
+          "line": 112,
           "kind": "Variable"
         },
         {
           "name": "LegacyEventNameAlias",
-          "line": 115,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "legacyAliases",
-          "line": 117,
+          "line": 121,
           "kind": "Variable"
         },
         {
           "name": "isLegacyEventNameAlias",
-          "line": 121,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canonicalEventName",
-          "line": 129,
+          "line": 133,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "eventNameReadCandidates",
-          "line": 140,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CLIENT_EVENT_NAMES",
-          "line": 149,
+          "line": 153,
           "kind": "Variable"
         },
         {
           "name": "ClientEventName",
-          "line": 158,
+          "line": 162,
           "kind": "TypeAliasDeclaration"
         }
       ],
@@ -116202,6 +116407,45 @@
         {
           "name": "validateCreateBody",
           "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/feature-flags/isFlagEnabledForUser.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 2060,
+      "lines": 46,
+      "sha256": "d1096a3d31ae9ad01652810665c9c7bec37f00021c878092dc0f9eb91c2e5bfe",
+      "binary": false,
+      "exports": [
+        {
+          "name": "GUIDED_TOURS_V2_FLAG",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "isFlagEnabledForUser",
+          "line": 36,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "GUIDED_TOURS_V2_FLAG",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveUserFlagRoles",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isFlagEnabledForUser",
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -117588,9 +117832,9 @@
       "path": "lib/i18n/pickRootClientMessages.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 6840,
-      "lines": 210,
-      "sha256": "9637b629a0e9ecaa208880d9dce2a431479c79e78e5860ed8eb05c3d83b263e4",
+      "bytes": 7102,
+      "lines": 214,
+      "sha256": "a0c3858401fd445a569c7cb9f0f95fb99acbf362d2d655d28800ddeb736c8185",
       "binary": false,
       "exports": [
         {
@@ -117610,62 +117854,62 @@
         },
         {
           "name": "WIOA_CLIENT_NAMESPACES",
-          "line": 45,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 53,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 65,
+          "line": 67,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 105,
+          "line": 107,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 109,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 113,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 117,
+          "line": 119,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickWioaClientMessages",
-          "line": 121,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 125,
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 170,
+          "line": 174,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 175,
+          "line": 179,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -117692,77 +117936,77 @@
         },
         {
           "name": "WIOA_CLIENT_NAMESPACES",
-          "line": 45,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 53,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 65,
+          "line": 67,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickNamespaces",
-          "line": 67,
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminDashboardClientSlice",
-          "line": 77,
+          "line": 79,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickMarketingClientSlice",
-          "line": 84,
+          "line": 86,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 105,
+          "line": 107,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 109,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 113,
+          "line": 115,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 117,
+          "line": 119,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickWioaClientMessages",
-          "line": 121,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 125,
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 170,
+          "line": 174,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 175,
+          "line": 179,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -127634,53 +127878,64 @@
       "path": "lib/onboarding/portalTourSteps.test.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 2277,
-      "lines": 58,
-      "sha256": "33f8be36d415afdab8f77a8bdbeca60c22f12e3dc92dc93e513467d1600817b7",
+      "bytes": 1352,
+      "lines": 37,
+      "sha256": "e65602873042d03e149546cf9ca0897cd93c01fa0c085db6b0c42bfcabbb7a00",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "SUITES",
+          "line": 10,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
       "path": "lib/onboarding/portalTourSteps.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 3701,
-      "lines": 124,
-      "sha256": "37a126ad9b94227008a9f725476281919e6c76484f55650f63f8cd17bab46cab",
+      "bytes": 707,
+      "lines": 13,
+      "sha256": "294b01e1e5be56320b3970bc07c87c4465cac71994651099a34b28164ed97293",
       "binary": false,
       "exports": [
         {
+          "name": "TourStep",
+          "line": 9,
+          "kind": "ReExport"
+        },
+        {
           "name": "MEMBER_PORTAL_TOUR_STEPS",
-          "line": 3,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_TOUR_STEPS",
-          "line": 36,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_TOUR_STEPS",
-          "line": 87,
+          "line": 13,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_PORTAL_TOUR_STEPS",
-          "line": 3,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_TOUR_STEPS",
-          "line": 36,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_TOUR_STEPS",
-          "line": 87,
+          "line": 13,
           "kind": "Variable"
         }
       ],
@@ -137041,6 +137296,248 @@
       "directive": null
     },
     {
+      "path": "lib/tours/registry.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 5530,
+      "lines": 134,
+      "sha256": "3e555d042f4663ed09ecbb6684bb3fc024b9ac0e2672fab6fafa72dabb0e0dfd",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "Messages",
+          "line": 18,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "REVIEWED_LOCALES",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "loadTours",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolve",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CHROME_KEYS",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "PLACEMENTS",
+          "line": 41,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/tours/registry.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4924,
+      "lines": 147,
+      "sha256": "190ea3f8cfb2f0051f56c92a0599c2c71452f1881ae6a62584a82dad7d78f0b5",
+      "binary": false,
+      "exports": [
+        {
+          "name": "TourPlacement",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourRole",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TOUR_STATUSES",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "TourStatus",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourStepDefinition",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TourDefinition",
+          "line": 31,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TOUR_KEYS",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "TourKey",
+          "line": 41,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourStep",
+          "line": 44,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TOUR_REGISTRY",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "LegacyTourPortal",
+          "line": 112,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "LEGACY_PORTAL_TOUR_KEY",
+          "line": 114,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEGACY_TOUR_VERSION",
+          "line": 121,
+          "kind": "Variable"
+        },
+        {
+          "name": "isTourKey",
+          "line": 123,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isTourStatus",
+          "line": 127,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getTour",
+          "line": 131,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listTours",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toTourSteps",
+          "line": 140,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TourPlacement",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourRole",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TOUR_STATUSES",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "TourStatus",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourStepDefinition",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TourDefinition",
+          "line": 31,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TOUR_KEYS",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "TourKey",
+          "line": 41,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TourStep",
+          "line": 44,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "step",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TOUR_REGISTRY",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "LegacyTourPortal",
+          "line": 112,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "LEGACY_PORTAL_TOUR_KEY",
+          "line": 114,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEGACY_TOUR_VERSION",
+          "line": 121,
+          "kind": "Variable"
+        },
+        {
+          "name": "isTourKey",
+          "line": 123,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isTourStatus",
+          "line": 127,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getTour",
+          "line": 131,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listTours",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toTourSteps",
+          "line": 140,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/turnstile/verifyTurnstile.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -142466,18 +142963,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 215182,
-      "lines": 3532,
-      "sha256": "bf61994356d99eab49e7bee65cd07ed92ec4c4e0ec590b14d8bbb1664ded5dbf",
+      "bytes": 218742,
+      "lines": 3631,
+      "sha256": "9ece1fc998349220cfbfc080a1a2d92da75dc2e67e2dbd961276cfe10b356986",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 238545,
-      "lines": 3532,
-      "sha256": "ce279588e5bb5e20b3c36715b5c28fc2912dc5fab2d6f25874e35207e3e0e44e",
+      "bytes": 242468,
+      "lines": 3631,
+      "sha256": "c3af9e5bebbc4e152590f3379df14ced93da942253bfa7e8ad2921c4fc7e2673",
       "binary": false
     },
     {
@@ -144464,6 +144961,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260920141917_user_tour_state/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 1390,
+      "lines": 29,
+      "sha256": "d602187204ad25b2bb16a7ffcb4cbdde3a41afda4abf69d0505c3f182d665c34",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -144476,9 +144982,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 134550,
-      "lines": 3179,
-      "sha256": "5e5d07f3b522c17b4a9ae0886335fc5f09b506930cade34c3a01855aa5f22728",
+      "bytes": 135499,
+      "lines": 3202,
+      "sha256": "cd45f109bca439118d457da742d04ad6b21c3ab86df60053742c0f22b12f4f80",
       "binary": false
     },
     {
@@ -168167,6 +168673,143 @@
           "name": "nodeOwned",
           "line": 78,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/guided-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 11708,
+      "lines": 265,
+      "sha256": "f6bc7f39ffb15a7341f0494e2fdcfffdad3cd17a143ea2f3501dbd5f0e59b7f8",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "refresh",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ANCHORS",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "Trigger",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Harness",
+          "line": 33,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Posted",
+          "line": 62,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "open",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/tour-auto-start.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2720,
+      "lines": 71,
+      "sha256": "beb3cb401bfe6bc8dd23d246a4db3c111be8065f125f2f75feb5f1aa4eea08fc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "search",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "fetchMock",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "Page",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/tours-key-route.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6158,
+      "lines": 159,
+      "sha256": "62c8f437e741a8f318f066ec1e3a510f79ce4ad38d46dbd0d5a7ff39fb3a9854",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "req",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "call",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "upserted",
+          "line": 55,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/tours-state-route.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 8037,
+      "lines": 199,
+      "sha256": "c553250742856f8602b71b1a0b789741f3d54772c72fd79d66489c42c3ed6b93",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "req",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "call",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "row",
+          "line": 51,
+          "kind": "Variable"
         }
       ],
       "directive": null
