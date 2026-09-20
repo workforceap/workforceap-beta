@@ -254,3 +254,20 @@ export function trackThankYouViewed(funnel: ThankYouFunnel) {
     thank_you_funnel: funnel,
   });
 }
+
+/**
+ * GTM mirror of the server-side `tour_*` member events written by
+ * `/api/tours/[tourKey]` (lib/events/names.ts). Engagement only; the server
+ * row is the record.
+ */
+export function trackTourEvent(
+  phase: 'started' | 'completed' | 'dismissed',
+  tourKey: string,
+  extra?: { version?: number; last_step?: number; role?: string; source_page?: string }
+) {
+  pushEvent({
+    event: `tour_${phase}`,
+    tour_key: tourKey,
+    ...extra,
+  });
+}

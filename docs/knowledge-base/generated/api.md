@@ -513,6 +513,8 @@
 | [app/api/subgroup/members/\[id\]/route.ts](../../../app/api/subgroup/members/%5Bid%5D/route.ts) | 131 | api | GET:13 |
 | [app/api/subgroup/members/route.ts](../../../app/api/subgroup/members/route.ts) | 113 | api | GET:12 |
 | [app/api/test/xapi-access-token/route.ts](../../../app/api/test/xapi-access-token/route.ts) | 37 | api | GET:12 |
+| [app/api/tours/\[tourKey\]/route.ts](../../../app/api/tours/%5BtourKey%5D/route.ts) | 83 | api | POST:29 |
+| [app/api/tours/state/route.ts](../../../app/api/tours/state/route.ts) | 96 | api | TourStateRow:14, GET:30 |
 | [app/api/unsubscribe/route.ts](../../../app/api/unsubscribe/route.ts) | 88 | api | dynamic:21, POST:66, GET:77 |
 | [app/api/webhooks/coursera/route.ts](../../../app/api/webhooks/coursera/route.ts) | 396 | learning-coursera | POST:88 |
 | [app/api/webhooks/learning-completion/_webhook.ts](../../../app/api/webhooks/learning-completion/_webhook.ts) | 82 | api | webhookSchema:5, verifyWebhookSecret:11, buildDedupeKey:27, checkIdempotency:33 |

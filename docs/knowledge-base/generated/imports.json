@@ -62152,6 +62152,118 @@
     "target": "lib/xapi/token.ts"
   },
   {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "zod",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "zod"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "app/api/tours/[tourKey]/route.ts",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/feature-flags/isFlagEnabledForUser",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/isFlagEnabledForUser.ts"
+  },
+  {
+    "from": "app/api/tours/state/route.ts",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/api/unsubscribe/route.ts",
     "specifier": "next/server",
     "line": 12,
@@ -74921,6 +75033,30 @@
   },
   {
     "from": "components/onboarding/PortalTour.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 8,
+    "kind": "re-export",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "components/onboarding/PortalTour.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 9,
+    "kind": "re-export",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "components/onboarding/StartTourButton.tsx",
+    "specifier": "./TourContext",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/onboarding/TourAutoStart.tsx",
     "specifier": "react",
     "line": 3,
     "kind": "import",
@@ -74928,36 +75064,28 @@
     "package": "react"
   },
   {
-    "from": "components/onboarding/PortalTour.tsx",
-    "specifier": "./TourContext",
+    "from": "components/onboarding/TourAutoStart.tsx",
+    "specifier": "next/navigation",
     "line": 4,
     "kind": "import",
-    "external": false,
-    "target": "components/onboarding/TourContext.tsx"
+    "external": true,
+    "package": "next"
   },
   {
-    "from": "components/onboarding/PortalTour.tsx",
-    "specifier": "@/lib/a11y/scrollBehavior",
+    "from": "components/onboarding/TourAutoStart.tsx",
+    "specifier": "@/lib/tours/registry",
     "line": 5,
     "kind": "import",
     "external": false,
-    "target": "lib/a11y/scrollBehavior.ts"
+    "target": "lib/tours/registry.ts"
   },
   {
-    "from": "components/onboarding/StartTourButton.tsx",
+    "from": "components/onboarding/TourAutoStart.tsx",
     "specifier": "./TourContext",
-    "line": 3,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/onboarding/TourContext.tsx"
-  },
-  {
-    "from": "components/onboarding/StartTourButton.tsx",
-    "specifier": "@/lib/onboarding/portalTourSteps",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/onboarding/portalTourSteps.ts"
   },
   {
     "from": "components/onboarding/TourContext.tsx",
@@ -74977,27 +75105,51 @@
   },
   {
     "from": "components/onboarding/TourContext.tsx",
-    "specifier": "./PortalTour",
+    "specifier": "@/lib/analytics/events",
     "line": 5,
-    "kind": "type",
+    "kind": "import",
     "external": false,
-    "target": "components/onboarding/PortalTour.tsx"
+    "target": "lib/analytics/events.ts"
+  },
+  {
+    "from": "components/onboarding/TourContext.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "components/onboarding/TourProviderWrapper.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
   },
   {
     "from": "components/onboarding/TourProviderWrapper.tsx",
     "specifier": "./TourContext",
-    "line": 3,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "components/onboarding/TourContext.tsx"
   },
   {
     "from": "components/onboarding/TourProviderWrapper.tsx",
-    "specifier": "./PortalTour",
-    "line": 4,
+    "specifier": "./TourAutoStart",
+    "line": 5,
     "kind": "import",
     "external": false,
-    "target": "components/onboarding/PortalTour.tsx"
+    "target": "components/onboarding/TourAutoStart.tsx"
+  },
+  {
+    "from": "components/onboarding/TourProviderWrapper.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
   },
   {
     "from": "components/partner/CopyReferralLink.tsx",
@@ -81958,6 +82110,62 @@
     "kind": "import",
     "external": true,
     "package": "react"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "next-intl",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "@/lib/a11y/scrollBehavior",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/a11y/scrollBehavior.ts"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "./hooks/useAnnounce",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/hooks/useAnnounce.ts"
+  },
+  {
+    "from": "components/portal/kit/GuidedTour.tsx",
+    "specifier": "./hooks/useFocusTrap",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/hooks/useFocusTrap.ts"
   },
   {
     "from": "components/portal/kit/JobListingRow.tsx",
@@ -103784,6 +103992,38 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "lib/feature-flags/isFlagEnabledForUser.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/feature-flags/isFlagEnabledForUser.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "lib/feature-flags/isFlagEnabledForUser.ts",
+    "specifier": "./publicApi",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/publicApi.ts"
+  },
+  {
+    "from": "lib/feature-flags/isFlagEnabledForUser.ts",
+    "specifier": "./reservedKeys",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/reservedKeys.ts"
+  },
+  {
     "from": "lib/feature-flags/publicApi.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -108816,12 +109056,20 @@
     "target": "lib/onboarding/portalTourSteps.ts"
   },
   {
-    "from": "lib/onboarding/portalTourSteps.ts",
-    "specifier": "@/components/onboarding/PortalTour",
-    "line": 1,
-    "kind": "type",
+    "from": "lib/onboarding/portalTourSteps.test.ts",
+    "specifier": "@/lib/tours/registry",
+    "line": 8,
+    "kind": "import",
     "external": false,
-    "target": "components/onboarding/PortalTour.tsx"
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "lib/onboarding/portalTourSteps.ts",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "lib/onet/copy.ts",
@@ -111870,6 +112118,46 @@
     "kind": "type",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/tours/registry.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/tours/registry.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/tours/registry.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/tours/registry.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/tours/registry.test.ts",
+    "specifier": "./registry",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "lib/ui/adminSemanticTokens.test.ts",
@@ -139262,6 +139550,230 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/messages/es.json",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "messages/es.json"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/components/onboarding/PortalTour",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/PortalTour.tsx"
+  },
+  {
+    "from": "tests/tours/guided-tour.spec.tsx",
+    "specifier": "@/lib/onboarding/portalTourSteps",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/onboarding/portalTourSteps.ts"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "@/components/onboarding/TourProviderWrapper",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourProviderWrapper.tsx"
+  },
+  {
+    "from": "tests/tours/tour-auto-start.spec.tsx",
+    "specifier": "@/components/onboarding/TourAutoStart",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourAutoStart.tsx"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 25,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/app/api/tours/[tourKey]/route",
+    "line": 36,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/tours/[tourKey]/route.ts"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "tests/tours/tours-key-route.spec.ts",
+    "specifier": "@/lib/events/names",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 32,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "@/app/api/tours/state/route",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/tours/state/route.ts"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/tours/tours-state-route.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 46,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "tests/webhook-retries-audit-noise.spec.ts",

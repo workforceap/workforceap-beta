@@ -302,6 +302,7 @@ model User {
 
   chaptersLed            Chapter[]       @relation("ChapterLeader")
   chapterMemberships     ChapterMember[]
+  tourStates             UserTourState[]
 
   @@index([organizationId])
   @@index([wioaReviewStatus])
@@ -3180,4 +3181,26 @@ model TokenizedLink {
   @@index([type])
   @@index([subjectUserId])
   @@map("tokenized_link")
+}
+
+// Guided tours (lib/tours/registry.ts): one row per user per tour key. Per
+// user, not per employer/partner org, so a second partner user still gets the
+// tour. `version` is the registry version the row was written against; the
+// client re-tours when it is behind. Legacy `tourCompletedAt` timestamps are
+// read as COMPLETED v1 by GET /api/tours/state until they are dropped.
+model UserTourState {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tourKey   String   @map("tour_key")
+  version   Int
+  status    String // STARTED | COMPLETED | DISMISSED
+  lastStep  Int      @default(0) @map("last_step")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tourKey])
+  @@index([userId])
+  @@map("user_tour_states")
 }

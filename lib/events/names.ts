@@ -66,6 +66,10 @@ export const EVENT_NAMES = [
   'career_os.learning_completion_processed',
   'career_os.interview_practice_completed',
   'program_completed',
+  // Guided tours (lib/tours/registry.ts): written server-side by /api/tours/[tourKey].
+  'tour_started',
+  'tour_completed',
+  'tour_dismissed',
   // WAP-39: names below were written by direct `memberEvent.create` callers
   // before every writer was routed through lib/events/track.ts. Spelling is
   // preserved exactly so existing rows and their readers keep matching.
