@@ -11,7 +11,7 @@ export default function CourseraProgressCoverageNotice({
       {coverage === 'capped'
         ? 'Your latest Coursera progress is still syncing.'
         : 'Progress may be a few hours behind.'}{' '}
-      What you see here is your most recent saved progress; nothing you completed is lost.
+      Progress shown uses available course records.
     </p>
   );
 }

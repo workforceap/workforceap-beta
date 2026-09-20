@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "7b33c3ef9e62d117104120b62dbc5a683fcd5e3674713536e831c83c01590eb6",
+  "inputTreeSha256": "4ec4d3ad044d041a8d919536dcd875cf32f881c7688a6acb3a5fb3e59a9041a3",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -58958,9 +58958,9 @@
       "path": "components/portal/CourseraProgressCoverageNotice.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 626,
+      "bytes": 587,
       "lines": 17,
-      "sha256": "d863b53785869dfa305c29639679427b3fe497faecabcf8a635665c392a0efab",
+      "sha256": "3f4989357231d98c468ca9c1337e41a2085aa2f6f1176de7939a60692f4cb956",
       "binary": false,
       "exports": [
         {
