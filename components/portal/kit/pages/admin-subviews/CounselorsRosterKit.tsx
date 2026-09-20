@@ -14,6 +14,7 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
+import { COUNSELOR_AT_RISK_DEFINITION } from '@/lib/admin/counselorRosterLabels';
 import {
   DEFAULT_COUNSELOR_SORT_DIRECTION,
   DEFAULT_COUNSELOR_SORT_KEY,
@@ -103,8 +104,16 @@ export function CounselorsRosterKit({
   const kpis: KpiItem[] = [
     { label: 'Counselors', value: total },
     { label: 'Avg Caseload', value: avgCaseload },
-    // Only a real state colours a number: at-risk owned > 0 is one.
-    { label: 'At-Risk Owned', value: atRiskOwned, tone: typeof atRiskOwned === 'number' && atRiskOwned > 0 ? 'alert' : undefined },
+    // Only a real state colours a number: at-risk owned > 0 is one. The
+    // caption prints the rule (saved active alert, the same as every other
+    // at-risk tile) so this tile can never silently mean something else.
+    {
+      label: 'At-Risk Owned',
+      value: atRiskOwned,
+      tone: typeof atRiskOwned === 'number' && atRiskOwned > 0 ? 'alert' : undefined,
+      delta: COUNSELOR_AT_RISK_DEFINITION,
+      deltaTone: 'muted',
+    },
     { label: 'Avg Response', value: avgResponse },
   ];
 

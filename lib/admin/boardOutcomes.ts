@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { prisma } from '@/lib/db/prisma';
 import { REPORT_SAMPLE_CAP, sqlCount } from '@/lib/db/scanCaps';
+import { MEMBER_ONLY_WHERE, memberOnlyProfileWhere, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { summarizeRetentionGroups } from '@/lib/analytics/retentionOutcome';
 import {
   validatedProgramAssignmentRowsSql,
@@ -167,6 +168,13 @@ export async function getBoardOutcomes(
 
   // Members enrolled within the period (or any time, for all-time).
   //
+  // Population: member-role accounts only (`MEMBER_ONLY_WHERE`). Staff,
+  // admin and fixture accounts never count as members served, never sit in
+  // the placement-rate denominator and never appear in the demographics
+  // (number audit 2026-09-20, F1-F3: a single super_admin dogfood placement
+  // was the organisation's whole placement rate and two of the three board
+  // demographic profiles were staff).
+  //
   // Multi-tenant scoping: when `organizationId` is provided, every query is
   // narrowed to that org. When omitted, behavior is unchanged (single-tenant
   // pilot mode — see BoardOutcomes module header). The existing
@@ -174,22 +182,30 @@ export async function getBoardOutcomes(
   const enrolledWhere = {
     deletedAt: null,
     enrolledProgram: { not: null },
+    ...MEMBER_ONLY_WHERE,
     ...(organizationId ? { organizationId } : {}),
     ...(start ? { enrolledAt: { gte: start, lte: end } } : {}),
   } as const;
 
+  // Placements are counted only for member-role users (same population as
+  // the denominator above), scoped by `placedAt` for the period.
   const placementWhere = {
     ...(start ? { placedAt: { gte: start, lte: end } } : {}),
-    ...(organizationId ? { user: { organizationId } } : {}),
+    user: { ...MEMBER_ONLY_WHERE, ...(organizationId ? { organizationId } : {}) },
   } as const;
   const profileUserWhere = start
     ? enrolledWhere
     : {
         deletedAt: null,
         enrolledProgram: { not: null },
+        ...MEMBER_ONLY_WHERE,
         ...(organizationId ? { organizationId } : {}),
       };
+  // Demographics run on `prisma.profile`, so the role predicate sits on the
+  // profile row itself (see memberOnlyProfileWhere).
+  const demographicsWhere = memberOnlyProfileWhere(profileUserWhere);
   const orgSql = organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty;
+  const memberJoin = memberOnlySqlJoin();
   const enrolledAtSql = start
     ? Prisma.sql`AND u.enrolled_at >= ${start} AND u.enrolled_at <= ${end}`
     : Prisma.empty;
@@ -235,6 +251,7 @@ export async function getBoardOutcomes(
             AND (mpp.courses_completed > 0 OR mpp.average_percent > 0)
           ) AS started
         FROM users u
+        ${memberJoin}
         INNER JOIN learner_program_assignments ce
           ON ce.user_id = u.id
         INNER JOIN validated_programs enrolled_program
@@ -266,6 +283,7 @@ export async function getBoardOutcomes(
       SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY pr.salary_offered)::int AS median
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
+      ${memberJoin}
       WHERE pr.salary_offered > 0
         ${orgSql}
         ${placedAtSql}
@@ -274,6 +292,7 @@ export async function getBoardOutcomes(
       SELECT AVG(EXTRACT(EPOCH FROM (pr.placed_at - u.enrolled_at)) / (7 * 86400)) AS avg_weeks
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
+      ${memberJoin}
       WHERE u.enrolled_at IS NOT NULL
         AND pr.placed_at > u.enrolled_at
         ${orgSql}
@@ -299,6 +318,7 @@ export async function getBoardOutcomes(
         enrolled_program.canonical_slug AS program_slug,
         COUNT(DISTINCT u.id)::bigint AS count
       FROM users u
+      ${memberJoin}
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
@@ -326,6 +346,7 @@ export async function getBoardOutcomes(
       SELECT u.enrolled_program AS program_slug, COUNT(*)::bigint AS count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
+      ${memberJoin}
       WHERE pr.program_slug IS NULL
         AND u.enrolled_program IS NOT NULL
         ${orgSql}
@@ -334,27 +355,27 @@ export async function getBoardOutcomes(
     `,
     prisma.profile.groupBy({
       by: ['veteranStatus'],
-      where: { user: profileUserWhere },
+      where: demographicsWhere,
       _count: { _all: true },
     }),
     prisma.profile.groupBy({
       by: ['employmentStatus'],
-      where: { user: profileUserWhere },
+      where: demographicsWhere,
       _count: { _all: true },
     }),
     prisma.profile.groupBy({
       by: ['householdIncome'],
-      where: { user: profileUserWhere },
+      where: demographicsWhere,
       _count: { _all: true },
     }),
     prisma.profile.groupBy({
       by: ['educationLevel'],
-      where: { user: profileUserWhere },
+      where: demographicsWhere,
       _count: { _all: true },
     }),
     prisma.profile.groupBy({
       by: ['ethnicity'],
-      where: { user: profileUserWhere },
+      where: demographicsWhere,
       _count: { _all: true },
     }),
     prisma.placementRecord.findMany({
@@ -647,12 +668,50 @@ export function buildPlacementActivitySeries(
   return [...months.values()].sort((a, b) => a.month.localeCompare(b.month));
 }
 
+/** Distinct member-role users with any event since `since` (staff events never count). */
+/**
+ * Funnel waterfall stages with their conversion from the previous stage.
+ *
+ * Application approval is NOT a prerequisite for enrolment (the enrol route
+ * gates on WIOA screening only), so "Approved" is not a stage between
+ * Applications and Enrolled: with 0 approved applications and 37 enrolled the
+ * CSV printed "Approved 0 → Enrolled 37, 0%" (number audit 2026-09-20, F5).
+ * Enrolled converts from Applications; approval counts stay in
+ * `applicationFunnel`. A conversion is omitted (not 0%) when the previous
+ * stage is empty, so no export prints a rate over nothing.
+ */
+export function buildFunnelWaterfall(counts: {
+  accounts: number;
+  applications: number;
+  enrolled: number;
+  trainingCompleted: number;
+  placed: number;
+}): FunnelWaterfallStage[] {
+  const stage = (name: string, count: number, previousCount?: number): FunnelWaterfallStage =>
+    previousCount === undefined
+      ? { stage: name, count }
+      : {
+          stage: name,
+          count,
+          previousCount,
+          ...(previousCount > 0 ? { conversionRate: Math.round((count / previousCount) * 100) } : {}),
+        };
+  return [
+    stage('Accounts', counts.accounts),
+    stage('Applications', counts.applications, counts.accounts),
+    stage('Enrolled', counts.enrolled, counts.applications),
+    stage('Training completed', counts.trainingCompleted, counts.enrolled),
+    stage('Placed', counts.placed, counts.trainingCompleted),
+  ];
+}
+
 async function countDistinctEventUsers(since: Date, organizationId?: string): Promise<number> {
   const orgSql = organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty;
   const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
     SELECT COUNT(DISTINCT me.user_id)::bigint AS count
     FROM member_events me
     INNER JOIN users u ON u.id = me.user_id
+    ${memberOnlySqlJoin()}
     WHERE me.created_at >= ${since}
       ${orgSql}
   `;
@@ -683,6 +742,20 @@ export async function getBoardSnapshot(
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+  // Every count in the snapshot is over member-role accounts only (see
+  // getBoardOutcomes). `memberUser` is the relation filter for models keyed
+  // by user; `memberJoin` is its raw-SQL twin.
+  const memberUser = { ...MEMBER_ONLY_WHERE, ...(organizationId ? { organizationId } : {}) };
+  const memberJoin = memberOnlySqlJoin();
+  // Funnel and cohort stages honour the selected period (F4): applications
+  // and accounts by `created_at`, enrolments by `enrolled_at`, placements by
+  // `placed_at`. For all-time the predicates are empty.
+  const periodRange = periodStart ? { gte: periodStart, lte: periodEnd } : null;
+  const periodSql = (column: string) =>
+    periodStart
+      ? Prisma.sql`AND ${Prisma.raw(column)} >= ${periodStart} AND ${Prisma.raw(column)} <= ${periodEnd}`
+      : Prisma.empty;
+
   const [
     outcomes,
     applicationsByStatus,
@@ -704,68 +777,63 @@ export async function getBoardSnapshot(
     prisma.application.groupBy({
       by: ['status'],
       _count: { _all: true },
-      ...(organizationId ? { where: { user: { organizationId } } } : {}),
+      where: { user: memberUser, ...(periodRange ? { createdAt: periodRange } : {}) },
     }),
     prisma.user.count({
-      where: { deletedAt: null, ...(organizationId ? { organizationId } : {}) },
+      where: { deletedAt: null, ...memberUser },
     }),
     countDistinctEventUsers(sevenDaysAgo, organizationId),
     countDistinctEventUsers(fourteenDaysAgo, organizationId),
     countDistinctEventUsers(thirtyDaysAgo, organizationId),
+    // Credential records: approved rows held by member-role users only.
     prisma.userCertification.count({
-      ...(organizationId ? { where: { user: { organizationId } } } : {}),
+      where: { status: 'approved', user: memberUser },
     }),
     prisma.userCertification.count({
       where: {
+        status: 'approved',
         earnedAt: { gte: thirtyDaysAgo },
-        ...(organizationId ? { user: { organizationId } } : {}),
+        user: memberUser,
       },
     }),
     prisma.$queryRaw<Array<{ count: bigint | number }>>`
       SELECT COUNT(DISTINCT uc.user_id)::bigint AS count
       FROM user_certifications uc
       INNER JOIN users u ON u.id = uc.user_id
-      WHERE 1=1
+      ${memberJoin}
+      WHERE uc.status = 'approved'
         ${organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty}
     `.then((rows) => sqlCount(rows[0]?.count)),
     prisma.placementRecord.count({
-      where: {
-        programSlug: null,
-        ...(organizationId ? { user: { organizationId } } : {}),
-      },
+      where: { programSlug: null, user: memberUser },
     }),
     prisma.placementRecord.count({
-      where: {
-        fundingSource: null,
-        ...(organizationId ? { user: { organizationId } } : {}),
-      },
+      where: { fundingSource: null, user: memberUser },
     }),
     prisma.placementRecord.count({
       where: {
         AND: [{ retentionStatus: null }, { retentionDecision: null }],
-        ...(organizationId ? { user: { organizationId } } : {}),
+        user: memberUser,
       },
     }),
     prisma.placementRecord.count({
-      where: {
-        salaryOffered: null,
-        ...(organizationId ? { user: { organizationId } } : {}),
-      },
+      where: { salaryOffered: null, user: memberUser },
     }),
     prisma.user.count({
       where: {
         deletedAt: null,
         enrolledProgram: { not: null },
         enrolledAt: null,
-        ...(organizationId ? { organizationId } : {}),
+        ...memberUser,
       },
     }),
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
       SELECT to_char(date_trunc('month', me.created_at), 'YYYY-MM') AS month, COUNT(*)::bigint AS count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id
+      ${memberJoin}
       WHERE me.event_name = 'placement_recorded'
-        ${periodStart ? Prisma.sql`AND me.created_at >= ${periodStart} AND me.created_at <= ${periodEnd}` : Prisma.empty}
+        ${periodSql('me.created_at')}
         ${organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty}
       GROUP BY 1
       ORDER BY 1
@@ -794,7 +862,7 @@ export async function getBoardSnapshot(
     certifiedCohorts,
   ] = await Promise.all([
     prisma.user.count({
-      where: { deletedAt: null, ...(organizationId ? { organizationId } : {}) },
+      where: { deletedAt: null, ...memberUser, ...(periodRange ? { createdAt: periodRange } : {}) },
     }),
     prisma.$queryRaw<Array<{ median_days: number | null; oldest_days: number | null }>>`
       SELECT
@@ -804,6 +872,7 @@ export async function getBoardSnapshot(
         MAX(EXTRACT(EPOCH FROM (${now} - a.created_at)) / 86400) AS oldest_days
       FROM applications a
       INNER JOIN users u ON u.id = a.user_id
+      ${memberJoin}
       WHERE a.status = 'PENDING'
         ${orgUserSql}
     `,
@@ -814,25 +883,31 @@ export async function getBoardSnapshot(
         COUNT(*) FILTER (WHERE a.status = 'APPROVED')::bigint AS approved
       FROM applications a
       INNER JOIN users u ON u.id = a.user_id
+      ${memberJoin}
       WHERE 1=1
         ${orgUserSql}
+        ${periodSql('a.created_at')}
       GROUP BY 1
     `,
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
       SELECT to_char(date_trunc('month', u.enrolled_at), 'YYYY-MM') AS month, COUNT(*)::bigint AS count
       FROM users u
+      ${memberJoin}
       WHERE u.deleted_at IS NULL
         AND u.enrolled_program IS NOT NULL
         AND u.enrolled_at IS NOT NULL
         ${orgUserSql}
+        ${periodSql('u.enrolled_at')}
       GROUP BY 1
     `,
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
       SELECT to_char(date_trunc('month', pr.placed_at), 'YYYY-MM') AS month, COUNT(*)::bigint AS count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
+      ${memberJoin}
       WHERE 1=1
         ${orgUserSql}
+        ${periodSql('pr.placed_at')}
       GROUP BY 1
     `,
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
@@ -845,6 +920,7 @@ export async function getBoardSnapshot(
         to_char(date_trunc('month', u.enrolled_at), 'YYYY-MM') AS month,
         COUNT(DISTINCT u.id)::bigint AS count
       FROM users u
+      ${memberJoin}
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
@@ -861,6 +937,7 @@ export async function getBoardSnapshot(
         AND u.enrolled_at IS NOT NULL
         AND mpp.courses_completed = progress_program.total_courses
         ${orgUserSql}
+        ${periodSql('u.enrolled_at')}
       GROUP BY 1
     `,
   ]);
@@ -876,14 +953,13 @@ export async function getBoardSnapshot(
   const certifiedCount = outcomes.totals.membersCertified;
   const placedCount = outcomes.totals.membersPlaced;
 
-  const funnelWaterfall: FunnelWaterfallStage[] = [
-    { stage: 'Accounts', count: totalAccounts },
-    { stage: 'Applications', count: totalApps, previousCount: totalAccounts, conversionRate: totalAccounts > 0 ? Math.round((totalApps / totalAccounts) * 100) : 0 },
-    { stage: 'Approved', count: applicationFunnel.approved, previousCount: totalApps, conversionRate: totalApps > 0 ? Math.round((applicationFunnel.approved / totalApps) * 100) : 0 },
-    { stage: 'Enrolled', count: enrolledCount, previousCount: applicationFunnel.approved, conversionRate: applicationFunnel.approved > 0 ? Math.round((enrolledCount / applicationFunnel.approved) * 100) : 0 },
-    { stage: 'Training completed', count: certifiedCount, previousCount: enrolledCount, conversionRate: enrolledCount > 0 ? Math.round((certifiedCount / enrolledCount) * 100) : 0 },
-    { stage: 'Placed', count: placedCount, previousCount: certifiedCount, conversionRate: certifiedCount > 0 ? Math.round((placedCount / certifiedCount) * 100) : 0 },
-  ];
+  const funnelWaterfall: FunnelWaterfallStage[] = buildFunnelWaterfall({
+    accounts: totalAccounts,
+    applications: totalApps,
+    enrolled: enrolledCount,
+    trainingCompleted: certifiedCount,
+    placed: placedCount,
+  });
 
   // Cohort table by month (application month) — SQL date_trunc groups, exact counts.
   const cohortMap = new Map<string, CohortMonth>();
@@ -931,33 +1007,30 @@ export async function getBoardSnapshot(
     retentionRows,
   ] = await Promise.all([
     prisma.user.count({
-      where: { deletedAt: null, ...(organizationId ? { organizationId } : {}) },
+      where: { deletedAt: null, ...memberUser },
     }),
     countDistinctEventUsers(sevenDaysAgo, organizationId),
-    // Qualified leads = users who completed assessment + have program interest but are not yet enrolled
+    // Qualified leads = members who completed assessment + have program interest but are not yet enrolled
     prisma.user.count({
       where: {
         deletedAt: null,
         assessmentCompleted: true,
         enrolledProgram: null,
-        ...(organizationId ? { organizationId } : {}),
+        ...memberUser,
       },
     }),
-    // Funded starts = users enrolled this month with a funding source on their placement (or any enrolled this month if no placement yet)
+    // Funded starts = members enrolled this month with a funding source on their placement (or any enrolled this month if no placement yet)
     prisma.user.count({
       where: {
         deletedAt: null,
         enrolledProgram: { not: null },
         enrolledAt: { gte: startOfMonth },
-        ...(organizationId ? { organizationId } : {}),
+        ...memberUser,
       },
     }),
     // Placements this month
     prisma.placementRecord.count({
-      where: {
-        placedAt: { gte: startOfMonth },
-        ...(organizationId ? { user: { organizationId } } : {}),
-      },
+      where: { placedAt: { gte: startOfMonth }, user: memberUser },
     }),
     // Retention: pull retention fields for placements in this org/period so we
     // can compute the real 90-day retention rate below. Scoped by `placedAt`
@@ -966,7 +1039,7 @@ export async function getBoardSnapshot(
       by: ['retentionStatus', 'retentionDecision'],
       where: {
         ...(retentionStart ? { placedAt: { gte: retentionStart, lte: retentionEnd } } : {}),
-        ...(organizationId ? { user: { organizationId } } : {}),
+        user: memberUser,
       },
       _count: { _all: true },
     }),

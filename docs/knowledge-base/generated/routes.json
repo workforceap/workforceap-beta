@@ -7488,12 +7488,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 22,
+        "line": 23,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 214,
+        "line": 217,
         "kind": "FunctionDeclaration",
         "localName": "AnalyticsPage"
       }
@@ -8011,17 +8011,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 23,
+        "line": 24,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 25,
+        "line": 26,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 33,
+        "line": 34,
         "kind": "FunctionDeclaration",
         "localName": "AdminCommandCenterPage"
       }
@@ -10255,12 +10255,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 31,
+        "line": 32,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 46,
+        "line": 47,
         "kind": "FunctionDeclaration",
         "localName": "AdminTodayPage"
       }
@@ -10508,17 +10508,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 14,
+        "line": 15,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 16,
+        "line": 17,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 27,
+        "line": 28,
         "kind": "FunctionDeclaration",
         "localName": "PipelinePage"
       }
@@ -11774,7 +11774,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 13,
+        "line": 14,
         "kind": "Variable"
       }
     ],
@@ -11800,7 +11800,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 12,
+        "line": 13,
         "kind": "import"
       }
     ]
@@ -17510,7 +17510,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 237,
+        "line": 263,
         "kind": "Variable"
       }
     ],
@@ -17536,7 +17536,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 12,
         "kind": "import"
       }
     ]
@@ -17897,7 +17897,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 280,
+        "line": 316,
         "kind": "Variable"
       }
     ],
@@ -17923,7 +17923,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 18,
         "kind": "import"
       }
     ]
@@ -18564,7 +18564,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 86,
+        "line": 90,
         "kind": "Variable"
       }
     ],

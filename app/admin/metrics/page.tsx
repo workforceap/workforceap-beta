@@ -57,12 +57,14 @@ export default async function AdminMetricsPage({
       { label: 'Uptime 30d', value: '—' },
     ];
 
-    // "Requests by surface (last 24h)". The metrics module tracks real
-    // member-portal activity (the last entry of the daily-activity series is
-    // today / the most-recent 24h bucket: member events + AI tool runs +
-    // applications). There is no instrumented Admin or API/webhook request
-    // counter, so those surfaces honestly render "—" (pct 0) instead of
-    // inventing traffic. Member-portal volume is the one real count.
+    // "Requests by surface (today)". The metrics module tracks real
+    // member-portal activity; the last entry of the daily-activity series is
+    // the current calendar day since midnight (server time, UTC in
+    // production): member events + AI tool runs + applications. It is not a
+    // rolling 24-hour window, so the caption says "today", not "last 24h"
+    // (number audit 2026-09-20, S29). There is no instrumented Admin or
+    // API/webhook request counter, so those surfaces honestly render "—"
+    // (pct 0) instead of inventing traffic.
     const today = data.dailyActivity.at(-1);
     const memberPortal24h = today
       ? today.events + today.aiTools + today.applications
@@ -84,7 +86,7 @@ export default async function AdminMetricsPage({
         goal="Raw platform metrics"
         kpis={kpis}
         bySurface={bySurface}
-        surfaceCaption="last 24h · member-portal events instrumented; admin & API surfaces not yet metered"
+        surfaceCaption={`today since midnight UTC · member-portal events instrumented; admin & API surfaces not yet metered${data.degradedSlices.length > 0 ? ` · some figures unavailable right now (${data.degradedSlices.join(', ')})` : ''}`}
         headerAction={
           <a
             href="/api/admin/funder-program-summary"

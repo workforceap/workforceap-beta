@@ -5,6 +5,7 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 async function _GET(req: NextRequest) {
   try {
@@ -17,8 +18,11 @@ async function _GET(req: NextRequest) {
   const stage = req.nextUrl.searchParams.get('stage');
 
   const counts = await withTenantScope(orgId, async (db) => {
+    // Member-role accounts only (`profile.role`), the predicate every roster
+    // uses; `user_roles` is missing for 48 of 127 members and included staff
+    // (number audit 2026-09-20, F8).
     const members = await db.user.findMany({
-      where: { deletedAt: null, userRoles: { some: { role: { name: 'member' } } } },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE },
       select: {
         id: true,
         createdAt: true,

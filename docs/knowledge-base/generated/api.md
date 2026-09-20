@@ -8,7 +8,7 @@
 | [app/api/(portal)/dashboard/jobs/\[id\]/route.ts](../../../app/api/%28portal%29/dashboard/jobs/%5Bid%5D/route.ts) | 25 | jobs-employers | GET:25 |
 | [app/api/(portal)/dashboard/jobs/route.ts](../../../app/api/%28portal%29/dashboard/jobs/route.ts) | 151 | jobs-employers | GET:151 |
 | [app/api/admin/analytics/ai-efficacy/route.ts](../../../app/api/admin/analytics/ai-efficacy/route.ts) | 71 | administration | GET:71 |
-| [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | 76 | member-counselor | GET:13 |
+| [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | 80 | member-counselor | GET:14 |
 | [app/api/admin/analytics/members/route.ts](../../../app/api/admin/analytics/members/route.ts) | 71 | administration | GET:8 |
 | [app/api/admin/analytics/placements/_placementsAnalytics.ts](../../../app/api/admin/analytics/placements/_placementsAnalytics.ts) | 44 | jobs-employers | fetchPlacementAnalytics:3 |
 | [app/api/admin/analytics/placements/route.test.ts](../../../app/api/admin/analytics/placements/route.test.ts) | 39 | jobs-employers |  |
@@ -154,7 +154,7 @@
 | [app/api/admin/messages/thread/\[threadId\]/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/route.ts) | 175 | communications | GET:11 |
 | [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | 107 | communications | POST:79, PATCH:106 |
 | [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | 345 | communications | GET:206, POST:345 |
-| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 263 | administration | GET:237 |
+| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 289 | administration | GET:263 |
 | [app/api/admin/milestone-cascades/\[id\]/approve/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/approve/route.ts) | 195 | member-counselor | POST:195 |
 | [app/api/admin/milestone-cascades/\[id\]/dismiss/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/dismiss/route.ts) | 116 | member-counselor | POST:116 |
 | [app/api/admin/milestone-cascades/synthetic/route.ts](../../../app/api/admin/milestone-cascades/synthetic/route.ts) | 97 | member-counselor | POST:97 |
@@ -164,7 +164,7 @@
 | [app/api/admin/onet/sync/route.ts](../../../app/api/admin/onet/sync/route.ts) | 67 | administration | POST:16 |
 | [app/api/admin/organization/logo/route.ts](../../../app/api/admin/organization/logo/route.ts) | 83 | administration | POST:13 |
 | [app/api/admin/outcomes/pdf/route.ts](../../../app/api/admin/outcomes/pdf/route.ts) | 189 | administration | GET:189 |
-| [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | 280 | administration | GET:280 |
+| [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | 316 | administration | GET:316 |
 | [app/api/admin/outcomes/snapshot/route.ts](../../../app/api/admin/outcomes/snapshot/route.ts) | 83 | administration | GET:83 |
 | [app/api/admin/partner-context/route.ts](../../../app/api/admin/partner-context/route.ts) | 82 | administration | GET:42, POST:82 |
 | [app/api/admin/partner-payouts/route.ts](../../../app/api/admin/partner-payouts/route.ts) | 103 | administration | GET:103 |
@@ -179,7 +179,7 @@
 | [app/api/admin/partners/invite/route.ts](../../../app/api/admin/partners/invite/route.ts) | 92 | partners-funding | POST:92 |
 | [app/api/admin/partners/route.ts](../../../app/api/admin/partners/route.ts) | 176 | partners-funding | GET:83, POST:176 |
 | [app/api/admin/pipeline/at-risk-stats/route.ts](../../../app/api/admin/pipeline/at-risk-stats/route.ts) | 115 | administration | GET:10 |
-| [app/api/admin/pipeline/route.ts](../../../app/api/admin/pipeline/route.ts) | 86 | administration | GET:86 |
+| [app/api/admin/pipeline/route.ts](../../../app/api/admin/pipeline/route.ts) | 90 | administration | GET:90 |
 | [app/api/admin/pipeline/stale/route.ts](../../../app/api/admin/pipeline/stale/route.ts) | 41 | administration | GET:10 |
 | [app/api/admin/pipeline/surveys/route.ts](../../../app/api/admin/pipeline/surveys/route.ts) | 87 | administration | GET:12 |
 | [app/api/admin/placement-surveys/resend/route.ts](../../../app/api/admin/placement-surveys/resend/route.ts) | 165 | administration | POST:23 |

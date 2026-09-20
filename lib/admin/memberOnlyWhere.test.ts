@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE, STAFF_PROFILE_ROLES } from './memberOnlyWhere';
+import {
+  MEMBER_ONLY_EXCLUDED_EMAILS,
+  MEMBER_ONLY_WHERE,
+  STAFF_PROFILE_ROLES,
+  memberOnlyProfileWhere,
+  memberOnlySqlJoin,
+} from './memberOnlyWhere';
 
 /**
  * Seeded accounts mirroring the demo database the 2026-09-20 admin audit ran
@@ -68,4 +74,32 @@ test('fixture emails and accounts without a profile row are not members either',
     assert.equal(matches(MEMBER_ONLY_WHERE, { ...member, email }), false);
   }
   assert.equal(matches(MEMBER_ONLY_WHERE, { ...member, profile: null }), false);
+});
+
+test('memberOnlyProfileWhere puts the role on the profile row and the fixture exclusion on the user', () => {
+  const where = memberOnlyProfileWhere({ deletedAt: null, enrolledProgram: { not: null }, organizationId: 'org-1' });
+  assert.equal(where.role, 'member');
+  assert.deepEqual(where.user, {
+    deletedAt: null,
+    enrolledProgram: { not: null },
+    organizationId: 'org-1',
+    email: { notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] },
+  });
+  assert.deepEqual(memberOnlyProfileWhere(), { role: 'member', user: { email: { notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] } } });
+});
+
+test('memberOnlySqlJoin is the raw-SQL twin: role = member join plus the fixture-email exclusion', () => {
+  const join = memberOnlySqlJoin();
+  assert.equal(
+    join.sql,
+    "INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?)",
+  );
+  assert.deepEqual(join.values, [...MEMBER_ONLY_EXCLUDED_EMAILS]);
+
+  const aliased = memberOnlySqlJoin('u_scope', 'mp');
+  assert.equal(aliased.sql, "INNER JOIN profiles mp ON mp.user_id = u_scope.id AND mp.role = 'member' AND u_scope.email NOT IN (?,?)");
+
+  // Aliases are identifiers, never bound parameters or injection points.
+  assert.throws(() => memberOnlySqlJoin('u; DROP TABLE users'), /Invalid SQL alias/);
+  assert.throws(() => memberOnlySqlJoin('u', 'p.x'), /Invalid SQL alias/);
 });

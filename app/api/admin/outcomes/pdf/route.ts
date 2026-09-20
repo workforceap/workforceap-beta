@@ -6,6 +6,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent, auditRequestMeta } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { MEMBER_ONLY_WHERE, memberOnlyProfileWhere } from '@/lib/admin/memberOnlyWhere';
 
 /**
  * GET /api/admin/outcomes/pdf
@@ -38,13 +39,11 @@ async function _GET(request: NextRequest) {
 
     // Placement data, member data, and demographics are independent reads —
     // run them together instead of one round trip at a time.
+    // Member-role accounts only (number audit 2026-09-20, F9; kept while
+    // Needs Mike 10 decides whether this route stays).
     const [placements, members, demographics] = await Promise.all([
       prisma.placementRecord.findMany({
-        where: {
-          user: {
-            organizationId: orgId,
-          },
-        },
+        where: { user: { organizationId: orgId, ...MEMBER_ONLY_WHERE } },
         select: {
           salaryOffered: true,
           userId: true,
@@ -56,12 +55,12 @@ async function _GET(request: NextRequest) {
         where: {
           organizationId: orgId,
           deletedAt: null,
+          ...MEMBER_ONLY_WHERE,
         },
         select: {
           id: true,
           enrolledProgram: true,
           enrolledAt: true,
-          coursesCompleted: true,
           placementRecord: {
             select: {
               salaryOffered: true,
@@ -83,9 +82,10 @@ async function _GET(request: NextRequest) {
     const salaries = placements
       .map((p) => p.salaryOffered)
       .filter((s): s is number => s !== null && s !== undefined);
+    // null (not $0) when no placement carries a salary (F6).
     const avgSalary = salaries.length > 0
       ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
-      : 0;
+      : null;
     const medianSalary = median(salaries);
 
     // YTD metrics
@@ -169,7 +169,7 @@ function toBreakdown(rows: GroupByRow[], field: DemographicField): Array<{ label
 async function getDemographics(orgId: string) {
   // PERF: 5 cheap indexed aggregates instead of materializing every org
   // profile just to bucket 5 categorical columns in JS.
-  const profileWhere = { user: { organizationId: orgId, deletedAt: null } };
+  const profileWhere = memberOnlyProfileWhere({ organizationId: orgId, deletedAt: null });
   const [veteranStatus, employmentStatus, householdIncome, educationLevel, ethnicity] = await Promise.all([
     prisma.profile.groupBy({ by: ['veteranStatus'], where: profileWhere, _count: { _all: true } }),
     prisma.profile.groupBy({ by: ['employmentStatus'], where: profileWhere, _count: { _all: true } }),

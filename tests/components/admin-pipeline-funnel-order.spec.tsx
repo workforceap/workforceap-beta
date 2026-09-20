@@ -51,12 +51,12 @@ describe('/admin/pipeline funnel order', () => {
     expect(props.funnelSubtitle).toMatch(/^last 90 days · .*each stage counts the ones who reached it$/);
   });
 
-  it('shows the WIOA screening count as a captioned tile', async () => {
+  it('shows the WIOA verified count as a captioned tile', async () => {
     const props = await kitProps();
-    const wioa = props.kpis?.find((kpi) => kpi.label === 'WIOA screened');
+    const wioa = props.kpis?.find((kpi) => kpi.label === 'WIOA verified');
     expect(wioa).toMatchObject({ value: '0', deltaTone: 'muted' });
     expect(wioa?.delta).toMatch(/not a gate/);
-    expect(props.kpis?.map((kpi) => kpi.label)).toEqual(['Started', 'Enrolled', 'Active', 'Started → Active', 'WIOA screened']);
+    expect(props.kpis?.map((kpi) => kpi.label)).toEqual(['Started', 'Enrolled', 'Active', 'Started → Active', 'WIOA verified']);
   });
 
   it('passes an empty funnel and no tiles when nobody started in the window', async () => {

@@ -1,5 +1,8 @@
 import type { PrismaClient } from '@prisma/client';
 import { inheritMemberOrg, inheritUserOrg, type AdminPageTenantOk } from '@/lib/tenant/adminPageScopeFilters';
+import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
+
+export { COUNSELOR_AT_RISK_DEFINITION, COUNSELOR_PLACEMENTS_DEFINITION } from './counselorRosterLabels';
 
 export type CounselorAssignmentAgg = {
   caseload: number;
@@ -9,10 +12,17 @@ export type CounselorAssignmentAgg = {
 
 /**
  * Caseload / at-risk / placement counts via `groupBy` — no 20k-row hydrate.
+ *
+ * "At risk" is the saved `at_risk_alerts` case in an active status — the same
+ * rule as every other at-risk tile (Command Center, /admin attention, the
+ * at-risk API). The roster used to apply its own 21-days-since-login rule
+ * here and nowhere else, so it could disagree with the tile one click away.
+ * "Placed" is a `placement_records` row, the source every outcome figure
+ * reads, not the `memberStatus = 'placed'` pointer (number audit 2026-09-20,
+ * S27).
  */
 export async function loadCounselorAssignmentAggregates(
   db: Pick<PrismaClient, 'counselorAssignment'>,
-  idleCutoff: Date,
   scope: AdminPageTenantOk,
 ): Promise<Map<string, CounselorAssignmentAgg>> {
   const cohort = {
@@ -28,17 +38,13 @@ export async function loadCounselorAssignmentAggregates(
     }),
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
-      where: { AND: [cohort, { member: { memberStatus: 'placed' } }] },
+      where: { AND: [cohort, { member: { placementRecord: { isNot: null } } }] },
       _count: { _all: true },
     }),
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
       where: {
-        AND: [cohort, { OR: [
-          { member: { memberStatus: 'inactive' } },
-          { member: { lastLoginAt: null } },
-          { member: { lastLoginAt: { lt: idleCutoff } } },
-        ] }],
+        AND: [cohort, { member: { atRiskAlerts: { some: { status: { in: [...ACTIVE_AT_RISK_STATUSES] } } } } }],
       },
       _count: { _all: true },
     }),

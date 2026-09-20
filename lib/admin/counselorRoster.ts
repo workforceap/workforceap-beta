@@ -28,7 +28,7 @@ export async function loadCounselorRoster(
   const [total, matchingTotal, aggregates] = await Promise.all([
     totalPromise,
     query.search ? db.counselor.count({ where }) : totalPromise,
-    loadCounselorAssignmentAggregates(db, new Date(now.getTime() - 21 * 86400000), scope),
+    loadCounselorAssignmentAggregates(db, scope),
   ]);
   const page = Math.min(query.page, Math.max(1, Math.ceil(matchingTotal / COUNSELOR_PAGE_SIZE)));
   const counselors = await db.counselor.findMany({

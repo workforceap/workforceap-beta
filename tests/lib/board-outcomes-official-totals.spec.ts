@@ -24,8 +24,11 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 import { getBoardOutcomes } from '@/lib/admin/boardOutcomes';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { REPORT_SAMPLE_CAP, UNBOUNDED_SCAN_TAKE_FLOOR } from '@/lib/db/scanCaps';
 import { prisma } from '@/lib/db/prisma';
+
+const MEMBER_JOIN = "INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?)";
 
 function flatten(call: unknown[]): { sql: string; values: unknown[] } {
   const [strings, ...values] = call as [TemplateStringsArray, ...unknown[]];
@@ -59,11 +62,11 @@ describe('getBoardOutcomes official totals', () => {
     // Members served / placed come from count() while the only row read returned nothing.
     expect(prisma.user.count).toHaveBeenCalledTimes(1);
     expect(prisma.user.count).toHaveBeenCalledWith({
-      where: expect.objectContaining({ deletedAt: null, enrolledProgram: { not: null }, organizationId: 'org-1' }),
+      where: expect.objectContaining({ deletedAt: null, enrolledProgram: { not: null }, organizationId: 'org-1', ...MEMBER_ONLY_WHERE }),
     });
     expect(prisma.placementRecord.count).toHaveBeenCalledTimes(1);
     expect(prisma.placementRecord.count).toHaveBeenCalledWith({
-      where: expect.objectContaining({ user: { organizationId: 'org-1' } }),
+      where: expect.objectContaining({ user: { organizationId: 'org-1', ...MEMBER_ONLY_WHERE } }),
     });
     expect(outcomes.totals).toMatchObject({
       membersServed: 120,
@@ -114,11 +117,45 @@ describe('getBoardOutcomes official totals', () => {
     await getBoardOutcomes('all-time');
 
     expect(prisma.user.count).toHaveBeenCalledWith({
-      where: { deletedAt: null, enrolledProgram: { not: null } },
+      where: { deletedAt: null, enrolledProgram: { not: null }, ...MEMBER_ONLY_WHERE },
     });
     for (const q of rawQueries()) {
       expect(q.sql).not.toContain('organization_id');
     }
     expect(rawQueries().some((q) => q.sql.includes('PERCENTILE_CONT(0.5)'))).toBe(true);
+  });
+
+  it('counts member-role accounts only in every aggregate, Prisma and raw SQL alike', async () => {
+    await getBoardOutcomes('all-time', 'org-1');
+
+    // Every raw aggregate (training status, median, weeks, certified by
+    // program, legacy placements by program) joins profiles on role = member
+    // and excludes the fixture emails (number audit 2026-09-20, F1-F3).
+    const raw = rawQueries();
+    expect(raw.length).toBeGreaterThanOrEqual(5);
+    for (const q of raw) {
+      expect(q.sql).toContain(MEMBER_JOIN);
+      for (const email of MEMBER_ONLY_EXCLUDED_EMAILS) expect(q.values).toContain(email);
+    }
+
+    // Demographics run on prisma.profile with the role predicate on the profile row itself.
+    expect(prisma.profile.groupBy).toHaveBeenCalledTimes(5);
+    for (const call of vi.mocked(prisma.profile.groupBy).mock.calls) {
+      const [args] = call as unknown as [{ where: { role?: string; user?: { email?: unknown; enrolledProgram?: unknown } } }];
+      expect(args.where.role).toBe('member');
+      expect(args.where.user?.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
+      expect(args.where.user?.enrolledProgram).toEqual({ not: null });
+    }
+
+    // Program enrolment groupBys and the placement sample carry the same population.
+    expect(prisma.courseEnrollment.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { user: expect.objectContaining(MEMBER_ONLY_WHERE) } }),
+    );
+    expect(prisma.placementRecord.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ user: expect.objectContaining(MEMBER_ONLY_WHERE) }) }),
+    );
+    expect(prisma.placementRecord.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ user: expect.objectContaining(MEMBER_ONLY_WHERE) }) }),
+    );
   });
 });

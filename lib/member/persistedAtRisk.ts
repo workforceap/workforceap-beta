@@ -3,8 +3,10 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { resolveMemberLastActivity } from '@/lib/counselor/lastActivity';
+import { memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
 
-export const ACTIVE_AT_RISK_STATUSES = ['open', 'acknowledged', 'escalated'] as const;
+export { ACTIVE_AT_RISK_STATUSES };
 
 export type PersistedRiskScope =
   | { organizationId: string; counselorUserId?: string; platform?: false }
@@ -22,6 +24,12 @@ export type PersistedAtRiskMember = {
  * Count and page are distinct members in one snapshot. When several active cases
  * exist, show the highest score, then most recently updated case, then its ID.
  * No age cutoff is applied to an unresolved saved case.
+ *
+ * Population: member-role accounts only (`memberOnlySqlJoin`). Alerts saved
+ * against staff, admin, counselor, partner or fixture accounts are never
+ * "members at risk", so the Command Center KPI agrees with the /admin
+ * attention tile that already reads the member-only roster (number audit
+ * 2026-09-20, S2: 131 here vs 125 there).
  */
 export async function loadPersistedAtRiskMembers(
   scope: PersistedRiskScope,
@@ -47,6 +55,7 @@ export async function loadPersistedAtRiskMembers(
         PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC
       ) AS member_rank
       FROM at_risk_alerts a JOIN users u ON u.id = a.user_id
+      ${memberOnlySqlJoin('u')}
       WHERE a.status IN (${Prisma.join(statuses)}) AND a.score >= ${threshold}
         AND u.deleted_at IS NULL ${organization} ${assignment}
     ), members AS (

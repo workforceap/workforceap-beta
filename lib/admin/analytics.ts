@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import {
   validatedProgramAssignmentRowsSql,
   validatedProgramCompletionValuesSql,
@@ -9,6 +11,9 @@ import {
  * Analytics overview for non-technical admin users.
  * Complements the funder-facing BoardSnapshot in boardOutcomes.ts.
  * All numbers are sourced from existing DB data — no new tables.
+ *
+ * Population: member-role accounts only (`MEMBER_ONLY_WHERE`), like every
+ * other outcome figure (number audit 2026-09-20, F1, S6, S23, S24).
  */
 
 export type MemberStatusCounts = {
@@ -51,6 +56,33 @@ export type AnalyticsOverview = {
   unassignedCount: number;
 };
 
+/**
+ * Fold per-(rollup slug, assigned program) averages onto canonical programs.
+ * A rollup only counts toward the program its learner is assigned to, and
+ * alias slugs merge into one row with a member-weighted average (S24).
+ */
+export function summarizeProgramProgress(
+  groups: ReadonlyArray<{ programSlug: string; enrolledProgram: string; avgPercent: number | null; memberCount: number }>,
+): ProgramProgress[] {
+  const byProgram = new Map<string, { weighted: number; members: number }>();
+  for (const g of groups) {
+    const canonical = canonicalizeProgramSlug(g.programSlug);
+    if (canonical !== canonicalizeProgramSlug(g.enrolledProgram)) continue;
+    if (g.memberCount <= 0) continue;
+    const cur = byProgram.get(canonical) ?? { weighted: 0, members: 0 };
+    cur.weighted += (g.avgPercent ?? 0) * g.memberCount;
+    cur.members += g.memberCount;
+    byProgram.set(canonical, cur);
+  }
+  return [...byProgram.entries()]
+    .map(([programSlug, { weighted, members }]) => ({
+      programSlug,
+      avgPercent: members > 0 ? Math.round(weighted / members) : 0,
+      activeMembers: members,
+    }))
+    .sort((a, b) => b.activeMembers - a.activeMembers || a.programSlug.localeCompare(b.programSlug));
+}
+
 function monthFmt(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
@@ -62,6 +94,8 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
   const now = new Date();
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
   const orgFilterSql = organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty;
+  const memberUser = { ...MEMBER_ONLY_WHERE, ...(organizationId ? { organizationId } : {}) };
+  const memberJoin = memberOnlySqlJoin();
 
   // All of the reads below are independent of one another (none consumes
   // another's output), so they run as one Promise.all instead of one
@@ -81,32 +115,19 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
     assignments,
   ] = await Promise.all([
     prisma.user.count({
-      where: {
-        deletedAt: null,
-        enrolledProgram: { not: null },
-        ...(organizationId ? { organizationId } : {}),
-      },
+      where: { deletedAt: null, enrolledProgram: { not: null }, ...memberUser },
+    }),
+    // "Active — currently training": an active member WITH an enrolled
+    // program. The status alone counted 92 never-enrolled members and 6 staff
+    // as "currently training" beside "Total enrolled 37" (S23).
+    prisma.user.count({
+      where: { deletedAt: null, memberStatus: 'active', enrolledProgram: { not: null }, ...memberUser },
     }),
     prisma.user.count({
-      where: {
-        deletedAt: null,
-        memberStatus: 'active',
-        ...(organizationId ? { organizationId } : {}),
-      },
+      where: { deletedAt: null, memberStatus: 'placed', ...memberUser },
     }),
     prisma.user.count({
-      where: {
-        deletedAt: null,
-        memberStatus: 'placed',
-        ...(organizationId ? { organizationId } : {}),
-      },
-    }),
-    prisma.user.count({
-      where: {
-        deletedAt: null,
-        memberStatus: 'inactive',
-        ...(organizationId ? { organizationId } : {}),
-      },
+      where: { deletedAt: null, memberStatus: 'inactive', ...memberUser },
     }),
     // ── Enrollment trend (last 6 months) ──
     prisma.user.findMany({
@@ -114,23 +135,30 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
         deletedAt: null,
         enrolledProgram: { not: null },
         enrolledAt: { gte: sixMonthsAgo },
-        ...(organizationId ? { organizationId } : {}),
+        ...memberUser,
       },
       select: { enrolledAt: true },
     }),
     // ── Training progress by program (active members only) ──
-    prisma.memberProgramProgress.groupBy({
-      by: ['programSlug'],
-      where: {
-        user: {
-          deletedAt: null,
-          memberStatus: 'active',
-          ...(organizationId ? { organizationId } : {}),
-        },
-      },
-      _avg: { averagePercent: true },
-      _count: { _all: true },
-    }),
+    // Grouped by the rollup's stored slug AND the learner's assigned program
+    // so JS can canonicalise both and keep only rollups for the program the
+    // member is actually enrolled in; alias slugs (comptia-a-plus) are folded
+    // onto their canonical program instead of listing it twice (S24).
+    prisma.$queryRaw<Array<{ program_slug: string; enrolled_program: string; avg_percent: number | null; member_count: bigint | number }>>`
+      SELECT
+        mpp.program_slug,
+        u.enrolled_program,
+        AVG(mpp.average_percent)::float AS avg_percent,
+        COUNT(DISTINCT u.id)::bigint AS member_count
+      FROM member_program_progress mpp
+      INNER JOIN users u ON u.id = mpp.user_id
+      ${memberJoin}
+      WHERE u.deleted_at IS NULL
+        AND u.member_status = 'active'
+        AND u.enrolled_program IS NOT NULL
+        ${orgFilterSql}
+      GROUP BY mpp.program_slug, u.enrolled_program
+    `,
     // ── Completed-training count: enrolled members whose exact completed
     // course count equals their immutable curriculum-version denominator.
     prisma.$queryRaw<Array<{ count: number }>>`
@@ -141,6 +169,7 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
       )
       SELECT COUNT(DISTINCT u.id)::int AS count
       FROM users u
+      ${memberJoin}
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
@@ -162,13 +191,9 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
         ${orgFilterSql}
         AND mpp.courses_completed = progress_program.total_courses
     `,
-    // ── Drop-off: members with staleTrainingDetectedAt set ──
+    // ── Drop-off: members with staleTrainingDetectedAt set (S6: members only) ──
     prisma.user.count({
-      where: {
-        deletedAt: null,
-        staleTrainingDetectedAt: { not: null },
-        ...(organizationId ? { organizationId } : {}),
-      },
+      where: { deletedAt: null, staleTrainingDetectedAt: { not: null }, ...memberUser },
     }),
     // ── Counselor load ──
     prisma.counselorAssignment.findMany({
@@ -194,13 +219,14 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
   }
   const enrollmentTrend = [...trendMap.values()].sort((a, b) => a.month.localeCompare(b.month));
 
-  const programProgress: ProgramProgress[] = programProgressGroups
-    .map((g) => ({
-      programSlug: g.programSlug,
-      avgPercent: g._count._all > 0 ? Math.round(g._avg.averagePercent ?? 0) : 0,
-      activeMembers: g._count._all,
-    }))
-    .sort((a, b) => b.activeMembers - a.activeMembers);
+  const programProgress = summarizeProgramProgress(
+    programProgressGroups.map((g) => ({
+      programSlug: g.program_slug,
+      enrolledProgram: g.enrolled_program,
+      avgPercent: g.avg_percent,
+      memberCount: typeof g.member_count === 'bigint' ? Number(g.member_count) : g.member_count,
+    })),
+  );
 
   // ── Placement rate: placed / (placed + completed-training) ──
   const placedCount = placed;
@@ -228,7 +254,7 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
         deletedAt: null,
         memberStatus: 'active',
         id: { notIn: [...assignedMemberIds] },
-        ...(organizationId ? { organizationId } : {}),
+        ...memberUser,
       },
     }),
   ]);

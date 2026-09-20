@@ -116,7 +116,8 @@ describe('GET /api/admin/analytics/dashboard', () => {
     const body = await res.json();
     expect(body.completionRate).toBe(0);
     expect(body.placementRate).toBe(0);
-    expect(body.avgPlacementSalary).toBe(0);
+    // No placement carries a salary: null (rendered "—"), never "$0" (number audit 2026-09-20, F6).
+    expect(body.avgPlacementSalary).toBeNull();
   });
 
   it('returns 500 on unexpected error', async () => {
