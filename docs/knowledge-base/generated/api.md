@@ -468,7 +468,7 @@
 | [app/api/og/program/route.tsx](../../../app/api/og/program/route.tsx) | 91 | public-experience | runtime:4, GET:12 |
 | [app/api/og/route.tsx](../../../app/api/og/route.tsx) | 64 | api | runtime:3, GET:10 |
 | [app/api/onboarding/complete/route.ts](../../../app/api/onboarding/complete/route.ts) | 59 | applications-enrollment | POST:11 |
-| [app/api/onboarding/reset/route.ts](../../../app/api/onboarding/reset/route.ts) | 63 | applications-enrollment | POST:11 |
+| [app/api/onboarding/reset/route.ts](../../../app/api/onboarding/reset/route.ts) | 85 | applications-enrollment | POST:24 |
 | [app/api/onboarding/step/route.ts](../../../app/api/onboarding/step/route.ts) | 61 | applications-enrollment | POST:13 |
 | [app/api/onboarding/tour-complete/route.ts](../../../app/api/onboarding/tour-complete/route.ts) | 59 | applications-enrollment | POST:11 |
 | [app/api/org/\[slug\]/outcomes/route.ts](../../../app/api/org/%5Bslug%5D/outcomes/route.ts) | 70 | api | GET:70 |
@@ -515,7 +515,7 @@
 | [app/api/subgroup/members/\[id\]/route.ts](../../../app/api/subgroup/members/%5Bid%5D/route.ts) | 131 | api | GET:13 |
 | [app/api/subgroup/members/route.ts](../../../app/api/subgroup/members/route.ts) | 113 | api | GET:12 |
 | [app/api/test/xapi-access-token/route.ts](../../../app/api/test/xapi-access-token/route.ts) | 37 | api | GET:12 |
-| [app/api/tours/\[tourKey\]/route.ts](../../../app/api/tours/%5BtourKey%5D/route.ts) | 83 | api | POST:29 |
+| [app/api/tours/\[tourKey\]/route.ts](../../../app/api/tours/%5BtourKey%5D/route.ts) | 84 | api | POST:29 |
 | [app/api/tours/state/route.ts](../../../app/api/tours/state/route.ts) | 96 | api | TourStateRow:14, GET:30 |
 | [app/api/unsubscribe/route.ts](../../../app/api/unsubscribe/route.ts) | 88 | api | dynamic:21, POST:66, GET:77 |
 | [app/api/webhooks/coursera/route.ts](../../../app/api/webhooks/coursera/route.ts) | 396 | learning-coursera | POST:88 |

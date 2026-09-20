@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "9deb77a3d1c112b61b6452d7f8924adc560820897edf2b64b83e06bf47541825",
+  "inputTreeSha256": "41f045a51151442906fc9128f6486c26ebbc1c5ca3220d69e6ac5631510377a7",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -4978,19 +4978,19 @@
       "path": "app/(portal)/counselor/layout.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2643,
-      "lines": 70,
-      "sha256": "f5116fe4dd6d9ccd3ba32c273c1bab44fc0b552c606dab0ade9b0dc5385bc7de",
+      "bytes": 3049,
+      "lines": 78,
+      "sha256": "c8c4c6787da717b53ee807ab87d60ca38c3810968c72900c4e644166187cf6fd",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 25,
+          "line": 27,
           "kind": "FunctionDeclaration",
           "localName": "CounselorLayout"
         }
@@ -4998,12 +4998,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorLayout",
-          "line": 25,
+          "line": 27,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -39297,26 +39297,31 @@
       "path": "app/api/onboarding/reset/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 2292,
-      "lines": 63,
-      "sha256": "3aee809e3910e3a2cd2bec4e8667bb79be826ae523f8f67c523b291b28a04f6c",
+      "bytes": 3233,
+      "lines": 85,
+      "sha256": "3faa5f6f9ad93bcd4d20152fddf5ff82c1bc87467e6747fc10bf60f0b6a5ef27",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 11,
+          "line": 24,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "bodySchema",
-          "line": 9,
+          "line": 10,
           "kind": "Variable"
         },
         {
+          "name": "tourKeysForPortal",
+          "line": 16,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "POST",
-          "line": 11,
+          "line": 24,
           "kind": "Variable"
         }
       ],
@@ -40813,9 +40818,9 @@
       "path": "app/api/tours/[tourKey]/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 2917,
-      "lines": 83,
-      "sha256": "21f86993712c916f3f2c5991fa02673aec4f153be20d5bb44742086768c41f01",
+      "bytes": 2960,
+      "lines": 84,
+      "sha256": "46cc898cfbd16c7ffad720a9f9351f5431d318ff418e479065c6f944e7e0f551",
       "binary": false,
       "exports": [
         {
@@ -56702,6 +56707,31 @@
       "directive": "use client"
     },
     {
+      "path": "components/onboarding/TourOfferStrip.tsx",
+      "area": "components",
+      "domain": "applications-enrollment",
+      "bytes": 3360,
+      "lines": 86,
+      "sha256": "e2285a586c386ad247caff780eb553326e6efced3467bfe563f7acaad35c0900",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 24,
+          "kind": "FunctionDeclaration",
+          "localName": "TourOfferStrip"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TourOfferStrip",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "components/onboarding/TourProviderWrapper.tsx",
       "area": "components",
       "domain": "applications-enrollment",
@@ -58096,22 +58126,32 @@
       "path": "components/portal/CounselorPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 969,
-      "lines": 36,
-      "sha256": "8f25e437e224895e51e5005e631b5bfb7f5d80da3d5a6a2068324754e24a1aa0",
+      "bytes": 1756,
+      "lines": 52,
+      "sha256": "21e7ef9ad770e467026ad404d4b9852360f5ade426b5d075ab62ce958b7fc48d",
       "binary": false,
       "exports": [
         {
+          "name": "COUNSELOR_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration",
           "localName": "CounselorPortalShell"
         }
       ],
       "declarations": [
         {
+          "name": "COUNSELOR_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "CounselorPortalShell",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60801,14 +60841,14 @@
       "path": "components/portal/PortalHeaderActions.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1132,
-      "lines": 35,
-      "sha256": "912df60fc8642ddf390bb0fb4ae088b39f2d7bc6500030d63bd5aeeba53ffe57",
+      "bytes": 1682,
+      "lines": 45,
+      "sha256": "887ed75e626da539d31e2d873ba031cb03dd0ecdc7c2dd5aebc72fb03625f34c",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 11,
+          "line": 13,
           "kind": "FunctionDeclaration",
           "localName": "PortalHeaderActions"
         }
@@ -60816,7 +60856,32 @@
       "declarations": [
         {
           "name": "PortalHeaderActions",
-          "line": 11,
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/PortalHelpMenu.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 4005,
+      "lines": 116,
+      "sha256": "a7719b5add42ab3f6b3b3d5b48898c53b3aeb8620ff8c3ae9c7708308099fdc9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 18,
+          "kind": "FunctionDeclaration",
+          "localName": "PortalHelpMenu"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PortalHelpMenu",
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63398,14 +63463,14 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 33914,
-      "lines": 809,
-      "sha256": "4e4c1fda3130266590d15cd91fa8c05df35d5f3f98a2d0517907ad080d0a952a",
+      "bytes": 34312,
+      "lines": 818,
+      "sha256": "d5c4fae86c3ede73a96a200b3de3ad13ff5997607cdd46678266c85c9108eb32",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 93,
+          "line": 94,
           "kind": "FunctionDeclaration",
           "localName": "WorkspaceShell"
         }
@@ -63413,17 +63478,17 @@
       "declarations": [
         {
           "name": "ROLE_TO_NAV_VARIANT",
-          "line": 46,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "ShellIdentity",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkspaceShell",
-          "line": 93,
+          "line": 94,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -70326,71 +70391,71 @@
       "path": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 10256,
-      "lines": 259,
-      "sha256": "79161bf4f7e532d07014a814c8ebc72424d907ef17dfa020454c9098e8dab129",
+      "bytes": 10580,
+      "lines": 263,
+      "sha256": "85e7c54c21f5220eefb82c8a14b6812585201d80585ee4b5bc1095ed54deb124",
       "binary": false,
       "exports": [
         {
           "name": "CounselorTodayKitProps",
-          "line": 46,
+          "line": 50,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorTodayKit",
-          "line": 187,
+          "line": 191,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CounselorTodayKitProps",
-          "line": 46,
+          "line": 50,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "GROUP_ICON",
-          "line": 55,
+          "line": 59,
           "kind": "Variable"
         },
         {
           "name": "SEVERITY_TONE",
-          "line": 64,
+          "line": 68,
           "kind": "Variable"
         },
         {
           "name": "SEVERITY_TAG",
-          "line": 70,
+          "line": 74,
           "kind": "Variable"
         },
         {
           "name": "plural",
-          "line": 76,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "todayRowDetail",
-          "line": 81,
+          "line": 85,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TodayTile",
-          "line": 98,
+          "line": 102,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TodayRowItem",
-          "line": 114,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TodayGroupSection",
-          "line": 156,
+          "line": 160,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorTodayKit",
-          "line": 187,
+          "line": 191,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -75102,9 +75167,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 44752,
-      "lines": 589,
-      "sha256": "8bfbdfc941165842d755749b217b159f1aa967b4d52bcd39b3cab942c945bafe",
+      "bytes": 45251,
+      "lines": 590,
+      "sha256": "a84974fc68a2f7c2e6174f28a31b12a69c120133a76a07761efc0065cb8ea816",
       "binary": false
     },
     {
@@ -77100,9 +77165,9 @@
       "path": "docs/knowledge-base/features.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 18183,
-      "lines": 49,
-      "sha256": "08860ce337bb3e9379e75d51ed7d4978904e8f1f1dadbeaf1420f3e14688454d",
+      "bytes": 19303,
+      "lines": 50,
+      "sha256": "7dc431cbdfe6cf979c2b123f4df5b89204795549aed26af8dd5b142c43a7cb89",
       "binary": false
     },
     {
@@ -129848,9 +129913,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 21971,
+      "bytes": 22068,
       "lines": 517,
-      "sha256": "8091baf888a68318d58ec6685f5e89fd9f3f2cdfd2f54501236f4cb107e4c8ad",
+      "sha256": "1c36cc73de7d761194353386e94e143470cedf0d4136a8dc2722919d50078670",
       "binary": false,
       "exports": [
         {
@@ -140687,43 +140752,129 @@
       "directive": null
     },
     {
+      "path": "lib/tours/getTourOffer.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1643,
+      "lines": 38,
+      "sha256": "3834d2a5cc7e8f294337c03dd71d35c35985ea36ab64915251761202835a7ce1",
+      "binary": false,
+      "exports": [
+        {
+          "name": "TourOffer",
+          "line": 6,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "getTourOffer",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TourOffer",
+          "line": 6,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "getTourOffer",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/tours/offer.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1243,
+      "lines": 26,
+      "sha256": "f2275ab17d4cde685a69d0f74b469e9b235f01bf947101174290e95108c3be82",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "tour",
+          "line": 6,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/tours/offer.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1110,
+      "lines": 27,
+      "sha256": "e013cd42785c10ebb1255b63f6e88660f600a73ce08c51040d091db6fbeb6450",
+      "binary": false,
+      "exports": [
+        {
+          "name": "TourStateSnapshot",
+          "line": 4,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "shouldOfferTour",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "TourStateSnapshot",
+          "line": 4,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "shouldOfferTour",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 5530,
-      "lines": 134,
-      "sha256": "3e555d042f4663ed09ecbb6684bb3fc024b9ac0e2672fab6fafa72dabb0e0dfd",
+      "bytes": 7308,
+      "lines": 176,
+      "sha256": "f789d739da3b1be6bc4b40a4cf283d93f22ed174b479a3e0587efcf7a84fe704",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "Messages",
-          "line": 18,
+          "line": 19,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "REVIEWED_LOCALES",
-          "line": 21,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "loadTours",
-          "line": 23,
+          "line": 24,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolve",
-          "line": 31,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CHROME_KEYS",
-          "line": 40,
+          "line": 41,
           "kind": "Variable"
         },
         {
           "name": "PLACEMENTS",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         }
       ],
@@ -140733,9 +140884,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 4924,
-      "lines": 147,
-      "sha256": "190ea3f8cfb2f0051f56c92a0599c2c71452f1881ae6a62584a82dad7d78f0b5",
+      "bytes": 6457,
+      "lines": 180,
+      "sha256": "f9b6b1fc92a44bf519a37717869b243a4ad39c5cfa231e15047aa059ac8df167",
       "binary": false,
       "exports": [
         {
@@ -140790,42 +140941,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 112,
+          "line": 136,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 114,
+          "line": 138,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 121,
+          "line": 145,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 123,
+          "line": 147,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 127,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 131,
+          "line": 155,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 135,
+          "line": 159,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getHomeTourForRole",
+          "line": 168,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 140,
+          "line": 173,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140887,42 +141043,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 112,
+          "line": 136,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 114,
+          "line": 138,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 121,
+          "line": 145,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 123,
+          "line": 147,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 127,
+          "line": 151,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 131,
+          "line": 155,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 135,
+          "line": 159,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getHomeTourForRole",
+          "line": 168,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 140,
+          "line": 173,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -146417,18 +146578,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 218742,
-      "lines": 3631,
-      "sha256": "9ece1fc998349220cfbfc080a1a2d92da75dc2e67e2dbd961276cfe10b356986",
+      "bytes": 220850,
+      "lines": 3676,
+      "sha256": "9a04626f0d8019f06d84e94403aee285a669e57a16381cd289c07977297b5265",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 242468,
-      "lines": 3631,
-      "sha256": "c3af9e5bebbc4e152590f3379df14ced93da942253bfa7e8ad2921c4fc7e2673",
+      "bytes": 244797,
+      "lines": 3676,
+      "sha256": "eee060e75e6e569dc92097e0c8775e2dcc9621d9a341d60dbe563409bfb4a2f2",
       "binary": false
     },
     {
@@ -173127,6 +173288,87 @@
       "directive": null
     },
     {
+      "path": "tests/tours/counselor-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 11617,
+      "lines": 237,
+      "sha256": "4c6af3f11c775eea65b3ed4ee97f43db56502fcd0a5d3cbda9e00b5df62a879d",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 36,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 37,
+          "kind": "Variable"
+        },
+        {
+          "name": "Posted",
+          "line": 47,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 50,
+          "kind": "Variable"
+        },
+        {
+          "name": "Today",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 63,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 83,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/get-tour-offer.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3408,
+      "lines": 78,
+      "sha256": "cd4bd97da66ef34d737fb192ebce713233647d58ad5d063d330bf89aac9f6bd6",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "findUnique",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "flag",
+          "line": 23,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/guided-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -173180,12 +173422,30 @@
       "directive": null
     },
     {
+      "path": "tests/tours/onboarding-reset-tour-state.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3731,
+      "lines": 95,
+      "sha256": "8a262f176391781362154a1564b8d6fb4ff46c01888b234a0b7d1f4aa7fd187f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "call",
+          "line": 36,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/tour-auto-start.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2720,
+      "bytes": 2716,
       "lines": 71,
-      "sha256": "beb3cb401bfe6bc8dd23d246a4db3c111be8065f125f2f75feb5f1aa4eea08fc",
+      "sha256": "58df48a901352ac5be1c559e1ac2d6dc55fdd2135ecf9f4f4eb05e5a55fe4088",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -173208,12 +173468,45 @@
       "directive": null
     },
     {
+      "path": "tests/tours/tour-offer-strip.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4052,
+      "lines": 87,
+      "sha256": "ba92da52fbe1621ab267a66627acb74c512d508d2348b1d09d46c3dc5cd160ce",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "Posted",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "Page",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/tours-key-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6158,
-      "lines": 159,
-      "sha256": "62c8f437e741a8f318f066ec1e3a510f79ce4ad38d46dbd0d5a7ff39fb3a9854",
+      "bytes": 6464,
+      "lines": 162,
+      "sha256": "47e342c2a3dec7f7beaccfa7100b8de31a634f73eb8c2dfc50f98ca3e1f75d1d",
       "binary": false,
       "exports": [],
       "declarations": [

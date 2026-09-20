@@ -1053,12 +1053,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 14,
+        "line": 16,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 25,
+        "line": 27,
         "kind": "FunctionDeclaration",
         "localName": "CounselorLayout"
       }
@@ -28502,7 +28502,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 11,
+        "line": 24,
         "kind": "Variable"
       }
     ],

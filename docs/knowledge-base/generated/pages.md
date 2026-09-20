@@ -50,7 +50,7 @@
 | [app/(portal)/counselor/inbox/page.tsx](../../../app/%28portal%29/counselor/inbox/page.tsx) | 76 | member-counselor | dynamic:12, default:14 |
 | [app/(portal)/counselor/lab-reviews/\[submissionId\]/page.tsx](../../../app/%28portal%29/counselor/lab-reviews/%5BsubmissionId%5D/page.tsx) | 6 | member-counselor | default:3 |
 | [app/(portal)/counselor/lab-reviews/page.tsx](../../../app/%28portal%29/counselor/lab-reviews/page.tsx) | 8 | member-counselor | default:4 |
-| [app/(portal)/counselor/layout.tsx](../../../app/%28portal%29/counselor/layout.tsx) | 70 | member-counselor | generateMetadata:14, default:25 |
+| [app/(portal)/counselor/layout.tsx](../../../app/%28portal%29/counselor/layout.tsx) | 78 | member-counselor | generateMetadata:16, default:27 |
 | [app/(portal)/counselor/loading.tsx](../../../app/%28portal%29/counselor/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/messages/error.tsx](../../../app/%28portal%29/counselor/messages/error.tsx) | 13 | communications | default:5 |
 | [app/(portal)/counselor/messages/loading.tsx](../../../app/%28portal%29/counselor/messages/loading.tsx) | 6 | communications | default:3 |

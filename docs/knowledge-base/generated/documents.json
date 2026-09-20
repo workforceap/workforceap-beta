@@ -17674,32 +17674,32 @@
       {
         "level": 2,
         "title": "6a. Table standard (admin tables, 2026-09-20)",
-        "line": 429
+        "line": 430
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 471
+        "line": 472
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 508
+        "line": 509
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 533
+        "line": 534
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 570
+        "line": 571
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 580
+        "line": 581
       }
     ],
     "datedFilename": false,
@@ -28807,12 +28807,12 @@
       {
         "level": 2,
         "title": "Shared files with a wide change impact",
-        "line": 41
+        "line": 42
       },
       {
         "level": 2,
         "title": "Historical and supporting areas",
-        "line": 47
+        "line": 48
       }
     ],
     "datedFilename": false,
