@@ -79,18 +79,19 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           Link an existing WorkforceAP user. Choose <strong>WorkforceAP Staff</strong> for internal team, <strong>Partner Org</strong> for affiliated counselors, or <strong>Independent Advisor</strong> for solo practitioners.
         </p>
         {msg && (
-          <div style={{ padding: '0.625rem 0.875rem', borderRadius: '0.625rem', background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+          <div role={msg.type === 'ok' ? 'status' : 'alert'} style={{ padding: '0.625rem 0.875rem', borderRadius: '0.625rem', background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
             {msg.text}
           </div>
         )}
         <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {[
-            { label: 'User ID (UUID)', value: userId, set: setUserId, placeholder: 'Paste from admin member detail URL', type: 'text' },
-            { label: 'Title (optional)', value: title, set: setTitle, placeholder: 'e.g. Career Coach', type: 'text' },
-          ].map(({ label, value, set, placeholder, type }) => (
-            <div key={label}>
-              <label style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>{label}</label>
-              <input type={type} value={value} onChange={(e) => set(e.target.value)} placeholder={placeholder}
+            { id: 'admincounselorsclient-user-id-field', label: 'User ID (UUID)', value: userId, set: setUserId, placeholder: 'Paste from admin member detail URL', type: 'text' },
+            { id: 'admincounselorsclient-title-field', label: 'Title (optional)', value: title, set: setTitle, placeholder: 'e.g. Career Coach', type: 'text' },
+          ].map(({ id, label, value, set, placeholder, type }) => (
+            <div key={id}>
+              {/* Labels are tied to their inputs so screen readers name the fields (audit 2026-09-20). */}
+              <label htmlFor={id} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>{label}</label>
+              <input id={id} type={type} value={value} onChange={(e) => set(e.target.value)} placeholder={placeholder}
                 style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem', boxSizing: 'border-box' as const }} />
             </div>
           ))}

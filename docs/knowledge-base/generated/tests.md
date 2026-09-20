@@ -28,7 +28,7 @@
 | [tests/api/admin-outcomes-snapshot.spec.ts](../../../tests/api/admin-outcomes-snapshot.spec.ts) | 125 | tests |  |
 | [tests/api/admin-outcomes.spec.ts](../../../tests/api/admin-outcomes.spec.ts) | 209 | tests |  |
 | [tests/api/admin-overview-completion.spec.ts](../../../tests/api/admin-overview-completion.spec.ts) | 18 | tests |  |
-| [tests/api/admin-partner-invite-route.spec.ts](../../../tests/api/admin-partner-invite-route.spec.ts) | 128 | tests |  |
+| [tests/api/admin-partner-invite-route.spec.ts](../../../tests/api/admin-partner-invite-route.spec.ts) | 208 | tests |  |
 | [tests/api/admin-partners-school.spec.ts](../../../tests/api/admin-partners-school.spec.ts) | 50 | tests |  |
 | [tests/api/admin-placements.spec.ts](../../../tests/api/admin-placements.spec.ts) | 409 | tests |  |
 | [tests/api/admin-suggest-matches-route.spec.ts](../../../tests/api/admin-suggest-matches-route.spec.ts) | 137 | tests |  |
@@ -36,6 +36,7 @@
 | [tests/api/admin-token-links.spec.ts](../../../tests/api/admin-token-links.spec.ts) | 268 | tests |  |
 | [tests/api/admin-training-progress-items-exact-email.spec.ts](../../../tests/api/admin-training-progress-items-exact-email.spec.ts) | 139 | tests |  |
 | [tests/api/admin-user-create-active-identity-race.spec.ts](../../../tests/api/admin-user-create-active-identity-race.spec.ts) | 223 | tests |  |
+| [tests/api/admin-user-create-provider-failure.spec.ts](../../../tests/api/admin-user-create-provider-failure.spec.ts) | 104 | tests |  |
 | [tests/api/admin-user-create-tenant-conflict.spec.ts](../../../tests/api/admin-user-create-tenant-conflict.spec.ts) | 131 | tests |  |
 | [tests/api/admin-user-lifecycle.spec.ts](../../../tests/api/admin-user-lifecycle.spec.ts) | 280 | tests |  |
 | [tests/api/admin-user-patch-route.spec.ts](../../../tests/api/admin-user-patch-route.spec.ts) | 271 | tests |  |
@@ -220,6 +221,7 @@
 | [tests/components/admin-command-center-workflows.spec.tsx](../../../tests/components/admin-command-center-workflows.spec.tsx) | 258 | tests |  |
 | [tests/components/admin-directory-navigation.spec.tsx](../../../tests/components/admin-directory-navigation.spec.tsx) | 182 | tests |  |
 | [tests/components/admin-directory-results.spec.tsx](../../../tests/components/admin-directory-results.spec.tsx) | 129 | tests |  |
+| [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
@@ -277,6 +279,7 @@
 | [tests/components/referral-share-toolkit.spec.tsx](../../../tests/components/referral-share-toolkit.spec.tsx) | 146 | applications-enrollment |  |
 | [tests/components/silent-failure-sweep-connection-failure.spec.tsx](../../../tests/components/silent-failure-sweep-connection-failure.spec.tsx) | 386 | tests |  |
 | [tests/components/skill-mission-close-guard.test.tsx](../../../tests/components/skill-mission-close-guard.test.tsx) | 103 | tests |  |
+| [tests/components/staff-shell-auth-reads.spec.tsx](../../../tests/components/staff-shell-auth-reads.spec.tsx) | 115 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
@@ -430,6 +433,7 @@
 | [tests/lib/public-job-filters.spec.ts](../../../tests/lib/public-job-filters.spec.ts) | 81 | tests |  |
 | [tests/lib/recommendPrograms.test.ts](../../../tests/lib/recommendPrograms.test.ts) | 38 | tests |  |
 | [tests/lib/referral-rewards.spec.ts](../../../tests/lib/referral-rewards.spec.ts) | 223 | applications-enrollment |  |
+| [tests/lib/required-fields-dom.spec.ts](../../../tests/lib/required-fields-dom.spec.ts) | 53 | tests |  |
 | [tests/lib/retention-window-evidence.spec.ts](../../../tests/lib/retention-window-evidence.spec.ts) | 40 | tests |  |
 | [tests/lib/self-serve-counselor-assign.spec.ts](../../../tests/lib/self-serve-counselor-assign.spec.ts) | 255 | tests |  |
 | [tests/lib/skill-mission-kit-tokens.spec.ts](../../../tests/lib/skill-mission-kit-tokens.spec.ts) | 17 | tests |  |
@@ -460,6 +464,7 @@
 | [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
+| [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |
 | [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |
 | [tests/pdf-deployment.test.ts](../../../tests/pdf-deployment.test.ts) | 53 | tests |  |
 | [tests/portal-audit-auth.test.ts](../../../tests/portal-audit-auth.test.ts) | 44 | tests |  |

@@ -42,11 +42,11 @@
 | [components/admin/AdminAnalyticsChartsLazy.tsx](../../../components/admin/AdminAnalyticsChartsLazy.tsx) | 14 | administration | default:14 |
 | [components/admin/AdminChartsLoading.tsx](../../../components/admin/AdminChartsLoading.tsx) | 13 | administration | default:6 |
 | [components/admin/AdminCommandCenterClient.tsx](../../../components/admin/AdminCommandCenterClient.tsx) | 549 | administration | default:37 |
-| [components/admin/AdminCounselorsClient.tsx](../../../components/admin/AdminCounselorsClient.tsx) | 186 | administration | default:27 |
+| [components/admin/AdminCounselorsClient.tsx](../../../components/admin/AdminCounselorsClient.tsx) | 187 | administration | default:27 |
 | [components/admin/AdminCronsClient.test.tsx](../../../components/admin/AdminCronsClient.test.tsx) | 113 | administration |  |
 | [components/admin/AdminCronsClient.tsx](../../../components/admin/AdminCronsClient.tsx) | 269 | administration | CronExecutionRow:7, default:41 |
 | [components/admin/AdminDataLoadError.tsx](../../../components/admin/AdminDataLoadError.tsx) | 30 | administration | default:6 |
-| [components/admin/AdminFeatureFlagsClient.tsx](../../../components/admin/AdminFeatureFlagsClient.tsx) | 511 | administration | default:60 |
+| [components/admin/AdminFeatureFlagsClient.tsx](../../../components/admin/AdminFeatureFlagsClient.tsx) | 512 | administration | default:60 |
 | [components/admin/AdminFeedbackClient.tsx](../../../components/admin/AdminFeedbackClient.tsx) | 272 | administration | default:51 |
 | [components/admin/AdminFooter.tsx](../../../components/admin/AdminFooter.tsx) | 22 | administration | default:1 |
 | [components/admin/AdminInterviewReadyTable.tsx](../../../components/admin/AdminInterviewReadyTable.tsx) | 145 | administration | InterviewReadyRow:9, default:32 |
@@ -73,7 +73,7 @@
 | [components/admin/AdminResumeUpload.tsx](../../../components/admin/AdminResumeUpload.tsx) | 102 | administration | default:11 |
 | [components/admin/AdminSuperMessagesClient.tsx](../../../components/admin/AdminSuperMessagesClient.tsx) | 743 | administration | default:177 |
 | [components/admin/AdminTrainingDashboardTable.tsx](../../../components/admin/AdminTrainingDashboardTable.tsx) | 246 | administration | default:42 |
-| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 529 | administration | default:34 |
+| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 562 | administration | default:35 |
 | [components/admin/AnalyticsDashboard.tsx](../../../components/admin/AnalyticsDashboard.tsx) | 352 | administration | default:113 |
 | [components/admin/ApplicantTriageChecklist.tsx](../../../components/admin/ApplicantTriageChecklist.tsx) | 79 | administration | ApplicantTriageChecklistProps:10, default:21 |
 | [components/admin/ApplicantTriageChip.tsx](../../../components/admin/ApplicantTriageChip.tsx) | 50 | administration | ApplicantTriageChipProps:10, default:24 |
@@ -108,7 +108,7 @@
 | [components/admin/GtmSetupCheck.tsx](../../../components/admin/GtmSetupCheck.tsx) | 42 | administration | default:17 |
 | [components/admin/IgnoredXapiSummaryCard.tsx](../../../components/admin/IgnoredXapiSummaryCard.tsx) | 171 | administration | default:30 |
 | [components/admin/InviteForm.tsx](../../../components/admin/InviteForm.tsx) | 356 | administration | default:26 |
-| [components/admin/InvitePartnerUserButton.tsx](../../../components/admin/InvitePartnerUserButton.tsx) | 63 | administration | default:5 |
+| [components/admin/InvitePartnerUserButton.tsx](../../../components/admin/InvitePartnerUserButton.tsx) | 88 | administration | inviteFailureText:12, default:23 |
 | [components/admin/InvitesTable.tsx](../../../components/admin/InvitesTable.tsx) | 442 | administration | default:128 |
 | [components/admin/JobsTableClient.tsx](../../../components/admin/JobsTableClient.tsx) | 264 | administration | JobTableRow:10, default:116 |
 | [components/admin/MemberCourseraDiagnoseButton.tsx](../../../components/admin/MemberCourseraDiagnoseButton.tsx) | 206 | learning-coursera | default:18 |
@@ -125,6 +125,7 @@
 | [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1208 | administration | default:278 |
 | [components/admin/MentorStatusButtons.tsx](../../../components/admin/MentorStatusButtons.tsx) | 95 | administration | default:12 |
 | [components/admin/MfaStatusBanner.tsx](../../../components/admin/MfaStatusBanner.tsx) | 67 | administration | default:5 |
+| [components/admin/OrgWideChangeNotice.tsx](../../../components/admin/OrgWideChangeNotice.tsx) | 37 | administration | default:9 |
 | [components/admin/OutcomesDashboard.tsx](../../../components/admin/OutcomesDashboard.tsx) | 558 | administration | default:198 |
 | [components/admin/OutcomesSnapshot.tsx](../../../components/admin/OutcomesSnapshot.tsx) | 628 | administration | default:134 |
 | [components/admin/PartnerDeactivateDialog.tsx](../../../components/admin/PartnerDeactivateDialog.tsx) | 128 | administration | default:17 |
@@ -143,7 +144,7 @@
 | [components/admin/SeedCanonicalMappingsButton.tsx](../../../components/admin/SeedCanonicalMappingsButton.tsx) | 130 | administration | default:32 |
 | [components/admin/SeedCanonicalMappingsFromB4BButton.tsx](../../../components/admin/SeedCanonicalMappingsFromB4BButton.tsx) | 165 | administration | default:40 |
 | [components/admin/SignaturePad.tsx](../../../components/admin/SignaturePad.tsx) | 209 | administration | SignatureValue:5, default:16 |
-| [components/admin/SubgroupForm.tsx](../../../components/admin/SubgroupForm.tsx) | 184 | administration | default:22 |
+| [components/admin/SubgroupForm.tsx](../../../components/admin/SubgroupForm.tsx) | 193 | administration | default:23 |
 | [components/admin/SubgroupMembersTable.tsx](../../../components/admin/SubgroupMembersTable.tsx) | 306 | administration | default:30 |
 | [components/admin/TestimonialsAdminClient.tsx](../../../components/admin/TestimonialsAdminClient.tsx) | 399 | administration | default:37 |
 | [components/admin/TrainingProgressClient.tsx](../../../components/admin/TrainingProgressClient.tsx) | 818 | administration | CanonicalCatalog:25, CurriculumRow:35, RawCourseraRow:64, default:418 |
@@ -490,6 +491,7 @@
 | [components/portal/counselor/RecentActivityFeed.tsx](../../../components/portal/counselor/RecentActivityFeed.tsx) | 130 | member-counselor | default:37 |
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
+| [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |
 | [components/portal/jobs/LogExternalApplicationButton.tsx](../../../components/portal/jobs/LogExternalApplicationButton.tsx) | 327 | jobs-employers | default:53 |
 | [components/portal/kit/AppShellMember.tsx](../../../components/portal/kit/AppShellMember.tsx) | 113 | components | MemberTab:3, AppShellMember:26 |
 | [components/portal/kit/AppShellSidebar.tsx](../../../components/portal/kit/AppShellSidebar.tsx) | 117 | components | NavItem:7, NavGroup:13, AppShellSidebar:34 |
@@ -554,7 +556,7 @@
 | [components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx) | 237 | communications | EmailTemplateRow:29, EmailTemplatesKitProps:42, EmailTemplatesKit:67 |
 | [components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx) | 233 | components | EmployerCard:33, EmployersDirectoryKitProps:71, EmployersDirectoryKit:171 |
 | [components/portal/kit/pages/admin-subviews/ExportsKit.tsx](../../../components/portal/kit/pages/admin-subviews/ExportsKit.tsx) | 195 | components | ExportTone:22, ExportOption:24, ExportsKitProps:45, ExportsKit:171 |
-| [components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx) | 219 | components | FeatureFlagRow:25, FeatureFlagsKitProps:40, FeatureFlagsKit:52 |
+| [components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx) | 225 | components | FeatureFlagRow:26, FeatureFlagsKitProps:41, FeatureFlagsKit:55 |
 | [components/portal/kit/pages/admin-subviews/FeedbackKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeedbackKit.tsx) | 252 | components | FeedbackSentiment:26, FeedbackRow:28, FeedbackKitProps:43, FeedbackKit:73 |
 | [components/portal/kit/pages/admin-subviews/GrowthKit.tsx](../../../components/portal/kit/pages/admin-subviews/GrowthKit.tsx) | 231 | components | GrowthUtmRow:35, GrowthApplyEventRow:44, GrowthConversionValueRow:49, GrowthKitProps:56, GrowthKit:136 |
 | [components/portal/kit/pages/admin-subviews/InvitesKit.tsx](../../../components/portal/kit/pages/admin-subviews/InvitesKit.tsx) | 198 | components | InviteRow:22, InvitesKitProps:33, InvitesKit:61 |
@@ -619,7 +621,7 @@
 | [components/portal/sessions/SessionRunClient.tsx](../../../components/portal/sessions/SessionRunClient.tsx) | 1350 | components | default:67 |
 | [components/portal/sessions/SessionsHistoryClient.tsx](../../../components/portal/sessions/SessionsHistoryClient.tsx) | 214 | components | SessionRow:7, default:29 |
 | [components/portal/sessions/SessionsIndexBody.tsx](../../../components/portal/sessions/SessionsIndexBody.tsx) | 214 | components | default:60 |
-| [components/portal/sessions/WalkInSessionClient.tsx](../../../components/portal/sessions/WalkInSessionClient.tsx) | 184 | components | default:18 |
+| [components/portal/sessions/WalkInSessionClient.tsx](../../../components/portal/sessions/WalkInSessionClient.tsx) | 194 | components | default:20 |
 | [components/portal/tools/AiToolError.tsx](../../../components/portal/tools/AiToolError.tsx) | 105 | components | default:16 |
 | [components/portal/tools/AiToolLanguageSelector.tsx](../../../components/portal/tools/AiToolLanguageSelector.tsx) | 74 | components | AiToolLanguage:5, default:44 |
 | [components/portal/tools/BrowserSpeechCaptions.tsx](../../../components/portal/tools/BrowserSpeechCaptions.tsx) | 136 | components | default:30 |

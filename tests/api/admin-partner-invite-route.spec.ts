@@ -43,6 +43,10 @@ vi.mock('@/lib/auth/supabaseAdminUsers', () => ({
   findSupabaseAuthUserByEmail: vi.fn(),
 }));
 
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
+vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined) }));
+
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),
@@ -124,5 +128,81 @@ describe('POST /api/admin/partners/[id]/invite', () => {
     expect(prisma.user.create).not.toHaveBeenCalled();
     expect(prisma.partnerUser.update).not.toHaveBeenCalled();
     expect(prisma.partnerUser.create).not.toHaveBeenCalled();
+  });
+
+  // Audit 2026-09-20: provider failures escaped as 500 "Internal server
+  // error" and the partner page showed nothing. Every failure now reads
+  // "Invite not sent: <reason>" with a 4xx/5xx that matches the cause.
+  describe('provider failures', () => {
+    it('answers 503 "Invite not sent" when the provider call throws a network error', async () => {
+      vi.mocked(getSupabaseAdmin).mockReturnValue({
+        auth: { admin: { inviteUserByEmail: vi.fn(() => Promise.reject(new TypeError('fetch failed'))) } },
+      } as any);
+
+      const res = await POST(makeRequest({ email: 'new@example.com' }), { params: Promise.resolve({ id: PARTNER_ID }) });
+      const body = await res.json();
+      expect(res.status).toBe(503);
+      expect(body.reason).toBe('unavailable');
+      expect(body.error).toMatch(/^Invite not sent: /);
+      expect(body.error).not.toContain('fetch failed');
+      expect(prisma.user.create).not.toHaveBeenCalled();
+    });
+
+    it('answers 503 when the provider reports itself unavailable', async () => {
+      vi.mocked(getSupabaseAdmin).mockReturnValue({
+        auth: {
+          admin: {
+            inviteUserByEmail: vi.fn(() =>
+              Promise.resolve({ data: { user: null }, error: { name: 'AuthRetryableFetchError', message: 'Service Unavailable', status: 503 } })
+            ),
+          },
+        },
+      } as any);
+      vi.mocked(findSupabaseAuthUserByEmail).mockResolvedValue(null);
+
+      const res = await POST(makeRequest({ email: 'new@example.com' }), { params: Promise.resolve({ id: PARTNER_ID }) });
+      expect(res.status).toBe(503);
+      expect((await res.json()).error).toMatch(/^Invite not sent: the sign-in provider is unavailable/);
+      expect(findSupabaseAuthUserByEmail).not.toHaveBeenCalled();
+    });
+
+    it('answers 503 when the provider client is not configured', async () => {
+      vi.mocked(getSupabaseAdmin).mockImplementation(() => {
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL required for admin operations');
+      });
+      const res = await POST(makeRequest({ email: 'new@example.com' }), { params: Promise.resolve({ id: PARTNER_ID }) });
+      expect(res.status).toBe(503);
+      const body = await res.json();
+      expect(body.error).toMatch(/^Invite not sent: /);
+      expect(JSON.stringify(body)).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
+    });
+
+    it('answers 400 with a validation reason when the address is rejected and no auth user exists', async () => {
+      vi.mocked(getSupabaseAdmin).mockReturnValue({
+        auth: {
+          admin: {
+            inviteUserByEmail: vi.fn(() =>
+              Promise.resolve({ data: { user: null }, error: { name: 'AuthApiError', code: 'email_address_invalid', message: 'Unable to validate email address: invalid format', status: 400 } })
+            ),
+          },
+        },
+      } as any);
+      vi.mocked(findSupabaseAuthUserByEmail).mockResolvedValue(null);
+
+      const res = await POST(makeRequest({ email: 'odd@example.com' }), { params: Promise.resolve({ id: PARTNER_ID }) });
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.reason).toBe('validation');
+      expect(body.error).toMatch(/^Invite not sent: the sign-in provider rejected that email address/);
+      expect(body.error).not.toContain('Unable to validate');
+    });
+
+    it('still links an already-registered user (duplicate is not a failure)', async () => {
+      vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: USER_ID, organizationId: ORG_ID } as any);
+      const res = await POST(makeRequest({ email: 'existing@example.com' }), { params: Promise.resolve({ id: PARTNER_ID }) });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, userId: USER_ID });
+      expect(prisma.partnerUser.create).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
+import { RequiredFieldsHint } from '@/components/portal/forms/RequiredFieldsHint';
+import { missingRequiredLabels } from '@/lib/forms/requiredFields';
 
 /**
  * Walk-in session intake form.
@@ -32,7 +34,13 @@ export default function WalkInSessionClient({
   const [error, setError] = useState<string | null>(null);
   const [existingMemberId, setExistingMemberId] = useState<string | null>(null);
 
-  const canSubmit = firstName.trim().length > 0 && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) && !submitting;
+  const emailLooksValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim());
+  const canSubmit = firstName.trim().length > 0 && emailLooksValid && !submitting;
+  // Says which required field still blocks the button (audit 2026-09-20).
+  const missingRequired = missingRequiredLabels([
+    { label: 'First name', ok: firstName.trim().length > 0 },
+    { label: email.trim().length > 0 ? 'A valid email' : 'Email', ok: emailLooksValid },
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,10 +178,12 @@ export default function WalkInSessionClient({
         </div>
       ) : null}
 
+      <RequiredFieldsHint id="walk-in-required" labels={missingRequired} leadIn="Before you can create the account" />
       <button
         type="submit"
         className="btn btn-primary"
         disabled={!canSubmit}
+        aria-describedby={missingRequired.length > 0 ? 'walk-in-required' : undefined}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
       >
         {submitting ? <PortalInlineSpinner size={18} /> : <UserPlus size={18} aria-hidden />}

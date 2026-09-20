@@ -14,6 +14,8 @@ import {
 } from '@/lib/portal/memberResumeUpload';
 import { getResumeExtractionWarning } from '@/lib/resume/extractionQuality';
 import { User, BookOpen, FileText, CheckCircle, Handshake, Wallet } from 'lucide-react';
+import { RequiredFieldsHint } from '@/components/portal/forms/RequiredFieldsHint';
+import { missingRequiredLabels } from '@/lib/forms/requiredFields';
 
 const FUNDING_SOURCE_OPTIONS = [
   { value: '', label: '— Not set —' },
@@ -368,6 +370,17 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
     'Review & Create',
   ];
 
+  // Names the step-1 fields that still block "Continue" (audit 2026-09-20:
+  // the button was disabled with no explanation). Mirrors canProceedStep1.
+  const step1Missing = missingRequiredLabels([
+    { label: 'First name', ok: Boolean(form.firstName) },
+    { label: 'Email', ok: Boolean(form.email) },
+    { label: 'Employment status', ok: Boolean(form.employmentStatus) },
+    { label: 'Education level', ok: Boolean(form.educationLevel) },
+    { label: 'US citizen or permanent resident (Yes)', ok: form.usCitizen === true },
+    { label: 'Authorized to work in US (Yes)', ok: form.authorizedToWork === true },
+  ]);
+
   return (
     <div className="wizard-container">
       <div className="wizard-step-indicator">
@@ -495,8 +508,15 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
             <label htmlFor="addmemberwizard-counselor-notes-field">Counselor Notes</label>
             <textarea id="addmemberwizard-counselor-notes-field" value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} placeholder="Internal notes — not visible to the member" />
           </div>
+          <RequiredFieldsHint id="wizard-step1-required" labels={step1Missing} leadIn="Before you can continue" />
           <div className="wizard-actions">
-            <button type="button" className="btn btn-primary" onClick={() => setStep(2)} disabled={!canProceedStep1}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => setStep(2)}
+              disabled={!canProceedStep1}
+              aria-describedby={step1Missing.length > 0 ? 'wizard-step1-required' : undefined}
+            >
               Continue to Step 2
             </button>
           </div>

@@ -16641,8 +16641,16 @@
   },
   {
     "from": "app/admin/blog/BlogPostEditor.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
+  },
+  {
+    "from": "app/admin/blog/BlogPostEditor.tsx",
     "specifier": "react-markdown",
-    "line": 13,
+    "line": 14,
     "kind": "dynamic-import",
     "external": true,
     "package": "react-markdown"
@@ -16650,7 +16658,7 @@
   {
     "from": "app/admin/blog/BlogPostEditor.tsx",
     "specifier": "remark-gfm",
-    "line": 14,
+    "line": 15,
     "kind": "dynamic-import",
     "external": true,
     "package": "remark-gfm"
@@ -19400,6 +19408,14 @@
     "package": "next"
   },
   {
+    "from": "app/admin/employers/CreateEmployerAccountClient.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
+  },
+  {
     "from": "app/admin/employers/EmployerStatusButton.tsx",
     "specifier": "next/navigation",
     "line": 3,
@@ -19910,6 +19926,14 @@
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminFeatureFlagsClient.tsx"
+  },
+  {
+    "from": "app/admin/feature-flags/page.tsx",
+    "specifier": "@/components/admin/OrgWideChangeNotice",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/OrgWideChangeNotice.tsx"
   },
   {
     "from": "app/admin/feedback/loading.tsx",
@@ -22398,6 +22422,22 @@
     "kind": "import",
     "external": true,
     "package": "lucide-react"
+  },
+  {
+    "from": "app/admin/members/new/AddMemberWizard.tsx",
+    "specifier": "@/components/portal/forms/RequiredFieldsHint",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/forms/RequiredFieldsHint.tsx"
+  },
+  {
+    "from": "app/admin/members/new/AddMemberWizard.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
   },
   {
     "from": "app/admin/members/new/loading.tsx",
@@ -25473,8 +25513,16 @@
   },
   {
     "from": "app/admin/settings/page.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/components/admin/OrgWideChangeNotice",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/OrgWideChangeNotice.tsx"
+  },
+  {
+    "from": "app/admin/settings/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -38665,8 +38713,24 @@
   },
   {
     "from": "app/api/admin/partners/[id]/invite/route.ts",
-    "specifier": "zod",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/invite/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/invite/route.ts",
+    "specifier": "zod",
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "zod"
@@ -38674,7 +38738,7 @@
   {
     "from": "app/api/admin/partners/[id]/invite/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 11,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -38682,7 +38746,7 @@
   {
     "from": "app/api/admin/partners/[id]/invite/route.ts",
     "specifier": "@/lib/audit",
-    "line": 12,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -38690,7 +38754,7 @@
   {
     "from": "app/api/admin/partners/[id]/invite/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 13,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -41409,8 +41473,16 @@
   },
   {
     "from": "app/api/admin/users/route.ts",
-    "specifier": "@/lib/tenant/organization",
+    "specifier": "@/lib/observability/captureApiError",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/admin/users/route.ts",
+    "specifier": "@/lib/tenant/organization",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -41418,7 +41490,7 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/tenant/withTenantScope",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/withTenantScope.ts"
@@ -41426,7 +41498,7 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/admin/adminUserProvisioning",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/admin/adminUserProvisioning.ts"
@@ -41434,7 +41506,7 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/auth/passwordReset",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/auth/passwordReset.ts"
@@ -41442,15 +41514,23 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/auth/supabaseAdminUsers",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/auth/supabaseAdminUsers.ts"
   },
   {
     "from": "app/api/admin/users/route.ts",
-    "specifier": "@/lib/db/withRequestGuc",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/api/admin/users/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -41458,7 +41538,7 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/audit",
-    "line": 21,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -41466,7 +41546,7 @@
   {
     "from": "app/api/admin/users/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 22,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -70080,6 +70160,14 @@
     "target": "lib/admin/roleLabels.ts"
   },
   {
+    "from": "components/admin/AdminUsersManager.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
+  },
+  {
     "from": "components/admin/AnalyticsDashboard.tsx",
     "specifier": "react",
     "line": 3,
@@ -71544,6 +71632,14 @@
     "package": "react"
   },
   {
+    "from": "components/admin/OrgWideChangeNotice.tsx",
+    "specifier": "lucide-react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
     "from": "components/admin/OutcomesDashboard.tsx",
     "specifier": "react",
     "line": 3,
@@ -72086,6 +72182,14 @@
     "kind": "import",
     "external": true,
     "package": "next"
+  },
+  {
+    "from": "components/admin/SubgroupForm.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
   },
   {
     "from": "components/admin/SubgroupMembersTable.tsx",
@@ -82416,6 +82520,14 @@
     "target": "lib/counselor/nudgeTemplates.ts"
   },
   {
+    "from": "components/portal/forms/RequiredFieldsHint.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
+  },
+  {
     "from": "components/portal/jobs/LogExternalApplicationButton.tsx",
     "specifier": "react",
     "line": 3,
@@ -84657,8 +84769,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
-    "specifier": "next/link",
+    "specifier": "react",
     "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
+    "specifier": "next/link",
+    "line": 2,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -84666,14 +84786,6 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
     "specifier": "@astryxdesign/core/Link",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
-    "specifier": "@astryxdesign/core/Button",
     "line": 3,
     "kind": "import",
     "external": true,
@@ -84681,8 +84793,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@astryxdesign/core/Button",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -87494,6 +87614,22 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalInlineSpinner.tsx"
+  },
+  {
+    "from": "components/portal/sessions/WalkInSessionClient.tsx",
+    "specifier": "@/components/portal/forms/RequiredFieldsHint",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/forms/RequiredFieldsHint.tsx"
+  },
+  {
+    "from": "components/portal/sessions/WalkInSessionClient.tsx",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
   },
   {
     "from": "components/portal/tools/AiToolError.tsx",
@@ -96184,6 +96320,30 @@
     "target": "lib/auth/roles.ts"
   },
   {
+    "from": "lib/auth/authProviderError.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/auth/authProviderError.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/auth/authProviderError.test.ts",
+    "specifier": "./authProviderError",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
     "from": "lib/auth/client.ts",
     "specifier": "@supabase/ssr",
     "line": 3,
@@ -103974,6 +104134,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/feature-flags/publicApi.ts"
+  },
+  {
+    "from": "lib/forms/requiredFields.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/forms/requiredFields.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/forms/requiredFields.test.ts",
+    "specifier": "./requiredFields",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
   },
   {
     "from": "lib/gdpr/deleteAuthUser.test.ts",
@@ -117954,7 +118138,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 48,
+    "line": 52,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -117962,7 +118146,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/app/api/admin/partners/[id]/invite/route",
-    "line": 65,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/partners/[id]/invite/route.ts"
@@ -117970,7 +118154,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 66,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -117978,7 +118162,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 67,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -117986,7 +118170,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 68,
+    "line": 72,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -117994,7 +118178,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/supabase-admin",
-    "line": 69,
+    "line": 73,
     "kind": "import",
     "external": false,
     "target": "lib/supabase-admin.ts"
@@ -118002,7 +118186,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/auth/supabaseAdminUsers",
-    "line": 70,
+    "line": 74,
     "kind": "import",
     "external": false,
     "target": "lib/auth/supabaseAdminUsers.ts"
@@ -118010,7 +118194,7 @@
   {
     "from": "tests/api/admin-partner-invite-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 71,
+    "line": 75,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118438,6 +118622,38 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "app/api/admin/users/route.ts"
+  },
+  {
+    "from": "tests/api/admin-user-create-provider-failure.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/admin-user-create-provider-failure.spec.ts",
+    "specifier": "@/app/api/admin/users/route",
+    "line": 39,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "app/api/admin/users/route.ts"
+  },
+  {
+    "from": "tests/api/admin-user-create-provider-failure.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 40,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/api/admin-user-create-provider-failure.spec.ts",
+    "specifier": "@/lib/tenant/organization",
+    "line": 41,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/tenant/organization.ts"
   },
   {
     "from": "tests/api/admin-user-create-tenant-conflict.spec.ts",
@@ -129000,6 +129216,86 @@
     "target": "components/admin/MembersTable.tsx"
   },
   {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@testing-library/user-event",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/user-event"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/admin/InvitePartnerUserButton",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/InvitePartnerUserButton.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/admin/AdminCounselorsClient",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/AdminCounselorsClient.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/portal/sessions/WalkInSessionClient",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/sessions/WalkInSessionClient.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/admin/SubgroupForm",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/SubgroupForm.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/app/admin/partners/new/NewPartnerForm",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/partners/new/NewPartnerForm.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/admin/OrgWideChangeNotice",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/OrgWideChangeNotice.tsx"
+  },
+  {
+    "from": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "specifier": "@/components/portal/forms/RequiredFieldsHint",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/forms/RequiredFieldsHint.tsx"
+  },
+  {
     "from": "tests/components/admin-hydration-hardening.test.ts",
     "specifier": "vitest",
     "line": 1,
@@ -131811,6 +132107,62 @@
     "from": "tests/components/skill-mission-close-guard.test.tsx",
     "specifier": "@/messages/en.json",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "next-intl",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "@/components/portal/AdminPortalShell",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/AdminPortalShell.tsx"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "@/components/portal/CounselorPortalShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/CounselorPortalShell.tsx"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
+  },
+  {
+    "from": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
@@ -135704,6 +136056,22 @@
     "target": "lib/member/referrals.ts"
   },
   {
+    "from": "tests/lib/required-fields-dom.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/required-fields-dom.spec.ts",
+    "specifier": "@/lib/forms/requiredFields",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/forms/requiredFields.ts"
+  },
+  {
     "from": "tests/lib/retention-window-evidence.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -136510,6 +136878,22 @@
     "kind": "import",
     "external": true,
     "package": "node:child_process"
+  },
+  {
+    "from": "tests/next-config-csp-form-action.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/next-config-csp-form-action.spec.ts",
+    "specifier": "../next.config",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
   },
   {
     "from": "tests/next-config-redirect-destinations.spec.ts",
