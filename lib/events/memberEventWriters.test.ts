@@ -1,7 +1,4 @@
-import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
-import test from 'node:test';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   CLIENT_EVENT_NAMES,
   EVENT_NAMES,
@@ -11,85 +8,78 @@ import {
   isEventName,
 } from './names';
 
-const REPO = join(__dirname, '..', '..');
+/**
+ * WAP-39: every MemberEvent row is written by lib/events/track.ts and carries
+ * a name from the typed vocabulary.
+ *
+ * The "only track.ts calls memberEvent.create" rule is enforced at lint time
+ * by the `no-restricted-syntax` DIRECT_WRITER_BANS in eslint.config.mjs (all
+ * production ts/tsx, with lib/events/track.ts the single exemption), and the
+ * writer signatures type `eventName` as `EventName` so tsc rejects an unknown
+ * literal at the call site. This suite covers the runtime half: the canonical
+ * writer refuses unknown names before any storage call and stores alias
+ * spellings under their canonical name.
+ */
+vi.mock('@/lib/db/prisma', () => ({ prisma: { memberEvent: { create: vi.fn() } } }));
+vi.mock('@/lib/observability/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
+vi.mock('@/lib/observability/requestId', () => ({ getRequestId: () => 'req-1' }));
 
-/** The one production module allowed to call `memberEvent.create` (WAP-39). */
-const CANONICAL_EVENT_WRITER = 'lib/events/track.ts';
+import { prisma } from '@/lib/db/prisma';
+import { logger } from '@/lib/observability/logger';
+import { persistEvent, trackEvent } from './track';
 
-function productionTypeScriptFiles(root: string): string[] {
-  const files: string[] = [];
-  for (const entry of readdirSync(root)) {
-    if (entry === 'node_modules' || entry.startsWith('.')) continue;
-    const path = join(root, entry);
-    if (statSync(path).isDirectory()) {
-      files.push(...productionTypeScriptFiles(path));
-    } else if (/\.(?:ts|tsx)$/.test(entry) && !/\.(?:test|spec)\.(?:ts|tsx)$/.test(entry)) {
-      files.push(path);
-    }
-  }
-  return files;
-}
+describe('canonical MemberEvent writer', () => {
+  const create = vi.fn();
+  const db = { memberEvent: { create } } as unknown as Parameters<typeof persistEvent>[1];
 
-test('only lib/events/track.ts creates MemberEvent rows', () => {
-  const files = [
-    ...productionTypeScriptFiles(join(REPO, 'app')),
-    ...productionTypeScriptFiles(join(REPO, 'lib')),
-    ...productionTypeScriptFiles(join(REPO, 'components')),
-  ];
-  const writers = new Set<string>();
-  for (const file of files) {
-    const source = readFileSync(file, 'utf8');
-    // Matches `x.memberEvent.create(`, the multi-line `.memberEvent\n.create(`
-    // form and createMany/upsert.
-    if (/\bmemberEvent\s*\.\s*(?:create|createMany|upsert)\s*\(/.test(source)) {
-      writers.add(relative(REPO, file).split('\\').join('/'));
-    }
-  }
-  assert.deepEqual(
-    [...writers].sort(),
-    [CANONICAL_EVENT_WRITER],
-    'route every MemberEvent write through persistEvent/trackEvent in lib/events/track.ts',
-  );
+  beforeEach(() => {
+    vi.clearAllMocks();
+    create.mockResolvedValue({ id: 'evt-1' });
+  });
+
+  it('persistEvent rejects a name outside the vocabulary before touching storage', async () => {
+    await expect(
+      persistEvent({ userId: 'user-1', eventName: 'made_up' as never }, db),
+    ).rejects.toThrow('Unknown member event');
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('persistEvent stores a legacy alias under its canonical name with the request id', async () => {
+    const [alias, canonical] = Object.entries(LEGACY_EVENT_NAME_ALIASES)[0]!;
+    await persistEvent({ userId: 'user-1', eventName: alias as never, entityType: 'test' }, db);
+    expect(create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ userId: 'user-1', eventName: canonical, entityType: 'test', requestId: 'req-1' }),
+    });
+  });
+
+  it('trackEvent writes through the same validated path and swallows unknown names as logged errors', async () => {
+    await trackEvent({ userId: 'user-1', eventName: 'course_completed' });
+    expect(prisma.memberEvent.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ eventName: 'course_completed' }),
+    });
+
+    await expect(trackEvent({ userId: 'user-1', eventName: 'made_up' as never })).resolves.toBeUndefined();
+    expect(prisma.memberEvent.create).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith('trackEvent failed', expect.objectContaining({ eventName: 'made_up' }));
+  });
 });
 
-test('every event name a production writer passes is in the typed vocabulary', () => {
-  const files = [
-    ...productionTypeScriptFiles(join(REPO, 'app')),
-    ...productionTypeScriptFiles(join(REPO, 'lib')),
-    ...productionTypeScriptFiles(join(REPO, 'components')),
-  ];
-  const unknown: string[] = [];
-  for (const file of files) {
-    const source = readFileSync(file, 'utf8');
-    for (const match of source.matchAll(/\beventName:\s*'([^']+)'/g)) {
-      const name = match[1]!;
-      // `orderBy: { eventName: 'asc' }` style sort keys are not event names.
-      if (name === 'asc' || name === 'desc') continue;
-      // Readers may still filter historical rows by a spelling that has
-      // no writer; only reject names that are neither current nor aliased
-      // and that are being written.
-      if (!canonicalEventName(name) && /persistEvent|trackEvent/.test(source)) {
-        unknown.push(`${relative(REPO, file)}: ${name}`);
-      }
+describe('event vocabulary', () => {
+  it('follows one lower_snake_case taxonomy and aliases resolve into it', () => {
+    for (const name of EVENT_NAMES) {
+      expect(name, `${name} breaks the taxonomy`).toMatch(/^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/);
     }
-  }
-  assert.deepEqual(unknown, [], 'add new names to lib/events/names.ts before writing them');
-});
-
-test('vocabulary names follow one lower_snake_case taxonomy and aliases resolve into it', () => {
-  for (const name of EVENT_NAMES) {
-    assert.match(name, /^[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)*$/, `${name} breaks the taxonomy`);
-  }
-  assert.equal(new Set(EVENT_NAMES).size, EVENT_NAMES.length, 'duplicate vocabulary entry');
-  for (const [alias, canonical] of Object.entries(LEGACY_EVENT_NAME_ALIASES)) {
-    assert.ok(isEventName(canonical), `${alias} must alias a vocabulary name`);
-    assert.ok(!isEventName(alias), `${alias} cannot be both an alias and a current name`);
-    assert.equal(canonicalEventName(alias), canonical);
-    assert.deepEqual(eventNameReadCandidates(canonical), [canonical, alias]);
-  }
-  assert.deepEqual(eventNameReadCandidates('course_completed'), ['course_completed']);
-  assert.equal(canonicalEventName('made_up'), null);
-  for (const name of CLIENT_EVENT_NAMES) {
-    assert.ok(isEventName(name), `client emitter ${name} must stay in the server vocabulary`);
-  }
+    expect(new Set(EVENT_NAMES).size, 'duplicate vocabulary entry').toBe(EVENT_NAMES.length);
+    for (const [alias, canonical] of Object.entries(LEGACY_EVENT_NAME_ALIASES)) {
+      expect(isEventName(canonical), `${alias} must alias a vocabulary name`).toBe(true);
+      expect(isEventName(alias), `${alias} cannot be both an alias and a current name`).toBe(false);
+      expect(canonicalEventName(alias)).toBe(canonical);
+      expect(eventNameReadCandidates(canonical)).toEqual([canonical, alias]);
+    }
+    expect(eventNameReadCandidates('course_completed')).toEqual(['course_completed']);
+    expect(canonicalEventName('made_up')).toBeNull();
+    for (const name of CLIENT_EVENT_NAMES) {
+      expect(isEventName(name), `client emitter ${name} must stay in the server vocabulary`).toBe(true);
+    }
+  });
 });

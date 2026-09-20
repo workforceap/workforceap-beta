@@ -1,8 +1,5 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { DIGITAL_LITERACY_PROGRAM_SLUG } from '@/shared/digitalLiteracyPathway';
 import type { DashboardEnrollment } from './resolveActiveDashboardProgram';
@@ -10,8 +7,6 @@ import {
   programStartAccessFromDashboardView,
   resolveProgramStartAccess,
 } from './programStartEnrollment';
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 function enrollment(
   slug: string,
@@ -69,16 +64,5 @@ test('dashboard view with an active slug does not bounce start', () => {
   assert.equal(access.enrolledSlug, DIGITAL_LITERACY_PROGRAM_SLUG);
 });
 
-test('start page uses the live dashboard enrollment source, not User.enrolledProgram', () => {
-  const src = readFileSync(
-    join(ROOT, 'app/(portal)/dashboard/program/start/page.tsx'),
-    'utf8',
-  );
-  assert.match(src, /getActiveProgramForDashboard/);
-  assert.match(src, /programStartAccessFromDashboardView/);
-  assert.match(src, /const enrolledSlug = access\.enrolledSlug/);
-  assert.doesNotMatch(src, /const enrolledSlug = dbUser\?\.enrolledProgram/);
-  assert.doesNotMatch(src, /enrolledProgram:\s*true/);
-  assert.doesNotMatch(src, /prisma\.user\.update/);
-  assert.match(src, /if \(!enrolledSlug\) \{\n    redirect\('\/dashboard\/program'\);/);
-});
+// The /dashboard/program/start page gating on the live dashboard enrollment
+// source is exercised in tests/app/program-start-page.spec.tsx.

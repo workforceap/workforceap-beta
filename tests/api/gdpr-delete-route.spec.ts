@@ -105,6 +105,13 @@ describe('POST /api/gdpr/delete', () => {
     expect(userUpdateSql).toContain("full_name = 'Deleted User'");
     expect(deleteUserStorageObjects).toHaveBeenCalledWith('user-123');
     expect(deleteSupabaseAuthUser).toHaveBeenCalledWith('user-123');
+    // Ordering contract (formerly lib/gdpr/erase-routes.test.ts): storage
+    // objects go first, then the anonymizing writes, then the auth delete.
+    const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [anonymizeOrder] = vi.mocked(prisma.$executeRaw).mock.invocationCallOrder;
+    const [authDeleteOrder] = vi.mocked(deleteSupabaseAuthUser).mock.invocationCallOrder;
+    expect(storageOrder).toBeLessThan(anonymizeOrder);
+    expect(anonymizeOrder).toBeLessThan(authDeleteOrder);
     // The deletion marker is a typed Prisma write (the former raw INSERT bound
     // the metadata as text into the jsonb column and failed with 42804).
     expect(prisma.memberEvent.create).toHaveBeenCalledWith({

@@ -122,6 +122,20 @@ describe('localized WIOA assessment', () => {
     expect(props.checkpointEndpoint).toBeUndefined();
   });
 
+  it.each(['member', 'public'] as const)('%s mode defaults to the structured form and discloses voice as preparation-only', (mode) => {
+    show('en', mode);
+    const helpKey = mode === 'public' ? 'publicModeHelp' : 'memberModeHelp';
+    // Structured form is the default entry mode: the form is mounted, the voice session is not.
+    expect(screen.getByRole('radio', { name: en.wioa.formMode })).toBeChecked();
+    expect(screen.getByRole('radio', { name: en.wioa.voiceMode })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: mode === 'public' ? en.wioa.send : en.wioa.save })).toBeInTheDocument();
+    expect(mocks.voice).not.toHaveBeenCalled();
+    // Voice is disclosed as preparation only, and the help copy says it never saves or sends answers.
+    expect(en.wioa.voiceMode).toMatch(/Voice preparation only/);
+    expect(en.wioa[helpKey]).toMatch(/does not save or send your answers/);
+    expect(screen.getByText(en.wioa[helpKey])).toBeInTheDocument();
+  });
+
   it('renders new reason objects as explanations in both staff views', () => {
     const props = { snapshot: saved, reviewStatus: null, reviewedAt: null, reviewerName: null, reviewNotes: null };
     render(<><AdminMemberWioaReviewPanel {...props} memberId="member-1" decisionHistory={[]} /><WioaScreeningReadonly {...props} /></>);

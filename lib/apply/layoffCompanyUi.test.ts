@@ -24,28 +24,16 @@ test('en apply copy uses Mike wording for layoff / last employer', () => {
   );
 });
 
-test('ApplyEligibilityClient always renders layoff company field (not gated)', () => {
-  const src = readFileSync(join(root, 'app/apply/ApplyEligibilityClient.tsx'), 'utf8');
-  assert.match(src, /eligibilityLayoffCompanyLabel/);
-  assert.match(src, /name="layoffCompany"/);
-  assert.match(src, /showLayoffCompany/);
-  // Field is rendered when showLayoffCompany is true; helper always returns true.
-  assert.equal(
-    layoffCompanyApplicable({
-      unemployedOrUnderemployed: null,
-      receivingUnemployment: null,
-      exhaustedUnemployment: null,
-    }),
-    true,
-  );
+test('layoff company question is never gated off the eligibility form', () => {
+  // The helper decides whether the field renders; it is always applicable.
+  for (const answers of [
+    { unemployedOrUnderemployed: null, receivingUnemployment: null, exhaustedUnemployment: null },
+    { unemployedOrUnderemployed: 'no', receivingUnemployment: 'no', exhaustedUnemployment: 'no' },
+    { unemployedOrUnderemployed: 'yes', receivingUnemployment: 'yes', exhaustedUnemployment: null },
+  ] as const) {
+    assert.equal(layoffCompanyApplicable(answers), true);
+  }
 });
 
-test('member + token eligibility forms use Mike wording', () => {
-  const member = readFileSync(
-    join(root, 'app/(portal)/dashboard/eligibility/EligibilityForm.tsx'),
-    'utf8',
-  );
-  const token = readFileSync(join(root, 'app/q/[token]/PublicEligibilityForm.tsx'), 'utf8');
-  assert.match(member, /What company did you get laid off from, or last work for\?/);
-  assert.match(token, /What company did you get laid off from, or last work for\?/);
-});
+// The three eligibility forms (apply, member portal, token link) rendering the
+// field with Mike's wording are exercised in tests/app/eligibility-layoff-company.spec.tsx.

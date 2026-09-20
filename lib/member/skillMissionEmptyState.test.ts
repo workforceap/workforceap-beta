@@ -1,13 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { getSkillMissionDefinitionsForProgram } from '@/lib/content/skillMissionCatalog';
 import { skillMissionEmptyState } from './skillMissionEmptyState';
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('unenrolled members are sent to choose a program, not a training page', () => {
   const empty = skillMissionEmptyState({ programSlug: null, programTitle: null });
@@ -38,12 +33,8 @@ test('falls back to "this program" when the catalog title is missing', () => {
   assert.equal(empty.primaryAction.href, '/dashboard/program');
 });
 
-test('missions page uses the dashboard program helper, not only User.enrolledProgram', () => {
-  const src = readFileSync(join(ROOT, 'app/(portal)/dashboard/missions/page.tsx'), 'utf8');
-  assert.match(src, /getActiveProgramForDashboard/);
-  assert.match(src, /SkillMissionEmpty/);
-  assert.doesNotMatch(src, /enrolledProgram:/);
-});
+// The /dashboard/missions page resolving its program through the dashboard
+// helper (not User.enrolledProgram) is exercised in tests/app/skill-missions-page.spec.tsx.
 
 test('staff training preview program has catalog missions so superadmins are not sent to choose-a-program', () => {
   const missions = getSkillMissionDefinitionsForProgram('comptia-a-professional-certificate');

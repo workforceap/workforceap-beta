@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "d94b89eadbae5e42eb513ddc670e30b91d8e9af264b94abc80a578aa244872b4",
+  "inputTreeSha256": "96d8a55a7544a15876cf6ff42164c5d590c94a7942999ba587bb92a25c68447c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -58609,6 +58609,29 @@
       "directive": "use client"
     },
     {
+      "path": "components/portal/JobApplicationsTracker.test.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 2865,
+      "lines": 68,
+      "sha256": "14fab54697f09c21078a6041d2b831aff7d6c1c1e11273323b7e8bee5f4445ff",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "fetchMock",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "show",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/JobApplicationsTracker.tsx",
       "area": "components",
       "domain": "components",
@@ -59113,6 +59136,29 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/portal/MemberDoThisNextCard.test.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 1729,
+      "lines": 46,
+      "sha256": "7b023a0627bd48b86b6f385e4ea5e4bed7cb0d398cab6d098c4a85c1b0d5bbfc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "action",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "show",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/portal/MemberDoThisNextCard.tsx",
@@ -67164,6 +67210,24 @@
       "directive": null
     },
     {
+      "path": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 2067,
+      "lines": 44,
+      "sha256": "307f3b63b8cad812863403632a936d957a39a8cf3dbd5b6435038366964798f7",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "cases",
+          "line": 18,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx",
       "area": "components",
       "domain": "components",
@@ -69687,9 +69751,9 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.test.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 2587,
-      "lines": 70,
-      "sha256": "d2b9f96291f0d6b66147e24ff9f8ac323e5914b692863efd7249e240254adbe9",
+      "bytes": 3919,
+      "lines": 95,
+      "sha256": "38d2df7cf3247a4bcadb336943923c8ce889e3f4ea56b9e6207c4d8da278b82f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -79351,14 +79415,14 @@
       "path": "eslint.config.mjs",
       "area": "root",
       "domain": "root",
-      "bytes": 9263,
-      "lines": 205,
-      "sha256": "0b842e87ffc90e910d72bafbd72af5ef23c08a2501eb21dc861bd325daf53b91",
+      "bytes": 9669,
+      "lines": 218,
+      "sha256": "6332901972d24be0df492504e8f7faa310e5af53531f3276c3c9a8324a69bb7b",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 205,
+          "line": 218,
           "kind": "ExportAssignment"
         }
       ],
@@ -79399,8 +79463,18 @@
           "kind": "Variable"
         },
         {
+          "name": "MEMBER_EVENT_WRITER_BAN",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "COURSE_ENROLLMENT_WRITER_BAN",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
           "name": "config",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         }
       ],
@@ -83548,20 +83622,15 @@
       "path": "lib/admin/directoryEmptyState.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2885,
-      "lines": 71,
-      "sha256": "674ef0d19ed7a6cd7a13a3c1f3a6ccdcaa442f07c7f14bc9e404d00ddc7dc7e6",
+      "bytes": 1724,
+      "lines": 39,
+      "sha256": "8562dd0b5f558807bf077884cdd1d7731c95847c05f2cb43dcb6237ab93ec961",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "ROOT",
-          "line": 13,
-          "kind": "Variable"
-        },
-        {
           "name": "assertSentenceCaseLabel",
-          "line": 15,
+          "line": 10,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -84385,34 +84454,6 @@
         {
           "name": "isMatchSuggestionsDryRun",
           "line": 13,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/admin/memberDeleteStorage.test.ts",
-      "area": "libraries",
-      "domain": "administration",
-      "bytes": 1804,
-      "lines": 37,
-      "sha256": "a1a957bd89ba2c92316b16c5f80d54565e66f5778ec920ae837fef46d02cceaf",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "root",
-          "line": 7,
-          "kind": "Variable"
-        },
-        {
-          "name": "ADMIN_MEMBER_DELETE",
-          "line": 8,
-          "kind": "Variable"
-        },
-        {
-          "name": "readRoute",
-          "line": 10,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -93226,9 +93267,9 @@
       "path": "lib/apply/layoffCompanyUi.test.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 1926,
-      "lines": 51,
-      "sha256": "e4d2145761929a1e05feeb1aa6a4f4066c55b2c4efcb461f7f4082bb7f1b352b",
+      "bytes": 1625,
+      "lines": 39,
+      "sha256": "2fc148752fd61e3f254381cbd1c9bf7d2a1d82d0cfc733a8007fde8e2c98065a",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -115694,28 +115735,12 @@
       "path": "lib/events/memberEventWriters.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3872,
-      "lines": 95,
-      "sha256": "6c875e2b3a381fb279870639626fe2293119304afa981c436db1246d166ea39c",
+      "bytes": 4006,
+      "lines": 85,
+      "sha256": "c3a89bc993ea62da75bb61ed50a9292b296edd6e5197690964b972a451c724af",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "REPO",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "CANONICAL_EVENT_WRITER",
-          "line": 17,
-          "kind": "Variable"
-        },
-        {
-          "name": "productionTypeScriptFiles",
-          "line": 19,
-          "kind": "FunctionDeclaration"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -116706,44 +116731,6 @@
         {
           "name": "ACCOUNT_STORAGE_DELETE_FAILED",
           "line": 213,
-          "kind": "Variable"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/gdpr/erase-routes.test.ts",
-      "area": "libraries",
-      "domain": "libraries",
-      "bytes": 1922,
-      "lines": 48,
-      "sha256": "c4fdd8b3b29ce8ba6c86a0ccc9e13fbf0c3c193f6984e667894fb1582bc77c46",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "root",
-          "line": 7,
-          "kind": "Variable"
-        },
-        {
-          "name": "readRoute",
-          "line": 9,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "GDPR_DELETE",
-          "line": 13,
-          "kind": "Variable"
-        },
-        {
-          "name": "ADMIN_ERASE",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "MEMBER_DELETE",
-          "line": 15,
           "kind": "Variable"
         }
       ],
@@ -121071,18 +121058,12 @@
       "path": "lib/member/jobApplicationsEmptyState.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 1722,
-      "lines": 40,
-      "sha256": "0323283a5e3a725344d5c66595ceb25e4308f5941ba46466351289e47e8673c8",
+      "bytes": 885,
+      "lines": 18,
+      "sha256": "2d7b1fdbd7a6e1492b33185fe358f28d196a7a522897b7a855782c004530d63f",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "ROOT",
-          "line": 9,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -122325,18 +122306,12 @@
       "path": "lib/member/memberProgramHref.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 2344,
-      "lines": 58,
-      "sha256": "9a123aabf99282438fba8dd8e66a37e70d6bbc5b32ea6ab665f304a1560b73e2",
+      "bytes": 1665,
+      "lines": 40,
+      "sha256": "a228851eba6f003edffb4eee582e6182c9e4ae141c0e85a75aca7f3fbdb18e2a",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "ROOT",
-          "line": 13,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -122968,20 +122943,15 @@
       "path": "lib/member/programStartEnrollment.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 3085,
-      "lines": 84,
-      "sha256": "7ecb57911afc30b8537ee5e48ea47d6d3938a3c3e56616239b11e7c60da49b9e",
+      "bytes": 2370,
+      "lines": 68,
+      "sha256": "1b9871ef09e7094c953b86e4f71605dc74ce9d0167e217b0065c4895ca7108c5",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "ROOT",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
           "name": "enrollment",
-          "line": 16,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -123606,18 +123576,12 @@
       "path": "lib/member/skillMissionEmptyState.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 2385,
-      "lines": 51,
-      "sha256": "62ff625ab3137ddb6a63ba9dac173a1c49ff77804f71d2f328ce6426863dde52",
+      "bytes": 2025,
+      "lines": 42,
+      "sha256": "73bc1e05f828577cb20caf5758fa9f7ea0315d71ed9bf7f9ea1aa27da5553d07",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "ROOT",
-          "line": 10,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -130451,15 +130415,15 @@
       "path": "lib/platform/orgBrandingCache.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2583,
-      "lines": 65,
-      "sha256": "0bc203ed8ca5bdd8b23ae4935241c99bd8496c440899d8f3d492b3128574987b",
+      "bytes": 6176,
+      "lines": 142,
+      "sha256": "0c820255dc7fa5851982bc8ed516ff5c37e5d064417bd4018a88f3bfeead3e0a",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "ROOT",
-          "line": 14,
+          "name": "mocks",
+          "line": 9,
           "kind": "Variable"
         }
       ],
@@ -138942,12 +138906,23 @@
       "path": "lib/wioa/wioaAvailability.test.ts",
       "area": "libraries",
       "domain": "partners-funding",
-      "bytes": 1237,
-      "lines": 33,
-      "sha256": "d3001f0eb9a264d3a54b9eee6630db3621149b1685626d96c6a84f812c11f1ef",
+      "bytes": 2798,
+      "lines": 67,
+      "sha256": "df2b9217a6c908d7d1f561d74f52063f8fb964e2a5a66eeb2fe6a79236e2a735",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "WIOA_HREF",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "loadSurfaces",
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -138978,55 +138953,55 @@
       "path": "lib/wioa/wioaNotification.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 6117,
-      "lines": 170,
-      "sha256": "3a6918c53e6be78595698e56cd7e6d4eee7674dd7e20919523cae3e2ed20afcd",
+      "bytes": 5562,
+      "lines": 157,
+      "sha256": "102ab9c2160bd2cdca831b59b06dd95c3f9f8bafd978f2ae3d2e854ebe14ec53",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "originalWioaRecipient",
-          "line": 12,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "originalAdminRecipients",
-          "line": 13,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "originalResendKey",
-          "line": 14,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "originalEmailFrom",
-          "line": 15,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "originalConsoleError",
-          "line": 16,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "EnvName",
-          "line": 18,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "restoreEnv",
-          "line": 24,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "snapshot",
-          "line": 40,
+          "line": 38,
           "kind": "Variable"
         },
         {
           "name": "notification",
-          "line": 56,
+          "line": 54,
           "kind": "Variable"
         }
       ],
@@ -151980,9 +151955,9 @@
       "path": "scripts/source-text-tests-baseline.json",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5665,
-      "lines": 118,
-      "sha256": "57c79a06a84cfb1e02db34a35973e974e43587d34560cfe362a502a29185ab05",
+      "bytes": 5131,
+      "lines": 106,
+      "sha256": "f2937dd2f6b8f4df54a9d801de243548a4d83314c5e91484d2aac953670cfbc4",
       "binary": false
     },
     {
@@ -153029,9 +153004,9 @@
       "path": "scripts/vitest-library-specs.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 1315,
-      "lines": 33,
-      "sha256": "43c4cb0bc1b1af1f3fae20323d0e012622a29a51ed00caef0a12a5d5076db5f2",
+      "bytes": 1440,
+      "lines": 36,
+      "sha256": "429041a2552e1614120a717af63bacc696588f28bed47169229715f5aac0b3c5",
       "binary": false,
       "exports": [
         {
@@ -154156,9 +154131,9 @@
       "path": "tests/api/admin-member-delete.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7419,
-      "lines": 185,
-      "sha256": "59a1f015cd53078829bcb3259255dedfa0bca023f0edeeae59252ac02f2075f8",
+      "bytes": 7983,
+      "lines": 193,
+      "sha256": "f51bc7454f837f324c8f3501dc4d42d6797ec13df5fe04653b258df9238039d2",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -154228,6 +154203,54 @@
         {
           "name": "request",
           "line": 66,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/api/admin-member-erase.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6849,
+      "lines": 181,
+      "sha256": "f499bdf81da0d348320eeea8221444a408fbefb2889d89be92a9c2bbe91845d1",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "findFirst",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "update",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "remove",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "supabaseDeleteUser",
+          "line": 50,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 83,
+          "kind": "Variable"
+        },
+        {
+          "name": "eraseReq",
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 93,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156687,9 +156710,9 @@
       "path": "tests/api/gdpr-delete-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4827,
-      "lines": 142,
-      "sha256": "43a295d59458aa09c6eb96cae0fca13472cef2fcef23f9dab0998b3b11e6a2d8",
+      "bytes": 5355,
+      "lines": 149,
+      "sha256": "92c4a6d24e4fdd58032223b556a1fee1ecd93b5cde973457e49e9b33bcbfed63",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -157045,9 +157068,9 @@
       "path": "tests/api/member-delete-account.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7242,
-      "lines": 213,
-      "sha256": "b1b8f8d8f8b20e99d66995fd6ab3cc242c0061fa6f04b3ad10cce06435a96496",
+      "bytes": 7587,
+      "lines": 218,
+      "sha256": "049699f6a66a2cbdd2adc9a6fad97a4b771b5ad31c79af3b051ff230112acdc3",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159214,6 +159237,29 @@
       "directive": null
     },
     {
+      "path": "tests/app/eligibility-layoff-company.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2517,
+      "lines": 62,
+      "sha256": "d1ef081dd5a7acedde8187d95653aff646a3d3c1ac076248b995b673304a093b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "LABEL",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "show",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/employer-application-detail-dates.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -159327,6 +159373,24 @@
           "name": "read",
           "line": 7,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/job-applications-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2684,
+      "lines": 61,
+      "sha256": "49eb64a54f8032b8f323aab26d1a9805decff5a5e28b5ce27727a417a6e9e04a",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 11,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -159679,6 +159743,24 @@
       "directive": null
     },
     {
+      "path": "tests/app/program-start-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4250,
+      "lines": 91,
+      "sha256": "b9b0498f9546568a3d0271167035e94322bc46e6e9a1e3917f70c40b21f395f6",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "view",
+          "line": 33,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/public-cta-class.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -159792,6 +159874,24 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/app/skill-missions-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4778,
+      "lines": 97,
+      "sha256": "f597c07f45fb4b5c02fd863f233e45fd9a0ac5e0e2469b0addd1b6a7157fe1e5",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "view",
+          "line": 29,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -162000,9 +162100,9 @@
       "path": "tests/components/wioa-qualification.spec.tsx",
       "area": "tests",
       "domain": "partners-funding",
-      "bytes": 9067,
-      "lines": 131,
-      "sha256": "3777bc156661d24c6580135be8d634341ccc80c4b4b828273b994ede51a208cf",
+      "bytes": 10052,
+      "lines": 145,
+      "sha256": "b73a52319d9cb555b770f19bd190de7e17dc43ae603508ab75a788b68636fe5d",
       "binary": false,
       "exports": [],
       "declarations": [

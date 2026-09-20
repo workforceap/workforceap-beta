@@ -114,7 +114,7 @@
 | [scripts/seed-partner-school.ts](../../../scripts/seed-partner-school.ts) | 188 | operations |  |
 | [scripts/seed-test-user.sql](../../../scripts/seed-test-user.sql) | 39 | operations |  |
 | [scripts/send-eligibility-campaign.ts](../../../scripts/send-eligibility-campaign.ts) | 96 | operations |  |
-| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 118 | operations |  |
+| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 106 | operations |  |
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |
@@ -137,6 +137,6 @@
 | [scripts/verify-rippling-job-sanitizer.ts](../../../scripts/verify-rippling-job-sanitizer.ts) | 75 | operations |  |
 | [scripts/verify-rls-staging.mjs](../../../scripts/verify-rls-staging.mjs) | 205 | operations |  |
 | [scripts/visual-audit.mjs](../../../scripts/visual-audit.mjs) | 114 | operations |  |
-| [scripts/vitest-library-specs.mjs](../../../scripts/vitest-library-specs.mjs) | 33 | operations | VITEST_LIBRARY_SPECS:2 |
+| [scripts/vitest-library-specs.mjs](../../../scripts/vitest-library-specs.mjs) | 36 | operations | VITEST_LIBRARY_SPECS:2 |
 | [scripts/wrap-api-routes-with-guc-ts.ts](../../../scripts/wrap-api-routes-with-guc-ts.ts) | 216 | operations |  |
 | [scripts/wrap-api-routes-with-guc.ts](../../../scripts/wrap-api-routes-with-guc.ts) | 250 | operations |  |

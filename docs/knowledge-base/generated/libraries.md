@@ -51,7 +51,7 @@
 | [lib/admin/cronRegistry.test.ts](../../../lib/admin/cronRegistry.test.ts) | 25 | administration |  |
 | [lib/admin/cronRegistry.ts](../../../lib/admin/cronRegistry.ts) | 392 | administration | CronDef:8, CRON_REGISTRY:22, CRON_CATEGORY_COLOR:387 |
 | [lib/admin/diagnoseMemberCoursera.ts](../../../lib/admin/diagnoseMemberCoursera.ts) | 395 | learning-coursera | CourseraDiagnoseReport:17, diagnoseMemberCoursera:91 |
-| [lib/admin/directoryEmptyState.test.ts](../../../lib/admin/directoryEmptyState.test.ts) | 71 | administration |  |
+| [lib/admin/directoryEmptyState.test.ts](../../../lib/admin/directoryEmptyState.test.ts) | 39 | administration |  |
 | [lib/admin/directoryEmptyState.ts](../../../lib/admin/directoryEmptyState.ts) | 25 | administration | PARTNERS_DIRECTORY_EMPTY:6, EMPLOYERS_DIRECTORY_EMPTY:13, SUBGROUPS_DIRECTORY_EMPTY:20 |
 | [lib/admin/directorySearch.ts](../../../lib/admin/directorySearch.ts) | 43 | administration | normalizeDirectorySearch:4, buildDirectorySearchWhere:8, STAFF_DIRECTORY_ROLES:21, USER_DIRECTORY_ROLES:22, buildUserDirectoryWhere:24 |
 | [lib/admin/eligibilityDatasheet.test.ts](../../../lib/admin/eligibilityDatasheet.test.ts) | 151 | administration |  |
@@ -71,7 +71,6 @@
 | [lib/admin/jobsBoardSort.ts](../../../lib/admin/jobsBoardSort.ts) | 65 | administration | JOB_SORT_KEYS:3, JobSortKey:4, JobSortDirection:5, DEFAULT_JOB_SORT_KEY:7, DEFAULT_JOB_SORT_DIRECTION:8, sortJobRows:45 |
 | [lib/admin/logCronRun.ts](../../../lib/admin/logCronRun.ts) | 29 | administration | logCronRun:7 |
 | [lib/admin/matchSuggestionsConfig.ts](../../../lib/admin/matchSuggestionsConfig.ts) | 16 | administration | getMatchSuggestionsTestRecipient:8, isMatchSuggestionsDryRun:13 |
-| [lib/admin/memberDeleteStorage.test.ts](../../../lib/admin/memberDeleteStorage.test.ts) | 37 | administration |  |
 | [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 288 | administration |  |
 | [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 611 | administration | MergeConflict:5, MergePreview:12, MergeResult:20, assertNoCourseraOwnershipForMemberMerge:40, checkMergeConflicts:103, buildMergePreview:168, executeMemberMerge:325 |
 | [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 71 | administration |  |
@@ -205,7 +204,7 @@
 | [lib/apply/eligibilityExtendedFields.test.ts](../../../lib/apply/eligibilityExtendedFields.test.ts) | 242 | applications-enrollment |  |
 | [lib/apply/eligibilityExtendedFields.ts](../../../lib/apply/eligibilityExtendedFields.ts) | 80 | applications-enrollment | YES_NO:15, YesNo:16, APPLY_HEAR_ABOUT_OPTIONS:24, ApplyHearAboutOption:26, APPLY_HEAR_ABOUT_OTHER:28, APPLY_HEAR_ABOUT_AMBASSADOR:30, isYesNo:32, normalizeYesNo:36, normalizeHearAbout:41, hearAboutNeedsOther:48, hearAboutSuggestsAmbassador:58, layoffCompanyApplicable:74 |
 | [lib/apply/eligibilityScreeningFields.ts](../../../lib/apply/eligibilityScreeningFields.ts) | 125 | applications-enrollment | EligibilityScreeningFields:8, ELIGIBILITY_DATASHEET_COLUMNS:29, EligibilityDatasheetColumn:47, hasEligibilityScreeningFields:49, eligibilityDatasheetCells:72, eligibilityFieldsPlainLines:95 |
-| [lib/apply/layoffCompanyUi.test.ts](../../../lib/apply/layoffCompanyUi.test.ts) | 51 | applications-enrollment |  |
+| [lib/apply/layoffCompanyUi.test.ts](../../../lib/apply/layoffCompanyUi.test.ts) | 39 | applications-enrollment |  |
 | [lib/apply/paidApplyUtm.test.ts](../../../lib/apply/paidApplyUtm.test.ts) | 31 | applications-enrollment |  |
 | [lib/apply/paidApplyUtm.ts](../../../lib/apply/paidApplyUtm.ts) | 67 | applications-enrollment | PAID_APPLY_UTM_SOURCES:3, PaidApplyUtmSource:10, UTM_SOURCE_COOKIE:12, WAP_PAID_APPLY_HEADER:15, UTM_SOURCE_COOKIE_MAX_AGE:18, isPaidUtmSource:20, resolvePaidApplyUtmSource:27, persistUtmSourceCookie:43, readUtmSourceCookie:54, isPaidApplyLanding:60 |
 | [lib/apply/partnerApplyHref.test.ts](../../../lib/apply/partnerApplyHref.test.ts) | 34 | applications-enrollment |  |
@@ -576,7 +575,7 @@
 | [lib/events/catalog.ts](../../../lib/events/catalog.ts) | 79 | libraries | FunnelDefinition:1, FUNNEL_DEFINITIONS:10 |
 | [lib/events/client.ts](../../../lib/events/client.ts) | 25 | libraries | MemberEventRequest:5, postMemberEvent:14 |
 | [lib/events/emailVerified.ts](../../../lib/events/emailVerified.ts) | 55 | communications | EmailVerifiedPayload:7, emailDomainFromAddress:15, emitEmailVerifiedFromCallback:26 |
-| [lib/events/memberEventWriters.test.ts](../../../lib/events/memberEventWriters.test.ts) | 95 | libraries |  |
+| [lib/events/memberEventWriters.test.ts](../../../lib/events/memberEventWriters.test.ts) | 85 | libraries |  |
 | [lib/events/names.ts](../../../lib/events/names.ts) | 158 | libraries | EVENT_NAMES:5, EventName:95, isEventName:97, LEGACY_EVENT_NAME_ALIASES:108, LegacyEventNameAlias:115, isLegacyEventNameAlias:121, canonicalEventName:129, eventNameReadCandidates:140, CLIENT_EVENT_NAMES:149, ClientEventName:158 |
 | [lib/events/track.ts](../../../lib/events/track.ts) | 66 | libraries | EventName:7, TrackEventParams:9, persistEvent:35, trackEvent:56 |
 | [lib/experiments/client.ts](../../../lib/experiments/client.ts) | 14 | libraries | EXPERIMENTS:4, getExperimentVariant:5, readExperimentOverrideFromSearch:6, ExperimentDefinition:10, ExperimentOverride:11, ExperimentSubject:12, Variant:13 |
@@ -597,7 +596,6 @@
 | [lib/gdpr/deleteAuthUser.ts](../../../lib/gdpr/deleteAuthUser.ts) | 15 | libraries | deleteSupabaseAuthUser:5 |
 | [lib/gdpr/deleteUserStorage.test.ts](../../../lib/gdpr/deleteUserStorage.test.ts) | 175 | libraries |  |
 | [lib/gdpr/deleteUserStorage.ts](../../../lib/gdpr/deleteUserStorage.ts) | 214 | libraries | MEMBER_RESUME_BUCKET:4, MEMBER_FILES_BUCKET:5, MEMBER_STORAGE_PREFIXES:14, StorageListItem:23, MemberStorageAdmin:39, MemberStorageObject:43, DeleteUserStorageResult:45, parseMemberStoragePath:65, isMemberOwnedStoragePath:78, deleteUserStorageObjects:160, ACCOUNT_STORAGE_DELETE_FAILED:213 |
-| [lib/gdpr/erase-routes.test.ts](../../../lib/gdpr/erase-routes.test.ts) | 48 | libraries |  |
 | [lib/hooks/useTheme.ts](../../../lib/hooks/useTheme.ts) | 113 | libraries | Theme:5, useTheme:56 |
 | [lib/http/clientIp.ts](../../../lib/http/clientIp.ts) | 80 | libraries | getClientIpFromRequest:23 |
 | [lib/http/errorResponse.ts](../../../lib/http/errorResponse.ts) | 53 | libraries | apiError:21, safeBadRequest:45 |
@@ -686,7 +684,7 @@
 | [lib/member/isNewMember.ts](../../../lib/member/isNewMember.ts) | 12 | member-counselor | isNewMember:4, secondsSinceAccountCreation:9 |
 | [lib/member/jobApplicationKanban.test.ts](../../../lib/member/jobApplicationKanban.test.ts) | 27 | member-counselor |  |
 | [lib/member/jobApplicationKanban.ts](../../../lib/member/jobApplicationKanban.ts) | 73 | member-counselor | JOB_APPLICATION_STAGES:1, JobApplicationStage:2, JOB_APPLICATION_SOURCES:4, JobApplicationSource:5, JobApplicationDbStatus:7, JobApplicationKanbanItem:16, getJobApplicationStage:22, getDbStatusForStage:39, buildJobApplicationKanban:53, JOB_APPLICATION_SOURCE_LABELS:68 |
-| [lib/member/jobApplicationsEmptyState.test.ts](../../../lib/member/jobApplicationsEmptyState.test.ts) | 40 | member-counselor |  |
+| [lib/member/jobApplicationsEmptyState.test.ts](../../../lib/member/jobApplicationsEmptyState.test.ts) | 18 | member-counselor |  |
 | [lib/member/jobApplicationsEmptyState.ts](../../../lib/member/jobApplicationsEmptyState.ts) | 12 | member-counselor | JOB_APPLICATIONS_EMPTY:6 |
 | [lib/member/jobPipelineDisplay.test.ts](../../../lib/member/jobPipelineDisplay.test.ts) | 32 | member-counselor |  |
 | [lib/member/jobPipelineDisplay.ts](../../../lib/member/jobPipelineDisplay.ts) | 31 | member-counselor | JOBS_EMPTY_RECOMMENDATIONS:5, JOBS_BOARD_EMPTY:17, displayJobLocation:27 |
@@ -704,7 +702,7 @@
 | [lib/member/memberEngagementSignals.ts](../../../lib/member/memberEngagementSignals.ts) | 60 | member-counselor | MemberEngagementSignals:3, getMemberEngagementSignals:14 |
 | [lib/member/memberIdentity.test.ts](../../../lib/member/memberIdentity.test.ts) | 43 | member-counselor |  |
 | [lib/member/memberIdentity.ts](../../../lib/member/memberIdentity.ts) | 58 | member-counselor | MemberShellIdentity:11, MEMBER_IDENTITY_HREF:24, memberInitials:30, buildMemberShellIdentity:43 |
-| [lib/member/memberProgramHref.test.ts](../../../lib/member/memberProgramHref.test.ts) | 58 | member-counselor |  |
+| [lib/member/memberProgramHref.test.ts](../../../lib/member/memberProgramHref.test.ts) | 40 | member-counselor |  |
 | [lib/member/memberProgramHref.ts](../../../lib/member/memberProgramHref.ts) | 22 | member-counselor | MEMBER_PROGRAM_HREF:8, LEGACY_TRAINING_STUB_HREF:9, resolveMemberProgramHref:15 |
 | [lib/member/memberProgramTrainingView.ts](../../../lib/member/memberProgramTrainingView.ts) | 226 | member-counselor | STALE_TRAINING_ACTIVITY_DAYS:15, MemberProgramTrainingView:17, loadMemberProgramTrainingView:52, isTrainingStaleForCounselorEscalation:210 |
 | [lib/member/mentorsEmptyState.test.ts](../../../lib/member/mentorsEmptyState.test.ts) | 48 | member-counselor |  |
@@ -719,7 +717,7 @@
 | [lib/member/proactiveInsights.ts](../../../lib/member/proactiveInsights.ts) | 236 | member-counselor | ProactiveInsightTone:21, ProactiveInsight:23, ProactiveInsightsInput:39, buildProactiveInsights:70, buildInsightNotificationPayload:214 |
 | [lib/member/programCourseMatch.ts](../../../lib/member/programCourseMatch.ts) | 292 | member-counselor | CanonicalMappingHit:22, CanonicalMappingIndex:22, findCanonicalMappingForCourseraCourse:24, loadCanonicalMappingsForCourseraIds:25, resolveProgramCourse:51, resolveProgramCourseWithCatalogFallback:149 |
 | [lib/member/programCourseResolution.test.ts](../../../lib/member/programCourseResolution.test.ts) | 69 | member-counselor |  |
-| [lib/member/programStartEnrollment.test.ts](../../../lib/member/programStartEnrollment.test.ts) | 84 | member-counselor |  |
+| [lib/member/programStartEnrollment.test.ts](../../../lib/member/programStartEnrollment.test.ts) | 68 | member-counselor |  |
 | [lib/member/programStartEnrollment.ts](../../../lib/member/programStartEnrollment.ts) | 40 | member-counselor | ProgramStartAccess:6, resolveProgramStartAccess:19, programStartAccessFromDashboardView:32 |
 | [lib/member/recommendPrograms.ts](../../../lib/member/recommendPrograms.ts) | 54 | member-counselor | DEFAULT_RECOMMENDED_PROGRAM_SLUGS:6, RecommendedProgramSummary:8, resolveRecommendedProgramSlugs:19, resolveRecommendedProgramSummaries:35 |
 | [lib/member/referralRules.ts](../../../lib/member/referralRules.ts) | 34 | applications-enrollment | MEMBER_REFERRAL_COOKIE:5, CODE_ALPHABET:8, CODE_LENGTH:9, REFERRAL_CODE_PATTERN:11, normalizeReferralCode:13, isValidReferralCode:17, ReferralGuardInput:22, referralRewardEligibility:27 |
@@ -731,7 +729,7 @@
 | [lib/member/service.ts](../../../lib/member/service.ts) | 129 | member-counselor | CreateMemberOptions:30, createMember:35 |
 | [lib/member/skillMissionCurriculum.test.ts](../../../lib/member/skillMissionCurriculum.test.ts) | 179 | member-counselor |  |
 | [lib/member/skillMissionCurriculum.ts](../../../lib/member/skillMissionCurriculum.ts) | 251 | member-counselor | ResolvedSkillMission:21, SkillMissionEnrollment:27, SkillMissionAssignment:33, resolveSkillMissionsForCurriculum:73, resolveSkillMissionForCurriculum:122, buildSkillMissionEventKey:132, parseSkillMissionEventKey:145, resolveSkillMissionAssignment:178, getMissionDefinitionForEventKey:247 |
-| [lib/member/skillMissionEmptyState.test.ts](../../../lib/member/skillMissionEmptyState.test.ts) | 51 | member-counselor |  |
+| [lib/member/skillMissionEmptyState.test.ts](../../../lib/member/skillMissionEmptyState.test.ts) | 42 | member-counselor |  |
 | [lib/member/skillMissionEmptyState.ts](../../../lib/member/skillMissionEmptyState.ts) | 33 | member-counselor | SkillMissionEmptyState:9, skillMissionEmptyState:15 |
 | [lib/member/skillMissions.ts](../../../lib/member/skillMissions.ts) | 321 | member-counselor | SkillMissionDefinition:17, MISSION_EVENT_SUBMITTED:19, MISSION_EVENT_PASSED:20, MISSION_EVENT_RETRY:21, MissionStatus:23, MissionResult:25, ClientQuizQuestion:36, SkillMissionSummaryItem:41, SkillMissionSummary:49, loadSkillMissionSummary:62, recordMissionResult:229, recordMissionSubmission:266, countRecentMissionSubmissions:295, getMissionDefinitionForKey:319 |
 | [lib/member/staffTrainingProgramFallback.ts](../../../lib/member/staffTrainingProgramFallback.ts) | 24 | member-counselor | STAFF_TRAINING_PREVIEW_PROGRAM_SLUG:12, resolveStaffTrainingPreviewProgramSlug:14 |
@@ -852,7 +850,7 @@
 | [lib/placement/defaultOnboardingWindow.ts](../../../lib/placement/defaultOnboardingWindow.ts) | 6 | jobs-employers | defaultOnboardingWindowEnd:2 |
 | [lib/platform/brandColors.ts](../../../lib/platform/brandColors.ts) | 3 | administration | DEFAULT_BRAND_ACCENT:2, DEFAULT_BRAND_ACCENT_DARK:3 |
 | [lib/platform/defaultOrgTheme.ts](../../../lib/platform/defaultOrgTheme.ts) | 103 | administration | OrgBranding:12, DEFAULT_BRAND_ACCENT:13, DEFAULT_BRAND_ACCENT_DARK:13, ORG_BRANDING_CACHE_TTL_MS:14, ORG_BRANDING_CACHE_TTL_SECONDS:14, getDefaultOrgBranding:53, getOrgBrandingById:74, getRequestOrgBranding:88, orgAccentCss:99 |
-| [lib/platform/orgBrandingCache.test.ts](../../../lib/platform/orgBrandingCache.test.ts) | 65 | administration |  |
+| [lib/platform/orgBrandingCache.test.ts](../../../lib/platform/orgBrandingCache.test.ts) | 142 | administration |  |
 | [lib/platform/orgBrandingCache.ts](../../../lib/platform/orgBrandingCache.ts) | 60 | administration | OrgBranding:1, ORG_BRANDING_CACHE_TTL_SECONDS:16, ORG_BRANDING_CACHE_TTL_MS:17, getCachedOrgBranding:26, setCachedOrgBranding:36, clearOrgBrandingCache:45, cachedOrgBranding:50 |
 | [lib/platform/programCatalog.ts](../../../lib/platform/programCatalog.ts) | 127 | administration | ActiveProgramView:6, ActiveProgramCatalogResult:23, ActiveProgramCatalogOptions:28, getActiveProgramsResult:56, getActivePrograms:115, isProgramSlugActiveInCatalog:122 |
 | [lib/platform/seedProgramCatalog.ts](../../../lib/platform/seedProgramCatalog.ts) | 38 | administration | seedOrganizationProgramCatalog:5 |
@@ -1001,9 +999,9 @@
 | [lib/wioa/denialReason.ts](../../../lib/wioa/denialReason.ts) | 53 | partners-funding | DENIAL_DECISIONS:14, DENIAL_REASON_REQUIRED_MESSAGE:20, DENIAL_REASON_REQUIRED_CODE:24, isDenialDecision:26, normalizeDenialReason:31, isMissingDenialReason:37, assertDenialReason:45 |
 | [lib/wioa/eligibilityForm.ts](../../../lib/wioa/eligibilityForm.ts) | 70 | partners-funding | EligibilityFormMeta:3, lockEligibilityMember:24, saveEligibilityForm:45, eligibilityWriteFailure:61 |
 | [lib/wioa/reviewSnapshot.ts](../../../lib/wioa/reviewSnapshot.ts) | 168 | partners-funding | WioaReviewSnapshotSource:20, recordWioaReviewSnapshot:91, WioaReviewSnapshotRow:140, loadWioaReviewSnapshots:151 |
-| [lib/wioa/wioaAvailability.test.ts](../../../lib/wioa/wioaAvailability.test.ts) | 33 | partners-funding |  |
+| [lib/wioa/wioaAvailability.test.ts](../../../lib/wioa/wioaAvailability.test.ts) | 67 | partners-funding |  |
 | [lib/wioa/wioaAvailability.ts](../../../lib/wioa/wioaAvailability.ts) | 11 | partners-funding | isWioaPortalAvailable:7 |
-| [lib/wioa/wioaNotification.test.ts](../../../lib/wioa/wioaNotification.test.ts) | 170 | communications |  |
+| [lib/wioa/wioaNotification.test.ts](../../../lib/wioa/wioaNotification.test.ts) | 157 | communications |  |
 | [lib/wioa/wioaNotification.ts](../../../lib/wioa/wioaNotification.ts) | 107 | communications | getWioaScreeningNotificationRecipients:9, WioaScreeningNotificationContact:20, WioaEmailSender:26, sendWioaScreeningNotification:34 |
 | [lib/wioa/wioaQualification.test.ts](../../../lib/wioa/wioaQualification.test.ts) | 201 | partners-funding |  |
 | [lib/wioa/wioaQualification.ts](../../../lib/wioa/wioaQualification.ts) | 322 | partners-funding | WioaBarrier:12, WioaQualificationAnswers:22, WioaEligibilitySignal:51, WioaReason:53, WioaQualificationSnapshot:64, parseWioaQualificationSnapshot:69, barrierLabel:105, publicAssistanceLabel:110, publicAssistanceProgramsLabel:117, publicAssistanceHelpLabel:124, formatWioaReasons:174, computeWioaSignal:196, parseWioaAnswers:262 |

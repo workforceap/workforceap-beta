@@ -1,16 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import {
   EMPLOYERS_DIRECTORY_EMPTY,
   PARTNERS_DIRECTORY_EMPTY,
   SUBGROUPS_DIRECTORY_EMPTY,
 } from './directoryEmptyState';
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 function assertSentenceCaseLabel(label: string) {
   assert.ok(label.length > 0);
@@ -40,32 +35,5 @@ test('subgroups directory empty points at new subgroup', () => {
   assertSentenceCaseLabel(SUBGROUPS_DIRECTORY_EMPTY.primaryCta.label);
 });
 
-test('partners directory kit uses KitEmptyState and shared empty copy', () => {
-  const src = readFileSync(
-    join(ROOT, 'components/portal/kit/pages/admin-subviews/PartnersDirectoryKit.tsx'),
-    'utf8',
-  );
-  assert.match(src, /KitEmptyState/);
-  assert.match(src, /PARTNERS_DIRECTORY_EMPTY/);
-  assert.doesNotMatch(src, /from '@astryxdesign\/core\/EmptyState'/);
-});
-
-test('employers directory kit uses KitEmptyState and shared empty copy', () => {
-  const src = readFileSync(
-    join(ROOT, 'components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx'),
-    'utf8',
-  );
-  assert.match(src, /KitEmptyState/);
-  assert.match(src, /EMPLOYERS_DIRECTORY_EMPTY/);
-  assert.doesNotMatch(src, /from '@astryxdesign\/core\/EmptyState'/);
-});
-
-test('subgroups directory kit uses KitEmptyState and shared empty copy', () => {
-  const src = readFileSync(
-    join(ROOT, 'components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx'),
-    'utf8',
-  );
-  assert.match(src, /KitEmptyState/);
-  assert.match(src, /SUBGROUPS_DIRECTORY_EMPTY/);
-  assert.doesNotMatch(src, /from '@astryxdesign\/core\/EmptyState'/);
-});
+// The directory kits rendering this copy through KitEmptyState are exercised in
+// components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx.
