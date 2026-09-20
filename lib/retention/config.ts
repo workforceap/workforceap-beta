@@ -4,7 +4,7 @@
  * Defines how long each category of log/telemetry data is kept before
  * automated cleanup hard-deletes it. Member data (users, profiles,
  * enrollments, etc.) is NEVER auto-deleted by the cleanup job — only
- * log-like tables are in scope.
+ * log-like tables and no-account lead rows (WAP-172) are in scope.
  *
  * GDPR right-to-erasure is handled separately via the admin erase endpoint.
  *
@@ -71,6 +71,15 @@ export const RETENTION_AUDIT_DAYS = 365 * 3 + 1;
  * distinct constant here and switch lib/retention/cleanup.ts to it.
  */
 
+/**
+ * WAP-172: answers from people who screened without an account (the public
+ * WIOA self-screening page and the tokenized questionnaire) live in
+ * `public_wioa_screenings`, which has no user foreign key and so no erasure
+ * path of its own. They are purged on this TTL. Within the "up to 12 months"
+ * band the privacy policy gives application logs (§7).
+ */
+export const PUBLIC_LEAD_RETENTION_DAYS = 180;
+
 export const RETENTION_TABLES: RetentionTableConfig[] = [
   {
     model: 'auditLog',
@@ -113,6 +122,12 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     dateColumn: 'createdAt',
     days: 90,
     description: 'Portal workflow activity events',
+  },
+  {
+    model: 'publicWioaScreening',
+    dateColumn: 'createdAt',
+    days: PUBLIC_LEAD_RETENTION_DAYS,
+    description: 'No-account eligibility leads (public WIOA screening + tokenized questionnaire answers) — WAP-172 TTL',
   },
 ];
 

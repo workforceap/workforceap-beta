@@ -35,10 +35,10 @@
 | [emails/course-completed.ts](../../../emails/course-completed.ts) | 14 | communications | courseCompletedHtml:7 |
 | [emails/course-enrolled.ts](../../../emails/course-enrolled.ts) | 11 | communications | courseEnrolledHtml:4 |
 | [emails/course-kickoff.ts](../../../emails/course-kickoff.ts) | 12 | communications | courseKickoffHtml:4 |
-| [emails/eligibility-screening-admin-alert.ts](../../../emails/eligibility-screening-admin-alert.ts) | 36 | communications | eligibilityScreeningAdminAlertHtml:10 |
-| [emails/eligibility-screening-confirmation.ts](../../../emails/eligibility-screening-confirmation.ts) | 25 | communications | eligibilityScreeningConfirmationHtml:10 |
-| [emails/eligibility-screening-summary.ts](../../../emails/eligibility-screening-summary.ts) | 59 | communications | eligibilityScreeningSummaryHtml:21 |
-| [emails/eligibility-screening-ws5.test.ts](../../../emails/eligibility-screening-ws5.test.ts) | 119 | communications |  |
+| [emails/eligibility-screening-admin-alert.ts](../../../emails/eligibility-screening-admin-alert.ts) | 46 | communications | eligibilityScreeningAdminAlertHtml:15 |
+| [emails/eligibility-screening-confirmation.ts](../../../emails/eligibility-screening-confirmation.ts) | 32 | communications | eligibilityScreeningConfirmationHtml:16 |
+| [emails/eligibility-screening-summary.ts](../../../emails/eligibility-screening-summary.ts) | 50 | communications | eligibilityScreeningSummaryHtml:27 |
+| [emails/eligibility-screening-ws5.test.ts](../../../emails/eligibility-screening-ws5.test.ts) | 178 | communications |  |
 | [emails/employer-approved.ts](../../../emails/employer-approved.ts) | 18 | communications | employerApprovedHtml:3 |
 | [emails/employer-pending-applicants.ts](../../../emails/employer-pending-applicants.ts) | 21 | communications | employerPendingApplicantsHtml:8 |
 | [emails/employer-rejected.ts](../../../emails/employer-rejected.ts) | 19 | communications | employerRejectedHtml:3 |

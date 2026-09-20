@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "b1b76f89fa4d92eec719485a72208e04933444d76324b419eab096fdd586e3c7",
+  "inputTreeSha256": "72f9e4d5e863778ebec8b067f97d0d4c733c075d5fde5caefbe843463d541539",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4820,
-    "sourceModules": 3477,
-    "importReferences": 17265,
-    "resolvedLocalReferences": 11542,
+    "files": 4825,
+    "sourceModules": 3482,
+    "importReferences": 17279,
+    "resolvedLocalReferences": 11548,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 893,
-    "testCandidates": 885,
+    "testFiles": 897,
+    "testCandidates": 889,
     "testHelpers": 8,
-    "staticallySelectedTests": 883,
+    "staticallySelectedTests": 887,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1027
+      "files": 1028
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 506
+      "files": 510
     }
   ],
   "mostReferenced": [
@@ -127,11 +127,11 @@
       "references": 430
     },
     {
-      "file": "lib/content/programs.ts",
-      "references": 241
+      "file": "lib/tenant/organization.ts",
+      "references": 242
     },
     {
-      "file": "lib/tenant/organization.ts",
+      "file": "lib/content/programs.ts",
       "references": 241
     },
     {
@@ -258,7 +258,7 @@
     },
     {
       "file": "lib/email.ts",
-      "lines": 2830
+      "lines": 2832
     },
     {
       "file": "lib/content/courseSkillMap.ts",

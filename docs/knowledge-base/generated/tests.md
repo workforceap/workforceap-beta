@@ -88,7 +88,7 @@
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
-| [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 281 | tests |  |
+| [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 282 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |
 | [tests/api/employer-job-import.spec.ts](../../../tests/api/employer-job-import.spec.ts) | 115 | tests |  |
 | [tests/api/employer-jobs-bulk-delete-route.spec.ts](../../../tests/api/employer-jobs-bulk-delete-route.spec.ts) | 126 | tests |  |
@@ -500,6 +500,10 @@
 | [tests/portal-audit-five-role.test.ts](../../../tests/portal-audit-five-role.test.ts) | 1282 | tests |  |
 | [tests/portal-audit-health-gate.test.ts](../../../tests/portal-audit-health-gate.test.ts) | 397 | tests |  |
 | [tests/portal-hub-smoke-paths.test.ts](../../../tests/portal-hub-smoke-paths.test.ts) | 40 | tests |  |
+| [tests/privacy/partner-export-columns.spec.ts](../../../tests/privacy/partner-export-columns.spec.ts) | 64 | tests |  |
+| [tests/privacy/partner-referral-bundle-select.spec.ts](../../../tests/privacy/partner-referral-bundle-select.spec.ts) | 27 | tests |  |
+| [tests/privacy/public-eligibility-lead.spec.ts](../../../tests/privacy/public-eligibility-lead.spec.ts) | 129 | tests |  |
+| [tests/privacy/voice-context-minimisation.spec.ts](../../../tests/privacy/voice-context-minimisation.spec.ts) | 75 | tests |  |
 | [tests/rls/member-message-assignment.mjs](../../../tests/rls/member-message-assignment.mjs) | 175 | tests |  |
 | [tests/scripts/portal-qa-provisioning.spec.ts](../../../tests/scripts/portal-qa-provisioning.spec.ts) | 113 | tests |  |
 | [tests/scripts/preview-approved-curriculum-schema.test.ts](../../../tests/scripts/preview-approved-curriculum-schema.test.ts) | 491 | tests |  |
