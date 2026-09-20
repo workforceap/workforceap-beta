@@ -6,32 +6,47 @@ import { getAdminMetrics } from '@/lib/admin/metrics';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { countUnmatchedLearners } from '@/lib/coursera/progressQueries';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
+/**
+ * Executive Dashboard payload. Every people count is over member-role
+ * accounts (`memberOnlySqlJoin`), the same population `getAdminMetrics`
+ * uses for the funnel denominators, so no funnel can exceed 100% because its
+ * numerator counted staff (number audit 2026-09-20, F7, S4-S6).
+ */
 async function computeAdminRouteMetricsPayload(
   orgId: string,
   opts: { readOnlyAudit?: boolean } = {},
 ) {
   const metrics = await getAdminMetrics(orgId, opts);
+  const memberJoin = memberOnlySqlJoin();
 
   const assessmentCompleted = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(*)::int as count FROM users
-      WHERE assessment_completed = true AND deleted_at IS NULL
-        AND organization_id = ${orgId}
+      SELECT COUNT(*)::int as count FROM users u
+      ${memberJoin}
+      WHERE u.assessment_completed = true AND u.deleted_at IS NULL
+        AND u.organization_id = ${orgId}
     `;
 
   const dashboardViews = await prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE me.event_name = 'member_dashboard_viewed'
     `;
 
+  // Distinct members who activated, so the activation rate is members ÷
+  // members. COUNT(*) counted every activation event (161 events from one
+  // user over 40 viewers printed "Activation Rate 403%"; S4).
   const dashboardActivated = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(*)::int as count
+      SELECT COUNT(DISTINCT me.user_id)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE me.event_name = 'member_dashboard_activated'
     `;
 
@@ -40,9 +55,11 @@ async function computeAdminRouteMetricsPayload(
       FROM (
         SELECT air.user_id FROM ai_tool_results air
         INNER JOIN users u ON u.id = air.user_id AND u.organization_id = ${orgId}
+        ${memberJoin}
         UNION
         SELECT me.user_id FROM member_events me
-        INNER JOIN users u2 ON u2.id = me.user_id AND u2.organization_id = ${orgId}
+        INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+        ${memberJoin}
         WHERE me.event_name = 'ai_tool_run_started' AND me.entity_type = 'ai_tool'
       ) s
     `;
@@ -51,6 +68,7 @@ async function computeAdminRouteMetricsPayload(
       SELECT COUNT(DISTINCT ja.user_id)::int as count
       FROM job_applications ja
       INNER JOIN users u ON u.id = ja.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE ja.status <> 'SAVED'
     `;
 
@@ -61,6 +79,7 @@ async function computeAdminRouteMetricsPayload(
       SELECT COUNT(*)::int as count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE pr.placed_at >= ${thirtyDaysAgo}
     `;
 
@@ -68,15 +87,17 @@ async function computeAdminRouteMetricsPayload(
       SELECT AVG(pr.salary_offered)::float as avg
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE pr.salary_offered IS NOT NULL
     `;
 
   const weeklySignups = await prisma.$queryRaw<{ week: string; count: number }[]>`
-      SELECT DATE_TRUNC('week', created_at)::text as week, COUNT(*)::int as count
-      FROM users
-      WHERE created_at >= ${thirtyDaysAgo}
-        AND organization_id = ${orgId}
-      GROUP BY DATE_TRUNC('week', created_at)
+      SELECT DATE_TRUNC('week', u.created_at)::text as week, COUNT(*)::int as count
+      FROM users u
+      ${memberJoin}
+      WHERE u.created_at >= ${thirtyDaysAgo}
+        AND u.organization_id = ${orgId}
+      GROUP BY DATE_TRUNC('week', u.created_at)
       ORDER BY week
     `;
 
@@ -93,6 +114,7 @@ async function computeAdminRouteMetricsPayload(
       SELECT DATE_TRUNC('week', me.created_at)::text as week, COUNT(*)::int as count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE me.event_name = 'member_dashboard_viewed' AND me.created_at >= ${thirtyDaysAgo}
       GROUP BY DATE_TRUNC('week', me.created_at)
       ORDER BY week
@@ -105,6 +127,7 @@ async function computeAdminRouteMetricsPayload(
       SELECT COUNT(*)::int as count
       FROM applications a
       INNER JOIN users u ON u.id = a.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE a.status = 'PENDING'
     `;
   } catch (error) {
@@ -118,41 +141,44 @@ async function computeAdminRouteMetricsPayload(
       SELECT COUNT(DISTINCT ara.user_id)::int as count
       FROM at_risk_alerts ara
       INNER JOIN users u ON u.id = ara.user_id AND u.organization_id = ${orgId}
+      ${memberJoin}
       WHERE ara.status = 'open' AND ara.score >= 80
+        AND u.enrolled_program IS NOT NULL
     `;
   } catch (error) {
     console.error('Failed to get critical at risk', error);
     criticalAtRisk = [{ count: 0 }];
   }
 
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // Members currently flagged by the nightly stale-training check (no course
+  // progress for 7+ days). The flag is re-stamped on every run while the
+  // member stays stale, so an "older than 7 days" predicate on the stamp was
+  // always false and the tile always printed 0 (S6).
   let staleTraining;
   try {
     staleTraining = await prisma.$queryRaw<{ count: number }[]>`
       SELECT COUNT(*)::int as count
-      FROM users
-      WHERE stale_training_detected_at IS NOT NULL
-        AND stale_training_detected_at <= ${sevenDaysAgo}
-        AND deleted_at IS NULL
-        AND organization_id = ${orgId}
+      FROM users u
+      ${memberJoin}
+      WHERE u.stale_training_detected_at IS NOT NULL
+        AND u.deleted_at IS NULL
+        AND u.organization_id = ${orgId}
     `;
   } catch (error) {
     console.error('Failed to get stale training', error);
     staleTraining = [{ count: 0 }];
   }
 
-  let unmatchedCoursera;
+  // Same loader as the /admin/coursera page this tile links to, so the tile
+  // equals the page it opens. The old query INNER JOINed users on
+  // matched_user_id, which is NULL for every unmatched row, so it printed 0
+  // while 4,216 unmatched events existed (S5).
+  let unmatchedCoursera: number;
   try {
-    unmatchedCoursera = await prisma.$queryRaw<{ count: number }[]>`
-      SELECT COUNT(DISTINCT cp.user_id)::int as count
-      FROM coursera_xapi_events cp
-      INNER JOIN users u ON u.id = cp.matched_user_id AND u.organization_id = ${orgId}
-      WHERE cp.completion_status IN ('unmatched', 'error')
-    `;
+    unmatchedCoursera = await countUnmatchedLearners(orgId, { includeTestAccounts: false, strict: true });
   } catch (error) {
     console.error('Failed to get unmatched coursera', error);
-    unmatchedCoursera = [{ count: 0 }];
+    unmatchedCoursera = 0;
   }
 
   const total = metrics.totalMembers;
@@ -177,12 +203,13 @@ async function computeAdminRouteMetricsPayload(
       jobApplicationsTracked: jobApps,
       totalPlacements: metrics.placementStats.placed,
       recentPlacements: Number(recentPlacements[0].count),
-      avgPlacementSalary: Math.round(avgSalary[0].avg ?? 0),
+      // null (rendered "—") when no placement carries a salary; never "$0" (F6).
+      avgPlacementSalary: avgSalary[0]?.avg != null ? Math.round(avgSalary[0].avg) : null,
       placementRate: metrics.placementStats.placementRate,
       pendingApplications: Number(pendingApplications[0]?.count ?? 0),
       criticalAtRisk: Number(criticalAtRisk[0]?.count ?? 0),
       staleTraining: Number(staleTraining[0]?.count ?? 0),
-      unmatchedCoursera: Number(unmatchedCoursera[0]?.count ?? 0),
+      unmatchedCoursera,
     },
     funnels: [
       {

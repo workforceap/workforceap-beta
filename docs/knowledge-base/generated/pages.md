@@ -336,7 +336,7 @@
 | [app/admin/analytics/ai-efficacy/AIEfficacyDashboardLazy.tsx](../../../app/admin/analytics/ai-efficacy/AIEfficacyDashboardLazy.tsx) | 17 | administration | default:17 |
 | [app/admin/analytics/ai-efficacy/page.tsx](../../../app/admin/analytics/ai-efficacy/page.tsx) | 108 | administration | generateMetadata:10, default:40 |
 | [app/admin/analytics/loading.tsx](../../../app/admin/analytics/loading.tsx) | 5 | administration | default:3 |
-| [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | 266 | administration | generateMetadata:22, default:214 |
+| [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | 269 | administration | generateMetadata:23, default:217 |
 | [app/admin/assessments/loading.tsx](../../../app/admin/assessments/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/assessments/page.tsx](../../../app/admin/assessments/page.tsx) | 217 | administration | generateMetadata:21, default:29 |
 | [app/admin/audit-logs/AuditLogsClient.tsx](../../../app/admin/audit-logs/AuditLogsClient.tsx) | 396 | administration | default:37 |
@@ -353,14 +353,14 @@
 | [app/admin/blog/page.tsx](../../../app/admin/blog/page.tsx) | 224 | administration | generateMetadata:20, default:42 |
 | [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) | 170 | administration | default:11 |
 | [app/admin/board/loading.tsx](../../../app/admin/board/loading.tsx) | 5 | administration | default:3 |
-| [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | 195 | administration | generateMetadata:21, default:33 |
+| [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | 196 | administration | generateMetadata:21, default:33 |
 | [app/admin/board/print/page.tsx](../../../app/admin/board/print/page.tsx) | 97 | administration | generateMetadata:13, default:31 |
 | [app/admin/career-mappings/CareerMappingsClient.tsx](../../../app/admin/career-mappings/CareerMappingsClient.tsx) | 711 | administration | AuditEntry:34, default:99 |
 | [app/admin/career-mappings/loading.tsx](../../../app/admin/career-mappings/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/career-mappings/page.tsx](../../../app/admin/career-mappings/page.tsx) | 172 | administration | generateMetadata:16, default:30 |
 | [app/admin/certifications/loading.tsx](../../../app/admin/certifications/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/certifications/page.tsx](../../../app/admin/certifications/page.tsx) | 237 | administration | generateMetadata:17, default:25 |
-| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 265 | administration | dynamic:23, generateMetadata:25, default:33 |
+| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 272 | administration | dynamic:24, generateMetadata:26, default:34 |
 | [app/admin/counselors/loading.tsx](../../../app/admin/counselors/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/counselors/page.tsx](../../../app/admin/counselors/page.tsx) | 154 | administration | generateMetadata:17, default:48 |
 | [app/admin/coursera/csv-import/page.tsx](../../../app/admin/coursera/csv-import/page.tsx) | 60 | learning-coursera | metadata:11, dynamic:17, default:19 |
@@ -441,7 +441,7 @@
 | [app/admin/messages/loading.tsx](../../../app/admin/messages/loading.tsx) | 6 | communications | default:3 |
 | [app/admin/messages/page.tsx](../../../app/admin/messages/page.tsx) | 124 | communications | dynamic:15, generateMetadata:17, default:92 |
 | [app/admin/metrics/loading.tsx](../../../app/admin/metrics/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/metrics/page.tsx](../../../app/admin/metrics/page.tsx) | 192 | administration | generateMetadata:17, default:26 |
+| [app/admin/metrics/page.tsx](../../../app/admin/metrics/page.tsx) | 194 | administration | generateMetadata:17, default:26 |
 | [app/admin/not-found.tsx](../../../app/admin/not-found.tsx) | 20 | administration | default:3 |
 | [app/admin/outcomes/board.pdf/route.ts](../../../app/admin/outcomes/board.pdf/route.ts) | 288 | administration | dynamic:26, GET:57 |
 | [app/admin/outcomes/loading.tsx](../../../app/admin/outcomes/loading.tsx) | 5 | administration | default:3 |
@@ -449,7 +449,7 @@
 | [app/admin/outcomes/page.tsx](../../../app/admin/outcomes/page.tsx) | 113 | administration | generateMetadata:13, default:22 |
 | [app/admin/overview/loading.tsx](../../../app/admin/overview/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 655 | administration | generateMetadata:46, default:111 |
-| [app/admin/page.tsx](../../../app/admin/page.tsx) | 480 | administration | generateMetadata:31, default:46 |
+| [app/admin/page.tsx](../../../app/admin/page.tsx) | 485 | administration | generateMetadata:32, default:47 |
 | [app/admin/partners/OpenPartnerPortalButton.tsx](../../../app/admin/partners/OpenPartnerPortalButton.tsx) | 62 | partners-funding | default:6 |
 | [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 391 | partners-funding | default:56 |
 | [app/admin/partners/\[id\]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx](../../../app/admin/partners/%5Bid%5D/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx) | 476 | partners-funding | default:158 |
@@ -463,7 +463,7 @@
 | [app/admin/pipeline/PlacementRecordedToast.tsx](../../../app/admin/pipeline/PlacementRecordedToast.tsx) | 42 | administration | default:12 |
 | [app/admin/pipeline/StaleApplicationsBanner.tsx](../../../app/admin/pipeline/StaleApplicationsBanner.tsx) | 53 | administration | default:6 |
 | [app/admin/pipeline/loading.tsx](../../../app/admin/pipeline/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/pipeline/page.tsx](../../../app/admin/pipeline/page.tsx) | 135 | administration | dynamic:14, generateMetadata:16, default:27 |
+| [app/admin/pipeline/page.tsx](../../../app/admin/pipeline/page.tsx) | 140 | administration | dynamic:15, generateMetadata:17, default:28 |
 | [app/admin/pipeline/remindAction.ts](../../../app/admin/pipeline/remindAction.ts) | 80 | administration | remindStaleApplication:14 |
 | [app/admin/placement-surveys/page.tsx](../../../app/admin/placement-surveys/page.tsx) | 307 | administration | generateMetadata:18, default:114 |
 | [app/admin/placements/loading.tsx](../../../app/admin/placements/loading.tsx) | 5 | jobs-employers | default:3 |

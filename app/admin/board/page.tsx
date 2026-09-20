@@ -60,14 +60,15 @@ export default async function BoardOutcomesPage({
     const totals = snapshot.outcomes.totals;
     const retentionRate = snapshot.kpis.retentionRate;
 
-    // KPI tiles mapped to the board mockup (Placement Rate / Avg Wage /
+    // KPI tiles mapped to the board mockup (Placement Rate / Median Wage /
     // Credentials / 90-Day Retention). The wage figure is the median annual
-    // salary the outcomes module computes (the only wage statistic available);
-    // it is the board's headline "wage" number. Empty data renders 0 / "—".
+    // salary the outcomes module computes (PERCENTILE_CONT(0.5)), so the tile
+    // says "Median", never "Avg" (number audit 2026-09-20, F6); the same value
+    // is labelled Median Wage on /admin/outcomes. Empty data renders 0 / "—".
     const kpis: KpiItem[] = [
       { label: 'Placement Rate', value: `${totals.placementRate}%` },
       {
-        label: 'Avg Wage',
+        label: 'Median Wage',
         value:
           totals.medianAnnualSalary != null
             ? `$${totals.medianAnnualSalary.toLocaleString('en-US')}`

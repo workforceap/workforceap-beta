@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getAdminMetrics } from './metrics';
 
 const mockCache = {
-  getCacheOrFetch: vi.fn(),
+  getCache: vi.fn(),
+  setCache: vi.fn(),
 };
 
 vi.mock('@/lib/cache', () => ({
-  getCacheOrFetch: (...args: unknown[]) => mockCache.getCacheOrFetch(...args),
+  getCache: (...args: unknown[]) => mockCache.getCache(...args),
+  setCache: (...args: unknown[]) => mockCache.setCache(...args),
 }));
 
 vi.mock('server-only', () => ({}));
@@ -58,42 +60,37 @@ describe('admin metrics caching', () => {
         actionsPending: 0,
         followThroughRate: 0,
       },
+      degradedSlices: [],
     };
 
-    mockCache.getCacheOrFetch.mockResolvedValueOnce(cachedMetrics);
+    mockCache.getCache.mockResolvedValueOnce(cachedMetrics);
     const result = await getAdminMetrics('org-123');
 
-    expect(mockCache.getCacheOrFetch).toHaveBeenCalledWith(
-      'admin:metrics:org-123',
-      expect.any(Function),
-      300,
-    );
+    expect(mockCache.getCache).toHaveBeenCalledWith('admin:metrics:org-123');
+    expect(mockCache.setCache).not.toHaveBeenCalled();
     expect(result.totalMembers).toBe(42);
   });
 
-  it('getAdminMetrics fetcher runs on cache miss', async () => {
-    let fetcherCalled = false;
-    mockCache.getCacheOrFetch.mockImplementation(async (_key, fetcher) => {
-      fetcherCalled = true;
-      return fetcher();
-    });
+  it('getAdminMetrics computes on a cache miss and does not cache a zero-filled partial result', async () => {
+    mockCache.getCache.mockResolvedValue(null);
 
-    // Queries settle independently; a missing Prisma surface degrades to zeros
-    // instead of throwing, so the cache miss still returns a metrics object.
+    // Queries settle independently; the mocked Prisma surface is missing
+    // several models (memberEvent.count, $queryRaw rows, ...), so slices
+    // degrade to zeros instead of throwing. Such a partial result is returned
+    // but must never be written to the shared cache, or every viewer sees
+    // zeros for the TTL (number audit 2026-09-20, S29).
     const result = await getAdminMetrics('org-456');
-    expect(fetcherCalled).toBe(true);
     expect(result.totalMembers).toBe(0);
-    expect(mockCache.getCacheOrFetch).toHaveBeenCalledWith(
-      'admin:metrics:org-456',
-      expect.any(Function),
-      300,
-    );
+    expect(result.degradedSlices.length).toBeGreaterThan(0);
+    expect(mockCache.getCache).toHaveBeenCalledWith('admin:metrics:org-456');
+    expect(mockCache.setCache).not.toHaveBeenCalled();
   });
 
   it('bypasses shared cache during a read-only audit', async () => {
     const result = await getAdminMetrics('org-audit', { readOnlyAudit: true });
 
     expect(result.totalMembers).toBe(0);
-    expect(mockCache.getCacheOrFetch).not.toHaveBeenCalled();
+    expect(mockCache.getCache).not.toHaveBeenCalled();
+    expect(mockCache.setCache).not.toHaveBeenCalled();
   });
 });
