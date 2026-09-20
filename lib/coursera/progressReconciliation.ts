@@ -1,5 +1,6 @@
 import type { ProgramCourse } from '@/lib/content/programs';
 import { isProgramLevelCourseraId } from '@/lib/content/coursera/learningPaths';
+import { normalizeCourseraCourseId } from '@/lib/content/programCurriculumManifest';
 
 export type CourseProgressReconcileRow = {
   courseraCourseId: string;
@@ -87,18 +88,21 @@ export function reconcileProgramProgress(args: {
     if (isProgramLevelCourseraId(row.courseId)) continue;
     const mergedBySlug = mergeLocalFacts(localBySlug.get(row.courseSlug), row);
     localBySlug.set(row.courseSlug, mergedBySlug);
-    if (row.courseId) {
-      localByCourseId.set(
-        row.courseId,
-        mergeLocalFacts(localByCourseId.get(row.courseId), row),
-      );
+    // Ids are compared normalised: the same course can be recorded as
+    // "Course~<id>" and "<id>" (duplicate canonical mapping rows), and both
+    // must credit the one syllabus row.
+    const courseId = normalizeCourseraCourseId(row.courseId);
+    if (courseId) {
+      localByCourseId.set(courseId, mergeLocalFacts(localByCourseId.get(courseId), row));
     }
   }
 
   const rows = args.validatedCourses.map((course): CourseProgressReconcileRow => {
     const courseraCourseId = course.courseraCourseId?.trim() ?? '';
     const exactLocal = localBySlug.get(course.slug);
-    const idMatchedLocal = courseraCourseId ? localByCourseId.get(courseraCourseId) : undefined;
+    const idMatchedLocal = courseraCourseId
+      ? localByCourseId.get(normalizeCourseraCourseId(courseraCourseId))
+      : undefined;
     const local = exactLocal && idMatchedLocal
       ? mergeLocalFacts(exactLocal, idMatchedLocal)
       : exactLocal ?? idMatchedLocal;

@@ -271,7 +271,10 @@ test('streak chip: a stored counter whose last activity is older than yesterday 
 });
 
 test('a completion recorded under a Coursera id counts, and "Next:" skips it', async () => {
-  // IBM Software Developer: syllabus rows 2 and 4 bind to Coursera by id, not title.
+  // Synthetic fixture modelled on IBM Software Developer learner 702b1eb6 (the
+  // audit digest's "91c9bf" does not exist). Syllabus rows 2 and 4 bind to
+  // Coursera by id, not title (master, #2421); this branch keeps the path row
+  // out of the blend and derives "Next:" from the same reconciliation.
   const slug = 'software-developer-professional-certificate-ibm';
   const program = getProgramBySlug(slug);
   assert.ok(program);
@@ -294,21 +297,26 @@ test('a completion recorded under a Coursera id counts, and "Next:" skips it', a
           row('introduction-to-software-engineering', 'FkAMrrwEEey8ogoy0lwspQ', 'COMPLETED', 100),
           // Written before the id binding existed: synthetic slug, real Coursera id.
           row(`${slug}-course-2`, 'mR7MlUaTEemuHQ4HpHozrA', 'COMPLETED', 100),
-          row(`${slug}-course-4`, 'nI__WUzdEe64qQ7qqom4Rw', 'COMPLETED', 100),
+          row('generative-ai-introduction-and-applications', 'I3MKFTq0Ee6PABLgKXk5yQ', 'COMPLETED', 100),
+          row(`${slug}-course-3`, 'Course~I3MKFTq0Ee6PABLgKXk5yQ', 'COMPLETED', 100),
+          row(`${slug}-course-16`, 'nI__WUzdEe64qQ7qqom4Rw', 'COMPLETED', 100),
           row('introduction-html-css-javascript', 'yI8fAUhFEe6cKg41IVwGGw', 'COMPLETED', 100),
-          row('getting-started-with-git-and-github', null, 'COMPLETED', 100),
-          // The Learning Path row a stale mapping once wrote onto the lab slot.
+          row('getting-started-with-git-and-github', null, 'IN_PROGRESS', 69),
+          // B4B program-membership row; never a course.
+          row('ai-and-software-developer-professional-certificate-ibm', 'TpIlAogTQ8-SJQKIE8PP9w~6m4yZ', 'IN_PROGRESS', 31),
+          // The Learning Path row a stale mapping once wrote onto the lab slot (preventive; removed from prod 19:38 UTC).
           row(`${slug}-course-17`, 'fT-1P-CkT6q_tT_gpM-qJw', 'IN_PROGRESS', 31),
         ],
       }),
     }).db,
   );
-  assert.equal(view.certModulesDone, 5, '5 of 17 complete, not 3');
+  assert.equal(view.certModulesDone, 5, '5 of 17 complete; neither program-level row is a sixth');
   assert.equal(view.certModulesTotal, 17);
-  assert.equal(view.coursePercent, 29, 'the path row adds nothing to the blended percent');
-  // Course 2 (Intro to AI) is finished; the first incomplete syllabus row is course 3.
-  assert.equal(view.nextLesson, program.courses[2]!.name);
-  assert.notEqual(view.nextLesson, 'Introduction to Artificial Intelligence');
+  assert.equal(view.coursePercent, 33, '(5 x 100 + 69) / 17; the program-level rows add nothing');
+  // Courses 1-5 are finished; the first incomplete syllabus row is Git and GitHub (69%),
+  // not "Generative AI: Prompt Engineering", which the slug-only rule named.
+  assert.equal(view.nextLesson, 'Getting Started with Git and GitHub');
+  assert.notEqual(view.nextLesson, 'Generative AI: Prompt Engineering');
   // The lab stays in the 17 and is named, so the tile explains the 16-course Coursera path.
   assert.equal(
     view.programCoursesNote,

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
+import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
@@ -83,15 +84,14 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 
   let counselor_messages_unread = 0;
   if (thread) {
-    // A member who has never opened Messages has read nothing, so every
-    // staff-authored message is unread. (Treating the missing read marker as
-    // "nothing unread" hid an 81-day-old staff reply behind no badge at all.)
+    // Same rule as the Messages page (lib/messages/memberUnread.ts): a null
+    // read marker means every staff-authored message is unread.
     const unreadStaffMessages = await prisma.message.count({
-      where: {
+      where: memberUnreadStaffMessagesWhere({
         threadId: thread.id,
-        authorId: { not: userId },
-        ...(thread.memberLastReadAt ? { createdAt: { gt: thread.memberLastReadAt } } : {}),
-      },
+        memberUserId: userId,
+        memberLastReadAt: thread.memberLastReadAt,
+      }),
     });
     // Unread badges count threads: a member has one thread, so 0 or 1.
     counselor_messages_unread = countThreadsWithUnread(new Map([[thread.id, unreadStaffMessages]]));

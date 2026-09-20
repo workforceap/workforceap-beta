@@ -15738,6 +15738,10 @@
       {
         "file": "lib/messages/counselorInbox.ts",
         "line": 51
+      },
+      {
+        "file": "lib/messages/memberUnread.ts",
+        "line": 52
       }
     ],
     "kind": "test-candidate",
@@ -19765,6 +19769,46 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/member-messages-unread-marker.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/dashboard/messages/page.tsx",
+        "line": 38
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 40
+      },
+      {
+        "file": "lib/messages/counselorThread.ts",
+        "line": 41
+      },
+      {
+        "file": "lib/messages/memberUnread.ts",
+        "line": 42
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/member-referrals-page.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -22408,6 +22452,35 @@
       {
         "file": "lib/member/labWorkspaceTypes.ts",
         "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/member-messages-kit-mark-read.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/kit/pages/member/MemberMessagesKit.tsx",
+        "line": 32
       }
     ],
     "kind": "test-candidate",
@@ -27154,43 +27227,51 @@
     "localReferences": [
       {
         "file": "lib/coursera/programCourseList.ts",
-        "line": 46
+        "line": 53
       },
       {
         "file": "lib/content/programs.ts",
-        "line": 59
+        "line": 66
+      },
+      {
+        "file": "lib/content/coursera/learningPaths.ts",
+        "line": 67
+      },
+      {
+        "file": "lib/content/programSlug.ts",
+        "line": 68
       },
       {
         "file": "lib/coursera/progressReconciliation.ts",
-        "line": 60
+        "line": 69
       },
       {
         "file": "lib/coursera/programCourseList.ts",
-        "line": 61
+        "line": 70
       },
       {
         "file": "lib/coursera/progressTileSummary.ts",
-        "line": 62
+        "line": 71
       },
       {
         "file": "lib/member/jobPipelineDisplay.ts",
-        "line": 63
+        "line": 72
       },
       {
         "file": "lib/member/loadMemberDashboardHome.ts",
-        "line": 64
+        "line": 73
       },
       {
         "file": "lib/member/memberProgramTrainingView.ts",
-        "line": 65
+        "line": 74
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 152
+        "line": 191
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 244
+        "line": 287
       }
     ],
     "kind": "test-candidate",

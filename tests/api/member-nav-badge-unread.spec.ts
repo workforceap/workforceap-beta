@@ -49,6 +49,7 @@ vi.mock('@/lib/milestoneCascade/queries', () => ({
 
 import { getNavBadgeCountsForUser } from '@/lib/portal/navBadges';
 import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
+import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 
 describe('member counselor_messages_unread badge', () => {
   beforeEach(() => {
@@ -66,7 +67,8 @@ describe('member counselor_messages_unread badge', () => {
     expect(counts.counselor_messages_unread).toBe(1);
     expect(db.messageCount).toHaveBeenCalledTimes(1);
     const where = db.messageCount.mock.calls[0]![0].where;
-    expect(where).toEqual({ threadId: 'thread-1', authorId: { not: 'member-1' } });
+    expect(where).toEqual(memberUnreadStaffMessagesWhere({ threadId: 'thread-1', memberUserId: 'member-1', memberLastReadAt: null }));
+    expect(where).toEqual({ threadId: 'thread-1', authorId: { not: 'member-1' }, NOT: { body: { contains: '[ARCHIVED FIXTURE]' } } });
     expect(where.createdAt).toBeUndefined();
   });
 
@@ -82,6 +84,7 @@ describe('member counselor_messages_unread badge', () => {
       threadId: 'thread-1',
       authorId: { not: 'member-1' },
       createdAt: { gt: readAt },
+      NOT: { body: { contains: '[ARCHIVED FIXTURE]' } },
     });
   });
 
