@@ -992,6 +992,39 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "components/portal/JobApplicationsTracker.test.tsx",
+    "area": "components",
+    "domain": "components",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "lib/member/jobApplicationsEmptyState.ts",
+        "line": 5
+      },
+      {
+        "file": "components/portal/JobApplicationsTracker.tsx",
+        "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "components/portal/LanguageToggle.test.tsx",
     "area": "components",
     "domain": "components",
@@ -1031,6 +1064,35 @@
       },
       {
         "file": "components/portal/LearningHubEnrolledCourses.tsx",
+        "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "components/portal/MemberDoThisNextCard.test.tsx",
+    "area": "components",
+    "domain": "components",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/MemberDoThisNextCard.tsx",
         "line": 5
       }
     ],
@@ -1461,6 +1523,43 @@
       {
         "file": "components/portal/kit/hooks/useListFocus.ts",
         "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "area": "components",
+    "domain": "components",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/directoryEmptyState.ts",
+        "line": 3
+      },
+      {
+        "file": "components/portal/kit/pages/admin-subviews/PartnersDirectoryKit.tsx",
+        "line": 8
+      },
+      {
+        "file": "components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx",
+        "line": 9
+      },
+      {
+        "file": "components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx",
+        "line": 10
       }
     ],
     "kind": "test-candidate",
@@ -2242,7 +2341,7 @@
     "localReferences": [
       {
         "file": "lib/admin/directoryEmptyState.ts",
-        "line": 7
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -2391,25 +2490,6 @@
         "line": 4
       }
     ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "node-unit",
-        "source": "scripts/test-unit.mjs",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
-    "file": "lib/admin/memberDeleteStorage.test.ts",
-    "area": "libraries",
-    "domain": "administration",
-    "frameworkImports": [
-      "node:test"
-    ],
-    "localReferences": [],
     "kind": "test-candidate",
     "declaredRunners": [
       {
@@ -6522,12 +6602,24 @@
     "area": "libraries",
     "domain": "libraries",
     "frameworkImports": [
-      "node:test"
+      "vitest"
     ],
     "localReferences": [
       {
         "file": "lib/events/names.ts",
-        "line": 5
+        "line": 2
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 27
+      },
+      {
+        "file": "lib/observability/logger.ts",
+        "line": 28
+      },
+      {
+        "file": "lib/events/track.ts",
+        "line": 29
       }
     ],
     "kind": "test-candidate",
@@ -6535,6 +6627,12 @@
       {
         "runner": "node-unit",
         "source": "scripts/test-unit.mjs",
+        "status": "delegated",
+        "reason": "owned by npm run test:vitest (shared manifest; collection guarded)"
+      },
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
         "status": "selected"
       }
     ],
@@ -6682,25 +6780,6 @@
         "line": 4
       }
     ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "node-unit",
-        "source": "scripts/test-unit.mjs",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
-    "file": "lib/gdpr/erase-routes.test.ts",
-    "area": "libraries",
-    "domain": "libraries",
-    "frameworkImports": [
-      "node:test"
-    ],
-    "localReferences": [],
     "kind": "test-candidate",
     "declaredRunners": [
       {
@@ -7506,7 +7585,7 @@
     "localReferences": [
       {
         "file": "lib/member/jobApplicationsEmptyState.ts",
-        "line": 7
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -7658,7 +7737,7 @@
     "localReferences": [
       {
         "file": "lib/member/memberProgramHref.ts",
-        "line": 7
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -7792,15 +7871,15 @@
     "localReferences": [
       {
         "file": "shared/digitalLiteracyPathway.ts",
-        "line": 7
+        "line": 4
       },
       {
         "file": "lib/member/resolveActiveDashboardProgram.ts",
-        "line": 8
+        "line": 5
       },
       {
         "file": "lib/member/programStartEnrollment.ts",
-        "line": 9
+        "line": 6
       }
     ],
     "kind": "test-candidate",
@@ -7904,11 +7983,11 @@
     "localReferences": [
       {
         "file": "lib/content/skillMissionCatalog.ts",
-        "line": 7
+        "line": 4
       },
       {
         "file": "lib/member/skillMissionEmptyState.ts",
-        "line": 8
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -8680,12 +8759,16 @@
     "area": "libraries",
     "domain": "administration",
     "frameworkImports": [
-      "node:test"
+      "vitest"
     ],
     "localReferences": [
       {
         "file": "lib/platform/orgBrandingCache.ts",
-        "line": 7
+        "line": 30
+      },
+      {
+        "file": "lib/platform/defaultOrgTheme.ts",
+        "line": 37
       }
     ],
     "kind": "test-candidate",
@@ -8693,6 +8776,12 @@
       {
         "runner": "node-unit",
         "source": "scripts/test-unit.mjs",
+        "status": "delegated",
+        "reason": "owned by npm run test:vitest (shared manifest; collection guarded)"
+      },
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
         "status": "selected"
       }
     ],
@@ -9854,12 +9943,25 @@
     "area": "libraries",
     "domain": "partners-funding",
     "frameworkImports": [
-      "node:test"
+      "@testing-library/react",
+      "vitest"
     ],
     "localReferences": [
       {
         "file": "lib/wioa/wioaAvailability.ts",
-        "line": 5
+        "line": 6
+      },
+      {
+        "file": "lib/nav/portalNav.ts",
+        "line": 17
+      },
+      {
+        "file": "lib/nav/portalNav.i18n.ts",
+        "line": 18
+      },
+      {
+        "file": "components/portal/LearningHubDestinationCards.tsx",
+        "line": 19
       }
     ],
     "kind": "test-candidate",
@@ -9867,6 +9969,12 @@
       {
         "runner": "node-unit",
         "source": "scripts/test-unit.mjs",
+        "status": "delegated",
+        "reason": "owned by npm run test:vitest (shared manifest; collection guarded)"
+      },
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
         "status": "selected"
       }
     ],
@@ -9883,11 +9991,11 @@
     "localReferences": [
       {
         "file": "lib/wioa/wioaQualification.ts",
-        "line": 5
+        "line": 3
       },
       {
         "file": "lib/wioa/wioaNotification.ts",
-        "line": 6
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -10833,6 +10941,46 @@
       {
         "file": "lib/audit.ts",
         "line": 60
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/admin-member-erase.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/admin/members/[id]/erase/route.ts",
+        "line": 77
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 78
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 79
+      },
+      {
+        "file": "lib/tenant/organization.ts",
+        "line": 80
+      },
+      {
+        "file": "lib/gdpr/deleteUserStorage.ts",
+        "line": 81
       }
     ],
     "kind": "test-candidate",
@@ -18420,6 +18568,43 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/eligibility-layoff-company.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "app/apply/ApplyEligibilityClient.tsx",
+        "line": 20
+      },
+      {
+        "file": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx",
+        "line": 21
+      },
+      {
+        "file": "app/q/[token]/PublicEligibilityForm.tsx",
+        "line": 22
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/employer-application-detail-dates.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -18590,6 +18775,39 @@
       "vitest"
     ],
     "localReferences": [],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/job-applications-page.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "app/(portal)/dashboard/job-applications/page.tsx",
+        "line": 30
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 31
+      }
+    ],
     "kind": "test-candidate",
     "declaredRunners": [
       {
@@ -19117,6 +19335,47 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/program-start-page.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "shared/digitalLiteracyPathway.ts",
+        "line": 3
+      },
+      {
+        "file": "app/(portal)/dashboard/program/start/page.tsx",
+        "line": 28
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 29
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 30
+      },
+      {
+        "file": "lib/member/getActiveProgramForDashboard.ts",
+        "line": 31
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/public-cta-class.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -19224,6 +19483,47 @@
       {
         "file": "components/DeferredRootChrome.tsx",
         "line": 37
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/skill-missions-page.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/dashboard/missions/page.tsx",
+        "line": 23
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 24
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 25
+      },
+      {
+        "file": "lib/member/getActiveProgramForDashboard.ts",
+        "line": 26
+      },
+      {
+        "file": "lib/member/skillMissions.ts",
+        "line": 27
       }
     ],
     "kind": "test-candidate",

@@ -1,7 +1,5 @@
 import test, { afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { WioaQualificationSnapshot } from './wioaQualification';
 import {
   getWioaScreeningNotificationRecipients,
@@ -144,19 +142,8 @@ test('notification returns true only when Resend resolves with a delivery id', a
   assert.match(payload?.text ?? '', /Saved explanation \(original language\): Staff review recommended/);
 });
 
-test('the structured form is default and voice is disclosed as preparation-only', () => {
-  const source = readFileSync(
-    join(process.cwd(), 'components/portal/WioaQualificationClient.tsx'),
-    'utf8'
-  );
-
-  assert.match(source, /useState<'voice' \| 'form'>\('form'\)/);
-  assert.match(source, /t\('voiceMode'\)/);
-  const en = JSON.parse(readFileSync(join(process.cwd(), 'messages/en.json'), 'utf8'));
-  assert.match(en.wioa.voiceMode, /Voice preparation only/);
-  assert.match(en.wioa.memberModeHelp, /does not save or send your answers/);
-  assert.match(en.wioa.publicModeHelp, /does not save or send your answers/);
-});
+// The structured-form default and the voice preparation-only disclosure are
+// rendered assertions in tests/components/wioa-qualification.spec.tsx.
 
 test('version-2 notification renders staff explanations instead of raw reason objects', async () => {
   process.env.RESEND_API_KEY = 'test-only-resend-key';

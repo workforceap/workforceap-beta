@@ -285,6 +285,7 @@
 | [components/portal/JobApplicationCard.tsx](../../../components/portal/JobApplicationCard.tsx) | 262 | components | default:38 |
 | [components/portal/JobApplicationForm.tsx](../../../components/portal/JobApplicationForm.tsx) | 247 | components | default:14 |
 | [components/portal/JobApplicationKanban.tsx](../../../components/portal/JobApplicationKanban.tsx) | 284 | components | default:190 |
+| [components/portal/JobApplicationsTracker.test.tsx](../../../components/portal/JobApplicationsTracker.test.tsx) | 68 | components |  |
 | [components/portal/JobApplicationsTracker.tsx](../../../components/portal/JobApplicationsTracker.tsx) | 209 | components | default:19 |
 | [components/portal/JobTailorPanel.tsx](../../../components/portal/JobTailorPanel.tsx) | 347 | components | JOB_TAILOR_PREVIEW_RESULT:50, default:105 |
 | [components/portal/LanguageToggle.test.tsx](../../../components/portal/LanguageToggle.test.tsx) | 52 | components |  |
@@ -300,6 +301,7 @@
 | [components/portal/MemberCounselorChatClient.tsx](../../../components/portal/MemberCounselorChatClient.tsx) | 241 | components | default:41 |
 | [components/portal/MemberDashboardVoiceSection.tsx](../../../components/portal/MemberDashboardVoiceSection.tsx) | 75 | components | default:17 |
 | [components/portal/MemberDashboardVoiceSectionLazy.tsx](../../../components/portal/MemberDashboardVoiceSectionLazy.tsx) | 21 | components | default:15 |
+| [components/portal/MemberDoThisNextCard.test.tsx](../../../components/portal/MemberDoThisNextCard.test.tsx) | 46 | components |  |
 | [components/portal/MemberDoThisNextCard.tsx](../../../components/portal/MemberDoThisNextCard.tsx) | 245 | components | default:37 |
 | [components/portal/MemberFeedbackButton.tsx](../../../components/portal/MemberFeedbackButton.tsx) | 44 | components | default:6 |
 | [components/portal/MemberFeedbackModal.tsx](../../../components/portal/MemberFeedbackModal.tsx) | 258 | components | default:22 |
@@ -479,6 +481,7 @@
 | [components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx](../../../components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx) | 208 | components | CronDisplayStatus:32, CronJobRow:34, CronsMonitorKitProps:47, CronsMonitorKit:67 |
 | [components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx](../../../components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx) | 361 | components | StorageRow:23, PolicyRow:30, RunRow:38, DataRetentionKitProps:48, DataRetentionKit:73 |
 | [components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx](../../../components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx) | 140 | components | DiagnosticTone:17, DiagnosticTile:19, DiagnosticsKitProps:31, DiagnosticsKit:56 |
+| [components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx](../../../components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx) | 44 | components |  |
 | [components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx](../../../components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx) | 183 | components | DuplicateRow:27, DuplicatesKitProps:42, DuplicatesKit:74 |
 | [components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx) | 195 | communications | EmailCronDisplayStatus:31, EmailCronRow:37, EmailCronsKitProps:48, EmailCronsKit:67 |
 | [components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx) | 237 | communications | EmailTemplateRow:29, EmailTemplatesKitProps:42, EmailTemplatesKit:67 |
@@ -523,7 +526,7 @@
 | [components/portal/kit/pages/member/LinkedInHeadlineKit.tsx](../../../components/portal/kit/pages/member/LinkedInHeadlineKit.tsx) | 51 | member-counselor | LinkedInHeadlineKit:14 |
 | [components/portal/kit/pages/member/MemberCertificatesKit.tsx](../../../components/portal/kit/pages/member/MemberCertificatesKit.tsx) | 193 | member-counselor | MemberCertificatesKitProps:39, MemberCertificatesKit:70 |
 | [components/portal/kit/pages/member/MemberCounselorKit.tsx](../../../components/portal/kit/pages/member/MemberCounselorKit.tsx) | 76 | member-counselor | CounselorSessionSummary:16, MemberCounselorKitProps:22, MemberCounselorKit:31 |
-| [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 70 | member-counselor |  |
+| [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 95 | member-counselor |  |
 | [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 925 | member-counselor | StatSpark:85, WeeklyActivityPoint:95, PointsLedgerEntry:101, MemberHomeKitProps:107, MemberHomeKit:547 |
 | [components/portal/kit/pages/member/MemberJobDetail.tsx](../../../components/portal/kit/pages/member/MemberJobDetail.tsx) | 193 | member-counselor | JobDetailScreeningQuestion:15, MemberJobDetailProps:21, MemberJobDetail:52 |
 | [components/portal/kit/pages/member/MemberJobsBoard.tsx](../../../components/portal/kit/pages/member/MemberJobsBoard.tsx) | 154 | member-counselor | BoardJob:19, MemberJobsBoardProps:30, MemberJobsBoard:59 |

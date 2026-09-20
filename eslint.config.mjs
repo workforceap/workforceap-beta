@@ -28,7 +28,7 @@ const NO_DIRECT_COURSE_ENROLLMENT_WRITE_MESSAGE =
 const DIRECT_WRITER_BANS = [
   {
     selector:
-      "CallExpression[callee.type='MemberExpression'][callee.property.name=/^(create|createMany)$/][callee.object.type='MemberExpression'][callee.object.property.name='memberEvent']",
+      "CallExpression[callee.type='MemberExpression'][callee.property.name=/^(create|createMany|upsert)$/][callee.object.type='MemberExpression'][callee.object.property.name='memberEvent']",
     message: NO_DIRECT_MEMBER_EVENT_WRITE_MESSAGE,
   },
   {
@@ -37,6 +37,7 @@ const DIRECT_WRITER_BANS = [
     message: NO_DIRECT_COURSE_ENROLLMENT_WRITE_MESSAGE,
   },
 ];
+const [MEMBER_EVENT_WRITER_BAN, COURSE_ENROLLMENT_WRITER_BAN] = DIRECT_WRITER_BANS;
 
 const config = [
   {
@@ -99,14 +100,12 @@ const config = [
   },
   {
     // The two canonical writers are the only production modules allowed to
-    // call the banned Prisma delegates. Vitest specs mock or observe these
-    // delegates (`vi.mocked(prisma.memberEvent.create)`) without calling
-    // them, so they are not exempted here; the `*.test.*` ignore above
-    // covers node:test suites that build fake clients.
-    files: [
-      "lib/events/track.ts",
-      "lib/member/courseEnrollmentAssignment.ts",
-    ],
+    // call their own banned Prisma delegate; each keeps the other's ban.
+    // Vitest specs mock or observe these delegates
+    // (`vi.mocked(prisma.memberEvent.create)`) without calling them, so
+    // they are not exempted here; the `*.test.*` ignore above covers
+    // node:test suites that build fake clients.
+    files: ["lib/events/track.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -114,6 +113,20 @@ const config = [
           selector: "JSXOpeningElement[name.name='table']",
           message: NO_BARE_TABLE_MESSAGE,
         },
+        COURSE_ENROLLMENT_WRITER_BAN,
+      ],
+    },
+  },
+  {
+    files: ["lib/member/courseEnrollmentAssignment.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXOpeningElement[name.name='table']",
+          message: NO_BARE_TABLE_MESSAGE,
+        },
+        MEMBER_EVENT_WRITER_BAN,
       ],
     },
   },

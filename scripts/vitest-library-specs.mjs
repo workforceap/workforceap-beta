@@ -17,6 +17,7 @@ export const VITEST_LIBRARY_SPECS = Object.freeze([
   'lib/coursera/learnerProgress.test.ts',
   'lib/cron/wioa-report.test.ts',
   'lib/enroll/listPublicEnrollmentPartners.test.ts',
+  'lib/events/memberEventWriters.test.ts',
   'lib/marketing/trustStripMetrics.test.ts',
   'lib/marketing/googleItSupportLanding.test.ts',
   'lib/messages/counselorInbox.test.ts',
@@ -26,8 +27,10 @@ export const VITEST_LIBRARY_SPECS = Object.freeze([
   'lib/member/getMemberState.test.ts',
   'lib/member/streaks.test.ts',
   'lib/member/xapiVerbProgress.test.ts',
+  'lib/platform/orgBrandingCache.test.ts',
   'lib/readiness/progressSummary.test.ts',
   'lib/readiness/progressView.test.ts',
   'lib/retention/cleanup.test.ts',
+  'lib/wioa/wioaAvailability.test.ts',
   'lib/xapi/statements.test.ts',
 ]);

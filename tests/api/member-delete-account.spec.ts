@@ -107,6 +107,11 @@ describe('POST /api/member/delete-account', () => {
         }),
       })
     );
+    // Ordering contract (formerly lib/gdpr/erase-routes.test.ts): blobs are
+    // removed before the soft-delete write.
+    const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [updateOrder] = vi.mocked(prisma.user.update).mock.invocationCallOrder;
+    expect(storageOrder).toBeLessThan(updateOrder);
   });
 
   it('skips email mutation if user already deleted', async () => {

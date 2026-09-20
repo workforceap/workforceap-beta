@@ -148,6 +148,14 @@ describe('POST /api/admin/members/[id]/delete', () => {
       ],
     });
     expect(update).toHaveBeenCalled();
+    // Ordering contract (formerly lib/admin/memberDeleteStorage.test.ts): blobs
+    // are removed before the row is rewritten and before the login is locked,
+    // so a storage failure can never leave a "deleted" member with files.
+    const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [updateOrder] = update.mock.invocationCallOrder;
+    const [disableOrder] = supabaseUpdateUserById.mock.invocationCallOrder;
+    expect(storageOrder).toBeLessThan(updateOrder);
+    expect(storageOrder).toBeLessThan(disableOrder);
   });
 
   it('rejects self-deletion before looking up or touching any account', async () => {
