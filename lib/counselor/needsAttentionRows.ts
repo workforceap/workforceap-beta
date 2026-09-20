@@ -5,7 +5,7 @@
  * out of the queue and the caseload home shows a "caught up" state instead
  * (counselor audit, 2026-09-20).
  */
-export type NeedsAttentionBucket = 'critical' | 'warning' | 'ontrack';
+type NeedsAttentionBucket = 'critical' | 'warning' | 'ontrack';
 
 export function selectNeedsAttentionRows<T extends { bucket: NeedsAttentionBucket }>(
   rows: readonly T[],
