@@ -76752,6 +76752,54 @@
     "target": "components/portal/JobApplicationCard.tsx"
   },
   {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "@/lib/member/jobApplicationsEmptyState",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/jobApplicationsEmptyState.ts"
+  },
+  {
+    "from": "components/portal/JobApplicationsTracker.test.tsx",
+    "specifier": "./JobApplicationsTracker",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/JobApplicationsTracker.tsx"
+  },
+  {
     "from": "components/portal/JobApplicationsTracker.tsx",
     "specifier": "next/link",
     "line": 3,
@@ -77270,6 +77318,46 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/MemberDashboardVoiceSection.tsx"
+  },
+  {
+    "from": "components/portal/MemberDoThisNextCard.test.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "components/portal/MemberDoThisNextCard.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "components/portal/MemberDoThisNextCard.test.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/MemberDoThisNextCard.test.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "components/portal/MemberDoThisNextCard.test.tsx",
+    "specifier": "./MemberDoThisNextCard",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/MemberDoThisNextCard.tsx"
   },
   {
     "from": "components/portal/MemberDoThisNextCard.tsx",
@@ -83382,6 +83470,54 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "@/lib/admin/directoryEmptyState",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/directoryEmptyState.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "./PartnersDirectoryKit",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/PartnersDirectoryKit.tsx"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "./EmployersDirectoryKit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/DirectoryKitsEmptyState.test.tsx",
+    "specifier": "./SubgroupsDirectoryKit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/DuplicatesKit.tsx",
@@ -91553,32 +91689,8 @@
   },
   {
     "from": "lib/admin/directoryEmptyState.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/admin/directoryEmptyState.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/admin/directoryEmptyState.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/admin/directoryEmptyState.test.ts",
     "specifier": "./directoryEmptyState",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/admin/directoryEmptyState.ts"
@@ -92006,46 +92118,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
-  },
-  {
-    "from": "lib/admin/memberDeleteStorage.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/admin/memberDeleteStorage.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/admin/memberDeleteStorage.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/admin/memberDeleteStorage.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/admin/memberDeleteStorage.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
   },
   {
     "from": "lib/admin/memberMerge.test.ts",
@@ -103313,43 +103385,43 @@
   },
   {
     "from": "lib/events/memberEventWriters.test.ts",
-    "specifier": "node:assert/strict",
+    "specifier": "vitest",
     "line": 1,
     "kind": "import",
     "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/events/memberEventWriters.test.ts",
-    "specifier": "node:fs",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/events/memberEventWriters.test.ts",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/events/memberEventWriters.test.ts",
-    "specifier": "node:test",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
+    "package": "vitest"
   },
   {
     "from": "lib/events/memberEventWriters.test.ts",
     "specifier": "./names",
-    "line": 5,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/events/names.ts"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "lib/events/memberEventWriters.test.ts",
+    "specifier": "./track",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "lib/events/track.ts",
@@ -103622,46 +103694,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/portal/memberProfilePhoto.ts"
-  },
-  {
-    "from": "lib/gdpr/erase-routes.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/gdpr/erase-routes.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/gdpr/erase-routes.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/gdpr/erase-routes.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/gdpr/erase-routes.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
   },
   {
     "from": "lib/hooks/useTheme.ts",
@@ -105689,32 +105721,8 @@
   },
   {
     "from": "lib/member/jobApplicationsEmptyState.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/member/jobApplicationsEmptyState.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/member/jobApplicationsEmptyState.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/member/jobApplicationsEmptyState.test.ts",
     "specifier": "./jobApplicationsEmptyState",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/member/jobApplicationsEmptyState.ts"
@@ -106241,32 +106249,8 @@
   },
   {
     "from": "lib/member/memberProgramHref.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/member/memberProgramHref.test.ts",
-    "specifier": "node:url",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/member/memberProgramHref.test.ts",
-    "specifier": "node:path",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/member/memberProgramHref.test.ts",
     "specifier": "./memberProgramHref",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -106673,32 +106657,8 @@
   },
   {
     "from": "lib/member/programStartEnrollment.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/member/programStartEnrollment.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/member/programStartEnrollment.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/member/programStartEnrollment.test.ts",
     "specifier": "@/shared/digitalLiteracyPathway",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "shared/digitalLiteracyPathway.ts"
@@ -106706,7 +106666,7 @@
   {
     "from": "lib/member/programStartEnrollment.test.ts",
     "specifier": "./resolveActiveDashboardProgram",
-    "line": 8,
+    "line": 5,
     "kind": "type",
     "external": false,
     "target": "lib/member/resolveActiveDashboardProgram.ts"
@@ -106714,7 +106674,7 @@
   {
     "from": "lib/member/programStartEnrollment.test.ts",
     "specifier": "./programStartEnrollment",
-    "line": 9,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/member/programStartEnrollment.ts"
@@ -107049,32 +107009,8 @@
   },
   {
     "from": "lib/member/skillMissionEmptyState.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/member/skillMissionEmptyState.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/member/skillMissionEmptyState.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/member/skillMissionEmptyState.test.ts",
     "specifier": "@/lib/content/skillMissionCatalog",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/content/skillMissionCatalog.ts"
@@ -107082,7 +107018,7 @@
   {
     "from": "lib/member/skillMissionEmptyState.test.ts",
     "specifier": "./skillMissionEmptyState",
-    "line": 8,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissionEmptyState.ts"
@@ -109457,51 +109393,27 @@
   },
   {
     "from": "lib/platform/orgBrandingCache.test.ts",
-    "specifier": "node:test",
+    "specifier": "vitest",
     "line": 1,
     "kind": "import",
     "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/platform/orgBrandingCache.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/platform/orgBrandingCache.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/platform/orgBrandingCache.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/platform/orgBrandingCache.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
+    "package": "vitest"
   },
   {
     "from": "lib/platform/orgBrandingCache.test.ts",
     "specifier": "./orgBrandingCache",
-    "line": 7,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/platform/orgBrandingCache.ts"
+  },
+  {
+    "from": "lib/platform/orgBrandingCache.test.ts",
+    "specifier": "./defaultOrgTheme",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "lib/platform/defaultOrgTheme.ts"
   },
   {
     "from": "lib/platform/programCatalog.ts",
@@ -112305,24 +112217,8 @@
   },
   {
     "from": "lib/wioa/wioaAvailability.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/wioa/wioaAvailability.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/wioa/wioaAvailability.test.ts",
     "specifier": "node:fs",
-    "line": 3,
+    "line": 1,
     "kind": "import",
     "external": true,
     "package": "node:fs"
@@ -112330,20 +112226,68 @@
   {
     "from": "lib/wioa/wioaAvailability.test.ts",
     "specifier": "node:path",
-    "line": 4,
+    "line": 2,
     "kind": "import",
     "external": true,
     "package": "node:path"
   },
   {
     "from": "lib/wioa/wioaAvailability.test.ts",
-    "specifier": "./wioaAvailability",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "@testing-library/react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "react",
     "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "./wioaAvailability",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaAvailability.ts"
   },
   {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 17,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "@/lib/nav/portalNav.i18n",
+    "line": 18,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/nav/portalNav.i18n.ts"
+  },
+  {
+    "from": "lib/wioa/wioaAvailability.test.ts",
+    "specifier": "@/components/portal/LearningHubDestinationCards",
+    "line": 19,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "components/portal/LearningHubDestinationCards.tsx"
+  },
+  {
     "from": "lib/wioa/wioaNotification.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -112361,24 +112305,8 @@
   },
   {
     "from": "lib/wioa/wioaNotification.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/wioa/wioaNotification.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/wioa/wioaNotification.test.ts",
     "specifier": "./wioaQualification",
-    "line": 5,
+    "line": 3,
     "kind": "type",
     "external": false,
     "target": "lib/wioa/wioaQualification.ts"
@@ -112386,7 +112314,7 @@
   {
     "from": "lib/wioa/wioaNotification.test.ts",
     "specifier": "./wioaNotification",
-    "line": 6,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaNotification.ts"
@@ -116926,6 +116854,54 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "@/app/api/admin/members/[id]/erase/route",
+    "line": 77,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/members/[id]/erase/route.ts"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 78,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 79,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "@/lib/tenant/organization",
+    "line": 80,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/organization.ts"
+  },
+  {
+    "from": "tests/api/admin-member-erase.spec.ts",
+    "specifier": "@/lib/gdpr/deleteUserStorage",
+    "line": 81,
+    "kind": "import",
+    "external": false,
+    "target": "lib/gdpr/deleteUserStorage.ts"
   },
   {
     "from": "tests/api/admin-member-merge.spec.ts",
@@ -127408,6 +127384,62 @@
     "target": "app/admin/diagnostics/page.tsx"
   },
   {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "@/app/apply/ApplyEligibilityClient",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "app/apply/ApplyEligibilityClient.tsx"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/eligibility/EligibilityForm",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx"
+  },
+  {
+    "from": "tests/app/eligibility-layoff-company.spec.tsx",
+    "specifier": "@/app/q/[token]/PublicEligibilityForm",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "app/q/[token]/PublicEligibilityForm.tsx"
+  },
+  {
     "from": "tests/app/employer-application-detail-dates.spec.tsx",
     "specifier": "react-dom/server",
     "line": 3,
@@ -127646,6 +127678,54 @@
     "kind": "import",
     "external": true,
     "package": "vitest"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/job-applications/page",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/job-applications/page.tsx"
+  },
+  {
+    "from": "tests/app/job-applications-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
   },
   {
     "from": "tests/app/member-dashboard-layout.spec.tsx",
@@ -128352,6 +128432,62 @@
     "target": "app/wioa-qualification/page.tsx"
   },
   {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/shared/digitalLiteracyPathway",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "shared/digitalLiteracyPathway.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/program/start/page",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/program/start/page.tsx"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/member/getActiveProgramForDashboard",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/getActiveProgramForDashboard.ts"
+  },
+  {
     "from": "tests/app/public-cta-class.spec.ts",
     "specifier": "node:fs",
     "line": 1,
@@ -128534,6 +128670,62 @@
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/missions/page",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/missions/page.tsx"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@/lib/member/getActiveProgramForDashboard",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/getActiveProgramForDashboard.ts"
+  },
+  {
+    "from": "tests/app/skill-missions-page.spec.tsx",
+    "specifier": "@/lib/member/skillMissions",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/skillMissions.ts"
   },
   {
     "from": "tests/components/admin-command-center-presentation.spec.tsx",

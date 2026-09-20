@@ -7,7 +7,7 @@
     },
     {
       "file": "scripts/vitest-library-specs.mjs",
-      "sha256": "43c4cb0bc1b1af1f3fae20323d0e012622a29a51ed00caef0a12a5d5076db5f2"
+      "sha256": "429041a2552e1614120a717af63bacc696588f28bed47169229715f5aac0b3c5"
     },
     {
       "file": "vitest.config.ts",
@@ -63,6 +63,7 @@
       "lib/coursera/learnerProgress.test.ts",
       "lib/cron/wioa-report.test.ts",
       "lib/enroll/listPublicEnrollmentPartners.test.ts",
+      "lib/events/memberEventWriters.test.ts",
       "lib/marketing/trustStripMetrics.test.ts",
       "lib/marketing/googleItSupportLanding.test.ts",
       "lib/messages/counselorInbox.test.ts",
@@ -72,9 +73,11 @@
       "lib/member/getMemberState.test.ts",
       "lib/member/streaks.test.ts",
       "lib/member/xapiVerbProgress.test.ts",
+      "lib/platform/orgBrandingCache.test.ts",
       "lib/readiness/progressSummary.test.ts",
       "lib/readiness/progressView.test.ts",
       "lib/retention/cleanup.test.ts",
+      "lib/wioa/wioaAvailability.test.ts",
       "lib/xapi/statements.test.ts"
     ],
     "vitestImportPatterns": [
@@ -112,6 +115,7 @@
       "lib/coursera/learnerProgress.test.ts",
       "lib/cron/wioa-report.test.ts",
       "lib/enroll/listPublicEnrollmentPartners.test.ts",
+      "lib/events/memberEventWriters.test.ts",
       "lib/marketing/trustStripMetrics.test.ts",
       "lib/marketing/googleItSupportLanding.test.ts",
       "lib/messages/counselorInbox.test.ts",
@@ -121,9 +125,11 @@
       "lib/member/getMemberState.test.ts",
       "lib/member/streaks.test.ts",
       "lib/member/xapiVerbProgress.test.ts",
+      "lib/platform/orgBrandingCache.test.ts",
       "lib/readiness/progressSummary.test.ts",
       "lib/readiness/progressView.test.ts",
       "lib/retention/cleanup.test.ts",
+      "lib/wioa/wioaAvailability.test.ts",
       "lib/xapi/statements.test.ts",
       "components/**/*.test.tsx",
       "app/api/apply/signup/route.test.ts"

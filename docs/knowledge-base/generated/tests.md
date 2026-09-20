@@ -17,8 +17,9 @@
 | [tests/api/admin-health-debug.spec.ts](../../../tests/api/admin-health-debug.spec.ts) | 70 | tests |  |
 | [tests/api/admin-health.spec.ts](../../../tests/api/admin-health.spec.ts) | 238 | tests |  |
 | [tests/api/admin-job-matches-tenant-boundary.spec.ts](../../../tests/api/admin-job-matches-tenant-boundary.spec.ts) | 52 | tests |  |
-| [tests/api/admin-member-delete.spec.ts](../../../tests/api/admin-member-delete.spec.ts) | 185 | tests |  |
+| [tests/api/admin-member-delete.spec.ts](../../../tests/api/admin-member-delete.spec.ts) | 193 | tests |  |
 | [tests/api/admin-member-enrollment-funding.spec.ts](../../../tests/api/admin-member-enrollment-funding.spec.ts) | 147 | tests |  |
+| [tests/api/admin-member-erase.spec.ts](../../../tests/api/admin-member-erase.spec.ts) | 181 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
 | [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
 | [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 588 | tests |  |
@@ -98,7 +99,7 @@
 | [tests/api/employer-subscribe-pricing.spec.ts](../../../tests/api/employer-subscribe-pricing.spec.ts) | 196 | tests |  |
 | [tests/api/employers-page.spec.ts](../../../tests/api/employers-page.spec.ts) | 50 | tests |  |
 | [tests/api/extract-resume-text.spec.ts](../../../tests/api/extract-resume-text.spec.ts) | 62 | tests |  |
-| [tests/api/gdpr-delete-route.spec.ts](../../../tests/api/gdpr-delete-route.spec.ts) | 142 | tests |  |
+| [tests/api/gdpr-delete-route.spec.ts](../../../tests/api/gdpr-delete-route.spec.ts) | 149 | tests |  |
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 233 | tests |  |
@@ -111,7 +112,7 @@
 | [tests/api/member-course-complete.spec.ts](../../../tests/api/member-course-complete.spec.ts) | 198 | tests |  |
 | [tests/api/member-coursera-enroll-in-course.spec.ts](../../../tests/api/member-coursera-enroll-in-course.spec.ts) | 231 | learning-coursera |  |
 | [tests/api/member-coursera-identity.spec.ts](../../../tests/api/member-coursera-identity.spec.ts) | 83 | learning-coursera |  |
-| [tests/api/member-delete-account.spec.ts](../../../tests/api/member-delete-account.spec.ts) | 213 | tests |  |
+| [tests/api/member-delete-account.spec.ts](../../../tests/api/member-delete-account.spec.ts) | 218 | tests |  |
 | [tests/api/member-enrollments.spec.ts](../../../tests/api/member-enrollments.spec.ts) | 118 | tests |  |
 | [tests/api/member-event-ingestion.spec.ts](../../../tests/api/member-event-ingestion.spec.ts) | 46 | tests |  |
 | [tests/api/member-export-data.spec.ts](../../../tests/api/member-export-data.spec.ts) | 288 | tests |  |
@@ -193,12 +194,14 @@
 | [tests/app/counselor-student-detail-messages-rail.spec.tsx](../../../tests/app/counselor-student-detail-messages-rail.spec.tsx) | 150 | tests |  |
 | [tests/app/dashboard-training-redirect.spec.ts](../../../tests/app/dashboard-training-redirect.spec.ts) | 69 | tests |  |
 | [tests/app/diagnostics-read-reliability.spec.tsx](../../../tests/app/diagnostics-read-reliability.spec.tsx) | 57 | tests |  |
+| [tests/app/eligibility-layoff-company.spec.tsx](../../../tests/app/eligibility-layoff-company.spec.tsx) | 62 | tests |  |
 | [tests/app/employer-application-detail-dates.spec.tsx](../../../tests/app/employer-application-detail-dates.spec.tsx) | 54 | tests |  |
 | [tests/app/employer-applications-pageheader.spec.ts](../../../tests/app/employer-applications-pageheader.spec.ts) | 33 | tests |  |
 | [tests/app/employer-billing-page.spec.tsx](../../../tests/app/employer-billing-page.spec.tsx) | 66 | tests |  |
 | [tests/app/employer-candidate-times.spec.tsx](../../../tests/app/employer-candidate-times.spec.tsx) | 75 | tests |  |
 | [tests/app/employer-dashboard-dates.spec.tsx](../../../tests/app/employer-dashboard-dates.spec.tsx) | 73 | tests |  |
 | [tests/app/employer-remaining-pageheader.spec.ts](../../../tests/app/employer-remaining-pageheader.spec.ts) | 42 | tests |  |
+| [tests/app/job-applications-page.spec.tsx](../../../tests/app/job-applications-page.spec.tsx) | 61 | tests |  |
 | [tests/app/member-dashboard-layout.spec.tsx](../../../tests/app/member-dashboard-layout.spec.tsx) | 89 | tests |  |
 | [tests/app/member-messages-inbox-time.spec.tsx](../../../tests/app/member-messages-inbox-time.spec.tsx) | 54 | tests |  |
 | [tests/app/member-referrals-page.spec.tsx](../../../tests/app/member-referrals-page.spec.tsx) | 33 | tests |  |
@@ -214,10 +217,12 @@
 | [tests/app/partner-settings-dates.spec.tsx](../../../tests/app/partner-settings-dates.spec.tsx) | 48 | tests |  |
 | [tests/app/portal-h1-ownership.spec.ts](../../../tests/app/portal-h1-ownership.spec.ts) | 164 | tests |  |
 | [tests/app/portal-page-outlines.spec.tsx](../../../tests/app/portal-page-outlines.spec.tsx) | 62 | tests |  |
+| [tests/app/program-start-page.spec.tsx](../../../tests/app/program-start-page.spec.tsx) | 91 | tests |  |
 | [tests/app/public-cta-class.spec.ts](../../../tests/app/public-cta-class.spec.ts) | 97 | tests |  |
 | [tests/app/public-icon-font-free.spec.ts](../../../tests/app/public-icon-font-free.spec.ts) | 120 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
+| [tests/app/skill-missions-page.spec.tsx](../../../tests/app/skill-missions-page.spec.tsx) | 97 | tests |  |
 | [tests/components/admin-command-center-presentation.spec.tsx](../../../tests/components/admin-command-center-presentation.spec.tsx) | 55 | tests |  |
 | [tests/components/admin-command-center-workflows.spec.tsx](../../../tests/components/admin-command-center-workflows.spec.tsx) | 258 | tests |  |
 | [tests/components/admin-directory-navigation.spec.tsx](../../../tests/components/admin-directory-navigation.spec.tsx) | 182 | tests |  |
@@ -290,7 +295,7 @@
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
 | [tests/components/training-feedback-handoff.test.tsx](../../../tests/components/training-feedback-handoff.test.tsx) | 100 | tests |  |
-| [tests/components/wioa-qualification.spec.tsx](../../../tests/components/wioa-qualification.spec.tsx) | 131 | partners-funding |  |
+| [tests/components/wioa-qualification.spec.tsx](../../../tests/components/wioa-qualification.spec.tsx) | 145 | partners-funding |  |
 | [tests/components/wioa-review-revision.spec.tsx](../../../tests/components/wioa-review-revision.spec.tsx) | 64 | partners-funding |  |
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |

@@ -68,3 +68,28 @@ describe('MemberHomeKit certification-path card', () => {
     expect(screen.getByText('No next module on file.')).toBeTruthy();
   });
 });
+
+describe('MemberHomeKit resume module CTA', () => {
+  it('rewrites the dead training stub to My Program and keeps the query string', () => {
+    const { container } = renderKit(
+      <MemberHomeKit {...base} resumeHref="/dashboard/training?program=google-it-support" />,
+    );
+    const link = screen.getByRole('link', { name: /Resume module/ });
+    expect(link.getAttribute('href')).toBe('/dashboard/program?program=google-it-support');
+    // The CTA lives in the certification-path card inside the 4-column rail.
+    const card = link.closest('.wa-kit-cert-path');
+    expect(card).not.toBeNull();
+    expect(card!.parentElement?.className).toBe('lg:wa-col-span-4 wa-min-w-0');
+    expect(container.querySelector('a[href="/dashboard/training"]')).toBeNull();
+    expect(container.querySelector('a[href^="/dashboard/training?"]')).toBeNull();
+  });
+
+  it('leaves a real resume destination alone and defaults to My Program', () => {
+    const { unmount } = renderKit(<MemberHomeKit {...base} resumeHref="/dashboard/learning" />);
+    expect(screen.getByRole('link', { name: /Resume module/ }).getAttribute('href')).toBe('/dashboard/learning');
+    unmount();
+
+    renderKit(<MemberHomeKit {...base} />);
+    expect(screen.getByRole('link', { name: /Resume module/ }).getAttribute('href')).toBe('/dashboard/program');
+  });
+});
