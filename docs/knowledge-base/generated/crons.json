@@ -320,17 +320,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 153,
+          "line": 165,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 154,
+          "line": 166,
           "kind": "Variable"
         }
       ],
@@ -431,17 +431,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 107,
+          "line": 119,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 108,
+          "line": 120,
           "kind": "Variable"
         }
       ],
@@ -468,17 +468,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 95,
+          "line": 107,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 96,
+          "line": 108,
           "kind": "Variable"
         }
       ],
@@ -684,17 +684,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 132,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 133,
+          "line": 145,
           "kind": "Variable"
         }
       ],
