@@ -83,7 +83,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                 flexShrink: 0,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 700,
                 background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
                 color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
@@ -94,7 +94,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             >
               {chip.label}
               {chip.count > 0 ? (
-                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.75rem', opacity: 0.85 }}>{chip.count}</span>
+                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem', opacity: 0.85 }}>{chip.count}</span>
               ) : null}
             </button>
           );
@@ -142,7 +142,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                     >
                       {row.fullName}
                     </p>
-                    <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: '2px 0 6px' }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 6px' }}>
                       {row.programTitle} &middot; Referred {row.referredAtLabel}
                     </p>
                     <StageTrack

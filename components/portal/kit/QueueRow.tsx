@@ -86,7 +86,7 @@ export function QueueRow({ tone, icon, title, meta, flag, action, onClick }: Que
               <StatusDot variant={TONE_DOT[tone]} label={title} />
               <div style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
             </HStack>
-            {meta ? <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>{meta}</div> : null}
+            {meta ? <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{meta}</div> : null}
           </div>
           {flag ? (
             <span className="wa-hidden md:wa-inline">

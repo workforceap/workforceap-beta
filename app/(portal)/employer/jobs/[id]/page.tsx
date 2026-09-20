@@ -154,7 +154,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
                       borderRadius: '999px',
                       background: readinessTone.bg,
                       color: readinessTone.color,
-                      fontSize: '0.74rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.08em',
@@ -168,26 +168,26 @@ export default async function EmployerJobDetailPage({ params }: Props) {
                   {summaryStats.map((stat) => (
                     <div key={stat.label} style={{ padding: '0.9rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
                       <div style={{ fontSize: '1.15rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{stat.value}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{stat.label}</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.85rem', marginTop: '1rem' }}>
                   <div style={{ padding: '0.95rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Company</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Company</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{employer?.companyName ?? '—'}</p>
                   </div>
                   <div style={{ padding: '0.95rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Location</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Location</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{job.location?.trim() || 'Add job location'}</p>
                   </div>
                   <div style={{ padding: '0.95rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Compensation</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Compensation</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{formatSalary(job.salaryMin, job.salaryMax)}</p>
                   </div>
                   <div style={{ padding: '0.95rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Source</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Source</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{job.importProvider ?? job.importMethod ?? 'Created in portal'}</p>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
 
               <section className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                  <h2 style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Edit posting</h2>
+                  <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Edit posting</h2>
                   <Link href={`/employer/jobs/${id}/edit`} className="btn btn-outline btn-sm">
                     Full edit
                   </Link>
@@ -225,7 +225,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
 
               <section className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                  <h2 style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
+                  <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>
                     Applicants ({applicants.length})
                   </h2>
                   <Link href="/employer/applications" className="btn btn-ghost btn-sm">
@@ -238,7 +238,7 @@ export default async function EmployerJobDetailPage({ params }: Props) {
 
             <aside style={{ display: 'grid', gap: '1rem' }}>
               <section className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem' }}>Readiness check</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem' }}>Readiness check</h2>
                 <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
                   {editReadiness.issues.length === 0
                     ? 'This posting has the core details candidates need. You can still fine-tune the copy below.'
@@ -252,24 +252,24 @@ export default async function EmployerJobDetailPage({ params }: Props) {
               </section>
 
               <section className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem' }}>Hiring context</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.85rem' }}>Hiring context</h2>
                 <div style={{ display: 'grid', gap: '0.85rem' }}>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Role type</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Role type</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{job.jobType ?? '—'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Work style</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Work style</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{job.locationType ?? '—'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Description health</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Description health</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>
                       {job.description?.trim() && job.description.trim().length >= 140 ? 'Detailed enough to review' : 'Needs more day-to-day detail'}
                     </p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Training alignment</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Training alignment</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>
                       {job.suggestedPrograms?.length ? `${job.suggestedPrograms.length} program match${job.suggestedPrograms.length === 1 ? '' : 'es'} selected` : 'No program matches yet'}
                     </p>

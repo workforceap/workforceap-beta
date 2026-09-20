@@ -952,7 +952,7 @@ export default function ApplyEligibilityClient({
             {t(panel === 'funding' ? 'eligibilityRadioError' : panel === 'contact' ? 'contactIncompleteError' : isSchool ? 'schoolScreeningIncompleteError' : 'screeningIncompleteError')}
           </p>
         ) : null}
-        <p className="apply-consent-line" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0', lineHeight: 1.5 }}>
+        <p className="apply-consent-line" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0', lineHeight: 1.5 }}>
           {t('applyConsentLine')}{' '}
           <LocalizedLink href="/privacy" style={{ color: 'inherit', textDecoration: 'underline' }}>
             {t('applyConsentPrivacy')}

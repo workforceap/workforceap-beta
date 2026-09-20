@@ -83,7 +83,7 @@ export default function AdminMemberQuickSummary({ memberId }: { memberId: string
           <p
             style={{
               margin: '0 0 0.5rem',
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               fontWeight: 800,
               letterSpacing: '0.08em',
               textTransform: 'uppercase',

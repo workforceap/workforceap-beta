@@ -71,7 +71,7 @@ export default async function EmployerSettingsPage() {
 
         {/* Quick nav */}
         <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-          <h2 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
+          <h2 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
             {t('whatYouCanDoNow')}
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

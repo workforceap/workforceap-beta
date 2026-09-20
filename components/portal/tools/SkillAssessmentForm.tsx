@@ -206,7 +206,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
         <p
           style={{
             margin: 0,
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
@@ -316,7 +316,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
                 <span style={{ fontSize: '0.82rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
                   {occupation.description || occupation.code}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 700 }}>
                   {loadingResult && selectedOccupation?.code === occupation.code ? 'Loading profile…' : `Use ${occupation.code}`}
                 </span>
               </button>
@@ -343,7 +343,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
               padding: '1rem',
             }}
           >
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-accent)', fontWeight: 700 }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 700 }}>
               {selectedOccupation.code}
             </p>
             <h3 style={{ margin: '0.4rem 0 0.45rem', fontSize: '1.15rem', color: 'var(--color-on-surface)' }}>
@@ -404,7 +404,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
                         y={label.y}
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        style={{ fontSize: '12px', fill: '#584144', fontWeight: 600 }}
+                        style={{ fontSize: '13px', fill: '#584144', fontWeight: 600 }}
                       >
                         {axis.axis}
                       </text>
@@ -432,7 +432,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
                   <div style={{ height: axis.hasData === false ? '1rem' : '0.5rem', background: '#f0edec', borderRadius: '999px', overflow: 'hidden', transition: 'height 0.2s' }}>
                     {axis.hasData === false ? (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: '0.6rem', color: '#999', fontStyle: 'italic', lineHeight: 1 }}>no data</span>
+                        <span style={{ fontSize: '0.8125rem', color: '#999', fontStyle: 'italic', lineHeight: 1 }}>no data</span>
                       </div>
                     ) : (
                       <div
@@ -471,7 +471,7 @@ export default function SkillAssessmentForm({ disabled = false }: Props) {
                     <span style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}>{skill.name}</span>
                     <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{skill.score}%</span>
                   </div>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', textTransform: 'capitalize' }}>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'capitalize' }}>
                     {skill.category}
                   </p>
                 </div>

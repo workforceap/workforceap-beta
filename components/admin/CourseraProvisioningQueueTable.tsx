@@ -162,7 +162,7 @@ export default function CourseraProvisioningQueueTable({
         </button>
       </div>
 
-      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         Showing {filteredRows.length} of {rows.length} member{rows.length === 1 ? '' : 's'} · snapshot{' '}
         {new Date(generatedAt).toLocaleString()} · rows needing attention sort first.
       </p>
@@ -201,7 +201,7 @@ export default function CourseraProvisioningQueueTable({
                 <Link href={`/admin/members/${row.memberId}`} style={{ fontWeight: 600 }}>
                   {row.memberName}
                 </Link>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{row.memberEmail}</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.memberEmail}</div>
               </div>
             ),
           },
@@ -219,12 +219,12 @@ export default function CourseraProvisioningQueueTable({
                   <StatusBadge label={PROVISIONING_STATE_LABELS[row.state]} variant={STATE_VARIANT[row.state]} />
                 </span>
                 {row.approvalMismatch ? (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
                     Coursera activity without portal approval
                   </span>
                 ) : null}
                 {row.hasUnmatchedRows ? (
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
                     {row.unmatchedCourseraRows} unlinked Coursera row{row.unmatchedCourseraRows === 1 ? '' : 's'}
                   </span>
                 ) : null}
@@ -239,7 +239,7 @@ export default function CourseraProvisioningQueueTable({
               <div>
                 <span style={{ fontWeight: 600 }}>{row.approved ? 'Yes' : 'No'}</span>
                 {row.approved && row.approvedAt ? (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{fmtDate(row.approvedAt)}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{fmtDate(row.approvedAt)}</div>
                 ) : null}
               </div>
             ),
@@ -261,7 +261,7 @@ export default function CourseraProvisioningQueueTable({
             header: t('lastActivity'),
             cell: (row) => {
               const counts = (
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   {row.courseProgressRows} course · {row.linkedCourseraRows} B4B · {row.xapiStatements} xAPI
                 </div>
               );
@@ -286,7 +286,7 @@ export default function CourseraProvisioningQueueTable({
                     >
                       {fmtDate(row.lastSignInAt)}
                     </time>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>{t('lastSignIn')}</div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-accent)' }}>{t('lastSignIn')}</div>
                     {counts}
                   </div>
                 );
@@ -305,16 +305,16 @@ export default function CourseraProvisioningQueueTable({
             align: 'right',
             cell: (row) => (
               <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                <Link href={`/admin/members/${row.memberId}`} style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                <Link href={`/admin/members/${row.memberId}`} style={{ fontSize: '0.8125rem', fontWeight: 600 }}>
                   Member
                 </Link>
-                <Link href={`/admin/coursera/learners/${row.memberId}`} style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                <Link href={`/admin/coursera/learners/${row.memberId}`} style={{ fontSize: '0.8125rem', fontWeight: 600 }}>
                   Coursera detail
                 </Link>
                 {row.state === 'unmatched' || row.hasUnmatchedRows ? (
                   <Link
                     href={`/admin/coursera/learners/unmatched/${encodeURIComponent(row.memberEmail.toLowerCase())}`}
-                    style={{ fontSize: '0.8rem', fontWeight: 600 }}
+                    style={{ fontSize: '0.8125rem', fontWeight: 600 }}
                   >
                     Map rows
                   </Link>

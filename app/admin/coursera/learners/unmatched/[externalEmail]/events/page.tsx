@@ -123,7 +123,7 @@ export default async function AdminCourseraUnmatchedEventsPage({
                       <>
                         <strong>{evt.courseName ?? evt.courseSlug ?? '—'}</strong>
                         {evt.courseSlug && evt.courseName ? (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             {evt.courseSlug}
                           </div>
                         ) : null}
@@ -133,7 +133,7 @@ export default async function AdminCourseraUnmatchedEventsPage({
                   {
                     key: 'verb',
                     header: 'Verb',
-                    cell: (evt) => <code style={{ fontSize: '0.78rem' }}>{shortVerb(evt.verbId)}</code>,
+                    cell: (evt) => <code style={{ fontSize: '0.8125rem' }}>{shortVerb(evt.verbId)}</code>,
                   },
                   {
                     key: 'status',
@@ -145,7 +145,7 @@ export default async function AdminCourseraUnmatchedEventsPage({
                             display: 'inline-block',
                             padding: '0.1rem 0.45rem',
                             borderRadius: 999,
-                            fontSize: '0.72rem',
+                            fontSize: '0.8125rem',
                             fontWeight: 600,
                             background:
                               evt.completionStatus === 'unmatched'
@@ -160,7 +160,7 @@ export default async function AdminCourseraUnmatchedEventsPage({
                           {evt.completionStatus}
                         </span>
                         {evt.error ? (
-                          <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
                             {evt.error}
                           </div>
                         ) : null}
@@ -172,7 +172,7 @@ export default async function AdminCourseraUnmatchedEventsPage({
                     header: 'Statement ID',
                     cell: (evt) =>
                       evt.statementId ? (
-                        <code style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', wordBreak: 'break-all' }}>
+                        <code style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', wordBreak: 'break-all' }}>
                           {evt.statementId}
                         </code>
                       ) : (

@@ -30,6 +30,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Type floor (WAP-122): Tailwind's default `text-xs` is 12px. Every
+      // `wa-text-xs` on member/public/staff surfaces now resolves to the 13px
+      // floor (docs/KIT_GUIDE.md §1). Literal sizes below the floor are
+      // rejected by scripts/lint/check-type-floor.mjs.
+      fontSize: {
+        xs: ['0.8125rem', { lineHeight: '1.125rem' }],
+      },
       colors: {
         // Prefixed classes: wa-brand-* — keep in sync with DESIGN.md + css/main.css
         brand: {

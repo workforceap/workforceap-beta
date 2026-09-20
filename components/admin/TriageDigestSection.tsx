@@ -176,7 +176,7 @@ export default function TriageDigestSection({ digest }: { digest: TriageDigest }
                       <span
                         style={{
                           display: 'block',
-                          fontSize: '0.78rem',
+                          fontSize: '0.8125rem',
                           color: 'var(--color-on-surface-variant)',
                           marginTop: '0.15rem',
                         }}
@@ -206,7 +206,7 @@ export default function TriageDigestSection({ digest }: { digest: TriageDigest }
                 <p
                   style={{
                     margin: 0,
-                    fontSize: '0.78rem',
+                    fontSize: '0.8125rem',
                     color: 'var(--color-on-surface-variant)',
                   }}
                 >

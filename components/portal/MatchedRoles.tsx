@@ -137,7 +137,7 @@ export default function MatchedRoles() {
                     flexShrink: 0,
                     padding: '0.2rem 0.6rem',
                     borderRadius: '50px',
-                    fontSize: '0.8rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     color: matchColor,
                     background: `color-mix(in srgb, ${matchColor} 15%, transparent)`,

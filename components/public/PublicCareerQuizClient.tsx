@@ -331,7 +331,7 @@ export default function PublicCareerQuizClient({ friendType }: { friendType?: st
         </p>
       )}
 
-      <p style={{ fontSize: '0.8rem', fontWeight: 700, color: ACCENT, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+      <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: ACCENT, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
         Question {step + 1} of {QUIZ_QUESTIONS.length}
       </p>
       <p style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '1.25rem', lineHeight: 1.45 }}>

@@ -70,7 +70,7 @@
   .navdrop-menu a:hover{background:var(--surface-2);color:var(--crimson)}
   .navdrop-menu a[aria-current=page]{color:var(--crimson)}
   /* mobile drawer: sign-in group */
-  .mobilemenu-head{margin-top:18px;padding:6px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .mobilemenu-head{margin-top:18px;padding:6px;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
   .mobilemenu .mobilemenu-sub{display:block;padding:11px 6px 11px 18px;font-size:16px;color:var(--muted)}
   .mobilemenu .mobilemenu-sub[aria-current=page]{color:var(--crimson)}
   /* collapsible mobile sub-dropdowns (native <details>, zero-JS) */
@@ -152,13 +152,13 @@
   .step .t{flex:1}
   .step .t b{display:block;font-weight:700}
   .step .t span{font-size:13px;color:rgba(255,255,255,.8)}
-  .step .pill{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.22)}
+  .step .pill{font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.22)}
   .panel .note{position:relative;margin-top:14px;font-size:13px;color:rgba(255,255,255,.82)}
   /* gold PILL, centered at the panel top — inside the bounds so the panel's
      overflow:hidden never clips it (the old top-right negative-offset pill got
      cut off, worst on mobile). Pill shape, clearly gold. */
-  .floatbadge{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:calc(100% - 32px);background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff;font-weight:800;font-size:12px;letter-spacing:.02em;line-height:1;padding:8px 16px;border-radius:999px;box-shadow:0 8px 22px -8px rgba(164,127,56,.7)}
-  .floatbadge::before{content:"★";font-size:11px;opacity:.95}
+  .floatbadge{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;max-width:calc(100% - 32px);background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff;font-weight:800;font-size:13px;letter-spacing:.02em;line-height:1;padding:8px 16px;border-radius:999px;box-shadow:0 8px 22px -8px rgba(164,127,56,.7)}
+  .floatbadge::before{content:"★";font-size:13px;opacity:.95}
 
   /* section scaffolding */
   section.band{padding:68px 0}
@@ -170,7 +170,7 @@
   /* cert partners */
   .creds{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
   .creds .row{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;padding:26px 0}
-  .creds .lab{width:100%;text-align:center;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .creds .lab{width:100%;text-align:center;color:var(--muted);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
   .creds .logo{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:21px;color:#4a4440;opacity:.78}
   .creds .extra{color:var(--gold-dark);font-weight:700;font-size:15px}
 
@@ -188,10 +188,10 @@
   .tool p{color:var(--muted);font-size:15px}
   .tool .demo{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
   .demo .line{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text)}
-  .demo .line .chk{width:20px;height:20px;border-radius:6px;background:rgba(74,155,79,.15);color:var(--green);display:grid;place-items:center;font-size:12px;flex-shrink:0}
+  .demo .line .chk{width:20px;height:20px;border-radius:6px;background:rgba(74,155,79,.15);color:var(--green);display:grid;place-items:center;font-size:13px;flex-shrink:0}
   .demo .bar{height:8px;border-radius:5px;background:var(--border);overflow:hidden}
   .demo .bar i{display:block;height:100%;background:var(--grad)}
-  .demo .tag{display:inline-flex;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(43,123,185,.1);color:var(--blue);width:fit-content}
+  .demo .tag{display:inline-flex;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(43,123,185,.1);color:var(--blue);width:fit-content}
   @media(max-width:880px){.bento{grid-template-columns:1fr}.tool.big{grid-column:span 1;grid-row:auto}}
 
   /* steps */
@@ -241,7 +241,7 @@
   footer li a{color:var(--muted);font-size:14px;background-image:linear-gradient(var(--gold-dark),var(--gold-dark));background-size:0 1.5px;background-position:0 100%;background-repeat:no-repeat;transition:background-size .25s ease,color .2s}
   footer li a:hover{color:var(--gold-dark);background-size:100% 1.5px}
   .fbrand p{color:var(--muted);font-size:14px;max-width:30em;margin-top:12px}
-  .fseal{display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--gold-dark);background:rgba(164,127,56,.1);border:1px solid rgba(164,127,56,.28);padding:7px 13px;border-radius:999px}
+  .fseal{display:inline-flex;align-items:center;gap:7px;margin-top:16px;font-size:13px;font-weight:800;letter-spacing:.02em;color:var(--gold-dark);background:rgba(164,127,56,.1);border:1px solid rgba(164,127,56,.28);padding:7px 13px;border-radius:999px}
   .fseal svg{flex-shrink:0}
   .fbottom{border-top:1px solid var(--border);padding-top:22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px}
   @media(max-width:760px){
@@ -318,7 +318,7 @@
   /* ===== Eligibility form island (React, hydrated) ===== */
   .elig-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow-lg);max-width:560px}
   .elig-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
-  .elig-kicker{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--crimson);margin-bottom:4px}
+  .elig-kicker{display:block;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--crimson);margin-bottom:4px}
   .elig-head h3{font-size:22px;font-weight:800}
   .elig-progress{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:var(--gold-dark)}
   .elig-bar{height:8px;border-radius:5px;background:var(--border);overflow:hidden;margin-bottom:22px}
@@ -337,7 +337,7 @@
   .elig-fields label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--muted)}
   .elig-fields input{padding:11px 13px;border:1px solid var(--border);border-radius:11px;font:inherit;font-size:15px;color:var(--text);background:#fff}
   .elig-fields input:focus{outline:2px solid var(--crimson);outline-offset:1px}
-  .elig-fine{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+  .elig-fine{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
   .elig-done{text-align:center;padding:14px 4px}
   .elig-done__ic{display:inline-grid;place-items:center;width:54px;height:54px;border-radius:50%;background:rgba(74,155,79,.15);color:var(--green);font-size:26px;font-weight:800;margin-bottom:14px}
   .elig-done h3{font-size:22px;font-weight:800;margin-bottom:10px}
@@ -347,7 +347,7 @@
 
   /* ===== language switcher ===== */
   .langswitch{display:inline-flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px}
-  .langswitch a{font-size:12px;font-weight:700;color:var(--muted);padding:5px 8px;border-radius:7px;line-height:1}
+  .langswitch a{font-size:13px;font-weight:700;color:var(--muted);padding:5px 8px;border-radius:7px;line-height:1}
   .langswitch a:hover{color:var(--text)}
   .langswitch a[aria-current=true]{background:var(--crimson);color:#fff}
 

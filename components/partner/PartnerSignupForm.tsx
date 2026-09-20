@@ -210,7 +210,7 @@ export default function PartnerSignupForm() {
           disabled={status === 'sending'}
           autoComplete="new-password"
         />
-        <small style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8rem' }}>
+        <small style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
           Must be at least 8 characters
         </small>
       </div>
@@ -240,7 +240,7 @@ export default function PartnerSignupForm() {
         </div>
       ) : null}
 
-      <p style={{ marginBottom: '0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+      <p style={{ marginBottom: '0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         Payout eligibility depends on partner type and verification. Placements are verified before any payout, and full details are covered during onboarding.
       </p>
 
@@ -253,7 +253,7 @@ export default function PartnerSignupForm() {
         {status === 'sending' ? 'Creating your account…' : 'Create partner account'}
       </button>
 
-      <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+      <p style={{ marginTop: '0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         By signing up, you agree to our Terms of Service and Privacy Policy.
       </p>
     </form>

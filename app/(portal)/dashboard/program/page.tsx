@@ -303,7 +303,7 @@ export default async function ProgramPage({
         <PortalCard>
           <CourseraProgressCoverageNotice coverage={trainingView?.providerCoverage} />
           <div style={{ marginBottom: '1rem', padding: '0.9rem 1rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)', border: '1px solid var(--outline-variant)' }}>
-            <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
               Coursera & training email
             </p>
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', lineHeight: 1.55 }}>
@@ -340,7 +340,7 @@ export default async function ProgramPage({
                     color: 'white',
                     padding: '0.2rem 0.6rem',
                     borderRadius: '50px',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                   }}
                 >

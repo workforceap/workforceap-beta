@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "705137281c1e0d6c02e15ff4fccee760013780005ec3687950765d86e104d51a",
+  "inputTreeSha256": "c9fbd98f0f4752f045e69d4397f6226d2a47ae714af27fcaa60e344874ccecfc",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4827,
-    "sourceModules": 3489,
-    "importReferences": 16998,
-    "resolvedLocalReferences": 11334,
+    "files": 4833,
+    "sourceModules": 3495,
+    "importReferences": 17016,
+    "resolvedLocalReferences": 11336,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 830,
-    "testCandidates": 823,
+    "testFiles": 835,
+    "testCandidates": 828,
     "testHelpers": 7,
-    "staticallySelectedTests": 820,
+    "staticallySelectedTests": 825,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 126
+      "files": 128
     },
     {
       "area": "pages",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 461
+      "files": 465
     }
   ],
   "mostReferenced": [
@@ -310,7 +310,7 @@
     },
     {
       "file": "app/(portal)/partner/page.tsx",
-      "lines": 1390
+      "lines": 1387
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -386,7 +386,7 @@
     },
     {
       "file": "components/portal/counselor/AtRiskDashboard.tsx",
-      "lines": 1058
+      "lines": 1062
     },
     {
       "file": "lib/coursera/progressQueries.ts",

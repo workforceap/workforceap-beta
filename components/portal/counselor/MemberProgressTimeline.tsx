@@ -73,7 +73,7 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
           Progress Timeline
         </h3>
         {programAvgDays != null ? (
-          <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             Avg program: {programAvgDays}d
           </span>
         ) : null}
@@ -100,11 +100,11 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
           />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.375rem' }}>
-          <span style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             {completedCount} of {events.length} stages complete
           </span>
           {events.some((e) => e.durationDays != null) ? (
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Total: {events.reduce((sum, e) => sum + (e.durationDays ?? 0), 0)}d
             </span>
           ) : null}
@@ -175,7 +175,7 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
                   {event.status === 'in_progress' && (
                     <span
                       style={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         color: 'var(--color-accent)',
                         background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
@@ -188,7 +188,7 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
                   )}
                 </div>
                 {event.date ? (
-                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {new Date(event.date).toLocaleDateString()}
                     {event.durationDays != null ? ` · ${event.durationDays}d` : null}
                     {event.durationDays != null && programAvgDays != null && event.status === 'completed' ? (
@@ -207,7 +207,7 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
                     ) : null}
                   </p>
                 ) : (
-                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {event.status === 'skipped' ? 'Skipped' : 'Pending'}
                   </p>
                 )}

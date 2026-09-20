@@ -453,7 +453,7 @@ export function AtRiskDashboardView({
           >
             <BookOpen size={15} />
           </div>
-          <p style={{ margin: 0, fontSize: 12, lineHeight: 1.55, color: 'var(--wa-muted)' }}>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--wa-muted)' }}>
             <strong style={{ color: 'var(--wa-text)' }}>How to use this screen:</strong>{' '}
             Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
             <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
@@ -510,8 +510,12 @@ export function AtRiskDashboardView({
 
           {/* Search + program + sort + toggle */}
           <div className="wa-flex wa-flex-col md:wa-flex-row wa-gap-3 md:wa-items-center">
+            <label htmlFor="at-risk-search" className="sr-only">
+              Search at-risk members
+            </label>
             <input
-              type="text"
+              id="at-risk-search"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name or email…"
@@ -569,7 +573,7 @@ export function AtRiskDashboardView({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 600,
                 cursor: 'pointer',
                 userSelect: 'none',
@@ -591,7 +595,7 @@ export function AtRiskDashboardView({
           {/* Active filter chips */}
           {hasActiveFilters && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                 <Filter size={11} />
                 Filters:
               </span>
@@ -605,7 +609,7 @@ export function AtRiskDashboardView({
                 <FilterTag label={`Program: ${programFilter}`} onRemove={() => setProgramFilter('all')} />
               )}
               {unacknowledgedOnly && <FilterTag label="Only open alerts" onRemove={() => setUnacknowledgedOnly(false)} />}
-              <button type="button" className="btn btn-ghost btn-sm" onClick={clearAllFilters} style={{ fontSize: 11 }}>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={clearAllFilters} style={{ fontSize: 13 }}>
                 Clear all
               </button>
             </div>
@@ -673,7 +677,7 @@ export function AtRiskDashboardView({
           goal={`Showing ${filteredMembers.length} member${filteredMembers.length === 1 ? '' : 's'}${loading ? ' · Refreshing…' : ''}`}
           action={
             filteredMembers.length > 0 ? (
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
                 <input
                   type="checkbox"
                   aria-label="Select all visible"
@@ -819,7 +823,7 @@ function SortModeButton({
       onClick={onClick}
       title={tooltip}
       className={active ? 'btn btn-primary btn-sm' : 'btn btn-muted btn-sm'}
-      style={{ fontSize: 11, padding: '6px 10px', whiteSpace: 'nowrap' }}
+      style={{ fontSize: 13, padding: '6px 10px', whiteSpace: 'nowrap' }}
     >
       {children}
     </button>
@@ -868,7 +872,7 @@ function FilterChip({
         minHeight: 36,
         padding: '6px 12px',
         borderRadius: 999,
-        fontSize: 12,
+        fontSize: 13,
         fontWeight: 700,
         cursor: 'pointer',
         border: `1.5px solid ${active ? c : 'transparent'}`,
@@ -890,7 +894,7 @@ function FilterTag({ label, onRemove }: { label: string; onRemove: () => void })
         gap: 6,
         padding: '4px 10px',
         borderRadius: 999,
-        fontSize: 11,
+        fontSize: 13,
         fontWeight: 600,
         background: 'var(--wa-border)',
         color: 'var(--wa-text)'}}
@@ -917,7 +921,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
           key={f.name}
           title={`${f.description} (weight ${f.weight}).`}
           style={{
-            fontSize: 11,
+            fontSize: 13,
             padding: '3px 9px',
             borderRadius: 999,
             background: 'var(--wa-border)',
@@ -993,16 +997,16 @@ function RiskRow({
             >
               {row.name}
             </button>
-            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
+            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
               {cfg.label}
             </span>
             <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>
+          <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
             {row.email}
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 4 }}>
+          <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
             {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
@@ -1017,7 +1021,7 @@ function RiskRow({
             className="btn btn-muted btn-sm"
             disabled={acting}
             onClick={onAcknowledge}
-            style={{ fontSize: 12, padding: '5px 10px' }}
+            style={{ fontSize: 13, padding: '5px 10px' }}
             title="Mark that you have started outreach or taken ownership"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Ack'}
@@ -1029,7 +1033,7 @@ function RiskRow({
             className="btn btn-primary btn-sm"
             disabled={acting}
             onClick={onResolve}
-            style={{ fontSize: 12, padding: '5px 10px' }}
+            style={{ fontSize: 13, padding: '5px 10px' }}
             title="Close this alert when risk is cleared, member is placed/exited, or outcome documented"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Resolve'}
@@ -1038,7 +1042,7 @@ function RiskRow({
         <Link
           href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
           className="btn btn-outline btn-sm"
-          style={{ fontSize: 12, padding: '5px 10px' }}
+          style={{ fontSize: 13, padding: '5px 10px' }}
           title="Open the counselor message thread with this member"
         >
           <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
@@ -1047,7 +1051,7 @@ function RiskRow({
         <Link
           href={`/counselor/students/${row.userId}`}
           className="btn btn-outline btn-sm"
-          style={{ fontSize: 12, padding: '5px 10px' }}
+          style={{ fontSize: 13, padding: '5px 10px' }}
           title="Counselor student profile and history"
         >
           View

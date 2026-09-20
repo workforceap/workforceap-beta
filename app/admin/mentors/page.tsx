@@ -243,13 +243,13 @@ async function LegacyMentorsView({ scope }: { scope: import("@/lib/tenant/adminP
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                     Industry
                   </p>
                   <p style={{ margin: '0.25rem 0 0', fontSize: '0.95rem' }}>{mentor.industry || 'Not provided'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                     Applied
                   </p>
                   <p style={{ margin: '0.25rem 0 0', fontSize: '0.95rem' }}>{mentor.createdAt.toLocaleDateString()}</p>

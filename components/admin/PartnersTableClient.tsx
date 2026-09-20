@@ -87,7 +87,7 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
           borderRadius: '4px',
           cursor: loading ? 'wait' : 'pointer',
           color: '#2d7a32',
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           fontWeight: 600,
           display: 'inline-flex',
           alignItems: 'center',
@@ -104,7 +104,7 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
             placeholder="Reason (optional)"
             value={rejectNotes}
             onChange={(e) => setRejectNotes(e.target.value)}
-            style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid var(--outline-variant)', fontSize: '0.8rem', width: 140 }}
+            style={{ padding: '0.25rem 0.5rem', borderRadius: '4px', border: '1px solid var(--outline-variant)', fontSize: '0.8125rem', width: 140 }}
           />
           <button
             type="button"
@@ -117,7 +117,7 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
               borderRadius: '4px',
               cursor: loading ? 'wait' : 'pointer',
               color: '#b91c1c',
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
               display: 'inline-flex',
               alignItems: 'center',
@@ -140,7 +140,7 @@ function ApproveRejectButtons({ partnerId, onDone }: { partnerId: string; onDone
             borderRadius: '4px',
             cursor: loading ? 'wait' : 'pointer',
             color: '#b91c1c',
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             fontWeight: 600,
             display: 'inline-flex',
             alignItems: 'center',
@@ -196,9 +196,9 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
         cell: (partner: Partner) => (
           <>
             <div style={{ fontWeight: 600 }}>{partner.name}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{partner.slug}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{partner.slug}</div>
             {partner.partnerType === 'high_school' || partner.enrollmentPageEnabled || partner.sponsoredEnrollment ? (
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', marginTop: 2 }}>School partner</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', marginTop: 2 }}>School partner</div>
             ) : null}
           </>
         ),
@@ -249,7 +249,7 @@ export default function PartnersTableClient({ partners, subgroups, superAdmin, p
               style={{
                 padding: '0.2rem 0.5rem',
                 borderRadius: '4px',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 background: isPending
                   ? 'rgba(255, 187, 0, 0.15)'
                   : partner.active

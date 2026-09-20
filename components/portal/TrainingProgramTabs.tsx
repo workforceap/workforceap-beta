@@ -111,7 +111,7 @@ export default function TrainingProgramTabs({
                   aria-label="Primary program"
                   title="Primary program"
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     padding: '0.125rem 0.4rem',
                     borderRadius: '999px',

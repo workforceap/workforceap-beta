@@ -45,14 +45,14 @@ export default function AwardPointsButton({
   return (
     <>
       {success && (
-        <p style={{ color: 'var(--color-green)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{success}</p>
+        <p style={{ color: 'var(--color-green)', fontSize: '0.8125rem', marginBottom: '0.5rem' }}>{success}</p>
       )}
       {!open ? (
         <button
           type="button"
           className="btn btn-outline btn-sm"
           onClick={() => { setOpen(true); setSuccess(''); }}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8rem' }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', fontSize: '0.8125rem' }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>stars</span>
           Award points
@@ -69,11 +69,11 @@ export default function AwardPointsButton({
             gap: '0.5rem',
           }}
         >
-          <p style={{ fontSize: '0.8rem', fontWeight: 600, margin: 0 }}>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 600, margin: 0 }}>
             Award bonus points to {memberName}
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <label htmlFor={pointsId} style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>Points</label>
+            <label htmlFor={pointsId} style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>Points</label>
             <input id={pointsId}
               type="number"
               min={1}
@@ -101,19 +101,19 @@ export default function AwardPointsButton({
               padding: '0.3rem 0.5rem',
               border: '1px solid var(--outline-variant)',
               borderRadius: 'var(--radius-sm)',
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               background: 'var(--surface)',
               color: 'var(--color-on-surface)',
             }}
           />
-          {error && <p style={{ color: 'var(--color-red, #dc2626)', fontSize: '0.75rem', margin: 0 }}>{error}</p>}
+          {error && <p style={{ color: 'var(--color-red, #dc2626)', fontSize: '0.8125rem', margin: 0 }}>{error}</p>}
           <div style={{ display: 'flex', gap: '0.375rem' }}>
             <button
               type="button"
               className="btn btn-primary btn-sm"
               onClick={submit}
               disabled={saving}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8125rem' }}
             >
               {saving ? 'Saving…' : 'Confirm'}
             </button>
@@ -121,7 +121,7 @@ export default function AwardPointsButton({
               type="button"
               className="btn btn-ghost btn-sm"
               onClick={() => { setOpen(false); setError(''); }}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8125rem' }}
             >
               Cancel
             </button>

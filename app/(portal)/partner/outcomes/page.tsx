@@ -148,7 +148,7 @@ export default async function PartnerOutcomesPage() {
                     <span style={{ fontWeight: 700 }}>{row.member}</span>
                     <StatusTag tone="warn">{t('pendingReview')}</StatusTag>
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 12, color: colorVar('muted'), fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ marginTop: 6, fontSize: 13, color: colorVar('muted'), fontVariantNumeric: 'tabular-nums' }}>
                     {row.submittedLabel}
                   </div>
                 </div>

@@ -49,7 +49,7 @@
 
 .portal-role-switcher-header {
   padding: 0.75rem 1rem 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-on-surface-variant);
   text-transform: uppercase;
@@ -110,7 +110,7 @@
 @media (max-width: 768px) {
   .portal-role-switcher-trigger {
     padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
   }
   
   .portal-role-switcher-dropdown {

@@ -108,7 +108,7 @@ export function SessionsKit({ sessions = DEFAULT_SESSIONS, total }: SessionsKitP
             </div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -193,7 +193,7 @@ export function SessionsKit({ sessions = DEFAULT_SESSIONS, total }: SessionsKitP
                   </div>
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 13,
                       color: 'var(--wa-muted)',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -210,7 +210,7 @@ export function SessionsKit({ sessions = DEFAULT_SESSIONS, total }: SessionsKitP
             </div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
                 fontVariantNumeric: 'tabular-nums',

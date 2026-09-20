@@ -147,7 +147,7 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
                 </p>
 
                 <div>
-                  <label htmlFor="bulkupdatemodal-member-status-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkupdatemodal-member-status-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Member Status
                   </label>
                   <select id="bulkupdatemodal-member-status-field"
@@ -170,7 +170,7 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
                 </div>
 
                 <div>
-                  <label htmlFor="bulkupdatemodal-pipeline-stage-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkupdatemodal-pipeline-stage-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Pipeline Stage
                   </label>
                   <select id="bulkupdatemodal-pipeline-stage-field"
@@ -193,7 +193,7 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
                 </div>
 
                 <div>
-                  <label htmlFor="bulkupdatemodal-counselor-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkupdatemodal-counselor-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Counselor
                   </label>
                   <select id="bulkupdatemodal-counselor-field"
@@ -221,7 +221,7 @@ export default function BulkUpdateModal({ open, memberIds, programs, onClose, on
                 </div>
 
                 <div>
-                  <label htmlFor="bulkupdatemodal-program-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkupdatemodal-program-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Program
                   </label>
                   <select id="bulkupdatemodal-program-field"

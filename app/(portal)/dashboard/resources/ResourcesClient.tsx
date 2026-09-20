@@ -66,7 +66,7 @@ export default function ResourcesClient({ resources }: { resources: Resource[] }
                 <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--wa-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {r.title}
                 </p>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--wa-muted)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
                   {r.description}
                 </p>
               </div>
@@ -112,7 +112,7 @@ export default function ResourcesClient({ resources }: { resources: Resource[] }
                       Open resource
                       <ExternalLink size={14} aria-hidden="true" />
                     </a>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--wa-muted)' }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
                       Opens in a new tab
                     </span>
                   </div>

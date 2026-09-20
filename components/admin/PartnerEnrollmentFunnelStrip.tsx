@@ -49,7 +49,7 @@ export default function PartnerEnrollmentFunnelStrip({
         {steps.map((step) => (
           <div key={step.label} style={{ background: 'var(--wa-surface-2)', borderRadius: 8, padding: '10px 8px', textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{step.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--wa-muted)', fontWeight: 600 }}>{step.label}</div>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600 }}>{step.label}</div>
           </div>
         ))}
       </div>

@@ -189,7 +189,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
 
         {/* Sort control */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <label htmlFor="counselor-pq-sort" style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-muted)' }}>
+          <label htmlFor="counselor-pq-sort" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-muted)' }}>
             {t('priorityQueueSortLabel')}
           </label>
           <select
@@ -203,7 +203,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
               border: '1px solid var(--wa-border)',
               background: 'var(--wa-bg)',
               color: 'var(--wa-text)',
-              fontSize: 12,
+              fontSize: 13,
               minHeight: 36,
             }}
           >
@@ -212,7 +212,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
             <option value="last_contact">{t('priorityQueueSortLastContact')}</option>
           </select>
           {sortedRows.length > 0 ? (
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)', marginLeft: 'auto' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)', marginLeft: 'auto' }}>
               <input
                 type="checkbox"
                 aria-label={t('priorityQueueSelectAll')}
@@ -247,7 +247,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
                 border: '1px solid var(--wa-border)',
                 background: 'var(--wa-surface)',
                 color: 'var(--wa-text)',
-                fontSize: 12,
+                fontSize: 13,
                 minHeight: 36,
               }}
             >
@@ -258,7 +258,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
                 </option>
               ))}
             </select>
-            <button type="button" className="btn btn-primary btn-sm" disabled={!templateId || sending} onClick={handleSend} style={{ fontSize: 12, minHeight: 36 }}>
+            <button type="button" className="btn btn-primary btn-sm" disabled={!templateId || sending} onClick={handleSend} style={{ fontSize: 13, minHeight: 36 }}>
               {sending ? t('priorityQueueSending') : t('priorityQueueSend')}
             </button>
             <button
@@ -268,7 +268,7 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
                 setSelectedIds(new Set());
                 setTemplateId('');
               }}
-              style={{ fontSize: 12, minHeight: 36 }}
+              style={{ fontSize: 13, minHeight: 36 }}
             >
               {t('priorityQueueClear')}
             </button>
@@ -376,17 +376,17 @@ function PriorityRow({
           <Link href={`/counselor/students/${row.memberId}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)', textDecoration: 'none' }}>
             {row.memberName}
           </Link>
-          <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
+          <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
             {bucketLabel(row.bucket, t)}
           </span>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>
+        <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
           {row.enrolledProgram
             ? programDisplayTitle(row.enrolledProgram)
             : t('priorityQueueNoProgram')}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--wa-text)', marginTop: 4 }}>{row.blockerReason}</div>
-        <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>
+        <div style={{ fontSize: 13, color: 'var(--wa-text)', marginTop: 4 }}>{row.blockerReason}</div>
+        <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
           {row.daysSinceLogin == null ? '—' : t('priorityQueueDays', { count: row.daysSinceLogin })}
         </div>
       </div>
@@ -394,12 +394,12 @@ function PriorityRow({
         <Link
           href={row.threadId ? `/counselor/messages?thread=${encodeURIComponent(row.threadId)}` : `/counselor/students/${row.memberId}`}
           className="btn btn-primary btn-sm"
-          style={{ fontSize: 12, minHeight: 36 }}
+          style={{ fontSize: 13, minHeight: 36 }}
         >
           <MessageSquare size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
           {t('priorityQueueActionMessage')}
         </Link>
-        <Link href={`/counselor/students/${row.memberId}`} className="btn btn-outline btn-sm" style={{ fontSize: 12, minHeight: 36 }}>
+        <Link href={`/counselor/students/${row.memberId}`} className="btn btn-outline btn-sm" style={{ fontSize: 13, minHeight: 36 }}>
           {t('priorityQueueActionProfile')}
         </Link>
       </div>

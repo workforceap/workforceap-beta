@@ -26,7 +26,7 @@ export function SplitHero({ eyebrow, headline, subheadline, sidebar }: SplitHero
               display: 'inline-block',
               padding: '0.3rem 0.85rem',
               marginBottom: '1.75rem',
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               letterSpacing: '0.08em',
             }}
           >
