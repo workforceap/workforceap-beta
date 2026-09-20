@@ -1,7 +1,7 @@
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type Column,
@@ -102,10 +102,10 @@ export function PlacementSurveysKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Placement surveys"
         kicker="Outcomes"
-        goal="30/90/180-day follow-up tracking"
+        lede="30/90/180-day follow-up tracking"
       />
 
       <div className="wa-mb-5">

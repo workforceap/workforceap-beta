@@ -84,11 +84,6 @@ export default async function EmployerApplicationPage({
         kicker={t('employerPortal')}
         title={candidateName}
         subtitle={t('applyingForJob', { title: application.job.title })}
-        breadcrumbs={[
-          { label: t('employerPortal'), href: '/employer' },
-          { label: t('applicantsMetaTitle'), href: '/employer/applications' },
-          { label: candidateName },
-        ]}
         action={
           <Link href="/employer/applications" className="btn btn-outline btn-sm">
             {t('backToApplicants')}

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import SkillCheckpointsClient from '@/components/portal/SkillCheckpointsClient';
 
@@ -29,10 +29,10 @@ export default async function SkillCheckpointsPage() {
             { label: 'Skill Checkpoints' },
           ]}
         />
-        <SectionHeader
+        <PageOpener
           kicker="AI Career Toolkit"
           title="Skill Checkpoints"
-          goal="Short workplace scenarios that prove you can use a skill — not just study it"
+          lede="Short workplace scenarios that prove you can use a skill — not just study it"
         />
         <SkillCheckpointsClient userId={user.id} />
       </div>

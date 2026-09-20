@@ -4,6 +4,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import EligibilityForm, { type EligibilityInitial } from './EligibilityForm';
+import { PageOpener } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -93,9 +94,15 @@ export default async function EligibilityPage() {
 
   return (
     <div className="portal-profile-page" style={{ paddingBottom: '2rem', maxWidth: '720px' }}>
+      <PageOpener
+        className="wa-mb-5"
+        kicker="My account"
+        title="Complete / update your eligibility info"
+        lede="Keep your WorkforceAP file up to date so we can confirm program fit and supportive services."
+      />
       <div className="portal-profile-section-card">
         <div className="portal-profile-section-card__header">
-          <h1 className="portal-profile-section-card__title">Complete / update your eligibility info</h1>
+          <h2 className="portal-profile-section-card__title">Your eligibility details</h2>
         </div>
         <div className="portal-profile-section-card__body">
           <p

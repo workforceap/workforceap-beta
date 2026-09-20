@@ -7,7 +7,7 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   KitEmptyState,
   colorVar,
@@ -110,9 +110,10 @@ export function PartnersDirectoryKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
+        kicker="Partners"
         title="Partners"
-        goal="Workforce centers, nonprofits, referral orgs, and partner schools"
+        lede="Workforce centers, nonprofits, referral orgs, and partner schools"
         action={
           <AstryxLink as={Link as never} href="/admin/partners/new" isStandalone>
             <Button label="Add Partner" variant="primary" size="sm" icon={<Plus size={14} aria-hidden="true" />} />

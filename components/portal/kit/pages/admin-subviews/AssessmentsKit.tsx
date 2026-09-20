@@ -7,7 +7,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
@@ -134,10 +134,10 @@ export function AssessmentsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Assessments"
         kicker="Members"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/assessments?ui=legacy" as={NextLink as never} isStandalone>
             <Button label="Results & export" variant="secondary" size="sm" />

@@ -30,7 +30,7 @@ describe('employer remaining EmployerPageOpener contract', () => {
     expect(source.match(/<EmployerMessagesInboxClient[\s>]/g)?.length ?? 0).toBe(1);
   });
 
-  it('work-queue page mounts one EmployerPageOpener with breadcrumbs (jobs pattern)', () => {
+  it('work-queue page mounts one EmployerPageOpener without a breadcrumb row (jobs pattern)', () => {
     const source = read('app/(portal)/employer/work-queue/page.tsx');
     expect(source.match(/<EmployerPageOpener[\s>]/g)?.length ?? 0).toBe(1);
     expect(source).toContain('PortalPageFrame');

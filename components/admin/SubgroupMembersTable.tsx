@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import DataTable from '@/components/portal/ui/DataTable';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import ConfirmDialog from '@/components/admin/ConfirmDialog';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
 
 type Member = {
   id: string;
@@ -40,14 +42,9 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
     if (!removing) setRemoveTarget(null);
   };
   const closeAddModal = () => setShowAddModal(false);
-  // `useFocusTrap` already moves initial focus to the first focusable element
-  // in the dialog (the Cancel button / the search input) once it has recorded
-  // the trigger. Do NOT add `autoFocus` inside these dialogs: it fires during
-  // React's commit phase, before the trap's effect reads `document.activeElement`,
-  // so the trap would capture an in-dialog node as the restore target and focus
-  // would drop to <body> on close instead of returning to the trigger.
-  const removeTrapRef = useFocusTrap(!!removeTarget, closeRemoveTarget);
-  const addModalTrapRef = useFocusTrap(showAddModal, closeAddModal);
+  // Both dialogs are Astryx `Dialog`s (native <dialog>): focus moves to the
+  // title on open and returns to the trigger on close. Do not add `autoFocus`
+  // inside them or hand-roll a second focus trap.
 
   const memberIds = new Set(members.map((m) => m.id));
 
@@ -184,7 +181,6 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
                     disabled={!!removing}
                     aria-haspopup="dialog"
                     aria-expanded={removeTarget?.id === m.id}
-                    aria-controls="remove-member-modal"
                   >
                     {removing === m.id ? '…' : 'Remove'}
                   </button>
@@ -222,7 +218,6 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
                   disabled={!!removing}
                   aria-haspopup="dialog"
                   aria-expanded={removeTarget?.id === m.id}
-                  aria-controls="remove-member-modal"
                 >
                   {removing === m.id ? '…' : 'Remove'}
                 </button>
@@ -233,64 +228,28 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
         </div>
       )}
 
-      {removeTarget && (
-        <div className="admin-confirm-modal-overlay" role="presentation" onClick={closeRemoveTarget} tabIndex={-1}>
-          <div
-            id="remove-member-modal"
-            ref={removeTrapRef as React.RefObject<HTMLDivElement>}
-            className="admin-confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="subgroup-remove-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="subgroup-remove-title">Remove from subgroup?</h3>
-            <p>
+      <ConfirmDialog
+        open={!!removeTarget}
+        title="Remove from subgroup?"
+        body={
+          removeTarget ? (
+            <p style={{ margin: 0, color: 'var(--color-on-surface-variant)' }}>
               Remove <strong>{removeTarget.name}</strong> from this subgroup? They keep their WorkforceAP account.
             </p>
-            <div className="admin-confirm-modal__actions">
-              <button type="button" className="btn btn-outline" disabled={!!removing} onClick={closeRemoveTarget}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" disabled={!!removing} onClick={() => void runRemoveMember()}>
-                {removing ? 'Removing...' : 'Remove'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : ''
+        }
+        confirmLabel="Remove"
+        busy={!!removing}
+        danger
+        onConfirm={() => void runRemoveMember()}
+        onCancel={closeRemoveTarget}
+      />
 
-      {showAddModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-          onClick={closeAddModal}
-        >
-          <div
-            id="add-member-modal"
-            ref={addModalTrapRef as React.RefObject<HTMLDivElement>}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="add-member-dialog-title"
-            style={{
-              background: 'white',
-              padding: '1.5rem',
-              borderRadius: '8px',
-              maxWidth: 480,
-              width: '90%',
-              maxHeight: '80vh',
-              overflow: 'auto',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="add-member-dialog-title" style={{ margin: '0 0 1rem' }}>Add member to subgroup</h3>
+      <Dialog isOpen={showAddModal} onOpenChange={(isOpen) => { if (!isOpen) closeAddModal(); }} purpose="form" width={480} maxHeight="80vh" aria-label="Add member to subgroup">
+        <Layout
+          header={<DialogHeader title="Add member to subgroup" onOpenChange={(isOpen) => { if (!isOpen) closeAddModal(); }} />}
+          content={
+            <LayoutContent>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
               <input
                 type="text"
@@ -338,14 +297,10 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
                 {searching ? 'Searching…' : 'No members found or all matching members are already in this subgroup.'}
               </p>
             ) : null}
-            <div style={{ marginTop: '1rem' }}>
-              <button type="button" className="btn btn-outline" onClick={closeAddModal}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </LayoutContent>
+          }
+        />
+      </Dialog>
     </>
   );
 }

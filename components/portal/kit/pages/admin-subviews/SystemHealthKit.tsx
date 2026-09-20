@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   RankBars,
   type RankDatum,
   type KitColor,
@@ -121,7 +121,7 @@ export function SystemHealthKit({
 }: SystemHealthKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title={title} kicker={kicker} goal={goal} action={headerAction} />
+      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />
 
       {/* Status tiles — responsive grid: 2-col mobile → 4-col desktop. */}
       <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">

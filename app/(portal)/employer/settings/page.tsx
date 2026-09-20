@@ -57,7 +57,6 @@ export default async function EmployerSettingsPage() {
           kicker={t('employerPortal')}
           title={t('companySettings')}
           subtitle={t('updateCompanyProfile')}
-          breadcrumbs={[{ label: t('employerPortal'), href: '/employer' }, { label: t('settings') }]}
         />
 
         {/* Logo + form card */}

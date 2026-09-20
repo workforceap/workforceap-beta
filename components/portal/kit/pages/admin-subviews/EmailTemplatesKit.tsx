@@ -8,7 +8,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Token } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type KpiItem,
@@ -141,10 +141,10 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Email Templates"
         kicker="Messaging"
-        goal="Transactional emails sent to members and staff"
+        lede="Transactional emails sent to members and staff"
         action={
           <AstryxLink href="/admin/email-templates?ui=legacy" as={NextLink as never} isStandalone>
             <Button

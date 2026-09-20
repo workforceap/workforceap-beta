@@ -19,6 +19,7 @@ import {
 import { EMPLOYER_JOB_SUBMIT_REVIEW_DRAFT_FLASH } from '@/lib/employer/employerJobFormFlash';
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { DesignSurface, StatusTag, StatSparkTile, type KitTone } from '@/components/portal/kit';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 /**
  * Employer "My Jobs" board — Command Center visual language.
@@ -680,35 +681,17 @@ export default function EmployerJobsBoard({
   if (totalInDb === 0) {
     return (
       <DesignSurface surface="dense">
-        <div
-          className="wa-kit-card"
-          role="status"
-          style={{ textAlign: 'center', padding: '3rem 1.5rem' }}
-        >
-          <div
-            aria-hidden
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 999,
-              margin: '0 auto 1rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--wa-accent-soft)',
-              color: 'var(--wa-accent)',
-            }}
-          >
-            <Briefcase size={26} />
-          </div>
-          <h2 style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', margin: '0 0 6px' }}>No postings yet</h2>
-          <p style={{ color: 'var(--wa-muted)', fontSize: 13, maxWidth: 440, margin: '0 auto 1.25rem' }}>
-            Create a posting to start hiring. Everything stays private until you submit for WorkforceAP review — nothing
-            goes live by surprise.
-          </p>
-          <Link href="/employer/jobs/new" className="btn btn-primary">
-            Create your first posting
-          </Link>
+        <div className="wa-kit-card" role="status">
+          <KitEmptyState
+            headingAs="h2"
+            title="No postings yet"
+            description="Create a posting to start hiring. Everything stays private until you submit for WorkforceAP review — nothing goes live by surprise."
+            action={
+              <Link href="/employer/jobs/new" className="wa-kit-cta">
+                Create your first posting
+              </Link>
+            }
+          />
         </div>
       </DesignSurface>
     );

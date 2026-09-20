@@ -78,6 +78,7 @@ interface MetricsData {
 
 import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import PageHeader from '@/components/portal/PageHeader';
 
 export default function ExecutiveDashboardPage() {
   const searchParams = useSearchParams();
@@ -141,28 +142,11 @@ export default function ExecutiveDashboardPage() {
 
   return (
     <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: 1200, margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <nav style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
-          <Link href="/admin" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>Admin</Link>
-          <span style={{ margin: '0 0.35rem' }}>/</span>
-          <span style={{ fontWeight: 600 }}>Executive Dashboard</span>
-        </nav>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Executive Dashboard</h1>
-            <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', fontSize: '0.9rem' }}>
-              Real-time metrics across all 7 CEO funnels and placement KPIs
-            </p>
-          </div>
+      <PageHeader
+        title="Executive Dashboard"
+        subtitle="Real-time metrics across all 7 CEO funnels and placement KPIs"
+        breadcrumbs={[{ href: '/admin', label: 'Admin' }, { label: 'Executive Dashboard' }]}
+        action={
           <a
             href="/api/admin/funder-program-summary"
             className="btn btn-outline"
@@ -173,8 +157,8 @@ export default function ExecutiveDashboardPage() {
             </span>
             Export funder CSV
           </a>
-        </div>
-      </div>
+        }
+      />
 
       {/* MFA Status Banner for staff */}
       <MfaStatusBanner />

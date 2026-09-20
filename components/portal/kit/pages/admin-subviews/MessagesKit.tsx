@@ -7,7 +7,7 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   Avatar,
   type Column,
@@ -135,10 +135,10 @@ export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Messages"
         kicker="Inbox"
-        goal="Member ↔ staff threads."
+        lede="Member ↔ staff threads."
       />
 
       <DataTable<MessageThread>

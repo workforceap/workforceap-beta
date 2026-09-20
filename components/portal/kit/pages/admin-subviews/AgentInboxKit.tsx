@@ -3,7 +3,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   StatusTag,
@@ -139,10 +139,10 @@ export function AgentInboxKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Agent Inbox"
         kicker="Agentforce"
-        goal={goal}
+        lede={goal}
         action={
           <AstryxLink href="/admin/agent-inbox?ui=legacy" as={NextLink as never} isStandalone>
             <Button label="Review & Send" variant="primary" size="sm" />

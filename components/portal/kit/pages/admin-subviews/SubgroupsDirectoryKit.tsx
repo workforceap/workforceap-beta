@@ -8,7 +8,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   KitEmptyState,
   colorVar,
@@ -143,10 +143,10 @@ export function SubgroupsDirectoryKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener
         title="Subgroups"
         kicker="People"
-        goal="Cohorts, chapters & special programs"
+        lede="Cohorts, chapters & special programs"
         action={
           <AstryxLink href="/admin/subgroups/new" as={Link as never} isStandalone>
             <Button

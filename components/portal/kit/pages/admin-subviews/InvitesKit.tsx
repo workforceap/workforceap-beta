@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type Column,
@@ -117,10 +117,10 @@ export function InvitesKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Invites"
         kicker="People"
-        goal="Bulk member & partner invitations"
+        lede="Bulk member & partner invitations"
         action={action}
       />
 

@@ -6,6 +6,7 @@ import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -66,25 +67,16 @@ export default async function EmployerGuidePage() {
   return (
     <>
     <div className="wa-pb-24 md:wa-pb-0" style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      {/* Breadcrumb */}
-      <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/employer" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
-          ← {t('backToDashboard')}
-        </Link>
-      </nav>
-
-      {/* Header */}
-      <header style={{ marginBottom: '3rem' }}>
-        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
-          {t('employerGuideTitle')}
-        </p>
-        <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15, maxWidth: '28rem' }}>
-          {t('employerGuideHeadline')}
-        </h1>
-        <p style={{ fontSize: '1.0625rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.65, maxWidth: '42rem' }}>
-          {t('employerGuideBody')}
-        </p>
-      </header>
+      <EmployerPageOpener
+        kicker={t('employerGuideTitle')}
+        title={t('employerGuideHeadline')}
+        subtitle={t('employerGuideBody')}
+        action={
+          <Link href="/employer" className="btn btn-outline btn-sm">
+            {t('backToDashboard')}
+          </Link>
+        }
+      />
 
       {/* 3-Step Flow */}
       <section style={{ marginBottom: '3.5rem' }}>

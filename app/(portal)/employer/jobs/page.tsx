@@ -9,6 +9,7 @@ import { prisma } from '@/lib/db/prisma';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import EmployerJobsBoard from '@/components/employer/EmployerJobsBoard';
 import EmployerJobQuickActions from '@/components/employer/EmployerJobQuickActions';
+import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import { assessJobPostingReadiness } from '@/lib/employer/jobReadiness';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
@@ -185,28 +186,21 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
         {/* Job cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', padding: '0 1rem' }}>
           {boardItems.length === 0 && totalInDb > 0 ? (
-            <div className="portal-card portal-card--flat" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">filter_alt_off</span>
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{t('nothingInThisView')}</p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem' }}>
-                {t('tryAnotherFilter')}
-              </p>
-              <Link
-                href={`/employer/jobs${locationType ? `?locationType=${locationType}` : ''}`}
-                className="btn btn-primary btn-sm"
-              >
-                {t('showAllPostings')}
-              </Link>
-            </div>
+            <PortalEmptyState
+              headingAs="h2"
+              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">filter_alt_off</span>}
+              title={t('nothingInThisView')}
+              description={t('tryAnotherFilter')}
+              primaryAction={{ label: t('showAllPostings'), href: `/employer/jobs${locationType ? `?locationType=${locationType}` : ''}` }}
+            />
           ) : boardItems.length === 0 ? (
-            <div className="portal-card portal-card--flat" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">work_outline</span>
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{t('noJobsYet')}</p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem' }}>{t('postFirstRole')}</p>
-              <Link href="/employer/jobs/new" className="btn btn-primary btn-sm">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">add</span>{t('postAJobBtn')}
-              </Link>
-            </div>
+            <PortalEmptyState
+              headingAs="h2"
+              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">work_outline</span>}
+              title={t('noJobsYet')}
+              description={t('postFirstRole')}
+              primaryAction={{ label: t('postAJobBtn'), href: '/employer/jobs/new' }}
+            />
           ) : (
             boardItems.map((job) => (
               <div
@@ -240,21 +234,14 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
       {/* ── Desktop section ── */}
       <div className="wa-hidden md:wa-block">
           {totalInDb === 0 ? (
-            <div className="portal-card portal-card--flat" style={{ padding: '2.5rem', textAlign: 'center' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '1rem' }} aria-hidden="true">work_outline</span>
-              <h3 style={{ fontWeight: 700, fontSize: '1.125rem', marginBottom: '0.5rem', color: 'var(--color-on-surface)' }}>{t('noJobsYet')}</h3>
-              <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem', maxWidth: '28rem', marginInline: 'auto' }}>
-                {t('postFirstRole')}
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
-                <Link href="/employer/jobs/new" className="btn btn-primary">
-                  {t('postYourFirstJob')}
-                </Link>
-                <Link href="/employer/jobs/import" className="btn btn-outline">
-                  {t('importJobsBtn')}
-                </Link>
-              </div>
-            </div>
+            <PortalEmptyState
+              headingAs="h2"
+              icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">work_outline</span>}
+              title={t('noJobsYet')}
+              description={t('postFirstRole')}
+              primaryAction={{ label: t('postYourFirstJob'), href: '/employer/jobs/new' }}
+              secondaryAction={{ label: t('importJobsBtn'), href: '/employer/jobs/import' }}
+            />
           ) : (
             <>
               {totalInFilter > EMPLOYER_LIST_CAP && (

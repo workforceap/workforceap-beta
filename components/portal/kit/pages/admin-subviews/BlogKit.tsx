@@ -7,7 +7,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   StatusTag,
   type Column,
@@ -100,10 +100,10 @@ export function BlogKit({ posts = DEFAULT_POSTS }: BlogKitProps) {
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Blog"
         kicker="Content"
-        goal="Marketing & resource posts"
+        lede="Marketing & resource posts"
         action={
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <AstryxLink href="/admin/blog/ai" as={NextLink as never} isStandalone>

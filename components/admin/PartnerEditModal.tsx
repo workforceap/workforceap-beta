@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, HStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
 import PartnerSchoolEnrollmentFields, {
   type SchoolEnrollmentValues,
 } from '@/components/admin/PartnerSchoolEnrollmentFields';
@@ -70,7 +71,9 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
     schoolDistrict: partner.schoolDistrict ?? '',
     programSlugs: partner.programCatalog?.map((r) => r.programSlug) ?? [],
   });
-  const trapRef = useFocusTrap(true, onClose);
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen && !saving) onClose();
+  };
 
   useEffect(() => {
     const ids = subgroups.filter((s) => s.type === 'partner' && s.partnerId === partner.id).map((s) => s.id);
@@ -139,30 +142,12 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
   }
 
   return (
-    <div className="partner-modal-overlay" onClick={onClose} role="presentation" tabIndex={-1}>
-      <div
-        ref={trapRef as React.RefObject<HTMLDivElement>}
-        className="partner-modal"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="partner-edit-title"
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 id="partner-edit-title" style={{ margin: 0, fontSize: '1.25rem' }}>
-            Edit Partner
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            style={{ background: 'none', border: 'none', padding: '0.25rem', cursor: 'pointer', color: 'var(--color-on-surface-variant)' }}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
+    <Dialog isOpen onOpenChange={handleOpenChange} purpose="form" width={480} maxHeight="90vh" aria-label="Edit Partner">
+      <Layout
+        header={<DialogHeader title="Edit Partner" onOpenChange={saving ? undefined : handleOpenChange} />}
+        content={
+          <LayoutContent>
+        <form id="partner-edit-form" onSubmit={handleSubmit}>
           {error && (
             <div
               style={{
@@ -331,25 +316,18 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              style={{ padding: '0.5rem 1rem', background: 'var(--surface-container)', border: '1px solid var(--outline-variant)', borderRadius: '6px', cursor: saving ? 'not-allowed' : 'pointer' }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              style={{ padding: '0.5rem 1.25rem', background: 'var(--color-accent)', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer' }}
-            >
-              {saving ? 'Saving…' : 'Save Changes'}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter>
+            <HStack gap={2} justify="end">
+              <Button type="button" label="Cancel" variant="ghost" onClick={onClose} isDisabled={saving} />
+              <Button type="submit" form="partner-edit-form" label={saving ? 'Saving…' : 'Save Changes'} variant="primary" isDisabled={saving} isLoading={saving} />
+            </HStack>
+          </LayoutFooter>
+        }
+      />
+    </Dialog>
   );
 }

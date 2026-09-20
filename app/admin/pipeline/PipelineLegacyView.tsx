@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import StaleApplicationsBanner from './StaleApplicationsBanner';
+import PageHeader from '@/components/portal/PageHeader';
 
 const STAGES = [
   { key: 'holding', label: 'Holding Room', color: '#6b7280', desc: 'Invited, not yet in Coursera' },
@@ -63,8 +64,7 @@ export default function PipelineLegacyView() {
 
   return (
     <div className="admin-page">
-      <h1 className="admin-page-title">{t('memberPipeline')}</h1>
-      <p className="admin-page-subtitle">{t('sevenStageJourney')}</p>
+      <PageHeader title={t('memberPipeline')} subtitle={t('sevenStageJourney')} />
 
       <StaleApplicationsBanner staleApps={staleApps} />
 

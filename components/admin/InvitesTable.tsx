@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import DataTable from '@/components/portal/ui/DataTable';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import { loginCodeFromToken } from '@/lib/invitations/loginCode';
 
 type Invite = {
@@ -139,7 +139,6 @@ export default function InvitesTable({ invites }: Props) {
   const closeRevokeTarget = () => {
     if (!revoking) setRevokeTarget(null);
   };
-  const revokeTrapRef = useFocusTrap(!!revokeTarget, closeRevokeTarget);
 
   const filtered = invites.filter((i) => filter === 'all' || effectiveStatus(i) === filter);
 
@@ -428,29 +427,16 @@ export default function InvitesTable({ invites }: Props) {
         })}
       </ul>
 
-      {revokeTarget && (
-        <div className="admin-confirm-modal-overlay" role="presentation" onClick={closeRevokeTarget} tabIndex={-1}>
-          <div
-            ref={revokeTrapRef as React.RefObject<HTMLDivElement>}
-            className="admin-confirm-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="revoke-invite-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="revoke-invite-title">Revoke invitation?</h3>
-            <p>This will invalidate the invite sent to {revokeTarget.email}.</p>
-            <div className="admin-confirm-modal__actions">
-              <button type="button" className="btn btn-outline" disabled={!!revoking} onClick={closeRevokeTarget}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" disabled={!!revoking} onClick={() => void runRevoke()}>
-                {revoking ? 'Revoking...' : 'Revoke'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={!!revokeTarget}
+        title="Revoke invitation?"
+        body={revokeTarget ? `This will invalidate the invite sent to ${revokeTarget.email}.` : ''}
+        confirmLabel="Revoke"
+        busy={!!revoking}
+        danger
+        onConfirm={() => void runRevoke()}
+        onCancel={closeRevokeTarget}
+      />
     </div>
   );
 }

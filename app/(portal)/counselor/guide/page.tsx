@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import PageHeader from '@/components/portal/PageHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('counselor');
@@ -98,25 +99,15 @@ export default async function CounselorGuidePage() {
   return (
     <>
     <div className="wa-pb-24 md:wa-pb-0" style={{ maxWidth: '64rem', margin: '0 auto' }}>
-      {/* Breadcrumb */}
-      <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/counselor" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
-          ← Back to dashboard
-        </Link>
-      </nav>
-
-      {/* Header */}
-      <header style={{ marginBottom: '2.5rem' }}>
-        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
-          Counselor Guide
-        </p>
-        <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15 }}>
-          Your Counselor Portal
-        </h1>
-        <p style={{ fontSize: '1.0625rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.65, maxWidth: '42rem' }}>
-          The tools to guide your members from enrollment to employment — everything you need, right here.
-        </p>
-      </header>
+      <PageHeader
+        title="Your Counselor Portal"
+        subtitle="The tools to guide your members from enrollment to employment — everything you need, right here."
+        action={
+          <Link href="/counselor" className="btn btn-outline btn-sm">
+            Back to dashboard
+          </Link>
+        }
+      />
 
       {/* Live caseload box */}
       <section style={{ marginBottom: '2.5rem' }}>

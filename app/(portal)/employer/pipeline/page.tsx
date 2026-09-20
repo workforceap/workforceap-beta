@@ -17,6 +17,7 @@ import StatusBadge from '@/components/portal/StatusBadge';
 import { employerAiMatchStatusBadgeVariant, employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { getTranslations } from 'next-intl/server';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
+import PortalEmptyState from '@/components/portal/PortalEmptyState';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -123,7 +124,6 @@ export default async function EmployerPipelinePage() {
       <EmployerPageOpener
         kicker={t('employerPortal')}
         title={t('candidatePipeline')}
-        breadcrumbs={[{ label: t('employerPortal'), href: '/employer' }, { label: t('candidatePipeline') }]}
         subtitle={
           <>
             <span className="wa-block md:wa-hidden">{t('candidatePipelineSubtitleMobile')}</span>
@@ -154,23 +154,21 @@ export default async function EmployerPipelinePage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0 1rem' }}>
           {jobs.length === 0 ? (
-            <div className="portal-card portal-card--flat" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">account_tree</span>
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>No pipeline yet</p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem' }}>Post a job to receive matched candidates.</p>
-              <Link href="/employer/jobs/new" className="btn btn-primary btn-sm">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">add</span>Post a Job
-              </Link>
-            </div>
+            <PortalEmptyState
+              headingAs="h2"
+              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">account_tree</span>}
+              title="No pipeline yet"
+              description="Post a job to receive matched candidates."
+              primaryAction={{ label: 'Post a Job', href: '/employer/jobs/new' }}
+            />
           ) : allMatches.length === 0 ? (
-            <div className="portal-card portal-card--flat" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '0.75rem' }} aria-hidden="true">psychology</span>
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>No matches yet</p>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem' }}>Matches will appear once your jobs are live.</p>
-              <Link href="/employer/jobs" className="btn btn-muted btn-sm">
-                View Your Jobs
-              </Link>
-            </div>
+            <PortalEmptyState
+              headingAs="h2"
+              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">psychology</span>}
+              title="No matches yet"
+              description="Matches will appear once your jobs are live."
+              secondaryAction={{ label: 'View Your Jobs', href: '/employer/jobs' }}
+            />
           ) : (
             jobs.map((job) => {
               const matches = byJob.get(job.id) ?? [];
@@ -208,19 +206,21 @@ export default async function EmployerPipelinePage() {
       </div>
       <div className="wa-hidden md:wa-block">
         {jobs.length === 0 ? (
-          <div className="portal-card portal-card--flat" style={{ padding: '2.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '1rem' }} aria-hidden="true">account_tree</span>
-            <h3 style={{ fontWeight: 700, fontSize: '1.125rem', marginBottom: '0.5rem', color: 'var(--color-on-surface)' }}>No pipeline yet</h3>
-            <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>Post a job to receive matched candidates here.</p>
-            <Link href="/employer/jobs/new" className="btn btn-primary">Post your first job</Link>
-          </div>
+          <PortalEmptyState
+            headingAs="h2"
+            icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">account_tree</span>}
+            title="No pipeline yet"
+            description="Post a job to receive matched candidates here."
+            primaryAction={{ label: 'Post your first job', href: '/employer/jobs/new' }}
+          />
         ) : allMatches.length === 0 ? (
-          <div className="portal-card portal-card--flat" style={{ padding: '2.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)', display: 'block', marginBottom: '1rem' }} aria-hidden="true">psychology</span>
-            <h3 style={{ fontWeight: 700, fontSize: '1.125rem', marginBottom: '0.5rem', color: 'var(--color-on-surface)' }}>No matches yet</h3>
-            <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>Matches appear here after admin runs job–candidate matching.</p>
-            <Link href="/employer/jobs" className="btn btn-muted">View Your Jobs</Link>
-          </div>
+          <PortalEmptyState
+            headingAs="h2"
+            icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">psychology</span>}
+            title="No matches yet"
+            description="Matches appear here after admin runs job–candidate matching."
+            secondaryAction={{ label: 'View Your Jobs', href: '/employer/jobs' }}
+          />
         ) : (
           <EmployerKanban initialMatches={allMatches.map(m => ({ id: m.id, jobId: m.jobId, jobTitle: jobs.find(j => j.id === m.jobId)?.title ?? 'Job', matchScore: m.matchScore, matchReasons: m.matchReasons, status: m.status, student: m.student }))} />
         )}

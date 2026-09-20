@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   colorVar,
   type KpiItem,
@@ -157,10 +157,10 @@ export function CareerMappingsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Career paths"
         kicker="Matching"
-        goal="Program → role mappings that power matching"
+        lede="Program → role mappings that power matching"
         action={
           <Button
             label="Edit mappings"

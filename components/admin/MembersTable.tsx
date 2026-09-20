@@ -835,6 +835,7 @@ export default function MembersTable({
             {
               key: 'sel',
               header: <HeaderSelectAll filtered={filtered} selectedIds={selectedIds} onBulkSelect={onHeaderSelect} />,
+              cellDataLabel: 'Select',
               width: 40,
               align: 'center',
               columnClassName: 'admin-members-col-select',

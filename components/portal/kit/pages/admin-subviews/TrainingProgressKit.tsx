@@ -8,7 +8,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type Column,
@@ -261,10 +261,10 @@ export function TrainingProgressKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Training progress"
         kicker="Programs"
-        goal="Live B4B + LMS progress across all members"
+        lede="Live B4B + LMS progress across all members"
         action={
           <AstryxLink href="/admin/training-progress?ui=legacy" as={NextLink as never} isStandalone>
             <Button label="Detailed view" variant="secondary" size="sm" />

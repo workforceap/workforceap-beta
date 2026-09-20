@@ -2,7 +2,7 @@
 
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   type KpiItem,
@@ -140,10 +140,10 @@ export function AuditLogsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Audit logs"
         kicker="Compliance"
-        goal="Every privileged action, immutable"
+        lede="Every privileged action, immutable"
       />
 
       <div className="wa-mb-5">

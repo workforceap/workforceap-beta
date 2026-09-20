@@ -5,7 +5,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   Avatar,
@@ -145,10 +145,10 @@ export function WioaScreeningKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Funding eligibility"
         kicker="Compliance"
-        goal="WIOA screening & compliance"
+        lede="WIOA screening & compliance"
         action={
           <AstryxLink href="/admin/wioa-screening?ui=legacy" as={Link as never} isStandalone>
             <Button label="Review queue" variant="secondary" size="sm" />

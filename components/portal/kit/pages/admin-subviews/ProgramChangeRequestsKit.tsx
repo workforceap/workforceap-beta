@@ -7,7 +7,7 @@ import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   DataTable,
   type Column,
 } from '@/components/portal/kit';
@@ -120,10 +120,10 @@ export function ProgramChangeRequestsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Program change requests"
         kicker="Enrollment"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/program-change-requests?ui=legacy" as={Link as never} isStandalone>
             <Button label="Review & decide" variant="secondary" size="sm" />

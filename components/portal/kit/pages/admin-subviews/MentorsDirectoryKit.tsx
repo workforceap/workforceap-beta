@@ -3,7 +3,7 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   Avatar,
   KitEmptyState,
@@ -77,10 +77,10 @@ export function MentorsDirectoryKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Mentors"
         kicker="Partners & Employers"
-        goal="Industry volunteers paired with members"
+        lede="Industry volunteers paired with members"
       />
 
       <div className="wa-mb-5">

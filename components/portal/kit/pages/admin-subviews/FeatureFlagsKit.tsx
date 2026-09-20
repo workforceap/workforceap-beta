@@ -3,7 +3,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Button } from '@astryxdesign/core/Button';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   StatusTag,
@@ -133,10 +133,10 @@ export function FeatureFlagsKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Feature Flags"
         kicker="Platform"
-        goal="Gradual rollout & role-gating of platform features"
+        lede="Gradual rollout & role-gating of platform features"
         action={
           <AstryxLink href="/admin/feature-flags?ui=legacy" as={Link as never} isStandalone>
             <Button label="Manage" variant="primary" size="sm" />

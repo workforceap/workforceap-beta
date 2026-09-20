@@ -42,6 +42,7 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   DesignSurface,
   SectionHeader as KitSectionHeader,
+  PageOpener,
   DataTable as KitDataTable,
   QueueRow,
   StatusTag,
@@ -343,12 +344,11 @@ export default async function PartnerDashboardPage({
       <PortalPageFrame maxWidth="80rem">
         {partnerSchemaCompatibilityFallback ? <span hidden data-portal-error-state="partner-schema-compatibility-fallback" /> : null}
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
-          <h1 className="wa-sr-only">Partner overview</h1>
           {isPendingApproval && <PendingApprovalBanner />}
-          <KitSectionHeader
+          <PageOpener
             kicker={t('partnerDashboard')}
             title={ctx.partner.name}
-            goal={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
+            lede={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
           <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />

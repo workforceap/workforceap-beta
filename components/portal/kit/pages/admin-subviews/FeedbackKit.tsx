@@ -1,6 +1,6 @@
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   Avatar,
@@ -169,10 +169,10 @@ export function FeedbackKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Feedback"
         kicker="Members"
-        goal="Member ratings & comments on training, counselors, and the platform"
+        lede="Member ratings & comments on training, counselors, and the platform"
       />
 
       <div className="wa-mb-5">
