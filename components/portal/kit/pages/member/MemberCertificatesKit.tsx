@@ -3,7 +3,7 @@
 import { CheckCircle2, Download, Award } from 'lucide-react';
 import Link from 'next/link';
 import { DesignSurface, KpiStrip, KitEmptyState, ProgressBar, PageOpener } from '@/components/portal/kit';
-import ShareButton from '@/components/ui/ShareButton';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
 
 /**

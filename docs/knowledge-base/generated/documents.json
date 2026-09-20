@@ -7057,42 +7057,42 @@
       {
         "level": 3,
         "title": "Wired directly (not via `index.ts`)",
-        "line": 85
+        "line": 84
       },
       {
         "level": 3,
         "title": "Unwired React Email components (`.tsx`) — not currently imported outside `emails/`",
-        "line": 91
+        "line": 90
       },
       {
         "level": 3,
         "title": "Tests",
-        "line": 114
+        "line": 113
       },
       {
         "level": 2,
         "title": "Send Functions & Code Locations",
-        "line": 122
+        "line": 121
       },
       {
         "level": 2,
         "title": "Cron-Driven Notifications",
-        "line": 130
+        "line": 129
       },
       {
         "level": 2,
         "title": "Auth Emails (Supabase, not Resend)",
-        "line": 141
+        "line": 140
       },
       {
         "level": 2,
         "title": "Configuration Checklist",
-        "line": 147
+        "line": 146
       },
       {
         "level": 2,
         "title": "Dependencies",
-        "line": 155
+        "line": 154
       }
     ],
     "datedFilename": false,
@@ -7726,328 +7726,328 @@
       },
       {
         "level": 3,
-        "title": "TODO-006: Consolidate the five independent \"at-risk\" implementations",
+        "title": "~~TODO-006: Consolidate the five independent \"at-risk\" implementations~~ ✓ CLOSED",
         "line": 76
       },
       {
         "level": 3,
         "title": "TODO-007: `MemberEvent.eventName` taxonomy cleanup",
-        "line": 101
+        "line": 112
       },
       {
         "level": 3,
         "title": "~~TODO-008: `lib/**/*.test.ts` vitest lane doesn't run in CI~~ ✓ COMPLETED",
-        "line": 119
+        "line": 130
       },
       {
         "level": 2,
         "title": "Unresolved Design Decision #1: Training vs Coursera Hub Architecture",
-        "line": 158
+        "line": 169
       },
       {
         "level": 2,
         "title": "~~TODO-006: admin/token-links — P2 hardening follow-ups (post TODO-005)~~ ✓ Items 1-3 Completed; Item 4 Deferred",
-        "line": 174
+        "line": 185
       },
       {
         "level": 2,
         "title": "TODO-007: admin/growth — wire real GA4 property ID",
-        "line": 186
+        "line": 197
       },
       {
         "level": 2,
         "title": "TODO-026: withApiGuc + audit logs batch 6 (enroll, notes, bulk-email) — PR #1955",
-        "line": 198
+        "line": 209
       },
       {
         "level": 2,
         "title": "TODO-027: withApiGuc batch 7 — admin reports, blog AI, jobs-matches, messages-stats — PR #1956",
-        "line": 213
+        "line": 224
       },
       {
         "level": 2,
         "title": "TODO-028: input bounds — employer jobs, admin chapters, member status notes — PR #1957",
-        "line": 225
+        "line": 236
       },
       {
         "level": 2,
         "title": "TODO-016: partner/dashboard missing withApiGuc — ✓ Fixed PR #1867",
-        "line": 241
+        "line": 252
       },
       {
         "level": 2,
         "title": "TODO-017: ai/interview/results missing rate limit + withApiGuc — ✓ Fixed PR #1868",
-        "line": 253
+        "line": 264
       },
       {
         "level": 2,
         "title": "TODO-027: admin/members/create — tenant-scope partner/subgroup FKs + notes cap + audit log ✓ Fixed PR #1946",
-        "line": 265
+        "line": 276
       },
       {
         "level": 2,
-        "title": "TODO-008: Waitlist API — enable after Prisma migration",
-        "line": 277
+        "title": "~~TODO-008: Waitlist API — enable after Prisma migration~~ ✓ CLOSED (route removed)",
+        "line": 288
       },
       {
         "level": 2,
         "title": "TODO-021: Sprint 3 audit sweep — second wave (PRs #1924–#1928)",
-        "line": 289
+        "line": 296
       },
       {
         "level": 2,
         "title": "TODO-038: upload routes — derive Supabase contentType from validated extension — ✓ Fixed PR #1966",
-        "line": 311
+        "line": 318
       },
       {
         "level": 2,
         "title": "TODO-039: audit logs for deferred TODO-021 admin routes — ✓ Fixed PR #1967",
-        "line": 321
+        "line": 328
       },
       {
         "level": 2,
         "title": "TODO-036: admin/blog AI routes — rate limits + withApiGuc + logo MIME — ✓ Fixed PR #1964",
-        "line": 331
+        "line": 338
       },
       {
         "level": 2,
         "title": "TODO-037: AI rate limits for interview, counselor, admin resume routes — ✓ Fixed PR #1965",
-        "line": 341
+        "line": 348
       },
       {
         "level": 2,
         "title": "TODO-040: withApiGuc sweep — auth/me, jobs/matches, quarterly-outcomes; request-help rate limit — ✓ Fixed PR #1968",
-        "line": 351
+        "line": 358
       },
       {
         "level": 2,
         "title": "TODO-041: prep-bundle open relay + audit logs — ✓ Fixed PR #1969",
-        "line": 361
+        "line": 368
       },
       {
         "level": 2,
         "title": "TODO-042: withApiGuc for onet/webhooks/email-crons-preview; xapi batch size limit — ✓ Fixed PR #1970",
-        "line": 371
+        "line": 378
       },
       {
         "level": 2,
         "title": "TODO-043: §H-DEP4 dual audit trail on PII bulk-export + export-data — ✓ Fixed PR #1971",
-        "line": 381
+        "line": 388
       },
       {
         "level": 2,
         "title": "TODO-044: audit trails for member self-delete + admin subgroup mutations — ✓ Fixed PR #1972",
-        "line": 391
+        "line": 398
       },
       {
         "level": 2,
         "title": "TODO-047: audit logs for enrollment-funding, milestone-cascades/synthetic, placement-surveys/resend — ✓ Fixed PR #1975",
-        "line": 401
+        "line": 408
       },
       {
         "level": 2,
         "title": "TODO-046: withApiGuc for 9 Coursera admin routes + ai/interview/response — ✓ Fixed PR #1974",
-        "line": 411
+        "line": 418
       },
       {
         "level": 2,
         "title": "TODO-045: audit trail completeness — award-points, pipeline-stage, merge, reset-password, coursera-approval — ✓ Fixed PR #1973",
-        "line": 421
+        "line": 428
       },
       {
         "level": 2,
         "title": "TODO-048: withApiGuc for admin/blog/[id] GET/PATCH/DELETE — ✓ Fixed PR #1976",
-        "line": 434
+        "line": 441
       },
       {
         "level": 2,
         "title": "TODO-049: §H-DEP4 dual audit trails on admin/users routes — ✓ Fixed PR #1977",
-        "line": 444
+        "line": 451
       },
       {
         "level": 2,
         "title": "TODO-055: §H-DEP4 dual audit trails sweep 7 — 6 routes — ✓ Fixed PR #1983",
-        "line": 458
+        "line": 465
       },
       {
         "level": 2,
         "title": "TODO-054: §H-DEP4 dual audit trails sweep 6 — 5 routes — ✓ Fixed PR #1982",
-        "line": 470
+        "line": 477
       },
       {
         "level": 2,
         "title": "TODO-053: §H-DEP4 dual audit trails sweep 5 — 9 admin/members routes — ✓ Fixed PR #1981",
-        "line": 481
+        "line": 488
       },
       {
         "level": 2,
         "title": "TODO-052: §H-DEP4 dual audit trails sweep 4 — milestone/placements/employers/partners/subgroups/employer — ✓ Fixed PR #1980",
-        "line": 498
+        "line": 505
       },
       {
         "level": 2,
         "title": "TODO-051: §H-DEP4 dual audit trails sweep 3 — members + outcomes routes — ✓ Fixed PR #1984 + #1985",
-        "line": 514
+        "line": 521
       },
       {
         "level": 2,
         "title": "TODO-050: §H-DEP4 dual audit trails on partner/job routes — ✓ Fixed PR #1978",
-        "line": 530
+        "line": 537
       },
       {
         "level": 2,
         "title": "TODO-056: §H-DEP4 dual audit trails for 5 counselor mutation routes — ✓ Fixed PR #1990",
-        "line": 545
+        "line": 552
       },
       {
         "level": 2,
         "title": "TODO-086: §H-DEP4 dual audit trail — member AI/file routes batch 28 — ✓ Fixed PR #2020",
-        "line": 575
+        "line": 582
       },
       {
         "level": 2,
         "title": "TODO-085: §H-DEP4 dual audit trail — notifications + messages batch 27 — ✓ Fixed PR #2019",
-        "line": 583
+        "line": 590
       },
       {
         "level": 2,
         "title": "TODO-084: §H-DEP4 dual audit trail — activity tracking routes batch 26 — ✓ Fixed PR #2018",
-        "line": 591
+        "line": 598
       },
       {
         "level": 2,
         "title": "TODO-083: §H-DEP4 dual audit trail — compliance/profile routes batch 25 — ✓ Fixed PR #2017",
-        "line": 599
+        "line": 606
       },
       {
         "level": 2,
         "title": "TODO-082: §H-DEP4 dual audit trail — member routes batch 24 — ✓ Fixed PR #2016",
-        "line": 607
+        "line": 614
       },
       {
         "level": 2,
         "title": "TODO-081: §H-DEP4 dual audit trail — member routes batch 23 + stragglers — ✓ Fixed PR #2015",
-        "line": 615
+        "line": 622
       },
       {
         "level": 2,
         "title": "TODO-072: §H-DEP4 dual audit trail for member mgmt, blog, counselors, org routes (batch15) — ✓ Fixed PR #2007",
-        "line": 623
+        "line": 630
       },
       {
         "level": 2,
         "title": "TODO-071: §H-DEP4 dual audit trail for PII-access and AI generation routes (batch14) — ✓ Fixed PR #2006",
-        "line": 645
+        "line": 652
       },
       {
         "level": 2,
         "title": "TODO-070: §H-DEP4 dual audit trail for 6 admin routes (batch13) — ✓ Fixed PR #2005",
-        "line": 660
+        "line": 667
       },
       {
         "level": 2,
         "title": "TODO-069: §H-DEP4 dual audit trail for 7 admin routes (batch12) — ✓ Fixed PR #2004",
-        "line": 676
+        "line": 683
       },
       {
         "level": 2,
         "title": "TODO-068: §H-DEP4 dual audit trail for 10 admin routes (batch11) — ✓ Fixed PR #2003",
-        "line": 693
+        "line": 700
       },
       {
         "level": 2,
         "title": "TODO-067: §H-DEP4 dual audit trail for 9 admin routes (batch10) — ✓ Fixed PR #2002",
-        "line": 711
+        "line": 718
       },
       {
         "level": 2,
         "title": "TODO-069: §H-DEP4 dual audit trails for 7 admin routes (batch 12) — ✓ Fixed PR #2004",
-        "line": 730
+        "line": 737
       },
       {
         "level": 2,
         "title": "TODO-068: §H-DEP4 dual audit trails for 10 admin routes (batch 11) — ✓ Fixed PR #2003",
-        "line": 743
+        "line": 750
       },
       {
         "level": 2,
         "title": "TODO-067: §H-DEP4 dual audit trails for 9 admin routes (batch 10) — ✓ Fixed PR #2002",
-        "line": 757
+        "line": 764
       },
       {
         "level": 2,
         "title": "TODO-066: §H-DEP4 dual audit trails + security fixes for 4 misc routes — ✓ Fixed PR #2000",
-        "line": 776
+        "line": 783
       },
       {
         "level": 2,
         "title": "TODO-065: §H-DEP4 add logAuditEvent to 15 admin routes that had auditLog only — ✓ Fixed PR #2001",
-        "line": 790
+        "line": 797
       },
       {
         "level": 2,
         "title": "TODO-064: withApiGuc missing on 4 routes + rate-limit on request-help — ✓ Fixed PR #1999",
-        "line": 807
+        "line": 814
       },
       {
         "level": 2,
         "title": "TODO-063: §H-DEP4 add logAuditEvent to 6 admin routes that had auditLog only — ✓ Fixed PR #1998",
-        "line": 823
+        "line": 830
       },
       {
         "level": 2,
         "title": "TODO-062: §H-DEP4 add auditLog to 6 admin routes that had logAuditEvent only — ✓ Fixed PR #1997",
-        "line": 839
+        "line": 846
       },
       {
         "level": 2,
         "title": "TODO-061: §H-DEP4 audit sweep — deferred routes (voice-session, webhook, import)",
-        "line": 855
+        "line": 862
       },
       {
         "level": 2,
         "title": "TODO-060: §H-DEP4 dual audit trails employer/partner routes batch 6 — ✓ Fixed PR #1996",
-        "line": 868
+        "line": 875
       },
       {
         "level": 2,
         "title": "TODO-059: §H-DEP4 dual audit trails employer/partner routes batch 5 — ✓ Fixed PR #1995",
-        "line": 882
+        "line": 889
       },
       {
         "level": 2,
         "title": "TODO-058: §H-DEP4 dual audit trails employer/partner message routes batch 4 — ✓ Fixed PR #1994",
-        "line": 896
+        "line": 903
       },
       {
         "level": 2,
         "title": "TODO-057: withApiGuc for admin/members/bulk-email — ✓ Fixed PR #1989",
-        "line": 911
+        "line": 918
       },
       {
         "level": 2,
         "title": "TODO-059: §H-DEP4 audit trails — employer/partner routes batch 3 — ✓ Fixed PR #1993",
-        "line": 921
+        "line": 928
       },
       {
         "level": 2,
         "title": "TODO-087: Redundant `/api/auth/me` fetches on every authed page load",
-        "line": 933
+        "line": 940
       },
       {
         "level": 2,
         "title": "TODO-088: Public contact form is broken on prod — every submission returns 429 (HIGH)",
-        "line": 947
+        "line": 954
       },
       {
         "level": 2,
         "title": "TODO-089: Soft-404 on all dynamic content routes (programs, blog) — returns 200, not 404",
-        "line": 966
+        "line": 973
       },
       {
         "level": 2,
         "title": "Completed",
-        "line": 987
+        "line": 994
       }
     ],
     "datedFilename": false,

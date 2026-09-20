@@ -11,6 +11,7 @@ import {
 } from '@/lib/content/programs';
 import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
+import { rewardReferralOnEnrollment } from '@/lib/member/referrals';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -151,6 +152,8 @@ export const PATCH = withApiGuc(async (
       Program: program.title,
     }),
     invalidateMemberState(id),
+    // Staff-led enrollment is an enrollment trigger (WAP-32): pay a referral captured at signup. Idempotent.
+    rewardReferralOnEnrollment(id),
   ]);
   for (const result of postCommitResults) {
     if (result.status === 'rejected') {

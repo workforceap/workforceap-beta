@@ -62,14 +62,15 @@ export const CRON_REGISTRY: CronDef[] = [
   {
     id: 'at-risk-alerts',
     name: 'At-Risk Alerts',
-    description: 'Sends weekly at-risk digest alerts to counselors.',
-    schedule: '0 13 * * 1',
+    description:
+      'Weekly at-risk email: reads the CRITICAL AtRiskAlert rows the nightly check persisted (no re-scoring) and sends one batched alert per counselor; members with no counselor go to AT_RISK_DIGEST_EMAILS (fallback: admin inbox). Also runs the G5 member retention nudges (check-in / come-back / stuck, 7-day per-tier cooldown).',
+    schedule: '7 13 * * 1',
     scheduleLabel: 'Monday 1PM UTC',
     apiPath: '/api/cron/at-risk-alerts',
     method: 'GET',
     icon: 'notification_important',
     category: 'admin',
-    audienceDescription: 'Counselors — at-risk digest',
+    audienceDescription: 'Counselors — batched at-risk alerts (staff fallback for unassigned); members — retention nudges',
     workflowKey: 'cron_at_risk_alerts',
   },
   {
@@ -265,14 +266,14 @@ export const CRON_REGISTRY: CronDef[] = [
     id: 'at-risk-check',
     name: 'At-Risk Member Check',
     description:
-      'Nightly at-risk scoring for all active members. Calculates risk scores from engagement signals, training progress, and counselor contact recency. Persists alerts, resolves stale alerts, and emails AT_RISK_DIGEST_EMAILS an at-risk digest (fallback: admin inbox).',
-    schedule: '0 6 * * *',
+      'Nightly at-risk scoring for all active members. Calculates risk scores from engagement signals, training progress, and counselor contact recency; persists AtRiskAlert rows — the single risk source for both command centers, the at-risk dashboard and the weekly At-Risk Alerts email — and resolves stale alerts. Sends no email.',
+    schedule: '11 6 * * *',
     scheduleLabel: 'Daily 6AM UTC',
     apiPath: '/api/cron/at-risk-check',
     method: 'GET',
     icon: 'crisis_alert',
     category: 'admin',
-    audienceDescription: 'Internal counselor dashboard + admin alerts',
+    audienceDescription: 'Internal — persisted risk for counselor/admin dashboards and the weekly alert',
     workflowKey: 'cron_at_risk_check',
   },
   {

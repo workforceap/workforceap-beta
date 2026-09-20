@@ -660,4 +660,24 @@ assertContains(
   'admin session run member lookup is org-scoped',
 );
 
-console.log('[verify-high-risk-tenant-routes] OK — 68 routes verified');
+// WAP-18: previously bare exports. Both must run inside the request GUC so
+// RLS/tenant context is set for their reads (and so the audit-coverage gate
+// can treat them uniformly with every other admin route).
+assertMatches(
+  'app/api/admin/messages/stats/route.ts',
+  /export\s+const\s+GET\s*=\s*withApiGuc\(/,
+  'admin messages stats runs inside withApiGuc',
+);
+
+assertMatches(
+  'app/api/admin/reports/wioa/generate/route.ts',
+  /export\s+const\s+POST\s*=\s*withApiGuc\(/,
+  'admin WIOA generate runs inside withApiGuc',
+);
+assertMatches(
+  'app/api/admin/reports/wioa/generate/route.ts',
+  /^(?![\s\S]*\blet\s+lastReport\b)/,
+  'admin WIOA generate keeps no report in lambda memory',
+);
+
+console.log('[verify-high-risk-tenant-routes] OK — 70 routes verified');

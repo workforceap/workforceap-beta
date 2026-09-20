@@ -8,6 +8,8 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { invalidateMemberState } from '@/lib/member/getMemberState';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 const schema = z.object({
   fullName: z.string().min(1).max(200).optional(),
@@ -91,6 +93,26 @@ const schema = z.object({
   
       // Invalidate cached member state so dashboard reflects changes immediately
       await invalidateMemberState(id);
+
+      // Dual audit (WAP-18): field names only — bio/address/phone are PII.
+      const changedFields = Object.entries({ fullName, phone, profilePhone, profileAddress, profileBio, profileLinkedin })
+        .filter(([, value]) => value !== undefined)
+        .map(([key]) => key);
+      void auditLog({
+        actorUserId: admin.id,
+        action: 'admin_member_profile_update',
+        targetType: 'user',
+        targetId: id,
+        metadata: { fields: changedFields, orgId },
+      }).catch(() => {});
+      void logAuditEvent({
+        user: { id: admin.id, role: 'admin' },
+        verb: 'update',
+        object: { type: 'MemberProfile', id },
+        result: { success: true, extensions: { fields: changedFields } },
+        request: auditRequestMeta(req),
+        orgId,
+      }).catch(() => {});
 
       return NextResponse.json({ success: true, user });
     } catch (e) {

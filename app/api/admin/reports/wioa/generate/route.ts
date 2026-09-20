@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
-import { generateWioaReport, type WioaReport } from '@/lib/cron/wioa-report';
+import { generateWioaReport } from '@/lib/cron/wioa-report';
+import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 /**
- * In-memory store for the last generated WIOA report.
- * MVP — no DB table needed. Survives as long as the lambda is warm.
+ * POST /api/admin/reports/wioa/generate
+ *
+ * Generates a WIOA report for the requested period and returns it in the
+ * response body. The report is NOT retained server-side: the previous
+ * module-level in-memory GET only survived while a single lambda stayed warm,
+ * so it returned `null` on most invocations and a different admin's report on
+ * the rest. Durable retention is the monthly `/api/cron/wioa-report` email
+ * (WAP-18). Report generation itself reads only, so this route is on the
+ * mutation-audit allowlist in scripts/verify-admin-mutation-audit.cjs.
  */
-let lastReport: WioaReport | null = null;
-
-export async function POST(req: NextRequest) {
+async function _POST(req: NextRequest) {
   try {
     const user = await getUser();
     if (!user || !(await isAdmin(user.id))) {
@@ -26,7 +32,6 @@ export async function POST(req: NextRequest) {
         : undefined;
 
     const report = await generateWioaReport(period);
-    lastReport = report;
 
     return NextResponse.json({ success: true, report });
   } catch (error) {
@@ -38,19 +43,4 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
-  try {
-    const user = await getUser();
-    if (!user || !(await isAdmin(user.id))) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
-    return NextResponse.json({
-      report: lastReport,
-      lastGeneratedAt: lastReport?.generatedAt ?? null,
-    });
-  } catch (error) {
-    console.error('/api/admin/reports/wioa/generate GET error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
+export const POST = withApiGuc(_POST);

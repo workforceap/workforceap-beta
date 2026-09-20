@@ -1,0 +1,61 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/**/route.ts",
+    "app/**/page.tsx",
+    "app/**/layout.tsx",
+    "app/**/loading.tsx",
+    "app/**/error.tsx",
+    "app/**/not-found.tsx",
+    "app/**/sitemap.ts",
+    "app/**/robots.ts",
+    "scripts/**/*.{js,cjs,mjs,ts}",
+    "emails/**/*.{ts,tsx}",
+    "prisma/seed*.ts",
+    "tests/**/*.{ts,tsx}"
+  ],
+  "project": [
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "shared/**/*.{ts,tsx}",
+    "emails/**/*.{ts,tsx}",
+    "scripts/**/*.{js,cjs,mjs,ts}",
+    "prisma/**/*.ts",
+    "tests/**/*.{ts,tsx}",
+    "!**/*.d.ts"
+  ],
+  "ignoreDependencies": [
+    "@next/eslint-plugin-next",
+    "eslint-config-next",
+    "eslint-plugin-jsx-a11y",
+    "eslint-plugin-react-hooks",
+    "pdfjs-dist",
+    "critters",
+    "@react-email/preview-server",
+    "@astryxdesign/cli",
+    "postcss-load-config",
+    "playwright"
+  ],
+  "ignoreBinaries": [
+    "powershell",
+    "python3"
+  ],
+  "rules": {
+    "files": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "nsExports": "warn",
+    "nsTypes": "warn",
+    "enumMembers": "warn",
+    "classMembers": "warn",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "optionalPeerDependencies": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "binaries": "error",
+    "duplicates": "error"
+  }
+}

@@ -79,7 +79,7 @@
 | [scripts/lib/portal-audit-classify.mjs](../../../scripts/lib/portal-audit-classify.mjs) | 152 | operations | canonicalPathname:27, classifyPortalAuditRow:46 |
 | [scripts/lib/portal-audit-health-gate.mjs](../../../scripts/lib/portal-audit-health-gate.mjs) | 278 | operations | HEALTH_PATH:28, DEFAULT_HEALTH_GATE_TIMEOUT_MS:29, DEFAULT_HEALTH_GATE_INTERVAL_MS:30, HEALTH_REQUEST_TIMEOUT_MS:31, MIN_VERSION_LENGTH:32, normalizeOriginInput:39, expectedSupabaseRefForMode:45, resolveHealthGateTarget:57, normalizeTrustedSha:66, evaluateHealthPayload:85, formatHealthGateAttempt:158, describeHealthGateFailure:183, waitForTrustedHealth:222, formatPortalAuditTargetErrors:278 |
 | [scripts/lib/portal-audit-inventory.mjs](../../../scripts/lib/portal-audit-inventory.mjs) | 237 | operations | PORTAL_ROLE_PREFIXES:4, routeFromPageFile:52, discoverPortalPageRoutes:64, comparePortalRouteInventory:127, formatPortalRouteInventoryDrift:203, auditPortalRouteInventory:225 |
-| [scripts/lib/portal-audit-paths.mjs](../../../scripts/lib/portal-audit-paths.mjs) | 525 | operations | STATIC_PATHS:12, DYNAMIC_PATHS:202, REQUIRED_DYNAMIC_PATHS:244, SAFE_ACTION_CONTRACTS:257, ATTENDED_ACTION_GATES:352, REDIRECT_ONLY_PATHS:382, PRODUCTION_CANARY_PATHS:482, PRODUCTION_CANARY_ROLES:488, SECTION_LOGIN_REDIRECT:492, ROLE_ACCESS_MATRIX:504 |
+| [scripts/lib/portal-audit-paths.mjs](../../../scripts/lib/portal-audit-paths.mjs) | 518 | operations | STATIC_PATHS:12, DYNAMIC_PATHS:202, REQUIRED_DYNAMIC_PATHS:244, SAFE_ACTION_CONTRACTS:257, ATTENDED_ACTION_GATES:352, REDIRECT_ONLY_PATHS:382, PRODUCTION_CANARY_PATHS:475, PRODUCTION_CANARY_ROLES:481, SECTION_LOGIN_REDIRECT:485, ROLE_ACCESS_MATRIX:497 |
 | [scripts/lib/portal-audit-target.mjs](../../../scripts/lib/portal-audit-target.mjs) | 104 | operations | PORTAL_AUDIT_MODES:1, PRODUCTION_PORTAL_ORIGINS:7, normalizePortalAuditMode:13, validatePortalAuditTarget:47, formatPortalAuditTargetErrors:102 |
 | [scripts/lib/portal-hub-smoke-paths.mjs](../../../scripts/lib/portal-hub-smoke-paths.mjs) | 45 | operations | PORTAL_HUB_SMOKE_ROLES:8, PORTAL_HUB_SMOKE_PATHS:15, isPortalHubSmokePath:40 |
 | [scripts/lib/portal-qa-guard.cjs](../../../scripts/lib/portal-qa-guard.cjs) | 49 | operations | QA_ROLES:49, readPortalQaConfig:49, assertPortalQaOrganization:49 |
@@ -120,7 +120,9 @@
 | [scripts/validate-approved-coursera-track.ts](../../../scripts/validate-approved-coursera-track.ts) | 67 | learning-coursera |  |
 | [scripts/vercel-build.cjs](../../../scripts/vercel-build.cjs) | 69 | operations | appBuildScriptForEnvironment:65, copyMarketingBuild:66, main:67, runNpm:68 |
 | [scripts/vercel-deploy-fix.sh](../../../scripts/vercel-deploy-fix.sh) | 35 | operations |  |
-| [scripts/verify-high-risk-tenant-routes.cjs](../../../scripts/verify-high-risk-tenant-routes.cjs) | 663 | operations |  |
+| [scripts/verify-admin-mutation-audit.cjs](../../../scripts/verify-admin-mutation-audit.cjs) | 158 | operations | classify:156, exportedMutatingMethods:156, ALLOWLIST:156, DELEGATED_AUDIT_HELPERS:156 |
+| [scripts/verify-admin-mutation-audit.test.cjs](../../../scripts/verify-admin-mutation-audit.test.cjs) | 70 | operations |  |
+| [scripts/verify-high-risk-tenant-routes.cjs](../../../scripts/verify-high-risk-tenant-routes.cjs) | 673 | operations |  |
 | [scripts/verify-i18n-completeness.cjs](../../../scripts/verify-i18n-completeness.cjs) | 153 | operations |  |
 | [scripts/verify-material-symbols-font-size.mjs](../../../scripts/verify-material-symbols-font-size.mjs) | 38 | operations |  |
 | [scripts/verify-no-per-query-guc.cjs](../../../scripts/verify-no-per-query-guc.cjs) | 71 | operations | findViolations:56, TARGET:56 |

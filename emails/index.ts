@@ -33,7 +33,6 @@ export { applicantFollowupHtml } from './applicant-followup';
 export { adminPendingApplicantsHtml } from './admin-pending-applicants';
 export { adminWeeklyRecapHtml } from './admin-weekly-recap';
 export { partnerWeeklyDigestHtml } from './partner-weekly-digest';
-export { atRiskDigestHtml } from './at-risk-digest';
 export { onboardingStallsDigestHtml } from './onboarding-stalls-digest';
 export { counselorAtRiskAlertHtml, counselorAtRiskBatchHtml } from './counselor-at-risk-alert';
 export { placementSurveyHtml, placementSurveyEscalationHtml } from './placement-survey';
