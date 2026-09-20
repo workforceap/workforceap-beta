@@ -682,6 +682,17 @@ body {
     overflow-x: clip;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* Fixed cookie consent banner (components/CookieConsentBanner.tsx). The banner
+   pads <body> by its height, but that cannot move content inside a
+   100vh-centered layout such as /login, where the submit stayed inside the
+   viewport (y 778–836 at 1280x900) under an 81px banner, so Tab focus never
+   scrolled. scroll-margin-bottom makes focus()/scrollIntoView keep focused
+   controls above the banner; it is 0px whenever no banner is shown. */
+:root { --cookie-consent-reserve: 0px; }
+a, button, input, select, textarea, summary, [tabindex] {
+    scroll-margin-bottom: var(--cookie-consent-reserve);
+}
 body.mobile-nav-open {
     overflow: hidden;
 }

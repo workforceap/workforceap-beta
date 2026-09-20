@@ -598,8 +598,8 @@
 | [lib/i18n/esCopyDeckParity.test.ts](../../../lib/i18n/esCopyDeckParity.test.ts) | 136 | public-experience |  |
 | [lib/i18n/getT.ts](../../../lib/i18n/getT.ts) | 4 | public-experience | getTranslations:4 |
 | [lib/i18n/localizeHref.ts](../../../lib/i18n/localizeHref.ts) | 31 | public-experience | LocalizedHrefResolution:4, localizeHref:10, resolveLocalizedHref:22 |
-| [lib/i18n/pickRootClientMessages.test.ts](../../../lib/i18n/pickRootClientMessages.test.ts) | 115 | public-experience |  |
-| [lib/i18n/pickRootClientMessages.ts](../../../lib/i18n/pickRootClientMessages.ts) | 190 | public-experience | ROOT_CHROME_NAMESPACES:6, ROOT_MARKETING_CLIENT_KEYS:12, PORTAL_CLIENT_NAMESPACES:15, ADMIN_DASHBOARD_CLIENT_KEYS:40, ClientMessageSlice:52, pickRootClientMessages:88, pickPortalClientMessages:92, pickAdminClientMessages:96, pickApplyClientMessages:100, pickAuthClientMessages:104, pickClientMessageSlice:108, clientMessagesBytes:150, pickLegacyFatRootClientMessages:155 |
+| [lib/i18n/pickRootClientMessages.test.ts](../../../lib/i18n/pickRootClientMessages.test.ts) | 163 | public-experience |  |
+| [lib/i18n/pickRootClientMessages.ts](../../../lib/i18n/pickRootClientMessages.ts) | 210 | public-experience | ROOT_CHROME_NAMESPACES:6, ROOT_MARKETING_CLIENT_KEYS:12, PORTAL_CLIENT_NAMESPACES:15, WIOA_CLIENT_NAMESPACES:45, ADMIN_DASHBOARD_CLIENT_KEYS:53, ClientMessageSlice:65, pickRootClientMessages:101, pickPortalClientMessages:105, pickAdminClientMessages:109, pickApplyClientMessages:113, pickAuthClientMessages:117, pickWioaClientMessages:121, pickClientMessageSlice:125, clientMessagesBytes:170, pickLegacyFatRootClientMessages:175 |
 | [lib/i18n/server.ts](../../../lib/i18n/server.ts) | 10 | public-experience | getRequestLocale:5 |
 | [lib/i18n/serverLocale.ts](../../../lib/i18n/serverLocale.ts) | 13 | public-experience | WAPLocale:5, LOCALE_COOKIE:7, getLocale:9 |
 | [lib/interview/voiceTranscript.test.ts](../../../lib/interview/voiceTranscript.test.ts) | 67 | jobs-employers |  |

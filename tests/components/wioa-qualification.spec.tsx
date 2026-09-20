@@ -10,6 +10,7 @@ import WioaQualificationLoading from '@/components/portal/WioaQualificationLoadi
 import AdminMemberWioaReviewPanel from '@/components/admin/AdminMemberWioaReviewPanel';
 import WioaScreeningReadonly from '@/components/admin/WioaScreeningReadonly';
 import { computeWioaSignal, formatWioaReasons, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { pickPortalClientMessages, pickRootClientMessages, pickWioaClientMessages } from '@/lib/i18n/pickRootClientMessages';
 
 const mocks = vi.hoisted(() => ({ fetch: vi.fn(), voice: vi.fn(), pathname: '/wioa-qualification' }));
 vi.mock('next/navigation', () => ({ usePathname: () => mocks.pathname }));
@@ -24,6 +25,26 @@ function show(locale: keyof typeof messages, mode: 'public' | 'member' = 'member
 
 describe('localized WIOA assessment', () => {
   beforeEach(() => { cleanup(); vi.clearAllMocks(); vi.stubGlobal('fetch', mocks.fetch); });
+
+  // Regression: /en/wioa-qualification and /es/wioa-qualification rendered raw `wioa.*` keys
+  // because the root layout provider carried no `wioa` namespace. Render with the exact
+  // client payloads the route layouts now pass (public + member portal), not the full catalog.
+  it.each([
+    ['en', 'public', pickWioaClientMessages],
+    ['es', 'public', pickWioaClientMessages],
+    ['en', 'member', pickPortalClientMessages],
+  ] as const)('renders %s %s screening from the sliced client payload without leaking wioa.* keys', (locale, mode, pick) => {
+    mocks.pathname = `/${locale}/wioa-qualification`;
+    const text = messages[locale].wioa;
+    const view = render(<NextIntlClientProvider locale={locale} messages={pick(messages[locale])} timeZone="America/New_York"><WioaQualificationClient mode={mode} initialSnapshot={null} /></NextIntlClientProvider>);
+    expect(screen.getByRole('heading', { level: 1, name: text.title })).toBeInTheDocument();
+    expect(screen.getByText(text.kicker)).toBeInTheDocument();
+    expect(view.container.textContent).not.toMatch(/\bwioa\./);
+  });
+
+  it('root marketing payload still omits the wioa catalog (it attaches in app/wioa-qualification/layout.tsx)', () => {
+    expect((pickRootClientMessages(en) as Record<string, unknown>).wioa).toBeUndefined();
+  });
 
   it.each(['en', 'es', 'fr', 'pt'] as const)('renders %s initial public form and loading state without missing translations', (locale) => {
     const text = messages[locale].wioa;
