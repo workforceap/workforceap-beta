@@ -95,11 +95,13 @@
 | [lib/admin/trainingProgressGrades.ts](../../../lib/admin/trainingProgressGrades.ts) | 56 | administration | CourseGradeFact:21, latestCompletedGradeByUser:31 |
 | [lib/admin/trainingProgressPrograms.ts](../../../lib/admin/trainingProgressPrograms.ts) | 76 | administration | TrainingPace:10, STALLED_IDLE_DAYS:13, TrainingLearnerRef:15, programSlugsForLearner:28, deriveTrainingPace:64 |
 | [lib/admin/trainingProgressRoster.ts](../../../lib/admin/trainingProgressRoster.ts) | 311 | administration | RosterRow:14, PACE_FILTERS:33, PaceFilter:34, LINK_FILTERS:36, LinkFilter:37, SORT_KEYS:39, SortKey:48, SortDirection:50, RosterFilters:52, DEFAULT_ROSTER_FILTERS:61, DEFAULT_SORT_KEY:68, DEFAULT_SORT_DIRECTION:69, filterTrainingRows:106, latestActivityMs:172, relativeLastActiveCaption:186, sortTrainingRows:207, RosterSummary:243, summarizeTrainingRows:257, countMembersWithTraining:286, rosterProgramOptions:297, isPaceFilter:301, isLinkFilter:305, isSortKey:309 |
-| [lib/admin/triageDigest.ts](../../../lib/admin/triageDigest.ts) | 326 | administration | TriageMember:27, TriageBucketKey:42, TriageBucket:44, TriageDigest:62, getTriageDigest:80 |
+| [lib/admin/triageDigest.ts](../../../lib/admin/triageDigest.ts) | 328 | administration | TriageMember:27, TriageBucketKey:42, TriageBucket:44, TriageDigest:62, getTriageDigest:80 |
 | [lib/admin/triageDigestCopy.test.ts](../../../lib/admin/triageDigestCopy.test.ts) | 22 | administration |  |
 | [lib/admin/triageDigestCopy.ts](../../../lib/admin/triageDigestCopy.ts) | 26 | administration | TRIAGE_BUCKET_ACCENTS:12, stalledCheckInAction:23 |
 | [lib/admin/userDeleteResponse.test.ts](../../../lib/admin/userDeleteResponse.test.ts) | 16 | administration |  |
 | [lib/admin/userDeleteResponse.ts](../../../lib/admin/userDeleteResponse.ts) | 13 | administration | userAuthDeleteFailedResponse:3 |
+| [lib/admin/withSoftTimeout.test.ts](../../../lib/admin/withSoftTimeout.test.ts) | 16 | administration |  |
+| [lib/admin/withSoftTimeout.ts](../../../lib/admin/withSoftTimeout.ts) | 22 | administration | SoftTimeoutError:6, withSoftTimeout:13 |
 | [lib/agents/gateway/core.test.ts](../../../lib/agents/gateway/core.test.ts) | 252 | libraries |  |
 | [lib/agents/gateway/core.ts](../../../lib/agents/gateway/core.ts) | 442 | libraries | createMemberAgentGateway:135 |
 | [lib/agents/gateway/index.ts](../../../lib/agents/gateway/index.ts) | 18 | libraries | createMemberAgentGateway:1, MEMBER_AGENT_TOOL_DEFINITIONS:2, AgentGatewayHandoff:4, AgentGatewayResponse:5, AgentGatewaySource:6, AgentGatewayStatus:7, AuthenticatedAgentPrincipal:8, MemberAgentGateway:9, MemberAgentGatewayReader:10, MemberAgentToolName:11, MemberCourseraProgressData:12, MemberNextStepData:13, MemberTrainingStatusData:14 |
@@ -383,6 +385,8 @@
 | [lib/counselor/lastActivity.ts](../../../lib/counselor/lastActivity.ts) | 45 | member-counselor | NO_ACTIVITY_RECORDED_LABEL:16, MemberLastActivity:18, resolveMemberLastActivity:27, describeInactivity:37, isUrgentInactivity:43 |
 | [lib/counselor/lockMemberForReview.ts](../../../lib/counselor/lockMemberForReview.ts) | 32 | member-counselor | lockMemberForReview:8 |
 | [lib/counselor/memberStatus.ts](../../../lib/counselor/memberStatus.ts) | 48 | member-counselor | counselorEnrollmentStatusBadge:6, counselorStudentStatusBadge:19, counselorStudentStatusBadgeVariant:38 |
+| [lib/counselor/needsAttentionRows.test.ts](../../../lib/counselor/needsAttentionRows.test.ts) | 27 | member-counselor |  |
+| [lib/counselor/needsAttentionRows.ts](../../../lib/counselor/needsAttentionRows.ts) | 20 | member-counselor | selectNeedsAttentionRows:10, countNeedsAttention:18 |
 | [lib/counselor/nudgeTemplates.test.ts](../../../lib/counselor/nudgeTemplates.test.ts) | 69 | member-counselor |  |
 | [lib/counselor/nudgeTemplates.ts](../../../lib/counselor/nudgeTemplates.ts) | 132 | member-counselor | NudgeTemplateId:20, NudgeTemplate:22, NUDGE_TEMPLATES:30, listTemplates:54, getTemplate:58, NudgeRenderContext:62, barrierAwareNudgeLine:99, renderNudge:115 |
 | [lib/counselor/placementsQuery.test.ts](../../../lib/counselor/placementsQuery.test.ts) | 50 | member-counselor |  |
@@ -776,7 +780,9 @@
 | [lib/nav/mobileBottomNavLayout.ts](../../../lib/nav/mobileBottomNavLayout.ts) | 21 | public-experience | WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER:5, shouldReserveMobileBottomNavClearance:11 |
 | [lib/nav/portalNav.i18n.ts](../../../lib/nav/portalNav.i18n.ts) | 136 | public-experience | MEMBER_PORTAL_NAV_ITEMS_I18N:42 |
 | [lib/nav/portalNav.test.ts](../../../lib/nav/portalNav.test.ts) | 81 | public-experience |  |
-| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 504 | public-experience | PortalRole:47, NavGroup:49, NavTab:65, NavBadgeKey:67, PortalNavItem:85, NAV_TAB_META:108, NAV_TAB_ORDER:115, NAV_GROUP_LABELS:117, GROUP_ORDER:134, MEMBER_PORTAL_NAV_ITEMS:155, EMPLOYER_PORTAL_NAV_ITEMS:267, PARTNER_PORTAL_NAV_ITEMS:309, GROUP_PORTAL_NAV_ITEMS:350, ADMIN_PORTAL_NAV_ITEMS:358, COUNSELOR_PORTAL_NAV_ITEMS:452, PORTAL_NAV:464, navItemsForActiveRoute:473, getActiveTab:478, badgeTotalForItem:495 |
+| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 512 | public-experience | PortalRole:48, NavGroup:50, NavTab:66, NavBadgeKey:68, PortalNavItem:86, NAV_TAB_META:109, NAV_TAB_ORDER:116, NAV_GROUP_LABELS:118, GROUP_ORDER:135, MEMBER_PORTAL_NAV_ITEMS:156, EMPLOYER_PORTAL_NAV_ITEMS:268, PARTNER_PORTAL_NAV_ITEMS:310, GROUP_PORTAL_NAV_ITEMS:351, ADMIN_PORTAL_NAV_ITEMS:359, COUNSELOR_PORTAL_NAV_ITEMS:453, PORTAL_NAV:472, navItemsForActiveRoute:481, getActiveTab:486, badgeTotalForItem:503 |
+| [lib/nav/resumeUploadHint.test.ts](../../../lib/nav/resumeUploadHint.test.ts) | 33 | public-experience |  |
+| [lib/nav/resumeUploadHint.ts](../../../lib/nav/resumeUploadHint.ts) | 31 | public-experience | shouldShowResumeUploadHint:26 |
 | [lib/nav/workspaceCopy.ts](../../../lib/nav/workspaceCopy.ts) | 42 | public-experience | PRODUCT_COPY:1, EMPLOYER_PORTAL_NAV:11, PARTNER_PORTAL_NAV:18, GROUP_PORTAL_NAV:24, ADMIN_NAV:26 |
 | [lib/notifications/create.ts](../../../lib/notifications/create.ts) | 166 | communications | NotificationType:11, CreateNotificationInput:27, createNotification:54, createBulkNotifications:111 |
 | [lib/notifications/partner-notify.ts](../../../lib/notifications/partner-notify.ts) | 197 | communications | PartnerMilestone:30, sendPartnerMilestoneEmail:61, sendPartnerNewMemberAssignedEmail:138 |

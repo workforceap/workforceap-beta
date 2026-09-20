@@ -1236,7 +1236,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 45,
+        "line": 46,
         "kind": "FunctionDeclaration",
         "localName": "CounselorPortalPage"
       }
@@ -3306,12 +3306,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 25,
+        "line": 28,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 33,
+        "line": 36,
         "kind": "FunctionDeclaration",
         "localName": "DashboardCertificationsPage"
       }
@@ -7167,6 +7167,33 @@
     ]
   },
   {
+    "file": "app/(portal)/partner/signup/page.tsx",
+    "kind": "page",
+    "path": "/partner/signup",
+    "groups": [
+      "(portal)"
+    ],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 9,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 11,
+        "kind": "FunctionDeclaration",
+        "localName": "PartnerSignupAliasPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-static"
+    },
+    "boundaryReferences": []
+  },
+  {
     "file": "app/(portal)/profile/page.tsx",
     "kind": "page",
     "path": "/profile",
@@ -10932,12 +10959,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 28,
+        "line": 33,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 89,
+        "line": 94,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }

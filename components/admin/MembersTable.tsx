@@ -16,12 +16,14 @@ import DataTable from '@/components/portal/ui/DataTable';
 import ConfirmDialog from './ConfirmDialog';
 import PortalPagination from '@/components/portal/PortalPagination';
 import { useDirectoryNavigation } from './useDirectoryNavigation';
+import { formatPortalDate } from '@/lib/formatDate';
 
 function formatMemberDate(value: string | Date | null | undefined): string | null {
   if (value == null) return null;
   const d = typeof value === 'string' || typeof value === 'number' ? new Date(value) : value;
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString();
+  // Fixed locale + timezone: server and client render the same text (hydration).
+  return formatPortalDate(d);
 }
 
 type Member = {

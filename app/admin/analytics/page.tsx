@@ -235,10 +235,10 @@ export default async function AnalyticsPage({
   const engagement = await getEngagementData(orgId ?? undefined);
 
   const kpis: KpiItem[] = [
-    { label: 'WAU', value: engagement.wau.toLocaleString('en-US'), color: 'info' },
+    { label: 'WAU', value: engagement.wau.toLocaleString('en-US') },
     { label: 'Avg Session', value: engagement.avgSessionLabel },
-    { label: 'AI Tool Uses', value: engagement.aiToolUses.toLocaleString('en-US'), color: 'accent' },
-    { label: 'Voice Sessions', value: engagement.voiceSessions.toLocaleString('en-US'), color: 'gold' },
+    { label: 'AI Tool Uses', value: engagement.aiToolUses.toLocaleString('en-US') },
+    { label: 'Voice Sessions', value: engagement.voiceSessions.toLocaleString('en-US') },
   ];
 
   return (

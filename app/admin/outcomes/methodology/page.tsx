@@ -53,6 +53,9 @@ export default async function OutcomesMethodologyPage() {
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
+              // PageHeader above already renders the page h1; the document's
+              // own "# Outcomes Methodology" becomes a section heading.
+              h1: ({ children }) => <h2>{children}</h2>,
               a: ({ href, children }) => {
                 const isInternal = href?.startsWith('/');
                 return isInternal ? (

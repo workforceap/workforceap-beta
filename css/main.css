@@ -1797,7 +1797,9 @@ html.dark .portal-page-header .portal-page-header-main p {
 }
 html.dark .btn-outline,
 html.dark .btn-secondary {
-    border-color: var(--color-gray-300);
+    /* WAP-145 dark: gray-300 measured 2.02:1 against the canvas. Ghost borders read the
+       kit control border (3:1+); outside the portal token scope fall back to a 3:1 gray. */
+    border-color: var(--wa-control-border, var(--color-gray-400));
     color: var(--color-primary);
 }
 html.dark .app-system-page {
@@ -2628,7 +2630,9 @@ body.mobile-nav-open {
 a.btn-primary,
 button.btn-primary {
     background: var(--color-accent);
-    color: var(--color-white);
+    /* --color-white flips to the dark canvas in dark mode (2.85:1 on the accent, WAP-145);
+       the label on a solid accent stays white in both themes. */
+    color: var(--wa-on-accent);
     border: none;
 }
 .btn-primary:hover {

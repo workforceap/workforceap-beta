@@ -210,9 +210,16 @@ describe('workspace navigation', () => {
   });
 
   it('keeps the resume hint in member content so it cannot push the rail below its viewport', () => {
+    location.pathname = '/dashboard';
     const { container } = show();
     const main = container.querySelector('.workspace-shell-main') as HTMLElement;
     expect(within(main).getByRole('link', { name: 'Upload resume' })).toHaveAttribute('href', '/dashboard/resume');
+  });
+
+  it('scopes the resume hint to home and resume-consuming tools', () => {
+    location.pathname = '/dashboard/messages';
+    show();
+    expect(screen.queryByRole('link', { name: 'Upload resume' })).toBeNull();
   });
 
   it('preserves flat staff navigation while fixing its parent highlight', () => {
