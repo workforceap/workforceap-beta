@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "ebc28e301845527f026f5b78e195d37e779259724dafc1c50cde275c92347d15",
+  "inputTreeSha256": "d94b89eadbae5e42eb513ddc670e30b91d8e9af264b94abc80a578aa244872b4",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -5830,14 +5830,14 @@
       "path": "app/(portal)/counselor/students/[memberId]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 66716,
-      "lines": 1475,
-      "sha256": "d66b29fdb0bb785da8a0b9aac05e80de20ab225fecf4d2d251b5784c10dee41f",
+      "bytes": 45565,
+      "lines": 1041,
+      "sha256": "ab4123ff36f6e8d67774a2ddf1a9620bc3fba6401748618183987a5a7269aaa5",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 69,
+          "line": 80,
           "kind": "FunctionDeclaration",
           "localName": "CounselorStudentDetailPage"
         }
@@ -5845,62 +5845,62 @@
       "declarations": [
         {
           "name": "Props",
-          "line": 57,
+          "line": 64,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getInitials",
-          "line": 59,
+          "line": 70,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorStudentDetailPage",
-          "line": 69,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskAlertDisplay",
-          "line": 1315,
+          "line": 894,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NextBestActionRow",
-          "line": 1322,
+          "line": 901,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Counselor360Signals",
-          "line": 1332,
+          "line": 911,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "CARD_STYLE",
-          "line": 1350,
-          "kind": "Variable"
-        },
-        {
           "name": "AT_RISK_ALERT_STATUS_LABEL",
-          "line": 1354,
+          "line": 931,
           "kind": "Variable"
         },
         {
           "name": "atRiskAlertStatusLabel",
-          "line": 1361,
+          "line": 938,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "AT_RISK_LEVEL_TONE",
+          "line": 943,
+          "kind": "Variable"
+        },
+        {
           "name": "AtRiskSignalCard",
-          "line": 1365,
+          "line": 950,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CareerQuizRecommendationCard",
-          "line": 1423,
+          "line": 989,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NextBestActionsCard",
-          "line": 1449,
+          "line": 1015,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -5910,10 +5910,79 @@
       "path": "app/(portal)/counselor/students/[memberId]/studentDetail.module.css",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 879,
-      "lines": 37,
-      "sha256": "6a5728c47732a11d47489c09e8aed24323de8aa1a2de385cafa9fba454b99d85",
+      "bytes": 4462,
+      "lines": 287,
+      "sha256": "72b7dd7cebd28889bf79b439bff5978b1a2e99acc7b06ac13cef1380c20b08a8",
       "binary": false
+    },
+    {
+      "path": "app/(portal)/counselor/students/[memberId]/studentDetailTabs.ts",
+      "area": "pages",
+      "domain": "member-counselor",
+      "bytes": 1437,
+      "lines": 34,
+      "sha256": "c31dbfaabfa1864da18f7ce8435bdc36e5faab3d7cca9010376e6f4111bfc60e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "STUDENT_DETAIL_TABS_ID_BASE",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENT_DETAIL_TAB_PARAM",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENT_DETAIL_TABS",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseStudentDetailTab",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "STUDENT_DETAIL_TAB_IDS",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "StudentDetailTabId",
+          "line": 10,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "STUDENT_DETAIL_DEFAULT_TAB",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENT_DETAIL_TABS_ID_BASE",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENT_DETAIL_TAB_PARAM",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENT_DETAIL_TABS",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseStudentDetailTab",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "app/(portal)/counselor/students/error.tsx",
@@ -63152,19 +63221,19 @@
       "path": "components/portal/counselor/CounselorPriorityQueue.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 14533,
-      "lines": 408,
-      "sha256": "daab5e1fe1b85d43752f88b6cf6d56adf4ef16d1286b13ee341f4fe2b97a80c4",
+      "bytes": 15356,
+      "lines": 415,
+      "sha256": "8710edf18d826d1845f3abf5616a41636f36bfa0618ec4333f40673eef9584b5",
       "binary": false,
       "exports": [
         {
           "name": "CounselorPriorityQueueProps",
-          "line": 58,
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 68,
+          "line": 79,
           "kind": "FunctionDeclaration",
           "localName": "CounselorPriorityQueue"
         }
@@ -63172,47 +63241,52 @@
       "declarations": [
         {
           "name": "SortKey",
-          "line": 31,
+          "line": 37,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BulkSendResult",
-          "line": 33,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BUCKET_RANK",
-          "line": 40,
-          "kind": "Variable"
-        },
-        {
-          "name": "BUCKET_AUDIENCE",
           "line": 46,
           "kind": "Variable"
         },
         {
-          "name": "BUCKET_STYLE",
+          "name": "BUCKET_AUDIENCE",
           "line": 52,
           "kind": "Variable"
         },
         {
-          "name": "CounselorPriorityQueueProps",
+          "name": "BUCKET_STYLE",
           "line": 58,
+          "kind": "Variable"
+        },
+        {
+          "name": "priorityBucketToneClass",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CounselorPriorityQueueProps",
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CounselorPriorityQueue",
-          "line": 68,
+          "line": 79,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketLabel",
-          "line": 319,
+          "line": 341,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PriorityRow",
-          "line": 325,
+          "line": 347,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64790,6 +64864,80 @@
       "directive": null
     },
     {
+      "path": "components/portal/kit/Tabs.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 7177,
+      "lines": 221,
+      "sha256": "d1363826046f4dcdb9ec3ee05288434532f04ac8fd35d3b63900809f873302f9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KitTabItem",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "Tabs",
+          "line": 79,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TabPanel",
+          "line": 201,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KitTabItem",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TabsProps",
+          "line": 48,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TabsContextValue",
+          "line": 61,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TabsContext",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "PANEL_ATTR",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "anchorTarget",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Tabs",
+          "line": 79,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TabPanelProps",
+          "line": 195,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "TabPanel",
+          "line": 201,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "components/portal/kit/UniversalSearch.tsx",
       "area": "components",
       "domain": "components",
@@ -65251,9 +65399,9 @@
       "path": "components/portal/kit/index.ts",
       "area": "components",
       "domain": "components",
-      "bytes": 2578,
-      "lines": 49,
-      "sha256": "f5b3ca79bde11d8581a7c7d35e985c3d1f3cd68c2cfaae807e8dcdd0e89c1198",
+      "bytes": 2636,
+      "lines": 50,
+      "sha256": "7b95b70577e6c4ae68f28ca3da4e9e2252ea05dca0460c01136ba624575f4a4f",
       "binary": false,
       "exports": [
         {
@@ -65517,58 +65665,73 @@
           "kind": "ReExport"
         },
         {
-          "name": "AppShellSidebar",
+          "name": "Tabs",
           "line": 45,
+          "kind": "ReExport"
+        },
+        {
+          "name": "TabPanel",
+          "line": 45,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTabItem",
+          "line": 45,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AppShellSidebar",
+          "line": 46,
           "kind": "ReExport"
         },
         {
           "name": "NavItem",
-          "line": 45,
+          "line": 46,
           "kind": "ReExport"
         },
         {
           "name": "NavGroup",
-          "line": 45,
+          "line": 46,
           "kind": "ReExport"
         },
         {
           "name": "AppShellMember",
-          "line": 46,
-          "kind": "ReExport"
-        },
-        {
-          "name": "MemberTab",
-          "line": 46,
-          "kind": "ReExport"
-        },
-        {
-          "name": "UniversalSearch",
           "line": 47,
           "kind": "ReExport"
         },
         {
-          "name": "MemberDashboardKit",
+          "name": "MemberTab",
+          "line": 47,
+          "kind": "ReExport"
+        },
+        {
+          "name": "UniversalSearch",
           "line": 48,
+          "kind": "ReExport"
+        },
+        {
+          "name": "MemberDashboardKit",
+          "line": 49,
           "kind": "ReExport"
         },
         {
           "name": "MemberDashboardKitProps",
-          "line": 48,
+          "line": 49,
           "kind": "ReExport"
         },
         {
           "name": "colorVar",
-          "line": 49,
+          "line": 50,
           "kind": "ReExport"
         },
         {
           "name": "KitColor",
-          "line": 49,
+          "line": 50,
           "kind": "ReExport"
         },
         {
           "name": "KitTone",
-          "line": 49,
+          "line": 50,
           "kind": "ReExport"
         }
       ],
@@ -73262,9 +73425,9 @@
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 45174,
-      "lines": 1352,
-      "sha256": "a758838c1b8d618b9327c17e678271784b82491d62539c37a4ca9cf18ac177a9",
+      "bytes": 48498,
+      "lines": 1463,
+      "sha256": "ca770a54edfc96dc5bc1ab7953d0bbd8f302ef5f8cb1fe8937b9bab3f617a77b",
       "binary": false
     },
     {
@@ -73730,9 +73893,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 38181,
-      "lines": 527,
-      "sha256": "353ccee8645e00fa583eed9320ce45150473d98a970ed496e34bd2d21f730f2f",
+      "bytes": 38824,
+      "lines": 533,
+      "sha256": "ebdfb3c804a01abfae04a24e8036417e81fdb79d7542eedfe8b7150ff91d24d8",
       "binary": false
     },
     {
@@ -158927,25 +159090,78 @@
       "path": "tests/app/counselor-student-detail-messages-rail.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7623,
-      "lines": 150,
-      "sha256": "f5da2869cc71c16d9a7926988a56fbba1ded16df3e03c618939a61a36d4864fc",
+      "bytes": 8243,
+      "lines": 160,
+      "sha256": "b8a3dd264f27fe6bff3c36ce3c8b7f77582886c8bd043b6b2305246418e81c90",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "db",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "INSTANT",
-          "line": 78,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "renderPage",
-          "line": 80,
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/counselor-student-detail-tabs.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 16489,
+      "lines": 329,
+      "sha256": "e8be4d8577a58a0292469f8406d88c8c2ca548b64284c747aacc992c38fe8245",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "INSTANT",
+          "line": 89,
+          "kind": "Variable"
+        },
+        {
+          "name": "BASE",
+          "line": 90,
+          "kind": "Variable"
+        },
+        {
+          "name": "TAB_IDS",
+          "line": 91,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderPage",
+          "line": 93,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "panel",
+          "line": 105,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tab",
+          "line": 111,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Island",
+          "line": 228,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -160253,6 +160469,39 @@
         {
           "name": "note",
           "line": 21,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/counselor-priority-queue-tones.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4755,
+      "lines": 103,
+      "sha256": "0fdbc08c9d138c77e6cca5a1a5427fa5b10e227cacad84eb402d42b0153c1273",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "BUCKET_TONE",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "row",
+          "line": 29,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ROWS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOTALS",
+          "line": 46,
           "kind": "Variable"
         }
       ],

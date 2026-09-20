@@ -42,6 +42,7 @@ export {
 } from './CommandCenter';
 export { FormField, Toggle } from './FormField';
 export { ChatThread, type ChatMessage } from './ChatThread';
+export { Tabs, TabPanel, type KitTabItem } from './Tabs';
 export { AppShellSidebar, type NavItem, type NavGroup } from './AppShellSidebar';
 export { AppShellMember, type MemberTab } from './AppShellMember';
 export { UniversalSearch } from './UniversalSearch';

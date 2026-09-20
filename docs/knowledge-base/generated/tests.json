@@ -18361,11 +18361,44 @@
     "localReferences": [
       {
         "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
-        "line": 76
+        "line": 77
       },
       {
         "file": "lib/messages/counselorThread.ts",
-        "line": 141
+        "line": 151
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/counselor-student-detail-tabs.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
+        "line": 81
+      },
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/studentDetailTabs.ts",
+        "line": 82
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 87
       }
     ],
     "kind": "test-candidate",
@@ -19922,6 +19955,35 @@
       {
         "file": "lib/fetchWithTimeout.ts",
         "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/counselor-priority-queue-tones.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/counselor/CounselorPriorityQueue.tsx",
+        "line": 3
+      },
+      {
+        "file": "lib/counselor/priorityQueue.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",

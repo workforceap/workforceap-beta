@@ -1,37 +1,287 @@
-/* Student detail layout. The message thread is the one section the roster
-   deep-links to (#counselor-member-messages), so it renders first on mobile
-   and as a sticky right rail on desktop; the ~15 record sections keep their
-   order in the main column. Colocated with [memberId]/page.tsx. */
+/* Counselor student detail — layout for the four record tabs (Profile /
+   Training / Notes / Messages). Kit primitives (.wa-kit-card, .wa-kit-tag,
+   .wa-kit-tabs, tone hooks) carry the look; these classes only arrange them.
+   --wa-* tokens only; every text size sits on the 13px floor.
+   Colocated with [memberId]/page.tsx. */
 
-.detailLayout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.actionIcon {
+  font-size: 1rem;
+}
+
+.tabs {
+  margin-top: 1rem;
+  padding: 0 1rem 6rem; /* clears the mobile bottom nav */
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.messagesRail {
+.narrow {
+  max-width: 640px;
+}
+
+.narrower {
+  max-width: 480px;
+}
+
+.sectionTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.sectionTitleTight {
+  margin-bottom: 0.35rem;
+}
+
+.lede {
+  margin: 0 0 0.875rem;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.emptyCopy {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.identityCopy {
+  flex: 1;
   min-width: 0;
-  padding: 0 1rem;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-accent);
+  color: var(--wa-on-accent);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.identityName {
+  margin: 0 0 0.125rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--wa-text);
+}
+
+.identityMeta {
+  margin: 0 0 0.5rem;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 1rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.rowStart {
+  align-items: flex-start;
+}
+
+.rowCopy {
+  min-width: 0;
+}
+
+.rowTitle {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  color: var(--wa-text);
+}
+
+.rowMeta {
+  margin: 0.125rem 0 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.rowEnd {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.rowEnd > * + * {
+  margin-top: 0.25rem;
+}
+
+.accentValue {
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-accent);
+}
+
+.groupLabel {
+  margin: 0 0 0.5rem;
+}
+
+.group + .group {
+  margin-top: 1rem;
+}
+
+.progressHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-muted);
+}
+
+.progressHead + .progressHead {
+  margin-top: 0.5rem;
+}
+
+.progressTrack {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--wa-track);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--wa-accent);
+}
+
+.courses {
+  margin-top: 1rem;
+}
+
+.courseRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0;
+  border-top: 1px solid var(--wa-border);
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.courseRow[data-done='false'] {
+  opacity: 0.7;
+}
+
+.doneIcon {
+  font-size: 1rem;
+  color: var(--wa-success);
+}
+
+.signals {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.cardTitle {
+  margin: 0 0 0.5rem;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  color: var(--wa-text);
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cardHead .cardTitle {
+  margin: 0;
+}
+
+.factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.factor {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--wa-surface-2);
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  font-weight: 500;
+}
+
+.strong {
+  color: var(--wa-text);
+}
+
+.nba {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.nbaIcon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: var(--wa-accent);
+}
+
+.footerNote {
+  margin: 0;
 }
 
 @media (min-width: 768px) {
-  .detailLayout {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 24rem);
-    gap: 1.5rem;
-    align-items: start;
-  }
-
-  .messagesRail {
-    grid-column: 2;
-    grid-row: 1;
-    padding: 0;
-    /* Clears the sticky shell header (44px control + 12px padding each side). */
-    position: sticky;
-    top: 5.25rem;
-  }
-
-  .detailLayout > :not(.messagesRail) {
-    grid-column: 1;
-    grid-row: 1;
+  .tabs {
+    padding: 0 0 1.5rem;
   }
 }
