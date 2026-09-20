@@ -56,7 +56,7 @@ export default function ExecutiveTrendCharts({ signupData, enrollmentData, viewD
               <XAxis dataKey="week" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Bar dataKey="count" fill="var(--color-green)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill="var(--wa-success)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -72,7 +72,7 @@ export default function ExecutiveTrendCharts({ signupData, enrollmentData, viewD
               <XAxis dataKey="week" tick={{ fontSize: 10 }} />
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="var(--color-blue)" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="count" stroke="var(--wa-info)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

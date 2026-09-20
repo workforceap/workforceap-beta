@@ -53,10 +53,10 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 const ACTION_COLOR: Record<string, string> = {
-  mapping_created: 'var(--color-green, #4a9b4f)',
+  mapping_created: 'var(--wa-success-dark)',
   mapping_updated: 'var(--color-accent)',
-  mapping_deactivated: 'var(--color-gold)',
-  mapping_reactivated: 'var(--color-green, #4a9b4f)',
+  mapping_deactivated: 'var(--wa-gold-dark)',
+  mapping_reactivated: 'var(--wa-success-dark)',
   mapping_deleted: '#b91c1c',
 };
 
@@ -86,8 +86,8 @@ const REC_TYPES = ['primary', 'bridge', 'stretch'] as const;
 
 const REC_TYPE_COLOR: Record<string, string> = {
   primary: 'var(--color-accent)',
-  bridge: 'var(--color-gold)',
-  stretch: 'var(--color-blue, #2b7bb9)',
+  bridge: 'var(--wa-gold-dark)',
+  stretch: 'var(--wa-info-dark)',
 };
 
 const BAND_LABEL: Record<string, string> = {
@@ -306,7 +306,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
       </div>
 
       {message && (
-        <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', border: `1px solid ${message.type === 'ok' ? 'rgba(74,155,79,0.25)' : 'rgba(173,44,77,0.25)'}`, color: message.type === 'ok' ? 'var(--color-green, #4a9b4f)' : 'var(--color-accent)' }}>
+        <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', borderRadius: '0.75rem', background: message.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', border: `1px solid ${message.type === 'ok' ? 'rgba(74,155,79,0.25)' : 'rgba(173,44,77,0.25)'}`, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)' }}>
           {message.text}
         </div>
       )}
@@ -434,7 +434,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                               <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{match.programTitle}</p>
-                              <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[match.recommendationType]}22`, color: REC_TYPE_COLOR[match.recommendationType], textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: `color-mix(in srgb, ${REC_TYPE_COLOR[match.recommendationType]} 13%, transparent)`, color: REC_TYPE_COLOR[match.recommendationType], textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 {match.recommendationType}
                               </span>
                               <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -446,13 +446,13 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                           {/* Score + approve */}
                           <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                              <span style={{ fontSize: '1.125rem', fontWeight: 800, color: match.score >= 0.7 ? 'var(--color-green, #4a9b4f)' : match.score >= 0.4 ? 'var(--color-gold)' : 'var(--color-on-surface-variant)', letterSpacing: '-0.02em' }}>
+                              <span style={{ fontSize: '1.125rem', fontWeight: 800, color: match.score >= 0.7 ? 'var(--wa-success-dark)' : match.score >= 0.4 ? 'var(--wa-gold-dark)' : 'var(--color-on-surface-variant)', letterSpacing: '-0.02em' }}>
                                 {Math.round(match.score * 100)}%
                               </span>
                               <span style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)' }}>match</span>
                             </div>
                             {already ? (
-                              <span style={{ fontSize: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--wa-success-dark)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                                 Mapped
                               </span>
@@ -509,7 +509,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                               <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>
                                 {prog?.title ?? programDisplayTitle(m.programSlug)}
                               </p>
-                              <span style={{ fontSize: '0.6rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'}22`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <span style={{ fontSize: '0.6rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `color-mix(in srgb, ${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'} 13%, transparent)`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 {m.recommendationType}
                               </span>
                               <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -658,7 +658,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     fontWeight: 800,
                     padding: '0.15rem 0.4rem',
                     borderRadius: '9999px',
-                    background: `${ACTION_COLOR[entry.action] ?? 'var(--color-accent)'}22`,
+                    background: `color-mix(in srgb, ${ACTION_COLOR[entry.action] ?? 'var(--color-accent)'} 13%, transparent)`,
                     color: ACTION_COLOR[entry.action] ?? 'var(--color-accent)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',

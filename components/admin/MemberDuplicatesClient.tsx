@@ -137,7 +137,7 @@ export default function MemberDuplicatesClient() {
   return (
     <div style={{ display: 'grid', gap: '1.5rem' }}>
       {mergeResult && (
-        <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,155,79,0.08)', border: '1px solid rgba(74,155,79,0.2)', borderRadius: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontSize: '0.875rem' }}>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,155,79,0.08)', border: '1px solid rgba(74,155,79,0.2)', borderRadius: '0.75rem', color: 'var(--wa-success-dark)', fontSize: '0.875rem' }}>
           <strong>Merge complete.</strong> Repointed {mergeResult.repointed.length} relation groups.
           Merged fields: {mergeResult.mergedFields.join(', ') || 'none'}.
         </div>
@@ -181,7 +181,7 @@ export default function MemberDuplicatesClient() {
                       <label htmlFor={`s-${m.id}`} style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', cursor: 'pointer' }}>
                         Merge into primary
                       </label>
-                      {idx === 0 && <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: 'var(--color-green, #4a9b4f)', textTransform: 'uppercase' }}>Newest</span>}
+                      {idx === 0 && <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: 'var(--wa-success-dark)', textTransform: 'uppercase' }}>Newest</span>}
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(12rem, 1fr))', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>

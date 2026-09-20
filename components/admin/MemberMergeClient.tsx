@@ -123,7 +123,7 @@ export default function MemberMergeClient() {
   return (
     <div style={{ display: 'grid', gap: '1.5rem' }}>
       {result && (
-        <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,155,79,0.08)', border: '1px solid rgba(74,155,79,0.2)', borderRadius: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontSize: '0.875rem' }}>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(74,155,79,0.08)', border: '1px solid rgba(74,155,79,0.2)', borderRadius: '0.75rem', color: 'var(--wa-success-dark)', fontSize: '0.875rem' }}>
           <strong>Merge complete.</strong> Repointed {result.repointed.length} relation groups.
           Merged fields: {result.mergedFields.join(', ') || 'none'}.
         </div>
@@ -255,7 +255,7 @@ export default function MemberMergeClient() {
           {/* Summary cards */}
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
             <div style={cardStyle}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-green, #4a9b4f)', marginBottom: '0.5rem' }}>Primary (kept)</div>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--wa-success-dark)', marginBottom: '0.5rem' }}>Primary (kept)</div>
               <div style={{ fontWeight: 700, fontSize: '1rem' }}>{preview.primary.fullName}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{preview.primary.email}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>

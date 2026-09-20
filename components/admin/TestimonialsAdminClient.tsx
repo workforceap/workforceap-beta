@@ -160,7 +160,7 @@ export default function TestimonialsAdminClient() {
             padding: '0.625rem 0.875rem',
             borderRadius: '0.625rem',
             background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)',
-            color: msg.type === 'ok' ? 'var(--color-green, #4a9b4f)' : 'var(--color-accent)',
+            color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)',
             fontSize: '0.875rem',
             marginBottom: '1rem',
           }}
