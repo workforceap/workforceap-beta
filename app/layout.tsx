@@ -43,6 +43,8 @@ import { DEFAULT_MARKETING_HERO_PHOTO } from '@/lib/marketing/heroPhotos';
 // Policy: AGENTS.md "Astryx design system" + docs/KIT_GUIDE.md §9.
 import '@astryxdesign/core/reset.css';
 import '@astryxdesign/core/astryx.css';
+// Brand tokens the bridge below resolves against on every route, public included (WAP-106).
+import '@/css/wa-brand-tokens.css';
 import '@/css/astryx-brand-bridge.css';
 import DeferredRootChrome from '@/components/DeferredRootChrome';
 import SentrySetUser from '@/components/observability/SentrySetUser';

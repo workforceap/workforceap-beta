@@ -462,7 +462,7 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
                     }`,
                     fontSize: '0.8125rem',
                     color: testResult.ok
-                      ? 'var(--color-green, #4a9b4f)'
+                      ? 'var(--wa-success-dark)'
                       : 'var(--color-accent)',
                   }}
                 >

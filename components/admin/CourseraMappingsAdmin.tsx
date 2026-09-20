@@ -494,7 +494,7 @@ export default function CourseraMappingsAdmin({
               borderRadius: '0.75rem',
               background: message.kind === 'success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
               border: `1px solid ${message.kind === 'success' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
-              color: message.kind === 'success' ? 'var(--color-green, #15803d)' : 'var(--color-error, #b91c1c)',
+              color: message.kind === 'success' ? 'var(--wa-success-dark)' : 'var(--color-error, #b91c1c)',
             }}>
               {message.text}
               {reprocessResult && message.kind === 'success' && (

@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const STATUS_COLOR: Record<string, { bg: string; color: string }> = {
-  published: { bg: 'rgba(74,155,79,0.12)', color: 'var(--color-green, #4a9b4f)' },
+  published: { bg: 'rgba(74,155,79,0.12)', color: 'var(--wa-success-dark)' },
   scheduled: { bg: 'rgba(37,99,235,0.1)', color: '#2563eb' },
   draft: { bg: 'var(--surface-container-high)', color: 'var(--color-on-surface-variant)' },
 };

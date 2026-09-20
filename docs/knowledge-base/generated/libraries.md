@@ -945,7 +945,7 @@
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
 | [lib/ui/buttonClasses.test.ts](../../../lib/ui/buttonClasses.test.ts) | 33 | libraries |  |
 | [lib/ui/buttonClasses.ts](../../../lib/ui/buttonClasses.ts) | 166 | libraries | BUTTON_VARIANT_CLASS:14, BUTTON_RADIUS_CLASS:20, button:27, ButtonVariant:41, ButtonRadius:42, ButtonClassOptions:44, buttonClasses:57, primaryButtonClasses:77, secondaryButtonClasses:81, ghostButtonClasses:85, numPillClasses:90, buttonPresets:102 |
-| [lib/ui/statusColors.test.ts](../../../lib/ui/statusColors.test.ts) | 94 | libraries |  |
+| [lib/ui/statusColors.test.ts](../../../lib/ui/statusColors.test.ts) | 95 | libraries |  |
 | [lib/ui/statusColors.ts](../../../lib/ui/statusColors.ts) | 72 | libraries | StatusTone:23, StatusColorSet:25, STATUS_COLORS:34, statusColor:70 |
 | [lib/ui/statusToneAdapters.ts](../../../lib/ui/statusToneAdapters.ts) | 20 | libraries | statusToneToKitTone:14, badgeVariantToStatusTone:18 |
 | [lib/util/ageCalculation.ts](../../../lib/util/ageCalculation.ts) | 82 | libraries | calculateAge:5, isMinorAge:18, isYouthAge:23, meetsMinimumAge:29, AgeGroup:35, getAgeGroup:37, getAgeGroupLabel:45, isJobAgeAppropriate:59 |

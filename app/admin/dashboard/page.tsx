@@ -189,14 +189,14 @@ export default function ExecutiveDashboardPage() {
         }}
       >
         <SummaryCard label="Total Members" value={summary.totalMembers} />
-        <SummaryCard label="Enrolled" value={summary.enrolledMembers} suffix={`${summary.enrollmentRate}%`} color="var(--color-green)" />
-        <SummaryCard label="Assessment Done" value={`${summary.assessmentRate}%`} color="var(--color-blue)" />
+        <SummaryCard label="Enrolled" value={summary.enrolledMembers} suffix={`${summary.enrollmentRate}%`} color="var(--wa-success-dark)" />
+        <SummaryCard label="Assessment Done" value={`${summary.assessmentRate}%`} color="var(--wa-info-dark)" />
         <SummaryCard label="Dashboard Active" value={summary.activeDashboardUsers} />
         <SummaryCard label="Activation Rate" value={`${summary.activationRate}%`} color="var(--color-accent)" />
-        <SummaryCard label="AI Tool Runs" value={summary.aiToolRuns} color="var(--color-gold)" />
-        <SummaryCard label="Placements" value={summary.totalPlacements} color="var(--color-green)" />
+        <SummaryCard label="AI Tool Runs" value={summary.aiToolRuns} color="var(--wa-gold-dark)" />
+        <SummaryCard label="Placements" value={summary.totalPlacements} color="var(--wa-success-dark)" />
         <SummaryCard label="Placement Rate" value={`${summary.placementRate}%`} color="var(--color-accent)" />
-        <SummaryCard label="Avg Salary" value={`$${summary.avgPlacementSalary.toLocaleString()}`} color="var(--color-blue)" />
+        <SummaryCard label="Avg Salary" value={`$${summary.avgPlacementSalary.toLocaleString()}`} color="var(--wa-info-dark)" />
       </div>
 
       {/* Work Queue — actionable items needing attention */}
@@ -269,7 +269,7 @@ export default function ExecutiveDashboardPage() {
                   style={{
                     fontSize: '1.25rem',
                     fontWeight: 800,
-                    color: f.rate >= 50 ? 'var(--color-green)' : f.rate >= 25 ? 'var(--color-gold)' : 'var(--color-accent)',
+                    color: f.rate >= 50 ? 'var(--wa-success-dark)' : f.rate >= 25 ? 'var(--wa-gold-dark)' : 'var(--color-accent)',
                   }}
                 >
                   {f.rate}%
@@ -293,9 +293,9 @@ export default function ExecutiveDashboardPage() {
                     height: '100%',
                     background:
                       f.rate >= 50
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success)'
                         : f.rate >= 25
-                          ? 'var(--color-gold)'
+                          ? 'var(--wa-gold)'
                           : 'var(--color-accent)',
                     borderRadius: 4,
                     transition: 'width 0.3s ease',

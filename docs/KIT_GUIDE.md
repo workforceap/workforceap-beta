@@ -29,7 +29,7 @@ There are **two** live CSS-variable families in this codebase. Only one is canon
 
 | Family | File | Status |
 |---|---|---|
-| `--wa-*` | `css/portal-tokens.css` | **Canonical.** Use this for all kit/portal work. |
+| `--wa-*` | `css/portal-tokens.css` | **Canonical.** Use this for all kit/portal work. Its mode-constant brand hues (accent / gold / info / success / danger, hero pairs, soft tints) are defined in `css/wa-brand-tokens.css`, which it `@import`s and which `app/layout.tsx` also loads on every route so `css/astryx-brand-bridge.css` resolves to computed values on the public site (WAP-106). Neutrals, `color-scheme`, density and motion stay portal-only. |
 | `--color-*`, `--surface-container-*` | `css/main.css` | Legacy (MD3-style). Do not add new refs; bridge aliases in `portal-tokens.css` map the live names onto `--wa-*`. Caution: its `:root` holds **dark** values with light as the override — the opposite convention from `--wa-*`. |
 | `--dm-*` | — | **Deleted** (was `css/dark-mode.css`). Never reintroduce. |
 
@@ -152,6 +152,20 @@ import { DesignSurface, useSurface } from '@/components/portal/kit';
   the pattern in `lib/ui/statusColors.ts` and the `.wa-kit-tag--*` classes). If a value genuinely
   needs different colors per mode (rare — e.g. WCAG-tuned tag foregrounds), write one
   `light-dark(a, b)` pair, not an `html.dark` override.
+- The canvas **outside** the shell is part of dark mode too. `WorkspaceShell` marks the document
+  with `html[data-portal-role]` (inline at parse time and on mount) and `css/portal-kit.css` paints
+  `<html>`/`<body>` with solid `--wa-bg` for that document, out-ranking the marketing site's
+  `html.dark body` cool grey. The strip below a short page, rubber-band overscroll and the body seen
+  through the translucent header therefore continue the shell's warm canvas (WAP-153). Do not paint
+  the wave on body — the radial washes fade into `--wa-bg`, so the solid token is the seam-free
+  continuation. The member cream `--wa-bg` override in the bridge applies to
+  `html[data-portal-role='member']` as well as `[data-surface='warm']`.
+- Admin and staff surfaces read semantic state through `--wa-*` only: `--wa-info-dark` /
+  `--wa-success-dark` / `--wa-gold-dark` for text, the base hue for icons, fills and `color-mix`
+  tints. The legacy `--color-blue` / `--color-green` / `--color-gold` are pinned or only
+  scope-aliased and never adapt (gold is the same hex in both themes);
+  `lib/ui/adminSemanticTokens.test.ts` fails on any new reference under `app/admin` or
+  `components/admin` (WAP-133).
 - Elevation in dark mode comes from shadows plus a 1px **inset bezel highlight** baked into
   `--wa-shadow`/`--wa-shadow-lg` (transparent in light) — not from lighter surface tones. Do not
   add new surface-tone variables; `--wa-surface` and `--wa-surface-2` are the whole ladder.

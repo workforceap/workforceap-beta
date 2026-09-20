@@ -66841,8 +66841,16 @@
   },
   {
     "from": "app/layout.tsx",
+    "specifier": "@/css/wa-brand-tokens.css",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": null
+  },
+  {
+    "from": "app/layout.tsx",
     "specifier": "@/css/astryx-brand-bridge.css",
-    "line": 46,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "css/astryx-brand-bridge.css"
@@ -66850,7 +66858,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/DeferredRootChrome",
-    "line": 47,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
@@ -66858,7 +66866,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/observability/SentrySetUser",
-    "line": 48,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/observability/SentrySetUser.tsx"
@@ -66866,7 +66874,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/gucContext",
-    "line": 113,
+    "line": 115,
     "kind": "type",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -82658,7 +82666,7 @@
   {
     "from": "components/portal/kit/pages/VoiceStudioKit.tsx",
     "specifier": "@elevenlabs/client",
-    "line": 698,
+    "line": 707,
     "kind": "dynamic-import",
     "external": true,
     "package": "@elevenlabs/client"
