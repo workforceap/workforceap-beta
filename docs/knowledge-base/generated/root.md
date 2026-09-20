@@ -20,13 +20,13 @@
 | [DEMO_SETUP.md](../../../DEMO_SETUP.md) | 167 | root |  |
 | [DEPLOY.md](../../../DEPLOY.md) | 153 | root |  |
 | [DESIGN.md](../../../DESIGN.md) | 292 | root |  |
-| [EMAIL-SETUP.md](../../../EMAIL-SETUP.md) | 150 | root |  |
+| [EMAIL-SETUP.md](../../../EMAIL-SETUP.md) | 169 | root |  |
 | [ENG_REVIEW_i18n.md](../../../ENG_REVIEW_i18n.md) | 235 | root |  |
-| [ENV-VARIABLES.md](../../../ENV-VARIABLES.md) | 159 | root |  |
+| [ENV-VARIABLES.md](../../../ENV-VARIABLES.md) | 158 | root |  |
 | [LAUNCH-RUNBOOK.md](../../../LAUNCH-RUNBOOK.md) | 283 | root |  |
 | [MEMBER_ICP_AUDIT_REPORT.md](../../../MEMBER_ICP_AUDIT_REPORT.md) | 235 | root |  |
 | [MOBILE_AUDIT.md](../../../MOBILE_AUDIT.md) | 57 | root |  |
-| [NOTIFICATION-AUDIT.md](../../../NOTIFICATION-AUDIT.md) | 157 | communications |  |
+| [NOTIFICATION-AUDIT.md](../../../NOTIFICATION-AUDIT.md) | 165 | communications |  |
 | [PLAN-2026-Q3.md](../../../PLAN-2026-Q3.md) | 544 | root |  |
 | [QA-AUDIT-REPORT-2026-05-12.md](../../../QA-AUDIT-REPORT-2026-05-12.md) | 232 | root |  |
 | [README.md](../../../README.md) | 97 | root |  |

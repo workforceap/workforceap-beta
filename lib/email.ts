@@ -12,6 +12,7 @@ import {
   sanitizeHeaders,
   sendBrandedEmailOrThrowOnSkip as sendBrandedEmail,
 } from '@/lib/email/send';
+import { EMAIL_TEMPLATE_KEYS } from '@/lib/email/templateKeys';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import type { PlacementSurveyDeliveryPayload } from '@/lib/placement-survey/deliveryPayload';
 import { brandedEmailLayout } from '@/lib/email/template';
@@ -235,6 +236,7 @@ export async function sendVoiceCoachTranscriptEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_transcript,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} transcript — ${params.memberName}`),
       html,
@@ -303,6 +305,7 @@ export async function sendVoiceCoachArtifactEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_artifact,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} artifact — ${params.memberName}`),
       html,
@@ -377,6 +380,7 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_interview_transcript,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`Voice interview transcript — ${params.memberName} — ${params.role}`),
       html,
@@ -435,6 +439,7 @@ export async function sendElevatorSpeechEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.ai_elevator_speech,
       to,
       subject: sanitizeEmailSubjectLine(`Your AI elevator speech — ${params.targetRole}`),
       html,
@@ -486,6 +491,7 @@ export async function sendCounselorAssignedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.counselor_assigned,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${params.counselorFullName} is your counselor`),
       html,
@@ -664,6 +670,7 @@ export async function sendOnboardingStallsDigestEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.onboarding_stalls_digest,
       to: recipients,
       subject: sanitizeEmailSubjectLine(
         `Onboarding Stalls: ${params.interviewCount} interview, ${params.wioaCount} WIOA, ${params.noProgramCount} unassigned`
@@ -798,6 +805,7 @@ export async function sendPreScreeningReadyEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.pre_screening_ready,
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`Interview ready: ${name}`),
       html,
@@ -835,6 +843,7 @@ export async function sendNewApplicationAdminEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.admin_new_application,
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`New Application: ${params.applicantName}`),
       html,
@@ -951,6 +960,7 @@ export async function sendCourseAccountabilityEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.course_accountability,
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
@@ -1007,6 +1017,7 @@ export async function sendCertCelebrationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.cert_celebration,
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
@@ -1147,6 +1158,7 @@ export async function sendCourseCompletedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.course_completed,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`Congratulations! You Completed ${params.courseName}`),
       html,
@@ -1200,6 +1212,7 @@ export async function sendMilestoneCascadeEmail(params: {
   try {
     const result = await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.milestone_cascade,
       to: params.to,
       subject: sanitizeEmailSubjectLine(params.subject),
       html,
@@ -1240,6 +1253,7 @@ export async function sendWeeklyRecapEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.member_weekly_recap,
       to: params.to,
       subject: 'Your WorkforceAP Weekly Recap',
       html,
@@ -1309,6 +1323,7 @@ export async function sendInvitationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.invitation,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.inviterName} invited you to join ${branding.name}`),
       html,
@@ -1350,6 +1365,7 @@ export async function sendPartnerReferralInviteEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.partner_referral_invite,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.inviterName} invited you to WorkforceAP`),
       html,
@@ -1389,6 +1405,7 @@ export async function sendInvitationAcceptedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.invitation_accepted,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.accepterName} accepted your WorkforceAP invitation`),
       html,
@@ -1423,6 +1440,7 @@ export async function sendInactiveNudgeEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.inactive_nudge,
       to: params.to,
       subject: 'We Miss You at WorkforceAP',
       html,
@@ -1461,6 +1479,7 @@ export async function sendJobAlertDigestEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.job_alert_digest,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.jobs.length} new job${params.jobs.length === 1 ? '' : 's'} match your program`),
       html,
@@ -1711,6 +1730,7 @@ export async function sendApplicationConfirmationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.application_received,
       to: params.to,
       subject: sanitizeEmailSubjectLine(
         'Welcome to Workforce Advancement Project — Your Next Steps',

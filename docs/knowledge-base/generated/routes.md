@@ -910,6 +910,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/unsubscribe | route | POST, GET | [app/api/unsubscribe/route.ts](../../../app/api/unsubscribe/route.ts) | @/lib/db/withRequestGuc:14, @/lib/rate-limit:18 |
 | /api/webhooks/coursera | route | POST | [app/api/webhooks/coursera/route.ts](../../../app/api/webhooks/coursera/route.ts) | @/lib/rate-limit:4, @/lib/coursera/webhookAuth:9, @/lib/db/withRequestGuc:19, @/lib/tenant/resolveOrgFromRequest:20 |
 | /api/webhooks/learning-completion | route | POST | [app/api/webhooks/learning-completion/route.ts](../../../app/api/webhooks/learning-completion/route.ts) | @/lib/rate-limit:2, @/lib/db/withRequestGuc:10 |
+| /api/webhooks/resend | route | POST | [app/api/webhooks/resend/route.ts](../../../app/api/webhooks/resend/route.ts) | @/lib/db/withRequestGuc:17, @/lib/rate-limit:27 |
 | /api/xapi/about | route | GET | [app/api/xapi/about/route.ts](../../../app/api/xapi/about/route.ts) |  |
 | /api/xapi/config | route | GET, POST | [app/api/xapi/config/route.ts](../../../app/api/xapi/config/route.ts) | @/lib/rate-limit:4 |
 | /api/xapi/oauth/token | route | GET, POST | [app/api/xapi/oauth/token/route.ts](../../../app/api/xapi/oauth/token/route.ts) | @/lib/rate-limit:4 |

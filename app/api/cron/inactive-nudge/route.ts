@@ -7,6 +7,7 @@ import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThrottle';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyDiscord } from '@/lib/notify/discord';
 import { CRON_NUDGE_CANDIDATE_CAP } from '@/lib/cron/cronCaps';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
@@ -76,6 +77,8 @@ async function handle(_request: Request) {
         await createNotification({
           userId: member.id,
           type: 'nudge',
+          // One summary embed per run below; per-member posts hit Discord's 30/min limit.
+          notifyOperator: false,
           title: "We miss you!",
           body: "It's been a week — pick up where you left off in your training plan.",
           data: { link: '/dashboard' },
@@ -84,6 +87,15 @@ async function handle(_request: Request) {
     } catch (err) {
       captureApiError(err, { route: 'cron/inactive-nudge', extra: { userId: member.id } });
     }
+  }
+
+  if (sent > 0) {
+    await notifyDiscord({
+      title: 'Inactive-member nudges sent',
+      body: `${sent} member${sent === 1 ? '' : 's'} nudged this run (${skipped} skipped).`,
+      category: 'nudge',
+      fields: [{ name: 'cron', value: 'inactive-nudge' }],
+    });
   }
 
   const runResult = {

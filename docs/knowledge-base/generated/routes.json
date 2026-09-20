@@ -8552,7 +8552,7 @@
       },
       {
         "name": "default",
-        "line": 82,
+        "line": 83,
         "kind": "FunctionDeclaration",
         "localName": "AdminDataRetentionPage"
       }
@@ -8604,7 +8604,7 @@
       },
       {
         "name": "default",
-        "line": 203,
+        "line": 207,
         "kind": "FunctionDeclaration",
         "localName": "AdminDiagnosticsPage"
       }
@@ -9078,7 +9078,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 634,
+        "line": 660,
         "kind": "FunctionDeclaration",
         "localName": "AdminHealthPage"
       }
@@ -13599,12 +13599,12 @@
       },
       {
         "name": "GET",
-        "line": 96,
+        "line": 97,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 132,
+        "line": 133,
         "kind": "Variable"
       }
     ],
@@ -14900,28 +14900,43 @@
         "kind": "TypeAliasDeclaration"
       },
       {
+        "name": "EmailDeliveryHealth",
+        "line": 41,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "DiscordHealth",
+        "line": 50,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "WebPushHealth",
+        "line": 57,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
         "name": "HealthChecks",
-        "line": 40,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthResponse",
-        "line": 51,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthHistoryPoint",
-        "line": 58,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthHistoryResponse",
         "line": 63,
         "kind": "TypeAliasDeclaration"
       },
       {
+        "name": "HealthResponse",
+        "line": 77,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "HealthHistoryPoint",
+        "line": 84,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "HealthHistoryResponse",
+        "line": 89,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
         "name": "GET",
-        "line": 363,
+        "line": 511,
         "kind": "Variable"
       }
     ],
@@ -22616,17 +22631,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 15,
+        "line": 16,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 153,
+        "line": 165,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 154,
+        "line": 166,
         "kind": "Variable"
       }
     ],
@@ -22866,17 +22881,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 15,
+        "line": 16,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 103,
+        "line": 115,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 104,
+        "line": 116,
         "kind": "Variable"
       }
     ],
@@ -22898,17 +22913,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 14,
+        "line": 15,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 95,
+        "line": 107,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 96,
+        "line": 108,
         "kind": "Variable"
       }
     ],
@@ -22956,17 +22971,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 12,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 132,
+        "line": 144,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 133,
+        "line": 145,
         "kind": "Variable"
       }
     ],
@@ -30214,6 +30229,43 @@
       {
         "specifier": "@/lib/db/withRequestGuc",
         "line": 10,
+        "kind": "import"
+      }
+    ]
+  },
+  {
+    "file": "app/api/webhooks/resend/route.ts",
+    "kind": "route",
+    "path": "/api/webhooks/resend",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 30,
+        "kind": "Variable"
+      },
+      {
+        "name": "POST",
+        "line": 84,
+        "kind": "FunctionDeclaration"
+      }
+    ],
+    "methods": [
+      "POST"
+    ],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 17,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/rate-limit",
+        "line": 27,
         "kind": "import"
       }
     ]

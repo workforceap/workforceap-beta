@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [tests/admin-global-search.test.ts](../../../tests/admin-global-search.test.ts) | 125 | tests |  |
-| [tests/admin-health-dashboard.spec.tsx](../../../tests/admin-health-dashboard.spec.tsx) | 164 | tests |  |
+| [tests/admin-health-dashboard.spec.tsx](../../../tests/admin-health-dashboard.spec.tsx) | 170 | tests |  |
 | [tests/api/admin-ai-efficacy.spec.ts](../../../tests/api/admin-ai-efficacy.spec.ts) | 99 | tests |  |
 | [tests/api/admin-analytics.spec.ts](../../../tests/api/admin-analytics.spec.ts) | 199 | tests |  |
 | [tests/api/admin-coursera-exact-email-match.spec.ts](../../../tests/api/admin-coursera-exact-email-match.spec.ts) | 268 | learning-coursera |  |
@@ -14,8 +14,8 @@
 | [tests/api/admin-coursera-sync-progress.spec.ts](../../../tests/api/admin-coursera-sync-progress.spec.ts) | 81 | learning-coursera |  |
 | [tests/api/admin-employer-approval.spec.ts](../../../tests/api/admin-employer-approval.spec.ts) | 226 | tests |  |
 | [tests/api/admin-funder-program-summary.spec.ts](../../../tests/api/admin-funder-program-summary.spec.ts) | 108 | tests |  |
-| [tests/api/admin-health-debug.spec.ts](../../../tests/api/admin-health-debug.spec.ts) | 70 | tests |  |
-| [tests/api/admin-health.spec.ts](../../../tests/api/admin-health.spec.ts) | 238 | tests |  |
+| [tests/api/admin-health-debug.spec.ts](../../../tests/api/admin-health-debug.spec.ts) | 76 | tests |  |
+| [tests/api/admin-health.spec.ts](../../../tests/api/admin-health.spec.ts) | 268 | tests |  |
 | [tests/api/admin-job-matches-tenant-boundary.spec.ts](../../../tests/api/admin-job-matches-tenant-boundary.spec.ts) | 52 | tests |  |
 | [tests/api/admin-member-delete.spec.ts](../../../tests/api/admin-member-delete.spec.ts) | 193 | tests |  |
 | [tests/api/admin-member-enrollment-funding.spec.ts](../../../tests/api/admin-member-enrollment-funding.spec.ts) | 147 | tests |  |
@@ -204,7 +204,7 @@
 | [tests/app/counselor-student-detail-tabs.spec.tsx](../../../tests/app/counselor-student-detail-tabs.spec.tsx) | 329 | tests |  |
 | [tests/app/counselor-students-hot-queue.spec.tsx](../../../tests/app/counselor-students-hot-queue.spec.tsx) | 166 | tests |  |
 | [tests/app/dashboard-training-redirect.spec.ts](../../../tests/app/dashboard-training-redirect.spec.ts) | 69 | tests |  |
-| [tests/app/diagnostics-read-reliability.spec.tsx](../../../tests/app/diagnostics-read-reliability.spec.tsx) | 57 | tests |  |
+| [tests/app/diagnostics-read-reliability.spec.tsx](../../../tests/app/diagnostics-read-reliability.spec.tsx) | 59 | tests |  |
 | [tests/app/eligibility-layoff-company.spec.tsx](../../../tests/app/eligibility-layoff-company.spec.tsx) | 62 | tests |  |
 | [tests/app/employer-application-detail-dates.spec.tsx](../../../tests/app/employer-application-detail-dates.spec.tsx) | 54 | tests |  |
 | [tests/app/employer-applications-pageheader.spec.ts](../../../tests/app/employer-applications-pageheader.spec.ts) | 33 | tests |  |
@@ -309,7 +309,7 @@
 | [tests/components/password-toggle.spec.tsx](../../../tests/components/password-toggle.spec.tsx) | 81 | tests |  |
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
 | [tests/components/portal-date-inputs-today.spec.tsx](../../../tests/components/portal-date-inputs-today.spec.tsx) | 44 | tests |  |
-| [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 113 | communications |  |
+| [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 127 | communications |  |
 | [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 177 | tests |  |
 | [tests/components/portal-team-chat-read-cursor.spec.tsx](../../../tests/components/portal-team-chat-read-cursor.spec.tsx) | 123 | tests |  |
 | [tests/components/program-outcome-claims.spec.tsx](../../../tests/components/program-outcome-claims.spec.tsx) | 72 | tests |  |

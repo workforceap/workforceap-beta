@@ -110,7 +110,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 118
+          "line": 119
         }
       ]
     },
@@ -121,7 +121,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 555
+          "line": 561
         }
       ]
     },
@@ -810,7 +810,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 570
+          "line": 576
         }
       ]
     },
@@ -878,39 +878,51 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 9
+          "line": 10
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 63
+          "line": 64
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 83
+          "line": 84
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 120
+          "line": 121
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 158
+          "line": 159
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 220
+          "line": 221
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 258
+          "line": 259
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 340
+          "line": 341
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 381
+          "line": 382
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 433
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 485
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 511
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
@@ -1027,7 +1039,7 @@
       "references": [
         {
           "file": "lib/notify/discord.ts",
-          "line": 61
+          "line": 82
         }
       ]
     },
@@ -1037,12 +1049,20 @@
       "declaredInRootExample": false,
       "references": [
         {
-          "file": "lib/notify/discord.ts",
-          "line": 59
+          "file": "app/admin/diagnostics/page.tsx",
+          "line": 599
+        },
+        {
+          "file": "app/api/admin/health/route.ts",
+          "line": 343
         },
         {
           "file": "lib/notify/discord.ts",
-          "line": 73
+          "line": 80
+        },
+        {
+          "file": "lib/notify/discord.ts",
+          "line": 114
         }
       ]
     },
@@ -1468,23 +1488,23 @@
       "references": [
         {
           "file": "lib/email/send.test.ts",
-          "line": 10
-        },
-        {
-          "file": "lib/email/send.test.ts",
           "line": 11
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 57
+          "line": 12
         },
         {
           "file": "lib/email/send.test.ts",
           "line": 58
         },
         {
+          "file": "lib/email/send.test.ts",
+          "line": 59
+        },
+        {
           "file": "lib/email/send.ts",
-          "line": 216
+          "line": 232
         }
       ]
     },
@@ -1547,7 +1567,7 @@
         },
         {
           "file": "lib/auth/passwordReset.ts",
-          "line": 190
+          "line": 192
         },
         {
           "file": "lib/billing/sendPacket.ts",
@@ -1555,7 +1575,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 139
+          "line": 140
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -1586,7 +1606,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 101
+          "line": 102
         },
         {
           "file": "lib/email/adminRecipients.test.ts",
@@ -1633,7 +1653,7 @@
       "references": [
         {
           "file": "lib/email/send.ts",
-          "line": 60
+          "line": 67
         }
       ]
     },
@@ -2213,7 +2233,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 80
+          "line": 81
         },
         {
           "file": "lib/email/failureAlert.ts",
@@ -2221,19 +2241,19 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 342
-        },
-        {
-          "file": "lib/email/send.test.ts",
           "line": 343
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 371
+          "line": 344
         },
         {
           "file": "lib/email/send.test.ts",
           "line": 372
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 373
         },
         {
           "file": "lib/email/template.ts",
@@ -2316,7 +2336,7 @@
         },
         {
           "file": "lib/auth/passwordReset.ts",
-          "line": 134
+          "line": 136
         },
         {
           "file": "lib/auth/server.ts",
@@ -2391,7 +2411,7 @@
         },
         {
           "file": "lib/auth/passwordReset.ts",
-          "line": 133
+          "line": 135
         },
         {
           "file": "lib/auth/server.ts",
@@ -2535,16 +2555,24 @@
       "declaredInRootExample": true,
       "references": [
         {
+          "file": "app/admin/diagnostics/page.tsx",
+          "line": 604
+        },
+        {
+          "file": "app/api/admin/health/route.ts",
+          "line": 374
+        },
+        {
           "file": "components/portal/PushNotificationsToggle.tsx",
           "line": 5
         },
         {
           "file": "lib/push/sendWebPush.ts",
-          "line": 19
+          "line": 23
         },
         {
           "file": "lib/push/sendWebPush.ts",
-          "line": 29
+          "line": 33
         }
       ]
     },
@@ -2677,7 +2705,7 @@
         },
         {
           "file": "lib/notify/discord.ts",
-          "line": 60
+          "line": 81
         },
         {
           "file": "lib/platform/programCatalog.ts",
@@ -3325,7 +3353,7 @@
         },
         {
           "file": "app/api/admin/health/route.ts",
-          "line": 233
+          "line": 259
         },
         {
           "file": "app/api/admin/partners/[id]/approve/route.ts",
@@ -3373,7 +3401,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 130
+          "line": 131
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -3409,15 +3437,15 @@
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
-          "line": 51
+          "line": 53
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 84
+          "line": 94
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 222
+          "line": 249
         },
         {
           "file": "tests/api/contact-route.spec.ts",
@@ -3426,6 +3454,29 @@
         {
           "file": "tests/api/partner-signup.spec.ts",
           "line": 187
+        }
+      ]
+    },
+    {
+      "name": "RESEND_WEBHOOK_SECRET",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "app/api/admin/health/route.ts",
+          "line": 297
+        },
+        {
+          "file": "app/api/webhooks/resend/route.ts",
+          "line": 111
+        },
+        {
+          "file": "tests/api/admin-health-debug.spec.ts",
+          "line": 54
+        },
+        {
+          "file": "tests/api/admin-health.spec.ts",
+          "line": 96
         }
       ]
     },
@@ -3734,7 +3785,7 @@
         },
         {
           "file": "lib/auth/passwordReset.ts",
-          "line": 146
+          "line": 148
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
@@ -3954,7 +4005,7 @@
       "references": [
         {
           "file": "app/api/admin/health/route.ts",
-          "line": 85
+          "line": 111
         },
         {
           "file": "lib/agents/gateway/sessionStore.ts",
@@ -3978,15 +4029,15 @@
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
-          "line": 50
+          "line": 52
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 83
+          "line": 93
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 202
+          "line": 226
         }
       ]
     },
@@ -3997,7 +4048,7 @@
       "references": [
         {
           "file": "app/api/admin/health/route.ts",
-          "line": 84
+          "line": 110
         },
         {
           "file": "lib/agents/gateway/sessionStore.ts",
@@ -4037,15 +4088,15 @@
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
-          "line": 49
+          "line": 51
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 82
+          "line": 92
         },
         {
           "file": "tests/api/admin-health.spec.ts",
-          "line": 201
+          "line": 225
         }
       ]
     },
@@ -4476,7 +4527,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 158
+          "line": 159
         }
       ]
     },
@@ -4491,7 +4542,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 159
+          "line": 160
         }
       ]
     },
@@ -4753,12 +4804,20 @@
       "declaredInRootExample": true,
       "references": [
         {
-          "file": "lib/push/sendWebPush.ts",
-          "line": 19
+          "file": "app/admin/diagnostics/page.tsx",
+          "line": 604
+        },
+        {
+          "file": "app/api/admin/health/route.ts",
+          "line": 374
         },
         {
           "file": "lib/push/sendWebPush.ts",
-          "line": 30
+          "line": 23
+        },
+        {
+          "file": "lib/push/sendWebPush.ts",
+          "line": 34
         }
       ]
     },
@@ -4769,7 +4828,7 @@
       "references": [
         {
           "file": "lib/push/sendWebPush.ts",
-          "line": 28
+          "line": 32
         }
       ]
     },
@@ -4780,7 +4839,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 149
+          "line": 150
         }
       ]
     },

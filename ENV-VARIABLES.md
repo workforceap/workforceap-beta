@@ -14,10 +14,9 @@
 |----------|------------------|-----------------|--------|
 | `RESEND_API_KEY` | ✅ Set (`re_...`) | (your dev key) | Resend Dashboard |
 | `EMAIL_FROM` | `info@workforceap.org` | `info@workforceap.org` | Your domain |
-| `SMTP_HOST` | `smtp.gmail.com` | `smtp.gmail.com` | Gmail / Google Workspace |
-| `SMTP_USER` | `michael.brown2@workforceap.org` | (your email) | Gmail account |
-| `SMTP_PASS` | (app password) | (app password) | Google Account → App Passwords |
-| `SMTP_PORT` | `587` | `587` | Standard TLS port |
+| `RESEND_WEBHOOK_SECRET` | `whsec_...` (set after registering `/api/webhooks/resend`) | (optional) | Resend Dashboard → Webhooks |
+
+> `SMTP_HOST` / `SMTP_USER` / `SMTP_PASS` / `SMTP_PORT` are **not read anywhere** in the codebase (verified 2026-09-20). Resend is the sole app mailer; Supabase Auth's SMTP is configured in the Supabase dashboard, not via these variables. Remove them from Vercel if still present.
 
 ### Database (Supabase)
 | Variable | Production Value | Local Dev Value | Source |
@@ -111,7 +110,7 @@ All default to the Workforce Advancement Project identity printed on the officia
 - ✅ `NEXT_PUBLIC_SUPABASE_URL` — Database works
 - ✅ `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Auth works
 - ✅ `SUPABASE_SERVICE_ROLE_KEY` — Server-side DB operations work
-- ✅ `SMTP_HOST/USER/PASS/PORT` — Gmail SMTP for transactional email
+- ⚠️ `SMTP_HOST/USER/PASS/PORT` — were listed as present, but no code reads them (removed from the required table 2026-09-20)
 - ✅ `UPSTASH_REDIS_REST_URL/TOKEN` — Rate limiting active (50/30min for signup)
 
 ---

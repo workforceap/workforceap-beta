@@ -585,6 +585,32 @@ function LegacyHealthView({
           detail={checks.email.note}
           history={makeHistory(checks.email.backlog ?? 0, 0.4)}
         />
+        <StatusCard
+          title="Email Delivery"
+          status={checks.emailDelivery.status}
+          icon="mark_email_read"
+          detail={
+            (checks.emailDelivery.note ?? '') +
+            (checks.emailDelivery.lastWebhookAt
+              ? ` · last webhook ${new Date(checks.emailDelivery.lastWebhookAt).toLocaleString()}`
+              : '')
+          }
+          history={makeHistory((checks.emailDelivery.failed24h ?? 0) + (checks.emailDelivery.bounced24h ?? 0), 0.4)}
+        />
+        <StatusCard
+          title="Discord Alerts"
+          status={checks.discordNotifications.status}
+          icon="forum"
+          detail={checks.discordNotifications.note}
+          history={makeHistory((checks.discordNotifications.errors24h ?? 0) + (checks.discordNotifications.dropped24h ?? 0), 0.4)}
+        />
+        <StatusCard
+          title="Web Push"
+          status={checks.webPush.status}
+          icon="notifications"
+          detail={checks.webPush.note}
+          history={makeHistory(checks.webPush.errors24h ?? 0, 0.4)}
+        />
       </div>
 
       {/* Alert log */}
