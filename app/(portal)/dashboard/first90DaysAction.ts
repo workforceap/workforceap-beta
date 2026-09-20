@@ -12,6 +12,7 @@ import {
   isFirst90Stage,
 } from '@/lib/member/first90Days';
 import { escalateToCounselor } from '@/lib/member/counselorEscalation';
+import { persistEvent } from '@/lib/events/track';
 
 /**
  * Member submits a First 90 Days check-in from the dashboard card.
@@ -56,21 +57,19 @@ export async function submitFirst90DaysCheckIn(stage: string, response: string) 
 
     const days = daysSincePlacement(placement.placedAt);
 
-    await prisma.memberEvent.create({
-      data: {
-        userId: user.id,
-        eventName: FIRST90_CHECK_IN_EVENT,
-        entityType: 'PlacementRecord',
-        entityId: stage,
-        metadata: {
-          response,
-          stage,
-          placementId: placement.id,
-          daysSincePlacement: days,
-        },
-        sourcePage: '/dashboard',
+    await persistEvent({
+      userId: user.id,
+      eventName: FIRST90_CHECK_IN_EVENT,
+      entityType: 'PlacementRecord',
+      entityId: stage,
+      metadata: {
+        response,
+        stage,
+        placementId: placement.id,
+        daysSincePlacement: days,
       },
-    });
+      sourcePage: '/dashboard',
+    }, prisma);
 
     if (response === 'having_trouble') {
       const troubleSummary = `First 90 Days ${stage.replace('_', ' ')} check-in: member reported having trouble at ${placement.employerName}${placement.jobTitle ? ` (${placement.jobTitle})` : ''}, day ${days} after placement.`;

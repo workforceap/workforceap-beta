@@ -21,6 +21,8 @@ import { DEFAULT_BRAND_ACCENT } from '../lib/platform/brandColors';
 import { LEGACY_CURRICULUM_VERSION } from '../lib/content/programCurriculumManifest';
 import { programSlugReadCandidates } from '../lib/content/programSlug';
 import { planDemoMemberProgress } from '../lib/demo/demoProgressPlan';
+import { upsertEquivalentCourseEnrollment } from '../lib/member/courseEnrollmentAssignment';
+import { persistEvent } from '../lib/events/track';
 
 const prisma = new PrismaClient();
 
@@ -263,12 +265,13 @@ async function seedDemoMembers(orgId: string, partnerIds: Record<string, string>
       where: { userId, programSlug: { in: equivalentSlugs } },
       data: { isPrimary: false },
     });
-    await prisma.courseEnrollment.upsert({
-      where: { userId_programSlug: { userId, programSlug: plan.programSlug } },
+    // WAP-174: demo fixtures go through the same canonical enrollment writer
+    // as production so the seed cannot drift from alias/version handling.
+    await upsertEquivalentCourseEnrollment(prisma, {
+      userId,
+      programSlug: plan.programSlug,
       create: {
         organizationId: orgId,
-        userId,
-        programSlug: plan.programSlug,
         curriculumVersion: LEGACY_CURRICULUM_VERSION,
         isPrimary: true,
       },
@@ -457,22 +460,24 @@ async function seedDemoMembers(orgId: string, partnerIds: Record<string, string>
 
     // Placement record
     if (m.placedAt && m.placedJobTitle && m.placedEmployer) {
+      // WAP-39: the seed used a demo-only 'placed' name; write the vocabulary
+      // name through the canonical writer. Older demo databases may still hold
+      // 'placed' rows, so idempotency checks both spellings.
       const existingEvent = await prisma.memberEvent.findFirst({
-        where: { userId: user.id, eventName: 'placed' },
+        where: { userId: user.id, eventName: { in: ['placement_recorded', 'placed'] } },
       });
       if (!existingEvent) {
-        await prisma.memberEvent.create({
-          data: {
-            userId: user.id,
-            eventName: 'placed',
-            metadata: {
-              jobTitle: m.placedJobTitle,
-              employer: m.placedEmployer,
-              salary: m.placedSalary,
-              placedAt: m.placedAt.toISOString(),
-            },
+        await persistEvent({
+          userId: user.id,
+          eventName: 'placement_recorded',
+          metadata: {
+            jobTitle: m.placedJobTitle,
+            employer: m.placedEmployer,
+            salary: m.placedSalary,
+            placedAt: m.placedAt.toISOString(),
+            source: 'seed-demo',
           },
-        });
+        }, prisma);
       }
     }
 

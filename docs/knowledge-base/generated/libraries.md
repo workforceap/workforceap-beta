@@ -18,7 +18,7 @@
 | [lib/admin/analyticsOverview.ts](../../../lib/admin/analyticsOverview.ts) | 298 | administration | AnalyticsFunnel:15, AnalyticsEngagement:22, AnalyticsOutcomes:30, AnalyticsFundingRow:38, AnalyticsProgramRow:44, AnalyticsAcquisitionStep:50, AnalyticsAcquisition:59, AnalyticsOverview:65, loadAnalyticsOverview:89 |
 | [lib/admin/applicantTriage.ts](../../../lib/admin/applicantTriage.ts) | 352 | administration | ApplicantTriageBucket:19, APPLICANT_TRIAGE_BUCKETS:25, ApplicantTriageReasonCode:33, ApplicantTriageChecklistKey:50, ApplicantTriageChecklistItem:59, ApplicantTriageResult:66, YesNo:74, ApplicantTriageInput:76, APPLICANT_TRIAGE_REASON_TEXT:114, APPLICANT_TRIAGE_CHECKLIST_TEXT:132, APPLICANT_TRIAGE_BUCKET_TEXT:142, triageApplicant:184, ApplicantTriageDisplay:311, localizeApplicantTriage:323, APPLICANT_TRIAGE_BUCKET_RANK:347 |
 | [lib/admin/applicantTriageLoad.ts](../../../lib/admin/applicantTriageLoad.ts) | 138 | administration | ApplicantTriageLoaded:22, loadApplicantTriageByUserIds:28, ApplicantTriageDisplayLoaded:124, localizeApplicantTriageMap:129 |
-| [lib/admin/applicationReview.ts](../../../lib/admin/applicationReview.ts) | 161 | administration | ApplicationReviewResult:23, changeApplicationStatus:33 |
+| [lib/admin/applicationReview.ts](../../../lib/admin/applicationReview.ts) | 170 | administration | ApplicationReviewResult:24, changeApplicationStatus:34 |
 | [lib/admin/applicationReviewErrors.ts](../../../lib/admin/applicationReviewErrors.ts) | 13 | administration | applicationReviewFailure:4 |
 | [lib/admin/applyEmployerNotifiedAfterSuggest.test.ts](../../../lib/admin/applyEmployerNotifiedAfterSuggest.test.ts) | 29 | administration |  |
 | [lib/admin/applyEmployerNotifiedAfterSuggest.ts](../../../lib/admin/applyEmployerNotifiedAfterSuggest.ts) | 19 | administration | applyEmployerNotifiedAfterSuggest:4 |
@@ -338,7 +338,6 @@
 | [lib/content/programOccupationAlignment.test.ts](../../../lib/content/programOccupationAlignment.test.ts) | 177 | public-experience |  |
 | [lib/content/programOccupationAlignment.ts](../../../lib/content/programOccupationAlignment.ts) | 52 | public-experience | ProgramOccupationAlignment:10, REVISED_PROGRAM_OCCUPATION_ALIGNMENT:23 |
 | [lib/content/programResources.ts](../../../lib/content/programResources.ts) | 55 | public-experience | ProgramResource:4, PROGRAM_RESOURCES:10, getResourcesForCategory:53 |
-| [lib/content/programSalaryOutcomes.ts](../../../lib/content/programSalaryOutcomes.ts) | 107 | public-experience | SalaryRangeK:11, parseProgramSalaryRange:14, formatSalaryRangeK:20, salaryRangeDisplay:24, salaryMidpointK:29, SalaryGuideRow:56, buildSalaryGuideRows:67, salaryGuideSummaryStats:87 |
 | [lib/content/programSlug.test.ts](../../../lib/content/programSlug.test.ts) | 53 | public-experience |  |
 | [lib/content/programSlug.ts](../../../lib/content/programSlug.ts) | 64 | public-experience | PROGRAM_SLUG_ALIASES:6, canonicalizeProgramSlug:37, programSlugsEquivalent:42, programSlugReadCandidates:54 |
 | [lib/content/programSubgroup.test.ts](../../../lib/content/programSubgroup.test.ts) | 15 | public-experience |  |
@@ -346,7 +345,7 @@
 | [lib/content/programTitle.test.ts](../../../lib/content/programTitle.test.ts) | 52 | public-experience |  |
 | [lib/content/programTitle.ts](../../../lib/content/programTitle.ts) | 67 | public-experience | humanizeProgramSlug:40, programDisplayTitle:61 |
 | [lib/content/programs.test.ts](../../../lib/content/programs.test.ts) | 48 | public-experience |  |
-| [lib/content/programs.ts](../../../lib/content/programs.ts) | 687 | public-experience | PROGRAM_SLUG_ALIASES:19, FUNDING_SOURCES:41, FundingSource:48, LanguageSupportLevel:50, LanguageSupport:52, formatFundingSourceLabel:59, FUNDING_COLORS:64, ProgramCourse:79, Program:113, getDiscoveredProgram:170, getProgramDisplayTitle:197, getProgramDisplayPartner:205, PROGRAM_CATEGORY_COLORS:212, PROGRAMS:390, WORKFORCEAP_PROGRAM_CATALOG_SIZE:451, PROGRAM_AXIS_MAP:458, RadarAxis:528, RADAR_AXES:529, ProgramRecommendation:531, recommendProgramsForGaps:547, PROGRAM_TITLES:601, LEGACY_PROGRAM_TITLE_VALUES:618, SUPPORTED_PROGRAM_STORAGE_VALUES:631, CURRICULUM_MIGRATION_PENDING_CODE:639, CURRICULUM_MIGRATION_PENDING_MESSAGE:640, isCurriculumMigrationPending:649, getProgramByInterestValue:655, getProgramBySlug:675, getAllPrograms:680, invalidateProgramCache:685 |
+| [lib/content/programs.ts](../../../lib/content/programs.ts) | 682 | public-experience | PROGRAM_SLUG_ALIASES:19, FUNDING_SOURCES:41, FundingSource:48, LanguageSupportLevel:50, LanguageSupport:52, formatFundingSourceLabel:59, FUNDING_COLORS:64, ProgramCourse:79, Program:113, getDiscoveredProgram:168, getProgramDisplayTitle:195, getProgramDisplayPartner:203, PROGRAM_CATEGORY_COLORS:210, PROGRAMS:386, WORKFORCEAP_PROGRAM_CATALOG_SIZE:446, PROGRAM_AXIS_MAP:453, RadarAxis:523, RADAR_AXES:524, ProgramRecommendation:526, recommendProgramsForGaps:542, PROGRAM_TITLES:596, LEGACY_PROGRAM_TITLE_VALUES:613, SUPPORTED_PROGRAM_STORAGE_VALUES:626, CURRICULUM_MIGRATION_PENDING_CODE:634, CURRICULUM_MIGRATION_PENDING_MESSAGE:635, isCurriculumMigrationPending:644, getProgramByInterestValue:650, getProgramBySlug:670, getAllPrograms:675, invalidateProgramCache:680 |
 | [lib/content/quizIpMerge.test.ts](../../../lib/content/quizIpMerge.test.ts) | 140 | public-experience |  |
 | [lib/content/quizIpMerge.ts](../../../lib/content/quizIpMerge.ts) | 153 | public-experience | InterestProfilerRiasec:8, INTEREST_PROFILER_STORAGE_KEY:17, MINI_IP_MAX_PER_DIMENSION:26, SKILL_MAPPER_RADAR_AXES:29, SkillMapperRadarAxis:37, StoredInterestProfilerV1:39, mergeRiasecIntoWeights:67, riasecFromResultRows:83, riasecToRadarAxes:130 |
 | [lib/content/quizProgramRecommendations.ts](../../../lib/content/quizProgramRecommendations.ts) | 60 | public-experience | getTopProgramsFromQuiz:8 |
@@ -395,7 +394,7 @@
 | [lib/counselor/workQueue.ts](../../../lib/counselor/workQueue.ts) | 163 | member-counselor | WorkQueueRow:18, getCounselorWorkQueue:39, formatTimeWaiting:149, previewMessageBody:159 |
 | [lib/coursera/approvedCurriculumMigration.test.ts](../../../lib/coursera/approvedCurriculumMigration.test.ts) | 106 | learning-coursera |  |
 | [lib/coursera/b4bBindingSuggestions.server.ts](../../../lib/coursera/b4bBindingSuggestions.server.ts) | 19 | learning-coursera | getBindingSuggestions:13 |
-| [lib/coursera/b4bBindingSuggestions.test.ts](../../../lib/coursera/b4bBindingSuggestions.test.ts) | 143 | learning-coursera |  |
+| [lib/coursera/b4bBindingSuggestions.test.ts](../../../lib/coursera/b4bBindingSuggestions.test.ts) | 142 | learning-coursera |  |
 | [lib/coursera/b4bBindingSuggestions.ts](../../../lib/coursera/b4bBindingSuggestions.ts) | 199 | learning-coursera | SuggestionConfidence:22, B4BProgramSummary:25, B4BBindingSuggestion:31, B4BBindingsReport:42, computeBindingSuggestions:66, renderPatchHint:168 |
 | [lib/coursera/b4bClient.test.ts](../../../lib/coursera/b4bClient.test.ts) | 633 | learning-coursera |  |
 | [lib/coursera/b4bClient.ts](../../../lib/coursera/b4bClient.ts) | 843 | learning-coursera | B4BPaging:63, B4BUser:69, B4BProgram:80, B4BContent:92, B4BEnrollmentReport:100, B4BGradebookReport:126, B4BOrgInfo:153, B4BPageEnvelope:160, B4BApiError:171, B4BConfigurationError:188, getB4BOrgId:235, fetchCourseraWithTransientRetry:332, _setFetchForTesting:340, _getCachedTokenForTesting:346, _resetTokenCacheForTesting:351, fetchB4B:423, getOrgInfo:517, listUsers:521, listPrograms:531, listContents:544, getEnrollmentReports:569, getCourseGradebookReports:601, B4BInvitation:632, B4BMembership:640, B4BEnrollment:649, B4BWriteResult:660, inviteUserToProgram:727, createProgramMembership:758, enrollUserInCourse:790, listAllUsers:824 |
@@ -409,7 +408,7 @@
 | [lib/coursera/configCore.ts](../../../lib/coursera/configCore.ts) | 311 | learning-coursera | getCourseraConfig:158, _resetCourseraConfigForTesting:163, resolveCourseraProgramId:167, resolveCourseraSkillsetIds:173, getCourseraSkillsetSlugOverrides:180, resolveCourseraPublicProgramUrl:187, resolveCourseraLearningPathId:193, buildCourseraLaunchUrl:199, getCourseraReadiness:257 |
 | [lib/coursera/courseGradeDisplay.test.ts](../../../lib/coursera/courseGradeDisplay.test.ts) | 26 | learning-coursera |  |
 | [lib/coursera/courseGradeDisplay.ts](../../../lib/coursera/courseGradeDisplay.ts) | 101 | learning-coursera | scoreScaledToDisplayPercent:10, formatGradePercent:23, parseCourseGradeString:30, extractGradebookCourseScoreScaled:48 |
-| [lib/coursera/courseKickoff.ts](../../../lib/coursera/courseKickoff.ts) | 68 | learning-coursera | maybeSendCourseKickoffEmail:20 |
+| [lib/coursera/courseKickoff.ts](../../../lib/coursera/courseKickoff.ts) | 66 | learning-coursera | maybeSendCourseKickoffEmail:21 |
 | [lib/coursera/courseTitle.test.ts](../../../lib/coursera/courseTitle.test.ts) | 28 | learning-coursera |  |
 | [lib/coursera/courseTitle.ts](../../../lib/coursera/courseTitle.ts) | 34 | learning-coursera | looksLikeCourseraSlug:4, humanizeCourseraCourseTitle:14 |
 | [lib/coursera/csvImport.server.ts](../../../lib/coursera/csvImport.server.ts) | 1343 | learning-coursera | ingestCourseActivityRows:320, ingestLearningPathActivityRows:736, CourseraRawProgressAttachment:831, lockCourseraIdentityForAttachment:842, attachRawCourseraProgressToUser:877, backfillUserIdForCourseraEmail:988, backfillAllOrphanedCourseraProgress:1043, CourseraProgressPromotionResult:1122, promoteCsvProgressToCanonical:1166 |
@@ -453,13 +452,13 @@
 | [lib/coursera/resolveUserIdByEmail.merge.test.ts](../../../lib/coursera/resolveUserIdByEmail.merge.test.ts) | 31 | learning-coursera |  |
 | [lib/coursera/resolveUserIdByEmail.ts](../../../lib/coursera/resolveUserIdByEmail.ts) | 96 | learning-coursera | mergeCourseraEmailResolutions:10, resolveUserIdByCourseraEmail:22, resolveUserIdsByCourseraEmails:37 |
 | [lib/coursera/restWebhookStatement.ts](../../../lib/coursera/restWebhookStatement.ts) | 43 | learning-coursera | CourseraRestWebhookCourseFact:3, buildCourseraRestSyntheticStatement:16 |
-| [lib/coursera/seedCanonicalMappingsFromB4B.test.ts](../../../lib/coursera/seedCanonicalMappingsFromB4B.test.ts) | 113 | learning-coursera |  |
+| [lib/coursera/seedCanonicalMappingsFromB4B.test.ts](../../../lib/coursera/seedCanonicalMappingsFromB4B.test.ts) | 112 | learning-coursera |  |
 | [lib/coursera/seedCanonicalMappingsFromB4B.ts](../../../lib/coursera/seedCanonicalMappingsFromB4B.ts) | 267 | learning-coursera | B4BCourseSeedInput:28, selectSeedableB4BContents:42, B4BCourseSeedResult:52, B4BSeedSummary:68, SeedWritePlan:87, planSeedWrite:103, matchCourseToCatalog:131, seedCanonicalMappingsFromB4B:147 |
 | [lib/coursera/seedCanonicalMappingsFromCatalog.ts](../../../lib/coursera/seedCanonicalMappingsFromCatalog.ts) | 159 | learning-coursera | SeedCanonicalMappingsSummary:33, seedCanonicalMappingsFromCatalog:70 |
 | [lib/coursera/syncMembers.test.ts](../../../lib/coursera/syncMembers.test.ts) | 76 | learning-coursera |  |
 | [lib/coursera/syncMembers.ts](../../../lib/coursera/syncMembers.ts) | 39 | learning-coursera | COURSERA_SYNC_MEMBER_PAGE_SIZE:3, COURSERA_SYNC_MEMBER_CAP:6, CourseraSyncMember:8, fetchEligibleCourseraMembers:20 |
 | [lib/coursera/syncUserFromB4B.test.ts](../../../lib/coursera/syncUserFromB4B.test.ts) | 252 | learning-coursera |  |
-| [lib/coursera/syncUserFromB4B.ts](../../../lib/coursera/syncUserFromB4B.ts) | 921 | learning-coursera | DroppedItem:68, LearningPathItem:73, ResolvedCourse:82, SyncUserFromB4BResult:99, resolveContentIdToWapCourse:147, syncUserFromB4B:222, markUserAutoSynced:911 |
+| [lib/coursera/syncUserFromB4B.ts](../../../lib/coursera/syncUserFromB4B.ts) | 903 | learning-coursera | DroppedItem:68, LearningPathItem:73, ResolvedCourse:82, SyncUserFromB4BResult:99, resolveContentIdToWapCourse:147, syncUserFromB4B:222, markUserAutoSynced:893 |
 | [lib/coursera/testAccountHeuristic.ts](../../../lib/coursera/testAccountHeuristic.ts) | 39 | learning-coursera | isLikelyTestAccount:24 |
 | [lib/coursera/upsertCourseraCourseProgress.ts](../../../lib/coursera/upsertCourseraCourseProgress.ts) | 264 | learning-coursera | CourseraCourseProgressUpsertInput:7, upsertCourseraCourseProgress:47 |
 | [lib/coursera/upsertMergedCourseProgress.ts](../../../lib/coursera/upsertMergedCourseProgress.ts) | 203 | learning-coursera | UpsertMergedCourseProgressArgs:11, UpsertMergedCourseProgressResult:29, upsertMergedCourseProgress:41 |
@@ -557,8 +556,9 @@
 | [lib/events/catalog.ts](../../../lib/events/catalog.ts) | 79 | libraries | FunnelDefinition:1, FUNNEL_DEFINITIONS:10 |
 | [lib/events/client.ts](../../../lib/events/client.ts) | 25 | libraries | MemberEventRequest:5, postMemberEvent:14 |
 | [lib/events/emailVerified.ts](../../../lib/events/emailVerified.ts) | 55 | communications | EmailVerifiedPayload:7, emailDomainFromAddress:15, emitEmailVerifiedFromCallback:26 |
-| [lib/events/names.ts](../../../lib/events/names.ts) | 86 | libraries | EVENT_NAMES:5, EventName:70, isEventName:72, CLIENT_EVENT_NAMES:77, ClientEventName:86 |
-| [lib/events/track.ts](../../../lib/events/track.ts) | 59 | libraries | EventName:7, TrackEventParams:9, persistEvent:29, trackEvent:49 |
+| [lib/events/memberEventWriters.test.ts](../../../lib/events/memberEventWriters.test.ts) | 95 | libraries |  |
+| [lib/events/names.ts](../../../lib/events/names.ts) | 158 | libraries | EVENT_NAMES:5, EventName:95, isEventName:97, LEGACY_EVENT_NAME_ALIASES:108, LegacyEventNameAlias:115, isLegacyEventNameAlias:121, canonicalEventName:129, eventNameReadCandidates:140, CLIENT_EVENT_NAMES:149, ClientEventName:158 |
+| [lib/events/track.ts](../../../lib/events/track.ts) | 66 | libraries | EventName:7, TrackEventParams:9, persistEvent:35, trackEvent:56 |
 | [lib/experiments/client.ts](../../../lib/experiments/client.ts) | 14 | libraries | EXPERIMENTS:4, getExperimentVariant:5, readExperimentOverrideFromSearch:6, ExperimentDefinition:10, ExperimentOverride:11, ExperimentSubject:12, Variant:13 |
 | [lib/experiments/index.ts](../../../lib/experiments/index.ts) | 58 | libraries | ExperimentDefinition:18, ExperimentOverride:18, ExperimentSubject:18, Variant:18, EXPERIMENTS:19, readExperimentOverrideFromSearch:19, getExperimentVariant:31, signExperimentOverride:55 |
 | [lib/experiments/shared.ts](../../../lib/experiments/shared.ts) | 152 | libraries | Variant:3, ExperimentDefinition:5, ExperimentSubject:10, ExperimentOverride:15, getExperimentVariantClient:87, readExperimentOverrideFromSearch:118, EXPERIMENTS:147 |
@@ -638,16 +638,16 @@
 | [lib/member/counselorEscalation.ts](../../../lib/member/counselorEscalation.ts) | 74 | member-counselor | CounselorEscalationInput:21, escalateToCounselor:35 |
 | [lib/member/courseCompletion.ts](../../../lib/member/courseCompletion.ts) | 318 | member-counselor | completeMemberCourse:25 |
 | [lib/member/courseEnrollmentAssignment.test.ts](../../../lib/member/courseEnrollmentAssignment.test.ts) | 156 | member-counselor |  |
-| [lib/member/courseEnrollmentAssignment.ts](../../../lib/member/courseEnrollmentAssignment.ts) | 103 | member-counselor | upsertEquivalentCourseEnrollment:24 |
+| [lib/member/courseEnrollmentAssignment.ts](../../../lib/member/courseEnrollmentAssignment.ts) | 130 | member-counselor | CourseEnrollmentWriterClient:23, AssignedCourseEnrollment:28, upsertEquivalentCourseEnrollment:49 |
 | [lib/member/courseEnrollmentMigration.test.ts](../../../lib/member/courseEnrollmentMigration.test.ts) | 142 | member-counselor |  |
 | [lib/member/courseProgress.ts](../../../lib/member/courseProgress.ts) | 535 | member-counselor | CanonicalProgramCourse:51, resolveCanonicalProgramCourseFromCourseraId:61, refreshMemberProgramProgressRollup:96, markCourseProgressCompleted:192, claimLiveCourseCompletionEvent:315, upsertCourseProgressFromXapiStatement:372 |
-| [lib/member/courseraCourseProgress.test.ts](../../../lib/member/courseraCourseProgress.test.ts) | 33 | learning-coursera |  |
+| [lib/member/courseraCourseProgress.test.ts](../../../lib/member/courseraCourseProgress.test.ts) | 32 | learning-coursera |  |
 | [lib/member/courseraCourseProgress.ts](../../../lib/member/courseraCourseProgress.ts) | 17 | learning-coursera | countCompletedInProgram:4, getFirstIncompleteCourseIndex:13 |
-| [lib/member/courseraSkillsetMerge.test.ts](../../../lib/member/courseraSkillsetMerge.test.ts) | 112 | learning-coursera |  |
+| [lib/member/courseraSkillsetMerge.test.ts](../../../lib/member/courseraSkillsetMerge.test.ts) | 111 | learning-coursera |  |
 | [lib/member/courseraSkillsetMerge.ts](../../../lib/member/courseraSkillsetMerge.ts) | 107 | learning-coursera | COURSERA_TITLE_LOOSE_MIN_LEN:3, normalizeTitleForMatch:5, CourseraSkillsetProgressLike:24, resolveCompletedCourseSlugsFromEnterpriseSkillsets:30, mapCompletedSkillsetsToCourseSlugs:100 |
 | [lib/member/curriculumAssignment.test.ts](../../../lib/member/curriculumAssignment.test.ts) | 137 | member-counselor |  |
 | [lib/member/curriculumAssignment.ts](../../../lib/member/curriculumAssignment.ts) | 141 | member-counselor | CurriculumAssignment:14, CurriculumMappingTarget:20, CurriculumMappingResolution:27, activeCurriculumVersion:37, normalizeCurriculumVersion:50, getProgramCoursesForCurriculumVersion:67, selectCurriculumMappingTargets:84 |
-| [lib/member/curriculumAssignmentWriters.test.ts](../../../lib/member/curriculumAssignmentWriters.test.ts) | 135 | member-counselor |  |
+| [lib/member/curriculumAssignmentWriters.test.ts](../../../lib/member/curriculumAssignmentWriters.test.ts) | 168 | member-counselor |  |
 | [lib/member/dailyStudyPoints.test.ts](../../../lib/member/dailyStudyPoints.test.ts) | 25 | member-counselor |  |
 | [lib/member/dailyStudyPoints.ts](../../../lib/member/dailyStudyPoints.ts) | 26 | member-counselor | utcDateKey:21 |
 | [lib/member/dashboardTabs.test.ts](../../../lib/member/dashboardTabs.test.ts) | 52 | member-counselor |  |
@@ -657,11 +657,11 @@
 | [lib/member/exportData.test.ts](../../../lib/member/exportData.test.ts) | 15 | member-counselor |  |
 | [lib/member/exportData.ts](../../../lib/member/exportData.ts) | 623 | member-counselor | buildMemberExport:7 |
 | [lib/member/first90Days.test.ts](../../../lib/member/first90Days.test.ts) | 66 | member-counselor |  |
-| [lib/member/first90Days.ts](../../../lib/member/first90Days.ts) | 87 | member-counselor | FIRST90_STAGES:20, First90Stage:21, FIRST90_RESPONSES:23, First90Response:24, FIRST90_CHECK_IN_EVENT:27, FIRST90_WINDOW_DAYS:30, daysSincePlacement:34, getFirst90Stage:43, isFirst90Stage:52, isFirst90Response:56, First90CheckInRecord:60, buildCheckInsByStage:70 |
+| [lib/member/first90Days.ts](../../../lib/member/first90Days.ts) | 89 | member-counselor | FIRST90_STAGES:22, First90Stage:23, FIRST90_RESPONSES:25, First90Response:26, FIRST90_CHECK_IN_EVENT:29, FIRST90_WINDOW_DAYS:32, daysSincePlacement:36, getFirst90Stage:45, isFirst90Stage:54, isFirst90Response:58, First90CheckInRecord:62, buildCheckInsByStage:72 |
 | [lib/member/firstValueActions.ts](../../../lib/member/firstValueActions.ts) | 146 | member-counselor | FirstValueAction:6, FirstValueActionsContext:15, buildFirstValueActions:30 |
 | [lib/member/getActiveProgramForDashboard.ts](../../../lib/member/getActiveProgramForDashboard.ts) | 139 | member-counselor | DashboardEnrollment:42, ActiveProgramForDashboard:44, getActiveProgramForDashboard:65 |
 | [lib/member/getMemberResumePlainText.ts](../../../lib/member/getMemberResumePlainText.ts) | 90 | member-counselor | __resetAdminUnavailableWarningForTests:37, getMemberResumePlainText:52 |
-| [lib/member/getMemberState.test.ts](../../../lib/member/getMemberState.test.ts) | 241 | member-counselor |  |
+| [lib/member/getMemberState.test.ts](../../../lib/member/getMemberState.test.ts) | 252 | member-counselor |  |
 | [lib/member/getMemberState.ts](../../../lib/member/getMemberState.ts) | 584 | member-counselor | MemberChecklist:19, MemberState:27, MemberStateFull:69, GetMemberStateOptions:254, getMemberState:425, invalidateMemberState:439, getMemberStateFull:443 |
 | [lib/member/goalSteps.ts](../../../lib/member/goalSteps.ts) | 197 | member-counselor | GoalStep:10, GoalDescriptionPayload:16, parseGoalDescription:33, encodeGoalDescription:57, buildSteps:69, generateGoalSteps:89 |
 | [lib/member/interviewPrepBundle.ts](../../../lib/member/interviewPrepBundle.ts) | 106 | member-counselor | PrepBundleItem:4, InterviewPrepBundle:11, fetchInterviewPrepBundle:53 |
@@ -693,7 +693,7 @@
 | [lib/member/mentorsEmptyState.ts](../../../lib/member/mentorsEmptyState.ts) | 24 | member-counselor | MENTORS_MEMBER_EMPTY:6, MENTORS_ADMIN_EMPTY:19 |
 | [lib/member/missionCourseUnlock.test.ts](../../../lib/member/missionCourseUnlock.test.ts) | 33 | member-counselor |  |
 | [lib/member/missionCourseUnlock.ts](../../../lib/member/missionCourseUnlock.ts) | 44 | member-counselor | MissionUnlockCourse:8, normalizeCourseName:13, resolveMissionUnlockSlugs:22, isMissionCourseComplete:37 |
-| [lib/member/nextBestActions.test.ts](../../../lib/member/nextBestActions.test.ts) | 211 | member-counselor |  |
+| [lib/member/nextBestActions.test.ts](../../../lib/member/nextBestActions.test.ts) | 240 | member-counselor |  |
 | [lib/member/nextBestActions.ts](../../../lib/member/nextBestActions.ts) | 326 | member-counselor | NextBestAction:6, NextBestActionsContext:17, buildNextBestActions:44 |
 | [lib/member/parseCourseSlugList.ts](../../../lib/member/parseCourseSlugList.ts) | 11 | member-counselor | parseCourseSlugList:5 |
 | [lib/member/persistedAtRisk.ts](../../../lib/member/persistedAtRisk.ts) | 82 | member-counselor | ACTIVE_AT_RISK_STATUSES:7, PersistedRiskScope:9, PersistedAtRiskMember:13, loadPersistedAtRiskMembers:26, persistedRiskCommandRow:74 |
@@ -716,7 +716,7 @@
 | [lib/member/skillMissionCurriculum.ts](../../../lib/member/skillMissionCurriculum.ts) | 251 | member-counselor | ResolvedSkillMission:21, SkillMissionEnrollment:27, SkillMissionAssignment:33, resolveSkillMissionsForCurriculum:73, resolveSkillMissionForCurriculum:122, buildSkillMissionEventKey:132, parseSkillMissionEventKey:145, resolveSkillMissionAssignment:178, getMissionDefinitionForEventKey:247 |
 | [lib/member/skillMissionEmptyState.test.ts](../../../lib/member/skillMissionEmptyState.test.ts) | 51 | member-counselor |  |
 | [lib/member/skillMissionEmptyState.ts](../../../lib/member/skillMissionEmptyState.ts) | 33 | member-counselor | SkillMissionEmptyState:9, skillMissionEmptyState:15 |
-| [lib/member/skillMissions.ts](../../../lib/member/skillMissions.ts) | 323 | member-counselor | SkillMissionDefinition:15, MISSION_EVENT_SUBMITTED:17, MISSION_EVENT_PASSED:18, MISSION_EVENT_RETRY:19, MissionStatus:21, MissionResult:23, ClientQuizQuestion:34, SkillMissionSummaryItem:39, SkillMissionSummary:47, loadSkillMissionSummary:60, recordMissionResult:227, recordMissionSubmission:266, countRecentMissionSubmissions:297, getMissionDefinitionForKey:321 |
+| [lib/member/skillMissions.ts](../../../lib/member/skillMissions.ts) | 321 | member-counselor | SkillMissionDefinition:17, MISSION_EVENT_SUBMITTED:19, MISSION_EVENT_PASSED:20, MISSION_EVENT_RETRY:21, MissionStatus:23, MissionResult:25, ClientQuizQuestion:36, SkillMissionSummaryItem:41, SkillMissionSummary:49, loadSkillMissionSummary:62, recordMissionResult:229, recordMissionSubmission:266, countRecentMissionSubmissions:295, getMissionDefinitionForKey:319 |
 | [lib/member/staffTrainingProgramFallback.ts](../../../lib/member/staffTrainingProgramFallback.ts) | 24 | member-counselor | STAFF_TRAINING_PREVIEW_PROGRAM_SLUG:12, resolveStaffTrainingPreviewProgramSlug:14 |
 | [lib/member/staleTrainingCron.ts](../../../lib/member/staleTrainingCron.ts) | 236 | member-counselor | StaleTrainingCronResult:19, runStaleCourseraTrainingCheck:64 |
 | [lib/member/starterProfileReview.test.ts](../../../lib/member/starterProfileReview.test.ts) | 64 | member-counselor |  |
@@ -815,7 +815,7 @@
 | [lib/partner/partnerType.ts](../../../lib/partner/partnerType.ts) | 45 | partners-funding | PARTNER_TYPES:10, PartnerType:11, DEFAULT_PARTNER_TYPE:13, PAYOUT_ELIGIBLE_TYPES:23, isKnownPartnerType:25, normalizePartnerType:34, isReferralPartner:38, isPayoutEligibleType:43 |
 | [lib/partner/payoutEligibility.test.ts](../../../lib/partner/payoutEligibility.test.ts) | 53 | partners-funding |  |
 | [lib/partner/payoutEligibility.ts](../../../lib/partner/payoutEligibility.ts) | 25 | partners-funding | PlacementForPayout:1, getPlacementPayoutRejection:9 |
-| [lib/partner/referralBundle.ts](../../../lib/partner/referralBundle.ts) | 279 | applications-enrollment | ReferralMember:60, PipelineRow:98, loadPartnerReferralBundle:118, toPartnerMembersListRows:242 |
+| [lib/partner/referralBundle.ts](../../../lib/partner/referralBundle.ts) | 280 | applications-enrollment | ReferralMember:61, PipelineRow:99, loadPartnerReferralBundle:119, toPartnerMembersListRows:243 |
 | [lib/partner/referralLink.ts](../../../lib/partner/referralLink.ts) | 7 | applications-enrollment | buildPartnerReferralLink:2 |
 | [lib/partner/sponsoredEnrollment.test.ts](../../../lib/partner/sponsoredEnrollment.test.ts) | 122 | partners-funding |  |
 | [lib/partner/sponsoredEnrollment.ts](../../../lib/partner/sponsoredEnrollment.ts) | 133 | partners-funding | APPLY_REFERRAL_COOKIE:4, APPLY_REFERRAL_COOKIE_MAX_AGE:7, SponsorshipPartner:11, SponsorshipStamp:25, normalizePartnerRef:32, isSponsorshipWindowOpen:45, isActiveSponsorship:58, isSchoolApplyVariant:70, buildSponsorshipStamp:77, readReferralCookieFromHeader:93, readReferralCookieFromDocument:104, writeReferralCookieOnDocument:109, referralCookieSetOptions:117 |
@@ -983,8 +983,9 @@
 | [lib/webhooks/logEvent.ts](../../../lib/webhooks/logEvent.ts) | 69 | libraries | WebhookEventStatus:5, WebhookStatusPersistenceError:8, LogWebhookEventInput:15, logWebhookEvent:28, updateWebhookEventStatus:50 |
 | [lib/webhooks/retry.test.ts](../../../lib/webhooks/retry.test.ts) | 125 | libraries |  |
 | [lib/webhooks/retry.ts](../../../lib/webhooks/retry.ts) | 87 | libraries | updateWebhookEventStatus:5, getNextRetryDelayMs:11, getNextRetryAt:16, markWebhookForRetry:22, getPendingRetryEvents:47, getWebhookStats:63 |
+| [lib/wioa/denialReason.ts](../../../lib/wioa/denialReason.ts) | 53 | partners-funding | DENIAL_DECISIONS:14, DENIAL_REASON_REQUIRED_MESSAGE:20, DENIAL_REASON_REQUIRED_CODE:24, isDenialDecision:26, normalizeDenialReason:31, isMissingDenialReason:37, assertDenialReason:45 |
 | [lib/wioa/eligibilityForm.ts](../../../lib/wioa/eligibilityForm.ts) | 67 | partners-funding | EligibilityFormMeta:3, lockEligibilityMember:21, saveEligibilityForm:42, eligibilityWriteFailure:58 |
-| [lib/wioa/reviewSnapshot.ts](../../../lib/wioa/reviewSnapshot.ts) | 162 | partners-funding | WioaReviewSnapshotSource:19, recordWioaReviewSnapshot:88, WioaReviewSnapshotRow:134, loadWioaReviewSnapshots:145 |
+| [lib/wioa/reviewSnapshot.ts](../../../lib/wioa/reviewSnapshot.ts) | 166 | partners-funding | WioaReviewSnapshotSource:20, recordWioaReviewSnapshot:89, WioaReviewSnapshotRow:138, loadWioaReviewSnapshots:149 |
 | [lib/wioa/wioaAvailability.test.ts](../../../lib/wioa/wioaAvailability.test.ts) | 33 | partners-funding |  |
 | [lib/wioa/wioaAvailability.ts](../../../lib/wioa/wioaAvailability.ts) | 11 | partners-funding | isWioaPortalAvailable:7 |
 | [lib/wioa/wioaNotification.test.ts](../../../lib/wioa/wioaNotification.test.ts) | 170 | communications |  |

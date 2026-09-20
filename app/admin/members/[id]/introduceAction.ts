@@ -9,6 +9,7 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { persistEvent } from '@/lib/events/track';
 
 export async function introduceMemberToEmployer(memberId: string, jobId: string) {
   const user = await getUser();
@@ -64,21 +65,19 @@ export async function introduceMemberToEmployer(memberId: string, jobId: string)
   );
 
   await withTenantScope(orgId, (db) =>
-    db.memberEvent.create({
-      data: {
-        userId: member.id,
-        eventName: 'EMPLOYER_INTRO_CREATED',
-        entityType: 'MessageThread',
-        entityId: thread.id,
-        metadata: {
-          jobId: job.id,
-          employerId: job.employerId,
-          employerName: job.employer.companyName,
-          introducedBy: user.id,
-        },
-        sourcePage: `/admin/members/${member.id}`,
+    persistEvent({
+      userId: member.id,
+      eventName: 'employer_intro_created',
+      entityType: 'MessageThread',
+      entityId: thread.id,
+      metadata: {
+        jobId: job.id,
+        employerId: job.employerId,
+        employerName: job.employer.companyName,
+        introducedBy: user.id,
       },
-    }),
+      sourcePage: `/admin/members/${member.id}`,
+    }, db),
   );
 
   await withTenantScope(orgId, (db) =>

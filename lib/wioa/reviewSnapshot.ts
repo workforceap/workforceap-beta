@@ -5,6 +5,7 @@ import { resolveActorSnapshot } from '@/lib/audit';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import type { Prisma } from '@prisma/client';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { assertDenialReason } from '@/lib/wioa/denialReason';
 
 /**
  * Immutable eligibility decision trail — see the `WioaReviewSnapshot` model
@@ -89,6 +90,9 @@ export async function recordWioaReviewSnapshot(args: RecordSnapshotArgs, db: Pri
   const { organizationId, userId, applicationId, source, decision, notes, actorUserId } = args;
 
   try {
+    // WAP-184 G-3: a denial without a written reason is not evidence. Throwing
+    // here rolls back the decision that this snapshot was meant to accompany.
+    assertDenialReason(source, decision, notes);
     const [member, actorSnapshot] = await Promise.all([
       buildEligibilitySnapshot(db, userId, organizationId),
       resolveActorSnapshot(actorUserId, db),

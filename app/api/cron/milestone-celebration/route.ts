@@ -10,6 +10,7 @@ import { settlePendingReferralRewards } from '@/lib/member/referrals';
 import { TESTIMONIALS } from '@/content/testimonials';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { persistEvent } from '@/lib/events/track';
 
 export const maxDuration = 300;
 /**
@@ -112,16 +113,13 @@ async function handle(_req: NextRequest) {
       if (!delivery.ok) continue;
       sent++;
 
-      await prisma.memberEvent
-        .create({
-          data: {
-            userId: completion.userId,
-            eventName: 'certification_celebration_sent',
-            entityType: 'course_progress',
-            entityId: completion.id,
-            metadata: { programSlug, programName, courseSlug: completion.courseSlug, pointsAwarded: 25 },
-          },
-        })
+      await persistEvent({
+        userId: completion.userId,
+        eventName: 'certification_celebration_sent',
+        entityType: 'course_progress',
+        entityId: completion.id,
+        metadata: { programSlug, programName, courseSlug: completion.courseSlug, pointsAwarded: 25 },
+      }, prisma)
         .catch(() => { /* non-fatal — audit trail only, not used for idempotency */ });
     } catch {
       /* non-fatal */
