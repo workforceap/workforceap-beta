@@ -1,3 +1,37 @@
+-- ===========================================================================
+-- Defer FORCE ROW LEVEL SECURITY + authorize 'system' role in RLS helpers
+-- ===========================================================================
+-- Addresses Codex P1s on PR #1185 against the GUC RLS rollout from
+-- 20260513040000_add_rls_policies (master commit 12ab4e10):
+--
+--   1. r3238590386: "Do not force RLS before GUC coverage"
+--      The prior migration ran `ALTER TABLE x FORCE ROW LEVEL SECURITY` on 46
+--      tables, but no app routes / server components currently wrap their
+--      Prisma calls with `runWithGucContext`. Master's middleware falls back
+--      to an anonymous GUC when no scope exists, so on a connection role
+--      that does NOT bypass RLS, ordinary authenticated pages (/dashboard,
+--      /admin, etc.) would be denied by the per-table policies.
+--
+--      Currently masked in production because the Supabase postgres role
+--      bypasses RLS — but the moment a stricter connection role is used, the
+--      app breaks. We defer the FORCE until request-entry coverage lands.
+--
+--   2. r3238590392: "Authorize the system cron role under RLS"
+--      `withCronLogging` (master commit 12ab4e10) wraps cron handlers in
+--      `runWithGucContext(SYSTEM_GUC_CONTEXT, ...)` which sets
+--      `app.current_role = 'system'`. But the helper functions in the prior
+--      RLS migration only treat `admin` / `super_admin` as privileged —
+--      `system` is not authorized by any policy. Every cron that touches
+--      a P0 table (Coursera sync, at-risk, our new milestone-cascade ones,
+--      etc.) would fail on an RLS-enforced connection.
+--
+-- Both issues are latent today (the bypass-role masks them) but fix them now
+-- so the GUC enforcement work in flight isn't blocked by a sequence of
+-- crons silently breaking.
+--
+-- This migration is forward-only and idempotent (CREATE OR REPLACE for
+-- functions, NO FORCE is a no-op on already-not-forced tables).
+
 -- ───────────────────────────────────────────────────────────────────────────
 -- SECTION 1: Authorize 'system' role across RLS helper functions.
 --

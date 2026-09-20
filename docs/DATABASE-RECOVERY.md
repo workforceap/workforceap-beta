@@ -125,12 +125,27 @@ production recovery commands remain unchanged.
    migrations before Next.js compilation fails; rolling back the Vercel
    application does not undo those database changes.
 
-`build:with-migrate` contains two named historical rollback-resolution commands
-before `scripts/safe-migrate.cjs`. They concern specific earlier incidents;
-they do not repair the March replay blockers. The safe-migrate default executes
-one `migrate deploy`, propagates failure, and does not resolve or retry unknown
-failures. It skips migration work when the environment wrapper supplied its
-placeholder database, so that successful skip is not database verification.
+`build:with-migrate` used to run two named historical rollback-resolution
+commands before `scripts/safe-migrate.cjs`. WAP-178 removed both: they mutated
+`_prisma_migrations` unconditionally on every production deploy, and one of
+them named `20260616050000_s2_compliance_fix_xapi_org_null`, a directory that
+does not exist in this repo (the committed one is `...050001`). That mismatch
+was swallowed by `isBenignMigrateResolveError`, so the step was inert — but an
+unconditional auto-resolve in the build path is exactly what
+`scripts/safe-migrate.cjs`'s own header says was removed on purpose. Recovery
+is now an operator command only:
+
+```
+npm run db:migrate:resolve-failed
+npm run db:migrate:resolve-failed-in-db -- <migration-name> [--applied|--rolled-back]
+node scripts/safe-migrate.cjs --force-resolve <migration-name>
+```
+
+Neither command repairs the March replay blockers. The safe-migrate default
+executes one `migrate deploy`, propagates failure, and does not resolve or
+retry unknown failures. It skips migration work when the environment wrapper
+supplied its placeholder database, so that successful skip is not database
+verification.
 
 For a failed migration, first establish exactly what changed. A `--rolled-back`
 marker does not undo SQL: restore the failed migration's pre-state and verify its

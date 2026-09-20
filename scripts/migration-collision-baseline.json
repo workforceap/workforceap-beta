@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "ff7c319a09d15f15ee3f04e781ece8884cf31e42",
-  "purpose": "Exact historical timestamp collisions only. This does not certify database-applied checksums or clean migration replay. Do not regenerate to admit a new collision.",
+  "sourceCommit": "a9c3a7d3d3dee7e3a58c800f77c1ce2ffe3ffb44",
+  "purpose": "Exact historical timestamp collisions only. This does not certify database-applied checksums or clean migration replay. Do not regenerate to admit a new collision. WAP-178 re-baseline: the ten second-alphabetical members below were restored to their pre-fa8f9ebe3 bytes. fa8f9ebe3 ('ESLint burndown', 2026-05-21) reverted a directory rename but dropped the leading lines of all ten files, truncating two mid-statement and emptying a third, after production had already applied the originals. These sha256 values are therefore the ORIGINAL applied SQL, not a refresh of drifted bytes.",
   "groups": [
     {
       "timestamp": "20260331120000",
@@ -12,7 +12,7 @@
         },
         {
           "directory": "20260331120000_sprint7_organization_catalog_intake",
-          "sha256": "bbabfb916baaa94fead3aa2c83209a674d0774fd97dfe3c8dbe3de3081b42e58"
+          "sha256": "1445962a6babf6431fc45c166b022d583e64bcedee476d95ea53c8e62e089d45"
         }
       ]
     },
@@ -25,7 +25,7 @@
         },
         {
           "directory": "20260404120000_onboarding_tour_completed",
-          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          "sha256": "cc8da8ac99796aa5d1770a1f81818cd7ca95a34675095010110aeb6d98fece3c"
         }
       ]
     },
@@ -38,7 +38,7 @@
         },
         {
           "directory": "20260404180000_curated_job_and_program_change_requests",
-          "sha256": "e2c85fed58046eac2875e18162bf6462dbd1fc13e13e08e384183265db51837d"
+          "sha256": "192080037571424e1fe1b7d2e472718aa27dcc1ef2cab5941453e0d3736a4970"
         }
       ]
     },
@@ -51,7 +51,7 @@
         },
         {
           "directory": "20260504120000_xapi_course_progress",
-          "sha256": "2a5fc0be7fab71f649d668f5a04731117b91ba411ee3ec67ace30ddea1b48661"
+          "sha256": "d8aaa6728aae08f856b3afb394029769474762ca4f8ba04c6268d11f6511b077"
         }
       ]
     },
@@ -64,7 +64,7 @@
         },
         {
           "directory": "20260504130000_coursera_skillset_progress",
-          "sha256": "df259d1e5daaa35548a45d24a3acedf496ee143bb8cf43153329dc65c43bdfae"
+          "sha256": "6ef7485771b99b1c9e4a749f44fcf87e80d3d1edfdc4d8a4dca23328c24fab16"
         }
       ]
     },
@@ -77,7 +77,7 @@
         },
         {
           "directory": "20260509120000_user_last_coursera_auto_sync_at",
-          "sha256": "0e751f317305f81495d7f1e381a0db749ef531555da93b985369b394e97c5a1f"
+          "sha256": "c89155b8be30cc532fd01e1797bb9b2170c1e12dac247bdfb71bf4f0a276b066"
         }
       ]
     },
@@ -90,7 +90,7 @@
         },
         {
           "directory": "20260513000000_add_webhook_events",
-          "sha256": "3977c3602bacde734ebbe2f09f6ee5852aa86330d5c13edb8beeb45eea60b1a8"
+          "sha256": "4b9495b61472263290d59c343f93433c8647b6decc65603665a4140a24008043"
         }
       ]
     },
@@ -103,7 +103,7 @@
         },
         {
           "directory": "20260513030000_add_testimonial",
-          "sha256": "047a5e9854ad86f397a57fb1ce37c1310c5c98c530d463d32361b30b3036ae82"
+          "sha256": "e476892a8e600ef7b344d33d541f6b08c2da88cc35e1a75cd3ef489381908764"
         }
       ]
     },
@@ -116,7 +116,7 @@
         },
         {
           "directory": "20260514000000_defer_rls_force_authorize_system",
-          "sha256": "6cfc274e09729df0200691c9446bf124df3f86857878667da09099c2ea68ffbe"
+          "sha256": "738b4e00946b76082e8ff2779b15c8d8077cf9dfbd0cc7409c9f79769d978e28"
         }
       ]
     },
@@ -129,7 +129,7 @@
         },
         {
           "directory": "20260514010000_add_webhook_events",
-          "sha256": "75c8738e9831278f81d2c33cd58cf7f33ab80b5788735397c44be8dbaa947908"
+          "sha256": "b466b6561180b178bf1686241cc3ce1db418217ba16eb73849d49309977c9a15"
         }
       ]
     }
