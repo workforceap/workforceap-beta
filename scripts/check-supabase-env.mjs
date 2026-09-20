@@ -9,16 +9,37 @@
  * NEXT_PUBLIC_SUPABASE_ANON_KEY, and the connection URLs and fails loud if a
  * scope is wired to the wrong project or auth is missing the public anon key.
  *
- * Optional --check-pool-contract also checks explicit runtime port/Prisma pool
- * params without printing the URL. This is not enabled by the default build:
- * verify the deployed parameters before enforcing this additional contract.
+ * The runtime port / Prisma pool params are checked too, without ever
+ * printing the URL. --check-pool-contract forces that check on anywhere.
  * Exit 0 = ok, 1 = misconfigured (block the deploy).
+ *
+ * WAP-17: GO-LIVE-AND-SCALE-LIST.md:101,146 require the runtime
+ * POSTGRES_PRISMA_URL on :6543 with connection_limit=1, but production's own
+ * P2024 errors report Prisma's default of 5 — so the runbook and production
+ * disagree and nothing in the build noticed. Two changes here:
+ *
+ *   - Every real Vercel build now REPORTS the non-secret pool parameters
+ *     (port, connection_limit, pool_timeout, pgbouncer — never the URL, user,
+ *     password or options). That is the evidence the enforcement below was
+ *     waiting on, and it is safe: reporting cannot fail a deploy.
+ *   - Enforcement per Vercel env is a one-word flip in
+ *     POOL_CONTRACT_ENFORCED_VERCEL_ENVS. It is empty today (report-only
+ *     everywhere) — see the note on that constant for the order to flip it in.
+ *     Production must never be added before the parameters are set on the
+ *     production POSTGRES_PRISMA_URL, or the next deploy is blocked by an env
+ *     var only an operator can fix.
  */
 
 import guard from './lib/supabase-project-guard.cjs';
 import poolContract from './lib/runtime-pool-contract.cjs';
 
-// Opt-in until deployed runtime parameters have been verified. Never rewrites URLs.
+// Never rewrites URLs. Report-only on EVERY Vercel env for now: the contract
+// requires four params (port, connection_limit, pool_timeout, pgbouncer) and
+// the runbook shape in docs/HANDOFF.md:40 names three, so nothing yet shows
+// preview's URL carries all four. Add 'preview' after one preview build has
+// logged the parameters line below and they match; add 'production' only in
+// the same change that sets the production POSTGRES_PRISMA_URL (WAP-17).
+const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set([]);
 const checkPoolContract = process.argv.includes('--check-pool-contract');
 
 const {
@@ -75,10 +96,24 @@ if (process.env.VERCEL === '1') {
   errors.push(...strict.errors.map((message) => `  ✗ ${message}`));
 }
 
-if (checkPoolContract) {
+const onVercel = process.env.VERCEL === '1';
+const enforcePoolContract = checkPoolContract || (onVercel && POOL_CONTRACT_ENFORCED_VERCEL_ENVS.has(env));
+
+if (enforcePoolContract || onVercel) {
   const pool = poolContract.inspectRuntimePoolContract(process.env.POSTGRES_PRISMA_URL);
   console.log('[supabase-env-guard] runtime pool parameters:', pool.parameters);
-  errors.push(...pool.errors.map((message) => `  - ${message}`));
+  if (enforcePoolContract) {
+    errors.push(...pool.errors.map((message) => `  - ${message}`));
+  } else if (pool.errors.length) {
+    // Report-only on production (WAP-17). Loud, because an off-runbook pool is
+    // what produced `P2024 ... (pool timeout: 10, connection limit: 5)`.
+    console.warn(
+      `\n[supabase-env-guard] WARNING — runtime pool contract is off-runbook for VERCEL_ENV="${env}":\n` +
+        pool.errors.map((message) => `  - ${message}`).join('\n') +
+        '\nSee docs/GO-LIVE-AND-SCALE-LIST.md:101,146. Fix POSTGRES_PRISMA_URL, then add' +
+        ` '${env}' to POOL_CONTRACT_ENFORCED_VERCEL_ENVS in this file to make it blocking.\n`,
+    );
+  }
 }
 
 console.log(`[supabase-env-guard] env=${env} expected=${expected} →`, seen);

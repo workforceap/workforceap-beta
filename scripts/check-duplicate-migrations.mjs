@@ -15,8 +15,22 @@ const BASELINE = join(ROOT, 'scripts', 'migration-collision-baseline.json');
 // Review anchors live outside the mutable JSON payload. Editing that payload
 // cannot authorize a new collision or a rewritten historical migration. Changes
 // to these constants require separate source review, never automatic refresh.
-const REVIEWED_SOURCE_COMMIT = 'ff7c319a09d15f15ee3f04e781ece8884cf31e42';
-const REVIEWED_BASELINE_SHA256 = 'ba13bd4c04fcfa182335b2f6d717eb318ac36f1106bb0c8a3777c83c5543189e';
+//
+// WAP-178 (2026-09-20): re-anchored once, deliberately. fa8f9ebe3 reverted a
+// directory rename but dropped the leading lines of all ten second-alphabetical
+// members — truncating two mid-statement, emptying a third, and deleting live
+// DDL from a fourth — *after* production had applied the originals. The old
+// anchor below pinned those truncated bytes, so the guard was protecting the
+// corruption. The ten files are now restored to their pre-fa8f9ebe3 revision
+// (`git show fa8f9ebe3^:<path>`, i.e. b14679b3c), which is expected to be what
+// production's `_prisma_migrations` checksums were computed from; the
+// 2026-09-09 preflight (docs/DATABASE-RECOVERY.md) recorded 15 checksum
+// differences but its artifact is not in this tree, so parity is expected,
+// not proven here. This is a restoration to the reviewed history, not an
+// acceptance of drift. The source commit is the one whose bytes these SHAs
+// describe.
+const REVIEWED_SOURCE_COMMIT = 'b14679b3cb7eaa22e5ac88802cf25c8fa17b61b9';
+const REVIEWED_BASELINE_SHA256 = '752abd825d4289fafbcc238accd9566826afe31d76b35ab4aef9067acc3b2a88';
 // Two existing migrations use date-only prefixes. Detect their collisions too;
 // do not silently ignore a shorter numeric prefix or rename historical files.
 const TIMESTAMP = /^(\d+)_/;

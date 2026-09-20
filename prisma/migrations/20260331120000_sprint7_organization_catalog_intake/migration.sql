@@ -1,3 +1,5 @@
+-- Sprint 7: multi-tenant foundation (default org), program catalog, pre-screening, profile gate fields
+
 CREATE TABLE IF NOT EXISTS "organizations" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,

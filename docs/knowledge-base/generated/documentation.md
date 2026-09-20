@@ -28,7 +28,7 @@
 | [docs/CROSS-PORTAL-PAGES-AUDIT.md](../../../docs/CROSS-PORTAL-PAGES-AUDIT.md) | 54 | documentation |  |
 | [docs/DAILY-OPERATING-PLAN.md](../../../docs/DAILY-OPERATING-PLAN.md) | 250 | documentation |  |
 | [docs/DATABASE-PERFORMANCE-AUDIT.md](../../../docs/DATABASE-PERFORMANCE-AUDIT.md) | 671 | documentation |  |
-| [docs/DATABASE-RECOVERY.md](../../../docs/DATABASE-RECOVERY.md) | 199 | documentation |  |
+| [docs/DATABASE-RECOVERY.md](../../../docs/DATABASE-RECOVERY.md) | 216 | documentation |  |
 | [docs/DEEP-TECH-AUDIT-2026-05-12.md](../../../docs/DEEP-TECH-AUDIT-2026-05-12.md) | 231 | documentation |  |
 | [docs/DEMO-PATH-AUDIT.md](../../../docs/DEMO-PATH-AUDIT.md) | 128 | documentation |  |
 | [docs/DEPLOYMENT-CHECKLIST.md](../../../docs/DEPLOYMENT-CHECKLIST.md) | 176 | documentation |  |

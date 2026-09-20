@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { isReviewedLocale } from '@/lib/i18n/config';
 import LanguageToggle from '@/components/portal/LanguageToggle';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 /**
  * Subtle, dismissible notice shown across the portal when the active locale
@@ -55,13 +56,7 @@ export default function UnreviewedLocaleBanner() {
         color: 'var(--color-on-surface-variant)',
       }}
     >
-      <span
-        className="material-symbols-outlined"
-        aria-hidden="true"
-        style={{ fontSize: '1rem', color: 'var(--color-blue)' }}
-      >
-        translate
-      </span>
+      <LegacyGlyph name="translate" size={16} style={{ color: 'var(--color-blue)' }} />
       <span style={{ flex: 1, minWidth: 0 }}>{t('machineTranslationNotice')}</span>
       <span style={{ fontWeight: 700 }}>{t('machineTranslationNoticeAction')}:</span>
       <LanguageToggle compact />
@@ -79,7 +74,7 @@ export default function UnreviewedLocaleBanner() {
           lineHeight: 1,
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>close</span>
+        <LegacyGlyph name="close" size={16} />
       </button>
     </div>
   );

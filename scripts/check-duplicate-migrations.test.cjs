@@ -126,11 +126,20 @@ test('rejects a one-byte SQL change in a historical member', (t) => {
   assert.match(result.output, /Historical SQL checksum changed/);
 });
 
-test('preserves the empty SQL file already present in the reviewed history', (t) => {
+// WAP-178: the reviewed history used to pin an empty migration.sql
+// (20260404120000_onboarding_tour_completed), truncated to zero bytes by
+// fa8f9ebe3 after production had applied its three ALTER TABLE statements.
+// It has been restored, so no reviewed member may be empty again.
+test('no reviewed historical migration is an empty SQL file', (t) => {
   const f = fixture(t);
-  const empty = reviewed.groups.flatMap((group) => group.migrations).find((entry) => entry.sha256 === sha256(''));
-  assert.ok(empty, 'the reviewed history includes an empty migration');
-  assert.equal(fs.readFileSync(path.join(f.migrations, empty.directory, 'migration.sql')).length, 0);
+  const empty = reviewed.groups.flatMap((group) => group.migrations).filter((entry) => entry.sha256 === sha256(''));
+  assert.deepEqual(empty, [], 'an empty migration.sql cannot replay and cannot match a production checksum');
+  for (const group of reviewed.groups) {
+    for (const entry of group.migrations) {
+      const bytes = fs.readFileSync(path.join(f.migrations, entry.directory, 'migration.sql'));
+      assert.ok(bytes.length > 0, `${entry.directory}/migration.sql is empty`);
+    }
+  }
   assert.equal(f.run().status, 0);
 });
 
