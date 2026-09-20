@@ -7,6 +7,7 @@
  */
 
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { studentsNeedsHref } from '@/lib/admin/studentsRosterView';
 import { stalledCheckInAction, TRIAGE_BUCKET_ACCENTS } from '@/lib/admin/triageDigestCopy';
 import type { TriageBucket, TriageDigest, TriageMember } from '@/lib/admin/triageDigestTypes';
 import {
@@ -36,10 +37,16 @@ export type AdminAttentionTile = {
   href: string;
 };
 
+/**
+ * Every attention number opens the one admin roster (`/admin/students`) on
+ * the chip nearest its rule; the page resolves `?needs=` through
+ * `chipForStudentsNeeds`. The legacy `/admin/members` hub never read `needs`,
+ * so those links used to show the whole roster (admin audit 2026-09-20).
+ */
 export const ADMIN_ATTENTION_HREF: Record<AdminAttentionTileKey, string> = {
-  risk_alert: '/admin/members?needs=at-risk',
-  no_activity_30d: '/admin/members?needs=stalled',
-  new_no_counselor: '/admin/members?needs=new-applicants',
+  risk_alert: studentsNeedsHref('at-risk'),
+  no_activity_30d: studentsNeedsHref('stalled'),
+  new_no_counselor: studentsNeedsHref('new-applicants'),
 };
 
 export function buildAdminAttentionTiles(queue: AttentionQueue): AdminAttentionTile[] {

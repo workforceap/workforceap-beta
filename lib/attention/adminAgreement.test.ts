@@ -9,6 +9,7 @@ import {
   buildCommandCenterAttentionRows,
 } from './adminViews';
 import { FIXTURE_NOW, fixtureRoster } from '@/tests/fixtures/attentionRoster';
+import { chipForStudentsNeeds, parseStudentsNeeds } from '@/lib/admin/studentsRosterView';
 
 /**
  * The Command Center (`/admin`) and the Detailed overview (`/admin/overview`)
@@ -68,4 +69,22 @@ test('an empty roster is all clear on both pages', () => {
   assert.deepEqual(buildAdminAttentionTiles(empty).map((t) => t.value), [0, 0, 0]);
   assert.equal(buildAttentionDigest(empty).allClear, true);
   assert.ok(buildCommandCenterAttentionRows(empty).every((r) => r.count === 0 && !r.urgent));
+});
+
+test('every attention link opens the admin roster on a chip the page understands', () => {
+  for (const tile of tiles) {
+    const url = new URL(tile.href, 'https://example.test');
+    assert.equal(url.pathname, '/admin/students', tile.key);
+    const needs = parseStudentsNeeds(url.searchParams.get('needs'));
+    assert.ok(needs, `${tile.key} carries a recognised needs= value`);
+    if (tile.key !== 'new_no_counselor') {
+      assert.notEqual(chipForStudentsNeeds(needs, 'roster'), 'All', `${tile.key} lands on a filtered roster`);
+    }
+  }
+  assert.equal(chipForStudentsNeeds(parseStudentsNeeds('at-risk'), 'roster'), 'At Risk');
+  assert.equal(chipForStudentsNeeds(parseStudentsNeeds('stalled'), 'training'), 'Stalled');
+  assert.equal(chipForStudentsNeeds(parseStudentsNeeds(['stalled', 'x']), 'roster'), 'At Risk');
+  assert.equal(chipForStudentsNeeds(parseStudentsNeeds('not-a-need'), 'roster'), 'All');
+  assert.equal(parseStudentsNeeds(undefined), null);
+  for (const row of rows) assert.equal(row.href, tiles.find((t) => t.key === row.id)?.href);
 });

@@ -7488,12 +7488,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 17,
+        "line": 22,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 209,
+        "line": 214,
         "kind": "FunctionDeclaration",
         "localName": "AnalyticsPage"
       }
@@ -7513,7 +7513,7 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -10159,12 +10159,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 16,
+        "line": 13,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 25,
+        "line": 22,
         "kind": "FunctionDeclaration",
         "localName": "OutcomesPage"
       }
@@ -10216,12 +10216,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 49,
+        "line": 46,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 114,
+        "line": 111,
         "kind": "FunctionDeclaration",
         "localName": "AdminOverviewPage"
       }
@@ -11017,12 +11017,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 21,
+        "line": 24,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 35,
+        "line": 40,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }

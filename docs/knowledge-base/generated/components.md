@@ -97,7 +97,6 @@
 | [components/admin/EmailTemplatesClient.tsx](../../../components/admin/EmailTemplatesClient.tsx) | 821 | communications | default:34 |
 | [components/admin/EmployersTableClient.tsx](../../../components/admin/EmployersTableClient.tsx) | 393 | administration | EmployerTableRow:14, default:157 |
 | [components/admin/ExecutiveTrendCharts.tsx](../../../components/admin/ExecutiveTrendCharts.tsx) | 82 | administration | default:23 |
-| [components/admin/GtmSetupCheck.tsx](../../../components/admin/GtmSetupCheck.tsx) | 42 | administration | default:17 |
 | [components/admin/IgnoredXapiSummaryCard.tsx](../../../components/admin/IgnoredXapiSummaryCard.tsx) | 171 | administration | default:30 |
 | [components/admin/InviteForm.tsx](../../../components/admin/InviteForm.tsx) | 356 | administration | default:26 |
 | [components/admin/InvitePartnerUserButton.tsx](../../../components/admin/InvitePartnerUserButton.tsx) | 88 | administration | inviteFailureText:12, default:23 |
@@ -137,7 +136,7 @@
 | [components/admin/SubgroupMembersTable.tsx](../../../components/admin/SubgroupMembersTable.tsx) | 306 | administration | default:30 |
 | [components/admin/TestimonialsAdminClient.tsx](../../../components/admin/TestimonialsAdminClient.tsx) | 399 | administration | default:37 |
 | [components/admin/TrainingProgressClient.tsx](../../../components/admin/TrainingProgressClient.tsx) | 818 | administration | CanonicalCatalog:25, CurriculumRow:35, RawCourseraRow:64, default:418 |
-| [components/admin/TriageDigestSection.tsx](../../../components/admin/TriageDigestSection.tsx) | 244 | administration | default:12 |
+| [components/admin/TriageDigestSection.tsx](../../../components/admin/TriageDigestSection.tsx) | 309 | administration | PendingApplicationsCard:7, pendingApplicationsLabel:9, default:22 |
 | [components/admin/WioaReviewFilterBar.tsx](../../../components/admin/WioaReviewFilterBar.tsx) | 28 | partners-funding | default:4 |
 | [components/admin/WioaScreeningReadonly.tsx](../../../components/admin/WioaScreeningReadonly.tsx) | 85 | partners-funding | default:26 |
 | [components/admin/coursera/MapToUserActions.tsx](../../../components/admin/coursera/MapToUserActions.tsx) | 266 | learning-coursera | default:67 |
@@ -472,11 +471,11 @@
 | [components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx](../../../components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx) | 225 | components | AgentInboxRow:32, AgentInboxKitProps:50, AgentInboxKit:62 |
 | [components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx](../../../components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx) | 118 | components | AiEfficacyKitProps:20, AiEfficacyKit:48 |
 | [components/portal/kit/pages/admin-subviews/AiToolsAdminKit.tsx](../../../components/portal/kit/pages/admin-subviews/AiToolsAdminKit.tsx) | 196 | components | AiToolDef:42, AiToolUsage:63, AiToolsAdminKitProps:68, AiToolsAdminKit:134 |
-| [components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx](../../../components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx) | 90 | components | AnalyticsKitProps:24, AnalyticsKit:48 |
+| [components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx](../../../components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx) | 152 | components | AnalyticsKitProps:29, AnalyticsKit:92 |
 | [components/portal/kit/pages/admin-subviews/AssessmentsKit.tsx](../../../components/portal/kit/pages/admin-subviews/AssessmentsKit.tsx) | 223 | components | AssessmentDisplayStatus:31, AssessmentRow:33, AssessmentsKitProps:48, AssessmentsKit:87 |
 | [components/portal/kit/pages/admin-subviews/AuditLogsKit.tsx](../../../components/portal/kit/pages/admin-subviews/AuditLogsKit.tsx) | 222 | components | AuditRow:29, AuditLogsKitProps:45, AuditLogsKit:94 |
 | [components/portal/kit/pages/admin-subviews/BlogKit.tsx](../../../components/portal/kit/pages/admin-subviews/BlogKit.tsx) | 193 | components | BlogDisplayStatus:27, BlogRow:29, BlogKitProps:39, BlogKit:68 |
-| [components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx](../../../components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx) | 195 | components | FunderExport:23, BoardOutcomesKitProps:32, BoardOutcomesKit:91 |
+| [components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx](../../../components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx) | 145 | components | ADMIN_EXPORTS_HREF:25, BoardOutcomesKitProps:27, BoardOutcomesKit:61 |
 | [components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx](../../../components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx) | 193 | components | CareerPathCard:39, CareerMappingsKitProps:56, CareerMappingsKit:142 |
 | [components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx](../../../components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx) | 344 | components | CertSubmission:26, CertificationsQueueKitProps:38, CertificationsQueueKit:78 |
 | [components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx) | 305 | components | CounselorRow:36, CounselorsRosterKitProps:54, CounselorsRosterKit:76 |
@@ -489,7 +488,8 @@
 | [components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailCronsKit.tsx) | 195 | communications | EmailCronDisplayStatus:31, EmailCronRow:37, EmailCronsKitProps:48, EmailCronsKit:67 |
 | [components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx) | 237 | communications | EmailTemplateRow:29, EmailTemplatesKitProps:42, EmailTemplatesKit:67 |
 | [components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx](../../../components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx) | 233 | components | EmployerCard:33, EmployersDirectoryKitProps:71, EmployersDirectoryKit:171 |
-| [components/portal/kit/pages/admin-subviews/ExportsKit.tsx](../../../components/portal/kit/pages/admin-subviews/ExportsKit.tsx) | 195 | components | ExportTone:22, ExportOption:24, ExportsKitProps:45, ExportsKit:171 |
+| [components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx](../../../components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx) | 58 | components | EnrollmentOutcomesPanel:12 |
+| [components/portal/kit/pages/admin-subviews/ExportsKit.tsx](../../../components/portal/kit/pages/admin-subviews/ExportsKit.tsx) | 214 | components | ExportTone:27, ExportOption:29, ExportRowKind:55, exportRowKind:58, ExportsKitProps:62, ExportsKit:190 |
 | [components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx) | 225 | components | FeatureFlagRow:26, FeatureFlagsKitProps:41, FeatureFlagsKit:55 |
 | [components/portal/kit/pages/admin-subviews/FeedbackKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeedbackKit.tsx) | 252 | components | FeedbackSentiment:26, FeedbackRow:28, FeedbackKitProps:43, FeedbackKit:73 |
 | [components/portal/kit/pages/admin-subviews/GrowthKit.tsx](../../../components/portal/kit/pages/admin-subviews/GrowthKit.tsx) | 231 | components | GrowthUtmRow:35, GrowthApplyEventRow:44, GrowthConversionValueRow:49, GrowthKitProps:56, GrowthKit:136 |
@@ -506,7 +506,7 @@
 | [components/portal/kit/pages/admin-subviews/ProgramsCatalogKit.tsx](../../../components/portal/kit/pages/admin-subviews/ProgramsCatalogKit.tsx) | 257 | components | ProgramCard:45, ProgramsCatalogKitProps:63, ProgramsCatalogKit:184 |
 | [components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx](../../../components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx) | 185 | components | ScreeningPackRow:27, ScreeningPacksKitProps:40, ScreeningPacksKit:67 |
 | [components/portal/kit/pages/admin-subviews/SessionsKit.tsx](../../../components/portal/kit/pages/admin-subviews/SessionsKit.tsx) | 228 | components | SessionDisplayStatus:30, SessionKitRow:32, SessionsKitProps:48, SessionsKit:85 |
-| [components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx) | 631 | components | StudentStatus:69, StudentTrainingFacts:71, StudentRow:80, StudentFilter:117, StudentsRosterKitProps:119, StudentsRosterKit:231 |
+| [components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx) | 639 | components | StudentStatus:69, StudentTrainingFacts:71, StudentRow:80, StudentFilter:117, StudentsRosterKitProps:119, StudentsRosterKit:236 |
 | [components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx](../../../components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx) | 190 | components | SubgroupKind:38, SubgroupCard:40, SubgroupsDirectoryKitProps:51, SubgroupsDirectoryKit:127 |
 | [components/portal/kit/pages/admin-subviews/SystemHealthKit.tsx](../../../components/portal/kit/pages/admin-subviews/SystemHealthKit.tsx) | 201 | components | TileStatus:33, HealthTile:35, SystemHealthKitProps:46, SystemHealthKit:113, statusToKitColor:199 |
 | [components/portal/kit/pages/admin-subviews/UsersKit.tsx](../../../components/portal/kit/pages/admin-subviews/UsersKit.tsx) | 94 | components | UserRow:19, UsersKitProps:29, UsersKit:49 |

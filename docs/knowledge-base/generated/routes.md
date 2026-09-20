@@ -289,7 +289,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/ai-tools | page |  | [app/admin/ai-tools/page.tsx](../../../app/admin/ai-tools/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/analytics/ai-efficacy | page |  | [app/admin/analytics/ai-efficacy/page.tsx](../../../app/admin/analytics/ai-efficacy/page.tsx) | @/lib/auth/server:3, @/lib/tenant/adminPageScope:4 |
 | /admin/analytics | loading |  | [app/admin/analytics/loading.tsx](../../../app/admin/analytics/loading.tsx) |  |
-| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:10 |
+| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:11 |
 | /admin/assessments | loading |  | [app/admin/assessments/loading.tsx](../../../app/admin/assessments/loading.tsx) |  |
 | /admin/assessments | page |  | [app/admin/assessments/page.tsx](../../../app/admin/assessments/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:66, @/lib/tenant/adminPageScope:117 |
 | /admin/audit-logs | loading |  | [app/admin/audit-logs/loading.tsx](../../../app/admin/audit-logs/loading.tsx) |  |

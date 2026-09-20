@@ -1976,10 +1976,6 @@
         {
           "file": "app/layout.tsx",
           "line": 58
-        },
-        {
-          "file": "components/admin/GtmSetupCheck.tsx",
-          "line": 6
         }
       ]
     },

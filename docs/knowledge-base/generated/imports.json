@@ -16457,8 +16457,16 @@
   },
   {
     "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/db/prisma",
+    "specifier": "next/headers",
     "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/analytics/page.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -16466,7 +16474,7 @@
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -16474,7 +16482,7 @@
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/lib/tenant/organization",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -16482,15 +16490,39 @@
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/lib/admin/analytics",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/admin/analytics.ts"
   },
   {
     "from": "app/admin/analytics/page.tsx",
+    "specifier": "@/lib/admin/metrics",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/metrics.ts"
+  },
+  {
+    "from": "app/admin/analytics/page.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "app/admin/analytics/page.tsx",
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/admin/analytics/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 12,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -16498,7 +16530,7 @@
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/components/admin/AnalyticsDashboard",
-    "line": 13,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/admin/AnalyticsDashboard.tsx"
@@ -16506,15 +16538,23 @@
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/AnalyticsKit",
-    "line": 14,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx"
   },
   {
     "from": "app/admin/analytics/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
+  },
+  {
+    "from": "app/admin/analytics/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 15,
+    "line": 20,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -23593,16 +23633,8 @@
   },
   {
     "from": "app/admin/outcomes/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
-    "line": 11,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
-  },
-  {
-    "from": "app/admin/outcomes/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 14,
+    "line": 11,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -23761,16 +23793,8 @@
   },
   {
     "from": "app/admin/overview/page.tsx",
-    "specifier": "@/components/admin/GtmSetupCheck",
-    "line": 35,
-    "kind": "import",
-    "external": false,
-    "target": "components/admin/GtmSetupCheck.tsx"
-  },
-  {
-    "from": "app/admin/overview/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 36,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -23778,7 +23802,7 @@
   {
     "from": "app/admin/overview/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 37,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -23786,7 +23810,7 @@
   {
     "from": "app/admin/overview/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 38,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -23794,7 +23818,7 @@
   {
     "from": "app/admin/overview/page.tsx",
     "specifier": "@/lib/i18n/pluralCount",
-    "line": 47,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/pluralCount.ts"
@@ -24641,11 +24665,11 @@
   },
   {
     "from": "app/admin/pipeline/page.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/lib/admin/pipelineFunnel",
     "line": 10,
-    "kind": "type",
+    "kind": "import",
     "external": false,
-    "target": "components/portal/kit/index.ts"
+    "target": "lib/admin/pipelineFunnel.ts"
   },
   {
     "from": "app/admin/pipeline/page.tsx",
@@ -71264,14 +71288,6 @@
     "package": "recharts"
   },
   {
-    "from": "components/admin/GtmSetupCheck.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
     "from": "components/admin/IgnoredXapiSummaryCard.tsx",
     "specifier": "react",
     "line": 11,
@@ -72417,8 +72433,16 @@
   },
   {
     "from": "components/admin/TriageDigestSection.tsx",
+    "specifier": "lucide-react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/admin/TriageDigestSection.tsx",
     "specifier": "@/lib/admin/triageDigestTypes",
-    "line": 3,
+    "line": 4,
     "kind": "type",
     "external": false,
     "target": "lib/admin/triageDigestTypes.ts"
@@ -83137,8 +83161,24 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "react",
     "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
+    "specifier": "next/link",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -83146,18 +83186,18 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 9,
+    "line": 14,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
-    "specifier": "@astryxdesign/core/EmptyState",
-    "line": 10,
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 15,
     "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AssessmentsKit.tsx",
@@ -83289,8 +83329,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
-    "specifier": "lucide-react",
+    "specifier": "next/link",
     "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
+    "specifier": "lucide-react",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -83298,14 +83346,6 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
-    "specifier": "@astryxdesign/core/ClickableCard",
     "line": 4,
     "kind": "import",
     "external": true,
@@ -83854,6 +83894,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/directoryEmptyState.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+    "specifier": "next/link",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+    "specifier": "@astryxdesign/core/Card",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
@@ -90784,6 +90856,54 @@
     "target": "lib/tenant/adminPageScope.ts"
   },
   {
+    "from": "lib/admin/analyticsTabs.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/analyticsTabs.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/analyticsTabs.test.ts",
+    "specifier": "./analyticsTabs",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "lib/admin/analyticsTabs.ts",
+    "specifier": "@/components/portal/kit/Tabs",
+    "line": 11,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Tabs.tsx"
+  },
+  {
+    "from": "lib/admin/analyticsTabs.ts",
+    "specifier": "@/components/portal/kit/KpiStrip",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/KpiStrip.tsx"
+  },
+  {
+    "from": "lib/admin/analyticsTabs.ts",
+    "specifier": "@/components/portal/kit/Charts",
+    "line": 13,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Charts.tsx"
+  },
+  {
     "from": "lib/admin/applicantTriage.ts",
     "specifier": "@/lib/wioa/wioaQualification",
     "line": 17,
@@ -91178,7 +91298,7 @@
   {
     "from": "lib/admin/commandCenter.test.ts",
     "specifier": "./commandCenterHelpers",
-    "line": 116,
+    "line": 118,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -91186,7 +91306,7 @@
   {
     "from": "lib/admin/commandCenter.test.ts",
     "specifier": "./commandCenterHelpers",
-    "line": 126,
+    "line": 128,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -91282,7 +91402,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 24,
+    "line": 25,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -91290,7 +91410,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 25,
+    "line": 31,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -92454,6 +92574,46 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/pipelineFunnel.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/pipelineFunnel.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/pipelineFunnel.test.ts",
+    "specifier": "./pipelineFunnel",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/pipelineFunnel.ts"
+  },
+  {
+    "from": "lib/admin/pipelineFunnel.ts",
+    "specifier": "@/components/portal/kit/KpiStrip",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/KpiStrip.tsx"
+  },
+  {
+    "from": "lib/admin/pipelineFunnel.ts",
+    "specifier": "@/components/portal/kit/Charts",
+    "line": 13,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Charts.tsx"
   },
   {
     "from": "lib/admin/placementsRosterSort.ts",
@@ -95512,6 +95672,14 @@
     "target": "tests/fixtures/attentionRoster.ts"
   },
   {
+    "from": "lib/attention/adminAgreement.test.ts",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
     "from": "lib/attention/adminViews.ts",
     "specifier": "@/lib/content/programTitle",
     "line": 9,
@@ -95521,8 +95689,16 @@
   },
   {
     "from": "lib/attention/adminViews.ts",
-    "specifier": "@/lib/admin/triageDigestCopy",
+    "specifier": "@/lib/admin/studentsRosterView",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "lib/attention/adminViews.ts",
+    "specifier": "@/lib/admin/triageDigestCopy",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/admin/triageDigestCopy.ts"
@@ -95530,7 +95706,7 @@
   {
     "from": "lib/attention/adminViews.ts",
     "specifier": "@/lib/admin/triageDigestTypes",
-    "line": 11,
+    "line": 12,
     "kind": "type",
     "external": false,
     "target": "lib/admin/triageDigestTypes.ts"
@@ -95538,7 +95714,7 @@
   {
     "from": "lib/attention/adminViews.ts",
     "specifier": "./reasons",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/attention/reasons.ts"
@@ -95546,7 +95722,7 @@
   {
     "from": "lib/attention/adminViews.ts",
     "specifier": "./evaluate",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/attention/evaluate.ts"
@@ -129264,6 +129440,70 @@
     "package": "path"
   },
   {
+    "from": "tests/components/admin-overview-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-overview-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-overview-page.spec.tsx",
+    "specifier": "@/lib/admin/triageDigestTypes",
+    "line": 3,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/triageDigestTypes.ts"
+  },
+  {
+    "from": "tests/components/admin-overview-page.spec.tsx",
+    "specifier": "@/app/admin/overview/page",
+    "line": 51,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/overview/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-pipeline-funnel-order.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-pipeline-funnel-order.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-pipeline-funnel-order.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/PipelineFunnelKit",
+    "line": 3,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/PipelineFunnelKit.tsx"
+  },
+  {
+    "from": "tests/components/admin-pipeline-funnel-order.spec.tsx",
+    "specifier": "@/app/admin/pipeline/page",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/pipeline/page.tsx"
+  },
+  {
     "from": "tests/components/admin-pipeline-member-count.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -129438,6 +129678,46 @@
     "kind": "import",
     "external": false,
     "target": "app/admin/agent-inbox/AgentInboxClient.tsx"
+  },
+  {
+    "from": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/AnalyticsKit",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx"
+  },
+  {
+    "from": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
+  },
+  {
+    "from": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
   },
   {
     "from": "tests/components/astro-consent-banner.spec.ts",
@@ -129950,6 +130230,30 @@
     "kind": "import",
     "external": false,
     "target": "tests/fixtures/boardSnapshot.ts"
+  },
+  {
+    "from": "tests/components/board-outcomes-exports-link.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/board-outcomes-exports-link.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/board-outcomes-exports-link.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
   },
   {
     "from": "tests/components/bulk-action-dialogs.spec.tsx",
@@ -132558,6 +132862,54 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 3,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 61,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@/lib/attention/adminViews",
+    "line": 62,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/adminViews.ts"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@/app/admin/students/page",
+    "line": 126,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "app/admin/students/page.tsx"
   },
   {
     "from": "tests/components/students-roster-page.spec.tsx",
