@@ -136,7 +136,7 @@
 | [lib/ai/geminiChat.ts](../../../lib/ai/geminiChat.ts) | 47 | ai-voice | isGeminiConfigured:9, geminiChat:13 |
 | [lib/ai/geminiEmbed.ts](../../../lib/ai/geminiEmbed.ts) | 84 | ai-voice | isGeminiEmbedConfigured:8, EmbedResult:12, embedTexts:49, cosineSimilarity:68, _resetCacheForTests:82 |
 | [lib/ai/groq.ts](../../../lib/ai/groq.ts) | 237 | ai-voice | isAIConfigured:7, orderGroqModels:55, resolveGroqModelOverride:98, _resetGroqModelCacheForTesting:109, isGroqConfigured:113, groqChatCompletion:118, chatCompletion:179 |
-| [lib/ai/groqModels.test.ts](../../../lib/ai/groqModels.test.ts) | 114 | ai-voice |  |
+| [lib/ai/groqModels.test.ts](../../../lib/ai/groqModels.test.ts) | 96 | ai-voice |  |
 | [lib/ai/groqRetiredModels.ts](../../../lib/ai/groqRetiredModels.ts) | 17 | ai-voice | RETIRED_GROQ_MODEL_IDS:9, isRetiredGroqModel:15 |
 | [lib/ai/interviewVoiceGreeting.test.ts](../../../lib/ai/interviewVoiceGreeting.test.ts) | 11 | ai-voice |  |
 | [lib/ai/interviewVoiceGreeting.ts](../../../lib/ai/interviewVoiceGreeting.ts) | 10 | ai-voice | INTERVIEW_VOICE_GREETING_EN:1, INTERVIEW_VOICE_GREETING_ES:4, getInterviewVoiceGreeting:8 |

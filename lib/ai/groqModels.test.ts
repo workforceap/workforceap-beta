@@ -41,8 +41,6 @@ test('orderGroqModels: empty live list yields empty (caller falls back to static
 // a retired 8B id until Groq removed it; the next deprecation must fail CI.
 // ---------------------------------------------------------------------------
 
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import path from 'node:path';
 import { RETIRED_GROQ_MODEL_IDS, isRetiredGroqModel } from './groqRetiredModels';
 import { resolveGroqModelOverride } from './groq';
 
@@ -94,21 +92,5 @@ test('deny-list: a GROQ_MODEL override naming a retired id is ignored, a live on
   assert.ok(warnings.every((w) => w.includes('decommissioned')));
 });
 
-test('deny-list: no retired id appears in lib/, app/ or scripts/ outside the deny-list module and tests', () => {
-  const root = path.resolve(__dirname, '..', '..');
-  const allowed = new Set([path.join(root, 'lib', 'ai', 'groqRetiredModels.ts')]);
-  const sourceFile = /\.(?:[cm]?[jt]sx?|json|mjs|cjs)$/;
-  const hits: string[] = [];
-  const walk = (dir: string) => {
-    for (const entry of readdirSync(dir)) {
-      if (entry === 'node_modules' || entry.startsWith('.')) continue;
-      const full = path.join(dir, entry);
-      if (statSync(full).isDirectory()) { walk(full); continue; }
-      if (!sourceFile.test(entry) || /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(entry) || allowed.has(full)) continue;
-      const text = readFileSync(full, 'utf8');
-      for (const id of RETIRED) if (text.includes(id)) hits.push(`${path.relative(root, full)}: ${id}`);
-    }
-  };
-  for (const dir of ['lib', 'app', 'scripts']) walk(path.join(root, dir));
-  assert.deepEqual(hits, []);
-});
+// The static sweep of lib/, app/ and scripts/ for these ids runs in lint:
+// scripts/lint/verify-no-retired-groq-models.mjs (a test may not read source).

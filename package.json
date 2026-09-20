@@ -15,7 +15,7 @@
     "postinstall": "node scripts/prisma-env.js prisma generate",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . && node scripts/lint/check-type-floor.mjs",
+    "lint": "eslint . && node scripts/lint/check-type-floor.mjs && node scripts/lint/verify-no-retired-groq-models.mjs",
     "lint:fix": "eslint . --fix",
     "check": "npm run typecheck && npm run lint && node scripts/verify-material-symbols-font-size.mjs",
     "check:tenant-routes": "node scripts/verify-high-risk-tenant-routes.cjs",

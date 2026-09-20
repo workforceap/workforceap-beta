@@ -94865,24 +94865,8 @@
   },
   {
     "from": "lib/ai/groqModels.test.ts",
-    "specifier": "node:fs",
-    "line": 44,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/ai/groqModels.test.ts",
-    "specifier": "node:path",
-    "line": 45,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/ai/groqModels.test.ts",
     "specifier": "./groqRetiredModels",
-    "line": 46,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "lib/ai/groqRetiredModels.ts"
@@ -94890,7 +94874,7 @@
   {
     "from": "lib/ai/groqModels.test.ts",
     "specifier": "./groq",
-    "line": 47,
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "lib/ai/groq.ts"
@@ -116398,6 +116382,30 @@
     "kind": "require",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:fs",
+    "line": 19,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:path",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:url",
+    "line": 21,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
   },
   {
     "from": "scripts/locked-stakes/check-i18n-safe-diff.mjs",

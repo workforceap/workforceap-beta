@@ -2,9 +2,9 @@
  * Groq model ids the provider has decommissioned. Requests for them fail with
  * a model-decommissioned error, which is how the hourly Coursera auto-heal
  * career-os step died in production (WAP-74). This module is the only place
- * these ids may appear outside tests: `lib/ai/groqModels.test.ts` scans lib/,
- * app/ and scripts/ for them and `orderGroqModels` / the `GROQ_MODEL` override
- * drop them, so a retired id cannot ship past CI again.
+ * these ids may appear outside tests: `orderGroqModels` and the `GROQ_MODEL`
+ * override drop them at runtime, and `scripts/lint/verify-no-retired-groq-models.mjs`
+ * (run by `npm run lint`) fails CI when one appears in lib/, app/ or scripts/.
  */
 export const RETIRED_GROQ_MODEL_IDS: ReadonlySet<string> = new Set([
   'llama3-8b-8192',

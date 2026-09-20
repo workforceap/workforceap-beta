@@ -2812,11 +2812,11 @@
       },
       {
         "file": "lib/ai/groqRetiredModels.ts",
-        "line": 46
+        "line": 44
       },
       {
         "file": "lib/ai/groq.ts",
-        "line": 47
+        "line": 45
       }
     ],
     "kind": "test-candidate",

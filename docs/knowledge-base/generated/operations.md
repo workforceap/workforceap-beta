@@ -91,6 +91,7 @@
 | [scripts/lint/check-coursera-catalog-placeholders.mjs](../../../scripts/lint/check-coursera-catalog-placeholders.mjs) | 204 | learning-coursera |  |
 | [scripts/lint/check-type-floor.mjs](../../../scripts/lint/check-type-floor.mjs) | 302 | operations | FLOOR_PX:39, FLOOR_REM:41, ALLOW_MARKER:42, SCAN_ROOTS:45, SCAN_EXTENSIONS:46, toPx:67, scanSource:172, listSourceFiles:217, runCheck:251 |
 | [scripts/lint/check-type-floor.test.cjs](../../../scripts/lint/check-type-floor.test.cjs) | 90 | operations |  |
+| [scripts/lint/verify-no-retired-groq-models.mjs](../../../scripts/lint/verify-no-retired-groq-models.mjs) | 81 | operations |  |
 | [scripts/locked-stakes/check-i18n-safe-diff.mjs](../../../scripts/locked-stakes/check-i18n-safe-diff.mjs) | 296 | operations | checkI18nSafeDiff:225 |
 | [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 217 | operations |  |
 | [scripts/migrate-metadata-async.mjs](../../../scripts/migrate-metadata-async.mjs) | 80 | operations |  |

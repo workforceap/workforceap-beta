@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "0be1f9b6e82b7c04ff2604993c65ba3355d3dc3950567ecd3ec9e68165d09851",
+  "inputTreeSha256": "28b76006b30353793d6a069902e3b9e26e786f24e16c9198f3189f4bbf479662",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -91278,15 +91278,15 @@
       "path": "lib/ai/groqModels.test.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 5114,
-      "lines": 114,
-      "sha256": "5e08355a6826fbdce7eae3ddeff3b71b46e1a959e4e218163425439d1e29e974",
+      "bytes": 4198,
+      "lines": 96,
+      "sha256": "16465c9a479afcff3511b6b145b9475a9de44049a05b5e951bb2e27c2f632892",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "RETIRED",
-          "line": 49,
+          "line": 47,
           "kind": "Variable"
         }
       ],
@@ -91296,9 +91296,9 @@
       "path": "lib/ai/groqRetiredModels.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 748,
+      "bytes": 777,
       "lines": 17,
-      "sha256": "7811b3346b7a24d88161d7202af3d297c7a971411fb0da1c63f2616538dc13a0",
+      "sha256": "b69f6460cb7bfaedf8a744df960ca5a7ea1a72eaff50cfec201b239fa24a9e78",
       "binary": false,
       "exports": [
         {
@@ -145876,9 +145876,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 7578,
+      "bytes": 7633,
       "lines": 144,
-      "sha256": "b7df582b5f3910a32fc2524baec18296f6b7f714e8c6e8d9f9ea12d6478dcf97",
+      "sha256": "5f173f109656ab64f7c2cb2d2d3ee4cd6b1eb3b7fa992d209439f68476df864c",
       "binary": false
     },
     {
@@ -154087,6 +154087,69 @@
           "name": "load",
           "line": 5,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/lint/verify-no-retired-groq-models.mjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 3590,
+      "lines": 81,
+      "sha256": "266cffca63179015363b5574a5da6aa940586bc0a27683fef1a3d08d206e5d52",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "ROOT",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "RETIRED_GROQ_MODEL_IDS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_ROOTS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "ALLOWED",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "SOURCE_FILE",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "TEST_FILE",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "SKIP_DIRS",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 36,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findRetiredGroqModelReferences",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 62,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
