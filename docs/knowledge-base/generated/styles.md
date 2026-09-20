@@ -11,7 +11,7 @@
 | [css/language-toggle.css](../../../css/language-toggle.css) | 128 | styles |  |
 | [css/main.css](../../../css/main.css) | 8752 | styles |  |
 | [css/marketing-a11y.css](../../../css/marketing-a11y.css) | 33 | styles |  |
-| [css/marketing-depth.css](../../../css/marketing-depth.css) | 257 | styles |  |
+| [css/marketing-depth.css](../../../css/marketing-depth.css) | 259 | styles |  |
 | [css/marketing.css](../../../css/marketing.css) | 1498 | styles |  |
 | [css/mobile-dashboard-fixes.css](../../../css/mobile-dashboard-fixes.css) | 160 | styles |  |
 | [css/portal-a11y.css](../../../css/portal-a11y.css) | 30 | styles |  |

@@ -85,3 +85,63 @@ describe('admin headings', () => {
     expect(client).not.toContain('View all {count} items</Link>');
   });
 });
+
+describe('stat tiles colour numbers by state, not by column (WAP-99)', () => {
+  it('ignores the categorical color prop and paints only a derived tone', async () => {
+    const { StatTile } = await import('@/components/portal/kit/StatTile');
+    const { container } = render(
+      <>
+        <StatTile label="Avg Caseload" value={12} color="info" />
+        <StatTile label="At-Risk Owned" value={3} tone="accent" />
+      </>,
+    );
+    const values = container.querySelectorAll('.wa-kit-stat-value');
+    expect((values[0] as HTMLElement).style.color).toBe('var(--wa-text)');
+    expect((values[1] as HTMLElement).style.color).toBe('var(--wa-accent)');
+  });
+});
+
+describe('counselor home queue', () => {
+  it('is titled "Caseload" with a caught-up state when nothing is flagged', async () => {
+    const { CounselorHomeKit } = await import('@/components/portal/kit/pages/counselor/CounselorHomeKit');
+    render(<CounselorHomeKit firstName="Dana" assignedCount={8} onTrackCount={8} queueRows={[]} queueTotal={0} />);
+    expect(screen.getByRole('heading', { name: 'Caseload', level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Needs attention' })).toBeNull();
+    expect(screen.getByText(/Nothing flagged · 8 members on track/)).toBeInTheDocument();
+  });
+
+  it('is titled "Needs attention" only when a member is flagged', async () => {
+    const { CounselorHomeKit } = await import('@/components/portal/kit/pages/counselor/CounselorHomeKit');
+    render(
+      <CounselorHomeKit
+        firstName="Dana"
+        assignedCount={8}
+        queueRows={[{ memberId: 'm1', memberName: 'Jordan Williams', bucket: 'warning', blockerReason: 'No activity 10+ days' }]}
+        queueTotal={1}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: 'Needs attention', level: 2 })).toBeInTheDocument();
+    expect(screen.getByText(/1 member in queue/)).toBeInTheDocument();
+  });
+});
+
+describe('admin add-member wizard', () => {
+  it('starts eligibility answers unanswered instead of defaulting to "No"', () => {
+    const src = readFileSync(path.join(root, 'app/admin/members/new/AddMemberWizard.tsx'), 'utf8');
+    expect(src).toContain('usCitizen: null,\n  authorizedToWork: null,');
+    expect(src).toContain('form.usCitizen === true && form.authorizedToWork === true');
+  });
+});
+
+describe('partner portal', () => {
+  it('legacy overview uses the kit StatusTag, not the legacy pill', () => {
+    const src = readFileSync(path.join(root, 'app/(portal)/partner/page.tsx'), 'utf8');
+    expect(src).not.toContain('StatusBadge');
+    expect(src).toContain("import { StatusTag } from '@/components/portal/kit/StatusTag';");
+  });
+
+  it('/partner/signup redirects to the public /partner-signup page', () => {
+    const src = readFileSync(path.join(root, 'app/(portal)/partner/signup/page.tsx'), 'utf8');
+    expect(src).toContain("redirect('/partner-signup')");
+  });
+});

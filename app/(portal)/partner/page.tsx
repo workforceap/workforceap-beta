@@ -28,7 +28,7 @@ import { partnerVoiceSurface } from '@/lib/portal/voice';
 import { getTranslations } from 'next-intl/server';
 import { BarChart3, CheckCircle2, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit/StatusTag';
 import PortalKpiCard from '@/components/portal/PortalKpiCard';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import DataTable from '@/components/portal/ui/DataTable';
@@ -659,7 +659,7 @@ export default async function PartnerDashboardPage({
       key: 'status',
       header: t('status'),
       cell: (row) => (
-        <StatusBadge label={row.stageLabel} variant={row.stage === 'placed' ? 'success' : 'accent'} />
+        <StatusTag tone={row.stage === 'placed' ? 'ok' : 'alert'}>{row.stageLabel}</StatusTag>
       ),
     },
     {
@@ -1287,10 +1287,7 @@ export default async function PartnerDashboardPage({
                           </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
-                          <StatusBadge
-                            label={stageLabel}
-                            variant={p.stage === 'placed' ? 'success' : 'accent'}
-                          />
+                          <StatusTag tone={p.stage === 'placed' ? 'ok' : 'alert'}>{stageLabel}</StatusTag>
                           <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', opacity: 0.3 }} aria-hidden="true">chevron_right</span>
                         </div>
                       </div>

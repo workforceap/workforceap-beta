@@ -15,9 +15,11 @@
 /* depth stage hero (compact, for inner Next pages) */
 .mdx-stage{position:relative;background:var(--mdx-grad);border-radius:24px;overflow:hidden;color:#fff;
   padding:48px 32px;margin:8px 0 28px;box-shadow:0 24px 70px -24px rgba(109,20,55,.3)}
-.mdx-stage::after{content:"";position:absolute;inset:0;
+/* Decorative photo wash only: it must never swallow clicks or focus on the
+   stage's links (the no-JS "Continue to partner sign-up" anchor, WAP-118). */
+.mdx-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--wap-hero-photo-url, url('/images/hero-people.webp')) center/cover;opacity:.12;mix-blend-mode:luminosity}
-.mdx-stage > *{position:relative}
+.mdx-stage > *{position:relative;z-index:1}
 .mdx-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:800;font-size:12px;
   letter-spacing:.02em;padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff}
 .mdx-pill::before{content:"★";font-size:11px;opacity:.95}

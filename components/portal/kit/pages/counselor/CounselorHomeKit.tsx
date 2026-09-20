@@ -298,7 +298,13 @@ export function CounselorHomeKit({
     ];
   })();
 
-  const goalCaption = `${total} member${total === 1 ? '' : 's'} in queue${slaBreachCount > 0 ? ` · ${slaBreachCount} past 48h SLA` : ''}`;
+  // Only flagged members sit under "Needs attention"; when nothing is flagged
+  // the list is the caseload, and says so (counselor audit 2026-09-20, 4.1).
+  const nothingFlagged = queueRows.length === 0;
+  const queueTitle = nothingFlagged ? 'Caseload' : 'Needs attention';
+  const goalCaption = nothingFlagged
+    ? `Nothing flagged${onTrackCount > 0 ? ` · ${onTrackCount} member${onTrackCount === 1 ? '' : 's'} on track` : ''}`
+    : `${total} member${total === 1 ? '' : 's'} in queue${slaBreachCount > 0 ? ` · ${slaBreachCount} past 48h SLA` : ''}`;
 
   return (
     <DesignSurface surface="dense">
@@ -321,7 +327,7 @@ export function CounselorHomeKit({
         {/* 3 + 4. Hero queue (left) + side column (right). */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
-            <SectionHeader title="Needs attention" goal={goalCaption} />
+            <SectionHeader title={queueTitle} goal={goalCaption} />
             {queueRows.length === 0 ? (
               <EmptyQueueState rosterHref={rosterHref} />
             ) : (

@@ -1,4 +1,5 @@
 'use client';
+import { formatPortalDateTime } from '@/lib/formatDate';
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +21,8 @@ const SIGNAL_CONFIG: Record<EnrollmentSignal, { label: string; variant: BadgeVar
 
 function fmtDateTime(value: string | null): string {
   if (!value) return '—';
-  return new Date(value).toLocaleString();
+  // Fixed locale + timezone: server and client render the same text (hydration).
+  return formatPortalDateTime(value);
 }
 
 type EnrollResult = { ok: boolean; text: string };

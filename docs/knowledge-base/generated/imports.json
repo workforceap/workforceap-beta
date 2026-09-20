@@ -15001,11 +15001,11 @@
   },
   {
     "from": "app/(portal)/partner/page.tsx",
-    "specifier": "@/components/portal/StatusBadge",
+    "specifier": "@/components/portal/kit/StatusTag",
     "line": 31,
     "kind": "import",
     "external": false,
-    "target": "components/portal/StatusBadge.tsx"
+    "target": "components/portal/kit/StatusTag.tsx"
   },
   {
     "from": "app/(portal)/partner/page.tsx",
@@ -15694,6 +15694,14 @@
     "kind": "import",
     "external": true,
     "package": "next-intl"
+  },
+  {
+    "from": "app/(portal)/partner/signup/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
   },
   {
     "from": "app/(portal)/profile/page.tsx",
@@ -69377,8 +69385,16 @@
   },
   {
     "from": "components/admin/AdminUsersManager.tsx",
+    "specifier": "@/lib/formatDate",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/formatDate.ts"
+  },
+  {
+    "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "react",
-    "line": 3,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -69386,14 +69402,6 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@astryxdesign/core/TextInput",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/admin/AdminUsersManager.tsx",
-    "specifier": "@astryxdesign/core/Selector",
     "line": 5,
     "kind": "import",
     "external": true,
@@ -69401,8 +69409,16 @@
   },
   {
     "from": "components/admin/AdminUsersManager.tsx",
-    "specifier": "@/components/portal/ui/DataTable",
+    "specifier": "@astryxdesign/core/Selector",
     "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/AdminUsersManager.tsx",
+    "specifier": "@/components/portal/ui/DataTable",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -69410,7 +69426,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/components/portal/PortalPagination",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPagination.tsx"
@@ -69418,7 +69434,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/hooks/useFocusTrap",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
@@ -69426,7 +69442,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "./useDirectoryNavigation",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "components/admin/useDirectoryNavigation.ts"
@@ -69434,7 +69450,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/lib/admin/roleLabels",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/admin/roleLabels.ts"
@@ -69785,8 +69801,16 @@
   },
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
+    "specifier": "@/lib/formatDate",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/formatDate.ts"
+  },
+  {
+    "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "react",
-    "line": 3,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -69794,7 +69818,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "next/link",
-    "line": 4,
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -69802,7 +69826,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -69810,7 +69834,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -69818,7 +69842,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 7,
+    "line": 8,
     "kind": "type",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -69826,7 +69850,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/admin/ConfirmDialog",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/admin/ConfirmDialog.tsx"
@@ -69834,7 +69858,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/lib/admin/courseraEnrollmentPipeline",
-    "line": 9,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/admin/courseraEnrollmentPipeline.ts"
@@ -69842,7 +69866,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/lib/admin/courseraEnrollmentEvidence",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/admin/courseraEnrollmentEvidence.ts"
@@ -70854,6 +70878,14 @@
     "kind": "import",
     "external": false,
     "target": "components/admin/useDirectoryNavigation.ts"
+  },
+  {
+    "from": "components/admin/MembersTable.tsx",
+    "specifier": "@/lib/formatDate",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/formatDate.ts"
   },
   {
     "from": "components/admin/MentorStatusButtons.tsx",
@@ -127768,6 +127800,30 @@
     "target": "messages/en.json"
   },
   {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/components/portal/kit/StatTile",
+    "line": 91,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "components/portal/kit/StatTile.tsx"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
+    "line": 106,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
+    "line": 114,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
+  },
+  {
     "from": "tests/components/auth-connection-failure.spec.tsx",
     "specifier": "react",
     "line": 1,
@@ -132721,6 +132777,30 @@
   },
   {
     "from": "tests/lib/login-redirect-contract.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
     "specifier": "node:path",
     "line": 3,
     "kind": "import",

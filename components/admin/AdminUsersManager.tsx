@@ -1,4 +1,5 @@
 'use client';
+import { formatPortalDate } from '@/lib/formatDate';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { TextInput } from '@astryxdesign/core/TextInput';
@@ -446,7 +447,7 @@ export default function AdminUsersManager({
                 <span className="admin-portal-card__badge">{directoryRoleLabel(user.role)}</span>
               </div>
               <p className="admin-portal-card__meta">{user.email}</p>
-              <p className="admin-portal-card__meta">Created {new Date(user.createdAt).toLocaleDateString()}</p>
+              <p className="admin-portal-card__meta">Created {formatPortalDate(user.createdAt)}</p>
               {isEditing ? (
                 <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.75rem' }}>
                   <input aria-label="Full name" value={draft.fullName} onChange={(e) => setDraft((prev) => ({ ...prev, fullName: e.target.value }))} style={{ width: '100%', padding: '0.55rem 0.65rem' }} />

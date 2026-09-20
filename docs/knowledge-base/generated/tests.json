@@ -18851,6 +18851,18 @@
       {
         "file": "messages/en.json",
         "line": 7
+      },
+      {
+        "file": "components/portal/kit/StatTile.tsx",
+        "line": 91
+      },
+      {
+        "file": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
+        "line": 106
+      },
+      {
+        "file": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
+        "line": 114
       }
     ],
     "kind": "test-candidate",
@@ -23310,6 +23322,25 @@
   },
   {
     "file": "tests/lib/login-redirect-contract.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/marketing-depth-stage-pointer.spec.ts",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [

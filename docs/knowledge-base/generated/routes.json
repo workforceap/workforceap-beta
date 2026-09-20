@@ -7177,6 +7177,33 @@
     ]
   },
   {
+    "file": "app/(portal)/partner/signup/page.tsx",
+    "kind": "page",
+    "path": "/partner/signup",
+    "groups": [
+      "(portal)"
+    ],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 9,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 11,
+        "kind": "FunctionDeclaration",
+        "localName": "PartnerSignupAliasPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-static"
+    },
+    "boundaryReferences": []
+  },
+  {
     "file": "app/(portal)/profile/page.tsx",
     "kind": "page",
     "path": "/profile",

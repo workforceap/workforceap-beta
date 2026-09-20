@@ -73,7 +73,7 @@
 | [components/admin/AdminResumeUpload.tsx](../../../components/admin/AdminResumeUpload.tsx) | 102 | administration | default:11 |
 | [components/admin/AdminSuperMessagesClient.tsx](../../../components/admin/AdminSuperMessagesClient.tsx) | 743 | administration | default:177 |
 | [components/admin/AdminTrainingDashboardTable.tsx](../../../components/admin/AdminTrainingDashboardTable.tsx) | 246 | administration | default:42 |
-| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 528 | administration | default:33 |
+| [components/admin/AdminUsersManager.tsx](../../../components/admin/AdminUsersManager.tsx) | 529 | administration | default:34 |
 | [components/admin/AnalyticsDashboard.tsx](../../../components/admin/AnalyticsDashboard.tsx) | 352 | administration | default:113 |
 | [components/admin/ApplicantTriageChecklist.tsx](../../../components/admin/ApplicantTriageChecklist.tsx) | 79 | administration | ApplicantTriageChecklistProps:10, default:21 |
 | [components/admin/ApplicantTriageChip.tsx](../../../components/admin/ApplicantTriageChip.tsx) | 50 | administration | ApplicantTriageChipProps:10, default:24 |
@@ -87,7 +87,7 @@
 | [components/admin/BulkUpdateModal.tsx](../../../components/admin/BulkUpdateModal.tsx) | 262 | administration | default:37 |
 | [components/admin/ConfirmDialog.tsx](../../../components/admin/ConfirmDialog.tsx) | 81 | administration | default:37 |
 | [components/admin/CourseraCsvImportClient.tsx](../../../components/admin/CourseraCsvImportClient.tsx) | 310 | learning-coursera | default:107 |
-| [components/admin/CourseraEnrollmentPipelineTable.tsx](../../../components/admin/CourseraEnrollmentPipelineTable.tsx) | 516 | learning-coursera | default:28 |
+| [components/admin/CourseraEnrollmentPipelineTable.tsx](../../../components/admin/CourseraEnrollmentPipelineTable.tsx) | 518 | learning-coursera | default:30 |
 | [components/admin/CourseraInspectByEmailCard.tsx](../../../components/admin/CourseraInspectByEmailCard.tsx) | 687 | learning-coursera | default:151 |
 | [components/admin/CourseraMappingsAdmin.tsx](../../../components/admin/CourseraMappingsAdmin.tsx) | 1091 | learning-coursera | default:142 |
 | [components/admin/CourseraPipelineFlow.tsx](../../../components/admin/CourseraPipelineFlow.tsx) | 44 | learning-coursera | default:12 |
@@ -122,7 +122,7 @@
 | [components/admin/MemberReviewTable.tsx](../../../components/admin/MemberReviewTable.tsx) | 271 | administration | MemberReviewTable:34 |
 | [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:8 |
 | [components/admin/MembersListNav.tsx](../../../components/admin/MembersListNav.tsx) | 85 | administration | default:53 |
-| [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1206 | administration | default:276 |
+| [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1208 | administration | default:278 |
 | [components/admin/MentorStatusButtons.tsx](../../../components/admin/MentorStatusButtons.tsx) | 95 | administration | default:12 |
 | [components/admin/MfaStatusBanner.tsx](../../../components/admin/MfaStatusBanner.tsx) | 67 | administration | default:5 |
 | [components/admin/OutcomesDashboard.tsx](../../../components/admin/OutcomesDashboard.tsx) | 558 | administration | default:198 |
@@ -505,7 +505,7 @@
 | [components/portal/kit/KitEmptyState.tsx](../../../components/portal/kit/KitEmptyState.tsx) | 30 | components | KitEmptyState:4 |
 | [components/portal/kit/KitSortHeader.tsx](../../../components/portal/kit/KitSortHeader.tsx) | 37 | components | KitSortDirection:3, KitSortHeader:17 |
 | [components/portal/kit/KitTableShell.tsx](../../../components/portal/kit/KitTableShell.tsx) | 130 | components | KitTableShellColumn:7, KitTableShellRow:18, KitTableShell:43 |
-| [components/portal/kit/KpiStrip.tsx](../../../components/portal/kit/KpiStrip.tsx) | 38 | components | KpiItem:5, KpiStrip:30 |
+| [components/portal/kit/KpiStrip.tsx](../../../components/portal/kit/KpiStrip.tsx) | 41 | components | KpiItem:5, KpiStrip:33 |
 | [components/portal/kit/MemberDashboardKit.tsx](../../../components/portal/kit/MemberDashboardKit.tsx) | 119 | components | MemberDashboardKitProps:16, MemberDashboardKit:28 |
 | [components/portal/kit/MemberProfilePhotoEditor.tsx](../../../components/portal/kit/MemberProfilePhotoEditor.tsx) | 289 | components | MemberProfilePhotoEditor:17 |
 | [components/portal/kit/PageOpener.tsx](../../../components/portal/kit/PageOpener.tsx) | 64 | components | PageOpener:24 |
@@ -513,7 +513,7 @@
 | [components/portal/kit/ProgressRing.tsx](../../../components/portal/kit/ProgressRing.tsx) | 75 | components | ProgressRing:24 |
 | [components/portal/kit/QueueRow.tsx](../../../components/portal/kit/QueueRow.tsx) | 101 | components | QueueTone:9, QueueRow:44 |
 | [components/portal/kit/SectionHeader.tsx](../../../components/portal/kit/SectionHeader.tsx) | 47 | components | SectionHeader:18 |
-| [components/portal/kit/StatTile.tsx](../../../components/portal/kit/StatTile.tsx) | 54 | components | StatTile:18 |
+| [components/portal/kit/StatTile.tsx](../../../components/portal/kit/StatTile.tsx) | 65 | components | StatTile:28 |
 | [components/portal/kit/StatusTag.tsx](../../../components/portal/kit/StatusTag.tsx) | 25 | components | StatusTag:14 |
 | [components/portal/kit/UniversalSearch.tsx](../../../components/portal/kit/UniversalSearch.tsx) | 50 | components | UniversalSearch:19 |
 | [components/portal/kit/VoiceOrb.tsx](../../../components/portal/kit/VoiceOrb.tsx) | 175 | components | VoiceOrbProps:16, VoiceOrb:43 |
@@ -543,7 +543,7 @@
 | [components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx](../../../components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx) | 195 | components | FunderExport:23, BoardOutcomesKitProps:32, BoardOutcomesKit:91 |
 | [components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx](../../../components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx) | 193 | components | CareerPathCard:39, CareerMappingsKitProps:56, CareerMappingsKit:142 |
 | [components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx](../../../components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx) | 344 | components | CertSubmission:26, CertificationsQueueKitProps:38, CertificationsQueueKit:78 |
-| [components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx) | 300 | components | CounselorRow:36, CounselorsRosterKitProps:54, CounselorsRosterKit:76 |
+| [components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx) | 301 | components | CounselorRow:36, CounselorsRosterKitProps:54, CounselorsRosterKit:76 |
 | [components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx](../../../components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx) | 378 | learning-coursera | SyncHealth:38, UnmatchedLearnerRow:40, CourseraSyncKitProps:53, CourseraSyncKit:137 |
 | [components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx](../../../components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx) | 208 | components | CronDisplayStatus:32, CronJobRow:34, CronsMonitorKitProps:47, CronsMonitorKit:67 |
 | [components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx](../../../components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx) | 361 | components | StorageRow:23, PolicyRow:30, RunRow:38, DataRetentionKitProps:48, DataRetentionKit:73 |
@@ -579,7 +579,7 @@
 | [components/portal/kit/pages/admin/AdminSidebarNav.tsx](../../../components/portal/kit/pages/admin/AdminSidebarNav.tsx) | 276 | administration | AdminSidebarNavProps:51, AdminSidebarNav:236, default:276 |
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 405 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:88, CommandCenterKitProps:101, CommandCenterKit:304, default:405 |
-| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 414 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244, default:414 |
+| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 420 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244, default:420 |
 | [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 387 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |
 | [components/portal/kit/pages/member/CareerBusinessCoachKit.tsx](../../../components/portal/kit/pages/member/CareerBusinessCoachKit.tsx) | 51 | member-counselor | CareerBusinessCoachKit:16 |

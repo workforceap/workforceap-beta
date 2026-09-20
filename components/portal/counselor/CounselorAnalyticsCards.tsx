@@ -101,7 +101,7 @@ export default function CounselorAnalyticsCards({ data }: Props) {
                 {card.label}
               </p>
             </div>
-            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: card.accent, margin: 0, lineHeight: 1 }}>
+            <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--wa-text)', margin: 0, lineHeight: 1 }}>
               {card.value}
             </p>
           </div>

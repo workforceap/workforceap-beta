@@ -95,7 +95,7 @@
 | [lib/admin/trainingProgressGrades.ts](../../../lib/admin/trainingProgressGrades.ts) | 56 | administration | CourseGradeFact:21, latestCompletedGradeByUser:31 |
 | [lib/admin/trainingProgressPrograms.ts](../../../lib/admin/trainingProgressPrograms.ts) | 76 | administration | TrainingPace:10, STALLED_IDLE_DAYS:13, TrainingLearnerRef:15, programSlugsForLearner:28, deriveTrainingPace:64 |
 | [lib/admin/trainingProgressRoster.ts](../../../lib/admin/trainingProgressRoster.ts) | 311 | administration | RosterRow:14, PACE_FILTERS:33, PaceFilter:34, LINK_FILTERS:36, LinkFilter:37, SORT_KEYS:39, SortKey:48, SortDirection:50, RosterFilters:52, DEFAULT_ROSTER_FILTERS:61, DEFAULT_SORT_KEY:68, DEFAULT_SORT_DIRECTION:69, filterTrainingRows:106, latestActivityMs:172, relativeLastActiveCaption:186, sortTrainingRows:207, RosterSummary:243, summarizeTrainingRows:257, countMembersWithTraining:286, rosterProgramOptions:297, isPaceFilter:301, isLinkFilter:305, isSortKey:309 |
-| [lib/admin/triageDigest.ts](../../../lib/admin/triageDigest.ts) | 326 | administration | TriageMember:27, TriageBucketKey:42, TriageBucket:44, TriageDigest:62, getTriageDigest:80 |
+| [lib/admin/triageDigest.ts](../../../lib/admin/triageDigest.ts) | 328 | administration | TriageMember:27, TriageBucketKey:42, TriageBucket:44, TriageDigest:62, getTriageDigest:80 |
 | [lib/admin/triageDigestCopy.test.ts](../../../lib/admin/triageDigestCopy.test.ts) | 22 | administration |  |
 | [lib/admin/triageDigestCopy.ts](../../../lib/admin/triageDigestCopy.ts) | 26 | administration | TRIAGE_BUCKET_ACCENTS:12, stalledCheckInAction:23 |
 | [lib/admin/userDeleteResponse.test.ts](../../../lib/admin/userDeleteResponse.test.ts) | 16 | administration |  |

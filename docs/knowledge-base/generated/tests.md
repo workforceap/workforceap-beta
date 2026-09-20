@@ -223,7 +223,7 @@
 | [tests/components/admin-training-progress-roster.test.tsx](../../../tests/components/admin-training-progress-roster.test.tsx) | 275 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
-| [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 87 | tests |  |
+| [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 147 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
 | [tests/components/auth-controls.spec.tsx](../../../tests/components/auth-controls.spec.tsx) | 61 | tests |  |
 | [tests/components/auth-invitation-copy.spec.tsx](../../../tests/components/auth-invitation-copy.spec.tsx) | 166 | tests |  |
@@ -378,6 +378,7 @@
 | [tests/lib/live-smoke-regressions.spec.ts](../../../tests/lib/live-smoke-regressions.spec.ts) | 37 | tests |  |
 | [tests/lib/localized-link-rsc-prefetch.regression-1.test.tsx](../../../tests/lib/localized-link-rsc-prefetch.regression-1.test.tsx) | 76 | tests |  |
 | [tests/lib/login-redirect-contract.spec.ts](../../../tests/lib/login-redirect-contract.spec.ts) | 29 | tests |  |
+| [tests/lib/marketing-depth-stage-pointer.spec.ts](../../../tests/lib/marketing-depth-stage-pointer.spec.ts) | 28 | tests |  |
 | [tests/lib/marketing-hero-image.spec.ts](../../../tests/lib/marketing-hero-image.spec.ts) | 90 | tests |  |
 | [tests/lib/marketing-mobile-touch-targets.spec.ts](../../../tests/lib/marketing-mobile-touch-targets.spec.ts) | 25 | tests |  |
 | [tests/lib/match-students-tenant-scope.spec.ts](../../../tests/lib/match-students-tenant-scope.spec.ts) | 25 | tests |  |

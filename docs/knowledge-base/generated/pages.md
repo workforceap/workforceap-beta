@@ -309,7 +309,7 @@
 | [app/(portal)/partner/not-found.tsx](../../../app/%28portal%29/partner/not-found.tsx) | 20 | partners-funding | default:3 |
 | [app/(portal)/partner/outcomes/loading.tsx](../../../app/%28portal%29/partner/outcomes/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/outcomes/page.tsx](../../../app/%28portal%29/partner/outcomes/page.tsx) | 163 | partners-funding | generateMetadata:25, default:53 |
-| [app/(portal)/partner/page.tsx](../../../app/%28portal%29/partner/page.tsx) | 1389 | partners-funding | generateMetadata:61, default:72 |
+| [app/(portal)/partner/page.tsx](../../../app/%28portal%29/partner/page.tsx) | 1386 | partners-funding | generateMetadata:61, default:72 |
 | [app/(portal)/partner/referred-members/\[memberId\]/page.tsx](../../../app/%28portal%29/partner/referred-members/%5BmemberId%5D/page.tsx) | 533 | partners-funding | generateMetadata:32, default:61 |
 | [app/(portal)/partner/referred-members/loading.tsx](../../../app/%28portal%29/partner/referred-members/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/referred-members/page.tsx](../../../app/%28portal%29/partner/referred-members/page.tsx) | 80 | partners-funding | generateMetadata:18, default:27 |
@@ -317,6 +317,7 @@
 | [app/(portal)/partner/resources/page.tsx](../../../app/%28portal%29/partner/resources/page.tsx) | 133 | partners-funding | generateMetadata:16, default:62 |
 | [app/(portal)/partner/settings/loading.tsx](../../../app/%28portal%29/partner/settings/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/settings/page.tsx](../../../app/%28portal%29/partner/settings/page.tsx) | 145 | partners-funding | generateMetadata:17, default:64 |
+| [app/(portal)/partner/signup/page.tsx](../../../app/%28portal%29/partner/signup/page.tsx) | 13 | applications-enrollment | dynamic:9, default:11 |
 | [app/(portal)/profile/page.tsx](../../../app/%28portal%29/profile/page.tsx) | 6 | pages | default:4 |
 | [app/(portal)/resources/ResourcesClient.tsx](../../../app/%28portal%29/resources/ResourcesClient.tsx) | 77 | pages | default:15 |
 | [app/(portal)/resources/\[id\]/page.tsx](../../../app/%28portal%29/resources/%5Bid%5D/page.tsx) | 9 | pages | default:6 |
@@ -422,7 +423,7 @@
 | [app/admin/members/job-ready/page.tsx](../../../app/admin/members/job-ready/page.tsx) | 124 | administration | generateMetadata:19, default:27 |
 | [app/admin/members/loading.tsx](../../../app/admin/members/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/merge/page.tsx](../../../app/admin/members/merge/page.tsx) | 35 | administration | metadata:10, default:16 |
-| [app/admin/members/new/AddMemberWizard.tsx](../../../app/admin/members/new/AddMemberWizard.tsx) | 784 | administration | default:92 |
+| [app/admin/members/new/AddMemberWizard.tsx](../../../app/admin/members/new/AddMemberWizard.tsx) | 785 | administration | default:93 |
 | [app/admin/members/new/loading.tsx](../../../app/admin/members/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/new/page.tsx](../../../app/admin/members/new/page.tsx) | 53 | administration | generateMetadata:12, default:20 |
 | [app/admin/members/page.tsx](../../../app/admin/members/page.tsx) | 450 | administration | generateMetadata:31, default:40 |
@@ -439,7 +440,7 @@
 | [app/admin/outcomes/methodology/page.tsx](../../../app/admin/outcomes/methodology/page.tsx) | 77 | administration | metadata:14, dynamic:20, default:27 |
 | [app/admin/outcomes/page.tsx](../../../app/admin/outcomes/page.tsx) | 137 | administration | generateMetadata:16, default:25 |
 | [app/admin/overview/loading.tsx](../../../app/admin/overview/loading.tsx) | 5 | administration | default:3 |
-| [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 725 | administration | generateMetadata:48, default:113 |
+| [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 727 | administration | generateMetadata:48, default:113 |
 | [app/admin/page.tsx](../../../app/admin/page.tsx) | 448 | administration | generateMetadata:26, default:41 |
 | [app/admin/partners/OpenPartnerPortalButton.tsx](../../../app/admin/partners/OpenPartnerPortalButton.tsx) | 62 | partners-funding | default:6 |
 | [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 390 | partners-funding | default:55 |
