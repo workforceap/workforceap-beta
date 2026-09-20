@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "2f3ae407f23d99f61c0b4334ae670c30302453fb818585f8639c126f5aa472fb",
+  "inputTreeSha256": "5d3fa088c27c3f2842d20a18cd001775dbb226a42315f0cfd53856f4179d649e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -105856,16 +105856,11 @@
       "path": "lib/counselor/needsAttentionRows.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 888,
+      "bytes": 881,
       "lines": 20,
-      "sha256": "8573e09fb90dcd3b36bc75b2441e0cd950e4f9025ef62bf41e1ade60e2b815fa",
+      "sha256": "4c94bd05e3b0e1056fa6e7de9ce34db41204e62d6deea173829cb8f21662af94",
       "binary": false,
       "exports": [
-        {
-          "name": "NeedsAttentionBucket",
-          "line": 8,
-          "kind": "TypeAliasDeclaration"
-        },
         {
           "name": "selectNeedsAttentionRows",
           "line": 10,
