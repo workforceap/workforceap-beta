@@ -45,8 +45,13 @@ vi.mock('@/lib/db/prisma', () => ({
     $transaction: vi.fn(async (arg: any) => { const { prisma } = await import('@/lib/db/prisma'); return typeof arg === 'function' ? arg(prisma) : Promise.all(arg); }),
     $executeRaw: vi.fn(),
     memberEvent: { create: vi.fn() },
+    // The real lib/audit runs against these: after anonymisation `users.email`
+    // is the deleted marker, so an actor lookup here would surface the address.
+    user: { findUnique: vi.fn() },
+    auditLog: { create: vi.fn(async () => ({})) },
   },
 }));
+vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn() }));
 
 vi.mock('@/lib/supabaseCookieOptions', () => ({
   getSupabaseCookieOptions: vi.fn(() => ({ path: '/', sameSite: 'lax' })),
@@ -65,28 +70,47 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
     'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
   deleteUserStorageObjects: vi.fn(),
 }));
+// WAP-169: the two raw UPDATEs are gone; the route uses the shared anonymiser
+// (covered in tests/gdpr/anonymize-member.spec.ts).
+vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
+vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 
 import { POST } from '@/app/api/gdpr/delete/route';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { deleteSupabaseAuthUser } from '@/lib/gdpr/deleteAuthUser';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { logAuditEvent } from '@/lib/audit/log';
+
+const ORIGINAL_EMAIL = 'jane@example.com';
+const DELETED_MARKER = `deleted_user-123_1758369600000_${ORIGINAL_EMAIL}@deleted.invalid`;
 
 describe('POST /api/gdpr/delete', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({
       id: 'user-123',
-      email: 'jane@example.com',
+      email: ORIGINAL_EMAIL,
+    } as any);
+    // State of the users row once anonymizeMember has run.
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      email: DELETED_MARKER,
+      userRoles: [{ role: { name: 'member' } }],
     } as any);
     signInWithPassword.mockResolvedValue({ error: null });
     signOut.mockResolvedValue({ error: null });
-    vi.mocked(prisma.$executeRaw).mockResolvedValue(1);
+    vi.mocked(anonymizeMember).mockResolvedValue({
+      userId: 'user-123',
+      deletedAt: new Date('2026-09-20T12:00:00Z'),
+      alreadyDeleted: false,
+      profileRowsCleared: 1,
+    });
     vi.mocked(deleteSupabaseAuthUser).mockResolvedValue({ error: null } as any);
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] } as any);
   });
 
-  it('anonymizes user email and full name before deleting auth user', async () => {
+  it('anonymizes the member through the shared anonymiser before deleting the auth user', async () => {
     const res = await POST(
       new Request('http://localhost:3000/api/gdpr/delete', {
         method: 'POST',
@@ -98,17 +122,16 @@ describe('POST /api/gdpr/delete', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ ok: true });
 
-    const userUpdateCall = vi.mocked(prisma.$executeRaw).mock.calls[0];
-    const userUpdateSql = Array.from(userUpdateCall[0] as TemplateStringsArray).join('?');
-
-    expect(userUpdateSql).toContain("email = 'deleted_' || id || '@workforceap.org'");
-    expect(userUpdateSql).toContain("full_name = 'Deleted User'");
+    expect(anonymizeMember).toHaveBeenCalledTimes(1);
+    expect(anonymizeMember).toHaveBeenCalledWith('user-123', { reason: 'gdpr_account_delete' }, prisma);
+    // No hand-rolled SQL remains on this path.
+    expect(prisma.$executeRaw).not.toHaveBeenCalled();
     expect(deleteUserStorageObjects).toHaveBeenCalledWith('user-123');
     expect(deleteSupabaseAuthUser).toHaveBeenCalledWith('user-123');
     // Ordering contract (formerly lib/gdpr/erase-routes.test.ts): storage
     // objects go first, then the anonymizing writes, then the auth delete.
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
-    const [anonymizeOrder] = vi.mocked(prisma.$executeRaw).mock.invocationCallOrder;
+    const [anonymizeOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
     const [authDeleteOrder] = vi.mocked(deleteSupabaseAuthUser).mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(anonymizeOrder);
     expect(anonymizeOrder).toBeLessThan(authDeleteOrder);
@@ -122,6 +145,29 @@ describe('POST /api/gdpr/delete', () => {
         metadata: expect.objectContaining({ reason: 'user_requested', deletedAt: expect.any(String) }),
       }),
     });
+  });
+
+  it('writes no audit row that carries the original email or the deleted marker', async () => {
+    const res = await POST(
+      new Request('http://localhost:3000/api/gdpr/delete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: 'correct-password' }),
+      })
+    );
+    expect(res.status).toBe(200);
+    // Let the fire-and-forget audit writes settle.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
+    const row = vi.mocked(prisma.auditLog.create).mock.calls[0][0] as { data: Record<string, unknown> };
+    expect(row.data).toMatchObject({ action: 'gdpr_account_delete', actorUserId: 'user-123', actorEmailSnapshot: null, actorRoleSnapshot: 'member' });
+    const everyAuditWrite = JSON.stringify([vi.mocked(prisma.auditLog.create).mock.calls, vi.mocked(logAuditEvent).mock.calls]);
+    expect(everyAuditWrite).not.toContain(ORIGINAL_EMAIL);
+    expect(everyAuditWrite).not.toContain('deleted_user-123');
+    // No actor lookup happened either: the lookup is what would have copied
+    // the marker into the 3-year actor_email_snapshot.
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
   it('does not claim erased when storage object delete fails', async () => {
@@ -143,7 +189,25 @@ describe('POST /api/gdpr/delete', () => {
     expect(await res.json()).toMatchObject({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
     });
+    expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.$executeRaw).not.toHaveBeenCalled();
     expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+  });
+
+  it('does not delete the login when the anonymiser fails', async () => {
+    vi.mocked(anonymizeMember).mockRejectedValue(new Error('profiles locked'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await POST(
+      new Request('http://localhost:3000/api/gdpr/delete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ password: 'correct-password' }),
+      })
+    );
+
+    expect(res.status).toBe(500);
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
   });
 });

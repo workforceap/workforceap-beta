@@ -7488,12 +7488,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 17,
+        "line": 22,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 209,
+        "line": 214,
         "kind": "FunctionDeclaration",
         "localName": "AnalyticsPage"
       }
@@ -7513,7 +7513,7 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -8385,17 +8385,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 493,
+        "line": 335,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 501,
+        "line": 343,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 516,
+        "line": 358,
         "kind": "FunctionDeclaration",
         "localName": "AdminCourseraPage"
       }
@@ -10159,12 +10159,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 16,
+        "line": 13,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 25,
+        "line": 22,
         "kind": "FunctionDeclaration",
         "localName": "OutcomesPage"
       }
@@ -10216,12 +10216,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 49,
+        "line": 46,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 114,
+        "line": 111,
         "kind": "FunctionDeclaration",
         "localName": "AdminOverviewPage"
       }
@@ -11017,12 +11017,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 21,
+        "line": 24,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 35,
+        "line": 40,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }
@@ -12298,7 +12298,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 22,
+        "line": 27,
         "kind": "Variable"
       }
     ],
@@ -24506,7 +24506,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 19,
+        "line": 20,
         "kind": "Variable"
       }
     ],
@@ -25382,12 +25382,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 37,
+        "line": 33,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 121,
+        "line": 95,
         "kind": "Variable"
       }
     ],
@@ -25409,7 +25409,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 11,
+        "line": 7,
         "kind": "import"
       }
     ]
@@ -29910,7 +29910,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 34,
+        "line": 35,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -29921,7 +29921,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       }
     ]

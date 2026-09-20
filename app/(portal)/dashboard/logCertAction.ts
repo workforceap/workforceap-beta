@@ -27,10 +27,13 @@ export async function logExternalCertification(formData: FormData) {
       update: {
         earnedAt: new Date(earnedAtStr),
       },
+      // WAP-20: self-reported → pending until staff review it.
       create: {
         userId: user.id,
         certName,
         earnedAt: new Date(earnedAtStr),
+        status: 'pending',
+        submittedAt: new Date(),
       },
     });
   });

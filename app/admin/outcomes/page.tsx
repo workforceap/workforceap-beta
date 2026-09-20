@@ -8,9 +8,6 @@ import { getBoardSnapshot, BoardOutcomesPeriod } from '@/lib/admin/boardOutcomes
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import OutcomesSnapshot from '@/components/admin/OutcomesSnapshot';
 import { BoardOutcomesKit } from '@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit';
-import type {
-  FunderExport,
-} from '@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit';
 import type { KpiItem, ChartDatum, RankDatum } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -99,26 +96,8 @@ export default async function OutcomesPage({
         color: 'info',
       }));
 
-    // Real export endpoints — the snapshot route streams CSV and a board-ready
-    // Markdown report for the current period.
-    const exports: FunderExport[] = [
-      {
-        label: 'Outcomes CSV',
-        description: 'Full funnel waterfall (counts + conversion) for the current period.',
-        href: `/api/admin/outcomes/snapshot?period=${period}&format=csv`,
-      },
-      {
-        label: 'Board meeting PDF',
-        description: 'Printable board-ready snapshot with KPIs, cohorts, and methodology notes.',
-        href: `/api/admin/outcomes/snapshot?period=${period}&format=pdf`,
-      },
-      {
-        label: 'Outcomes report',
-        description: 'Board-ready Markdown snapshot with methodology and data-quality notes.',
-        href: `/api/admin/outcomes/snapshot?period=${period}&format=md`,
-      },
-    ];
-
+    // The period's CSV / PDF / Markdown snapshots are listed on /admin/exports
+    // (one exports list, one verb per row); the kit links there.
     return (
       <BoardOutcomesKit
         kpis={kpis}
@@ -126,7 +105,6 @@ export default async function OutcomesPage({
         placementsTotal={placementsTotal}
         periodLabel={snapshot.outcomes.period.label}
         byProgram={byProgram.length > 0 ? byProgram : undefined}
-        exports={exports}
       />
     );
   }

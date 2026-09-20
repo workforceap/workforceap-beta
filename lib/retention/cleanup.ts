@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import {
   RETENTION_TABLES,
   RETENTION_BATCH_SIZE,
@@ -163,10 +164,18 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * transaction as the user row.
  *
  * Each account is purged in its own transaction. An account that is still
- * held by a foreign key (a former staff member's admin audit trail, a
- * chapter membership, a subgroup they created) is reported by constraint
- * name and skipped, so one held account can no longer stop every other
- * account in the batch from being purged.
+ * held by a foreign key (a chapter membership, a subgroup they created) is
+ * reported by constraint name and skipped, so one held account can no longer
+ * stop every other account in the batch from being purged. A held account is
+ * passed through `anonymizeMember` (WAP-169) so the row that stays behind
+ * carries no identifying or special-category data; the helper is idempotent
+ * and keeps the existing `deleted_at`, so the account remains eligible for a
+ * later purge once the holding row is gone.
+ *
+ * Since migration 20260920141800 `audit_events.actor_user_id` is
+ * `ON DELETE SET NULL`, so the admin audit trail no longer holds an account;
+ * the member's own self-service rows are still removed with the account
+ * because they are the account's data, not the staff trail.
  */
 export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
   const cutoff = getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS);
@@ -207,6 +216,11 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
         if (!constraint) throw err;
         console.error(`[data-cleanup] Soft-deleted account ${id} is still referenced by ${constraint}; skipped.`);
         blocked.push({ id, constraint });
+        try {
+          await anonymizeMember(id, { reason: 'retention_purge_blocked', actorUserId: null });
+        } catch (anonymizeErr) {
+          console.error(`[data-cleanup] Could not anonymise held account ${id}:`, anonymizeErr);
+        }
       }
     }
 

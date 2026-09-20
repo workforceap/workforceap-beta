@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "c3bc720bb0f7ceef29a988edccd7007ed360cf539e65858f17b99a875b08ed8b",
+  "inputTreeSha256": "8c1e6d13d339a16e504f87aa8af804879ae0a3f98cff094a2507df94918eb90e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -9888,9 +9888,9 @@
       "path": "app/(portal)/dashboard/logCertAction.ts",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 970,
-      "lines": 39,
-      "sha256": "a186108b94f7b89392faf6a280d828725d9cb280aff3fbf9c80060168061ab81",
+      "bytes": 1096,
+      "lines": 42,
+      "sha256": "5f2fd244a0128202a4a43b13c40557625d3cd2d34f50ea8be0d3527ed65652d0",
       "binary": false,
       "exports": [
         {
@@ -14337,19 +14337,19 @@
       "path": "app/admin/analytics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9746,
-      "lines": 251,
-      "sha256": "a4f1b2a8e21bbde4504dd874f7a9b7e31132032c3550b669ef1304ff2c44bc9a",
+      "bytes": 10722,
+      "lines": 266,
+      "sha256": "caf6f06326ca679899f5eca16dc1e9fa1e131743bd78589b97455371bb5fd1f3",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 17,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 209,
+          "line": 214,
           "kind": "FunctionDeclaration",
           "localName": "AnalyticsPage"
         }
@@ -14357,37 +14357,37 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 17,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TOOL_LABELS",
-          "line": 28,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "VOICE_EVENT_NAMES",
-          "line": 47,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "EngagementData",
-          "line": 54,
+          "line": 59,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "memberScope",
-          "line": 65,
+          "line": 70,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEngagementData",
-          "line": 75,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AnalyticsPage",
-          "line": 209,
+          "line": 214,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -15882,24 +15882,24 @@
       "path": "app/admin/coursera/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 67937,
-      "lines": 1636,
-      "sha256": "01e929398b04cb05049eeeb036a6c9e1f342299a77a24cc3a3f3970166a95c4a",
+      "bytes": 62287,
+      "lines": 1478,
+      "sha256": "7c0a362a1a0b1eb394b6ef60a38d45cae1d73af0bcec79085f97c9144471207f",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 493,
+          "line": 335,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 501,
+          "line": 343,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 516,
+          "line": 358,
           "kind": "FunctionDeclaration",
           "localName": "AdminCourseraPage"
         }
@@ -15936,53 +15936,43 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "CatalogIssueList",
-          "line": 308,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "CourseraCatalogHealthSection",
-          "line": 328,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "collapsibleSectionStyle",
-          "line": 466,
+          "line": 308,
           "kind": "Variable"
         },
         {
           "name": "collapsibleSummaryStyle",
-          "line": 470,
+          "line": 312,
           "kind": "Variable"
         },
         {
           "name": "collapsibleBodyStyle",
-          "line": 481,
+          "line": 323,
           "kind": "Variable"
         },
         {
           "name": "collapsibleCountStyle",
-          "line": 487,
+          "line": 329,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 493,
+          "line": 335,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 501,
+          "line": 343,
           "kind": "Variable"
         },
         {
           "name": "fmtRelative",
-          "line": 503,
+          "line": 345,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCourseraPage",
-          "line": 516,
+          "line": 358,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -17032,9 +17022,9 @@
       "path": "app/admin/exports/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 10653,
-      "lines": 267,
-      "sha256": "ef8ba107eb877dc9a36573107e0ab93329fce4df29e0cda15131317043d37b68",
+      "bytes": 11489,
+      "lines": 288,
+      "sha256": "ff06815ecc2a2a40171f3b7baf657278c0a8268b183ae85f920914ed1c487724",
       "binary": false,
       "exports": [
         {
@@ -17062,12 +17052,12 @@
         },
         {
           "name": "ExportSectionHeader",
-          "line": 241,
+          "line": 262,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ExportDownloadLink",
-          "line": 254,
+          "line": 275,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19237,19 +19227,19 @@
       "path": "app/admin/outcomes/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 5773,
-      "lines": 135,
-      "sha256": "bc94bdf908a753abb078436233fb6bc5ad49592fa0af99c34322e6c655ebcd3c",
+      "bytes": 4958,
+      "lines": 113,
+      "sha256": "f3cea7b12a74bf93c29ed02a99ac87df60878e4785cb30838f30e8172cd81511",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 25,
+          "line": 22,
           "kind": "FunctionDeclaration",
           "localName": "OutcomesPage"
         }
@@ -19257,12 +19247,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "OutcomesPage",
-          "line": 25,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19297,19 +19287,19 @@
       "path": "app/admin/overview/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 30595,
-      "lines": 730,
-      "sha256": "251bd634128a395af50dab60b25d65d8a0e67eff9dbaa6473d26c77713d4f52e",
+      "bytes": 27050,
+      "lines": 655,
+      "sha256": "495f173387adccf37acfda398cf170e5c6dcecbcd8eef0e380d1dc3f30eaf068",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 49,
+          "line": 46,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 114,
+          "line": 111,
           "kind": "FunctionDeclaration",
           "localName": "AdminOverviewPage"
         }
@@ -19317,32 +19307,32 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 49,
+          "line": 46,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecentSignupRow",
-          "line": 57,
+          "line": 54,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementWithUser",
-          "line": 70,
+          "line": 67,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PendingPlacementWithUser",
-          "line": 84,
+          "line": 81,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "placementRecordBaseSelect",
-          "line": 96,
+          "line": 93,
           "kind": "Variable"
         },
         {
           "name": "AdminOverviewPage",
-          "line": 114,
+          "line": 111,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19822,9 +19812,9 @@
       "path": "app/admin/pipeline/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6510,
-      "lines": 178,
-      "sha256": "6fd43b5b72effe83f62a89be31093d99ecfeae5e1bc5e0728e4ce05d2dafd2d8",
+      "bytes": 5568,
+      "lines": 135,
+      "sha256": "6f34ecc9a5ecc28741f07c6d678e97057dd1b25fd5998dc94f5ae9a4def6c4e7",
       "binary": false,
       "exports": [
         {
@@ -20641,19 +20631,19 @@
       "path": "app/admin/students/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 3748,
-      "lines": 99,
-      "sha256": "5c2d65aefdccd8724f4ccdcaa82482b3f374e72f5af609c2a0246bfa1b843fa4",
+      "bytes": 4125,
+      "lines": 107,
+      "sha256": "847578b10bd950bd03a2a68d978b99466bd03e043409885eb607e773255edd4c",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 21,
+          "line": 24,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 35,
+          "line": 40,
           "kind": "FunctionDeclaration",
           "localName": "AdminStudentsPage"
         }
@@ -20661,12 +20651,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 21,
+          "line": 24,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminStudentsPage",
-          "line": 35,
+          "line": 40,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -21076,9 +21066,9 @@
       "path": "app/admin/users/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 7429,
-      "lines": 195,
-      "sha256": "4905cc1d0e45b4bf5089cafddddf460a757931e836aeaecc3a8d466877e3b136",
+      "bytes": 7668,
+      "lines": 210,
+      "sha256": "16b38b6ed61993299e56904e1522efe36cd4a9400e7362fdf60506075a89964a",
       "binary": false,
       "exports": [
         {
@@ -22130,21 +22120,21 @@
       "path": "app/api/admin/certifications/review/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 4105,
-      "lines": 106,
-      "sha256": "d97f4cf5699a46667d21813dddf2a00d4c226767428c442fde6e4e418e5a447f",
+      "bytes": 4681,
+      "lines": 115,
+      "sha256": "6f5c6971cfd659e24f85a727acb6b26ebc612b39a6c9ad06c41ef4b84b70843a",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         }
       ],
@@ -29038,74 +29028,33 @@
       "path": "app/api/admin/users/_deletedEmail.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 832,
-      "lines": 21,
-      "sha256": "9e740cb420a44b15559e6e1c83e12365a64dc0e6e9f0fc8b4c736b43617d2c18",
+      "bytes": 276,
+      "lines": 8,
+      "sha256": "175da7cd37724ed8916f6c900d7e76b3d6bf6ed4e9860e1c9abf8860f8b79cf8",
       "binary": false,
       "exports": [
         {
           "name": "buildDeletedEmail",
-          "line": 6,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "parseDeletedEmail",
-          "line": 11,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "isDeletedEmail",
-          "line": 15,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "isDeletedEmailMarker",
-          "line": 19,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "MAX_EMAIL_LENGTH",
-          "line": 1,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_SUFFIX",
-          "line": 2,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_RE",
-          "line": 3,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_MARKER_RE",
           "line": 4,
-          "kind": "Variable"
-        },
-        {
-          "name": "buildDeletedEmail",
-          "line": 6,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "parseDeletedEmail",
-          "line": 11,
-          "kind": "FunctionDeclaration"
+          "kind": "ReExport"
         },
         {
           "name": "isDeletedEmail",
-          "line": 15,
-          "kind": "FunctionDeclaration"
+          "line": 5,
+          "kind": "ReExport"
         },
         {
           "name": "isDeletedEmailMarker",
-          "line": 19,
-          "kind": "FunctionDeclaration"
+          "line": 6,
+          "kind": "ReExport"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 7,
+          "kind": "ReExport"
         }
       ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -34685,21 +34634,21 @@
       "path": "app/api/gdpr/delete/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 5490,
-      "lines": 159,
-      "sha256": "5a2f39a89c29edae594abfa9a8603f4e30c47de73a2982ab77e4e9182bcfc83b",
+      "bytes": 5573,
+      "lines": 145,
+      "sha256": "c4e18ee332e6e56251b10e2352b5d2b6218072a1406e537b0f91625128aeb2e2",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         }
       ],
@@ -35835,46 +35784,46 @@
       "path": "app/api/member/certifications/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 4067,
-      "lines": 122,
-      "sha256": "342d07397f7dd5af04fb4fcb7dc7271b330b1cde13f8ca3fc99948a7b8c74db2",
+      "bytes": 3352,
+      "lines": 96,
+      "sha256": "536b89c09d35b6de2b47bb29eef63339322ae57396d008166dca2894997687a1",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 37,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 121,
+          "line": 95,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "toggleSchema",
-          "line": 13,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "_GET",
-          "line": 17,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 37,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "_POST",
-          "line": 37,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 121,
+          "line": 95,
           "kind": "Variable"
         }
       ],
@@ -36175,9 +36124,9 @@
       "path": "app/api/member/delete-account/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 3110,
-      "lines": 76,
-      "sha256": "5563d02706c2a30692424d286e7191cbfcfb5d11d69c769251a3cc19bfe04ec9",
+      "bytes": 2715,
+      "lines": 61,
+      "sha256": "b15a9d7076efad7f7fdf79c0deb044dd7a0f64a370cb93c6e6dc2643d5a528bf",
       "binary": false,
       "exports": [
         {
@@ -40699,31 +40648,31 @@
       "path": "app/api/stripe/webhook/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 10238,
-      "lines": 249,
-      "sha256": "77e14eaf5daad22fb6361848e59faa504c1c727e09e1c15d6c1422c75fb989e2",
+      "bytes": 12733,
+      "lines": 295,
+      "sha256": "1e31765f546eca9f7d6073d162cc7be89412570c4dd2765dd9a04cce668e9e18",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "normalizeStripeId",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invoiceSubscriptionId",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -49054,14 +49003,14 @@
       "path": "components/admin/AdminDataLoadError.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 1021,
-      "lines": 30,
-      "sha256": "16d9de6c08777b9dcfca0ebbeeca41272e0f9ea06339d56f46a8704508525e25",
+      "bytes": 1076,
+      "lines": 33,
+      "sha256": "3ec851c41938b614da55d82a33b23b5db97743d5d445feaa9aaecab51a9c7bb1",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataLoadError"
         }
@@ -49069,7 +49018,7 @@
       "declarations": [
         {
           "name": "AdminDataLoadError",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -50777,6 +50726,75 @@
       "directive": "use client"
     },
     {
+      "path": "components/admin/CourseraCatalogHealthTable.tsx",
+      "area": "components",
+      "domain": "learning-coursera",
+      "bytes": 6610,
+      "lines": 176,
+      "sha256": "827c7fa83b8a906056cc6bf1ffd7962dfc5b11d77aa60f38b33ddb4c80eec8d0",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CourseraCatalogHealthTable",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CourseraCatalogHealthSection",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "IssueGroup",
+          "line": 12,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "catalogIssueGroups",
+          "line": 14,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "issueCount",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ProviderCell",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "IssuesCell",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "IssuesSubRow",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "COLUMNS",
+          "line": 82,
+          "kind": "Variable"
+        },
+        {
+          "name": "CourseraCatalogHealthTable",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CourseraCatalogHealthSection",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/admin/CourseraCsvImportClient.tsx",
       "area": "components",
       "domain": "learning-coursera",
@@ -51797,36 +51815,6 @@
         {
           "name": "ExecutiveTrendCharts",
           "line": 23,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
-      "path": "components/admin/GtmSetupCheck.tsx",
-      "area": "components",
-      "domain": "administration",
-      "bytes": 1489,
-      "lines": 42,
-      "sha256": "c7bd0df07cd22291ab9afcca135beec8e56b2d977210966a0329d3efe0f5291b",
-      "binary": false,
-      "exports": [
-        {
-          "name": "default",
-          "line": 17,
-          "kind": "FunctionDeclaration",
-          "localName": "GtmSetupCheck"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "gtmStatus",
-          "line": 5,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "GtmSetupCheck",
-          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -53570,22 +53558,42 @@
       "path": "components/admin/TriageDigestSection.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8377,
-      "lines": 244,
-      "sha256": "08b682b0b42665210bb832db56440ad13bfe3e69382e95d07adf65c8a2f9f056",
+      "bytes": 10984,
+      "lines": 309,
+      "sha256": "9fdb8160e6b11efe3048bed73cc70b8c8d8dc42294f78d22acd9d5faefb08f17",
       "binary": false,
       "exports": [
         {
+          "name": "PendingApplicationsCard",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "pendingApplicationsLabel",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "default",
-          "line": 12,
+          "line": 22,
           "kind": "FunctionDeclaration",
           "localName": "TriageDigestSection"
         }
       ],
       "declarations": [
         {
+          "name": "PendingApplicationsCard",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "pendingApplicationsLabel",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "TriageDigestSection",
-          "line": 12,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64725,36 +64733,46 @@
       "path": "components/portal/kit/DataTable.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3810,
-      "lines": 132,
-      "sha256": "e35fa3434e2196da71148e23b783259414cc1876ffe88869a10983fdcd27dbf9",
+      "bytes": 6255,
+      "lines": 199,
+      "sha256": "805c3d9e6626f70be285becdaa2fd35da12edf1abd094807ef0eed7e2922c81e",
       "binary": false,
       "exports": [
         {
+          "name": "KitTableBulkBarContext",
+          "line": 11,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 11,
+          "kind": "ReExport"
+        },
+        {
           "name": "Column",
-          "line": 6,
+          "line": 13,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTable",
-          "line": 40,
+          "line": 73,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "Column",
-          "line": 6,
+          "line": 13,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTableProps",
-          "line": 18,
+          "line": 26,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTable",
-          "line": 40,
+          "line": 73,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65094,6 +65112,45 @@
       "directive": null
     },
     {
+      "path": "components/portal/kit/KitRowMenu.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 4775,
+      "lines": 146,
+      "sha256": "5c3ce0617b90538bc5aba69ec0dcebc9f1a0d04895c39f01d8b07626fbd149c6",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KitRowMenuItem",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitRowMenu",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KitRowMenuItem",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitRowMenuProps",
+          "line": 19,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "KitRowMenu",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "components/portal/kit/KitSortHeader.tsx",
       "area": "components",
       "domain": "components",
@@ -65136,46 +65193,120 @@
       "path": "components/portal/kit/KitTableShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4128,
-      "lines": 130,
-      "sha256": "fc593d52920b634719f81b930d02ef17641dc88173006b03f8a8e1262310149c",
+      "bytes": 14669,
+      "lines": 370,
+      "sha256": "639b5c43fbe48b4ccdbffda2a0de3926d255ccf7ca0d66c3b423c5ce620bc77c",
       "binary": false,
       "exports": [
         {
           "name": "KitTableShellColumn",
-          "line": 7,
+          "line": 9,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellRow",
-          "line": 18,
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShell",
-          "line": 43,
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTablePager",
+          "line": 355,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "KitTableShellColumn",
-          "line": 7,
+          "line": 9,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellRow",
-          "line": 18,
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellProps",
-          "line": 23,
+          "line": 43,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "nextSelection",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "KitTableShell",
-          "line": 43,
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTablePager",
+          "line": 355,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/kit/KitTableToolbar.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 5143,
+      "lines": 150,
+      "sha256": "93159dbc2715f47a99f588290a8277502424ec2a0f34059930196e35acafb004",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KitTableViewChip",
+          "line": 8,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableToolbar",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KitTableViewChip",
+          "line": 8,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableToolbarProps",
+          "line": 20,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "KitTableToolbar",
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -66062,9 +66193,9 @@
       "path": "components/portal/kit/index.ts",
       "area": "components",
       "domain": "components",
-      "bytes": 2647,
-      "lines": 50,
-      "sha256": "423555035fdd373a38fa718fe69f17c6d4dfc2c2394e940987927823a0fe8bf1",
+      "bytes": 3059,
+      "lines": 62,
+      "sha256": "fc2c01cdf2acc7821331bcf0cf807f7aced2781de8e77ff77fd1cec954800fc5",
       "binary": false,
       "exports": [
         {
@@ -66208,198 +66339,268 @@
           "kind": "ReExport"
         },
         {
-          "name": "FeatureTile",
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 29,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTableToolbar",
           "line": 30,
           "kind": "ReExport"
         },
         {
-          "name": "QueueRow",
+          "name": "KitTableViewChip",
+          "line": 30,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitRowMenu",
           "line": 31,
           "kind": "ReExport"
         },
         {
-          "name": "QueueTone",
+          "name": "KitRowMenuItem",
           "line": 31,
           "kind": "ReExport"
         },
         {
-          "name": "WorkQueueItem",
-          "line": 32,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanBoard",
+          "name": "KIT_TABLE_PAGE_SIZE",
           "line": 33,
           "kind": "ReExport"
         },
         {
-          "name": "KanbanColumnHeader",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanColumnData",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanCardData",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "BarChartMini",
+          "name": "readKitTableUrlState",
           "line": 34,
           "kind": "ReExport"
         },
         {
-          "name": "RankBars",
-          "line": 34,
+          "name": "writeKitTableUrlState",
+          "line": 35,
           "kind": "ReExport"
         },
         {
-          "name": "Sparkline",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "AreaChartMini",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "ChartDatum",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "RankDatum",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "CardHead",
+          "name": "kitTableHref",
           "line": 36,
           "kind": "ReExport"
         },
         {
-          "name": "DeltaChip",
+          "name": "parseKitTableSort",
           "line": 37,
           "kind": "ReExport"
         },
         {
-          "name": "StatSparkTile",
+          "name": "serializeKitTableSort",
           "line": 38,
           "kind": "ReExport"
         },
         {
-          "name": "StageTrack",
+          "name": "KitTableSort",
           "line": 39,
           "kind": "ReExport"
         },
         {
-          "name": "SegmentedProgress",
+          "name": "KitTableUrlState",
           "line": 40,
           "kind": "ReExport"
         },
         {
-          "name": "SparkStat",
-          "line": 41,
+          "name": "FeatureTile",
+          "line": 42,
           "kind": "ReExport"
         },
         {
-          "name": "FormField",
+          "name": "QueueRow",
           "line": 43,
           "kind": "ReExport"
         },
         {
-          "name": "Toggle",
+          "name": "QueueTone",
           "line": 43,
           "kind": "ReExport"
         },
         {
-          "name": "ChatThread",
+          "name": "WorkQueueItem",
           "line": 44,
           "kind": "ReExport"
         },
         {
-          "name": "ChatMessage",
-          "line": 44,
-          "kind": "ReExport"
-        },
-        {
-          "name": "Tabs",
+          "name": "KanbanBoard",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "TabPanel",
+          "name": "KanbanColumnHeader",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "KitTabItem",
+          "name": "KanbanColumnData",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "AppShellSidebar",
+          "name": "KanbanCardData",
+          "line": 45,
+          "kind": "ReExport"
+        },
+        {
+          "name": "BarChartMini",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "NavItem",
+          "name": "RankBars",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "NavGroup",
+          "name": "Sparkline",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "AppShellMember",
-          "line": 47,
+          "name": "AreaChartMini",
+          "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "MemberTab",
-          "line": 47,
+          "name": "ChartDatum",
+          "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "UniversalSearch",
+          "name": "RankDatum",
+          "line": 46,
+          "kind": "ReExport"
+        },
+        {
+          "name": "CardHead",
           "line": 48,
           "kind": "ReExport"
         },
         {
-          "name": "MemberDashboardKit",
+          "name": "DeltaChip",
           "line": 49,
+          "kind": "ReExport"
+        },
+        {
+          "name": "StatSparkTile",
+          "line": 50,
+          "kind": "ReExport"
+        },
+        {
+          "name": "StageTrack",
+          "line": 51,
+          "kind": "ReExport"
+        },
+        {
+          "name": "SegmentedProgress",
+          "line": 52,
+          "kind": "ReExport"
+        },
+        {
+          "name": "SparkStat",
+          "line": 53,
+          "kind": "ReExport"
+        },
+        {
+          "name": "FormField",
+          "line": 55,
+          "kind": "ReExport"
+        },
+        {
+          "name": "Toggle",
+          "line": 55,
+          "kind": "ReExport"
+        },
+        {
+          "name": "ChatThread",
+          "line": 56,
+          "kind": "ReExport"
+        },
+        {
+          "name": "ChatMessage",
+          "line": 56,
+          "kind": "ReExport"
+        },
+        {
+          "name": "Tabs",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "TabPanel",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTabItem",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AppShellSidebar",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "NavItem",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "NavGroup",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AppShellMember",
+          "line": 59,
+          "kind": "ReExport"
+        },
+        {
+          "name": "MemberTab",
+          "line": 59,
+          "kind": "ReExport"
+        },
+        {
+          "name": "UniversalSearch",
+          "line": 60,
+          "kind": "ReExport"
+        },
+        {
+          "name": "MemberDashboardKit",
+          "line": 61,
           "kind": "ReExport"
         },
         {
           "name": "MemberDashboardKitProps",
-          "line": 49,
+          "line": 61,
           "kind": "ReExport"
         },
         {
           "name": "colorVar",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "toneClass",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "KitColor",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "KitTone",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         }
       ],
@@ -66444,6 +66645,135 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/portal/kit/kitTableUrlState.ts",
+      "area": "components",
+      "domain": "components",
+      "bytes": 4102,
+      "lines": 109,
+      "sha256": "26a695ab1df02b3f374c256df23015e6784e42affea94044d2313bdedba57230",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KIT_TABLE_PAGE_SIZE",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "KitTableSortDirection",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableSort",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableUrlState",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "parseKitTableSort",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "serializeKitTableSort",
+          "line": 44,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readKitTableUrlState",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTableUrlChanges",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "writeKitTableUrlState",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "kitTableHref",
+          "line": 106,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KIT_TABLE_PAGE_SIZE",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "KitTableSortDirection",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableSort",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableUrlState",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ParamSource",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "readParam",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseKitTableSort",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "serializeKitTableSort",
+          "line": 44,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseKitTablePage",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readKitTableUrlState",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTableUrlChanges",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "writeKitTableUrlState",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "kitTableHref",
+          "line": 106,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/portal/kit/pages/PartnerOverviewKit.module.css",
@@ -67112,41 +67442,51 @@
       "path": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3048,
-      "lines": 90,
-      "sha256": "7552c3a0ae77297bd85198faf0783aa839a293b09241291a4879d70c6343f68f",
+      "bytes": 5264,
+      "lines": 152,
+      "sha256": "685bdca27a1935cb0811acdb05b2f67b89e8becdfcc68f8a8ffef1b6f7efede1",
       "binary": false,
       "exports": [
         {
           "name": "AnalyticsKitProps",
-          "line": 24,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AnalyticsKit",
-          "line": 48,
+          "line": 92,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "AnalyticsKitProps",
-          "line": 24,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 39,
+          "line": 52,
           "kind": "Variable"
         },
         {
-          "name": "EMPTY_HINT",
-          "line": 46,
+          "name": "EMPTY_TOP_TOOLS",
+          "line": 64,
           "kind": "Variable"
+        },
+        {
+          "name": "EMPTY_ACTIVE_BY_PROGRAM",
+          "line": 72,
+          "kind": "Variable"
+        },
+        {
+          "name": "EmptyStateLink",
+          "line": 80,
+          "kind": "FunctionDeclaration"
         },
         {
           "name": "AnalyticsKit",
-          "line": 48,
+          "line": 92,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -67333,56 +67673,46 @@
       "path": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7178,
-      "lines": 195,
-      "sha256": "2f01b56c58d1e796da91fc5d93527e8b0daf7252bd5b563d30b317495813922e",
+      "bytes": 5567,
+      "lines": 145,
+      "sha256": "c94a04f05036def92c7e02bfe59bc96f930e5577201a27db6d2e3b129abd0c41",
       "binary": false,
       "exports": [
         {
-          "name": "FunderExport",
-          "line": 23,
-          "kind": "InterfaceDeclaration"
+          "name": "ADMIN_EXPORTS_HREF",
+          "line": 25,
+          "kind": "Variable"
         },
         {
           "name": "BoardOutcomesKitProps",
-          "line": 32,
+          "line": 27,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "BoardOutcomesKit",
-          "line": 91,
+          "line": 61,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
-          "name": "FunderExport",
-          "line": 23,
-          "kind": "InterfaceDeclaration"
+          "name": "ADMIN_EXPORTS_HREF",
+          "line": 25,
+          "kind": "Variable"
         },
         {
           "name": "BoardOutcomesKitProps",
-          "line": 32,
+          "line": 27,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 60,
+          "line": 54,
           "kind": "Variable"
-        },
-        {
-          "name": "DEFAULT_EXPORTS",
-          "line": 67,
-          "kind": "Variable"
-        },
-        {
-          "name": "exportIcon",
-          "line": 85,
-          "kind": "FunctionDeclaration"
         },
         {
           "name": "BoardOutcomesKit",
-          "line": 91,
+          "line": 61,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -68155,79 +68485,128 @@
       "directive": "use client"
     },
     {
+      "path": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 2724,
+      "lines": 58,
+      "sha256": "bb67769d0244f26fa98d6314e5e22aa34a4786ace09d6af0b20d9ed589e22106",
+      "binary": false,
+      "exports": [
+        {
+          "name": "EnrollmentOutcomesPanel",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "EnrollmentOutcomesPanel",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "PanelLink",
+          "line": 52,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6163,
-      "lines": 195,
-      "sha256": "7db8f6f3d4f4a2cee44ad79a1ffe10c801ac6e3312d6e8d0d53070efc9e40451",
+      "bytes": 7122,
+      "lines": 214,
+      "sha256": "e9698fe231aa086ce2a707eb1d1819becc7d3ac2b034a2403a4f8e6cc4181968",
       "binary": false,
       "exports": [
         {
           "name": "ExportTone",
-          "line": 22,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ExportOption",
-          "line": 24,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "ExportRowKind",
+          "line": 55,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "exportRowKind",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "ExportsKitProps",
-          "line": 45,
+          "line": 62,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "ExportsKit",
-          "line": 171,
+          "line": 190,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "ExportTone",
-          "line": 22,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ExportOption",
-          "line": 24,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "ExportRowKind",
+          "line": 55,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "exportRowKind",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "ExportsKitProps",
-          "line": 45,
+          "line": 62,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_EXPORTS",
-          "line": 49,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "TONE_TINT",
-          "line": 78,
+          "line": 95,
           "kind": "Variable"
         },
         {
           "name": "BADGE_TOKEN_COLOR",
-          "line": 87,
+          "line": 104,
           "kind": "Variable"
         },
         {
           "name": "exportIcon",
-          "line": 95,
+          "line": 112,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ExportTile",
-          "line": 110,
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ExportsKit",
-          "line": 171,
+          "line": 190,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69236,9 +69615,9 @@
       "path": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 21925,
-      "lines": 631,
-      "sha256": "ebbe0a64559325db48935aa3c701937fee2d7e726aa8c2c1371949832e9a8b5d",
+      "bytes": 22193,
+      "lines": 639,
+      "sha256": "83699244a3a46e2d6c432643ef01b142f7c3ad35f81b6722066800fd4b4342b1",
       "binary": false,
       "exports": [
         {
@@ -69268,7 +69647,7 @@
         },
         {
           "name": "StudentsRosterKit",
-          "line": 231,
+          "line": 236,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69300,47 +69679,47 @@
         },
         {
           "name": "DEFAULT_STUDENTS",
-          "line": 133,
+          "line": 138,
           "kind": "Variable"
         },
         {
           "name": "STATUS_TOKEN_COLOR",
-          "line": 189,
+          "line": 194,
           "kind": "Variable"
         },
         {
           "name": "PACE_TOKEN_COLOR",
-          "line": 197,
+          "line": 202,
           "kind": "Variable"
         },
         {
           "name": "TEXT_SORT_KEYS",
-          "line": 204,
+          "line": 209,
           "kind": "Variable"
         },
         {
           "name": "formatRosterGrade",
-          "line": 206,
+          "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readinessColor",
-          "line": 212,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readinessVar",
-          "line": 219,
+          "line": 224,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NavButton",
-          "line": 223,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterKit",
-          "line": 231,
+          "line": 236,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69508,51 +69887,61 @@
       "path": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5211,
-      "lines": 94,
-      "sha256": "67e481f4c517add76bbc902c78ac8a3b333e79322b65ee693d7e8ee4b2700801",
+      "bytes": 12802,
+      "lines": 298,
+      "sha256": "513fa364396d1c773af4443f948e02e7bde6fd07c420300b4959e46474c2bce0",
       "binary": false,
       "exports": [
         {
           "name": "UserRow",
-          "line": 19,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKitProps",
-          "line": 29,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKit",
-          "line": 49,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "UserRow",
-          "line": 19,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKitProps",
-          "line": 29,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "manageHref",
-          "line": 38,
+          "line": 50,
           "kind": "Variable"
         },
         {
+          "name": "roleCodeOf",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "Feedback",
+          "line": 54,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "UserCell",
-          "line": 40,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UsersKit",
-          "line": 49,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -74210,9 +74599,9 @@
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 49050,
-      "lines": 1480,
-      "sha256": "c413d22a90e0266c3abf0a5528fe837569d1761c2454efdc99bb0ba093f58c17",
+      "bytes": 59479,
+      "lines": 1929,
+      "sha256": "004c9e18dc89ccfcd0cf49eea53a8af0455be19e1f1b7cdfe3dce2d1d4e19267",
       "binary": false
     },
     {
@@ -74678,9 +75067,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 40737,
-      "lines": 545,
-      "sha256": "46a3e7d065e5a15fbcf6c17ff847bc441671ef452b8e9c1d08b91ef08bc4ec0d",
+      "bytes": 44752,
+      "lines": 589,
+      "sha256": "8bfbdfc941165842d755749b217b159f1aa967b4d52bcd39b3cab942c945bafe",
       "binary": false
     },
     {
@@ -81624,9 +82013,9 @@
       "path": "lib/admin-coursera-catalog-health-structure.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 942,
-      "lines": 21,
-      "sha256": "a0f1b07120698492e0400c250e02763262fe465c1b09e5791f88d23ad89981e1",
+      "bytes": 1200,
+      "lines": 24,
+      "sha256": "aa57cd230e88d57dc4e30a9f40c3da1adeb6a8a04436de416122b1ff46d2aa96",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -82063,6 +82452,107 @@
         {
           "name": "loadAnalyticsOverview",
           "line": 89,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/analyticsTabs.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 2849,
+      "lines": 64,
+      "sha256": "b0ea718c55731078915cda78aacb66049c3e646816bfbac938cc40a0a6f71ca7",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/analyticsTabs.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 4169,
+      "lines": 96,
+      "sha256": "57114b541754c5ecd3f4e5204e1f608ddc37f561c08dcac100826ba09753028c",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ANALYTICS_TABS",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnalyticsTabId",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANALYTICS_TAB_PARAM",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseAnalyticsTab",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EnrollmentOutcomesSource",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EnrollmentOutcomesPanelData",
+          "line": 46,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "buildEnrollmentOutcomesPanel",
+          "line": 61,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ANALYTICS_TABS",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnalyticsTabId",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANALYTICS_TAB_PARAM",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseAnalyticsTab",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "EnrollmentOutcomesSource",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EnrollmentOutcomesPanelData",
+          "line": 46,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fmt",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildEnrollmentOutcomesPanel",
+          "line": 61,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83269,15 +83759,15 @@
       "path": "lib/admin/commandCenter.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 4360,
-      "lines": 130,
-      "sha256": "211090e710f0e3effecc0e6d0747c1ff077910fecada98b5b0a15673740885c4",
+      "bytes": 6550,
+      "lines": 186,
+      "sha256": "7a7f12317cde7189e54fc39f74314e82a0b5181c26f59461dbce94d69988bb47",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "baseCenter",
-          "line": 10,
+          "line": 12,
           "kind": "Variable"
         }
       ],
@@ -83287,126 +83777,136 @@
       "path": "lib/admin/commandCenter.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 11797,
-      "lines": 276,
-      "sha256": "670778092d86a7380c6b6002b4b4b6024dc43bb12d7fca8534d31c2e95201530",
+      "bytes": 11502,
+      "lines": 266,
+      "sha256": "9857b53c21962f7d4e72b78ad467d2c6d68483d225d0ce93fd80c94f110d34f9",
       "binary": false,
       "exports": [
         {
           "name": "buildApplicationEmailPacket",
-          "line": 24,
-          "kind": "ReExport"
-        },
-        {
-          "name": "bucketCommandCenterTotals",
-          "line": 24,
-          "kind": "ReExport"
-        },
-        {
-          "name": "AdminApplicationPendingRow",
           "line": 26,
           "kind": "ReExport"
         },
         {
-          "name": "AdminAtRiskRow",
+          "name": "bucketCommandCenterTotals",
           "line": 27,
           "kind": "ReExport"
         },
         {
-          "name": "AdminCommandCenter",
+          "name": "buildProgramHealthRows",
           "line": 28,
           "kind": "ReExport"
         },
         {
-          "name": "AdminCommandCenterBaseRow",
+          "name": "PROGRAM_HEALTH_SHARE_LABEL",
           "line": 29,
           "kind": "ReExport"
         },
         {
-          "name": "AdminCommandCenterTotals",
-          "line": 30,
-          "kind": "ReExport"
-        },
-        {
-          "name": "AdminInterviewingRow",
-          "line": 31,
-          "kind": "ReExport"
-        },
-        {
-          "name": "AdminNeedsReplyRow",
+          "name": "AdminApplicationPendingRow",
           "line": 32,
           "kind": "ReExport"
         },
         {
-          "name": "AdminProgramHealthRow",
+          "name": "AdminAtRiskRow",
           "line": 33,
           "kind": "ReExport"
         },
         {
-          "name": "ApplicationEmailPacket",
+          "name": "AdminCommandCenter",
           "line": 34,
           "kind": "ReExport"
         },
         {
+          "name": "AdminCommandCenterBaseRow",
+          "line": 35,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AdminCommandCenterTotals",
+          "line": 36,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AdminInterviewingRow",
+          "line": 37,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AdminNeedsReplyRow",
+          "line": 38,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AdminProgramHealthRow",
+          "line": 39,
+          "kind": "ReExport"
+        },
+        {
+          "name": "ApplicationEmailPacket",
+          "line": 40,
+          "kind": "ReExport"
+        },
+        {
           "name": "getAdminCommandCenter",
-          "line": 41,
+          "line": 47,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "DAY_MS",
-          "line": 37,
+          "line": 43,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_LIMIT",
-          "line": 38,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_HEALTH_LIMIT",
-          "line": 39,
+          "line": 45,
           "kind": "Variable"
         },
         {
           "name": "getAdminCommandCenter",
-          "line": 41,
+          "line": 47,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readQueue",
-          "line": 86,
+          "line": 92,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadNeedsReply",
-          "line": 97,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadAtRisk",
-          "line": 118,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadInterviewing",
-          "line": 123,
+          "line": 129,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadApplicationsPending",
-          "line": 151,
+          "line": 157,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadProgramHealth",
-          "line": 237,
+          "line": 243,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "jobApplicationStatusLabel",
-          "line": 272,
+          "line": 262,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83550,9 +84050,9 @@
       "path": "lib/admin/commandCenterHelpers.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 5675,
-      "lines": 161,
-      "sha256": "b173c9b56776c70256e3b7b06acc72f5c4d034637c1cb1e3b627e69297ac3e3f",
+      "bytes": 7584,
+      "lines": 201,
+      "sha256": "9847fe6776a06f9b6e79900d4b15d5cbf8565bd307e6f85ea7967855c7145869",
       "binary": false,
       "exports": [
         {
@@ -83592,42 +84092,52 @@
         },
         {
           "name": "AdminProgramHealthRow",
-          "line": 67,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "PROGRAM_HEALTH_SHARE_LABEL",
+          "line": 85,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildProgramHealthRows",
+          "line": 93,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 74,
+          "line": 114,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 75,
+          "line": 115,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "normalizeAdminQueueRequest",
-          "line": 76,
+          "line": 116,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "adminQueueHref",
-          "line": 83,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCommandCenter",
-          "line": 87,
+          "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildApplicationEmailPacket",
-          "line": 97,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 146,
+          "line": 186,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83669,42 +84179,52 @@
         },
         {
           "name": "AdminProgramHealthRow",
-          "line": 67,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "PROGRAM_HEALTH_SHARE_LABEL",
+          "line": 85,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildProgramHealthRows",
+          "line": 93,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 74,
+          "line": 114,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 75,
+          "line": 115,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "normalizeAdminQueueRequest",
-          "line": 76,
+          "line": 116,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "adminQueueHref",
-          "line": 83,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCommandCenter",
-          "line": 87,
+          "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildApplicationEmailPacket",
-          "line": 97,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 146,
+          "line": 186,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86093,6 +86613,103 @@
       "directive": null
     },
     {
+      "path": "lib/admin/pipelineFunnel.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 2325,
+      "lines": 47,
+      "sha256": "cac9205f52e87c3c35c2990c9f477e49ef8f9d8fc3c73891b22a984b41961d64",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "seeded",
+          "line": 12,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/pipelineFunnel.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 2609,
+      "lines": 61,
+      "sha256": "f73f00fb649976983fca85ea20315faaec27a71a1fe288541a23cbf138230100",
+      "binary": false,
+      "exports": [
+        {
+          "name": "PipelineFunnelCounts",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "PIPELINE_FUNNEL_STAGES",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "WIOA_SCREENED_LABEL",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "WIOA_SCREENED_CAPTION",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "pipelineFunnelSubtitle",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildPipelineFunnel",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PipelineFunnelCounts",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "PIPELINE_FUNNEL_STAGES",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "WIOA_SCREENED_LABEL",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "WIOA_SCREENED_CAPTION",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "pipelineFunnelSubtitle",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fmt",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildPipelineFunnel",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/admin/placementsRosterSort.ts",
       "area": "libraries",
       "domain": "administration",
@@ -86690,9 +87307,9 @@
       "path": "lib/admin/studentsRosterView.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 5465,
-      "lines": 141,
-      "sha256": "52c3096bf6ce362a284147e56796267930715a0036deedb2a6ea8b6b8c85e5fd",
+      "bytes": 7143,
+      "lines": 175,
+      "sha256": "2ab9d0137404f0aa72f467e294b9b3c161e37ec0f315904dc9ebe73e2f931d9d",
       "binary": false,
       "exports": [
         {
@@ -86756,33 +87373,63 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "matchesRosterChip",
+          "name": "STUDENTS_NEEDS_PARAM",
           "line": 64,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENTS_NEEDS_VALUES",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "StudentsNeeds",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "parseStudentsNeeds",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "chipForStudentsNeeds",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "studentsNeedsHref",
+          "line": 88,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "matchesRosterChip",
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 77,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 83,
+          "line": 117,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 92,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 118,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 136,
+          "line": 170,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86853,33 +87500,63 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "matchesRosterChip",
+          "name": "STUDENTS_NEEDS_PARAM",
           "line": 64,
+          "kind": "Variable"
+        },
+        {
+          "name": "STUDENTS_NEEDS_VALUES",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "StudentsNeeds",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "parseStudentsNeeds",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "chipForStudentsNeeds",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "studentsNeedsHref",
+          "line": 88,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "matchesRosterChip",
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 77,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 83,
+          "line": 117,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 92,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 118,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 136,
+          "line": 170,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87587,6 +88264,50 @@
         {
           "name": "userAuthDeleteFailedResponse",
           "line": 3,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/usersSelfGuard.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 746,
+      "lines": 14,
+      "sha256": "94d9ceea693a6271df664287b59d05322a8ff23dcd2b0e27de51f8e9b9b841db",
+      "binary": false,
+      "exports": [
+        {
+          "name": "SELF_DELETE_BLOCKED_TITLE",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "SELF_ROLE_CHANGE_BLOCKED_TITLE",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "isSelfRow",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "SELF_DELETE_BLOCKED_TITLE",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "SELF_ROLE_CHANGE_BLOCKED_TITLE",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "isSelfRow",
+          "line": 12,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -95402,35 +96123,35 @@
       "path": "lib/attention/adminAgreement.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3473,
-      "lines": 71,
-      "sha256": "c34a14c39b7a5b22c3237ddcc520cdfeb8ad055a96fd07560d9617d7d4f7edee",
+      "bytes": 4629,
+      "lines": 90,
+      "sha256": "2adfc5953b039875ae4fdd44cbfbf84f438d5bbe91539438d3a5b0170c0cdbd5",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "queue",
-          "line": 19,
-          "kind": "Variable"
-        },
-        {
-          "name": "tiles",
           "line": 20,
           "kind": "Variable"
         },
         {
-          "name": "rows",
+          "name": "tiles",
           "line": 21,
           "kind": "Variable"
         },
         {
-          "name": "digest",
+          "name": "rows",
           "line": 22,
           "kind": "Variable"
         },
         {
+          "name": "digest",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
           "name": "bucketFor",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         }
       ],
@@ -95440,116 +96161,116 @@
       "path": "lib/attention/adminViews.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 6744,
-      "lines": 183,
-      "sha256": "1a5fafa9000a12bb8c354b6174960788d98a77c62c309873ecf351f20772b73d",
+      "bytes": 7109,
+      "lines": 190,
+      "sha256": "85248b5de243589447d0691aade465f1fe553304351def1ad71fff944336b76d",
       "binary": false,
       "exports": [
         {
           "name": "ADMIN_ATTENTION_TILES",
-          "line": 22,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "AdminAttentionTileKey",
-          "line": 28,
+          "line": 29,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AdminAttentionTile",
-          "line": 30,
+          "line": 31,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ADMIN_ATTENTION_HREF",
-          "line": 39,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "buildAdminAttentionTiles",
-          "line": 45,
+          "line": 52,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminAttentionQueueItem",
-          "line": 56,
+          "line": 63,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildCommandCenterAttentionRows",
-          "line": 70,
+          "line": 77,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildAttentionDigest",
-          "line": 126,
+          "line": 133,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "TOP_N",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_ATTENTION_TILES",
-          "line": 22,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "AdminAttentionTileKey",
-          "line": 28,
+          "line": 29,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AdminAttentionTile",
-          "line": 30,
+          "line": 31,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ADMIN_ATTENTION_HREF",
-          "line": 39,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "buildAdminAttentionTiles",
-          "line": 45,
+          "line": 52,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminAttentionQueueItem",
-          "line": 56,
+          "line": 63,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "plural",
-          "line": 66,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildCommandCenterAttentionRows",
-          "line": 70,
+          "line": 77,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberProgram",
-          "line": 97,
+          "line": 104,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "riskAction",
-          "line": 101,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTriageMember",
-          "line": 109,
+          "line": 116,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildAttentionDigest",
-          "line": 126,
+          "line": 133,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -100197,6 +100918,30 @@
         {
           "name": "buildCareerPlanSteps",
           "line": 161,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/certifications/certificationApproved.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1695,
+      "lines": 42,
+      "sha256": "d64fe11de1d96099269a12357db110914454ea3c8b70ebb215e3ba0401317c34",
+      "binary": false,
+      "exports": [
+        {
+          "name": "runCertificationApprovedEffects",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "runCertificationApprovedEffects",
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -121234,6 +121979,110 @@
       "directive": null
     },
     {
+      "path": "lib/member/anonymizeMember.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 6283,
+      "lines": 179,
+      "sha256": "1a16f354b636b4a6cffbbadfd3e8567b0272ad7ff01120473993522a35e310a1",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AnonymizeMemberReason",
+          "line": 35,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberOptions",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberResult",
+          "line": 51,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANONYMIZED_FULL_NAME",
+          "line": 59,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ANONYMIZED_AUDIT_ACTION",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_DATA",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_FIELDS",
+          "line": 98,
+          "kind": "Variable"
+        },
+        {
+          "name": "anonymizeMember",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AnonymizeMemberReason",
+          "line": 35,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberOptions",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberResult",
+          "line": 51,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANONYMIZED_FULL_NAME",
+          "line": 59,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ANONYMIZED_AUDIT_ACTION",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_DATA",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_FIELDS",
+          "line": 98,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnonymizeDb",
+          "line": 102,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "scrambledEmail",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "anonymizeMember",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/applicationAiFeedback.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -122300,6 +123149,80 @@
         {
           "name": "resolveMemberDashboardTabs",
           "line": 35,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/deletedEmail.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 1345,
+      "lines": 30,
+      "sha256": "ee9aacc5df9bb9a29966733e0cbe7d5eb857cd06d58f7dccdcaa2a17e8b99cdc",
+      "binary": false,
+      "exports": [
+        {
+          "name": "buildDeletedEmail",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmail",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmailMarker",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MAX_EMAIL_LENGTH",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_SUFFIX",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_RE",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_MARKER_RE",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildDeletedEmail",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmail",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmailMarker",
+          "line": 28,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -136927,9 +137850,9 @@
       "path": "lib/retention/cleanup.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 13336,
-      "lines": 354,
-      "sha256": "7c483ab8c6e458b4e28c5ef83ae44b8ac2a8914f94c381d1ecb07e79e3a63839",
+      "bytes": 15003,
+      "lines": 386,
+      "sha256": "cfa70c09d7a1475520a1ce007e1be40eb156993fd05cd74008b7a014d5188e63",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -136954,8 +137877,13 @@
           "kind": "Variable"
         },
         {
+          "name": "mockAnonymizeMember",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
           "name": "foreignKeyError",
-          "line": 17,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -136965,96 +137893,96 @@
       "path": "lib/retention/cleanup.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 9608,
-      "lines": 284,
-      "sha256": "955f36aa572ced461b8317bb9cf9e72c7eef82dc554a05198a9e459dcebda908",
+      "bytes": 10449,
+      "lines": 298,
+      "sha256": "df49d6f3c261a556a3a01660aa1cc3f62a113d3bbad1eae66398b6de06534b16",
       "binary": false,
       "exports": [
         {
           "name": "CleanupResult",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "cleanupTable",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 118,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 123,
+          "line": 124,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 141,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 171,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 226,
+          "line": 240,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CleanupResult",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "cleanupTable",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 118,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 123,
+          "line": 124,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SELF_SERVICE_AUDIT_ACTOR_ROLE",
-          "line": 134,
+          "line": 135,
           "kind": "Variable"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 141,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 171,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 226,
+          "line": 240,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141076,6 +142004,55 @@
           "name": "saveSkillAssessmentSchema",
           "line": 16,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/webhooks/deadLetter.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 2174,
+      "lines": 61,
+      "sha256": "52949d5ecd3ff46d56bad5f9e35c94d3f88611cb0181eed79c5263b9dc15f565",
+      "binary": false,
+      "exports": [
+        {
+          "name": "WebhookDeadLetterInput",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "WebhookDeadLetterResult",
+          "line": 18,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "recordWebhookDeadLetter",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "WebhookDeadLetterInput",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "WebhookDeadLetterResult",
+          "line": 18,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "DeadLetterDb",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "recordWebhookDeadLetter",
+          "line": 34,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -146998,6 +147975,24 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260920141800_audit_events_actor_set_null/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 796,
+      "lines": 11,
+      "sha256": "1a10d0b6d14533f77bfccfa7a83080ef0b006592d0f78faf0ed4d877fdeb264c",
+      "binary": false
+    },
+    {
+      "path": "prisma/migrations/20260920141900_user_certifications_default_pending/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 361,
+      "lines": 5,
+      "sha256": "e32daaae3a85acafd07e5e4e558b7bc094a7d20bb54ea4bc4aa6876dd6c88be6",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/20260920141917_user_tour_state/migration.sql",
       "area": "database",
       "domain": "database",
@@ -147028,9 +148023,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 138153,
-      "lines": 3253,
-      "sha256": "7dd51a701575ad079df11e763a9f7a3711abefcff5df3af9469c4052d434378e",
+      "bytes": 138404,
+      "lines": 3257,
+      "sha256": "d75b1a310e33e2dbcf365086efd338ddec2246bf79076ec0ae56d8a8547bd62a",
       "binary": false
     },
     {
@@ -156602,9 +157597,9 @@
       "path": "tests/api/admin-health-debug.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2536,
-      "lines": 70,
-      "sha256": "db742d1881b24cef7ed56dea4a247e26b96e1decbf0bb1713ca31554e60709c7",
+      "bytes": 2890,
+      "lines": 76,
+      "sha256": "0967e5932d04892e02f4392bfed38b69ffa71296ee39cfedd6e1a731fa470d8a",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -156614,9 +157609,9 @@
       "path": "tests/api/admin-health.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8822,
-      "lines": 238,
-      "sha256": "01f0336f7fefd3ebf1c4d6295d02c2e570b574b45f8fa80cbeb9c4e227189e75",
+      "bytes": 10370,
+      "lines": 268,
+      "sha256": "6a63e4d72a69c07f3991dfdbc4d8be0ade48694f9de6cb16a812d7dcd630588b",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -159345,9 +160340,9 @@
       "path": "tests/api/gdpr-delete-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5355,
-      "lines": 149,
-      "sha256": "92c4a6d24e4fdd58032223b556a1fee1ecd93b5cde973457e49e9b33bcbfed63",
+      "bytes": 8455,
+      "lines": 213,
+      "sha256": "a67d36137ebcc9c27e2bcaf4616aa0133015936c69c81870e69874c8f6a7ccd5",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159359,6 +160354,16 @@
         {
           "name": "signOut",
           "line": 4,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORIGINAL_EMAIL",
+          "line": 86,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_MARKER",
+          "line": 87,
           "kind": "Variable"
         }
       ],
@@ -159606,15 +160611,15 @@
       "path": "tests/api/member-certifications.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5116,
-      "lines": 130,
-      "sha256": "661af415938a2889b1622e38b8ab88c59817b56f12ebb3084bd7800edeb29ec1",
+      "bytes": 6836,
+      "lines": 157,
+      "sha256": "8e4b06774e6a0073304510c078790a48a91349c7107180b50b8c54270b58da4d",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "postReq",
-          "line": 46,
+          "line": 49,
           "kind": "Variable"
         }
       ],
@@ -159703,15 +160708,20 @@
       "path": "tests/api/member-delete-account.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7587,
-      "lines": 218,
-      "sha256": "049699f6a66a2cbdd2adc9a6fad97a4b771b5ad31c79af3b051ff230112acdc3",
+      "bytes": 8942,
+      "lines": 236,
+      "sha256": "6229f208b3e8430a45222f666895b853e47663717b00b32a2d5d8dec64002a96",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "anonymized",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
           "name": "UUIDS",
-          "line": 60,
+          "line": 76,
           "kind": "Variable"
         }
       ],
@@ -161502,9 +162512,9 @@
       "path": "tests/app/admin-exports-verbs.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5609,
-      "lines": 117,
-      "sha256": "5b4d7d84836e64adbf014276456471355e25b0373c2f8e2cf63bbb21493fa859",
+      "bytes": 7202,
+      "lines": 150,
+      "sha256": "81b5dcaa4a193c62452a57454201a791436027f5365cc303468b39d2452bad0b",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -162085,9 +163095,9 @@
       "path": "tests/app/diagnostics-read-reliability.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3752,
-      "lines": 57,
-      "sha256": "de9dea108a1e89a7897d7a45cf20648a5b21c70d10525b4d06297fb0a03bac2b",
+      "bytes": 4016,
+      "lines": 59,
+      "sha256": "b0ba8bdeee86f78bdc9605b4ff20dc5e60e6187d24636c9ec0dd53975cc017b7",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -162098,7 +163108,7 @@
         },
         {
           "name": "load",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -162763,6 +163773,67 @@
       "directive": null
     },
     {
+      "path": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+      "area": "tests",
+      "domain": "partners-funding",
+      "bytes": 7374,
+      "lines": 171,
+      "sha256": "5cdd47e986b3bf3af2a88240ad77165f5b332f4492f4c0f1501314ec7fae83a6",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "payload",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "request",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "deliverCheckout",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "paidOrphan",
+          "line": 57,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/certifications/self-report-pending.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 8312,
+      "lines": 166,
+      "sha256": "79388f8718facb7cf4f3672f1e7ba6e4abd7b2b93a5b35f8f761a9d1b0be7834",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "afterCallbacks",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "reviewRequest",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "flushAfter",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/admin-command-center-presentation.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -162948,6 +164019,57 @@
       "directive": null
     },
     {
+      "path": "tests/components/admin-overview-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7361,
+      "lines": 149,
+      "sha256": "107084b863b6bd539ac04ded8201dc9835ad548ee112c68d12e5426f06556fee",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "signup",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderOverview",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/admin-pipeline-funnel-order.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3270,
+      "lines": 68,
+      "sha256": "bf58623716bac825ac267dc81397366d5434d91d827b4c6c3e54cac48941ee81",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "kitProps",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/admin-pipeline-member-count.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -163117,6 +164239,29 @@
         {
           "name": "retrySummary",
           "line": 21,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/analytics-kit-tabs-empty.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5395,
+      "lines": 102,
+      "sha256": "55479d63c83df23f292a95dd8c314ebf78c094f8b0ab21c48e3a53a019a54051",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "assertKitTokensOnly",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "metrics",
+          "line": 57,
           "kind": "Variable"
         }
       ],
@@ -163412,6 +164557,18 @@
       "bytes": 2908,
       "lines": 50,
       "sha256": "6a2b3d0fc3de01de8e79e78420346a58575e9a63e25ea3aaff44f0fc948a419e",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/board-outcomes-exports-link.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 1920,
+      "lines": 40,
+      "sha256": "db841f3af0ef99f488c84d1472bb31762cb39ea510ad81536095c7944b6d91bd",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -163718,6 +164875,34 @@
         {
           "name": "tile",
           "line": 17,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/coursera-catalog-health-table.spec.tsx",
+      "area": "tests",
+      "domain": "learning-coursera",
+      "bytes": 6405,
+      "lines": 131,
+      "sha256": "b8bf0a2cad539b4ec4c72ac10d24e5bf5e39dedda7272e650b49d1b0212db0af",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "entry",
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "healthy",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "troubled",
+          "line": 48,
           "kind": "Variable"
         }
       ],
@@ -164111,6 +165296,51 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/kit-data-table-primitive.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 12858,
+      "lines": 245,
+      "sha256": "f469c0f333cc2a619a3d5673b61a6c5937d9cb355a5b5b489be2b2604450b0a9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "Row",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "rows",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "columns",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "base",
+          "line": 27,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/kit-table-toolbar.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7584,
+      "lines": 138,
+      "sha256": "0eb03f9f8b01cd6e070af3dd00d9c67d154811365273f45d857c961ce780d3a4",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -164733,9 +165963,9 @@
       "path": "tests/components/portal-header-notifications.spec.tsx",
       "area": "tests",
       "domain": "communications",
-      "bytes": 6278,
+      "bytes": 6274,
       "lines": 127,
-      "sha256": "cd0e266a93ea7007bc292b68587fb61a467ccc636b706155a01ea6f25a4c1c13",
+      "sha256": "b4e491f62adcde79574a825f33fda1d96d0d31dd9a17b85552d296db2b2a9bfa",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -165170,6 +166400,34 @@
       "directive": null
     },
     {
+      "path": "tests/components/students-roster-needs-link.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7519,
+      "lines": 140,
+      "sha256": "6b73390cd9b370c175c2a4f132c9ece8f0079f09142b0c0fa6ab81de98ca67cf",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "ROWS",
+          "line": 64,
+          "kind": "Variable"
+        },
+        {
+          "name": "checkedChip",
+          "line": 79,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/students-roster-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -165238,6 +166496,54 @@
         {
           "name": "workspace",
           "line": 9,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/users-kit-row-menu.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 10389,
+      "lines": 194,
+      "sha256": "da79db454d62e67d73fa1f835d7d651302a3effdecf22b452e6e0c8b2946821f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "navigation",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "me",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "other",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "props",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "tableRowFor",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openMenu",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 53,
           "kind": "Variable"
         }
       ],
@@ -166498,6 +167804,49 @@
       "lines": 18,
       "sha256": "37f21155fc69a36352b437d3c2912d92f1009eb3b96ddabb8383e60826421396",
       "binary": false
+    },
+    {
+      "path": "tests/gdpr/anonymize-member.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6822,
+      "lines": 142,
+      "sha256": "ab7edf871bab7675da9910b463d5e0057055e609e1b5060d4d3e88ddc465945c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "USER_ID",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORIGINAL_EMAIL",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "NOW",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnonymizeDb",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Call",
+          "line": 24,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fakeDb",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "tests/hello.txt",
@@ -170262,6 +171611,89 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/migrations/audit-events-actor-set-null.mjs",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7466,
+      "lines": 148,
+      "sha256": "7aa6a5c38357e4eb9f5c154cea343002ff21384b6d270dc28fe0b1424e18cd77",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "migrationPath",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "migration",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceUrl",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "target",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceDatabase",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabase",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "createsDatabase",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "env",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "runSql",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sql",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "ident",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabaseCreated",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "resetTables",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "constraintState",
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {

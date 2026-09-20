@@ -6,7 +6,7 @@
 | --- | ---: | --- | --- |
 | [lib/a11y/scrollBehavior.ts](../../../lib/a11y/scrollBehavior.ts) | 17 | libraries | prefersReducedMotion:9, scrollBehavior:15 |
 | [lib/admin-ai-tools-page-structure.test.ts](../../../lib/admin-ai-tools-page-structure.test.ts) | 33 | libraries |  |
-| [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 21 | learning-coursera |  |
+| [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 24 | learning-coursera |  |
 | [lib/admin-coursera-subject-scope-structure.test.ts](../../../lib/admin-coursera-subject-scope-structure.test.ts) | 89 | learning-coursera |  |
 | [lib/admin-job-ready-query-structure.test.ts](../../../lib/admin-job-ready-query-structure.test.ts) | 29 | libraries |  |
 | [lib/admin/adminJobMatchesPrismaDeps.ts](../../../lib/admin/adminJobMatchesPrismaDeps.ts) | 128 | administration | createAdminJobMatchesPrismaDeps:49 |
@@ -14,6 +14,8 @@
 | [lib/admin/aiJobMatchCompute.ts](../../../lib/admin/aiJobMatchCompute.ts) | 54 | administration | JobMatchInput:3, AI_JOB_MATCH_EMPTY_COOLDOWN_MS:11, getOrComputeAiJobMatches:16, markAiJobMatchEmptyCooldown:48, clearAiJobMatchEmptyCooldown:52 |
 | [lib/admin/analytics.ts](../../../lib/admin/analytics.ts) | 258 | administration | MemberStatusCounts:14, EnrollmentTrend:21, ProgramProgress:27, PlacementRate:33, CounselorLoad:39, AnalyticsOverview:44, getAnalyticsOverview:61 |
 | [lib/admin/analyticsOverview.ts](../../../lib/admin/analyticsOverview.ts) | 298 | administration | AnalyticsFunnel:15, AnalyticsEngagement:22, AnalyticsOutcomes:30, AnalyticsFundingRow:38, AnalyticsProgramRow:44, AnalyticsAcquisitionStep:50, AnalyticsAcquisition:59, AnalyticsOverview:65, loadAnalyticsOverview:89 |
+| [lib/admin/analyticsTabs.test.ts](../../../lib/admin/analyticsTabs.test.ts) | 64 | administration |  |
+| [lib/admin/analyticsTabs.ts](../../../lib/admin/analyticsTabs.ts) | 96 | administration | ANALYTICS_TABS:15, AnalyticsTabId:20, ANALYTICS_TAB_PARAM:22, parseAnalyticsTab:25, EnrollmentOutcomesSource:31, EnrollmentOutcomesPanelData:46, buildEnrollmentOutcomesPanel:61 |
 | [lib/admin/applicantTriage.ts](../../../lib/admin/applicantTriage.ts) | 373 | administration | ApplicantTriageBucket:20, APPLICANT_TRIAGE_BUCKETS:26, ApplicantTriageReasonCode:34, ApplicantTriageChecklistKey:52, ApplicantTriageChecklistItem:61, ApplicantTriageResult:68, YesNo:76, ApplicantTriageInput:78, APPLICANT_TRIAGE_REASON_TEXT:120, APPLICANT_TRIAGE_CHECKLIST_TEXT:139, APPLICANT_TRIAGE_BUCKET_TEXT:149, triageApplicant:195, ApplicantTriageDisplay:332, localizeApplicantTriage:344, APPLICANT_TRIAGE_BUCKET_RANK:368 |
 | [lib/admin/applicantTriageLoad.ts](../../../lib/admin/applicantTriageLoad.ts) | 142 | administration | ApplicantTriageLoaded:22, loadApplicantTriageByUserIds:28, ApplicantTriageDisplayLoaded:128, localizeApplicantTriageMap:133 |
 | [lib/admin/applicationReview.ts](../../../lib/admin/applicationReview.ts) | 170 | administration | ApplicationReviewResult:24, changeApplicationStatus:34 |
@@ -27,10 +29,10 @@
 | [lib/admin/careerPlanSignal.test.ts](../../../lib/admin/careerPlanSignal.test.ts) | 153 | administration |  |
 | [lib/admin/careerPlanSignal.ts](../../../lib/admin/careerPlanSignal.ts) | 201 | administration | CareerPlanActivationStage:1, CareerPlanSignal:8, DeriveCareerPlanSignalInput:31, deriveCareerPlanSignal:150 |
 | [lib/admin/cohortAnalytics.ts](../../../lib/admin/cohortAnalytics.ts) | 640 | administration | cohortLabel:16, WeeklyRecapCohortRow:34, getWeeklyRecapCohortStats:44, WeeklyScoreboardComparison:145, WeeklyCounselorLeaderboardRow:151, WeeklyFunnelVelocity:161, WeeklyAtRiskMember:168, WeeklyScoreboardStats:176, getWeeklyScoreboardStats:218, AiToolsCohortRow:442, aiToolsUserScope:457, aiToolsActivityScope:464, getAiToolsCohortStats:482, AiToolUsageRow:545, getAiToolUsageCounts:563, CertificationsCohortRow:601, getCertificationsCohortStats:609 |
-| [lib/admin/commandCenter.test.ts](../../../lib/admin/commandCenter.test.ts) | 130 | administration |  |
-| [lib/admin/commandCenter.ts](../../../lib/admin/commandCenter.ts) | 276 | administration | buildApplicationEmailPacket:24, bucketCommandCenterTotals:24, AdminApplicationPendingRow:26, AdminAtRiskRow:27, AdminCommandCenter:28, AdminCommandCenterBaseRow:29, AdminCommandCenterTotals:30, AdminInterviewingRow:31, AdminNeedsReplyRow:32, AdminProgramHealthRow:33, ApplicationEmailPacket:34, getAdminCommandCenter:41 |
+| [lib/admin/commandCenter.test.ts](../../../lib/admin/commandCenter.test.ts) | 186 | administration |  |
+| [lib/admin/commandCenter.ts](../../../lib/admin/commandCenter.ts) | 266 | administration | buildApplicationEmailPacket:26, bucketCommandCenterTotals:27, buildProgramHealthRows:28, PROGRAM_HEALTH_SHARE_LABEL:29, AdminApplicationPendingRow:32, AdminAtRiskRow:33, AdminCommandCenter:34, AdminCommandCenterBaseRow:35, AdminCommandCenterTotals:36, AdminInterviewingRow:37, AdminNeedsReplyRow:38, AdminProgramHealthRow:39, ApplicationEmailPacket:40, getAdminCommandCenter:47 |
 | [lib/admin/commandCenterHealth.ts](../../../lib/admin/commandCenterHealth.ts) | 195 | administration | CommandCenterHealthStatus:15, CommandCenterHealthRow:17, CronRunSnapshot:32, CronHealthDefinition:39, CRON_RUNS_HREF:48, COMMAND_CENTER_CRON_ROWS:50, formatAgo:62, cronHealthRow:73, notCheckedHereRow:111, BuildSystemHealthInput:128, buildCommandCenterSystemHealth:152 |
-| [lib/admin/commandCenterHelpers.ts](../../../lib/admin/commandCenterHelpers.ts) | 161 | administration | AdminCommandCenterBaseRow:3, AdminNeedsReplyRow:9, AdminAtRiskRow:16, AdminInterviewingRow:25, ApplicationEmailPacket:32, AdminApplicationPendingRow:38, AdminCommandCenterTotals:52, AdminProgramHealthRow:67, ADMIN_QUEUE_KEYS:74, AdminQueueKey:75, normalizeAdminQueueRequest:76, adminQueueHref:83, AdminCommandCenter:87, buildApplicationEmailPacket:97, bucketCommandCenterTotals:146 |
+| [lib/admin/commandCenterHelpers.ts](../../../lib/admin/commandCenterHelpers.ts) | 201 | administration | AdminCommandCenterBaseRow:3, AdminNeedsReplyRow:9, AdminAtRiskRow:16, AdminInterviewingRow:25, ApplicationEmailPacket:32, AdminApplicationPendingRow:38, AdminCommandCenterTotals:52, AdminProgramHealthRow:72, PROGRAM_HEALTH_SHARE_LABEL:85, buildProgramHealthRows:93, ADMIN_QUEUE_KEYS:114, AdminQueueKey:115, normalizeAdminQueueRequest:116, adminQueueHref:123, AdminCommandCenter:127, buildApplicationEmailPacket:137, bucketCommandCenterTotals:186 |
 | [lib/admin/counselorRoster.ts](../../../lib/admin/counselorRoster.ts) | 51 | administration | COUNSELOR_PAGE_SIZE:5, parseCounselorRosterQuery:7, loadCounselorRoster:13 |
 | [lib/admin/counselorRosterAggregates.test.ts](../../../lib/admin/counselorRosterAggregates.test.ts) | 33 | administration |  |
 | [lib/admin/counselorRosterAggregates.ts](../../../lib/admin/counselorRosterAggregates.ts) | 66 | administration | CounselorAssignmentAgg:4, loadCounselorAssignmentAggregates:13 |
@@ -82,6 +84,8 @@
 | [lib/admin/metrics.ts](../../../lib/admin/metrics.ts) | 478 | administration | getAdminMetrics:357 |
 | [lib/admin/overviewOrgFilter.test.ts](../../../lib/admin/overviewOrgFilter.test.ts) | 47 | administration |  |
 | [lib/admin/overviewOrgFilter.ts](../../../lib/admin/overviewOrgFilter.ts) | 75 | administration | trainingDashboardMemberWhere:5, triageDigestMemberWhere:17, triageDigestNewApplicantWhere:27, triageDigestStaleTrainingWhere:38, triageDigestEventWhere:48, triageDigestAssignmentWhere:58, analyticsOverviewUserWhere:67 |
+| [lib/admin/pipelineFunnel.test.ts](../../../lib/admin/pipelineFunnel.test.ts) | 47 | administration |  |
+| [lib/admin/pipelineFunnel.ts](../../../lib/admin/pipelineFunnel.ts) | 61 | administration | PipelineFunnelCounts:15, PIPELINE_FUNNEL_STAGES:25, WIOA_SCREENED_LABEL:32, WIOA_SCREENED_CAPTION:33, pipelineFunnelSubtitle:35, buildPipelineFunnel:41 |
 | [lib/admin/placementsRosterSort.ts](../../../lib/admin/placementsRosterSort.ts) | 72 | administration | PLACEMENT_SORT_KEYS:7, PlacementSortKey:16, PlacementSortDirection:17, DEFAULT_PLACEMENT_SORT_KEY:19, DEFAULT_PLACEMENT_SORT_DIRECTION:20, sortPlacementRows:52 |
 | [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 51 | administration | directoryRoleLabel:15, resolveDirectoryRole:40 |
 | [lib/admin/runAdminJobMatchesGet.test.ts](../../../lib/admin/runAdminJobMatchesGet.test.ts) | 135 | administration |  |
@@ -92,7 +96,7 @@
 | [lib/admin/studentsRosterFacts.ts](../../../lib/admin/studentsRosterFacts.ts) | 59 | administration | StudentRosterAssignmentSource:8, StudentRosterActivitySource:9, StudentRosterCourseFact:10, resolveStudentRosterAssignment:13, STUDENT_ROSTER_ACTIVITY_LABELS:34, resolveStudentRosterActivity:41 |
 | [lib/admin/studentsRosterLoad.ts](../../../lib/admin/studentsRosterLoad.ts) | 302 | administration | STUDENTS_SECONDARY_LOAD_NOTICE:41, StudentsRosterLoad:47, loadStudentsRoster:82 |
 | [lib/admin/studentsRosterSort.ts](../../../lib/admin/studentsRosterSort.ts) | 111 | administration | STUDENT_SORT_KEYS:7, StudentSortKey:18, StudentSortDirection:19, DEFAULT_STUDENT_SORT_KEY:21, DEFAULT_STUDENT_SORT_DIRECTION:22, sortStudentRows:71, isStudentSortKey:109 |
-| [lib/admin/studentsRosterView.ts](../../../lib/admin/studentsRosterView.ts) | 141 | administration | STUDENTS_ROSTER_VIEWS:21, StudentsRosterView:22, parseStudentsRosterView:27, STUDENTS_ROSTER_VIEW_HREFS:35, TRAINING_PROGRESS_LEGACY_HREF:41, MEMBERS_MANAGEMENT_HREF:44, ROSTER_CHIPS:46, RosterChip:47, TRAINING_CHIPS:49, TrainingChip:50, StudentsRosterChip:52, chipsForView:54, matchesRosterChip:64, matchesRosterSearch:77, StudentsRosterViewCopy:83, STUDENTS_ROSTER_VIEW_COPY:92, toTrainingRosterRow:118, initialsFrom:136 |
+| [lib/admin/studentsRosterView.ts](../../../lib/admin/studentsRosterView.ts) | 175 | administration | STUDENTS_ROSTER_VIEWS:21, StudentsRosterView:22, parseStudentsRosterView:27, STUDENTS_ROSTER_VIEW_HREFS:35, TRAINING_PROGRESS_LEGACY_HREF:41, MEMBERS_MANAGEMENT_HREF:44, ROSTER_CHIPS:46, RosterChip:47, TRAINING_CHIPS:49, TrainingChip:50, StudentsRosterChip:52, chipsForView:54, STUDENTS_NEEDS_PARAM:64, STUDENTS_NEEDS_VALUES:65, StudentsNeeds:66, parseStudentsNeeds:68, chipForStudentsNeeds:81, studentsNeedsHref:88, matchesRosterChip:98, matchesRosterSearch:111, StudentsRosterViewCopy:117, STUDENTS_ROSTER_VIEW_COPY:126, toTrainingRosterRow:152, initialsFrom:170 |
 | [lib/admin/studentsUnmatchedCoursera.test.ts](../../../lib/admin/studentsUnmatchedCoursera.test.ts) | 35 | learning-coursera |  |
 | [lib/admin/studentsUnmatchedCoursera.ts](../../../lib/admin/studentsUnmatchedCoursera.ts) | 53 | learning-coursera | loadUnmatchedCourseraRoster:32 |
 | [lib/admin/trainingDashboard.ts](../../../lib/admin/trainingDashboard.ts) | 315 | administration | TrainingDashboardMetrics:20, TrainingDashboardRow:29, TrainingDashboardData:56, loadTrainingDashboardData:70 |
@@ -106,6 +110,7 @@
 | [lib/admin/triageDigestTypes.ts](../../../lib/admin/triageDigestTypes.ts) | 50 | administration | TriageMember:8, TriageBucketKey:23, TriageBucket:25, TriageDigest:45 |
 | [lib/admin/userDeleteResponse.test.ts](../../../lib/admin/userDeleteResponse.test.ts) | 16 | administration |  |
 | [lib/admin/userDeleteResponse.ts](../../../lib/admin/userDeleteResponse.ts) | 13 | administration | userAuthDeleteFailedResponse:3 |
+| [lib/admin/usersSelfGuard.ts](../../../lib/admin/usersSelfGuard.ts) | 14 | administration | SELF_DELETE_BLOCKED_TITLE:9, SELF_ROLE_CHANGE_BLOCKED_TITLE:10, isSelfRow:12 |
 | [lib/admin/withSoftTimeout.test.ts](../../../lib/admin/withSoftTimeout.test.ts) | 16 | administration |  |
 | [lib/admin/withSoftTimeout.ts](../../../lib/admin/withSoftTimeout.ts) | 22 | administration | SoftTimeoutError:6, withSoftTimeout:13 |
 | [lib/agents/gateway/core.test.ts](../../../lib/agents/gateway/core.test.ts) | 252 | libraries |  |
@@ -224,8 +229,8 @@
 | [lib/assessment/questions.ts](../../../lib/assessment/questions.ts) | 61 | libraries | QuestionChoice:14, AssessmentQuestionPublic:16, ASSESSMENT_QUESTIONS_PUBLIC:23, TOTAL_POINTS_PUBLIC:61 |
 | [lib/assessment/reviewRows.ts](../../../lib/assessment/reviewRows.ts) | 62 | libraries | AssessmentReviewRow:9, buildAssessmentReviewRows:35, formatAssessmentReviewText:52 |
 | [lib/attention/admin.ts](../../../lib/attention/admin.ts) | 46 | libraries | ADMIN_ATTENTION_ROSTER_CAP:27, getAdminAttention:44 |
-| [lib/attention/adminAgreement.test.ts](../../../lib/attention/adminAgreement.test.ts) | 71 | libraries |  |
-| [lib/attention/adminViews.ts](../../../lib/attention/adminViews.ts) | 183 | libraries | ADMIN_ATTENTION_TILES:22, AdminAttentionTileKey:28, AdminAttentionTile:30, ADMIN_ATTENTION_HREF:39, buildAdminAttentionTiles:45, AdminAttentionQueueItem:56, buildCommandCenterAttentionRows:70, buildAttentionDigest:126 |
+| [lib/attention/adminAgreement.test.ts](../../../lib/attention/adminAgreement.test.ts) | 90 | libraries |  |
+| [lib/attention/adminViews.ts](../../../lib/attention/adminViews.ts) | 190 | libraries | ADMIN_ATTENTION_TILES:23, AdminAttentionTileKey:29, AdminAttentionTile:31, ADMIN_ATTENTION_HREF:46, buildAdminAttentionTiles:52, AdminAttentionQueueItem:63, buildCommandCenterAttentionRows:77, buildAttentionDigest:133 |
 | [lib/attention/counselor.ts](../../../lib/attention/counselor.ts) | 66 | libraries | CounselorAttentionOptions:14, resolveCounselorMemberIds:27, getCounselorAttention:57 |
 | [lib/attention/counselorAgreement.test.ts](../../../lib/attention/counselorAgreement.test.ts) | 151 | libraries |  |
 | [lib/attention/counselorViews.ts](../../../lib/attention/counselorViews.ts) | 447 | libraries | PriorityBucket:23, PriorityQueueRow:25, PriorityQueueData:45, PRIORITY_QUEUE_ON_TRACK_DISPLAY_CAP:51, severityToBucket:53, toPriorityQueue:75, InboxZeroContext:108, InboxZeroRow:110, InboxZeroQueue:123, toInboxZeroQueue:134, TriagePriority:165, TriageContext:166, TriageRow:168, TriageQueue:179, SEVERITY_TO_TRIAGE_PRIORITY:192, FLAG_PRIORITY:198, toTriageQueue:218, emptyTriageQueue:235, WorkQueueRow:241, WORK_QUEUE_REASONS:251, toWorkQueueRows:254, WorkQueueContext:276, toWorkQueueContext:283, orderedReasonCounts:291, TodayGroupKey:306, TodayGroupMeta:308, TODAY_GROUP_ORDER:318, TODAY_GROUPS:327, todayGroupForReason:376, TodayRow:380, TodayGroup:394, TodayQueue:396, toTodayQueue:428 |
@@ -300,6 +305,7 @@
 | [lib/career/careerQuizAreas.ts](../../../lib/career/careerQuizAreas.ts) | 26 | libraries | MINI_IP_AREA_ORDER:19, getMiniIpAreaOrder:24 |
 | [lib/career/careerQuizRules.test.ts](../../../lib/career/careerQuizRules.test.ts) | 170 | libraries |  |
 | [lib/career/careerQuizRules.ts](../../../lib/career/careerQuizRules.ts) | 177 | libraries | RIASEC_AREAS:13, RiasecArea:21, QuizQuestion:23, QUIZ_QUESTIONS:26, SCALE_LABELS:36, isValidQuizAnswers:42, areasToTypeSlug:51, typeSlugToLabel:61, areaScoresToOnetAnswers:79, CareerPlanTopCareer:93, CareerPlanStep:98, buildCareerPlanApplyHref:120, buildCommitmentShareText:143, buildCareerPlanSteps:161 |
+| [lib/certifications/certificationApproved.ts](../../../lib/certifications/certificationApproved.ts) | 42 | libraries | runCertificationApprovedEffects:18 |
 | [lib/coach/memory.test.ts](../../../lib/coach/memory.test.ts) | 64 | libraries |  |
 | [lib/coach/memory.ts](../../../lib/coach/memory.ts) | 165 | libraries | CoachTurn:12, takeLastCoachExchanges:29, formatCoachTranscript:34, deriveCoachMemoryFallback:44, appendCoachMemoryToSystemPrompt:62, loadCoachMemory:71, getCoachMemoryDynamicVariables:79, updateCoachMemory:111 |
 | [lib/coach/memorySafety.test.ts](../../../lib/coach/memorySafety.test.ts) | 78 | libraries |  |
@@ -658,6 +664,7 @@
 | [lib/marketing/utmCapture.ts](../../../lib/marketing/utmCapture.ts) | 66 | public-experience | UTM_SESSION_KEYS:17, MarketingAttribution:26, readMarketingAttribution:36, clearMarketingAttribution:57 |
 | [lib/member/aiToolFollowThrough.test.ts](../../../lib/member/aiToolFollowThrough.test.ts) | 26 | member-counselor |  |
 | [lib/member/aiToolFollowThrough.ts](../../../lib/member/aiToolFollowThrough.ts) | 148 | member-counselor | AIToolFollowThrough:1, getAIToolFollowThrough:14 |
+| [lib/member/anonymizeMember.ts](../../../lib/member/anonymizeMember.ts) | 179 | member-counselor | AnonymizeMemberReason:35, AnonymizeMemberOptions:40, AnonymizeMemberResult:51, ANONYMIZED_FULL_NAME:59, MEMBER_ANONYMIZED_AUDIT_ACTION:60, ANONYMIZED_PROFILE_DATA:63, ANONYMIZED_PROFILE_FIELDS:98, anonymizeMember:117 |
 | [lib/member/applicationAiFeedback.ts](../../../lib/member/applicationAiFeedback.ts) | 51 | member-counselor | APPLICATION_FEEDBACK_TOOL_TYPES:4, RecentAiToolForFeedback:11, findRecentAiToolsForApplicationFeedback:25, formatFeedbackPromptDate:49 |
 | [lib/member/assessmentConfirmMessage.test.ts](../../../lib/member/assessmentConfirmMessage.test.ts) | 18 | member-counselor |  |
 | [lib/member/assessmentConfirmMessage.ts](../../../lib/member/assessmentConfirmMessage.ts) | 6 | member-counselor | assessmentConfirmMessage:2 |
@@ -681,6 +688,7 @@
 | [lib/member/dailyStudyPoints.ts](../../../lib/member/dailyStudyPoints.ts) | 26 | member-counselor | utcDateKey:21 |
 | [lib/member/dashboardTabs.test.ts](../../../lib/member/dashboardTabs.test.ts) | 52 | member-counselor |  |
 | [lib/member/dashboardTabs.ts](../../../lib/member/dashboardTabs.ts) | 60 | member-counselor | MemberDashboardTab:1, MemberDashboardTabLink:3, resolveMemberDashboardTabs:35 |
+| [lib/member/deletedEmail.ts](../../../lib/member/deletedEmail.ts) | 30 | member-counselor | buildDeletedEmail:15, parseDeletedEmail:20, isDeletedEmail:24, isDeletedEmailMarker:28 |
 | [lib/member/ensureAppUser.test.ts](../../../lib/member/ensureAppUser.test.ts) | 118 | member-counselor |  |
 | [lib/member/ensureAppUser.ts](../../../lib/member/ensureAppUser.ts) | 113 | member-counselor | EnsureAppUserOptions:13, ensureAppUserProvisioned:53 |
 | [lib/member/exportData.test.ts](../../../lib/member/exportData.test.ts) | 15 | member-counselor |  |
@@ -929,8 +937,8 @@
 | [lib/resume/resumeUiConcurrencyAndWarnings.test.ts](../../../lib/resume/resumeUiConcurrencyAndWarnings.test.ts) | 131 | member-counselor |  |
 | [lib/resume/resumeUploadBodyFidelity.test.ts](../../../lib/resume/resumeUploadBodyFidelity.test.ts) | 237 | member-counselor |  |
 | [lib/resume/resumeUploadUiContract.test.ts](../../../lib/resume/resumeUploadUiContract.test.ts) | 49 | member-counselor |  |
-| [lib/retention/cleanup.test.ts](../../../lib/retention/cleanup.test.ts) | 354 | member-counselor |  |
-| [lib/retention/cleanup.ts](../../../lib/retention/cleanup.ts) | 284 | member-counselor | CleanupResult:12, DataCleanupReport:19, cleanupTable:38, BlockedAccount:118, DeletedAccountsResult:123, foreignKeyConstraintName:141, cleanupDeletedAccounts:171, runDataCleanup:226 |
+| [lib/retention/cleanup.test.ts](../../../lib/retention/cleanup.test.ts) | 386 | member-counselor |  |
+| [lib/retention/cleanup.ts](../../../lib/retention/cleanup.ts) | 298 | member-counselor | CleanupResult:13, DataCleanupReport:20, cleanupTable:39, BlockedAccount:119, DeletedAccountsResult:124, foreignKeyConstraintName:142, cleanupDeletedAccounts:180, runDataCleanup:240 |
 | [lib/retention/config.ts](../../../lib/retention/config.ts) | 149 | member-counselor | RetentionTableConfig:22, RETENTION_BATCH_SIZE:33, CRITICAL_AUDIT_ACTION_PREFIXES:46, RETENTION_AUDIT_DAYS:66, PUBLIC_LEAD_RETENTION_DAYS:81, RETENTION_TABLES:83, DELETED_ACCOUNT_RETENTION_DAYS:141, getCutoffDate:144 |
 | [lib/security/auditAiToolsHistory.test.ts](../../../lib/security/auditAiToolsHistory.test.ts) | 23 | libraries |  |
 | [lib/security/placementSurveyToken.ts](../../../lib/security/placementSurveyToken.ts) | 118 | libraries | issuePlacementSurveyToken:66, VerifyResult:90, verifyPlacementSurveyToken:94 |
@@ -1009,6 +1017,7 @@
 | [lib/validation/resumeStrength.ts](../../../lib/validation/resumeStrength.ts) | 9 | libraries | resumeStrengthSchema:3, ResumeStrengthInput:9 |
 | [lib/validation/salaryNegotiation.ts](../../../lib/validation/salaryNegotiation.ts) | 14 | libraries | salaryNegotiationSchema:3, SalaryNegotiationInput:14 |
 | [lib/validation/skillAssessment.ts](../../../lib/validation/skillAssessment.ts) | 21 | libraries | saveSkillAssessmentSchema:16 |
+| [lib/webhooks/deadLetter.ts](../../../lib/webhooks/deadLetter.ts) | 61 | libraries | WebhookDeadLetterInput:7, WebhookDeadLetterResult:18, recordWebhookDeadLetter:34 |
 | [lib/webhooks/logEvent.ts](../../../lib/webhooks/logEvent.ts) | 69 | libraries | WebhookEventStatus:5, WebhookStatusPersistenceError:8, LogWebhookEventInput:15, logWebhookEvent:28, updateWebhookEventStatus:50 |
 | [lib/webhooks/retry.test.ts](../../../lib/webhooks/retry.test.ts) | 125 | libraries |  |
 | [lib/webhooks/retry.ts](../../../lib/webhooks/retry.ts) | 87 | libraries | updateWebhookEventStatus:5, getNextRetryDelayMs:11, getNextRetryAt:16, markWebhookForRetry:22, getPendingRetryEvents:47, getWebhookStats:63 |

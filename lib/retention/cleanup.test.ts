@@ -12,6 +12,11 @@ const mockDeleteMany = vi.fn();
 const mockFindMany = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
+const mockAnonymizeMember = vi.fn();
+
+vi.mock('@/lib/member/anonymizeMember', () => ({
+  anonymizeMember: (...args: unknown[]) => mockAnonymizeMember(...args),
+}));
 
 /** Shape Prisma gives a violated foreign key (P2003). */
 function foreignKeyError(constraint: string) {
@@ -175,6 +180,7 @@ describe('cleanupDeletedAccounts', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockAuditEventDeleteMany.mockResolvedValue({ count: 0 });
+    mockAnonymizeMember.mockResolvedValue(null);
   });
 
   it('hard-deletes soft-deleted users past retention, one transaction per account', async () => {
@@ -196,6 +202,8 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockDeleteMany).toHaveBeenCalledTimes(2);
     expect(mockDeleteMany).toHaveBeenNthCalledWith(1, { where: { id: 'u1' } });
     expect(mockDeleteMany).toHaveBeenNthCalledWith(2, { where: { id: 'u2' } });
+    // A purged account is gone; only held accounts go through the anonymiser.
+    expect(mockAnonymizeMember).not.toHaveBeenCalled();
   });
 
   it("removes the member's own audit_events rows before the user row, so the RESTRICT actor FK cannot fire", async () => {
@@ -255,6 +263,30 @@ describe('cleanupDeletedAccounts', () => {
         where: { deletedAt: { not: null, lt: expect.any(Date) }, id: { notIn: ['held'] } },
       }),
     );
+    // WAP-169: the row that stays behind is scrubbed through the shared
+    // anonymiser as an unattended (cron) action; purged accounts are not.
+    expect(mockAnonymizeMember).toHaveBeenCalledTimes(1);
+    expect(mockAnonymizeMember).toHaveBeenCalledWith('held', {
+      reason: 'retention_purge_blocked',
+      actorUserId: null,
+    });
+    errorSpy.mockRestore();
+  });
+
+  it('keeps the held account in the report when anonymising it fails, and keeps purging', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'held' }, { id: 'free' }]).mockResolvedValueOnce([]);
+    mockDeleteMany.mockImplementation(async ({ where }: { where: { id: string } }) => {
+      if (where.id === 'held') throw foreignKeyError('chapter_members_user_id_fkey');
+      return { count: 1 };
+    });
+    mockAnonymizeMember.mockRejectedValueOnce(new Error('profiles locked'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = await cleanupDeletedAccounts();
+
+    expect(result).toEqual({ deleted: 1, blocked: [{ id: 'held', constraint: 'chapter_members_user_id_fkey' }] });
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: 'free' } });
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Could not anonymise held account held'), expect.any(Error));
     errorSpy.mockRestore();
   });
 
