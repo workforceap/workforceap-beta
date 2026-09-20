@@ -1221,7 +1221,7 @@ describe('POST /api/cron/placement-survey', () => {
     });
   });
 
-  it('returns partial status when email failures occur', async () => {
+  it('records an error run and answers 500 when email failures occur (WAP-177)', async () => {
     vi.mocked(runDailyPlacementSurveyCron).mockResolvedValue({
       success: true,
       waves: [
@@ -1240,7 +1240,13 @@ describe('POST /api/cron/placement-survey', () => {
     });
 
     const res = await runCron(new Request('http://localhost:3000/api/cron/placement-survey'));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(500);
+    const { logCronRun } = await import('@/lib/admin/logCronRun');
+    expect(vi.mocked(logCronRun)).toHaveBeenCalledWith(
+      'cron_placement_survey',
+      expect.objectContaining({ summary: expect.objectContaining({ totalEmailFailures: 1 }) }),
+      'error',
+    );
     const body = await res.json();
     expect(body.summary.totalEmailFailures).toBe(1);
   });

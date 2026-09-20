@@ -4,7 +4,7 @@ import {
   type CreateEmailResponse,
 } from 'resend';
 import { getAdminAlertRecipients } from '@/lib/email';
-import { barrierLabel, formatWioaReasons, publicAssistanceLabel, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 export function getWioaScreeningNotificationRecipients(): string[] {
   const configured = (process.env.WIOA_SCREENING_NOTIFY_EMAIL ?? '')
@@ -71,6 +71,8 @@ export async function sendWioaScreeningNotification(params: {
         `• Unemployed / laid off: ${answers.dislocatedWorker ? 'Yes' : 'No'}`,
         `• Low income self-report: ${answers.lowIncomeSelfReport ? 'Yes' : 'No'}`,
         `• Receiving TANF / WIC / Food stamps (SNAP): ${publicAssistanceLabel(answers.publicAssistanceSelfReport)}`,
+        answers.publicAssistanceSelfReport === true ? `• Programs named (self-reported): ${publicAssistanceProgramsLabel(answers)}` : null,
+        answers.publicAssistanceSelfReport === true ? `• Wants help applying for benefits: ${publicAssistanceHelpLabel(answers)}` : null,
         `• Interested in training: ${answers.trainingInterest ? 'Yes' : 'No'}`,
         `• Completed intake already: ${answers.completedIntakeSelfReport ? 'Yes' : 'No'}`,
         '',

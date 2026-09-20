@@ -52,6 +52,8 @@ async function buildEligibilitySnapshot(db: Prisma.TransactionClient, userId: st
           id: true, createdAt: true, q1: true, q2: true, q3: true,
           qualifies: true, yesCount: true, receivingUnemployment: true,
           exhaustedUnemployment: true, layoffCompany: true, snapWic: true,
+          // WAP-53: benefit detail and help request travel with the decision evidence.
+          publicAssistancePrograms: true, publicAssistanceHelpRequested: true,
         },
       },
       preScreeningResponse: {

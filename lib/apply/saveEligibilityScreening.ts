@@ -1,5 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import type { EligibilityScreeningFields } from './eligibilityScreeningFields';
+import { normalizePublicAssistanceFollowUp } from './publicAssistance';
 
 /** Shared persistence only: each caller retains its existing qualification policy. */
 export async function saveEligibilityScreening(
@@ -21,6 +22,11 @@ export async function saveEligibilityScreening(
     exhaustedUnemployment: answers.exhaustedUnemployment ?? null,
     layoffCompany: answers.layoffCompany ?? null,
     snapWic: answers.snapWic ?? null,
+    ...normalizePublicAssistanceFollowUp({
+      snapWic: answers.snapWic,
+      publicAssistancePrograms: answers.publicAssistancePrograms,
+      publicAssistanceHelpRequested: answers.publicAssistanceHelpRequested,
+    }),
     hearAbout: answers.hearAbout ?? null,
     hearAboutOther: answers.hearAboutOther ?? null,
     partnerAmbassadorReferral: answers.partnerAmbassadorReferral ?? null,

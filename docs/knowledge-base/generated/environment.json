@@ -863,7 +863,7 @@
         },
         {
           "file": "lib/cron/withCronLogging.ts",
-          "line": 33
+          "line": 64
         },
         {
           "file": "lib/email/send.test.ts",
@@ -903,7 +903,7 @@
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
-          "line": 19
+          "line": 31
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
@@ -923,11 +923,11 @@
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 85
+          "line": 86
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 89
+          "line": 90
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
@@ -1889,7 +1889,7 @@
       "references": [
         {
           "file": "app/api/cron/smoke-test/route.ts",
-          "line": 132
+          "line": 136
         }
       ]
     },
@@ -1908,7 +1908,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 264
+          "line": 281
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2141,15 +2141,15 @@
         },
         {
           "file": "app/api/cron/deploy-health/route.ts",
-          "line": 14
+          "line": 18
         },
         {
           "file": "app/api/cron/onboarding-stalls/route.ts",
-          "line": 11
+          "line": 15
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
-          "line": 131
+          "line": 135
         },
         {
           "file": "app/api/employer/checkout/route.ts",
@@ -2285,7 +2285,7 @@
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
-          "line": 69
+          "line": 88
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -2344,7 +2344,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 436
+          "line": 464
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2415,7 +2415,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 435
+          "line": 463
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2522,7 +2522,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 277
+          "line": 294
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2611,7 +2611,7 @@
         },
         {
           "file": "lib/nav/portalNav.ts",
-          "line": 153
+          "line": 155
         }
       ]
     },
@@ -2872,11 +2872,11 @@
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1252
+          "line": 1258
         },
         {
           "file": "tests/api/placement-survey.spec.ts",
-          "line": 1256
+          "line": 1262
         },
         {
           "file": "tests/api/testimonials.spec.ts",
@@ -3490,6 +3490,10 @@
       "declaredInRootExample": false,
       "references": [
         {
+          "file": "scripts/run-db-contract-tests.mjs",
+          "line": 50
+        },
+        {
           "file": "tests/rls/member-message-assignment.mjs",
           "line": 21
         }
@@ -3774,7 +3778,7 @@
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
-          "line": 20
+          "line": 31
         },
         {
           "file": "lib/supabase-admin.ts",
@@ -3836,13 +3840,24 @@
       ]
     },
     {
+      "name": "TEST_REAL_DB",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "scripts/test-unit.mjs",
+          "line": 52
+        }
+      ]
+    },
+    {
       "name": "TURNSTILE_SECRET_KEY",
       "publicPrefix": false,
       "declaredInRootExample": true,
       "references": [
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 266
+          "line": 283
         },
         {
           "file": "app/api/contact/route.ts",
@@ -3956,7 +3971,7 @@
       "references": [
         {
           "file": "lib/email/unsubscribeToken.ts",
-          "line": 18
+          "line": 29
         }
       ]
     },
@@ -4409,7 +4424,7 @@
       "references": [
         {
           "file": "app/api/cron/deploy-health/route.ts",
-          "line": 33
+          "line": 37
         },
         {
           "file": "app/api/health/slo/route.ts",
@@ -4424,7 +4439,7 @@
       "references": [
         {
           "file": "app/api/cron/deploy-health/route.ts",
-          "line": 34
+          "line": 38
         },
         {
           "file": "app/api/health/slo/route.ts",
@@ -4439,7 +4454,7 @@
       "references": [
         {
           "file": "app/api/cron/deploy-health/route.ts",
-          "line": 35
+          "line": 39
         }
       ]
     },

@@ -13,13 +13,32 @@
  */
 import { createHmac, timingSafeEqual } from 'crypto';
 
+let warnedSecretFallback = false;
+
+/**
+ * True when tokens are being signed with a borrowed secret. Rotating that
+ * borrowed secret (the natural fix for a cron 401 storm, WAP-177) silently
+ * invalidates every unsubscribe link already sent, so operators must set an
+ * explicit UNSUBSCRIBE_TOKEN_SECRET first.
+ */
+export function usesUnsubscribeSecretFallback(env: NodeJS.ProcessEnv = process.env): boolean {
+  return !env.UNSUBSCRIBE_TOKEN_SECRET && Boolean(env.CRON_SECRET || env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
 function secret(): string {
-  const s =
-    process.env.UNSUBSCRIBE_TOKEN_SECRET ||
-    process.env.CRON_SECRET ||
-    process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!s) throw new Error('No secret available for unsubscribe tokens');
-  return s;
+  const explicit = process.env.UNSUBSCRIBE_TOKEN_SECRET;
+  if (explicit) return explicit;
+  const fallback = process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!fallback) throw new Error('No secret available for unsubscribe tokens');
+  if (!warnedSecretFallback) {
+    warnedSecretFallback = true;
+    console.warn(
+      '[unsubscribe] UNSUBSCRIBE_TOKEN_SECRET is unset; signing unsubscribe links with a borrowed secret. ' +
+        'Rotating CRON_SECRET or the service-role key would invalidate every link already sent. ' +
+        'Set UNSUBSCRIBE_TOKEN_SECRET before rotating either (WAP-177).',
+    );
+  }
+  return fallback;
 }
 
 function normalize(email: string): string {

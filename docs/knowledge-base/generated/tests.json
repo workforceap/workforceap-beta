@@ -263,7 +263,7 @@
         "source": "scripts/test-unit.mjs",
         "status": "skipped",
         "reason": "owned by npm run test:vitest (shared manifest; collection guarded)",
-        "sourceLine": 84
+        "sourceLine": 95
       },
       {
         "runner": "vitest",
@@ -3385,6 +3385,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/apply/publicAssistance.test.ts",
+    "area": "libraries",
+    "domain": "applications-enrollment",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/apply/publicAssistance.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/apply/schoolCollection.test.ts",
     "area": "libraries",
     "domain": "applications-enrollment",
@@ -3879,11 +3903,11 @@
     "localReferences": [
       {
         "file": "lib/auth/roles.ts",
-        "line": 4
+        "line": 16
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 5
+        "line": 23
       }
     ],
     "kind": "test-candidate",
@@ -3891,12 +3915,10 @@
       {
         "runner": "node-unit",
         "source": "scripts/test-unit.mjs",
-        "status": "skipped",
-        "reason": "requires a live postgres connection (no Prisma mock layer in this spec)",
-        "sourceLine": 89
+        "status": "selected"
       }
     ],
-    "collectionStatus": "not-selected-by-indexed-runners",
+    "collectionStatus": "statically-selected",
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
@@ -5742,6 +5764,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/cron/cronSecretPolicy.test.ts",
+    "area": "libraries",
+    "domain": "communications",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/cron/cronSecretPolicy.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/cron/placementSurveySentStatePolicy.test.ts",
     "area": "libraries",
     "domain": "communications",
@@ -5749,6 +5795,30 @@
       "node:test"
     ],
     "localReferences": [],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/cron/staleExecutions.test.ts",
+    "area": "libraries",
+    "domain": "communications",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/cron/staleExecutions.ts",
+        "line": 3
+      }
+    ],
     "kind": "test-candidate",
     "declaredRunners": [
       {
@@ -8040,6 +8110,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/messages/unansweredBackfill.test.ts",
+    "area": "libraries",
+    "domain": "communications",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/messages/unansweredBackfill.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/milestoneCascade/buildCascadeFromCompletion.test.ts",
     "area": "libraries",
     "domain": "member-counselor",
@@ -10150,6 +10244,30 @@
       {
         "file": "scripts/verify-admin-mutation-audit.cjs",
         "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "scripts/verify-no-source-text-tests.test.ts",
+    "area": "operations",
+    "domain": "operations",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "scripts/verify-no-source-text-tests.mjs",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -13263,8 +13381,12 @@
         "line": 73
       },
       {
-        "file": "lib/observability/captureApiError.ts",
+        "file": "lib/admin/logCronRun.ts",
         "line": 74
+      },
+      {
+        "file": "lib/observability/captureApiError.ts",
+        "line": 75
       }
     ],
     "kind": "test-candidate",
@@ -16329,20 +16451,24 @@
         "line": 1134
       },
       {
-        "file": "lib/cron/placement-surveys.ts",
-        "line": 1262
+        "file": "lib/admin/logCronRun.ts",
+        "line": 1244
       },
       {
         "file": "lib/cron/placement-surveys.ts",
-        "line": 1319
+        "line": 1268
       },
       {
         "file": "lib/cron/placement-surveys.ts",
-        "line": 1344
+        "line": 1325
       },
       {
         "file": "lib/cron/placement-surveys.ts",
-        "line": 1362
+        "line": 1350
+      },
+      {
+        "file": "lib/cron/placement-surveys.ts",
+        "line": 1368
       }
     ],
     "kind": "test-candidate",

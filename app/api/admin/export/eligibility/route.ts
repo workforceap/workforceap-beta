@@ -63,6 +63,8 @@ async function _GET() {
               exhaustedUnemployment: true,
               layoffCompany: true,
               snapWic: true,
+              publicAssistancePrograms: true,
+              publicAssistanceHelpRequested: true,
               hearAbout: true,
               hearAboutOther: true,
               partnerAmbassadorReferral: true,
@@ -89,7 +91,7 @@ async function _GET() {
       {
         reportTitle: 'Eligibility Screening Datasheet',
         notes:
-          'WS5 adult eligibility answers (unemployment triad, SNAP/WIC, hear-about, ambassador). In-admin CSV — not a Google Sheet sync.',
+          'WS5 adult eligibility answers (unemployment triad, SNAP/WIC with programs and help requested, hear-about, ambassador). In-admin CSV — not a Google Sheet sync.',
       },
     );
 

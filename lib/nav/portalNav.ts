@@ -76,6 +76,8 @@ export type NavBadgeKey =
   | 'milestones_awaiting_approval'
   | 'counselor_messages_unread'
   | 'counselor_sla_breach_48h'
+  /** Member threads whose latest message has no staff reply yet (any age). */
+  | 'member_messages_unanswered'
   | 'employer_queue_review_today'
   | 'employer_queue_stale_48h'
   | 'employer_queue_interview'
@@ -376,7 +378,9 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     group: 'students',
     Icon: MessageSquare,
     requiresSuperAdminContext: true,
-    badgeKey: 'counselor_sla_breach_48h',
+    // WAP-168: the badge is every member message awaiting a staff reply, not
+    // only the ones already 48h overdue, so someone is pushed to look today.
+    badgeKey: 'member_messages_unanswered',
   },
 
   // ── Programs & Training ──

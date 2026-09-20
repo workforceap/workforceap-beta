@@ -31,6 +31,9 @@ export type ApplyFlowDraftV1 = {
   exhaustedUnemployment?: 'yes' | 'no' | null;
   layoffCompany?: string;
   snapWic?: 'yes' | 'no' | null;
+  /** WAP-53 follow-ups after snapWic = yes. */
+  publicAssistancePrograms?: string[];
+  publicAssistanceHelpRequested?: 'yes' | 'no' | null;
   hearAbout?: string;
   hearAboutOther?: string;
   partnerAmbassadorReferral?: string;

@@ -105,6 +105,40 @@ console.log('wioaQualification tests passed');
   assert.ok(!reasons.some((r) => r.code === 'public_assistance'));
 }
 
+test('WAP-53 follow-ups parse after a Yes, are dropped after a No, and legacy snapshots round-trip unchanged', () => {
+  const withDetail = parseWioaAnswers({ ...base, ageBracket: '25_54', publicAssistanceSelfReport: true, publicAssistancePrograms: ['snap', 'bogus', 'snap'], publicAssistanceHelpRequested: true });
+  assert.deepEqual(withDetail?.publicAssistancePrograms, ['snap']);
+  assert.equal(withDetail?.publicAssistanceHelpRequested, true);
+  const afterNo = parseWioaAnswers({ ...base, ageBracket: '25_54', publicAssistanceSelfReport: false, publicAssistancePrograms: ['snap'], publicAssistanceHelpRequested: true });
+  assert.equal('publicAssistancePrograms' in (afterNo ?? {}), false);
+  assert.equal('publicAssistanceHelpRequested' in (afterNo ?? {}), false);
+  const legacy = parseWioaAnswers({ ...base, ageBracket: '25_54', publicAssistanceSelfReport: true });
+  assert.deepEqual(legacy, { ...base, ageBracket: '25_54', publicAssistanceSelfReport: true });
+});
+
+test('WIC alone is not treated as a definitive low-income indicator (WAP-53 acceptance 6)', () => {
+  const wicOnly = computeWioaSignal({ ...base, ageBracket: '25_54', primaryBarrier: 'transportation', publicAssistanceSelfReport: true, publicAssistancePrograms: ['wic'] });
+  assert.equal(wicOnly.signal, 'possible');
+  assert.ok(wicOnly.reasons.some((r) => r.code === 'wic_only_review'));
+  assert.ok(!wicOnly.reasons.some((r) => r.code === 'public_assistance'));
+  const wicAndSnap = computeWioaSignal({ ...base, ageBracket: '25_54', primaryBarrier: 'transportation', publicAssistanceSelfReport: true, publicAssistancePrograms: ['wic', 'snap'] });
+  assert.equal(wicAndSnap.signal, 'likely');
+  assert.ok(wicAndSnap.reasons.some((r) => r.code === 'public_assistance'));
+  // A Yes with no detail (pre-WAP-53 snapshot) keeps the historical policy.
+  const noDetail = computeWioaSignal({ ...base, ageBracket: '25_54', primaryBarrier: 'transportation', publicAssistanceSelfReport: true });
+  assert.equal(noDetail.signal, 'likely');
+  // Help requested never changes the signal: it is a staff action, not evidence.
+  const help = computeWioaSignal({ ...base, ageBracket: '25_54', primaryBarrier: 'transportation', publicAssistanceSelfReport: true, publicAssistancePrograms: ['wic'], publicAssistanceHelpRequested: true });
+  assert.equal(help.signal, wicOnly.signal);
+  const snapshot: WioaQualificationSnapshot = { version: 2, submittedAt: validSnapshot.submittedAt, answers: { ...base, ageBracket: '25_54', publicAssistanceSelfReport: true, publicAssistancePrograms: ['wic'] }, ...wicOnly };
+  assert.deepEqual(parseWioaQualificationSnapshot(snapshot), snapshot);
+  for (const locale of ['en', 'es', 'fr', 'pt']) {
+    const messages = JSON.parse(readFileSync(`messages/${locale}.json`, 'utf8'));
+    const t = createTranslator({ locale, messages, namespace: 'wioa', onError: (error) => { throw error; } });
+    assert.equal(formatWioaReasons({ ...snapshot, reasons: [{ code: 'wic_only_review' }] }, t)[0], messages.wioa.reasons.wic_only_review);
+  }
+});
+
 test('all 1,536 policy combinations preserve the version-1 signals and English explanations', () => {
   // Frozen from 79ff683's implementation before the localization change.
   // Includes all age/barrier/benefit/boolean branches, including WIC/TANF/SNAP policy.

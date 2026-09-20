@@ -5467,6 +5467,10 @@ html:not(.dark) .apply-location-callout strong {
     background: var(--color-accent);
     box-shadow: inset 0 0 0 2px var(--color-white);
 }
+/* WAP-53: multi-select benefit cards reuse the radio card chrome with a square indicator. */
+.form-radio-card.form-check-card .radio-dot {
+    border-radius: 3px;
+}
 html.dark .form-radio-card.selected {
     border: 2px solid var(--color-accent);
     background: rgba(173, 44, 77, 0.15);

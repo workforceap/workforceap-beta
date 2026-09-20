@@ -4,7 +4,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser, withAuthGuc } from '@/lib/auth/server';
 import { isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import { getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
+import { countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
 import AdminSuperMessagesClient from '@/components/admin/AdminSuperMessagesClient';
 import {
@@ -107,8 +107,13 @@ export default async function AdminMessagesPage({
   // to promote as long as the data is real (it is — loaded from prisma below).
   if (requestedUi !== 'legacy') {
     try {
-      const threads = await loadMemberThreads();
-      return <MessagesKit threads={threads} />;
+      const [threads, unansweredCount] = await Promise.all([
+        loadMemberThreads(),
+        // Staff-facing unanswered count (WAP-168 fix 3): counts every member
+        // thread awaiting a staff reply, not just the 30 rows shown below.
+        withAuthGuc(() => countUnansweredMemberThreads()),
+      ]);
+      return <MessagesKit threads={threads} unansweredCount={unansweredCount} />;
     } catch (err) {
       console.error('[admin/messages] failed to load member threads:', err);
       return <AdminDataLoadError title="Could not load messages" />;
