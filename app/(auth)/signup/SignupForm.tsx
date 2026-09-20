@@ -182,13 +182,13 @@ const s = {
   } as React.CSSProperties,
 
   fieldError: {
-    fontSize: '0.8rem',
+    fontSize: '0.8125rem',
     color: 'var(--color-accent)',
     marginTop: 'var(--space-1)',
   } as React.CSSProperties,
 
   hint: {
-    fontSize: '0.8rem',
+    fontSize: '0.8125rem',
     color: 'var(--color-on-surface-variant)',
     marginTop: 'var(--space-1)',
   } as React.CSSProperties,
@@ -449,7 +449,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
             {/* Phone */}
             <div style={s.fieldGroup}>
               <label htmlFor="phone" style={s.label}>
-                {tAuth('signup.phone')} <span style={{ fontSize: '0.75rem', color: '#737373', fontWeight: 400 }}>({tAuth('signup.optional')})</span>
+                {tAuth('signup.phone')} <span style={{ fontSize: '0.8125rem', color: '#737373', fontWeight: 400 }}>({tAuth('signup.optional')})</span>
               </label>
               <input
                 id="phone"
@@ -468,7 +468,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
             {/* ZIP */}
             <div style={s.fieldGroup}>
               <label htmlFor="zip" style={s.label}>
-                {tAuth('signup.zipCode')} <span style={{ fontSize: '0.75rem', color: '#737373', fontWeight: 400 }}>({tAuth('signup.optional')})</span>
+                {tAuth('signup.zipCode')} <span style={{ fontSize: '0.8125rem', color: '#737373', fontWeight: 400 }}>({tAuth('signup.optional')})</span>
               </label>
               <input
                 id="zip"

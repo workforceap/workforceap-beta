@@ -34,7 +34,7 @@ export default function CounselorCommandCenter({ data }: { data: CommandCenter }
     >
       <header style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
         <div>
-          <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
+          <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
             Today
           </p>
           <h2 className="portal-section-heading" style={{ margin: '0.15rem 0 0' }}>
@@ -54,7 +54,7 @@ export default function CounselorCommandCenter({ data }: { data: CommandCenter }
               borderRadius: '999px',
               background: 'rgba(173,44,77,0.12)',
               color: 'var(--color-accent)',
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               fontWeight: 700,
             }}
           >
@@ -211,16 +211,16 @@ function PriorityRow({
             <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--color-on-surface)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {name}
             </p>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 600 : 400 }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 600 : 400 }}>
               {meta}
             </p>
             {preview ? (
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {preview}
               </p>
             ) : null}
           </div>
-          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-accent)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {actionLabel} &rarr;
           </span>
         </div>

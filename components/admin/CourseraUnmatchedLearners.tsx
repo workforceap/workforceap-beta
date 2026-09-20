@@ -155,7 +155,7 @@ export default function CourseraUnmatchedLearners({
                         borderRadius: '999px',
                         background: 'color-mix(in srgb, var(--color-error, #b42318) 12%, transparent)',
                         color: 'var(--color-error, #b42318)',
-                        fontSize: '0.7rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         letterSpacing: '0.02em',
                         textTransform: 'uppercase',
@@ -163,13 +163,13 @@ export default function CourseraUnmatchedLearners({
                     >
                       Not in WAP
                     </span>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {learner.externalEmail}
                       {learner.actorIdentifier && learner.actorIdentifier !== learner.externalEmail
                         ? ` · actor ${learner.actorIdentifier}`
                         : ''}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
                       <a href={`/admin/coursera/learners/unmatched/${hash}`}>view detail →</a>
                     </div>
                   </>
@@ -292,7 +292,7 @@ export default function CourseraUnmatchedLearners({
                       <span
                         role={fb.kind === 'success' ? 'status' : 'alert'}
                         style={{
-                          fontSize: '0.78rem',
+                          fontSize: '0.8125rem',
                           color: fb.kind === 'success' ? 'rgb(22, 163, 74)' : 'rgb(239, 68, 68)',
                         }}
                       >

@@ -229,7 +229,7 @@ export default function PartnerOnboardingTour({ onComplete }: PartnerOnboardingT
           <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 12 }}>{slide.emoji}</div>
           <p
             style={{
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',

@@ -175,7 +175,7 @@ export default function RouteErrorFallback({
         {/* Text */}
         <p
           style={{
-            fontSize: '0.6875rem',
+            fontSize: '0.8125rem',
             fontWeight: 800,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',

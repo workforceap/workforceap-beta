@@ -369,7 +369,7 @@ export default function GoalsModule() {
                         }}
                       />
                     </div>
-                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', fontWeight: 600, color: SURFACE_VAR }}>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', fontWeight: 600, color: SURFACE_VAR }}>
                       {t('stepsProgress', { done, total, encouragement: encourage(pct, total) })}
                     </p>
                   </div>
@@ -415,7 +415,7 @@ export default function GoalsModule() {
                       </span>
                       {isGenerating ? t('generate.building') : t('generate.cta')}
                     </button>
-                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: SURFACE_VAR }}>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: SURFACE_VAR }}>
                       {t('generate.hint')}
                     </p>
                   </div>
@@ -435,7 +435,7 @@ export default function GoalsModule() {
           <p
             style={{
               margin: 0,
-              fontSize: '0.6875rem',
+              fontSize: '0.8125rem',
               fontWeight: 800,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
@@ -473,7 +473,7 @@ export default function GoalsModule() {
                 <span style={{ fontWeight: 700, fontSize: '0.8125rem', color: SURFACE }}>
                   {addingKey === s.key ? t('suggestions.adding') : s.title}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: SURFACE_VAR, lineHeight: 1.35 }}>{s.reason}</span>
+                <span style={{ fontSize: '0.8125rem', color: SURFACE_VAR, lineHeight: 1.35 }}>{s.reason}</span>
               </span>
             </button>
           ))}
@@ -522,7 +522,7 @@ export default function GoalsModule() {
         </div>
       )}
 
-      <p style={{ fontSize: '0.75rem', color: SURFACE_VAR, margin: 0 }}>
+      <p style={{ fontSize: '0.8125rem', color: SURFACE_VAR, margin: 0 }}>
         {t('footer')}
       </p>
     </div>

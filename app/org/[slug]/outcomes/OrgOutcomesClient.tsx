@@ -288,7 +288,7 @@ export default function OrgOutcomesClient({
             >
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -313,7 +313,7 @@ export default function OrgOutcomesClient({
           )}
 
           {/* Footer */}
-          <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8rem', color: '#999' }}>
+          <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.8125rem', color: '#999' }}>
             <p>Powered by WorkforceAP — workforceap.org</p>
             <p>Report generated: {new Date(data!.generatedAt).toLocaleString()}</p>
           </div>

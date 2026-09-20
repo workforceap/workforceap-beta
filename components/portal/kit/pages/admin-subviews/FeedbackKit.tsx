@@ -102,7 +102,7 @@ export function FeedbackKit({
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 13,
             color: 'var(--wa-muted)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -204,7 +204,7 @@ export function FeedbackKit({
             </div>
             <p
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 color: 'var(--wa-text)',
                 margin: '10px 0 0',
                 lineHeight: 1.5,
@@ -219,7 +219,7 @@ export function FeedbackKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}
@@ -240,7 +240,7 @@ export function FeedbackKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

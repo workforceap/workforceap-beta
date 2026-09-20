@@ -50,7 +50,7 @@ export function PartnershipCard({ icon, title, who, why, cta, ctaHref, span = 4 
       >
         {title}
       </h3>
-      <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
+      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
         {who}
       </p>
       <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.7, flex: 1 }}>

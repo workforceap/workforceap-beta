@@ -79,7 +79,7 @@ export default function AdminInterviewReadyTable({ rows }: { rows: InterviewRead
               cell: (r) => (
                 <>
                   <Link href={`/admin/members/${r.id}`}>{r.fullName}</Link>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
                 </>
               ),
             },

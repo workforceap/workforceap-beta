@@ -161,10 +161,10 @@ const cards = posts.map((p) => ({ ...p, hero: resolveHeroImage(p), date: formatP
     mask-image:linear-gradient(90deg,transparent 0%,transparent 40%,#000 100%);opacity:.18}
 
   .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:12.5px;
+    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
     letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
     box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
-  .pill__star{font-size:11px;opacity:.95}
+  .pill__star{font-size:13px;opacity:.95}
   @media(max-width:430px){.pill{white-space:normal;text-align:left}}
 
   .lede h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,5.5vw,64px);
@@ -178,13 +178,13 @@ const cards = posts.map((p) => ({ ...p, hero: resolveHeroImage(p), date: formatP
     box-shadow:var(--shadow-glass);color:#fff}
   .hcard-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
   .hcard-ic{display:inline-flex}
-  .dot-live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;
+  .dot-live{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff;
     background:rgba(74,155,79,.32);border:1px solid rgba(120,220,130,.4);padding:4px 10px;border-radius:999px}
   .dot-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#7fe389;box-shadow:0 0 8px #7fe389}
   .hcard-big{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:24px;margin-bottom:8px}
   .hcard-p{font-size:15px;line-height:1.55;color:rgba(255,255,255,.8);margin-bottom:18px}
   .hcard-chips{display:flex;flex-wrap:wrap;gap:8px}
-  .hcard-chips span{font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;
+  .hcard-chips span{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;
     background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
 
   /* ---------------- LIGHT BODY BLOCK ---------------- */
@@ -226,7 +226,7 @@ const cards = posts.map((p) => ({ ...p, hero: resolveHeroImage(p), date: formatP
   .post-cover{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--surface-2)}
   .post-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
   @media (prefers-reduced-motion: no-preference){.post-card:hover .post-cover img{transform:scale(1.05)}}
-  .post-cat{position:absolute;left:12px;top:12px;font-size:11.5px;font-weight:800;letter-spacing:.02em;
+  .post-cat{position:absolute;left:12px;top:12px;font-size:13px;font-weight:800;letter-spacing:.02em;
     padding:5px 11px;border-radius:999px;background:rgba(26,20,20,.72);color:#fff;backdrop-filter:blur(6px)}
   .post-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:800;line-height:1.25;
     margin:18px 20px 0;color:var(--text)}

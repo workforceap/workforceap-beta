@@ -11,7 +11,7 @@
   background: var(--surface-container-highest);
   border: none;
   border-radius: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   color: var(--color-on-surface);
@@ -29,7 +29,7 @@
   color: #fff;
   border: none;
   border-radius: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -46,7 +46,7 @@
   color: var(--color-on-surface-variant);
   border: 1px solid var(--outline-variant);
   border-radius: 0.5rem;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;

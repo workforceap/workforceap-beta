@@ -77,7 +77,7 @@
 .portal-mobile-content .portal-quick-grid-item__label {
   overflow-wrap: break-word;
   word-break: break-word;
-  font-size: clamp(0.75rem, 3.5vw, 0.875rem);
+  font-size: clamp(0.8125rem, 3.5vw, 0.875rem);
 }
 
 /* ── MobileRecentActivity: prevent text overflow ── */
@@ -138,7 +138,7 @@
 
 /* ── MemberProgressStrip labels: ensure they don't force overflow ── */
 .portal-mobile-content [role="list"][aria-label="Member journey progress"] [role="listitem"] > span:last-child {
-  font-size: clamp(0.625rem, 2.2vw, 0.8125rem);
+  font-size: clamp(0.8125rem, 2.2vw, 0.8125rem);
 }
 
 /* ── Mobile tab nav: ensure tabs don't overflow section ── */

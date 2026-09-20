@@ -318,7 +318,7 @@ function CatalogIssueList({
       <summary style={{ cursor: 'pointer', fontWeight: 700 }}>
         {items.length} {label.toLowerCase()}
       </summary>
-      <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1rem', fontSize: '0.8rem' }}>
+      <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1rem', fontSize: '0.8125rem' }}>
         {items.map((item) => <li key={item}>{item}</li>)}
       </ul>
     </details>
@@ -370,7 +370,7 @@ function CourseraCatalogHealthSection({
               cell: (row) => (
                 <>
                   <strong>{row.programTitle}</strong>
-                  <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem' }}>
+                  <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                     {row.programSlug}
                   </div>
                 </>
@@ -386,12 +386,12 @@ function CourseraCatalogHealthSection({
                     {row.catalogHealth.mappedCount} / {row.catalogHealth.syllabusCount}
                   </strong>
                   {row.catalogHealth.validProviderCourseCount != null ? (
-                    <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                       {row.catalogHealth.validProviderCourseCount} provider-valid
                     </div>
                   ) : null}
                   {row.catalogHealth.localCourseCount > 0 ? (
-                    <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                       + {row.catalogHealth.localCourseCount} WorkforceAP {row.catalogHealth.localCourseCount === 1 ? 'lab' : 'labs'}
                     </div>
                   ) : null}
@@ -485,7 +485,7 @@ const collapsibleBodyStyle: CSSProperties = {
   borderTop: '1px solid var(--outline-variant)',
 };
 const collapsibleCountStyle: CSSProperties = {
-  fontSize: '0.8rem',
+  fontSize: '0.8125rem',
   fontWeight: 400,
   color: 'var(--color-on-surface-variant)',
 };
@@ -1086,12 +1086,12 @@ export default async function AdminCourseraPage({
                       learner.user ? (
                         <>
                           <strong>{learner.user.fullName}</strong>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{learner.user.email}</div>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{learner.user.email}</div>
                         </>
                       ) : (
                         <>
                           <strong>{learner.externalName || learner.externalEmail}</strong>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             {learner.externalEmail} · unmapped
                           </div>
                         </>
@@ -1107,7 +1107,7 @@ export default async function AdminCourseraPage({
                           <span
                             style={{
                               marginLeft: '0.4rem',
-                              fontSize: '0.7rem',
+                              fontSize: '0.8125rem',
                               padding: '0.1rem 0.35rem',
                               borderRadius: '0.4rem',
                               background: 'rgba(34, 197, 94, 0.15)',
@@ -1197,7 +1197,7 @@ export default async function AdminCourseraPage({
                     cell: (row) => (
                       <>
                         <strong>{row.fullName}</strong>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{row.email}</div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.email}</div>
                       </>
                     ),
                   },
@@ -1209,7 +1209,7 @@ export default async function AdminCourseraPage({
                       <>
                         {row.courseName}
                         {row.courseId ? (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{row.courseId}</div>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.courseId}</div>
                         ) : null}
                       </>
                     ),
@@ -1227,7 +1227,7 @@ export default async function AdminCourseraPage({
                       row.status === 'COMPLETED' ? (
                         <span
                           style={{
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(34, 197, 94, 0.15)',
@@ -1239,7 +1239,7 @@ export default async function AdminCourseraPage({
                       ) : row.status === 'IN_PROGRESS' ? (
                         <span
                           style={{
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(164, 127, 56, 0.14)',
@@ -1249,7 +1249,7 @@ export default async function AdminCourseraPage({
                           in progress
                         </span>
                       ) : (
-                        <span style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)' }}>not started</span>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>not started</span>
                       ),
                   },
                   {
@@ -1361,12 +1361,12 @@ export default async function AdminCourseraPage({
                       learner.user ? (
                         <>
                           <strong>{learner.user.fullName}</strong>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{learner.user.email}</div>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{learner.user.email}</div>
                         </>
                       ) : (
                         <>
                           <strong>{learner.externalName || learner.externalEmail}</strong>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             {learner.externalEmail} · unmapped
                           </div>
                         </>
@@ -1382,7 +1382,7 @@ export default async function AdminCourseraPage({
                           <span
                             style={{
                               marginLeft: '0.4rem',
-                              fontSize: '0.7rem',
+                              fontSize: '0.8125rem',
                               padding: '0.1rem 0.35rem',
                               borderRadius: '0.4rem',
                               background: 'rgba(34, 197, 94, 0.15)',
@@ -1574,7 +1574,7 @@ export default async function AdminCourseraPage({
                     cell: (row) => (
                       <>
                         <div style={{ fontWeight: 500 }}>{row.userFullName || row.userEmail}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{row.userEmail}</div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.userEmail}</div>
                       </>
                     ),
                   },

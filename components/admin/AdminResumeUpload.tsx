@@ -76,7 +76,7 @@ export default function AdminResumeUpload({ memberId, onUploaded }: Props) {
         required
         style={{ fontSize: '0.9rem' }}
       />
-      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         {RESUME_UPLOAD_FORMAT_LABEL} · max 5MB
       </p>
       {error && <p style={{ margin: 0, fontSize: '0.85rem', color: '#b91c1c' }}>{error}</p>}

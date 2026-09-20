@@ -123,7 +123,7 @@ function PathTile({ card }: { card: CareerPathCard }) {
           </h3>
           <p
             style={{
-              fontSize: 12,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               margin: '4px 0 0',
               overflow: 'hidden',

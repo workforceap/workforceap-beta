@@ -106,7 +106,7 @@ export default function AtRiskSummaryWidget() {
         <Link
           href="/counselor/at-risk"
           style={{
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             fontWeight: 600,
             color: 'var(--color-accent)',
             textDecoration: 'none',
@@ -133,7 +133,7 @@ export default function AtRiskSummaryWidget() {
             <p style={{ margin: 0, fontSize: '1.35rem', fontWeight: 700, color: lvl.color, fontVariantNumeric: 'tabular-nums' }}>
               {lvl.count}
             </p>
-            <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
               {lvl.label}
             </p>
           </div>
@@ -142,7 +142,7 @@ export default function AtRiskSummaryWidget() {
 
       {summary.recentAlerts.length > 0 && (
         <div>
-          <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
             Recent alerts
           </p>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -163,7 +163,7 @@ export default function AtRiskSummaryWidget() {
                   <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{alert.name}</span>
                   <span
                     style={{
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       color:
                         alert.riskLevel === 'CRITICAL'

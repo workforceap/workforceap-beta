@@ -49,7 +49,7 @@ export function CohortStatCard({ icon, title, subtitle, level, salaryRange, vari
           marginTop: 'auto',
         }}
       >
-        <span style={{ fontSize: '0.75rem', color: levelColor }}>{level}</span>
+        <span style={{ fontSize: '0.8125rem', color: levelColor }}>{level}</span>
         <span style={{ fontSize: '1rem', fontWeight: 700, color: salaryColor }}>{salaryRange}</span>
       </div>
     </div>

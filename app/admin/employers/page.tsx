@@ -341,7 +341,7 @@ export default async function AdminEmployersPage({
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{e.companyName}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {e.contactName} · {e.contactEmail}
                       </p>
                     </div>
@@ -365,10 +365,10 @@ export default async function AdminEmployersPage({
                     const laStyle = lastActiveBadgeStyle(days);
                     return (
                       <div style={{ paddingTop: '0.375rem', display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
-                        <span style={{ padding: '0.15rem 0.45rem', borderRadius: '999px', fontSize: '0.7rem', background: pt.bg, color: pt.color, fontWeight: 600 }}>
+                        <span style={{ padding: '0.15rem 0.45rem', borderRadius: '999px', fontSize: '0.8125rem', background: pt.bg, color: pt.color, fontWeight: 600 }}>
                           {pt.label}
                         </span>
-                        <span style={{ padding: '0.15rem 0.45rem', borderRadius: '999px', fontSize: '0.7rem', background: laStyle.background, color: laStyle.color, fontWeight: 600 }}>
+                        <span style={{ padding: '0.15rem 0.45rem', borderRadius: '999px', fontSize: '0.8125rem', background: laStyle.background, color: laStyle.color, fontWeight: 600 }}>
                           {lastActiveLabel(days)}
                         </span>
                       </div>
@@ -377,7 +377,7 @@ export default async function AdminEmployersPage({
                   {/* Meta + actions row */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {e.user.fullName} · {e.user.email}
                       </p>
                     </div>

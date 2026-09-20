@@ -179,11 +179,11 @@ async function renderLegacy() {
                       <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>
                         {post.title}
                       </p>
-                      <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: sc.bg, color: sc.color, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: sc.bg, color: sc.color, textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
                         {statusLabel}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {post.category && <span style={{ fontWeight: 600 }}>{post.category}</span>}
                       {post.category && <span>·</span>}
                       {publishLabel && <span>{statusKey === 'scheduled' ? `Scheduled ${publishLabel}` : `Published ${publishLabel}`}</span>}

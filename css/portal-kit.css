@@ -377,7 +377,7 @@ html.dark [data-surface] .wa-kit-card,
   border-radius: 999px;
   color: var(--wa-on-accent);
   background: rgba(0, 0, 0, 0.45);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -396,16 +396,18 @@ html.dark [data-surface] .wa-kit-card,
   background: var(--wa-accent);
 }
 
-/* WCAG AA focus ring, consistent across the kit */
+/* WCAG AA focus ring, consistent across the kit. The ring tokens are defined
+   once in css/main.css (:root --wa-focus-ring / --wa-focus-ring-on-dark) and
+   shared by every global and component focus rule (WAP-157). */
 .wa-kit-focus:focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--wa-surface), 0 0 0 4px var(--wa-accent);
+  box-shadow: var(--wa-focus-ring);
 }
 .wa-kit-focus--on-dark:focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--wa-sidebar-bg), 0 0 0 4px var(--wa-on-hero);
+  box-shadow: var(--wa-focus-ring-on-dark);
 }
 @media (forced-colors: active) {
   .wa-kit-focus:focus-visible,
@@ -601,7 +603,7 @@ html.dark [data-surface] .wa-kit-card,
   transform: translateX(20px);
 }
 .wa-kit-toggle-input:focus-visible + .wa-kit-toggle-track {
-  box-shadow: 0 0 0 2px var(--wa-surface), 0 0 0 4px var(--wa-accent);
+  box-shadow: var(--wa-focus-ring);
 }
 .wa-kit-toggle-label {
   font-size: 14px;
@@ -1304,7 +1306,7 @@ html.dark [data-surface] .wa-kit-card,
 }
 .wa-kit-training-field { display: flex; flex-direction: column; gap: .5rem; font-size: var(--wa-type-meta); font-weight: 650; }
 .wa-kit-training-field input, .wa-kit-training-field select { min-height: 2.75rem; min-width: 0; max-width: 100%; padding: .65rem .75rem; border: 1px solid var(--wa-border); border-radius: var(--wa-radius-sm); color: var(--wa-text); background: var(--wa-surface); font: inherit; font-size: 1rem; color-scheme: inherit; }
-.wa-kit-training-field input:focus-visible, .wa-kit-training-field select:focus-visible { outline: 2px solid var(--wa-accent); outline-offset: 2px; }
+.wa-kit-training-field input:focus-visible, .wa-kit-training-field select:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring); }
 .wa-kit-training-filter { flex-direction: row; justify-content: space-between; align-items: center; margin-top: var(--wa-pad-sm); }
 .wa-kit-training-filter select { max-width: 70%; }
 .wa-kit-training-notice { padding: var(--wa-pad-sm); border-left: 3px solid var(--wa-info); background: var(--wa-surface-2); margin-block: var(--wa-pad-sm) !important; font-size: var(--wa-type-meta); }

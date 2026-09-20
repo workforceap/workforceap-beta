@@ -43,7 +43,7 @@ export default function ReadinessMobileScoreCard({ overallScore, categories, pri
           <text x="80" y="95" textAnchor="middle" fill="var(--color-on-surface-variant)" fontSize="13">
             / 100
           </text>
-          <text x="80" y="115" textAnchor="middle" fill="var(--color-accent)" fontSize="11" fontWeight="600">
+          <text x="80" y="115" textAnchor="middle" fill="var(--color-accent)" fontSize="13" fontWeight="600">
             {t(scoreLabelKey(overallScore))}
           </text>
         </svg>

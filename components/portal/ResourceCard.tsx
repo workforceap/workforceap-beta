@@ -81,7 +81,7 @@ export default function ResourceCard({ resource, progress }: ResourceCardProps) 
       ) : null}
       <div className="resource-card-footer">
         {downloadError && (
-          <span role="alert" style={{ fontSize: '0.75rem', color: 'var(--color-error, #dc2626)' }}>
+          <span role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-error, #dc2626)' }}>
             Couldn&rsquo;t download — try again
           </span>
         )}

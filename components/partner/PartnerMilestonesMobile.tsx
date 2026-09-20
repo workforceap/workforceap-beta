@@ -85,7 +85,7 @@ export default function PartnerMilestonesMobile() {
           {pending.length > 0 && (
             <span
               className="wa-tabular-nums"
-              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', fontSize: '0.625rem', fontWeight: 700 }}
+              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent)', fontSize: '0.8125rem', fontWeight: 700 }}
             >
               {pending.length}
             </span>
@@ -94,7 +94,7 @@ export default function PartnerMilestonesMobile() {
 
         {pending.length === 0 ? (
           <div className="wa-kit-card wa-kit-card--sm" style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color: 'var(--wa-muted)' }}>No milestones pending review</p>
+            <p style={{ fontSize: 13, color: 'var(--wa-muted)' }}>No milestones pending review</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
@@ -109,8 +109,8 @@ export default function PartnerMilestonesMobile() {
                     <Link href={`/partner/referred-members/${m.memberId}`} style={{ textDecoration: 'none' }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}>{m.memberName}</p>
                     </Link>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--wa-accent)', margin: '0 0 0.125rem' }}>{m.label}</p>
-                    <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', margin: '0 0 0.125rem' }}>{m.label}</p>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
                       {new Date(m.at).toLocaleDateString()}
                     </p>
                   </div>
@@ -157,7 +157,7 @@ export default function PartnerMilestonesMobile() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}>{m.memberName}</p>
-                      <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {new Date(m.at).toLocaleDateString()}</p>
+                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {new Date(m.at).toLocaleDateString()}</p>
                     </div>
                     <StatusTag tone="ok">Done</StatusTag>
                   </div>

@@ -23,7 +23,7 @@ export default function FundingBadge({ source, showTooltip = true }: { source?: 
           gap: '0.25rem',
           padding: '0.15rem 0.5rem',
           borderRadius: '50px',
-          fontSize: '0.7rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
@@ -48,7 +48,7 @@ export default function FundingBadge({ source, showTooltip = true }: { source?: 
           border: '1px solid var(--outline-variant, #2a2a45)',
           borderRadius: '0.5rem',
           padding: '0.5rem 0.75rem',
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           color: 'var(--color-on-surface-variant)',
           minWidth: '200px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
@@ -59,11 +59,11 @@ export default function FundingBadge({ source, showTooltip = true }: { source?: 
               <li key={fs} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: fs === (source ?? 'WIOA') ? 700 : 400, color: fs === (source ?? 'WIOA') ? 'var(--color-accent)' : 'inherit' }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: FUNDING_COLORS[fs].text, display: 'inline-block' }} />
                 {fs}
-                {fs === (source ?? 'WIOA') && <span style={{ marginLeft: 'auto', fontSize: '0.65rem', opacity: 0.7 }}>← this program</span>}
+                {fs === (source ?? 'WIOA') && <span style={{ marginLeft: 'auto', fontSize: '0.8125rem', opacity: 0.7 }}>← this program</span>}
               </li>
             ))}
           </ul>
-          <p style={{ margin: '0.35rem 0 0', fontSize: '0.7rem', opacity: 0.7, lineHeight: 1.4 }}>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', opacity: 0.7, lineHeight: 1.4 }}>
             Programs are offered at no cost to eligible members.
           </p>
         </div>

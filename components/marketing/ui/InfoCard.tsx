@@ -34,7 +34,7 @@ export function InfoCard({ title, description, action, icon, eyebrow, variant = 
       }}
     >
       {icon && <div style={{ color: 'var(--color-accent)' }}>{icon}</div>}
-      {eyebrow && <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>{eyebrow}</p>}
+      {eyebrow && <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>{eyebrow}</p>}
       <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>{title}</h3>
       {description && (
         <p style={{ margin: 0, lineHeight: 1.6, color: 'var(--color-on-surface-variant)', fontSize: '0.92rem', flex: 1 }}>

@@ -89,7 +89,7 @@ export default function AIHistoryList({ results, initialFilter = '' }: { results
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
       {/* Filter row */}
       <div className="wa-kit-card wa-kit-card--sm" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <label htmlFor="ai-history-filter" className="wa-kit-field-label" style={{ fontSize: '0.75rem' }}>
+        <label htmlFor="ai-history-filter" className="wa-kit-field-label" style={{ fontSize: '0.8125rem' }}>
           Filter
         </label>
         <select
@@ -117,12 +117,12 @@ export default function AIHistoryList({ results, initialFilter = '' }: { results
             type="button"
             onClick={() => { setFilter(''); setExpandedId(null); }}
             className="wa-kit-focus"
-            style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             Clear
           </button>
         )}
-        <span style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', marginLeft: 'auto', fontVariantNumeric: 'tabular-nums' }}>
           {filtered.length} result{filtered.length !== 1 ? 's' : ''}
         </span>
       </div>
@@ -173,7 +173,7 @@ export default function AIHistoryList({ results, initialFilter = '' }: { results
                     <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--wa-text)' }}>{r.toolLabel}</span>
                     <span
                       style={{
-                        fontSize: '0.625rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         padding: '0.1rem 0.4rem',
                         borderRadius: '9999px',

@@ -155,7 +155,7 @@ export default async function HomePageBelowFold({
                     background: 'rgba(0,0,0,0.6)',
                     backdropFilter: 'blur(4px)',
                     color: 'white',
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -194,7 +194,7 @@ export default async function HomePageBelowFold({
                       padding: '0.2rem 0.6rem',
                       borderRadius: 'var(--radius-full, 50px)',
                       background: 'var(--surface-container-lowest)',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                     }}
                   >
@@ -240,7 +240,7 @@ export default async function HomePageBelowFold({
               color: 'var(--color-on-surface-variant)',
               marginBottom: '1.25rem',
               letterSpacing: '0.12em',
-              fontSize: '0.625rem',
+              fontSize: '0.8125rem',
             }}
           >
             {t('contrastEyebrow')}
@@ -305,7 +305,7 @@ export default async function HomePageBelowFold({
               opacity: 0.7,
               marginTop: 'clamp(2rem, 4vw, 2.75rem)',
               marginBottom: '1.25rem',
-              fontSize: '0.625rem',
+              fontSize: '0.8125rem',
               letterSpacing: '0.2em',
             }}
           >
@@ -519,7 +519,7 @@ export default async function HomePageBelowFold({
               </span>
               <span
                 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.8125rem',
                   color: 'var(--color-on-surface-variant)',
                   marginTop: '0.5rem',
                   fontWeight: 600,
@@ -534,7 +534,7 @@ export default async function HomePageBelowFold({
               <span style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-accent)', lineHeight: 1 }}>{programCount}</span>
               <span
                 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.8125rem',
                   color: 'var(--color-on-surface-variant)',
                   marginTop: '0.5rem',
                   fontWeight: 600,
@@ -547,10 +547,10 @@ export default async function HomePageBelowFold({
             </div>
             <div className="portal-card portal-card--flat" style={{ gridColumn: '1 / -1', background: 'var(--color-accent)', color: 'white', padding: '1.5rem', textAlign: 'center' }}>
               <span style={{ fontSize: '1.6rem', fontWeight: 900, lineHeight: 1.15 }}>{t('statNoUpfrontCost')}</span>
-              <span style={{ display: 'block', fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', marginTop: '0.5rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', opacity: 0.9 }}>
                 {t('statMemberCost')}
               </span>
-              <span style={{ display: 'block', fontSize: '0.7rem', marginTop: '0.35rem', opacity: 0.75, fontWeight: 400, textTransform: 'none', letterSpacing: 'normal' }}>
+              <span style={{ display: 'block', fontSize: '0.8125rem', marginTop: '0.35rem', opacity: 0.75, fontWeight: 400, textTransform: 'none', letterSpacing: 'normal' }}>
                 {t('statQualifyingMembers')}
               </span>
             </div>
@@ -620,7 +620,7 @@ export default async function HomePageBelowFold({
               }}
             >
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.02em' }}>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.02em' }}>
                   {journeyPhaseLabel(step.homePhase)}
                 </span>
                 <h3 style={{ fontWeight: 700, marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '1.125rem' }}>{step.title}</h3>

@@ -237,7 +237,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
         <div style={{ fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {row.fullName}
         </div>
-        <div style={{ fontSize: 10, color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 13, color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {row.email}
         </div>
       </div>
@@ -249,7 +249,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
     const enrolledSlug = row.enrolledProgram ?? null;
     if (pct === null) {
       return (
-        <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>
+        <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
           {enrolledSlug ? 'Progress unavailable' : 'Not enrolled'}
         </span>
       );
@@ -259,7 +259,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
         <div style={{ width: 72 }}>
           <ProgressBar pct={pct} color={row.riskLevel === 'LOW' ? 'success' : 'accent'} aria-label={`${row.fullName} progress ${pct}%`} />
         </div>
-        <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--wa-muted)' }}>{pct}%</span>
+        <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'var(--wa-muted)' }}>{pct}%</span>
       </div>
     );
   };
@@ -277,7 +277,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
       <Link
         href={`/counselor/students/${row.memberId}#counselor-member-messages`}
         className="btn btn-primary btn-sm"
-        style={{ whiteSpace: 'nowrap', fontSize: 11 }}
+        style={{ whiteSpace: 'nowrap', fontSize: 13 }}
         onClick={(e) => e.stopPropagation()}
       >
         <MessageSquare size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
@@ -356,7 +356,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                   minHeight: 40,
                   padding: '7px 14px',
                   borderRadius: 999,
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 700,
                   cursor: 'pointer',
                   border: '1px solid',
@@ -371,7 +371,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
             );
           })}
           {activeFilter && (
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => updateFilter(null)} style={{ fontSize: 11 }}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => updateFilter(null)} style={{ fontSize: 13 }}>
               Clear
             </button>
           )}
@@ -409,7 +409,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                     <RiskCell row={row} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 11, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
                   <span style={{ minWidth: 0 }}>{getProgramLabel(row.enrolledProgram, row.programInterest)}</span>
                   <span style={{ whiteSpace: 'nowrap' }} title={wioa.tooltip}>
                     <StatusTag tone={variantToTone(wioa.variant)}>{wioa.label}</StatusTag>
@@ -419,7 +419,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                   <ProgressBar pct={pct} color={row.riskLevel === 'LOW' ? 'success' : 'accent'} aria-label={`${row.fullName} progress ${pct}%`} />
                 ) : null}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                  <div style={{ fontSize: 10, color: 'var(--wa-muted)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
                     {pct !== null ? `${pct}% complete · ` : ''}
                     {row.lastActivityAt ? `last active ${formatLastActivity(row.lastActivityAt)}` : NO_ACTIVITY_RECORDED_LABEL}
                   </div>

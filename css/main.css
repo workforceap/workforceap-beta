@@ -228,7 +228,7 @@
     text-wrap: balance;
 }
 .text-label-upper {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -270,7 +270,7 @@
     gap: 1.5rem;
 }
 .portal-section-title {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -329,7 +329,7 @@
     line-height: 1;
 }
 .metric-card .metric-label {
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -356,7 +356,7 @@ html.dark .portal-kpi-card {
 }
 
 .portal-kpi-card__label {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -372,7 +372,7 @@ html.dark .portal-kpi-card {
     margin: 0;
 }
 .portal-kpi-card__hint {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     margin: 0.25rem 0 0;
 }
@@ -467,7 +467,9 @@ html.dark .portal-kpi-card {
 }
 .portal-input:focus {
     border-color: color-mix(in srgb, var(--color-accent) 55%, var(--outline-variant));
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 textarea.portal-input,
 .portal-textarea.portal-input {
@@ -485,13 +487,13 @@ textarea.portal-input,
     min-width: 0;
 }
 .portal-field__label {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.01em;
     color: var(--color-on-surface);
 }
 .portal-field__hint {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     line-height: 1.4;
     color: var(--color-on-surface-variant);
 }
@@ -503,7 +505,9 @@ textarea.portal-input,
 }
 .portal-input--error:focus {
     border-color: var(--color-error);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-error) 18%, transparent);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 
 /* Checkbox / radio rows styled as tappable cards so a row of yes-no choices
@@ -555,7 +559,7 @@ textarea.portal-input,
     background: color-mix(in srgb, var(--color-accent) 8%, var(--surface-container-lowest, transparent));
 }
 .portal-choice:has(input:focus-visible) {
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+    box-shadow: var(--wa-focus-ring);
 }
 .portal-choice__input {
     width: 1.2rem;
@@ -580,7 +584,7 @@ textarea.portal-input,
 .portal-choice__meta {
     display: block;
     margin-top: 0.15rem;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 400;
     color: var(--color-on-surface-variant);
 }
@@ -639,7 +643,7 @@ textarea.portal-input,
     color: var(--color-on-surface);
 }
 .portal-inbox-row__meta {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
 }
 .portal-inbox-row__preview {
@@ -1248,9 +1252,9 @@ html.dark .app-system-page__text a {
     background: rgba(255, 255, 255, 0.14);
 }
 .theme-toggle-btn:focus-visible {
-    outline: 3px solid var(--color-gold-light);
+    outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px #111, 0 0 0 4px var(--color-gold-light);
+    box-shadow: var(--wa-focus-ring-on-dark);
 }
 .theme-toggle-btn--surface {
     border-color: var(--color-gray-300);
@@ -1267,9 +1271,6 @@ html.dark .theme-toggle-btn--surface {
 }
 html.dark .theme-toggle-btn--surface:hover {
     background: #1f2630;
-}
-html.dark .theme-toggle-btn--surface:focus-visible {
-    box-shadow: 0 0 0 2px #0f1114, 0 0 0 4px var(--color-gold-light);
 }
 .btn-app-system-ghost {
     display: inline-flex;
@@ -1568,9 +1569,6 @@ html.dark .jobs-listing .job-card:hover {
     border-color: var(--color-gray-400);
     box-shadow: var(--shadow-md);
 }
-html.dark .jobs-listing .job-card:focus-visible {
-    box-shadow: 0 0 0 2px #0f1114, 0 0 0 4px var(--color-accent);
-}
 html.dark .jobs-listing .job-card__logo {
     background: var(--color-gray-100);
 }
@@ -1839,17 +1837,37 @@ html.dark .home-social-proof {
 a { text-decoration: none; color: inherit; transition: color var(--transition-fast); }
 ul { list-style: none; }
 
-/* Focus states - crimson ring, consistent site-wide */
+/* Focus ring — ONE recipe, site-wide (WAP-157).
+   This is the kit recipe from css/portal-kit.css (.wa-kit-focus): a
+   transparent 2px outline (which forced-colors mode turns into a system
+   Highlight outline), a 2px surface halo and a 4px accent ring drawn with
+   box-shadow so it follows rounded corners. Portal surfaces resolve the
+   --wa-* tokens; public pages fall back to the legacy palette. Component
+   rules that need their own focus block reuse these tokens — never restate
+   a ring with another colour, width or offset (tests/lib/focus-ring-recipe.spec.ts). */
+:root {
+    --wa-focus-ring: 0 0 0 2px var(--wa-surface, var(--color-white)), 0 0 0 4px var(--wa-accent, var(--color-accent));
+    --wa-focus-ring-on-dark: 0 0 0 2px var(--wa-sidebar-bg, #161616), 0 0 0 4px var(--wa-on-hero, #ffffff);
+}
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
-[tabindex]:focus-visible {
-    /* outline ensures visibility in Windows High Contrast Mode (WCAG 2.4.11) */
-    outline: 3px solid var(--color-accent);
+summary:focus-visible,
+[tabindex]:focus-visible,
+.nav-menu .dropdown .dropdown-trigger:focus-visible,
+.mobile-nav-toggle:focus-visible,
+.mobile-nav-backdrop:focus-visible {
+    outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-accent);
+    box-shadow: var(--wa-focus-ring);
+}
+@media (forced-colors: active) {
+    *:focus-visible {
+        outline: 2px solid Highlight !important;
+        box-shadow: none !important;
+    }
 }
 /* Transitions on interactive elements */
 button, a.btn, .btn {
@@ -2608,9 +2626,9 @@ button.btn-primary {
     box-shadow: 0 20px 40px rgba(28, 27, 27, 0.06);
 }
 .btn-primary:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--color-white), 0 0 0 4px var(--color-accent);
+    box-shadow: var(--wa-focus-ring);
 }
 /* Muted filled — neutral emphasis (portal / secondary actions); not the marketing "secondary" variant */
 .btn-muted,
@@ -2625,8 +2643,9 @@ a.btn-muted {
     transform: translateY(-2px);
 }
 .btn-muted:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 .btn-tertiary,
 a.btn-tertiary {
@@ -2660,8 +2679,9 @@ a.btn-outline:hover {
 a.btn-secondary:focus-visible,
 .btn-outline:focus-visible,
 a.btn-outline:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 /* Outline on dark / photo scrims (shared with home hero secondary CTA) */
 .btn-secondary--on-dark,
@@ -2681,8 +2701,9 @@ a.btn-secondary--on-dark:hover {
 }
 .btn-secondary--on-dark:focus-visible,
 a.btn-secondary--on-dark:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring-on-dark);
 }
 .btn-secondary--on-dark::after,
 a.btn-secondary--on-dark::after {
@@ -2712,8 +2733,9 @@ a.btn-ghost-text:hover {
 a.btn-ghost:focus-visible,
 .btn-ghost-text:focus-visible,
 a.btn-ghost-text:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 .btn-ghost::after,
 a.btn-ghost::after,
@@ -2740,8 +2762,9 @@ a.btn-ghost--on-photo:hover {
 }
 .btn-ghost--on-photo:focus-visible,
 a.btn-ghost--on-photo:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring-on-dark);
 }
 .btn-ghost--on-photo::after,
 a.btn-ghost--on-photo::after {
@@ -3029,7 +3052,7 @@ a.btn-accent:hover {
 }
 .trust-strip {
     opacity: 0.85;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     font-weight: 500;
@@ -3147,7 +3170,7 @@ a.btn-accent:hover {
     display: inline-block;
     color: var(--color-accent);
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.75rem;
@@ -3240,7 +3263,7 @@ a.btn-accent:hover {
     gap: 0.35rem;
 }
 .job-filter-label {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-on-surface-variant);
 }
@@ -3534,7 +3557,7 @@ a.btn-accent:hover {
 }
 .program-related__cat {
     margin: 0 0 0.35rem;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -3593,7 +3616,7 @@ a.btn-accent:hover {
     color: var(--color-on-surface-variant);
 }
 .program-sidebar-note {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
 }
 .program-sidebar-quiz-link {
@@ -3642,7 +3665,7 @@ a.btn-accent:hover {
     line-height: 1.45;
 }
 .program-card-outcomes {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     margin: 0.25rem 0 0.5rem;
 }
@@ -3738,7 +3761,7 @@ html.dark .program-card-courses-list li {
 }
 .programs-journey-nav__title {
     margin: 0 0 0.5rem;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -3775,7 +3798,7 @@ html.dark .program-card-courses-list li {
     text-decoration: none;
     color: var(--color-primary);
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     min-height: 44px;
     justify-content: center;
 }
@@ -3784,14 +3807,14 @@ html.dark .program-card-courses-list li {
     background: rgba(74, 155, 79, 0.06);
 }
 .programs-journey-nav__short {
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--color-on-surface-variant);
 }
 .programs-journey-nav__full {
-    font-size: 0.78rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-primary);
 }
@@ -3801,7 +3824,7 @@ html.dark .program-card-courses-list li {
 }
 .programs-journey-nav__detail-hint {
     margin: 0.6rem 0 0;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     line-height: 1.4;
 }
@@ -3955,7 +3978,7 @@ html.dark .program-card-courses-list li {
     margin-bottom: 0.25rem;
 }
 .process-step p {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     line-height: 1.4;
 }
@@ -5173,10 +5196,11 @@ body.inner-page {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 4px rgba(173,44,77,0.08);
     background: #fffbfc;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 .form-group textarea { min-height: 120px; resize: vertical; }
 .form-group input:disabled,
@@ -5292,8 +5316,9 @@ html.dark .sd-field option {
 .skip-link:focus,
 .skip-link:focus-visible {
     left: 0.75rem;
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 
 /* Apply form: radio button groups */
@@ -5595,13 +5620,13 @@ fieldset.apply-fieldset {
     }
 }
 .salary-ramp-badge {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-on-surface-variant);
 }
 .salary-guide-methodology {
     color: #888;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     margin-top: 2rem;
     max-width: 640px;
 }
@@ -5767,7 +5792,7 @@ fieldset.apply-fieldset {
     /* Methodology */
     .salary-guide-methodology {
         margin-top: 1.5rem;
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
     }
     /* CTAs */
     .salary-guide-ctas {
@@ -5911,7 +5936,7 @@ fieldset.apply-fieldset {
     line-height: 1.45;
 }
 .program-comparison-starter-meta {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     margin: 0 0 0.75rem;
 }
@@ -5925,7 +5950,7 @@ fieldset.apply-fieldset {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-gray-700);
     cursor: pointer;
@@ -6059,7 +6084,7 @@ fieldset.apply-fieldset {
     line-height: 1.45;
 }
 .program-comparison-card__outcomes {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     margin: 0 0 0.5rem;
 }
@@ -6536,9 +6561,10 @@ html.dark .faq-section-heading {
     color: var(--color-on-surface-variant);
 }
 .program-catalog-search-input:focus {
-    outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(173, 44, 77, 0.15);
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
 }
 html.dark .program-catalog-search-input {
     background: var(--surface-container-low);
@@ -6984,17 +7010,6 @@ html:not(.dark) .program-filters::after {
 }
 .career-track p { color: var(--color-on-surface-variant); margin-bottom: 1rem; line-height: 1.7; }
 
-/* =============================================
-   FOCUS STATES & ACCESSIBILITY
-   ============================================= */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 2px;
-}
 
 /* =============================================
    IMAGE LOADING
@@ -7075,7 +7090,7 @@ img.img-fade.loaded { opacity: 1; }
         position: absolute;
         top: 1.25rem;
         left: 1.25rem;
-        font-size: 0.78rem;
+        font-size: 0.8125rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.14em;
@@ -7188,7 +7203,7 @@ img.img-fade.loaded { opacity: 1; }
     }
     .mobile-nav-group-heading {
         padding: 0.75rem 0.5rem 0.35rem;
-        font-size: 0.72rem;
+        font-size: 0.8125rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.12em;
@@ -7217,7 +7232,7 @@ img.img-fade.loaded { opacity: 1; }
     .step-arrow { display: none; }
 
     .top-banner {
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         padding: 8px 0;
     }
     .top-banner-inner {
@@ -7384,7 +7399,7 @@ img.img-fade.loaded { opacity: 1; }
     .filter-chip {
         white-space: nowrap;
         flex-shrink: 0;
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         padding: 0.4rem 1rem;
     }
 
@@ -7446,7 +7461,7 @@ img.img-fade.loaded { opacity: 1; }
     .about-stats { flex-wrap: wrap; gap: 1rem; }
     .impact-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
     .program-card-category {
-        font-size: 0.72rem !important;
+        font-size: 0.8125rem !important;
     }
     .program-card-salary {
         width: 100%;
@@ -7469,7 +7484,7 @@ img.img-fade.loaded { opacity: 1; }
     .comparison-table th,
     .comparison-table td {
         padding: 0.6rem 0.75rem;
-        font-size: 0.8rem;
+        font-size: 0.8125rem;
     }
     .photo-highlight-content h2 {
         font-size: 1.5rem;
@@ -7576,25 +7591,8 @@ img {
     background: linear-gradient(180deg, var(--color-gray-500), var(--color-gray-600));
 }
 
-/* Enhanced focus rings */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-.nav-menu .dropdown .dropdown-trigger:focus-visible,
-.mobile-nav-toggle:focus-visible,
-.mobile-nav-backdrop:focus-visible {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 3px;
-    border-radius: 4px;
-}
 .nav-menu .dropdown .dropdown-trigger {
     outline: none;
-}
-.nav-menu .dropdown .dropdown-trigger:focus-visible {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 2px;
 }
 
 /* Text selection */
@@ -7793,7 +7791,7 @@ html.dark .apply-barrier-option input:checked {
 }
 .apply-step-content { max-width: 720px; }
 .apply-step-kicker {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -8043,7 +8041,7 @@ html.dark .apply-barrier-option input:checked {
 .quiz-result-card:hover { box-shadow: var(--shadow-md); }
 .quiz-result-rank {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-accent);
     margin-bottom: 0.75rem;
@@ -8065,7 +8063,7 @@ html.dark .apply-barrier-option input:checked {
     border-left: 3px solid var(--color-accent);
 }
 .quiz-result-roles {
-    font-size: 0.8rem;
+    font-size: 0.8125rem;
     color: var(--color-on-surface-variant);
     margin-bottom: 0.5rem;
 }
@@ -8178,7 +8176,7 @@ html.dark .apply-barrier-option input:checked {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     background: var(--color-gray-200);
     color: var(--color-on-surface-variant);
@@ -8196,7 +8194,7 @@ html.dark .apply-barrier-option input:checked {
     transform: scale(1.1);
 }
 .apply-status-label {
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-gray-400);
     text-transform: uppercase;
@@ -8238,14 +8236,14 @@ html.dark .apply-barrier-option input:checked {
     .apply-status-dot {
         width: 22px;
         height: 22px;
-        font-size: 0.6rem;
+        font-size: 0.8125rem;
     }
     .apply-status-label {
         display: none;
     }
     .apply-status-label-short {
         display: block;
-        font-size: 0.6rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         color: var(--color-gray-400);
         text-transform: uppercase;
@@ -8262,10 +8260,10 @@ html.dark .apply-barrier-option input:checked {
     .apply-status-dot {
         width: 20px;
         height: 20px;
-        font-size: 0.55rem;
+        font-size: 0.8125rem;
     }
     .apply-status-label-short {
-        font-size: 0.5rem;
+        font-size: 0.8125rem;
     }
 }
 
@@ -8417,11 +8415,6 @@ html.dark .apply-barrier-option input:checked {
 }
 
 
-/* Global Focus-Visible Outline */
-*:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-}
 /* Tailwind utility layer (was globals-onboarding.css): keep last so utilities can override when needed.
    Portal/admin-only rules that must load after utilities live in css/portal.css (imported by portal + admin layouts). */
 @tailwind utilities;
@@ -8471,7 +8464,7 @@ html.dark .apply-barrier-option input:checked {
     position: absolute;
     top: 1rem;
     left: 1rem;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-accent);
@@ -8499,7 +8492,7 @@ html.dark .apply-barrier-option input:checked {
     overflow: hidden;
 }
 .blog-card-meta {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-gray-400);
     margin: 0.5rem 1.25rem 0;
 }

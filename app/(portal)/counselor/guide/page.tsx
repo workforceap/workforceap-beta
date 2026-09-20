@@ -117,7 +117,7 @@ export default async function CounselorGuidePage() {
           gap: '1rem',
         }}>
           <div className="portal-card portal-card--flat" style={{ padding: '1.5rem', borderLeft: '4px solid var(--color-accent)' }}>
-            <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
               Members assigned
             </p>
             <p style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
@@ -125,7 +125,7 @@ export default async function CounselorGuidePage() {
             </p>
           </div>
           <div className="portal-card portal-card--flat" style={{ padding: '1.5rem', borderLeft: needsAttentionCount > 0 ? '4px solid var(--color-gold)' : '4px solid color-mix(in srgb, var(--outline-variant) 10%, transparent)' }}>
-            <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
               Need attention this week
             </p>
             <p style={{ fontSize: '2.25rem', fontWeight: 800, color: needsAttentionCount > 0 ? 'var(--color-gold)' : 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
@@ -237,7 +237,7 @@ export default async function CounselorGuidePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 800,
                 color: s.done ? 'var(--color-green)' : 'var(--color-accent)',
               }}>
@@ -245,7 +245,7 @@ export default async function CounselorGuidePage() {
               </div>
               <div>
                 <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{s.label}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{s.desc}</p>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{s.desc}</p>
               </div>
             </div>
           ))}

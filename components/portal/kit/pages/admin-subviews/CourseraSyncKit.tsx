@@ -263,7 +263,7 @@ export function CourseraSyncKit({
           <p
             style={{
               marginTop: 8,
-              fontSize: 11,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               textAlign: 'center',
             }}
@@ -294,7 +294,7 @@ export function CourseraSyncKit({
               <Token label="No unmatched records" size="sm" color="gray" />
             )}
           </div>
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '0 0 14px' }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 14px' }}>
             Recorded Coursera identities with no matching member. This is an activity backlog, not a provider membership roster.
           </p>
 
@@ -344,7 +344,7 @@ export function CourseraSyncKit({
                     </div>
                     <div
                       style={{
-                        fontSize: 11,
+                        fontSize: 13,
                         color: 'var(--wa-muted)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -364,11 +364,11 @@ export function CourseraSyncKit({
           )}
 
           {unmatchedLoaded && unmatchedTotal !== null && unmatchedTotal > unmatched.length ? (
-            <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--wa-muted)', marginTop: 14 }}>
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 14 }}>
               Showing {unmatched.length} of {unmatchedTotal}
             </p>
           ) : null}
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 14 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 14 }}>
             {hiddenTestCount === null ? 'Hidden test-account count unavailable.' : `${hiddenTestCount} likely test accounts excluded from this list and its total.`}
           </p>
         </Card>

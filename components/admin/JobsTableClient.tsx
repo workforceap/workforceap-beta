@@ -224,7 +224,7 @@ export default function JobsTableClient({
                       color: badge.color,
                       padding: '0.1rem 0.5rem',
                       borderRadius: '999px',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       whiteSpace: 'nowrap',
                     }}

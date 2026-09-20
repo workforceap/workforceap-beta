@@ -273,7 +273,7 @@ export default function PublicInterestProfilerClient() {
           </div>
         </div>
 
-        <p style={{ fontSize: '0.8rem', lineHeight: 1.6, color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ fontSize: '0.8125rem', lineHeight: 1.6, color: 'var(--color-on-surface-variant)' }}>
           O*NET Interest Profiler™ is a trademark of the U.S. Department of Labor. This site uses O*NET Web Services under
           the terms described at{' '}
           <a href="https://services.onetcenter.org/help/license" target="_blank" rel="noopener noreferrer">
@@ -328,7 +328,7 @@ export default function PublicInterestProfilerClient() {
           }}
         >
           {q.area && (
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.06em', color: '#8c0f37', margin: '0 0 0.5rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.06em', color: '#8c0f37', margin: '0 0 0.5rem' }}>
               {q.area}
             </p>
           )}
@@ -386,7 +386,7 @@ export default function PublicInterestProfilerClient() {
                     flexShrink: 0,
                     background: selected ? '#8c0f37' : 'var(--surface-container-highest, #e5e2e1)',
                     color: selected ? '#fff' : 'var(--color-on-surface-variant)',
-                    fontSize: '0.75rem', fontWeight: 700,
+                    fontSize: '0.8125rem', fontWeight: 700,
                     transition: 'background 0.15s, color 0.15s',
                   }}
                 >

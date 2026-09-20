@@ -74,7 +74,7 @@ export default function EmployerMatchStatusSelect({
                 padding: '0.4rem 0.5rem',
                 borderRadius: '0.375rem',
                 border: '1px solid var(--outline-variant)',
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
               }
             : undefined
@@ -87,7 +87,7 @@ export default function EmployerMatchStatusSelect({
         ))}
       </select>
       {revertMsg && (
-        <p role="alert" style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', fontWeight: 600, color: 'var(--wa-danger, #dc2626)' }}>
+        <p role="alert" style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', fontWeight: 600, color: 'var(--wa-danger, #dc2626)' }}>
           {revertMsg}
         </p>
       )}

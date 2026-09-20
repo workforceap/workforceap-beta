@@ -188,7 +188,7 @@ export default function CareersInterestForm() {
             aria-invalid={fieldErrors.first_name ? 'true' : undefined}
           />
           {fieldErrors.first_name && (
-            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
               {getFieldErrorMessage('first_name', fieldErrors.first_name)}
             </p>
           )}
@@ -207,7 +207,7 @@ export default function CareersInterestForm() {
             aria-invalid={fieldErrors.last_name ? 'true' : undefined}
           />
           {fieldErrors.last_name && (
-            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
               {getFieldErrorMessage('last_name', fieldErrors.last_name)}
             </p>
           )}
@@ -228,7 +228,7 @@ export default function CareersInterestForm() {
           aria-invalid={fieldErrors.email ? 'true' : undefined}
         />
         {fieldErrors.email && (
-          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
             {getFieldErrorMessage('email', fieldErrors.email)}
           </p>
         )}
@@ -261,7 +261,7 @@ export default function CareersInterestForm() {
           placeholder={t('messagePlaceholder')}
         />
         {fieldErrors.message && (
-          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
             {getFieldErrorMessage('message', fieldErrors.message)}
           </p>
         )}

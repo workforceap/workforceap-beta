@@ -47,7 +47,7 @@ function StreakBanner({
         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.01em' }}>
           {currentStreak}-day streak
         </p>
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {message}
           {longestStreak > currentStreak ? ` · Best: ${longestStreak} days` : ''}
         </p>
@@ -115,7 +115,7 @@ function StreakMiniCard({
           <p
             style={{
               margin: 0,
-              fontSize: '0.72rem',
+              fontSize: '0.8125rem',
               color: 'var(--color-on-surface-variant)',
             }}
           >
@@ -234,7 +234,7 @@ export default function PointsWidget({
             {icon}
           </span>
           <div>
-            <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.15rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.15rem' }}>
               My Points
             </p>
             <p style={{ fontSize: '1.75rem', fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, margin: 0, color: levelMeta.color, fontVariantNumeric: 'tabular-nums' }}>
@@ -249,7 +249,7 @@ export default function PointsWidget({
             border: `1px solid ${levelMeta.color}30`,
             borderRadius: 'var(--radius-full)',
             padding: '0.25rem 0.75rem',
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
           }}
         >
@@ -276,7 +276,7 @@ export default function PointsWidget({
       {/* Progress to next level */}
       {nextLevel && (
         <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem', fontVariantNumeric: 'tabular-nums' }}>
             <span>{pctToNext}% to {nextLevel.label}</span>
             <span>{nextLevel.min - total} pts needed</span>
           </div>
@@ -296,7 +296,7 @@ export default function PointsWidget({
               textAlign: 'center',
               padding: '0.25rem 0',
               borderRadius: 'var(--radius-sm)',
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               fontWeight: 700,
               background: l.name === level ? `${l.color}18` : 'transparent',
               color: l.name === level ? l.color : 'var(--color-on-surface-variant)',
@@ -313,10 +313,10 @@ export default function PointsWidget({
         <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {recent.map((tx) => (
             <li key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flex: 1, minWidth: 0 }}>
                 {tx.note ?? EVENT_LABELS[tx.event] ?? tx.event}
               </span>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-green)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-green)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                 +{tx.points}
               </span>
             </li>

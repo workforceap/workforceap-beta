@@ -171,7 +171,7 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
                 flexShrink: 0,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 fontWeight: 600,
                 textDecoration: 'none',
                 background: filter === chip.value ? 'var(--color-accent)' : 'var(--surface-container)',
@@ -217,9 +217,9 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
                   </h3>
                   <StatusBadge label={employerJobPortalStatusLabel(job.status)} variant={employerJobPortalBadgeVariant(job.status)} />
                 </div>
-                <p style={{ fontSize: '0.775rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>{job.location}</p>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>{job.location}</p>
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
-                  <span style={{ fontSize: '0.775rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">person</span>
                     <span style={{ fontVariantNumeric: 'tabular-nums' }}>{job.applicationsCount}</span> {t('applications', { count: job.applicationsCount })}
                   </span>
@@ -245,7 +245,7 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
           ) : (
             <>
               {totalInFilter > EMPLOYER_LIST_CAP && (
-                <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>
+                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>
                   Bulk actions include the first {EMPLOYER_LIST_CAP} postings in this filter.
                 </p>
               )}

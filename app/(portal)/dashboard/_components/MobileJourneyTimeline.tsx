@@ -92,7 +92,7 @@ export default function MobileJourneyTimeline({
   return (
         <section aria-label="Application journey" style={{ padding: '0 1.25rem', marginBottom: '0.85rem' }}>
           <details className="portal-card portal-card--flat" style={{ borderRadius: '0.875rem', padding: '0.95rem 1rem' }}>
-            <summary style={{ cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+            <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
               {t('applicationJourney')}
             </summary>
             <div className="portal-journey-timeline" style={{ marginTop: '1rem' }}>
@@ -102,7 +102,7 @@ export default function MobileJourneyTimeline({
                   <div key={i} className="portal-journey-step" style={{ opacity: locked ? 0.42 : 1 }}>
                     <div className={`portal-journey-step__dot portal-journey-step__dot--${step.done ? 'done' : step.active ? 'active' : 'locked'}`}>
                       {step.done && (
-                        <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: '0.75rem', fontVariationSettings: "'FILL' 1" }}>check</span>
+                        <span className="material-symbols-outlined" style={{ color: '#fff', fontSize: '0.8125rem', fontVariationSettings: "'FILL' 1" }}>check</span>
                       )}
                       {step.active && !step.done && <div className="portal-dot-pulse" />}
                     </div>

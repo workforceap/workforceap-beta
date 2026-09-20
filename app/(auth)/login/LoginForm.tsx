@@ -195,7 +195,7 @@ const s = {
   trustBar: {
     marginTop: 'var(--space-3)',
     textAlign: 'center' as const,
-    fontSize: '0.75rem',
+    fontSize: '0.8125rem',
     color: 'var(--color-on-surface-variant)',
     opacity: 0.65,
     letterSpacing: '0.01em',

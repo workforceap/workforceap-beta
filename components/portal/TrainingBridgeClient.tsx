@@ -154,7 +154,7 @@ export default function TrainingBridgeClient({ assessment }: Props) {
           </select>
         </FormField>
         {matchedFromAssessment && matchedFromAssessment.id !== selectedId && (
-          <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: 'var(--wa-muted)' }}>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
             {t('assessmentMatchedHint', { occupation: matchedFromAssessment.occupationTitle })}
           </p>
         )}
@@ -195,7 +195,7 @@ export default function TrainingBridgeClient({ assessment }: Props) {
       {/* ── Pathway + enroll CTA ── */}
       {program && (
         <div className="wa-kit-card" style={{ borderLeft: '4px solid var(--wa-accent)' }}>
-          <p style={{ margin: '0 0 0.25rem', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--wa-accent)' }}>
+          <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--wa-accent)' }}>
             {t('pathwayEyebrow')}
           </p>
           <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.05rem', fontWeight: 800, color: 'var(--wa-text)' }}>
@@ -227,7 +227,7 @@ export default function TrainingBridgeClient({ assessment }: Props) {
             </Link>
           </div>
 
-          <p style={{ margin: '0.85rem 0 0', fontSize: '0.78rem', lineHeight: 1.5, color: 'var(--wa-muted)' }}>
+          <p style={{ margin: '0.85rem 0 0', fontSize: '0.8125rem', lineHeight: 1.5, color: 'var(--wa-muted)' }}>
             {t('disclaimer')}
           </p>
         </div>

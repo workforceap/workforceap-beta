@@ -192,7 +192,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
               type="button"
               className="btn btn-outline btn-sm"
               onClick={() => setExpanded(variant)}
-              style={{ fontSize: '0.8rem' }}
+              style={{ fontSize: '0.8125rem' }}
             >
               Larger view
             </button>
@@ -206,7 +206,7 @@ export default function StaffMemberResumePanel({ memberId }: StaffMemberResumePa
                 Download ↗
               </a>
             ) : (
-              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8rem' }}>Preparing link…</span>
+              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>Preparing link…</span>
             )}
           </div>
         </div>

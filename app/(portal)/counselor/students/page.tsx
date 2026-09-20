@@ -287,7 +287,7 @@ export default async function CounselorStudentsPage({
             >
               <p
                 style={{
-                  fontSize: '10px',
+                  fontSize: '13px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   color: 'var(--color-on-surface-variant)',
@@ -324,7 +324,7 @@ export default async function CounselorStudentsPage({
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
                     {t('hotMemberQueue')}
                   </p>
                   <h2 style={{ margin: '0.2rem 0 0', fontSize: '1rem', fontWeight: 800, color: 'var(--color-amber)' }}>
@@ -352,12 +352,12 @@ export default async function CounselorStudentsPage({
                         <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                           {action.member.fullName ?? t('member')}
                         </p>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-amber)', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-amber)', whiteSpace: 'nowrap' }}>
                           {formatHotQueueTime(action.createdAt, t)}
                         </span>
                       </div>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-amber)' }}>{action.title}</p>
-                      <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>{action.description}</p>
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-amber)' }}>{action.title}</p>
+                      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{action.description}</p>
                     </div>
                   </Link>
                 ))}
@@ -408,7 +408,7 @@ export default async function CounselorStudentsPage({
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.875rem' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
                     {t('hotMemberQueue')}
                   </p>
                   <h2 style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-amber)' }}>
@@ -443,7 +443,7 @@ export default async function CounselorStudentsPage({
                       <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-on-surface-variant)' }}>{action.description}</p>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-warning-on-surface)' }}>
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-warning-on-surface)' }}>
                         {formatHotQueueTime(action.createdAt, t)}
                       </p>
                       <span className="btn btn-primary btn-sm">{t('openMember')}</span>

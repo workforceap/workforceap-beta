@@ -130,7 +130,7 @@ export default function MemberProgressStrip(props: Props) {
                   className="material-symbols-outlined"
                   aria-hidden="true"
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.8125rem',
                     color: '#fff',
                     fontVariationSettings: "'FILL' 1",
                     lineHeight: 1,

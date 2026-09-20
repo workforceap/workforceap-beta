@@ -151,7 +151,7 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts }: 
                     background: 'var(--color-accent, #ad2c4d)',
                     border: '1.5px solid var(--color-white, #fff)',
                     color: '#fff',
-                    fontSize: '0.65rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',

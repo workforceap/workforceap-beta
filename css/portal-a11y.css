@@ -22,9 +22,11 @@
   min-height: auto;
 }
 
-/* Fallback for controls without an opted-in kit focus treatment. */
+/* Fallback for controls without an opted-in kit focus treatment: the same
+   ring recipe as .wa-kit-focus (tokens in css/main.css), so a tab pass through
+   sidebar, header, tabs and content shows one ring (WAP-157). */
 .portal-touch-target :is(a, button, [role="button"], input, select, textarea):not(.wa-kit-focus):not(.wa-kit-focus--on-dark):focus-visible {
-  outline: 2px solid var(--wa-accent, var(--color-accent, #ad2c4d));
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: none;
+  box-shadow: var(--wa-focus-ring);
 }

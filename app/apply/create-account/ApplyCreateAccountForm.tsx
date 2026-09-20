@@ -815,7 +815,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
             <strong>{t('accountSmsLabel')}</strong> {t('accountSmsBody')}
           </span>
         </label>
-        <p id="sms-opt-in-hint" style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>{t('accountSmsFinePrint')}</p>
+        <p id="sms-opt-in-hint" style={{ fontSize: '13px', color: 'var(--color-on-surface-variant)', marginTop: '4px' }}>{t('accountSmsFinePrint')}</p>
       </div>
       <div className="form-group">
         <label htmlFor="password">{t('accountPasswordLabel')}</label>
@@ -876,7 +876,7 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
                 );
               })}
             </div>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               <strong>{t('accountPasswordStrengthLabel')}:</strong> {passwordStrengthTone}
             </p>
           </div>

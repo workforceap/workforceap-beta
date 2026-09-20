@@ -400,7 +400,7 @@ export default async function AdminTodayPage({
           </span>
           <span
             style={{
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
               color: 'var(--color-accent)',
             }}

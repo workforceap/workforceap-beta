@@ -45,7 +45,7 @@ export function PricingTierCard({ title, features, ctaText, ctaHref, variant = '
             color: '#fff',
             padding: '0.25rem 1rem',
             borderRadius: 'var(--radius-full)',
-            fontSize: '0.65rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             letterSpacing: '0.06em',
             textTransform: 'uppercase',

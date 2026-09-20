@@ -150,7 +150,7 @@ export default function MemberDuplicatesClient() {
             <div style={{ padding: '0.875rem 1.125rem', background: 'var(--surface-container-low)', borderBottom: '1px solid var(--outline-variant)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>warning</span>
               <span style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)' }}>{group.canonicalEmail}</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>{group.members.length} records</span>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>{group.members.length} records</span>
             </div>
 
             <div style={{ display: 'grid', gap: '1px', background: 'var(--outline-variant)' }}>
@@ -181,7 +181,7 @@ export default function MemberDuplicatesClient() {
                       <label htmlFor={`s-${m.id}`} style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', cursor: 'pointer' }}>
                         Merge into primary
                       </label>
-                      {idx === 0 && <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: 'var(--wa-success-dark)', textTransform: 'uppercase' }}>Newest</span>}
+                      {idx === 0 && <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: 'var(--wa-success-dark)', textTransform: 'uppercase' }}>Newest</span>}
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(12rem, 1fr))', gap: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
