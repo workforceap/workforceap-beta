@@ -30,6 +30,7 @@ import {
   type CounselorQueueRow,
   type CounselorSessionRow,
 } from '@/components/portal/kit/pages/counselor/CounselorHomeKit';
+import { countNeedsAttention, selectNeedsAttentionRows } from '@/lib/counselor/needsAttentionRows';
 
 // Quick Links accents: each link declares which severity it wants to signal
 // (accent/green/blue/gold/error) so At-Risk and Inactive Members read as
@@ -105,7 +106,7 @@ export default async function CounselorPortalPage({
       kitLoadErrors.push('counselor-priority-queue-load-failed');
     }
 
-    const kitQueueRows: CounselorQueueRow[] = kitQueue.rows.slice(0, 12).map((row) => ({
+    const kitQueueRows: CounselorQueueRow[] = selectNeedsAttentionRows(kitQueue.rows, 12).map((row) => ({
       memberId: row.memberId,
       memberName: row.memberName,
       bucket: row.bucket,
@@ -135,7 +136,7 @@ export default async function CounselorPortalPage({
         onTrackCount={kitQueue.totals.ontrack}
         slaBreachCount={kitCenter.totals.slaBreachCount}
         queueRows={kitQueueRows}
-        queueTotal={kitQueue.totals.total}
+        queueTotal={countNeedsAttention(kitQueue.totals)}
         sessions={kitSessions}
         bucketCounts={{
           critical: kitQueue.totals.critical,

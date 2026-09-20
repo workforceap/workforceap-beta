@@ -23,6 +23,11 @@ import {
 } from '@/lib/coursera/progressQueries';
 import { parseCourseGradeString } from '@/lib/coursera/courseGradeDisplay';
 import { loadStudentRosterEnrichment } from '@/lib/admin/studentsRosterEnrichment';
+import { withSoftTimeout } from '@/lib/admin/withSoftTimeout';
+
+const ROSTER_ENRICHMENT_TIMEOUT_MS = 20_000;
+const STUDENTS_SECONDARY_LOAD_NOTICE =
+  'Some roster details (recent activity, Coursera evidence) are unavailable right now. Names, programs and statuses are current; refresh in a few minutes for the rest.';
 import { resolveStudentRosterActivity, STUDENT_ROSTER_ACTIVITY_LABELS } from '@/lib/admin/studentsRosterFacts';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -183,11 +188,16 @@ export default async function AdminStudentsPage({
   let studentSecondaryLoadFailed =
     totalResult.status === 'rejected' || !eventAggregatesOk;
 
-  const rosterEnrichmentRows = await loadStudentRosterEnrichment({
-    organizationId: scope.orgId,
-    superAdmin: scope.superAdmin,
-    userIds: memberIds,
-  }).catch((reason: unknown) => {
+  // Coursera evidence joins (coursera_xapi_events et al.) fail soft: a missing
+  // table or a slow scan must not hold the roster past ROSTER_ENRICHMENT_TIMEOUT_MS.
+  const rosterEnrichmentRows = await withSoftTimeout(
+    loadStudentRosterEnrichment({
+      organizationId: scope.orgId,
+      superAdmin: scope.superAdmin,
+      userIds: memberIds,
+    }),
+    ROSTER_ENRICHMENT_TIMEOUT_MS,
+  ).catch((reason: unknown) => {
     studentSecondaryLoadFailed = true;
     console.error('[admin/students] roster enrichment load failed', reason);
     return [];
@@ -330,7 +340,11 @@ export default async function AdminStudentsPage({
   return (
     <>
       {studentSecondaryLoadFailed ? <span hidden data-portal-error-state="admin-students-secondary-load" /> : null}
-      <StudentsRosterKit students={students} total={total + unmatchedCount} />
+      <StudentsRosterKit
+        students={students}
+        total={total + unmatchedCount}
+        notice={studentSecondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
+      />
     </>
   );
 }

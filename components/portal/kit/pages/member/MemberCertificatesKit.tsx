@@ -45,6 +45,8 @@ export interface MemberCertificatesKitProps {
   inProgress?: InProgressCert[];
   /** Empty-state counselor CTA. Proofs pass /dev/member/messages. */
   counselorHref?: string;
+  /** Resume link for the in-progress course. When set and a course is in progress, it becomes the primary CTA. */
+  continueHref?: string;
 }
 
 /**
@@ -73,7 +75,10 @@ export function MemberCertificatesKit({
   earned = [],
   inProgress = [],
   counselorHref = '/dashboard/messages',
+  continueHref,
 }: MemberCertificatesKitProps) {
+  // The real next step for a member mid-course is the course, not a message.
+  const continueIsPrimary = Boolean(continueHref) && inProgress.length > 0;
   const kpiItems = [
     { label: 'Earned', value: earnedCount, color: 'text' as const },
     { label: 'In progress', value: inProgressCount, color: 'text' as const },
@@ -105,9 +110,20 @@ export function MemberCertificatesKit({
                   title="No certificates yet"
                   description="Completed credentials will appear here after they are logged and verified."
                   action={
-                    <Link href={counselorHref} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
-                      Message counselor
-                    </Link>
+                    continueIsPrimary ? (
+                      <span className="wa-flex wa-flex-wrap wa-items-center wa-justify-center wa-gap-3">
+                        <Link href={continueHref!} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
+                          Continue course
+                        </Link>
+                        <Link href={counselorHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90">
+                          Message counselor
+                        </Link>
+                      </span>
+                    ) : (
+                      <Link href={counselorHref} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
+                        Message counselor
+                      </Link>
+                    )
                   }
                 />
               </div>

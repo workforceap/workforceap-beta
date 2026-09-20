@@ -2224,6 +2224,14 @@
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
   },
   {
+    "from": "app/(portal)/counselor/page.tsx",
+    "specifier": "@/lib/counselor/needsAttentionRows",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/counselor/needsAttentionRows.ts"
+  },
+  {
     "from": "app/(portal)/counselor/placements/error.tsx",
     "specifier": "@/components/error/RouteErrorFallback",
     "line": 3,
@@ -6398,6 +6406,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/certifications/page.tsx",
+    "specifier": "@/lib/member/memberProgramTrainingView",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramTrainingView.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/certifications/page.tsx",
+    "specifier": "@/lib/content/programs",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/certifications/page.tsx",
+    "specifier": "@/lib/member/memberProgramHref",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramHref.ts"
   },
   {
     "from": "app/(portal)/dashboard/counselor/[id]/page.tsx",
@@ -25329,8 +25361,16 @@
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/studentsRosterFacts",
+    "specifier": "@/lib/admin/withSoftTimeout",
     "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/withSoftTimeout.ts"
+  },
+  {
+    "from": "app/admin/students/page.tsx",
+    "specifier": "@/lib/admin/studentsRosterFacts",
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterFacts.ts"
@@ -80385,8 +80425,16 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/components/theme/ThemeSelector",
+    "specifier": "@/lib/nav/resumeUploadHint",
     "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/resumeUploadHint.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/theme/ThemeSelector",
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -80394,7 +80442,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -80402,7 +80450,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -80410,7 +80458,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
@@ -92608,6 +92656,30 @@
     "package": "next"
   },
   {
+    "from": "lib/admin/withSoftTimeout.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/withSoftTimeout.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/withSoftTimeout.test.ts",
+    "specifier": "./withSoftTimeout",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/withSoftTimeout.ts"
+  },
+  {
     "from": "lib/agents/gateway/core.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -98070,6 +98142,30 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
+  },
+  {
+    "from": "lib/counselor/needsAttentionRows.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/counselor/needsAttentionRows.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/counselor/needsAttentionRows.test.ts",
+    "specifier": "./needsAttentionRows",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/counselor/needsAttentionRows.ts"
   },
   {
     "from": "lib/counselor/nudgeTemplates.test.ts",
@@ -107482,10 +107578,34 @@
   {
     "from": "lib/nav/portalNav.ts",
     "specifier": "@/lib/wioa/wioaAvailability",
-    "line": 45,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaAvailability.ts"
+  },
+  {
+    "from": "lib/nav/resumeUploadHint.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/nav/resumeUploadHint.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/nav/resumeUploadHint.test.ts",
+    "specifier": "./resumeUploadHint",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/resumeUploadHint.ts"
   },
   {
     "from": "lib/notifications/create.ts",
@@ -127392,6 +127512,62 @@
     "package": "@testing-library/react"
   },
   {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberCertificatesKit",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberCertificatesKit.tsx"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "tests/components/audit-ui-fixes.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
     "from": "tests/components/auth-connection-failure.spec.tsx",
     "specifier": "react",
     "line": 1,
@@ -132478,6 +132654,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/getMemberResumePlainText.ts"
+  },
+  {
+    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
   },
   {
     "from": "tests/lib/member-voice-data-use-disclosures.spec.ts",

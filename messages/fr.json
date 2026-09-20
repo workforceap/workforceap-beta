@@ -471,7 +471,7 @@
     "interviewCoachMetaDesc": "Run a text-based mock interview and get instant AI feedback.",
     "interviewPracticeMetaTitle": "Interview Practice Generator",
     "interviewPracticeMetaDesc": "Generate role-specific interview questions with answer frameworks.",
-    "interviewPrepMetaTitle": "Pre-Interview Prep Bundle",
+    "interviewPrepMetaTitle": "Préparation à l'entretien",
     "interviewPrepMetaDesc": "Everything you have built with our AI tools — pulled together for quick review before your next interview.",
     "jobMatchScorerMetaTitle": "Job Match Scorer",
     "jobMatchScorerMetaDesc": "See how well your resume matches a job and get specific gaps to address.",
@@ -1035,7 +1035,10 @@
     "messagesTitle": "Messages",
     "messagesDescription": "Discutez avec votre conseiller WorkforceAP.",
     "memberPortal": "Portail membre",
-    "noMessagesYet": "Aucun message pour l'instant"
+    "noMessagesYet": "Aucun message pour l'instant",
+    "yourCounselor": "Votre conseiller",
+    "workforceapSupport": "Assistance WorkforceAP",
+    "supportTeam": "Équipe d'assistance"
   },
   "profile": {
     "edit": "Modifier le profil",

@@ -74,6 +74,8 @@ export interface StudentRow {
 export type StudentFilter = 'All' | 'Job-Ready' | 'At Risk' | 'In Training' | 'Unmatched';
 
 export interface StudentsRosterKitProps {
+  /** Shown under the header when a secondary roster source (activity, Coursera evidence) failed soft. */
+  notice?: string;
   students?: StudentRow[];
   /** Total roster size for the "Showing N of TOTAL" footer + All chip count. */
   total?: number;
@@ -170,6 +172,7 @@ function readinessVar(score: number): string {
 }
 
 export function StudentsRosterKit({
+  notice,
   students = DEFAULT_STUDENTS,
   total = 847,
 }: StudentsRosterKitProps) {
@@ -355,6 +358,12 @@ export function StudentsRosterKit({
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <SectionHeader title="Students" kicker="People" goal="Find and act on any student." />
+
+      {notice ? (
+        <p role="status" className="wa-kit-training-notice" data-testid="students-roster-notice">
+          {notice}
+        </p>
+      ) : null}
 
       {/* Saved-view filter chips */}
       <div className="wa-mb-5">

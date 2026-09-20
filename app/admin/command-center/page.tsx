@@ -168,6 +168,7 @@ export default async function AdminCommandCenterPage({
       { label: 'At Risk', value: totals.atRiskCount, color: 'accent' },
     ];
 
+    const countLabel = (n: number) => `${n} ${n === 1 ? 'item' : 'items'}`;
     const queueItems: CommandCenterQueueItem[] = [
       {
         id: 'at-risk',
@@ -175,7 +176,7 @@ export default async function AdminCommandCenterPage({
         iconColor: 'var(--wa-accent)',
         title: `${totals.atRiskCount} ${totals.atRiskCount === 1 ? 'student' : 'students'} need a check-in`,
         detail: 'Approved training has gone quiet or course activity is flagged',
-        actionLabel: `${totals.atRiskCount} items`,
+        actionLabel: countLabel(totals.atRiskCount),
         urgent: totals.atRiskCount > 0,
         href: '/admin/command-center?queue=at-risk',
       },
@@ -185,7 +186,7 @@ export default async function AdminCommandCenterPage({
         iconColor: 'var(--wa-info)',
         title: `${totals.needsReplyCount} ${totals.needsReplyCount === 1 ? 'conversation needs' : 'conversations need'} a reply`,
         detail: 'Members are waiting on a response',
-        actionLabel: `${totals.needsReplyCount} items`,
+        actionLabel: countLabel(totals.needsReplyCount),
         href: '/admin/command-center?queue=needs-reply',
       },
       {
@@ -194,7 +195,7 @@ export default async function AdminCommandCenterPage({
         iconColor: 'var(--wa-gold)',
         title: `${totals.applicationsPendingCount} ${totals.applicationsPendingCount === 1 ? 'application needs' : 'applications need'} review`,
         detail: 'Eligibility + program-fit review pending',
-        actionLabel: `${totals.applicationsPendingCount} items`,
+        actionLabel: countLabel(totals.applicationsPendingCount),
         href: '/admin/command-center?queue=applications',
       },
       {
@@ -203,7 +204,7 @@ export default async function AdminCommandCenterPage({
         iconColor: 'var(--wa-gold)',
         title: `${totals.certificationsPendingCount} ${totals.certificationsPendingCount === 1 ? 'certification' : 'certifications'} awaiting review`,
         detail: 'Verify proof to count toward outcomes',
-        actionLabel: `${totals.certificationsPendingCount} items`,
+        actionLabel: countLabel(totals.certificationsPendingCount),
         urgent: totals.certificationsPendingCount > 0,
         href: '/admin/certifications',
       },
@@ -213,7 +214,7 @@ export default async function AdminCommandCenterPage({
         iconColor: 'var(--wa-success)',
         title: `${totals.interviewingCount} ${totals.interviewingCount === 1 ? 'opportunity needs' : 'opportunities need'} interview prep`,
         detail: 'Phone screens, interviews, and offers to prep',
-        actionLabel: `${totals.interviewingCount} items`,
+        actionLabel: countLabel(totals.interviewingCount),
         href: '/admin/command-center?queue=interviewing',
       },
     ];

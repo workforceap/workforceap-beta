@@ -286,7 +286,7 @@ export function MemberToolkitKit({
             {advisorOnline && onSend ? (
               <span
                 className="wa-flex wa-items-center wa-gap-1"
-                style={{ marginLeft: 'auto', fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-success)' }}
+                style={{ marginLeft: 'auto', fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-success-dark)' }}
               >
                 <Circle size={6} fill="currentColor" aria-hidden="true" />
                 Online

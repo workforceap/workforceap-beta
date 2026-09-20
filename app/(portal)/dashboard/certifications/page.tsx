@@ -21,6 +21,9 @@ import {
 import CertificationAddForm from '@/components/portal/CertificationAddForm';
 import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
+import { getProgramBySlug } from '@/lib/content/programs';
+import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -65,7 +68,8 @@ export default async function DashboardCertificationsPage({
     primaryEnrollment?.curriculumVersion ?? 'legacy-v1',
   );
 
-  const [certs, pathwayRows] = await Promise.all([
+  const primaryProgramSlug = primaryEnrollment?.programSlug ?? dbUser?.enrolledProgram ?? null;
+  const [certs, pathwayRows, trainingView] = await Promise.all([
     prisma.userCertification.findMany({
       take: 500,
       where: { userId: user.id },
@@ -78,6 +82,12 @@ export default async function DashboardCertificationsPage({
           where: { userId: user.id, pathwayId: primaryPathway.id },
         })
       : Promise.resolve([] as Array<{ pathwayId: string; stepIndex: number; status: string }>),
+    // Same program ledger as home and My program (reconcileProgramProgress), so
+    // the in-progress card cannot disagree with them. Pathway steps stay the
+    // fallback when no enrollment resolves.
+    primaryProgramSlug
+      ? loadMemberProgramTrainingView({ userId: user.id, programSlug: primaryProgramSlug }).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
   const completedSteps = pathwayRows.filter((r) => r.status === 'completed').length;
@@ -108,8 +118,21 @@ export default async function DashboardCertificationsPage({
 
     // In-progress cert = the member's current pathway milestone, surfaced as a
     // single in-progress card with the overall pathway completion percent.
+    const trainingProgram = trainingView && primaryProgramSlug ? getProgramBySlug(primaryProgramSlug) : undefined;
+    const nextCourseName = trainingView?.nextIncompleteCourseSlug
+      ? trainingProgram?.courses.find((course) => course.slug === trainingView.nextIncompleteCourseSlug)?.name ?? null
+      : null;
     const inProgress =
-      primaryPathway && currentMilestone
+      trainingView && trainingProgram && !trainingView.allCoursesComplete && trainingView.totalCourses > 0
+        ? [
+            {
+              id: `${trainingProgram.slug}-program`,
+              title: nextCourseName ?? trainingProgram.title,
+              percent: trainingView.progressPercentDisplay,
+              note: `${trainingView.completedCount} of ${trainingView.totalCourses} courses complete in ${trainingProgram.title}`,
+            },
+          ]
+        : primaryPathway && currentMilestone
         ? [
             {
               id: `${primaryPathway.id}-${currentMilestone.stepIndex}`,
@@ -130,6 +153,7 @@ export default async function DashboardCertificationsPage({
         learningHours={0}
         earned={earned}
         inProgress={inProgress}
+        continueHref={inProgress.length > 0 ? MEMBER_PROGRAM_HREF : undefined}
       />
     );
   }

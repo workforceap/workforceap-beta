@@ -1246,7 +1246,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 45,
+        "line": 46,
         "kind": "FunctionDeclaration",
         "localName": "CounselorPortalPage"
       }
@@ -3316,12 +3316,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 25,
+        "line": 28,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 33,
+        "line": 36,
         "kind": "FunctionDeclaration",
         "localName": "DashboardCertificationsPage"
       }
@@ -10942,12 +10942,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 28,
+        "line": 33,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 89,
+        "line": 94,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }

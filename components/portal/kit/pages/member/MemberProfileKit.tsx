@@ -311,7 +311,7 @@ export function MemberProfileKit({
               </p>
             ) : null}
             {accountSaved && !accountError ? (
-              <p role="status" aria-live="polite" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-success)', fontWeight: 600, marginTop: 12 }}>
+              <p role="status" aria-live="polite" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-success-dark)', fontWeight: 600, marginTop: 12 }}>
                 Saved.
               </p>
             ) : null}

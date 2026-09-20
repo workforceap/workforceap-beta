@@ -599,7 +599,7 @@ export function MemberHomeKit({
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
           kicker="Home"
-          title={greeting && firstName ? `${greeting}, ${firstName}` : firstName || 'Home'}
+          title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
           lede={nextLesson ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}` : 'Pick up your program, jobs, or Career Studio.'}
           icon={<Home size={13} aria-hidden="true" />}
           action={
@@ -750,7 +750,7 @@ export function MemberHomeKit({
                     Study minutes / day
                   </span>
                   {weeklyActivityDeltaLabel ? (
-                    <span style={{ color: 'var(--wa-success)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ color: 'var(--wa-success-dark)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                       {weeklyActivityDeltaLabel}
                     </span>
                   ) : null}
@@ -758,7 +758,9 @@ export function MemberHomeKit({
               </>
             ) : (
               <p className="wa-kit-lede" style={{ margin: 0 }}>
-                No study minutes this week.{' '}
+                {typeof pointsThisWeek === 'number' && pointsThisWeek > 0
+                  ? `${pointsThisWeek} points earned this week. Study minutes are not tracked for this program yet. `
+                  : 'No study minutes this week. '}
                 <a href={programHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700, textDecoration: 'none' }}>
                   Open program
                 </a>
@@ -782,8 +784,10 @@ export function MemberHomeKit({
                   gap: 4,
                   fontSize: 'var(--wa-type-meta)',
                   fontWeight: 700,
-                  color: 'var(--wa-success)',
-                  background: 'color-mix(in srgb, var(--wa-success) 12%, transparent)',
+                  // Text on a success tint reads the text-on-tint token (4.8:1 light);
+                  // --wa-success itself is a fill/icon colour (3.2:1 on the page).
+                  color: 'var(--wa-success-dark)',
+                  background: 'var(--wa-success-soft)',
                   padding: '3px 8px',
                   borderRadius: 999,
                   width: 'fit-content',
@@ -903,7 +907,7 @@ export function MemberHomeKit({
           <a
             href={coursesHref}
             className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-            style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info)' }}
+            style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}
           >
             <GraduationCap size={14} aria-hidden /> Learning hub <ArrowRight size={14} aria-hidden />
           </a>

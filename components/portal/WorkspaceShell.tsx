@@ -31,6 +31,7 @@ import MemberPortalTopNav from './MemberPortalTopNav';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import LanguageToggle from '@/components/portal/LanguageToggle';
+import { shouldShowResumeUploadHint } from '@/lib/nav/resumeUploadHint';
 import ThemeSelector from '@/components/theme/ThemeSelector';
 import UnreviewedLocaleBanner from '@/components/portal/UnreviewedLocaleBanner';
 import { useTranslations, useLocale } from 'next-intl';
@@ -381,7 +382,9 @@ export default function WorkspaceShell({
     insights: tGroup('memberProgress'),
     manage: tGroup('memberAccount'),
   } : {};
-  const resumeUploadHint = showResumeUploadHint ? (
+  // Members see the resume hint only on home and resume-consuming tools.
+  const resumeHintOnThisRoute = portalRole !== 'member' || shouldShowResumeUploadHint(pathname);
+  const resumeUploadHint = showResumeUploadHint && resumeHintOnThisRoute ? (
     <div className="workspace-resume-upload-hint" role="status">
       <span className="workspace-resume-upload-hint__text">
         No resume on file yet — upload one to power AI tools and your coach.
