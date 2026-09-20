@@ -12,6 +12,13 @@ import {
 } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
 import { useDraftAutosave } from '@/hooks/useDraftAutosave';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import {
+  MEMBER_REQUEST_FAILURE,
+  MEMBER_REQUEST_TIMEOUT_MS,
+  describeMemberRequestException,
+  readMemberRequestFailure,
+} from '@/lib/portal/memberRequestFailure';
 import { FormField, StatusTag } from '@/components/portal/kit';
 import AiToolLanguageSelector, { type AiToolLanguage } from './AiToolLanguageSelector';
 import ToolFollowThrough from './ToolFollowThrough';
@@ -170,15 +177,27 @@ export default function ElevatorPitchClient({
     setGenError(null);
     setEmailStatus(null);
     try {
-      const res = await fetch('/api/ai/elevator-pitch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name, targetRole, strengths, certifications, industry, language }),
-      });
-      const data = await res.json() as { pitch?: string; error?: string; emailSent?: boolean; emailError?: string };
-      if (!res.ok || !data.pitch) {
-        setGenError(data.error ?? 'Could not generate. Try again.');
+      // Timed out, non-JSON and 5xx answers all end in a visible error with the
+      // button re-enabled — never an indefinite "Writing…" (member audit 7c).
+      const res = await fetchWithTimeout(
+        '/api/ai/elevator-pitch',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name, targetRole, strengths, certifications, industry, language }),
+        },
+        MEMBER_REQUEST_TIMEOUT_MS,
+      );
+      if (!res.ok) {
+        setGenError(await readMemberRequestFailure(res));
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as
+        | { pitch?: string; emailSent?: boolean; emailError?: string }
+        | null;
+      if (!data?.pitch) {
+        setGenError(MEMBER_REQUEST_FAILURE.generic);
         return;
       }
       setPitch(data.pitch);
@@ -190,8 +209,8 @@ export default function ElevatorPitchClient({
       // "Previous pitches" is server-rendered — refresh so the new pitch shows up
       // without a manual reload (members read a stale list as "my pitch was deleted").
       router.refresh();
-    } catch {
-      setGenError('Network error — try again.');
+    } catch (err) {
+      setGenError(describeMemberRequestException(err));
     } finally {
       setGenerating(false);
     }

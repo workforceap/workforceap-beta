@@ -32,9 +32,13 @@ export function SignOutButton({ className, children, onSignOutStart }: SignOutBu
     router.refresh();
   };
 
+  // Kit CTA (`wa-kit-cta`) and header text-action callers own their styling;
+  // legacy `.btn` is only added for callers that still rely on it.
   const mergedClass =
     className != null && className !== ''
-      ? /\bbtn\b/.test(className) || className.includes('wa-shell-text-action')
+      ? /\bbtn\b/.test(className) ||
+        className.includes('wa-shell-text-action') ||
+        className.includes('wa-kit-cta')
         ? className
         : `btn ${className}`.trim()
       : 'btn';

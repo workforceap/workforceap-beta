@@ -139,7 +139,16 @@ describe('solid-accent controls and hero actions clear AA in dark mode (WAP-145 
     expect(primary).not.toContain('color: var(--color-white);');
     const outlineDark = main.match(/html\.dark \.btn-outline,\s*\nhtml\.dark \.btn-secondary \{[^}]*\}/)?.[0] ?? '';
     expect(outlineDark).toContain('border-color: var(--wa-control-border');
-    const signout = read('css/portal-main-extracted.css').match(/html\.dark \.workspace-sidebar-signout \{[^}]*\}/)?.[0] ?? '';
-    expect(signout).toContain('border-color: var(--wa-danger);');
+    // Sidebar Sign out is now a kit ghost CTA on the dark rail: its border and
+    // label read the sidebar tokens (dark chrome in both modes, so no html.dark
+    // override remains) and must clear 3:1 (border) / 4.5:1 (label) on the rail.
+    const extracted = read('css/portal-main-extracted.css');
+    expect(extracted).not.toMatch(/html\.dark \.workspace-sidebar-signout \{/);
+    const signout = extracted.match(/\.workspace-shell-root \.workspace-sidebar-signout \{[^}]*\}/)?.[0] ?? '';
+    expect(signout).toContain('border: 1px solid var(--wa-sidebar-muted);');
+    expect(signout).toContain('color: var(--wa-sidebar-muted);');
+    const railMuted = constantToken('--wa-sidebar-muted');
+    const railBg = constantToken('--wa-sidebar-bg');
+    expect(ratio(railMuted, railBg, railBg), 'sign-out border/label on the rail').toBeGreaterThanOrEqual(4.5);
   });
 });

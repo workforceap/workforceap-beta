@@ -1562,6 +1562,31 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "components/portal/tools/ElevatorPitchClient.test.tsx",
+    "area": "components",
+    "domain": "components",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/tools/ElevatorPitchClient.tsx",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "components/portal/tools/InterviewCoach.test.tsx",
     "area": "components",
     "domain": "components",
@@ -8525,6 +8550,30 @@
     "localReferences": [
       {
         "file": "lib/portal/memberProfilePhoto.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/portal/memberRequestFailure.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/portal/memberRequestFailure.ts",
         "line": 4
       }
     ],
@@ -20031,6 +20080,35 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/member-jobs-open-roles.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/member/MemberJobsKit.tsx",
+        "line": 4
+      },
+      {
+        "file": "lib/member/jobPipelineDisplay.ts",
+        "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/member-lab-workspace.test.tsx",
     "area": "tests",
     "domain": "tests",
@@ -20112,6 +20190,31 @@
       },
       {
         "file": "lib/content/courseDelivery.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/member-resume-upload-failure.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/dashboard/resume/ResumeClient.tsx",
         "line": 4
       }
     ],

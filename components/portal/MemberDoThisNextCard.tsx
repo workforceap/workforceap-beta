@@ -220,7 +220,7 @@ export default function MemberDoThisNextCard({ action, paddingX = '2rem', varian
           </p>
           <Link
             href={actionHref}
-            className="btn"
+            className="wa-kit-cta wa-kit-focus wa-kit-focus--on-dark"
             onClick={handleCtaClick}
             style={{
               marginTop: '0.25rem',
@@ -228,7 +228,6 @@ export default function MemberDoThisNextCard({ action, paddingX = '2rem', varian
               background: 'var(--wa-hero-action-bg)',
               color: 'var(--wa-hero-action-text)',
               fontWeight: 700,
-              border: 'none',
               textDecoration: 'none',
               maxWidth: '100%',
               boxSizing: 'border-box',

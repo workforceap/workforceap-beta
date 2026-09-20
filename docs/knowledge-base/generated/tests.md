@@ -252,9 +252,11 @@
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
 | [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 115 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
+| [tests/components/member-jobs-open-roles.spec.tsx](../../../tests/components/member-jobs-open-roles.spec.tsx) | 57 | tests |  |
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
 | [tests/components/member-nba-persistence.spec.tsx](../../../tests/components/member-nba-persistence.spec.tsx) | 37 | tests |  |
 | [tests/components/member-program-module-links.test.tsx](../../../tests/components/member-program-module-links.test.tsx) | 134 | tests |  |
+| [tests/components/member-resume-upload-failure.spec.tsx](../../../tests/components/member-resume-upload-failure.spec.tsx) | 98 | tests |  |
 | [tests/components/member-signup-form.spec.tsx](../../../tests/components/member-signup-form.spec.tsx) | 147 | tests |  |
 | [tests/components/member-training-workspace.test.tsx](../../../tests/components/member-training-workspace.test.tsx) | 338 | tests |  |
 | [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 91 | tests |  |
@@ -395,7 +397,7 @@
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |
 | [tests/lib/member-resume-plain-text-missing-admin-env.spec.ts](../../../tests/lib/member-resume-plain-text-missing-admin-env.spec.ts) | 87 | tests |  |
-| [tests/lib/member-status-text-token-contrast.spec.ts](../../../tests/lib/member-status-text-token-contrast.spec.ts) | 145 | tests |  |
+| [tests/lib/member-status-text-token-contrast.spec.ts](../../../tests/lib/member-status-text-token-contrast.spec.ts) | 154 | tests |  |
 | [tests/lib/member-voice-data-use-disclosures.spec.ts](../../../tests/lib/member-voice-data-use-disclosures.spec.ts) | 90 | tests |  |
 | [tests/lib/member-voice-fallback.spec.ts](../../../tests/lib/member-voice-fallback.spec.ts) | 106 | tests |  |
 | [tests/lib/message-read-cursor.spec.ts](../../../tests/lib/message-read-cursor.spec.ts) | 64 | tests |  |

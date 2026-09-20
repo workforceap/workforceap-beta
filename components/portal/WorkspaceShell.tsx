@@ -778,7 +778,10 @@ export default function WorkspaceShell({
                 <span className="workspace-sidebar-appearance__label">Appearance</span>
                 <ThemeSelector />
               </div>
-              <SignOutButton className="workspace-sidebar-signout" onSignOutStart={closeDrawer}>
+              <SignOutButton
+                className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus wa-kit-focus--on-dark workspace-sidebar-signout"
+                onSignOutStart={closeDrawer}
+              >
                 {translateLabel('Sign out')}
               </SignOutButton>
             </div> : null}
