@@ -416,13 +416,13 @@ export default async function CareerBriefPage() {
               margin: 0,
             }}
           >
-            {t('careerToolkit') ?? 'Career Toolkit'}
+            {t('careerToolkit') ?? 'AI Career Tools'}
           </h2>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {[
             {
-              label: t('jobSearchTools') ?? 'Job Search Tools',
+              label: t('careerToolkit') ?? 'AI Career Tools',
               href: '/dashboard/ai-tools',
               icon: 'auto_awesome',
             },
@@ -437,7 +437,7 @@ export default async function CareerBriefPage() {
               icon: 'description',
             },
             {
-              label: t('jobBoard') ?? 'Job Board',
+              label: t('jobBoard') ?? 'Job board',
               href: '/dashboard/jobs',
               icon: 'work',
             },

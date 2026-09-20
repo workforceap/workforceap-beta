@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "3110da3ca87ca6b4229701c9378629947558c285120e491e748e05b43ef9dbd8",
+  "inputTreeSha256": "4575a224a9a696664b49f4f63c41f6aa0391964df3b8b3c91d44d2940f1271b9",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4826,
-    "sourceModules": 3488,
-    "importReferences": 16946,
-    "resolvedLocalReferences": 11288,
+    "files": 4823,
+    "sourceModules": 3485,
+    "importReferences": 16938,
+    "resolvedLocalReferences": 11287,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1055,
-    "nextRouteFiles": 1022,
+    "routeFiles": 1054,
+    "nextRouteFiles": 1021,
     "apiHandlers": 490,
-    "pageFiles": 314,
+    "pageFiles": 313,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 829,
-    "testCandidates": 822,
+    "testFiles": 827,
+    "testCandidates": 820,
     "testHelpers": 7,
-    "staticallySelectedTests": 819,
+    "staticallySelectedTests": 817,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 681
+      "files": 682
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1014
+      "files": 1013
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 636
+      "files": 635
     },
     {
       "area": "root",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 461
+      "files": 459
     }
   ],
   "mostReferenced": [
@@ -310,7 +310,7 @@
     },
     {
       "file": "app/(portal)/partner/page.tsx",
-      "lines": 1386
+      "lines": 1389
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -361,11 +361,11 @@
       "lines": 1209
     },
     {
-      "file": "components/admin/MembersTable.tsx",
-      "lines": 1208
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1206
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
+      "file": "components/admin/MembersTable.tsx",
       "lines": 1206
     },
     {

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { purgePendingResumeDrafts } from '@/lib/resume/pendingResumeDraft';
+import { resetCurrentUserCache } from '@/lib/auth/currentUserClient';
 
 type SignOutButtonProps = {
   className?: string;
@@ -18,6 +19,8 @@ export function SignOutButton({ className, children, onSignOutStart }: SignOutBu
   const handleSignOut = async () => {
     onSignOutStart?.();
     const response = await fetch('/api/auth/logout', { method: 'POST' });
+    // Forget the shared current-user snapshot so nothing renders a stale role (WAP-27).
+    resetCurrentUserCache();
     if (response.ok) {
       try {
         purgePendingResumeDrafts(sessionStorage);

@@ -164,14 +164,14 @@ describe('workspace navigation', () => {
     expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
   });
 
-  it('keeps Jobs, Training progress, and Career Studio visible without opening a group', () => {
+  it('keeps Jobs, Training progress, and AI Career Tools visible without opening a group', () => {
     const { container } = show();
     const primary = container.querySelector('.workspace-sidebar-list--root > .workspace-sidebar-group');
     expect(primary).not.toBeNull();
     expect(primary?.querySelector('details')).toBeNull();
     expect(within(primary as HTMLElement).getByRole('link', { name: 'Job board' })).toHaveAttribute('href', '/dashboard/jobs');
     expect(within(primary as HTMLElement).getByRole('link', { name: 'My progress' })).toHaveAttribute('href', '/dashboard/readiness');
-    expect(within(primary as HTMLElement).getByRole('link', { name: 'Career Studio' })).toHaveAttribute('href', '/dashboard/ai-tools');
+    expect(within(primary as HTMLElement).getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
     expect(within(primary as HTMLElement).getByRole('link', { name: 'Messages' })).toHaveAttribute('href', '/dashboard/messages');
     const groupedHrefs = [...container.querySelectorAll('.workspace-sidebar details a')].map((link) => link.getAttribute('href'));
     expect(groupedHrefs).not.toContain('/dashboard/jobs');
@@ -330,7 +330,65 @@ describe('admin workspace with the production translation slice', () => {
   });
 });
 
-describe('Career Studio contextual tool row', () => {
+describe('member identity in the shell (WAP-101)', () => {
+  const identity = {
+    name: 'Alex Rivera',
+    email: 'alex@example.org',
+    initials: 'AR',
+    avatarUrl: null,
+    href: '/dashboard/profile',
+  };
+  const showIdentity = (avatarUrl: string | null = null) =>
+    render(<NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        identity={{ ...identity, avatarUrl }}
+        workspaceLabel="Member portal" contextLabel="My account" readOnlyAudit>
+        <h1>Training</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+
+  it('names the signed-in member in the header, separate from sign out, linking to profile', () => {
+    const { container } = showIdentity();
+    const header = container.querySelector('.workspace-shell-header') as HTMLElement;
+    const link = within(header).getByRole('link', { name: /Alex Rivera/ });
+    expect(link).toHaveAttribute('href', '/dashboard/profile');
+    expect(link).toHaveTextContent('alex@example.org');
+    expect(within(link).getByRole('img', { name: 'AR' })).toBeInTheDocument();
+    // The generic account chip is replaced by the member's own identity.
+    expect(header.textContent).not.toContain('My account');
+    // Sign out is still its own control and is not the identity link.
+    const signOut = screen.getByRole('button', { name: 'Sign out' });
+    expect(signOut).not.toBe(link);
+    expect(link).not.toHaveTextContent('Sign out');
+  });
+
+  it('shows the saved profile photo when one is on file', () => {
+    const { container } = showIdentity('https://cdn.example/photo.webp');
+    const header = container.querySelector('.workspace-shell-header') as HTMLElement;
+    const link = within(header).getByRole('link', { name: /Alex Rivera/ });
+    expect(link.querySelector('img')).toHaveAttribute('src', 'https://cdn.example/photo.webp');
+  });
+
+  it('repeats the identity in the mobile drawer above sign out', () => {
+    location.wide = false;
+    const { container } = showIdentity();
+    const footer = container.querySelector('.workspace-sidebar-footer') as HTMLElement;
+    // The closed drawer is aria-hidden until opened, so include hidden nodes.
+    const link = within(footer).getByRole('link', { name: /Alex Rivera/, hidden: true });
+    expect(link).toHaveAttribute('href', '/dashboard/profile');
+    expect(footer.textContent).not.toContain('My account');
+    const signOut = within(footer).getByRole('button', { name: 'Sign out', hidden: true });
+    expect(link.compareDocumentPosition(signOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('keeps the account chip for shells without an identity', () => {
+    const { container } = show();
+    expect(container.querySelector('.workspace-shell-header .workspace-shell-context--chip')).toHaveTextContent('Account');
+    expect(container.querySelector('.workspace-shell-identity')).toBeNull();
+  });
+});
+
+describe('AI Career Tools contextual tool row', () => {
   /** Every rail destination the member can actually see and click. */
   const railRows = (container: HTMLElement) =>
     [...container.querySelectorAll('.workspace-sidebar-nav a.workspace-sidebar-link')];
@@ -350,7 +408,7 @@ describe('Career Studio contextual tool row', () => {
     );
   });
 
-  it('marks the tool as current on every Career Studio tool route', () => {
+  it('marks the tool as current on every AI Career Tools tool route', () => {
     const slugs = [
       ['resume-studio', 'Resume studio'],
       ['cover-letter', 'Cover letter'],
@@ -382,7 +440,7 @@ describe('Career Studio contextual tool row', () => {
     }
   });
 
-  it('nests exactly one tool row directly under Career Studio and never more', () => {
+  it('nests exactly one tool row directly under AI Career Tools and never more', () => {
     location.pathname = '/dashboard/ai-tools/interview-practice';
     const { container } = show();
     const nested = nestedRows(container);

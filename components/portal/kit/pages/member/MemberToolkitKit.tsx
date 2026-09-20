@@ -19,13 +19,13 @@ import type { ReactNode } from 'react';
 import { DesignSurface, ChatThread, PageOpener, type ChatMessage } from '@/components/portal/kit';
 
 /**
- * Member Portal — Career Studio destination list (AI tools + advisor).
- * PageOpener kicker “Career Studio”, title “Career tools”, 13px row indexes
+ * Member Portal — AI Career Tools destination list (AI tools + advisor).
+ * PageOpener kicker “AI Career Tools”, title “Career tools”, 13px row indexes
  * and coach meta so the hub matches the rest of the member kit.
  *
  * Interactive (AI advisor composer) → 'use client'.
  *
- * Destination-style tool list. The live Career Studio hub
+ * Destination-style tool list. The live AI Career Tools hub
  * (`/dashboard/ai-tools` and `/dev/member/toolkit`) is VoiceStudioKit —
  * voice coaches + toolkit tabs. Do not swap that hub for this list.
  */
@@ -190,7 +190,7 @@ export function MemberToolkitKit({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
         <PageOpener
-          kicker="Career Studio"
+          kicker="AI Career Tools"
           title={heroTitle}
           lede={heroSubtitle}
           icon={<Wand2 size={13} aria-hidden="true" />}

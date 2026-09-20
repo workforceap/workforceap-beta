@@ -2232,14 +2232,6 @@
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
-    "specifier": "@/lib/counselor/needsAttentionRows",
-    "line": 33,
-    "kind": "import",
-    "external": false,
-    "target": "lib/counselor/needsAttentionRows.ts"
-  },
-  {
     "from": "app/(portal)/counselor/placements/error.tsx",
     "specifier": "@/components/error/RouteErrorFallback",
     "line": 3,
@@ -6424,30 +6416,6 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
-    "from": "app/(portal)/dashboard/certifications/page.tsx",
-    "specifier": "@/lib/member/memberProgramTrainingView",
-    "line": 24,
-    "kind": "import",
-    "external": false,
-    "target": "lib/member/memberProgramTrainingView.ts"
-  },
-  {
-    "from": "app/(portal)/dashboard/certifications/page.tsx",
-    "specifier": "@/lib/content/programs",
-    "line": 25,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "app/(portal)/dashboard/certifications/page.tsx",
-    "specifier": "@/lib/member/memberProgramHref",
-    "line": 26,
-    "kind": "import",
-    "external": false,
-    "target": "lib/member/memberProgramHref.ts"
-  },
-  {
     "from": "app/(portal)/dashboard/counselor/[id]/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -7561,8 +7529,24 @@
   },
   {
     "from": "app/(portal)/dashboard/layout.tsx",
-    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/portal/memberProfilePhotoUrl",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberProfilePhotoUrl.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
@@ -7570,7 +7554,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "next-intl/server",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -7578,7 +7562,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -15001,11 +14985,11 @@
   },
   {
     "from": "app/(portal)/partner/page.tsx",
-    "specifier": "@/components/portal/kit/StatusTag",
+    "specifier": "@/components/portal/StatusBadge",
     "line": 31,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/StatusTag.tsx"
+    "target": "components/portal/StatusBadge.tsx"
   },
   {
     "from": "app/(portal)/partner/page.tsx",
@@ -15694,14 +15678,6 @@
     "kind": "import",
     "external": true,
     "package": "next-intl"
-  },
-  {
-    "from": "app/(portal)/partner/signup/page.tsx",
-    "specifier": "next/navigation",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "app/(portal)/profile/page.tsx",
@@ -25473,16 +25449,8 @@
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/withSoftTimeout",
-    "line": 26,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/withSoftTimeout.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
     "specifier": "@/lib/admin/studentsRosterFacts",
-    "line": 31,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterFacts.ts"
@@ -68329,8 +68297,16 @@
   },
   {
     "from": "components/MainNav.tsx",
-    "specifier": "react",
+    "specifier": "@/lib/auth/currentUserClient",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
+  },
+  {
+    "from": "components/MainNav.tsx",
+    "specifier": "react",
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -69393,16 +69369,8 @@
   },
   {
     "from": "components/admin/AdminUsersManager.tsx",
-    "specifier": "@/lib/formatDate",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/formatDate.ts"
-  },
-  {
-    "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "react",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -69410,7 +69378,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@astryxdesign/core/TextInput",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
@@ -69418,7 +69386,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@astryxdesign/core/Selector",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
@@ -69426,7 +69394,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -69434,7 +69402,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/components/portal/PortalPagination",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPagination.tsx"
@@ -69442,7 +69410,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/hooks/useFocusTrap",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
@@ -69450,7 +69418,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "./useDirectoryNavigation",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/admin/useDirectoryNavigation.ts"
@@ -69458,7 +69426,7 @@
   {
     "from": "components/admin/AdminUsersManager.tsx",
     "specifier": "@/lib/admin/roleLabels",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/admin/roleLabels.ts"
@@ -69809,16 +69777,8 @@
   },
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
-    "specifier": "@/lib/formatDate",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/formatDate.ts"
-  },
-  {
-    "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "react",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -69826,7 +69786,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "next/link",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -69834,7 +69794,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -69842,7 +69802,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -69850,7 +69810,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 8,
+    "line": 7,
     "kind": "type",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -69858,7 +69818,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/components/admin/ConfirmDialog",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/admin/ConfirmDialog.tsx"
@@ -69866,7 +69826,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/lib/admin/courseraEnrollmentPipeline",
-    "line": 10,
+    "line": 9,
     "kind": "type",
     "external": false,
     "target": "lib/admin/courseraEnrollmentPipeline.ts"
@@ -69874,7 +69834,7 @@
   {
     "from": "components/admin/CourseraEnrollmentPipelineTable.tsx",
     "specifier": "@/lib/admin/courseraEnrollmentEvidence",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/admin/courseraEnrollmentEvidence.ts"
@@ -70886,14 +70846,6 @@
     "kind": "import",
     "external": false,
     "target": "components/admin/useDirectoryNavigation.ts"
-  },
-  {
-    "from": "components/admin/MembersTable.tsx",
-    "specifier": "@/lib/formatDate",
-    "line": 19,
-    "kind": "import",
-    "external": false,
-    "target": "lib/formatDate.ts"
   },
   {
     "from": "components/admin/MentorStatusButtons.tsx",
@@ -76168,6 +76120,14 @@
     "package": "next"
   },
   {
+    "from": "components/portal/DevViewToggle.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
+  },
+  {
     "from": "components/portal/DownloadMyDataButton.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -77153,8 +77113,16 @@
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "@/lib/i18n/date",
+    "specifier": "@/components/portal/kit/StatusTag",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/StatusTag.tsx"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "@/lib/i18n/date",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/date.ts"
@@ -77162,7 +77130,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
@@ -77170,7 +77138,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/member/memberApprovalStatus",
-    "line": 9,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
@@ -77920,6 +77888,14 @@
     "target": "lib/auth/portalRoleSwitcher.ts"
   },
   {
+    "from": "components/portal/MemberWorkspaceShell.tsx",
+    "specifier": "@/lib/member/memberIdentity",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
     "from": "components/portal/MentorSessionForm.tsx",
     "specifier": "react",
     "line": 3,
@@ -78582,6 +78558,14 @@
     "kind": "type",
     "external": false,
     "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "components/portal/PortalShell.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
   },
   {
     "from": "components/portal/PortalTeamChatClient.test.tsx",
@@ -79494,6 +79478,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/resume/pendingResumeDraft.ts"
+  },
+  {
+    "from": "components/portal/SignOutButton.tsx",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "components/portal/SkillCheckpointsClient.test.tsx",
@@ -80633,24 +80625,32 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/components/portal/LanguageToggle",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 33,
+    "kind": "type",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/kit/Avatar",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/Avatar.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/LanguageToggle",
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/lib/nav/resumeUploadHint",
-    "line": 34,
-    "kind": "import",
-    "external": false,
-    "target": "lib/nav/resumeUploadHint.ts"
-  },
-  {
-    "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -80658,7 +80658,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -80666,7 +80666,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -80674,7 +80674,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 38,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
@@ -88520,6 +88520,14 @@
     "package": "lucide-react"
   },
   {
+    "from": "components/super-admin-view-switcher.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "hooks/useCurrentUser.ts"
+  },
+  {
     "from": "components/theme/ThemeSelector.tsx",
     "specifier": "lucide-react",
     "line": 3,
@@ -90310,6 +90318,22 @@
     "kind": "import",
     "external": true,
     "package": "react"
+  },
+  {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "hooks/useDraftAutosave.ts",
@@ -92872,30 +92896,6 @@
     "package": "next"
   },
   {
-    "from": "lib/admin/withSoftTimeout.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/admin/withSoftTimeout.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/admin/withSoftTimeout.test.ts",
-    "specifier": "./withSoftTimeout",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/withSoftTimeout.ts"
-  },
-  {
     "from": "lib/agents/gateway/core.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -95294,6 +95294,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/supabase/env.ts"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "./currentUserClient",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "lib/auth/ensureUser.test.ts",
@@ -98358,30 +98382,6 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
-  },
-  {
-    "from": "lib/counselor/needsAttentionRows.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/counselor/needsAttentionRows.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/counselor/needsAttentionRows.test.ts",
-    "specifier": "./needsAttentionRows",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/counselor/needsAttentionRows.ts"
   },
   {
     "from": "lib/counselor/nudgeTemplates.test.ts",
@@ -105728,6 +105728,30 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "./memberApprovalStatus",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
     "from": "lib/member/memberEngagementSignals.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -105742,6 +105766,30 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/recap/generate.ts"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "./memberIdentity",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "lib/member/memberProgramHref.test.ts",
@@ -107794,34 +107842,10 @@
   {
     "from": "lib/nav/portalNav.ts",
     "specifier": "@/lib/wioa/wioaAvailability",
-    "line": 46,
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaAvailability.ts"
-  },
-  {
-    "from": "lib/nav/resumeUploadHint.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/nav/resumeUploadHint.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/nav/resumeUploadHint.test.ts",
-    "specifier": "./resumeUploadHint",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/nav/resumeUploadHint.ts"
   },
   {
     "from": "lib/notifications/create.ts",
@@ -127888,86 +127912,6 @@
     "package": "@testing-library/react"
   },
   {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "vitest",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "vitest"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "node:fs",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@testing-library/react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "@testing-library/react"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/components/portal/kit/pages/member/MemberCertificatesKit",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/member/MemberCertificatesKit.tsx"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/lib/nav/portalNav",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/nav/portalNav.ts"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/messages/en.json",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "messages/en.json"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/components/portal/kit/StatTile",
-    "line": 91,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "components/portal/kit/StatTile.tsx"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
-    "line": 106,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
-  },
-  {
-    "from": "tests/components/audit-ui-fixes.spec.tsx",
-    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
-    "line": 114,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
-  },
-  {
     "from": "tests/components/auth-connection-failure.spec.tsx",
     "specifier": "react",
     "line": 1,
@@ -132928,30 +132872,6 @@
     "package": "node:path"
   },
   {
-    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
-    "specifier": "vitest",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "vitest"
-  },
-  {
-    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
-    "specifier": "node:fs",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "tests/lib/marketing-depth-stage-pointer.spec.ts",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
     "from": "tests/lib/marketing-hero-image.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -133102,30 +133022,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/getMemberResumePlainText.ts"
-  },
-  {
-    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
-    "specifier": "vitest",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "vitest"
-  },
-  {
-    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
-    "specifier": "node:fs",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "tests/lib/member-status-text-token-contrast.spec.ts",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
   },
   {
     "from": "tests/lib/member-voice-data-use-disclosures.spec.ts",
@@ -134985,8 +134881,16 @@
   },
   {
     "from": "tests/next-config-redirect-destinations.spec.ts",
-    "specifier": "../next.config",
+    "specifier": "../lib/content/programs",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "tests/next-config-redirect-destinations.spec.ts",
+    "specifier": "../next.config",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "next.config.ts"
@@ -135518,6 +135422,38 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "../next.config",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
   },
   {
     "from": "types/job-application.ts",
