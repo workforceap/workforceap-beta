@@ -16,8 +16,8 @@ import {
   RefreshCw,
   Table2,
   FileText,
-  Clock,
   Building2,
+  Stethoscope,
   ArrowUpRight,
 } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -32,7 +32,6 @@ import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { countThreadsWithSlaBreach } from '@/lib/messages/superAdminMessageQueries';
 import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
 import TriageDigestSection from '@/components/admin/TriageDigestSection';
-import GtmSetupCheck from '@/components/admin/GtmSetupCheck';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PageHeader from '@/components/portal/PageHeader';
 import {
@@ -41,8 +40,6 @@ import {
   StatSparkTile,
   Avatar,
   DataTable,
-  colorVar,
-  type KitColor,
 } from '@/components/portal/kit';
 import { pluralCount } from '@/lib/i18n/pluralCount';
 
@@ -336,28 +333,19 @@ export default async function AdminOverviewPage() {
       />
 
       <DesignSurface surface="dense">
+        {/* Portal previews, GTM and other developer checks live on one
+            diagnostics page; the overview stays an operator's view
+            (admin audit 2026-09-20: "GTM and portal-view cards are developer noise"). */}
         {superAdmin && (
-          <section className="wa-kit-card" style={{ margin: '0 1.5rem 1.25rem' }}>
-            <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap" style={{ gap: 12 }}>
-              <div>
-                <p className="wa-kit-stat-label" style={{ margin: 0 }}>Super Admin Portal Views</p>
-                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
-                  View real employer and partner portals with live data. Select an org below.
-                </p>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <Link href="/admin/employers" className="btn btn-outline btn-sm">
-                  View employer portal
-                </Link>
-                <Link href="/counselor" className="btn btn-outline btn-sm">
-                  Counselor preview
-                </Link>
-                <Link href="/admin/partners" className="btn btn-outline btn-sm">
-                  View partner portal
-                </Link>
-              </div>
-            </div>
-          </section>
+          <p className="wa-kit-meta" style={{ margin: '0 1.5rem 1.25rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Stethoscope size={14} aria-hidden />
+            <span>
+              Portal previews and system checks:{' '}
+              <Link href="/admin/diagnostics" style={{ color: 'var(--wa-accent)', fontWeight: 700, textDecoration: 'none' }}>
+                Diagnostics
+              </Link>
+            </span>
+          </p>
         )}
 
         {/* Split into one alert per signal so each has its own action.
@@ -384,34 +372,6 @@ export default async function AdminOverviewPage() {
           </div>
         )}
 
-        {/* ── GTM Setup Check ── */}
-        <GtmSetupCheck />
-
-        {/* ── Pending Applications Alert ── */}
-        {pendingApplications > 0 && (
-          <>
-            <div className="md:wa-hidden">
-              <div className="portal-alert portal-alert--accent" style={{ margin: '0 1.5rem 1rem' }}>
-                <span className="portal-alert__label">
-                  {pendingApplications} pending
-                </span>
-                <Link href="/admin/members" className="portal-alert__action">
-                  Review &rarr;
-                </Link>
-              </div>
-            </div>
-            <div className="wa-hidden md:wa-block" style={{ marginBottom: '1.5rem' }}>
-              <div className="portal-alert portal-alert--accent" style={{ margin: 0 }}>
-                <span className="portal-alert__label">
-                  {pendingApplications} pending application{pendingApplications === 1 ? '' : 's'} awaiting review
-                </span>
-                <Link href="/admin/members" className="portal-alert__action">
-                  Review &rarr;
-                </Link>
-              </div>
-            </div>
-          </>
-        )}
         {pendingPlacements.length > 0 && (
           <div className="wa-hidden md:wa-block portal-alert" style={{ marginBottom: '1.5rem', borderColor: 'color-mix(in srgb, var(--wa-success) 35%, transparent)' }}>
             <span className="portal-alert__label">
@@ -424,8 +384,13 @@ export default async function AdminOverviewPage() {
         )}
 
 
-        {/* ── "Who needs you today" triage ── */}
-        <TriageDigestSection digest={triageDigest} />
+        {/* ── "Who needs you today" triage. Pending applications are not an
+            attention reason, so they are handed to the section as their own
+            card instead of sitting above an "All clear" that contradicts them. ── */}
+        <TriageDigestSection
+          digest={triageDigest}
+          pendingApplications={{ count: pendingApplications, href: '/admin/command-center?queue=applications' }}
+        />
 
       {/* ── KPI row (single treatment — desktop + mobile) ── */}
       <section style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
@@ -490,9 +455,9 @@ export default async function AdminOverviewPage() {
         </div>
       </section>
 
-      {/* ── Main Dashboard Layout ── */}
-      <div className="wa-hidden md:wa-block portal-grid-2col" style={{ gap: '2rem' }}>
-        {/* ── Left Column ── */}
+      {/* ── Placements, pending reviews and quick links. The former "At a
+          Glance" column repeated the metric cards above and is gone. ── */}
+      <div className="wa-hidden md:wa-block" style={{ padding: '0 1.5rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
           {/* Recent Placements */}
@@ -642,46 +607,6 @@ export default async function AdminOverviewPage() {
           </div>
         </div>
 
-        {/* ── Right Column ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-
-          {/* At a Glance */}
-          <div className="wa-kit-card">
-            <CardHead title="At a Glance" />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {(
-                [
-                  { icon: Users, label: 'Total Members', value: totalMembers, color: 'accent' as KitColor, href: '/admin/members' },
-                  { icon: Activity, label: 'Active in Training', value: activeInTraining, color: 'success' as KitColor, href: '/admin/pipeline' },
-                  { icon: ListChecks, label: 'Assessments Done', value: assessmentsCompleted, color: 'info' as KitColor, href: '/admin/assessments' },
-                  ...(pendingApplications > 0
-                    ? [{ icon: Clock, label: 'Pending Review', value: pendingApplications, color: 'gold' as KitColor, href: '/admin/members' }]
-                    : []),
-                ]
-              ).map((row) => (
-                <Link
-                  key={row.label}
-                  href={row.href}
-                  className="wa-kit-focus"
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, textDecoration: 'none' }}
-                >
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--wa-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <row.icon size={15} aria-hidden style={{ color: colorVar(row.color) }} />
-                    {row.label}
-                  </span>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: colorVar(row.color), fontVariantNumeric: 'tabular-nums' }}>
-                    {row.value}
-                  </span>
-                </Link>
-              ))}
-              <div style={{ borderTop: '1px solid var(--wa-border)', paddingTop: 14, marginTop: 2 }}>
-                <Link href="/admin/members" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}>
-                  View all members →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* ── Mobile Quick Actions ── */}

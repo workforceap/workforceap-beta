@@ -11,6 +11,7 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
 import {
   buildApplicationEmailPacket,
+  buildProgramHealthRows,
   normalizeAdminQueueRequest,
   type AdminQueueKey,
   type AdminApplicationPendingRow,
@@ -21,7 +22,12 @@ import {
   type AdminProgramHealthRow,
 } from '@/lib/admin/commandCenterHelpers';
 
-export { buildApplicationEmailPacket, bucketCommandCenterTotals } from '@/lib/admin/commandCenterHelpers';
+export {
+  buildApplicationEmailPacket,
+  bucketCommandCenterTotals,
+  buildProgramHealthRows,
+  PROGRAM_HEALTH_SHARE_LABEL,
+} from '@/lib/admin/commandCenterHelpers';
 export type {
   AdminApplicationPendingRow,
   AdminAtRiskRow,
@@ -229,10 +235,10 @@ async function loadApplicationsPending(
 
 /**
  * Per-program enrollment counts for the "Program Health" breakdown, scoped to
- * the org. Cheap single groupBy over enrolled, non-deleted members. Slugs are
- * resolved to catalog titles, sorted by count desc, and the top programs are
- * returned. `pct` is the share relative to the top program's count so the bars
- * render proportionally (the leading program is always full-width).
+ * the org. Cheap single groupBy over enrolled, non-deleted members; the pure
+ * projection (`buildProgramHealthRows`) resolves slugs to catalog titles,
+ * sorts by count desc and keeps the top programs. `pct` is each program's
+ * share of all enrolled students, labelled as such, never a completion rate.
  */
 async function loadProgramHealth(orgId: string): Promise<AdminProgramHealthRow[]> {
   const grouped = await prisma.user.groupBy({
@@ -247,26 +253,10 @@ async function loadProgramHealth(orgId: string): Promise<AdminProgramHealthRow[]
     _count: true,
   });
 
-  const rows = grouped
-    .map((group) => {
-      const slug = group.enrolledProgram;
-      if (!slug) return null;
-      return {
-        programSlug: slug,
-        label: programDisplayTitle(slug),
-        count: group._count,
-      };
-    })
-    .filter((row): row is { programSlug: string; label: string; count: number } => row != null)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, PROGRAM_HEALTH_LIMIT);
-
-  const topCount = rows[0]?.count ?? 0;
-
-  return rows.map((row) => ({
-    ...row,
-    pct: topCount > 0 ? Math.round((row.count / topCount) * 100) : 0,
-  }));
+  return buildProgramHealthRows(
+    grouped.map((group) => ({ programSlug: group.enrolledProgram, count: group._count })),
+    { limit: PROGRAM_HEALTH_LIMIT, labelFor: programDisplayTitle },
+  );
 }
 
 function jobApplicationStatusLabel(status: JobApplicationStatus): string {
