@@ -516,20 +516,24 @@
         "line": 8
       },
       {
-        "file": "messages/en.json",
+        "file": "lib/consent/reserve.ts",
         "line": 9
       },
       {
-        "file": "messages/es.json",
+        "file": "messages/en.json",
         "line": 10
       },
       {
-        "file": "messages/fr.json",
+        "file": "messages/es.json",
         "line": 11
       },
       {
-        "file": "messages/pt.json",
+        "file": "messages/fr.json",
         "line": 12
+      },
+      {
+        "file": "messages/pt.json",
+        "line": 13
       }
     ],
     "kind": "test-candidate",
@@ -2828,6 +2832,14 @@
       {
         "file": "lib/ai/groq.ts",
         "line": 3
+      },
+      {
+        "file": "lib/ai/groqRetiredModels.ts",
+        "line": 44
+      },
+      {
+        "file": "lib/ai/groq.ts",
+        "line": 45
       }
     ],
     "kind": "test-candidate",
@@ -20924,6 +20936,31 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/partner-signup-redirect.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/partner-signup/page.tsx",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/partner-status-pill.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -22241,6 +22278,31 @@
   },
   {
     "file": "tests/e2e/member-signup.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@playwright/test"
+    ],
+    "localReferences": [],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "excluded",
+        "reason": "Excluded by tests/e2e/**"
+      },
+      {
+        "runner": "playwright",
+        "source": "playwright.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/e2e/partner-signup-viewports.spec.ts",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [
@@ -24321,6 +24383,30 @@
       {
         "file": "lib/marketing/googleItSupportLanding.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/hydration-telemetry.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/observability/hydrationTelemetry.ts",
+        "line": 2
       }
     ],
     "kind": "test-candidate",

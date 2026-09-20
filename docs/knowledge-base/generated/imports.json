@@ -320,6 +320,14 @@
     "target": "lib/marketing/heroPhotos.ts"
   },
   {
+    "from": "app/(auth)/login/LoginForm.tsx",
+    "specifier": "@/lib/consent/reserve",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/consent/reserve.ts"
+  },
+  {
     "from": "app/(auth)/login/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -737,8 +745,16 @@
   },
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
+    "specifier": "@/lib/consent/reserve",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/consent/reserve.ts"
+  },
+  {
+    "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 24,
+    "line": 25,
     "kind": "dynamic-import",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -68577,8 +68593,16 @@
   },
   {
     "from": "components/CookieConsentBanner.test.tsx",
-    "specifier": "@/messages/en.json",
+    "specifier": "@/lib/consent/reserve",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/consent/reserve.ts"
+  },
+  {
+    "from": "components/CookieConsentBanner.test.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
@@ -68586,7 +68610,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/es.json",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "messages/es.json"
@@ -68594,7 +68618,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/fr.json",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "messages/fr.json"
@@ -68602,7 +68626,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/pt.json",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "messages/pt.json"
@@ -68641,16 +68665,40 @@
   },
   {
     "from": "components/CookieConsentBanner.tsx",
-    "specifier": "@/lib/consent/state",
+    "specifier": "@/lib/i18n/client",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/client.ts"
+  },
+  {
+    "from": "components/CookieConsentBanner.tsx",
+    "specifier": "@/lib/i18n/localizeHref",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/localizeHref.ts"
+  },
+  {
+    "from": "components/CookieConsentBanner.tsx",
+    "specifier": "@/lib/consent/state",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/consent/state.ts"
   },
   {
     "from": "components/CookieConsentBanner.tsx",
+    "specifier": "@/lib/consent/reserve",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/consent/reserve.ts"
+  },
+  {
+    "from": "components/CookieConsentBanner.tsx",
     "specifier": "./CookieConsentBanner.module.css",
-    "line": 8,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "components/CookieConsentBanner.module.css"
@@ -89953,8 +90001,16 @@
   },
   {
     "from": "instrumentation-client.ts",
+    "specifier": "@/lib/observability/hydrationTelemetry",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/hydrationTelemetry.ts"
+  },
+  {
+    "from": "instrumentation-client.ts",
     "specifier": "@sentry/nextjs",
-    "line": 112,
+    "line": 130,
     "kind": "dynamic-import",
     "external": true,
     "package": "@sentry/nextjs"
@@ -89962,7 +90018,15 @@
   {
     "from": "instrumentation-client.ts",
     "specifier": "@sentry/nextjs",
-    "line": 223,
+    "line": 155,
+    "kind": "dynamic-import",
+    "external": true,
+    "package": "@sentry/nextjs"
+  },
+  {
+    "from": "instrumentation-client.ts",
+    "specifier": "@sentry/nextjs",
+    "line": 268,
     "kind": "dynamic-import",
     "external": true,
     "package": "@sentry/nextjs"
@@ -93465,8 +93529,16 @@
   },
   {
     "from": "lib/ai/groq.ts",
+    "specifier": "@/lib/ai/groqRetiredModels",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/groqRetiredModels.ts"
+  },
+  {
+    "from": "lib/ai/groq.ts",
     "specifier": "@/lib/ai/configured",
-    "line": 6,
+    "line": 7,
     "kind": "re-export",
     "external": false,
     "target": "lib/ai/configured.ts"
@@ -93491,6 +93563,22 @@
     "from": "lib/ai/groqModels.test.ts",
     "specifier": "./groq",
     "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/groq.ts"
+  },
+  {
+    "from": "lib/ai/groqModels.test.ts",
+    "specifier": "./groqRetiredModels",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/groqRetiredModels.ts"
+  },
+  {
+    "from": "lib/ai/groqModels.test.ts",
+    "specifier": "./groq",
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "lib/ai/groq.ts"
@@ -108320,6 +108408,14 @@
     "target": "lib/observability/apiErrorScope.ts"
   },
   {
+    "from": "lib/observability/hydrationTelemetry.ts",
+    "specifier": "@/lib/i18n/config",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/config.ts"
+  },
+  {
     "from": "lib/observability/logger.ts",
     "specifier": "@/lib/observability/requestId",
     "line": 18,
@@ -114902,6 +114998,30 @@
     "kind": "require",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:fs",
+    "line": 19,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:path",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/lint/verify-no-retired-groq-models.mjs",
+    "specifier": "node:url",
+    "line": 21,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
   },
   {
     "from": "scripts/locked-stakes/check-i18n-safe-diff.mjs",
@@ -130656,6 +130776,30 @@
     "target": "lib/partner/referralLink.ts"
   },
   {
+    "from": "tests/components/partner-signup-redirect.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/partner-signup-redirect.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/partner-signup-redirect.spec.tsx",
+    "specifier": "@/app/partner-signup/page",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "app/partner-signup/page.tsx"
+  },
+  {
     "from": "tests/components/partner-status-pill.spec.ts",
     "specifier": "node:fs",
     "line": 1,
@@ -132201,6 +132345,14 @@
   },
   {
     "from": "tests/e2e/member-signup.spec.ts",
+    "specifier": "@playwright/test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@playwright/test"
+  },
+  {
+    "from": "tests/e2e/partner-signup-viewports.spec.ts",
     "specifier": "@playwright/test",
     "line": 1,
     "kind": "import",
@@ -134086,6 +134238,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/marketing/googleItSupportLanding.ts"
+  },
+  {
+    "from": "tests/lib/hydration-telemetry.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/hydration-telemetry.spec.ts",
+    "specifier": "@/lib/observability/hydrationTelemetry",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/hydrationTelemetry.ts"
   },
   {
     "from": "tests/lib/i18n-page-message-keys.spec.ts",

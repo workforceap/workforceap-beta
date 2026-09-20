@@ -1,3 +1,9 @@
+import {
+  createHydrationErrorListener,
+  isUntaggedGlobalHandlerHydrationEvent,
+  type HydrationErrorReport,
+} from '@/lib/observability/hydrationTelemetry';
+
 const APP_LOCALES = ['en', 'es', 'fr', 'pt'];
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
@@ -106,6 +112,43 @@ function isExtensionStyleHydrationNoise(event: {
   );
 }
 
+/**
+ * WAP-16 per-route hydration telemetry. Next hands React's recoverable errors
+ * to `reportError`, so they surface as window `error` events before Sentry's
+ * lazy chunk has loaded. The listener below is installed synchronously at
+ * module evaluation (before hydration) and forwards each error tagged with
+ * the route once the Sentry client exists. Sentry's own `onerror` global
+ * handler sees the same window event; `beforeSend` drops that untagged copy
+ * (isUntaggedGlobalHandlerHydrationEvent) so each recovery is counted once,
+ * per route.
+ */
+function forwardHydrationReport(report: HydrationErrorReport, error: unknown): void {
+  // Same gate as setSentryUser: never pull the Sentry chunk where it is not initialized.
+  if (!dsn || !isProduction || isReadOnlyPortalAuditDocument() || !initPromise) return;
+  void initPromise
+    .then(async () => {
+      const Sentry = await import('@sentry/nextjs');
+      Sentry.withScope((scope) => {
+        scope.setTag('hydration', 'true');
+        scope.setTag('route', report.route);
+        scope.setTag('locale', report.locale ?? 'none');
+        if (report.reactErrorCode) scope.setTag('react_error_code', report.reactErrorCode);
+        scope.setFingerprint(['hydration', report.route, report.reactErrorCode ?? report.message]);
+        Sentry.captureException(error instanceof Error ? error : new Error(report.message));
+      });
+    })
+    .catch(() => {
+      // telemetry must never surface as a page error
+    });
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(
+    'error',
+    createHydrationErrorListener({ getPathname: () => window.location.pathname, forward: forwardHydrationReport }),
+  );
+}
+
 async function initSentry() {
   if (!dsn || !isProduction || isReadOnlyPortalAuditDocument()) return;
 
@@ -149,6 +192,8 @@ async function initSentry() {
       // styles before hydrate. Sentry Replay records these as "Hydration Error"
       // on /admin and other portals (JAVASCRIPT-NEXTJS-1) — not actionable app bugs.
       if (isExtensionStyleHydrationNoise(event)) return null;
+      // The route-tagged copy from forwardHydrationReport is the one we keep.
+      if (isUntaggedGlobalHandlerHydrationEvent(event)) return null;
       return event;
     },
     beforeSendTransaction(event) {
