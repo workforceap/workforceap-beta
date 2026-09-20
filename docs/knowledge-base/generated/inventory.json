@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "8369d2d6bd01fbfe7dd6eeb3464b3d6b8811df63e69016d40503c94090849fc4",
+  "inputTreeSha256": "018291fa2a8a5171b4640f5b738ed31d318bc42dc1d24e5e12040e4252c6cc07",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -161012,9 +161012,9 @@
       "path": "tests/components/audit-ui-fixes.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6847,
-      "lines": 147,
-      "sha256": "a9313704528d3336ccccca1c62dd856be1eb912ef9690265c1b474337f1febb6",
+      "bytes": 7051,
+      "lines": 149,
+      "sha256": "912dfc79195c7a04e3b597c8e015e1b6e0cc61291fa1e1b3d403acc8cb2305f7",
       "binary": false,
       "exports": [],
       "declarations": [

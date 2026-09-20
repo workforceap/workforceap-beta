@@ -137,7 +137,9 @@ describe('partner portal', () => {
   it('legacy overview uses the kit StatusTag, not the legacy pill', () => {
     const src = readFileSync(path.join(root, 'app/(portal)/partner/page.tsx'), 'utf8');
     expect(src).not.toContain('StatusBadge');
-    expect(src).toContain("import { StatusTag } from '@/components/portal/kit/StatusTag';");
+    // #2385 moved the import onto the kit barrel; the pill component is what matters.
+    expect(src).toMatch(/import \{[^}]*\bStatusTag\b[^}]*\} from '@\/components\/portal\/kit(?:\/StatusTag)?';/s);
+    expect(src).toContain('<StatusTag tone={row.stage === \'placed\' ? \'ok\' : \'alert\'}>');
   });
 
   it('/partner/signup redirects to the public /partner-signup page', () => {
