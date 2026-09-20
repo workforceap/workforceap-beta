@@ -181,6 +181,7 @@
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 117 | tests |  |
+| [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
 | [tests/app/admin-users-directory-roles.spec.tsx](../../../tests/app/admin-users-directory-roles.spec.tsx) | 134 | tests |  |
 | [tests/app/admin-weekly-recap-page.spec.tsx](../../../tests/app/admin-weekly-recap-page.spec.tsx) | 109 | tests |  |
@@ -233,6 +234,7 @@
 | [tests/components/admin-directory-results.spec.tsx](../../../tests/components/admin-directory-results.spec.tsx) | 129 | tests |  |
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
+| [tests/components/admin-member-notes-panel.spec.tsx](../../../tests/components/admin-member-notes-panel.spec.tsx) | 81 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
 | [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 172 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
@@ -248,6 +250,7 @@
 | [tests/components/auth-training-return.spec.tsx](../../../tests/components/auth-training-return.spec.tsx) | 218 | tests |  |
 | [tests/components/board-completion-labels.test.tsx](../../../tests/components/board-completion-labels.test.tsx) | 50 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
+| [tests/components/command-center-system-health.spec.tsx](../../../tests/components/command-center-system-health.spec.tsx) | 228 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
 | [tests/components/counselor-notes-panels-load.spec.tsx](../../../tests/components/counselor-notes-panels-load.spec.tsx) | 115 | tests |  |
 | [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
@@ -262,6 +265,7 @@
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
+| [tests/components/feature-flags-kit.spec.tsx](../../../tests/components/feature-flags-kit.spec.tsx) | 124 | tests |  |
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
@@ -491,6 +495,7 @@
 | [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 121 | tests |  |
 | [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
+| [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 86 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
 | [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |
 | [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |

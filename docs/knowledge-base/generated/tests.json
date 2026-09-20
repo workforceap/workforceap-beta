@@ -18137,6 +18137,39 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/admin/members/[id]/page.tsx",
+        "line": 117
+      },
+      {
+        "file": "app/admin/members/[id]/memberDetailTabs.ts",
+        "line": 118
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 123
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/admin-partners-page.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -19852,6 +19885,31 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/admin-member-notes-panel.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/admin-pipeline-member-count.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -20341,6 +20399,35 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/command-center-system-health.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
+        "line": 3
+      },
+      {
+        "file": "lib/admin/commandCenterHealth.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/counselor-note-saves.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -20799,6 +20886,35 @@
       {
         "file": "app/employers/signup/page.tsx",
         "line": 18
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/feature-flags-kit.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
+        "line": 7
+      },
+      {
+        "file": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
+        "line": 8
       }
     ],
     "kind": "test-candidate",
@@ -27218,6 +27334,30 @@
       {
         "file": "lib/xapi/token.ts",
         "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/member-activity-rows.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/memberActivity.ts",
+        "line": 2
       }
     ],
     "kind": "test-candidate",

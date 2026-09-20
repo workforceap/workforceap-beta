@@ -7,10 +7,11 @@ import {
   PageOpener,
   KpiStrip,
   DataTable,
-  StatusTag,
+  KitEmptyState,
   type Column,
   type KpiItem,
 } from '@/components/portal/kit';
+import FeatureFlagToggle from './FeatureFlagToggle';
 
 /**
  * Feature flags — admin rollout registry rendered as a dense table.
@@ -20,8 +21,12 @@ import {
  * Target route: /admin/feature-flags
  *
  * Columns: Flag · Description · State · Updated.
- * State is a StatusTag (On=ok, Off=muted). Server-rendered (read-only); the
- * interactive create/toggle/edit workspace lives behind ?ui=legacy.
+ * State is a kit Toggle island (FeatureFlagToggle) that PATCHes the existing
+ * `/api/admin/feature-flags/[id]` route — same request, same server guard —
+ * and reads On/Off from the server-rendered flag. Create,
+ * rollout % and role gating still live in the legacy workspace (?ui=legacy).
+ * With no flags the table gives way to one kit empty state whose CTA opens
+ * that workspace.
  */
 export interface FeatureFlagRow {
   id: string;
@@ -120,9 +125,7 @@ export function FeatureFlagsKit({
       key: 'enabled',
       header: 'State',
       render: (row) => (
-        <StatusTag tone={row.enabled ? 'ok' : 'muted'}>
-          {row.enabled ? 'On' : 'Off'}
-        </StatusTag>
+        <FeatureFlagToggle id={row.id} name={row.name} enabled={row.enabled} />
       ),
     },
     {
@@ -154,6 +157,21 @@ export function FeatureFlagsKit({
         <KpiStrip items={kpis} />
       </div>
 
+      {flags.length === 0 ? (
+        <section className="wa-kit-card" aria-label="No feature flags">
+          <KitEmptyState
+            headingAs="h2"
+            title="No feature flags yet"
+            description="Create a flag to start rolling out features gradually. Flags apply to every member, counselor, employer and partner portal in this organization."
+            action={
+              <AstryxLink href="/admin/feature-flags?ui=legacy" as={Link as never} isStandalone>
+                <Button label="Create a flag" variant="primary" size="sm" />
+              </AstryxLink>
+            }
+          />
+        </section>
+      ) : (
+      <>
       <DataTable<FeatureFlagRow>
         columns={columns}
         rows={flags}
@@ -174,9 +192,7 @@ export function FeatureFlagsKit({
                 <FlagCell row={row} />
               </div>
               <div style={{ flexShrink: 0 }}>
-                <StatusTag tone={row.enabled ? 'ok' : 'muted'}>
-                  {row.enabled ? 'On' : 'Off'}
-                </StatusTag>
+                <FeatureFlagToggle id={row.id} name={row.name} enabled={row.enabled} />
               </div>
             </div>
             <div
@@ -220,6 +236,8 @@ export function FeatureFlagsKit({
       >
         Showing {flags.length} of {total}
       </p>
+      </>
+      )}
     </DesignSurface>
   );
 }
