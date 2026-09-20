@@ -73,6 +73,7 @@
         "messages": "Mensagens"
       },
       "counselor": {
+        "today": "Hoje",
         "overview": "Visão Geral",
         "inbox": "Caixa",
         "members": "Membros",

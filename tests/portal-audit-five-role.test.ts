@@ -602,7 +602,7 @@ describe('read-only portal action contracts', () => {
       'utf8',
     );
     const counselor = readFileSync(
-      join(process.cwd(), 'app', '(portal)', 'counselor', 'page.tsx'),
+      join(process.cwd(), 'app', '(portal)', 'counselor', 'overview', 'page.tsx'),
       'utf8',
     );
     expect(partnerGate).toContain('partner-exclusive-role-lookup');

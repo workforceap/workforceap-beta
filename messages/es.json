@@ -74,6 +74,7 @@
         "messages": "Mensajes"
       },
       "counselor": {
+        "today": "Hoy",
         "overview": "Resumen",
         "inbox": "Bandeja",
         "members": "Miembros",
