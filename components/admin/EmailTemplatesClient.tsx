@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 type Template = {
   id: string;
@@ -559,33 +560,11 @@ export default function EmailTemplatesClient({ templates: initialTemplates, admi
               </div>
             </>
           ) : (
-            <div
-              className="admin-empty-state"
-              style={{ textAlign: 'center', padding: '3rem 1rem' }}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: '2.5rem',
-                  color: 'var(--color-on-surface-variant)',
-                  marginBottom: '0.75rem',
-                  display: 'block',
-                }}
-              >
-                mail
-              </span>
-              <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem' }}>
-                Select a template
-              </h3>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.8125rem',
-                  color: 'var(--color-on-surface-variant)',
-                }}
-              >
-                Click any template on the left to preview, edit, or send a test.
-              </p>
+            <div className="admin-empty-state" style={{ padding: '1.5rem 1rem' }}>
+              <KitEmptyState
+                title="Select a template"
+                description="Click any template on the left to preview, edit, or send a test."
+              />
             </div>
           )}
         </div>
