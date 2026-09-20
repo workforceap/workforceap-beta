@@ -2,7 +2,7 @@ import { Activity, Database, Mail, RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Token } from '@astryxdesign/core/Token';
-import { DesignSurface, SectionHeader, type KitTone } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, type KitTone } from '@/components/portal/kit';
 
 /**
  * Live system diagnostics — at-a-glance status tiles.
@@ -56,7 +56,7 @@ const TONE_SWATCH: Record<DiagnosticTone, { bg: string; fg: string }> = {
 export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title="Diagnostics" goal="Live system diagnostics" kicker="System" />
+      <PageOpener className="wa-mb-5" title="Diagnostics" lede="Live system diagnostics" kicker="System" />
 
       <div
         className="wa-mb-5"
