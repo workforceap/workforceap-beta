@@ -130,7 +130,7 @@ export default function LearningHubEnrolledCourses({
               </p>
             ) : null}
           </div>
-          <Link href="/dashboard/program" className="btn btn-outline btn-sm" style={{ flexShrink: 0 }}>
+          <Link href="/dashboard/program" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ flexShrink: 0 }}>
             Open My Program
           </Link>
         </div>

@@ -21972,22 +21972,22 @@
       {
         "level": 2,
         "title": "Patterns to extract NEXT (after `DataTable` adoption settles)",
-        "line": 169
+        "line": 168
       },
       {
         "level": 2,
         "title": "What NOT to migrate",
-        "line": 184
+        "line": 183
       },
       {
         "level": 2,
         "title": "Pre-merge checklist for any UI migration PR",
-        "line": 195
+        "line": 194
       },
       {
         "level": 2,
         "title": "Document history",
-        "line": 205
+        "line": 204
       }
     ],
     "datedFilename": false,

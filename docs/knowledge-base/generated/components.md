@@ -291,7 +291,7 @@
 | [components/portal/LanguageToggle.test.tsx](../../../components/portal/LanguageToggle.test.tsx) | 52 | components |  |
 | [components/portal/LanguageToggle.tsx](../../../components/portal/LanguageToggle.tsx) | 99 | components | default:23 |
 | [components/portal/LearningHubDestinationCards.tsx](../../../components/portal/LearningHubDestinationCards.tsx) | 83 | components | default:10 |
-| [components/portal/LearningHubEnrolledCourses.test.tsx](../../../components/portal/LearningHubEnrolledCourses.test.tsx) | 53 | components |  |
+| [components/portal/LearningHubEnrolledCourses.test.tsx](../../../components/portal/LearningHubEnrolledCourses.test.tsx) | 71 | components |  |
 | [components/portal/LearningHubEnrolledCourses.tsx](../../../components/portal/LearningHubEnrolledCourses.tsx) | 204 | components | default:44 |
 | [components/portal/LearningPathCard.tsx](../../../components/portal/LearningPathCard.tsx) | 134 | components | default:9 |
 | [components/portal/LegacyViewNotice.tsx](../../../components/portal/LegacyViewNotice.tsx) | 38 | components | default:13 |
