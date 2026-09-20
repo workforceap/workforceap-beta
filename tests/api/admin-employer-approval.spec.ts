@@ -41,6 +41,8 @@ vi.mock('@/lib/db/prisma', () => ({
 
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 
+vi.mock('@/lib/notify/discord', () => ({ notifyDiscord: vi.fn(async () => undefined) }));
+
 vi.mock('@/lib/email', () => ({
   sendEmployerApprovedEmail: vi.fn(),
   sendEmployerRejectedEmail: vi.fn(),
@@ -62,6 +64,8 @@ import { getUser } from '@/lib/auth/server';
 import { requireAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { sendEmployerApprovedEmail, sendEmployerRejectedEmail } from '@/lib/email';
+import { notifyDiscord } from '@/lib/notify/discord';
+import { after } from 'next/server';
 
 const adminUser = { id: 'admin-1', email: 'admin@wap.org' };
 
@@ -106,6 +110,49 @@ describe('POST /api/admin/employers/[id]/approve', () => {
     expect(sendEmployerApprovedEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'acme@example.com', companyName: 'Acme' })
     );
+  });
+
+  it('retains the approval email and the Discord bridge with after() instead of abandoning them', async () => {
+    vi.mocked(prisma.employer.findFirst).mockResolvedValue({
+      id: 'emp-1',
+      status: 'pending_approval',
+      companyName: 'Acme',
+      contactEmail: 'acme@example.com',
+      contactName: 'Jane',
+    } as any);
+    vi.mocked(prisma.employer.update).mockResolvedValue({
+      id: 'emp-1',
+      status: 'active',
+      companyName: 'Acme',
+      contactEmail: 'acme@example.com',
+      contactName: 'Jane',
+    } as any);
+    // Record instead of running so a direct (non-retained) call is visible.
+    const retained: Array<() => unknown> = [];
+    vi.mocked(after).mockImplementation(((task: () => unknown) => { retained.push(task); }) as typeof after);
+
+    const res = await approvePost(makeRequest({}, 'emp-1') as any, { params: Promise.resolve({ id: 'emp-1' }) });
+    expect(res.status).toBe(200);
+
+    // One retained task for the email, one for Discord; neither ran on the response path.
+    expect(retained).toHaveLength(2);
+    expect(sendEmployerApprovedEmail).not.toHaveBeenCalled();
+    expect(notifyDiscord).not.toHaveBeenCalled();
+
+    for (const task of retained) await task();
+    expect(sendEmployerApprovedEmail).toHaveBeenCalledTimes(1);
+    expect(notifyDiscord).toHaveBeenCalledTimes(1);
+    expect(notifyDiscord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: 'employer_approval',
+        fields: expect.arrayContaining([{ name: 'company', value: 'Acme' }, { name: 'previousStatus', value: 'pending_approval' }]),
+      })
+    );
+
+    // Restore the run-immediately behaviour the other suites rely on.
+    vi.mocked(after).mockImplementation(((callback: () => unknown) => {
+      void Promise.resolve(callback()).catch(() => undefined);
+    }) as typeof after);
   });
 
   it('returns 400 if employer is already active', async () => {

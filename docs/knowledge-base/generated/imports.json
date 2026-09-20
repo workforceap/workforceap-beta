@@ -10441,8 +10441,24 @@
   },
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/lib/member/memberProgramTrainingView",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramTrainingView.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/program/start/page.tsx",
+    "specifier": "@/components/icons/LegacyGlyph",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/icons/LegacyGlyph.tsx"
+  },
+  {
+    "from": "app/(portal)/dashboard/program/start/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -10450,7 +10466,7 @@
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -10458,7 +10474,7 @@
   {
     "from": "app/(portal)/dashboard/program/start/page.tsx",
     "specifier": "@/components/portal/ProgramCommitmentPanel",
-    "line": 13,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/ProgramCommitmentPanel.tsx"
@@ -90553,24 +90569,8 @@
   },
   {
     "from": "lib/admin-ai-tools-page-structure.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/admin-ai-tools-page-structure.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/admin-ai-tools-page-structure.test.ts",
     "specifier": "./admin/cohortAnalytics",
-    "line": 5,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/admin/cohortAnalytics.ts"
@@ -90665,51 +90665,11 @@
   },
   {
     "from": "lib/admin-job-ready-query-structure.test.ts",
-    "specifier": "node:fs",
+    "specifier": "./content/programs",
     "line": 3,
     "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/admin-job-ready-query-structure.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/admin-programs-structure.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/admin-programs-structure.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/admin-programs-structure.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/admin-programs-structure.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
+    "external": false,
+    "target": "lib/content/programs.ts"
   },
   {
     "from": "lib/admin/adminJobMatchesPrismaDeps.ts",
@@ -101945,19 +101905,19 @@
   },
   {
     "from": "lib/cron/placementSurveySentStatePolicy.test.ts",
-    "specifier": "node:fs",
+    "specifier": "node:test",
     "line": 2,
     "kind": "import",
     "external": true,
-    "package": "node:fs"
+    "package": "node:test"
   },
   {
     "from": "lib/cron/placementSurveySentStatePolicy.test.ts",
-    "specifier": "node:test",
+    "specifier": "@prisma/client",
     "line": 3,
     "kind": "import",
     "external": true,
-    "package": "node:test"
+    "package": "@prisma/client"
   },
   {
     "from": "lib/cron/staleExecutions.test.ts",
@@ -102449,32 +102409,8 @@
   },
   {
     "from": "lib/db/scanCaps.test.ts",
-    "specifier": "node:fs",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/db/scanCaps.test.ts",
-    "specifier": "node:path",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/db/scanCaps.test.ts",
-    "specifier": "node:url",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "node:url"
-  },
-  {
-    "from": "lib/db/scanCaps.test.ts",
     "specifier": "./scanCaps",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/db/scanCaps.ts"
@@ -103222,38 +103158,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
-  },
-  {
-    "from": "lib/email/serverlessAfterGuard.test.ts",
-    "specifier": "node:test",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/email/serverlessAfterGuard.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/email/serverlessAfterGuard.test.ts",
-    "specifier": "node:fs",
-    "line": 8,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/email/serverlessAfterGuard.test.ts",
-    "specifier": "node:path",
-    "line": 9,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
   },
   {
     "from": "lib/email/template.ts",
@@ -105154,7 +105058,7 @@
   {
     "from": "lib/member/courseEnrollmentMigration.test.ts",
     "specifier": "node:test",
-    "line": 14,
+    "line": 8,
     "kind": "import",
     "external": true,
     "package": "node:test"
@@ -105162,26 +105066,18 @@
   {
     "from": "lib/member/courseEnrollmentMigration.test.ts",
     "specifier": "node:assert/strict",
-    "line": 15,
+    "line": 9,
     "kind": "import",
     "external": true,
     "package": "node:assert"
   },
   {
     "from": "lib/member/courseEnrollmentMigration.test.ts",
-    "specifier": "node:fs",
-    "line": 16,
+    "specifier": "@prisma/client",
+    "line": 10,
     "kind": "import",
     "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/member/courseEnrollmentMigration.test.ts",
-    "specifier": "node:path",
-    "line": 17,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
+    "package": "@prisma/client"
   },
   {
     "from": "lib/member/courseProgress.ts",
@@ -108718,38 +108614,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/send.ts"
-  },
-  {
-    "from": "lib/notify/discord.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/notify/discord.test.ts",
-    "specifier": "node:fs",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "lib/notify/discord.test.ts",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
-  },
-  {
-    "from": "lib/notify/discord.test.ts",
-    "specifier": "node:test",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
   },
   {
     "from": "lib/notify/discord.ts",
@@ -116786,7 +116650,7 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/app/api/admin/employers/[id]/approve/route",
-    "line": 59,
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/employers/[id]/approve/route.ts"
@@ -116794,7 +116658,7 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/app/api/admin/employers/[id]/reject/route",
-    "line": 60,
+    "line": 62,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/employers/[id]/reject/route.ts"
@@ -116802,7 +116666,7 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 61,
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -116810,7 +116674,7 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 62,
+    "line": 64,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -116818,7 +116682,7 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 63,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -116826,10 +116690,26 @@
   {
     "from": "tests/api/admin-employer-approval.spec.ts",
     "specifier": "@/lib/email",
-    "line": 64,
+    "line": 66,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/api/admin-employer-approval.spec.ts",
+    "specifier": "@/lib/notify/discord",
+    "line": 67,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "tests/api/admin-employer-approval.spec.ts",
+    "specifier": "next/server",
+    "line": 68,
+    "kind": "import",
+    "external": true,
+    "package": "next"
   },
   {
     "from": "tests/api/admin-funder-program-summary.spec.ts",
@@ -118904,6 +118784,54 @@
     "target": "lib/observability/apiErrorScope.ts"
   },
   {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "@/app/api/member/applications/[id]/messages/route",
+    "line": 62,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/member/applications/[id]/messages/route.ts"
+  },
+  {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "@/app/api/employer/applications/[id]/messages/route",
+    "line": 63,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/employer/applications/[id]/messages/route.ts"
+  },
+  {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 64,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 65,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/api/application-messages.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 66,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
     "from": "tests/api/apply-confirmation-clarity.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -119646,6 +119574,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/enroll/resolveEnrollmentPartner.ts"
+  },
+  {
+    "from": "tests/api/contact-route.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/contact-route.spec.ts",
+    "specifier": "@/app/api/contact/route",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/contact/route.ts"
+  },
+  {
+    "from": "tests/api/contact-route.spec.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
   },
   {
     "from": "tests/api/counselor-analytics.spec.ts",
@@ -121824,7 +121776,7 @@
     "target": "lib/stripe/subscriptionPersistence.ts"
   },
   {
-    "from": "tests/api/employers-page.spec.ts",
+    "from": "tests/api/employers-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
     "kind": "import",
@@ -121832,7 +121784,7 @@
     "package": "vitest"
   },
   {
-    "from": "tests/api/employers-page.spec.ts",
+    "from": "tests/api/employers-page.spec.tsx",
     "specifier": "fs",
     "line": 2,
     "kind": "import",
@@ -121840,12 +121792,68 @@
     "package": "fs"
   },
   {
-    "from": "tests/api/employers-page.spec.ts",
+    "from": "tests/api/employers-page.spec.tsx",
     "specifier": "path",
     "line": 3,
     "kind": "import",
     "external": true,
     "package": "path"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "next-intl",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@/components/marketing/employers/EmployersHeroCtaExperiment",
+    "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "components/marketing/employers/EmployersHeroCtaExperiment.tsx"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@/app/employers/signup/page",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "app/employers/signup/page.tsx"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@/components/employer/EmployerLoiForm",
+    "line": 51,
+    "kind": "import",
+    "external": false,
+    "target": "components/employer/EmployerLoiForm.tsx"
+  },
+  {
+    "from": "tests/api/employers-page.spec.tsx",
+    "specifier": "@/app/(portal)/employer/billing/page",
+    "line": 52,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/employer/billing/page.tsx"
   },
   {
     "from": "tests/api/extract-resume-text.spec.ts",
@@ -124721,8 +124729,16 @@
   },
   {
     "from": "tests/api/placement-survey.spec.ts",
-    "specifier": "@/app/api/admin/placement-surveys/resend/route",
+    "specifier": "@/app/api/admin/pipeline/surveys/route",
     "line": 107,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/pipeline/surveys/route.ts"
+  },
+  {
+    "from": "tests/api/placement-survey.spec.ts",
+    "specifier": "@/app/api/admin/placement-surveys/resend/route",
+    "line": 108,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/placement-surveys/resend/route.ts"
@@ -124730,7 +124746,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/app/api/cron/placement-survey/route",
-    "line": 108,
+    "line": 109,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/placement-survey/route.ts"
@@ -124738,7 +124754,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 109,
+    "line": 110,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -124746,7 +124762,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 110,
+    "line": 111,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -124754,7 +124770,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 111,
+    "line": 112,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -124762,7 +124778,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 112,
+    "line": 113,
     "kind": "import",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124770,7 +124786,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/email",
-    "line": 113,
+    "line": 114,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -124778,7 +124794,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "next/server",
-    "line": 114,
+    "line": 115,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -124786,7 +124802,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 928,
+    "line": 936,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124794,7 +124810,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 962,
+    "line": 970,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124802,7 +124818,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 995,
+    "line": 1003,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124810,7 +124826,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1038,
+    "line": 1046,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124818,7 +124834,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1063,
+    "line": 1071,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124826,7 +124842,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1134,
+    "line": 1142,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124834,7 +124850,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 1244,
+    "line": 1252,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -124842,7 +124858,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1268,
+    "line": 1276,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124850,7 +124866,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1325,
+    "line": 1333,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124858,7 +124874,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1350,
+    "line": 1358,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -124866,7 +124882,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1368,
+    "line": 1376,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -126041,19 +126057,11 @@
   },
   {
     "from": "tests/api/stripe-billing-migration.spec.ts",
-    "specifier": "node:fs",
+    "specifier": "@prisma/client",
     "line": 2,
     "kind": "import",
     "external": true,
-    "package": "node:fs"
-  },
-  {
-    "from": "tests/api/stripe-billing-migration.spec.ts",
-    "specifier": "node:path",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:path"
+    "package": "@prisma/client"
   },
   {
     "from": "tests/api/stripe-webhook-organization.spec.ts",
@@ -127000,6 +127008,46 @@
     "target": "lib/content/programs.ts"
   },
   {
+    "from": "tests/app/admin-ai-tools-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-ai-tools-page.spec.tsx",
+    "specifier": "@/app/admin/ai-tools/page",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/ai-tools/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-ai-tools-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-ai-tools-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/app/admin-ai-tools-page.spec.tsx",
+    "specifier": "@/lib/admin/cohortAnalytics",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/cohortAnalytics.ts"
+  },
+  {
     "from": "tests/app/admin-command-center-pagination.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -127120,6 +127168,78 @@
     "target": "app/admin/exports/page.tsx"
   },
   {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 21,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/app/admin/members/job-ready/page",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/job-ready/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/db/queryCaps",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/queryCaps.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/content/programs",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/member/trainingProgress",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingProgress.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/admin/jobReadyCandidates",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/jobReadyCandidates.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-job-ready-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
     "from": "tests/app/admin-partners-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -127171,6 +127291,118 @@
     "from": "tests/app/admin-partners-page.spec.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
     "line": 74,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 19,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "@/app/admin/placement-surveys/page",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/placement-surveys/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-placement-surveys-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 46,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 23,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/app/admin/programs/page",
+    "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/programs/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/lib/content/programs",
+    "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 51,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-programs-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -128930,7 +129162,7 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/app/(portal)/dashboard/program/start/page",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/program/start/page.tsx"
@@ -128938,7 +129170,7 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -128946,18 +129178,34 @@
   {
     "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 30,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
   },
   {
     "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/content/programEnrollmentSteps",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programEnrollmentSteps.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
     "specifier": "@/lib/member/getActiveProgramForDashboard",
-    "line": 31,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/member/getActiveProgramForDashboard.ts"
+  },
+  {
+    "from": "tests/app/program-start-page.spec.tsx",
+    "specifier": "@/lib/member/memberProgramTrainingView",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberProgramTrainingView.ts"
   },
   {
     "from": "tests/app/public-cta-class.spec.ts",
@@ -134120,6 +134368,54 @@
     "target": "lib/admin/aiJobMatchCompute.ts"
   },
   {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "@/lib/admin/cohortAnalytics",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/cohortAnalytics.ts"
+  },
+  {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
     "from": "tests/lib/ambassador-auto-assign.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -134422,6 +134718,46 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/authUserLifecycle.ts"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/admin/boardOutcomes",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/boardOutcomes.ts"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "tests/lib/boardOutcomes.snapshot.test.ts",
@@ -135608,6 +135944,54 @@
     "target": "lib/employer/jobExpiryInstant.ts"
   },
   {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 2,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "@/lib/admin/jobReadyCandidates",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/jobReadyCandidates.ts"
+  },
+  {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/job-ready-candidates.spec.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
     "from": "tests/lib/lab-workspace-access.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -135846,6 +136230,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
+    "from": "tests/lib/member-export-placement-survey.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/member-export-placement-survey.spec.ts",
+    "specifier": "@/lib/member/exportData",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/exportData.ts"
+  },
+  {
+    "from": "tests/lib/member-export-placement-survey.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "tests/lib/member-program-training-view.spec.ts",
@@ -136459,6 +136867,38 @@
     "from": "tests/lib/notifications/create.spec.ts",
     "specifier": "@/lib/db/prisma",
     "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/onet-sync-cap.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/onet-sync-cap.spec.ts",
+    "specifier": "@/lib/onet/sync",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/onet/sync.ts"
+  },
+  {
+    "from": "tests/lib/onet-sync-cap.spec.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "tests/lib/onet-sync-cap.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -138390,6 +138830,86 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "next/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/app/api/admin/webhooks/process-retries/route",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/webhooks/process-retries/route.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/webhooks/retry",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/retry.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/app/api/admin/webhooks/process-retries/_processRetries",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/webhooks/process-retries/_processRetries.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/audit",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
+  },
+  {
+    "from": "tests/webhook-retries-audit-noise.spec.ts",
+    "specifier": "@/lib/cron/authorizeCronRequest",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/authorizeCronRequest.ts"
   },
   {
     "from": "tests/well-known-icon-paths.spec.ts",

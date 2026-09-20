@@ -1325,3 +1325,29 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect(state.authDeletes).toEqual([]);
   });
 });
+
+describe('POST /api/apply/signup email lifetime', () => {
+  beforeEach(resetState);
+
+  it('awaits the applicant confirmation before responding while the admin alert is retained with after()', async () => {
+    let release!: () => void;
+    vi.mocked(sendApplicationConfirmationEmail).mockImplementationOnce(
+      () => new Promise<{ ok: boolean }>((resolve) => { release = () => resolve({ ok: true }); }),
+    );
+
+    let settled = false;
+    const pending = POST(makeRequest()).then((res) => { settled = true; return res; });
+
+    await vi.waitFor(() => expect(sendApplicationConfirmationEmail).toHaveBeenCalledTimes(1));
+    await new Promise((r) => setTimeout(r, 0));
+    // The response must not be produced while the applicant receipt is still in flight.
+    expect(settled).toBe(false);
+
+    release();
+    const res = await pending;
+    expect(res.status).toBe(200);
+    // The admin alert is scheduled through after(): it runs after the response, not before it.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(sendNewApplicationAdminEmail).toHaveBeenCalledTimes(1);
+  });
+});
