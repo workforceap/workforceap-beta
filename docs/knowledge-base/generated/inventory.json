@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "33d3cf1bb3b3bb9189edb3508ff09cbb71b56845f943635103e1c34142819a6d",
+  "inputTreeSha256": "bdfa07decc0cf5cda4df3fc245253ca47958112cd96882c9980f3f60e22fae6c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -17864,6 +17864,41 @@
       "directive": "use client"
     },
     {
+      "path": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 6565,
+      "lines": 188,
+      "sha256": "657166fec8999ea0d257d5b258061699e1a8350a84d62186ea2cef299c60bd0a",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 31,
+          "kind": "FunctionDeclaration",
+          "localName": "AdminMemberNotesPanel"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "NOTES_REQUEST_TIMEOUT_MS",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "Note",
+          "line": 24,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "AdminMemberNotesPanel",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "app/admin/members/[id]/CreateSuccessToast.tsx",
       "area": "pages",
       "domain": "administration",
@@ -18043,22 +18078,114 @@
       "directive": null
     },
     {
+      "path": "app/admin/members/[id]/memberDetail.module.css",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 7261,
+      "lines": 421,
+      "sha256": "500f19d582d3d814f9675f00173491ffb219151d3a7f44acdab1f6eea3d28d16",
+      "binary": false
+    },
+    {
+      "path": "app/admin/members/[id]/memberDetailTabs.ts",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 1776,
+      "lines": 40,
+      "sha256": "4c423ded4a14229cf0f5f97ce27774fc2785507859cc295b73fb6ad541af9f4b",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AdminMemberDetailTabId",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TABS_ID_BASE",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TAB_PARAM",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TABS",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseAdminMemberDetailTab",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TAB_IDS",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "AdminMemberDetailTabId",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_DEFAULT_TAB",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TABS_ID_BASE",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TAB_PARAM",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN_MEMBER_DETAIL_TABS",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "parseAdminMemberDetailTab",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/admin/members/[id]/notesPanel.module.css",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 1384,
+      "lines": 86,
+      "sha256": "adc79ea8114b66ff8093966ad9e50517b00801a7a89c3580f476afe67ea9bad5",
+      "binary": false
+    },
+    {
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 59361,
-      "lines": 1207,
-      "sha256": "ae962ce9d6d7796a71db5f9aa6bceb226a411370281361bf48e838ab1e1b5a7b",
+      "bytes": 68910,
+      "lines": 1427,
+      "sha256": "4824d07324dc8d56f5f55f68415e4b3ee24da41205619ccfae9dfd3c717c1de8",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 86,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 94,
+          "line": 104,
           "kind": "FunctionDeclaration",
           "localName": "AdminMemberDetailPage"
         }
@@ -18066,27 +18193,27 @@
       "declarations": [
         {
           "name": "AdminCourseProgressRow",
-          "line": 62,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "AdminMemberProgramProgressRow",
-          "line": 71,
+          "line": 81,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CAREER_PLAN_EVENT_NAMES",
-          "line": 78,
+          "line": 88,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 86,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminMemberDetailPage",
-          "line": 94,
+          "line": 104,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19190,19 +19317,19 @@
       "path": "app/admin/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 18902,
-      "lines": 470,
-      "sha256": "cfa384babc5841ddf37ea4cb1ef365eb12ce36271227cfb590b38fe5602b8dbf",
+      "bytes": 19514,
+      "lines": 480,
+      "sha256": "bd1fc6907db731e8021cf29c5d52c724be5f5f0709f211ad881c80f909142ebd",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 30,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration",
           "localName": "AdminTodayPage"
         }
@@ -19210,12 +19337,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 30,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminTodayPage",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -67992,44 +68119,69 @@
       "directive": null
     },
     {
+      "path": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 2471,
+      "lines": 71,
+      "sha256": "f40e07b1b5a012c894766218422f37539bbf8be5b977c8c41bbcb08f31fa7710",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 16,
+          "kind": "FunctionDeclaration",
+          "localName": "FeatureFlagToggle"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "FeatureFlagToggle",
+          "line": 16,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6092,
-      "lines": 225,
-      "sha256": "0667347bca5e60f0ff7d756c8522991944315bfb62a9f98f48252a64155dcb1b",
+      "bytes": 6981,
+      "lines": 243,
+      "sha256": "8cd06e4b5dce02abdc5297c671b7c8839e7449fdbd7a270b12f4d2452f42ddf7",
       "binary": false,
       "exports": [
         {
           "name": "FeatureFlagRow",
-          "line": 26,
+          "line": 31,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKitProps",
-          "line": 41,
+          "line": 46,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKit",
-          "line": 55,
+          "line": 60,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "FeatureFlagRow",
-          "line": 26,
+          "line": 31,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKitProps",
-          "line": 41,
+          "line": 46,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FeatureFlagsKit",
-          "line": 55,
+          "line": 60,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69412,9 +69564,9 @@
       "path": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 15630,
-      "lines": 404,
-      "sha256": "212f6cf598857ea03a667511242746c6c6fc940ba295e8596be9225e7af04608",
+      "bytes": 16873,
+      "lines": 432,
+      "sha256": "54ae3517783d0144fd1cc62f0920af49f338538f3d99aa655d34aa20426c59f4",
       "binary": false,
       "exports": [
         {
@@ -69439,17 +69591,17 @@
         },
         {
           "name": "CommandCenterMemberRow",
-          "line": 88,
+          "line": 98,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CommandCenterKitProps",
-          "line": 101,
+          "line": 111,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CommandCenterKit",
-          "line": 304,
+          "line": 314,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69476,62 +69628,62 @@
         },
         {
           "name": "CommandCenterMemberRow",
-          "line": 88,
+          "line": 98,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CommandCenterKitProps",
-          "line": 101,
+          "line": 111,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 137,
+          "line": 147,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_QUEUE",
-          "line": 145,
+          "line": 155,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_PLACEMENTS_BY_MONTH",
-          "line": 186,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_PROGRAM_HEALTH",
-          "line": 195,
+          "line": 205,
           "kind": "Variable"
         },
         {
           "name": "clampPct",
-          "line": 205,
+          "line": 215,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HeaderProps",
-          "line": 211,
+          "line": 221,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CommandCenterHeader",
-          "line": 217,
+          "line": 227,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueRow",
-          "line": 233,
+          "line": 243,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberColumns",
-          "line": 259,
+          "line": 269,
           "kind": "Variable"
         },
         {
           "name": "CommandCenterKit",
-          "line": 304,
+          "line": 314,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -82988,6 +83140,140 @@
       "directive": null
     },
     {
+      "path": "lib/admin/commandCenterHealth.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 7220,
+      "lines": 195,
+      "sha256": "9610cde3df7050cb2fd405b4dc0470545ca5f293e1a86c3bdd99da988859f1bd",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CommandCenterHealthStatus",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CommandCenterHealthRow",
+          "line": 17,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CronRunSnapshot",
+          "line": 32,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CronHealthDefinition",
+          "line": 39,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CRON_RUNS_HREF",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "COMMAND_CENTER_CRON_ROWS",
+          "line": 50,
+          "kind": "Variable"
+        },
+        {
+          "name": "formatAgo",
+          "line": 62,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "cronHealthRow",
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "notCheckedHereRow",
+          "line": 111,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "BuildSystemHealthInput",
+          "line": 128,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "buildCommandCenterSystemHealth",
+          "line": 152,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CommandCenterHealthStatus",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CommandCenterHealthRow",
+          "line": 17,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CronRunSnapshot",
+          "line": 32,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CronHealthDefinition",
+          "line": 39,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CRON_RUNS_HREF",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "COMMAND_CENTER_CRON_ROWS",
+          "line": 50,
+          "kind": "Variable"
+        },
+        {
+          "name": "HOUR_MS",
+          "line": 59,
+          "kind": "Variable"
+        },
+        {
+          "name": "STALE_FACTOR",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "formatAgo",
+          "line": 62,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "cronHealthRow",
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "notCheckedHereRow",
+          "line": 111,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "BuildSystemHealthInput",
+          "line": 128,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "buildCommandCenterSystemHealth",
+          "line": 152,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/admin/commandCenterHelpers.ts",
       "area": "libraries",
       "domain": "administration",
@@ -84913,6 +85199,95 @@
         {
           "name": "isMatchSuggestionsDryRun",
           "line": 13,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/memberActivity.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 2911,
+      "lines": 91,
+      "sha256": "1108a42a9491359a1d2f2636b95fefe2f51274a8ad2abb18682527ce9f894325",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MemberActivityKind",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberActivityAuditInput",
+          "line": 13,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityEventInput",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityRow",
+          "line": 28,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_CAP",
+          "line": 38,
+          "kind": "Variable"
+        },
+        {
+          "name": "humanizeActivityName",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberActivityRows",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MemberActivityKind",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberActivityAuditInput",
+          "line": 13,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityEventInput",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityRow",
+          "line": 28,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_CAP",
+          "line": 38,
+          "kind": "Variable"
+        },
+        {
+          "name": "humanizeActivityName",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "auditActor",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberActivityRows",
+          "line": 68,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -159417,6 +159792,69 @@
       "directive": null
     },
     {
+      "path": "tests/app/admin-member-detail-tabs.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 21572,
+      "lines": 420,
+      "sha256": "d9272e073ebddecadb297e435d2ea39e4e0a414786baeba6378a8c1259ac67cc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "panelMock",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "INSTANT",
+          "line": 125,
+          "kind": "Variable"
+        },
+        {
+          "name": "BASE",
+          "line": 126,
+          "kind": "Variable"
+        },
+        {
+          "name": "TAB_IDS",
+          "line": 127,
+          "kind": "Variable"
+        },
+        {
+          "name": "PANELS_BY_TAB",
+          "line": 130,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderPage",
+          "line": 140,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "panel",
+          "line": 152,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tab",
+          "line": 158,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Island",
+          "line": 356,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/admin-partners-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -160750,6 +161188,24 @@
       "directive": null
     },
     {
+      "path": "tests/components/admin-member-notes-panel.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3957,
+      "lines": 81,
+      "sha256": "d72ccb12d102ec4f1f160e22b7821270a8f16527724697994842f0a914f9f76f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "NOTE",
+          "line": 10,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/admin-pipeline-member-count.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -161283,6 +161739,44 @@
       "directive": null
     },
     {
+      "path": "tests/components/command-center-system-health.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 9471,
+      "lines": 228,
+      "sha256": "12b57f41d7f63f06385e543bf2b4399db7757eb45b52edf030a97f5c3177711e",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "NOW",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "hoursAgo",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "COURSERA",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "run",
+          "line": 25,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/counselor-note-saves.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -161703,6 +162197,34 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/feature-flags-kit.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5299,
+      "lines": 124,
+      "sha256": "694fb4178b0d0ba2f0ceb7f209308b0996e679453ee20b59e03ae8f9efc42625",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 4,
+          "kind": "Variable"
+        },
+        {
+          "name": "FLAG",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderKit",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -167944,6 +168466,18 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/member-activity-rows.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4070,
+      "lines": 86,
+      "sha256": "bac72f4e13632eaf39099f68b29184c9f4f8d934e8a77c6acda60ba39b16fed1",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
