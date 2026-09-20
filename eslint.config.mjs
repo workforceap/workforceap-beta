@@ -30,15 +30,11 @@ const config = [
       // Tighten these rules in follow-up PRs instead of blocking CI adoption.
       "@next/next/no-html-link-for-pages": "off",
       "react/no-unescaped-entities": "off",
-      "react-hooks/refs": "off",
-      "react-hooks/set-state-in-effect": "off",
-      "react-hooks/immutability": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/error-boundaries": "off",
-      // Re-enabled: catches genuine correctness bugs (conditional/looped
-      // hook calls), unlike the stylistic rules above. Lint runs with
-      // continue-on-error in CI (see .github/workflows/ci-gate.yml), so
-      // this will not block merges while any existing violations are fixed.
+      // eslint-plugin-react-hooks@5.2.0 ships only `rules-of-hooks` and
+      // `exhaustive-deps`; the React Compiler rules (refs, purity,
+      // set-state-in-effect, immutability, error-boundaries) arrive with the
+      // v6+ plugin. Do not pre-configure rules the installed plugin lacks.
+      // Catches genuine correctness bugs (conditional/looped hook calls).
       "react-hooks/rules-of-hooks": "error",
     },
   },

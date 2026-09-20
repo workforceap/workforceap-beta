@@ -16,7 +16,7 @@ interface EmployerInviteEmailProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.workforceap.org";
 
-export const EmployerInviteEmail = ({
+const EmployerInviteEmail = ({
   invitedBy = "The WorkforceAP Team",
   invitedEmail = "employer@example.com",
   inviteLink = `${baseUrl}/signup?type=employer`,

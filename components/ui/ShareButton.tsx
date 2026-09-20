@@ -130,4 +130,3 @@ export function ShareButton({ url, title, text, className = '', chrome = 'defaul
   );
 }
 
-export default ShareButton;

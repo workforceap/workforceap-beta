@@ -110,7 +110,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 113
+          "line": 112
         }
       ]
     },
@@ -121,7 +121,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 549
+          "line": 548
         }
       ]
     },
@@ -180,11 +180,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 99
+          "line": 95
         },
         {
           "file": "eslint.config.mjs",
-          "line": 126
+          "line": 122
         },
         {
           "file": "playwright.config.ts",
@@ -799,7 +799,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 564
+          "line": 563
         }
       ]
     },
@@ -907,35 +907,35 @@
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 142
+          "line": 145
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 146
+          "line": 149
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 458
+          "line": 534
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 462
+          "line": 538
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 85
+          "line": 87
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 89
+          "line": 91
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
-          "line": 80
+          "line": 98
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
-          "line": 84
+          "line": 103
         },
         {
           "file": "tests/api/weekly-recap.spec.ts",
@@ -1042,7 +1042,7 @@
       "references": [
         {
           "file": "tests/e2e/auth-helpers.ts",
-          "line": 64
+          "line": 63
         }
       ]
     },
@@ -1053,7 +1053,7 @@
       "references": [
         {
           "file": "tests/e2e/auth-helpers.ts",
-          "line": 65
+          "line": 64
         }
       ]
     },
@@ -1544,7 +1544,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 134
+          "line": 133
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -1575,7 +1575,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 96
+          "line": 95
         },
         {
           "file": "lib/email/adminRecipients.test.ts",
@@ -1908,7 +1908,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 263
+          "line": 264
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2140,10 +2140,6 @@
           "line": 94
         },
         {
-          "file": "app/api/cron/at-risk-check/route.ts",
-          "line": 21
-        },
-        {
           "file": "app/api/cron/deploy-health/route.ts",
           "line": 14
         },
@@ -2257,7 +2253,7 @@
         },
         {
           "file": "lib/cron/at-risk-alerts.ts",
-          "line": 32
+          "line": 41
         },
         {
           "file": "lib/cron/placement-surveys.ts",
@@ -2265,7 +2261,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 75
+          "line": 74
         },
         {
           "file": "lib/email/send.test.ts",
@@ -2348,7 +2344,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 435
+          "line": 436
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2419,7 +2415,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 434
+          "line": 435
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2526,7 +2522,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 276
+          "line": 277
         },
         {
           "file": "app/api/contact/route.ts",
@@ -3425,7 +3421,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 125
+          "line": 124
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -3846,7 +3842,7 @@
       "references": [
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 265
+          "line": 266
         },
         {
           "file": "app/api/contact/route.ts",
@@ -4493,7 +4489,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 153
+          "line": 152
         }
       ]
     },
@@ -4508,7 +4504,7 @@
         },
         {
           "file": "lib/email.ts",
-          "line": 154
+          "line": 153
         }
       ]
     },
@@ -4657,11 +4653,11 @@
       "references": [
         {
           "file": "eslint.config.mjs",
-          "line": 99
+          "line": 95
         },
         {
           "file": "eslint.config.mjs",
-          "line": 126
+          "line": 122
         }
       ]
     },
@@ -4797,7 +4793,7 @@
       "references": [
         {
           "file": "lib/email.ts",
-          "line": 144
+          "line": 143
         }
       ]
     },

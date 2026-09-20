@@ -20,6 +20,11 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
+vi.mock('@/lib/audit/log', () => ({
+  logAuditEvent: vi.fn(async () => undefined),
+  auditRequestMeta: vi.fn(() => ({})),
+}));
 vi.mock('@/lib/auth/roles', () => ({
   requireAdmin: mocks.requireAdmin,
   isSuperAdmin: mocks.isSuperAdmin,

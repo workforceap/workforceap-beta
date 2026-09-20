@@ -27560,6 +27560,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/admin/blog/ai/draft/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
     "from": "app/api/admin/blog/ai/from-ideas/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -27614,6 +27622,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/blog/ai/from-ideas/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
   },
   {
     "from": "app/api/admin/blog/ai/review/route.ts",
@@ -27894,6 +27910,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/certifications/review/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/admin/certifications/review/route.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
   },
   {
     "from": "app/api/admin/chapters/route.ts",
@@ -28544,6 +28576,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/admin/coursera/canonical-course-mappings/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
     "from": "app/api/admin/coursera/csv-import/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -28598,6 +28638,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/coursera/csv-import/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
   },
   {
     "from": "app/api/admin/coursera/enroll-member/route.ts",
@@ -31048,6 +31096,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/admin/employer-screening-packs/[id]/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
     "from": "app/api/admin/employer-screening-packs/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -31102,6 +31158,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/employer-screening-packs/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
   },
   {
     "from": "app/api/admin/employers/[id]/approve/route.ts",
@@ -33249,8 +33313,24 @@
   },
   {
     "from": "app/api/admin/members/[id]/billing-packets/route.ts",
-    "specifier": "@/lib/content/programs",
+    "specifier": "@/lib/audit",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/billing-packets/route.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/billing-packets/route.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -33258,7 +33338,7 @@
   {
     "from": "app/api/admin/members/[id]/billing-packets/route.ts",
     "specifier": "@/lib/billing/packetSchema",
-    "line": 9,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/billing/packetSchema.ts"
@@ -33266,7 +33346,7 @@
   {
     "from": "app/api/admin/members/[id]/billing-packets/route.ts",
     "specifier": "@/lib/billing/packetNumber",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/billing/packetNumber.ts"
@@ -33274,7 +33354,7 @@
   {
     "from": "app/api/admin/members/[id]/billing-packets/route.ts",
     "specifier": "@/lib/billing/providerIdentity",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/billing/providerIdentity.ts"
@@ -33282,7 +33362,7 @@
   {
     "from": "app/api/admin/members/[id]/billing-packets/route.ts",
     "specifier": "@/lib/billing/packetAccess",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/billing/packetAccess.ts"
@@ -33718,6 +33798,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/edit-profile/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/edit-profile/route.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
   },
   {
     "from": "app/api/admin/members/[id]/enrollment-funding/route.ts",
@@ -36113,8 +36209,16 @@
   },
   {
     "from": "app/api/admin/members/bulk-update/route.ts",
-    "specifier": "@/lib/content/programSlug",
+    "specifier": "@/lib/member/referrals",
     "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-update/route.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -36896,6 +37000,14 @@
     "target": "lib/messages/superAdminMessageQueries.ts"
   },
   {
+    "from": "app/api/admin/messages/stats/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
     "from": "app/api/admin/messages/thread/[threadId]/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -37097,8 +37209,16 @@
   },
   {
     "from": "app/api/admin/messages/threads/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/admin/messages/threads/route.ts",
     "specifier": "@/lib/messages/superAdminMessageQueries",
-    "line": 222,
+    "line": 223,
     "kind": "type",
     "external": false,
     "target": "lib/messages/superAdminMessageQueries.ts"
@@ -37718,6 +37838,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/organization/logo/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
   },
   {
     "from": "app/api/admin/outcomes/pdf/route.ts",
@@ -39449,8 +39577,16 @@
   },
   {
     "from": "app/api/admin/program-change-requests/[id]/route.ts",
-    "specifier": "@/lib/content/programSlug",
+    "specifier": "@/lib/member/referrals",
     "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
+  },
+  {
+    "from": "app/api/admin/program-change-requests/[id]/route.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -39718,6 +39854,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/wioa-report.ts"
+  },
+  {
+    "from": "app/api/admin/reports/wioa/generate/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
   },
   {
     "from": "app/api/admin/reports/wioa/route.ts",
@@ -43385,8 +43529,16 @@
   },
   {
     "from": "app/api/apply/signup/route.ts",
-    "specifier": "@/lib/counselor/autoAssign",
+    "specifier": "@/lib/member/referrals",
     "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
+  },
+  {
+    "from": "app/api/apply/signup/route.ts",
+    "specifier": "@/lib/counselor/autoAssign",
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/autoAssign.ts"
@@ -43394,7 +43546,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 27,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -43402,7 +43554,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/partners/sponsorship",
-    "line": 32,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/partners/sponsorship.ts"
@@ -43410,7 +43562,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/schoolCollection",
-    "line": 41,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/apply/schoolCollection.ts"
@@ -43418,7 +43570,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/eligibilityExtendedFields",
-    "line": 46,
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityExtendedFields.ts"
@@ -43426,7 +43578,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/email",
-    "line": 47,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -46858,7 +47010,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 6,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -46866,7 +47018,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 7,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -46874,7 +47026,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 8,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -46905,16 +47057,24 @@
   },
   {
     "from": "app/api/cron/at-risk-check/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/cron/at-risk-alerts",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/at-risk-alerts.ts"
+  },
+  {
+    "from": "app/api/cron/at-risk-check/route.ts",
+    "specifier": "@/lib/email/pacing",
     "line": 9,
     "kind": "import",
     "external": false,
-    "target": "lib/email.ts"
+    "target": "lib/email/pacing.ts"
   },
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 13,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -46922,7 +47082,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/authorizeCronRequest",
-    "line": 14,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
@@ -46930,7 +47090,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 15,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -46938,7 +47098,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 16,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -48001,8 +48161,16 @@
   },
   {
     "from": "app/api/cron/milestone-celebration/route.ts",
-    "specifier": "@/content/testimonials",
+    "specifier": "@/lib/member/referrals",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
+  },
+  {
+    "from": "app/api/cron/milestone-celebration/route.ts",
+    "specifier": "@/content/testimonials",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "content/testimonials.ts"
@@ -48010,7 +48178,7 @@
   {
     "from": "app/api/cron/milestone-celebration/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -55816,6 +55984,22 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/member/profile/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/member/profile/route.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
+  },
+  {
     "from": "app/api/member/program-change-request/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -60642,7 +60826,7 @@
   {
     "from": "app/api/referral-sources/route.ts",
     "specifier": "@/lib/public/publicDataFilters",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/public/publicDataFilters.ts"
@@ -60650,7 +60834,7 @@
   {
     "from": "app/api/referral-sources/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -61278,14 +61462,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/http/clientIp.ts"
-  },
-  {
-    "from": "app/api/waitlist/route.ts",
-    "specifier": "next/server",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "app/api/webhooks/coursera/route.ts",
@@ -76618,7 +76794,7 @@
   {
     "from": "components/portal/JobApplicationKanban.tsx",
     "specifier": "./JobApplicationCard",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "components/portal/JobApplicationCard.tsx"
@@ -89000,14 +89176,6 @@
     "target": "lib/email/escapeHtml.ts"
   },
   {
-    "from": "emails/at-risk-digest.ts",
-    "specifier": "@/lib/email/escapeHtml",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/email/escapeHtml.ts"
-  },
-  {
     "from": "emails/billing-packet.ts",
     "specifier": "@/lib/email/escapeHtml",
     "line": 6,
@@ -89593,16 +89761,8 @@
   },
   {
     "from": "emails/index.ts",
-    "specifier": "./at-risk-digest",
-    "line": 36,
-    "kind": "re-export",
-    "external": false,
-    "target": "emails/at-risk-digest.ts"
-  },
-  {
-    "from": "emails/index.ts",
     "specifier": "./onboarding-stalls-digest",
-    "line": 37,
+    "line": 36,
     "kind": "re-export",
     "external": false,
     "target": "emails/onboarding-stalls-digest.ts"
@@ -89610,7 +89770,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./counselor-at-risk-alert",
-    "line": 38,
+    "line": 37,
     "kind": "re-export",
     "external": false,
     "target": "emails/counselor-at-risk-alert.ts"
@@ -89618,7 +89778,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./placement-survey",
-    "line": 39,
+    "line": 38,
     "kind": "re-export",
     "external": false,
     "target": "emails/placement-survey.ts"
@@ -89626,7 +89786,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./counselor-assigned",
-    "line": 40,
+    "line": 39,
     "kind": "re-export",
     "external": false,
     "target": "emails/counselor-assigned.ts"
@@ -89634,7 +89794,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./partner-referral-invite",
-    "line": 41,
+    "line": 40,
     "kind": "re-export",
     "external": false,
     "target": "emails/partner-referral-invite.ts"
@@ -89642,7 +89802,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-welcome",
-    "line": 42,
+    "line": 41,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-welcome.ts"
@@ -89650,7 +89810,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-verify-email",
-    "line": 43,
+    "line": 42,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-verify-email.ts"
@@ -89658,7 +89818,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-signup-admin-alert",
-    "line": 44,
+    "line": 43,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-signup-admin-alert.ts"
@@ -89666,7 +89826,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-approved",
-    "line": 45,
+    "line": 44,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-approved.ts"
@@ -89674,7 +89834,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-rejected",
-    "line": 46,
+    "line": 45,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-rejected.ts"
@@ -89682,7 +89842,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./wioa-report",
-    "line": 47,
+    "line": 46,
     "kind": "re-export",
     "external": false,
     "target": "emails/wioa-report.ts"
@@ -89690,7 +89850,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-check-in",
-    "line": 48,
+    "line": 47,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-check-in.ts"
@@ -89698,7 +89858,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-come-back",
-    "line": 49,
+    "line": 48,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-come-back.ts"
@@ -89706,7 +89866,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-stuck",
-    "line": 50,
+    "line": 49,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-stuck.ts"
@@ -89714,7 +89874,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./job-alert-digest",
-    "line": 51,
+    "line": 50,
     "kind": "re-export",
     "external": false,
     "target": "emails/job-alert-digest.ts"
@@ -89722,7 +89882,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-pending-applicants",
-    "line": 52,
+    "line": 51,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-pending-applicants.ts"
@@ -89730,7 +89890,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./admin-stale-applicants-digest",
-    "line": 53,
+    "line": 52,
     "kind": "re-export",
     "external": false,
     "target": "emails/admin-stale-applicants-digest.ts"
@@ -89738,7 +89898,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./job-expiry",
-    "line": 54,
+    "line": 53,
     "kind": "re-export",
     "external": false,
     "target": "emails/job-expiry.ts"
@@ -89746,7 +89906,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./school-enrollment-parent-ack",
-    "line": 55,
+    "line": 54,
     "kind": "re-export",
     "external": false,
     "target": "emails/school-enrollment-parent-ack.ts"
@@ -89754,7 +89914,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./school-enrollment-partner-ack",
-    "line": 56,
+    "line": 55,
     "kind": "re-export",
     "external": false,
     "target": "emails/school-enrollment-partner-ack.ts"
@@ -100674,7 +100834,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 10,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -100682,7 +100842,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/db/scanCaps",
-    "line": 11,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/db/scanCaps.ts"
@@ -100690,7 +100850,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 12,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -100698,7 +100858,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/email",
-    "line": 22,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -100706,7 +100866,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 28,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -101914,7 +102074,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/invitations/loginCode",
-    "line": 73,
+    "line": 72,
     "kind": "import",
     "external": false,
     "target": "lib/invitations/loginCode.ts"
@@ -106186,7 +106346,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "node:crypto",
-    "line": 18,
+    "line": 26,
     "kind": "import",
     "external": true,
     "package": "node:crypto"
@@ -106194,7 +106354,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@prisma/client",
-    "line": 19,
+    "line": 27,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -106202,7 +106362,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 20,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -106210,7 +106370,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/member/pointsConfig",
-    "line": 21,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/member/pointsConfig.ts"
@@ -106218,7 +106378,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/member/streaks",
-    "line": 22,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/member/streaks.ts"
@@ -106226,7 +106386,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 23,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -106234,7 +106394,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/member/referralRules",
-    "line": 24,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "lib/member/referralRules.ts"
@@ -106242,7 +106402,7 @@
   {
     "from": "lib/member/referrals.ts",
     "specifier": "@/lib/member/referralRules",
-    "line": 32,
+    "line": 40,
     "kind": "re-export",
     "external": false,
     "target": "lib/member/referralRules.ts"
@@ -114872,6 +115032,78 @@
     "package": "child_process"
   },
   {
+    "from": "scripts/verify-admin-mutation-audit.cjs",
+    "specifier": "node:fs",
+    "line": 16,
+    "kind": "require",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.cjs",
+    "specifier": "node:path",
+    "line": 17,
+    "kind": "require",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "require",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:os",
+    "line": 4,
+    "kind": "require",
+    "external": true,
+    "package": "node:os"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:path",
+    "line": 5,
+    "kind": "require",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "node:child_process",
+    "line": 6,
+    "kind": "require",
+    "external": true,
+    "package": "node:child_process"
+  },
+  {
+    "from": "scripts/verify-admin-mutation-audit.test.cjs",
+    "specifier": "./verify-admin-mutation-audit.cjs",
+    "line": 8,
+    "kind": "require",
+    "external": false,
+    "target": "scripts/verify-admin-mutation-audit.cjs"
+  },
+  {
     "from": "scripts/verify-high-risk-tenant-routes.cjs",
     "specifier": "node:fs",
     "line": 9,
@@ -117770,15 +118002,23 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/cron/authorizeCronRequest",
-    "line": 62,
+    "line": 64,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
   },
   {
     "from": "tests/api/at-risk-alert.spec.ts",
+    "specifier": "@/app/api/cron/at-risk-check/route",
+    "line": 77,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/at-risk-check/route.ts"
+  },
+  {
+    "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/app/api/cron/at-risk-alerts/route",
-    "line": 75,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/at-risk-alerts/route.ts"
@@ -117786,7 +118026,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/cron/authorizeCronRequest",
-    "line": 76,
+    "line": 79,
     "kind": "import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
@@ -117794,7 +118034,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 77,
+    "line": 80,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -117802,7 +118042,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/email",
-    "line": 78,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -117810,7 +118050,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 79,
+    "line": 82,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -117818,7 +118058,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/emails/counselor-at-risk-alert",
-    "line": 80,
+    "line": 83,
     "kind": "import",
     "external": false,
     "target": "emails/counselor-at-risk-alert.ts"
@@ -118194,7 +118434,7 @@
   {
     "from": "tests/api/billing-packets.spec.ts",
     "specifier": "@/app/api/admin/members/[id]/billing-packets/route",
-    "line": 53,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/[id]/billing-packets/route.ts"
@@ -118202,7 +118442,7 @@
   {
     "from": "tests/api/billing-packets.spec.ts",
     "specifier": "@/app/api/billing-packets/[packetId]/send/route",
-    "line": 54,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "app/api/billing-packets/[packetId]/send/route.ts"
@@ -118210,7 +118450,7 @@
   {
     "from": "tests/api/billing-packets.spec.ts",
     "specifier": "@/app/api/billing-packets/[packetId]/pdf/route",
-    "line": 55,
+    "line": 60,
     "kind": "import",
     "external": false,
     "target": "app/api/billing-packets/[packetId]/pdf/route.ts"
@@ -119298,7 +119538,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/app/api/cron/at-risk-alerts/route",
-    "line": 68,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/at-risk-alerts/route.ts"
@@ -119306,7 +119546,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/cron/at-risk-alerts",
-    "line": 69,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "lib/cron/at-risk-alerts.ts"
@@ -119314,7 +119554,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 73,
+    "line": 75,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -119322,7 +119562,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 74,
+    "line": 76,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -119346,7 +119586,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/app/api/cron/at-risk-check/route",
-    "line": 59,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/at-risk-check/route.ts"
@@ -119354,7 +119594,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 60,
+    "line": 66,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -119362,23 +119602,23 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 61,
+    "line": 67,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
   },
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
-    "specifier": "@/lib/email",
-    "line": 62,
+    "specifier": "@/lib/cron/at-risk-alerts",
+    "line": 68,
     "kind": "import",
     "external": false,
-    "target": "lib/email.ts"
+    "target": "lib/cron/at-risk-alerts.ts"
   },
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 63,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -119386,7 +119626,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 64,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -121778,7 +122018,7 @@
   {
     "from": "tests/api/member-profile.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 57,
+    "line": 63,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -121786,7 +122026,7 @@
   {
     "from": "tests/api/member-profile.spec.ts",
     "specifier": "@/app/api/member/profile/route",
-    "line": 64,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "app/api/member/profile/route.ts"
@@ -121794,7 +122034,7 @@
   {
     "from": "tests/api/member-profile.spec.ts",
     "specifier": "@/app/api/member/profile/completeness/route",
-    "line": 65,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "app/api/member/profile/completeness/route.ts"
@@ -121802,7 +122042,7 @@
   {
     "from": "tests/api/member-profile.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 66,
+    "line": 72,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -121810,7 +122050,7 @@
   {
     "from": "tests/api/member-profile.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 67,
+    "line": 73,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -123842,7 +124082,7 @@
   {
     "from": "tests/api/public-api-hardening-followups.spec.ts",
     "specifier": "vitest",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": true,
     "package": "vitest"
@@ -123850,7 +124090,7 @@
   {
     "from": "tests/api/public-api-hardening-followups.spec.ts",
     "specifier": "@/lib/xapi/token",
-    "line": 51,
+    "line": 50,
     "kind": "type",
     "external": false,
     "target": "lib/xapi/token.ts"
@@ -123858,7 +124098,7 @@
   {
     "from": "tests/api/public-api-hardening-followups.spec.ts",
     "specifier": "@/app/api/xapi/oauth/token/route",
-    "line": 95,
+    "line": 94,
     "kind": "import",
     "external": false,
     "target": "app/api/xapi/oauth/token/route.ts"
@@ -123866,7 +124106,7 @@
   {
     "from": "tests/api/public-api-hardening-followups.spec.ts",
     "specifier": "@/lib/xapi/token",
-    "line": 96,
+    "line": 95,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/token.ts"
@@ -123874,26 +124114,10 @@
   {
     "from": "tests/api/public-api-hardening-followups.spec.ts",
     "specifier": "@/app/api/webhooks/coursera/route",
-    "line": 97,
+    "line": 96,
     "kind": "import",
     "external": false,
     "target": "app/api/webhooks/coursera/route.ts"
-  },
-  {
-    "from": "tests/api/public-api-hardening-followups.spec.ts",
-    "specifier": "@/app/api/waitlist/route",
-    "line": 98,
-    "kind": "import",
-    "external": false,
-    "target": "app/api/waitlist/route.ts"
-  },
-  {
-    "from": "tests/api/public-api-hardening-followups.spec.ts",
-    "specifier": "next/server",
-    "line": 294,
-    "kind": "type",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "tests/api/public-route-error-handling.spec.ts",
@@ -125313,32 +125537,8 @@
   },
   {
     "from": "tests/api/wioa-report.spec.ts",
-    "specifier": "@/app/api/admin/reports/wioa/generate/route",
-    "line": 306,
-    "kind": "type",
-    "external": false,
-    "target": "app/api/admin/reports/wioa/generate/route.ts"
-  },
-  {
-    "from": "tests/api/wioa-report.spec.ts",
-    "specifier": "@/app/api/admin/reports/wioa/generate/route",
-    "line": 311,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "app/api/admin/reports/wioa/generate/route.ts"
-  },
-  {
-    "from": "tests/api/wioa-report.spec.ts",
-    "specifier": "@/app/api/admin/reports/wioa/generate/route",
-    "line": 343,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "app/api/admin/reports/wioa/generate/route.ts"
-  },
-  {
-    "from": "tests/api/wioa-report.spec.ts",
     "specifier": "next/server",
-    "line": 372,
+    "line": 317,
     "kind": "type",
     "external": true,
     "package": "next"
@@ -125346,7 +125546,7 @@
   {
     "from": "tests/api/wioa-report.spec.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 458,
+    "line": 403,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"

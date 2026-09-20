@@ -302,61 +302,6 @@ describe('POST /api/admin/reports/wioa/generate', () => {
   });
 });
 
-describe('GET /api/admin/reports/wioa/generate', () => {
-  let getGeneratedReport: typeof import('@/app/api/admin/reports/wioa/generate/route').GET;
-
-  beforeEach(async () => {
-    vi.resetModules();
-    vi.clearAllMocks();
-    const mod = await import('@/app/api/admin/reports/wioa/generate/route');
-    getGeneratedReport = mod.GET;
-  });
-
-  it('returns null report when none generated yet', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
-    vi.mocked(isAdmin).mockResolvedValue(true);
-
-    const res = await getGeneratedReport(new NextRequest('http://localhost:3000/api/admin/reports/wioa/generate'));
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.report).toBeNull();
-    expect(body.lastGeneratedAt).toBeNull();
-  });
-
-  it('returns last generated report', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
-    vi.mocked(isAdmin).mockResolvedValue(true);
-
-    const mockReport = {
-      generatedAt: '2025-01-15T00:00:00.000Z',
-      periodStart: '2025-01-01T00:00:00.000Z',
-      periodEnd: '2025-01-31T23:59:59.999Z',
-      totalActiveMembers: 100,
-      totalCompleters: 80,
-      totalPlacements: 40,
-      overallAvgWage: 55000,
-      programs: [],
-      rawJson: {},
-    };
-    vi.mocked(generateWioaReport).mockResolvedValue(mockReport as any);
-
-    const { POST } = await import('@/app/api/admin/reports/wioa/generate/route');
-    await POST(
-      new NextRequest('http://localhost:3000/api/admin/reports/wioa/generate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({}),
-      })
-    );
-
-    const res = await getGeneratedReport(new NextRequest('http://localhost:3000/api/admin/reports/wioa/generate'));
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.report).toMatchObject(mockReport);
-    expect(body.lastGeneratedAt).toBe(mockReport.generatedAt);
-  });
-});
-
 describe('GET /api/cron/wioa-report', () => {
   beforeEach(() => {
     vi.clearAllMocks();

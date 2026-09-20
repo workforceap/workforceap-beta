@@ -61,7 +61,7 @@ The following templates map to existing email functions in `lib/email.ts`. The l
 | `partner-weekly-digest`  | `sendPartnerWeeklyDigestEmail`           | Partner     |
 | `invitation`             | `sendInvitationEmail`                    | Invite      |
 | `employer-welcome`       | `sendEmployerWelcomeEmail`               | Employer    |
-| `at-risk-digest`         | `sendAtRiskAlertDigestEmail`             | Admin/Counselor |
+| `counselor-at-risk-alert` | `sendCounselorAtRiskAlertEmail`         | Counselor / staff fallback |
 
 ## Seeding Default Templates
 

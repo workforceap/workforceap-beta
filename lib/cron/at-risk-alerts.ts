@@ -1,10 +1,18 @@
 /**
- * Daily counselor at-risk alert batcher.
+ * At-risk notification + member retention nudge helpers.
  *
- * Runs at 8am local time. Scores active members, finds those with CRITICAL
- * risk (score ≥ 70), groups by assigned counselor, and sends one batched
- * email per counselor. Deduplicates: skips members whose alert was already
- * notified to a counselor within the last 24 hours.
+ * `runDailyAtRiskCounselorAlerts` is THE at-risk email (WAP-30 / TODO-006):
+ * it runs inside the nightly `/api/cron/at-risk-check` on the scores that
+ * cron just persisted to `AtRiskAlert`, groups CRITICAL members by assigned
+ * counselor and sends one batched email per counselor. Critical members
+ * with no active counselor are routed to the staff fallback inbox
+ * (`AT_RISK_DIGEST_EMAILS`, else the admin alert list) instead of being
+ * dropped. Dedup: a member whose alert was notified within the last 24h is
+ * skipped. The former separate "digest" email is gone — one sender, one
+ * schedule, one source of truth.
+ *
+ * `runMemberRetentionNudges` (G5 green/yellow/red nudges to MEMBERS) stays a
+ * separate question and keeps its own weekly cron.
  */
 
 import { prisma } from '@/lib/db/prisma';
@@ -20,6 +28,7 @@ import {
   type ClassifyMemberResult,
 } from '@/lib/member/atRiskScoring';
 import {
+  getAtRiskDigestRecipients,
   sendCounselorAtRiskAlertEmail,
   sendMemberCheckInEmail,
   sendMemberComeBackEmail,
@@ -296,15 +305,29 @@ export type DailyAtRiskAlertRunResult = {
   success: boolean;
   counselorsNotified: number;
   membersFlagged: number;
+  /** Critical members with no counselor AND no staff fallback recipient configured. */
   skippedNoCounselor: number;
+  /** Critical members with no counselor that were routed to the staff fallback inbox. */
+  unassignedRoutedToStaff: number;
   skippedAlreadyNotified: number;
   skippedPacing: number;
   skippedFixture: number;
   results: CounselorAlertResult[];
 };
 
-export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): Promise<DailyAtRiskAlertRunResult> {
-  const scores = await calculateAllAtRiskScores();
+/** Synthetic batch id for the staff fallback inbox (members with no counselor). */
+export const STAFF_FALLBACK_COUNSELOR_ID = 'staff-fallback';
+
+/**
+ * @param precomputedScores Scores the calling cron already computed and
+ *   persisted this run. Pass them so at-risk-check never scores twice; when
+ *   omitted (manual invocation) the scorer runs here.
+ */
+export async function runDailyAtRiskCounselorAlerts(
+  pacer: BulkEmailCronPacer,
+  precomputedScores?: AtRiskScore[],
+): Promise<DailyAtRiskAlertRunResult> {
+  const scores = precomputedScores ?? (await calculateAllAtRiskScores());
   const criticalScores = scores.filter((s) => s.score >= THRESHOLDS.CRITICAL);
 
   if (criticalScores.length === 0) {
@@ -313,6 +336,7 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
       counselorsNotified: 0,
       membersFlagged: 0,
       skippedNoCounselor: 0,
+      unassignedRoutedToStaff: 0,
       skippedAlreadyNotified: 0,
       skippedPacing: 0,
       skippedFixture: 0,
@@ -400,13 +424,16 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
 
   const alertByUserId = new Map(alerts.map((a) => [a.userId, a]));
 
-  // Group by counselor
+  // Group by counselor. Members with no active counselor go to the staff
+  // fallback inbox (one batch) so no critical member is silently dropped.
+  const staffRecipients = getAtRiskDigestRecipients();
   const counselorBatches = new Map<
     string,
     {
       counselorId: string;
-      counselorEmail: string;
+      counselorEmail: string | string[];
       counselorName: string;
+      profileUrlFor: (userId: string) => string;
       members: Array<{
         userId: string;
         fullName: string | null;
@@ -421,17 +448,12 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
   >();
 
   let skippedNoCounselor = 0;
+  let unassignedRoutedToStaff = 0;
   let skippedAlreadyNotified = 0;
 
   for (const score of criticalScores) {
     const member = memberById.get(score.userId);
     if (!member) continue;
-
-    const counselor = member.counselorAssignments[0]?.counselor;
-    if (!counselor?.user?.email) {
-      skippedNoCounselor++;
-      continue;
-    }
 
     const alert = alertByUserId.get(score.userId);
     if (alert?.notifiedCounselorAt && alert.notifiedCounselorAt >= twentyFourHoursAgo) {
@@ -439,12 +461,33 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
       continue;
     }
 
-    const batch = counselorBatches.get(counselor.id) || {
-      counselorId: counselor.id,
-      counselorEmail: counselor.user.email,
-      counselorName: counselor.user.fullName ?? 'Counselor',
-      members: [],
-    };
+    const counselor = member.counselorAssignments[0]?.counselor;
+    let batchKey: string;
+    let batch = counselor?.user?.email ? counselorBatches.get(counselor.id) : counselorBatches.get(STAFF_FALLBACK_COUNSELOR_ID);
+    if (counselor?.user?.email) {
+      batchKey = counselor.id;
+      batch = batch || {
+        counselorId: counselor.id,
+        counselorEmail: counselor.user.email,
+        counselorName: counselor.user.fullName ?? 'Counselor',
+        profileUrlFor: (userId: string) => `${SITE_URL}/counselor/students/${userId}`,
+        members: [],
+      };
+    } else {
+      if (staffRecipients.length === 0) {
+        skippedNoCounselor++;
+        continue;
+      }
+      unassignedRoutedToStaff++;
+      batchKey = STAFF_FALLBACK_COUNSELOR_ID;
+      batch = batch || {
+        counselorId: STAFF_FALLBACK_COUNSELOR_ID,
+        counselorEmail: staffRecipients,
+        counselorName: 'WorkforceAP staff',
+        profileUrlFor: (userId: string) => `${SITE_URL}/admin/members/${userId}`,
+        members: [],
+      };
+    }
 
     batch.members.push({
       userId: score.userId,
@@ -457,7 +500,7 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
       alertId: alert?.id ?? '',
     });
 
-    counselorBatches.set(counselor.id, batch);
+    counselorBatches.set(batchKey, batch);
   }
 
   const results: CounselorAlertResult[] = [];
@@ -477,17 +520,18 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
         level: m.level,
         factors: m.factors,
         recommendedAction: m.recommendedAction,
-        profileUrl: `${SITE_URL}/counselor/students/${m.userId}`,
+        profileUrl: batch.profileUrlFor(m.userId),
       })),
       dashboardUrl: `${SITE_URL}/counselor/at-risk`,
     }));
+    const counselorEmail = Array.isArray(batch.counselorEmail) ? batch.counselorEmail.join(',') : batch.counselorEmail;
 
     if ('skipped' in result) {
       if (result.error === 'fixture_recipient') skippedFixture++;
       else skippedPacing++;
       results.push({
         counselorId: batch.counselorId,
-        counselorEmail: batch.counselorEmail,
+        counselorEmail,
         counselorName: batch.counselorName,
         sent: false,
         memberCount: batch.members.length,
@@ -508,7 +552,7 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
 
     results.push({
       counselorId: batch.counselorId,
-      counselorEmail: batch.counselorEmail,
+      counselorEmail,
       counselorName: batch.counselorName,
       sent: result.ok,
       memberCount: batch.members.length,
@@ -521,6 +565,7 @@ export async function runDailyAtRiskCounselorAlerts(pacer: BulkEmailCronPacer): 
     counselorsNotified: results.filter((r) => r.sent).length,
     membersFlagged: results.reduce((sum, r) => sum + r.memberCount, 0),
     skippedNoCounselor,
+    unassignedRoutedToStaff,
     skippedAlreadyNotified,
     skippedPacing,
     skippedFixture,

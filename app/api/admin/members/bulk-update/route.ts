@@ -19,6 +19,7 @@ import {
 } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
+import { rewardReferralOnEnrollment } from '@/lib/member/referrals';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 
 const MAX_MEMBERS = 100;
@@ -224,6 +225,14 @@ async function _POST(request: NextRequest) {
         });
 
         updatedCount++;
+
+        // Staff-led enrollment is an enrollment trigger too (WAP-32): pay a
+        // referral captured at signup. Idempotent, non-blocking.
+        if (programSlug) {
+          rewardReferralOnEnrollment(member.id).catch((err) =>
+            console.error(`[bulk-update] referral settlement failed for ${member.id}:`, err),
+          );
+        }
 
         // Cache invalidation and audit writes are important
         // post-commit work. Report a warning instead of lying to the UI that

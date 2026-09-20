@@ -3,13 +3,10 @@ import { prisma } from '@/lib/db/prisma';
 import {
   calculateAllAtRiskScores,
   persistAtRiskAlert,
-  getRiskLevel,
   THRESHOLDS,
 } from '@/lib/member/atRiskScoring';
-import {
-  sendAtRiskAlertDigestEmail,
-  getAtRiskDigestRecipients,
-} from '@/lib/email';
+import { runDailyAtRiskCounselorAlerts } from '@/lib/cron/at-risk-alerts';
+import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
@@ -18,11 +15,19 @@ import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
-
 /**
- * Nightly at-risk check — run via cron at 6 AM UTC.
- * Scores active members, persists alerts, sends counselor/admin digest email.
+ * Nightly at-risk check — THE at-risk schedule (WAP-30 / TODO-006).
+ *
+ * 1. Scores every active member (`calculateAllAtRiskScores`).
+ * 2. Persists MEDIUM+ scores to `AtRiskAlert` — the single risk source the
+ *    admin command center, counselor command center and at-risk dashboard
+ *    all read — and resolves alerts for members no longer at risk.
+ * 3. Sends the one at-risk email on those same scores: a batched alert per
+ *    counselor for their CRITICAL members (24h dedup via
+ *    `notifiedCounselorAt`), with members who have no counselor routed to
+ *    `AT_RISK_DIGEST_EMAILS` (fallback: admin inbox). No second scoring pass,
+ *    no separate digest.
+ *
  * Vercel Cron uses GET — both GET and POST are supported.
  */
 async function handle(request: Request) {
@@ -39,13 +44,12 @@ async function handle(request: Request) {
     (s) => s.score >= THRESHOLDS.MEDIUM && s.score < THRESHOLDS.HIGH,
   ).length;
 
-  for (const score of scores.filter((s) => s.score >= THRESHOLDS.MEDIUM)) {
+  const atRiskScores = scores.filter((s) => s.score >= THRESHOLDS.MEDIUM);
+  for (const score of atRiskScores) {
     await persistAtRiskAlert(score);
   }
 
-  const activeAlertUserIds = new Set(
-    scores.filter((s) => s.score >= THRESHOLDS.MEDIUM).map((s) => s.userId),
-  );
+  const activeAlertUserIds = new Set(atRiskScores.map((s) => s.userId));
 
   const staleAlerts = await prisma.atRiskAlert.findMany({
     where: {
@@ -68,56 +72,15 @@ async function handle(request: Request) {
     });
   }
 
-  const digestScores = scores.filter((s) => s.score >= THRESHOLDS.MEDIUM).slice(0, 50);
-  const userRows =
-    digestScores.length > 0
-      ? await prisma.user.findMany({
-          where: { id: { in: digestScores.map((s) => s.userId) } },
-          select: { id: true, email: true, fullName: true },
-          take: 100,
-        })
-      : [];
-  const userById = new Map(userRows.map((u) => [u.id, u]));
-
-  const digestMembers = digestScores.map((s) => {
-    const u = userById.get(s.userId);
-    return {
-      fullName: u?.fullName ?? null,
-      email: u?.email?.trim() ? u.email : '(no email on file)',
-      score: s.score,
-      level: getRiskLevel(s.score),
-      factors: s.factors.map((f) => f.description),
-      recommendedAction: s.recommendedAction,
-      adminUrl: `${SITE_URL}/admin/members/${s.userId}`,
-    };
-  });
-
-  const recipients = getAtRiskDigestRecipients();
-  const dateLabel = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
-
-  let digestEmailSent = false;
-  let digestEmailError: string | undefined;
-
-  if (recipients.length > 0) {
-    const digest = await sendAtRiskAlertDigestEmail({
-      to: recipients,
-      dateLabel,
-      criticalCount,
-      highCount,
-      mediumCount,
-      members: digestMembers,
-    });
-    digestEmailSent = digest.ok;
-    digestEmailError = digest.error;
-  } else {
-    digestEmailError = 'No recipients';
-  }
+  // One sender, one schedule: counselor alerts run on the scores persisted above.
+  const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
+  const counselorAlerts = await runDailyAtRiskCounselorAlerts(pacer, scores);
+  // Pacing/fixture skips are healthy outcomes (the pacer is bounding provider
+  // load; fixtures never receive mail) — only a real provider failure is an error run.
+  const SKIP_REASONS = new Set(['fixture_recipient', 'pacing_budget_exhausted', 'request_deadline_exhausted']);
+  const alertDeliveryFailed =
+    counselorAlerts.success === false ||
+    counselorAlerts.results.some((result) => Boolean(result.error) && !result.sent && !SKIP_REASONS.has(result.error ?? ''));
 
   const durationMs = Date.now() - startTime;
   const runResult = {
@@ -126,21 +89,15 @@ async function handle(request: Request) {
     critical: criticalCount,
     high: highCount,
     medium: mediumCount,
-    alertsCreated: scores.filter((s) => s.score >= THRESHOLDS.MEDIUM).length,
+    alertsCreated: atRiskScores.length,
     alertsResolved: staleAlerts.length,
     durationMs,
-    digestEmailSent,
-    digestEmailError,
-    digestRecipientCount: recipients.length,
-    digestListedMembers: digestMembers.length,
+    counselorAlerts,
+    emailPacing: pacer.summary(),
   };
   await setCronRecordsProcessed(runResult.alertsCreated);
-  await logCronRun(
-    'cron_at_risk_check',
-    runResult,
-    digestEmailSent || recipients.length === 0 ? 'ok' : 'error',
-  );
-  return NextResponse.json(runResult);
+  await logCronRun('cron_at_risk_check', runResult, alertDeliveryFailed ? 'error' : 'ok');
+  return NextResponse.json(runResult, { status: alertDeliveryFailed ? 500 : 200 });
 }
 
 export const GET = withCronLogging('cron_at_risk_check', handle);
