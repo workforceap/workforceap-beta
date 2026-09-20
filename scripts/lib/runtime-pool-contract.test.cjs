@@ -34,31 +34,34 @@ test('missing, malformed, duplicated, zero and off-contract params fail without 
     assert.equal(JSON.stringify(result).includes('DO_NOT_LOG'), false);
   }
 });
-test('Vercel builds report pool parameters without enforcing them', () => {
+test('preview reports pool parameters, production enforces them, flag forces either', () => {
   const script = resolve(__dirname, '../check-supabase-env.mjs');
   // `base` is on 6543 but sets none of the required Prisma pool params.
-  const env = { VERCEL: '1', VERCEL_ENV: 'production', POSTGRES_PRISMA_URL: base };
   const poolErrors = [
     'Runtime URL must explicitly set connection_limit=1.',
     'Runtime URL must explicitly set a positive integer pool_timeout.',
     'Runtime URL must explicitly set pgbouncer=true.',
   ];
-  const run = (args) => {
+  const run = (vercelEnv, args = []) => {
+    const env = { VERCEL: '1', VERCEL_ENV: vercelEnv, POSTGRES_PRISMA_URL: base };
     const r = spawnSync(process.execPath, [script, ...args], { env, encoding: 'utf8' });
     return r.stdout + r.stderr;
   };
 
-  // Reported either way, so a deploy is verifiable from its build log...
-  const reported = run([]);
-  const enforced = run(['--check-pool-contract']);
-  assert.match(reported, /runtime pool parameters/);
-  assert.match(enforced, /runtime pool parameters/);
+  const preview = run('preview');
+  const production = run('production');
+  const previewForced = run('preview', ['--check-pool-contract']);
 
-  // ...but only --check-pool-contract turns the contract into blocking errors.
-  for (const message of poolErrors) {
-    assert.equal(reported.includes(message), false);
-    assert.ok(enforced.includes(message));
+  // Reported on every Vercel build, so any deploy is verifiable from its log.
+  for (const output of [preview, production, previewForced]) {
+    assert.match(output, /runtime pool parameters/);
+    assert.equal(output.includes('DO_NOT_LOG'), false);
   }
-  assert.equal(reported.includes('DO_NOT_LOG'), false);
-  assert.equal(enforced.includes('DO_NOT_LOG'), false);
+
+  // Preview is reported only; production blocks; the flag forces enforcement.
+  for (const message of poolErrors) {
+    assert.equal(preview.includes(message), false);
+    assert.ok(production.includes(message));
+    assert.ok(previewForced.includes(message));
+  }
 });

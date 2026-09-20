@@ -116554,7 +116554,7 @@
   {
     "from": "scripts/check-supabase-env.mjs",
     "specifier": "./lib/supabase-project-guard.cjs",
-    "line": 21,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "scripts/lib/supabase-project-guard.cjs"
@@ -116562,7 +116562,7 @@
   {
     "from": "scripts/check-supabase-env.mjs",
     "specifier": "./lib/runtime-pool-contract.cjs",
-    "line": 22,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "scripts/lib/runtime-pool-contract.cjs"

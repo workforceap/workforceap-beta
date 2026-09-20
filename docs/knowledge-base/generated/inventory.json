@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "c28f18a505ba18f3e92b5ed50245d14367b0cc46997ef2f63bd6bc70efe9a40c",
+  "inputTreeSha256": "3e51d2cb08269cfc251a384878c927c9a769b93304fb9fbe77c3439bcf3fb4cb",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -151544,70 +151544,75 @@
       "path": "scripts/check-supabase-env.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 3974,
-      "lines": 99,
-      "sha256": "8f28a00b24641e63a7e884115b2afef6f4be411cf084268edc4f3aad101d953b",
+      "bytes": 4543,
+      "lines": 108,
+      "sha256": "c3e53a20f5fb2a291dbf51e7ab227055f91fae916bf2a6bcc7ae56f68233a6f9",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "checkPoolContract",
-          "line": 25,
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "enforcePoolContract",
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "DEMO_REF",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "PROD_REF",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "formatSupabaseEnvGuardFailure",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "inspectSupabaseEnvironment",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "projectForAnonKey",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "projectForUrl",
-          "line": 27,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "env",
-          "line": 47,
-          "kind": "Variable"
-        },
-        {
-          "name": "urls",
-          "line": 49,
-          "kind": "Variable"
-        },
-        {
-          "name": "expected",
           "line": 56,
           "kind": "Variable"
         },
         {
+          "name": "urls",
+          "line": 58,
+          "kind": "Variable"
+        },
+        {
+          "name": "expected",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
           "name": "errors",
-          "line": 57,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "seen",
-          "line": 58,
+          "line": 67,
           "kind": "Variable"
         }
       ],
@@ -154978,9 +154983,9 @@
       "path": "scripts/lib/runtime-pool-contract.test.cjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 3621,
-      "lines": 64,
-      "sha256": "737169ebb0832dffd24e10878749aa885ad7c134aa2aaca3a16cc94f73199b36",
+      "bytes": 3728,
+      "lines": 67,
+      "sha256": "76a0f59f5a94e4c1a052f87082de140bb9b0ef7780398f41292146a82237b006",
       "binary": false,
       "exports": [],
       "declarations": [

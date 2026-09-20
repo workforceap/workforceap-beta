@@ -10,19 +10,28 @@
  * scope is wired to the wrong project or auth is missing the public anon key.
  *
  * Vercel builds always report the runtime port/Prisma pool params (never the
- * URL) so a deploy can be verified from its build log. Optional
- * --check-pool-contract additionally *enforces* them. Enforcement is not in
- * the default build: verify the reported parameters first. Note that the flag
- * also disables the CI short-circuit below, so it must never be added to a
- * build command that GitHub Actions runs against stub URLs.
+ * URL) so a deploy can be verified from its build log. Production Vercel
+ * builds (VERCEL_ENV=production) additionally *enforce* them: a runtime URL
+ * that is not the 6543 transaction pooler with exactly one each of
+ * connection_limit=1, a positive pool_timeout and pgbouncer=true blocks the
+ * deploy (WAP-177). --check-pool-contract forces the same enforcement
+ * anywhere, for local verification.
+ *
+ * Preview and CI are deliberately NOT enforced. Preview URLs are demo-project
+ * strings that may predate this contract, and CI runs against stub URLs — the
+ * flag also disables the CI short-circuit below, so it must never be added to
+ * a build command that GitHub Actions runs.
  * Exit 0 = ok, 1 = misconfigured (block the deploy).
  */
 
 import guard from './lib/supabase-project-guard.cjs';
 import poolContract from './lib/runtime-pool-contract.cjs';
 
-// Opt-in until deployed runtime parameters have been verified. Never rewrites URLs.
+// Never rewrites URLs. The flag forces enforcement anywhere (local checks);
+// production Vercel builds enforce on their own. CI sets neither, so the
+// short-circuit below is unaffected — see the note in the docblock.
 const checkPoolContract = process.argv.includes('--check-pool-contract');
+const enforcePoolContract = checkPoolContract || process.env.VERCEL_ENV === 'production';
 
 const {
   DEMO_REF,
@@ -78,12 +87,12 @@ if (process.env.VERCEL === '1') {
   errors.push(...strict.errors.map((message) => `  ✗ ${message}`));
 }
 
-// Report on every Vercel build so a deploy's actual parameters are visible
-// before enforcement is turned on; only --check-pool-contract can block.
-if (checkPoolContract || process.env.VERCEL === '1') {
+// Report on every Vercel build so any deploy's actual parameters are visible;
+// block only where enforcement applies (production, or the explicit flag).
+if (enforcePoolContract || process.env.VERCEL === '1') {
   const pool = poolContract.inspectRuntimePoolContract(process.env.POSTGRES_PRISMA_URL);
   console.log('[supabase-env-guard] runtime pool parameters:', pool.parameters);
-  if (checkPoolContract) errors.push(...pool.errors.map((message) => `  - ${message}`));
+  if (enforcePoolContract) errors.push(...pool.errors.map((message) => `  - ${message}`));
 }
 
 console.log(`[supabase-env-guard] env=${env} expected=${expected} →`, seen);
