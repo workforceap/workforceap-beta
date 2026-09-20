@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "3110da3ca87ca6b4229701c9378629947558c285120e491e748e05b43ef9dbd8",
+  "inputTreeSha256": "226ee61f8a07908b0b8a062ff008a0718222c6b5fb6fb594cf24372e2b48d476",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -60423,9 +60423,9 @@
       "path": "components/portal/MemberDoThisNextCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8415,
+      "bytes": 8445,
       "lines": 246,
-      "sha256": "42919356e31f656b3a321697310ea32bafa72ee991a10488c150b041779f788a",
+      "sha256": "f181634c3155bc4c3ac2a1ec04532ec2aa85a126215b4a6e268264b543d40856",
       "binary": false,
       "exports": [
         {
@@ -66054,9 +66054,9 @@
       "path": "components/portal/kit/ChatThread.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6376,
+      "bytes": 6384,
       "lines": 179,
-      "sha256": "8609b1ab92ef7d0250547e79e4cf8a5fa386c76693e6032dc43f06e56816ce75",
+      "sha256": "ea5ded04ecb44169ec271e2a7e5f2c1175470438d48e9b9b1b97b40f86c6db8b",
       "binary": false,
       "exports": [
         {
@@ -66631,9 +66631,9 @@
       "path": "components/portal/kit/MemberProfilePhotoEditor.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8980,
+      "bytes": 8988,
       "lines": 289,
-      "sha256": "dfe02863e22c71c87138add949a40f1a5801860438dcc4dc23cb8a7a052023ce",
+      "sha256": "d4cb284cda2f58f90f68ba7656026db2e7ee2e55a9aa7cccfa9e1e2483b0596b",
       "binary": false,
       "exports": [
         {
@@ -75884,9 +75884,9 @@
       "path": "css/main.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 237643,
-      "lines": 8752,
-      "sha256": "3c7ddd20c13d67f28cf2cbcfed08f32b693c5b830936855ba6fa0138284be47b",
+      "bytes": 238010,
+      "lines": 8756,
+      "sha256": "1c767048eab63954507736cd1e0cb00103632d5f14b6af2def18cf672a1380eb",
       "binary": false
     },
     {
@@ -75947,9 +75947,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 270141,
-      "lines": 9993,
-      "sha256": "d4867131e6d295b7392b5d8b89c0604e20971a661d7af63df572cf8345673450",
+      "bytes": 270236,
+      "lines": 9994,
+      "sha256": "1ccf661a03257c64ce16af22ae7c4891de5e1bef030968877844e60cf1041d27",
       "binary": false
     },
     {
@@ -164490,9 +164490,9 @@
       "path": "tests/lib/member-status-text-token-contrast.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5136,
-      "lines": 103,
-      "sha256": "1fb6101dc1b14a457ef4df98da08bae5ded0a795cd3e7c2c59d80e3f96024a29",
+      "bytes": 7585,
+      "lines": 145,
+      "sha256": "581f8a84748f8edb75acd2e09ecbdf200f7dbe1a94a246c19d13d790221b7396",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -164545,6 +164545,11 @@
           "name": "read",
           "line": 54,
           "kind": "Variable"
+        },
+        {
+          "name": "constantToken",
+          "line": 106,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null

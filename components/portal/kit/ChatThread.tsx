@@ -163,7 +163,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
             border: 'none',
             borderRadius: 999,
             background: 'var(--wa-accent)',
-            color: 'var(--wa-on-accent)',
+            color: 'var(--wa-on-accent-control)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
