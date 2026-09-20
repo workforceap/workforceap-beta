@@ -59,10 +59,10 @@ export function AiEfficacyKit({
   const lift = placementRateWith - placementRateWithout;
 
   const kpis: KpiItem[] = [
-    { label: 'AI Users Placed', value: `${placementRateWith}%`, color: 'success' },
-    { label: 'Non-Users Placed', value: `${placementRateWithout}%`, color: 'muted' },
-    { label: 'Lift', value: liftLabel(lift), color: 'accent' },
-    { label: 'Confidence', value: confidence, color: 'success' },
+    { label: 'AI Users Placed', value: `${placementRateWith}%` },
+    { label: 'Non-Users Placed', value: `${placementRateWithout}%` },
+    { label: 'Lift', value: liftLabel(lift) },
+    { label: 'Confidence', value: confidence },
   ];
 
   // Explainer: real cohort sentence, no fabrication. Falls back gracefully

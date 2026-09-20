@@ -57,9 +57,9 @@ export function PlacementSurveysKit({
 }: PlacementSurveysKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Sent', value: sent },
-    { label: 'Completed', value: completed, color: 'success' },
-    { label: 'Response Rate', value: responseRate, color: 'info' },
-    { label: 'Still Employed', value: stillEmployedRate, color: 'success' },
+    { label: 'Completed', value: completed },
+    { label: 'Response Rate', value: responseRate },
+    { label: 'Still Employed', value: stillEmployedRate },
   ];
 
   const numStyle = { fontVariantNumeric: 'tabular-nums' as const };

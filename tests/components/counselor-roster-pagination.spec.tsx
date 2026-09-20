@@ -25,11 +25,14 @@ it('shows distinct search-empty guidance and hides unavailable page links', () =
 });
 it('keeps categorical KPI totals neutral and derives the only hue from at-risk state', () => {
   const { unmount } = render(<CounselorsRosterKit counselors={[]} total={12} avgCaseload={8} atRiskOwned={0} avgResponse="2.1h" />);
-  const valueOf = (label: string) => screen.getByText(label).closest('.wa-kit-card')!.querySelector<HTMLElement>('.wa-kit-stat-value')!;
-  expect(valueOf('Avg Caseload').style.color).toBe('var(--wa-text)');
-  expect(valueOf('Avg Response').style.color).toBe('var(--wa-text)');
-  expect(valueOf('At-Risk Owned').style.color).toBe('var(--wa-text)');
+  const cardOf = (label: string) => screen.getByText(label).closest<HTMLElement>('.wa-kit-card')!;
+  const valueOf = (label: string) => cardOf(label).querySelector<HTMLElement>('.wa-kit-stat-value')!;
+  for (const label of ['Avg Caseload', 'Avg Response', 'At-Risk Owned']) {
+    expect(valueOf(label).style.color).toBe('');
+    expect(cardOf(label).className).not.toMatch(/wa-kit-tone--/);
+  }
   unmount();
   render(<CounselorsRosterKit counselors={[]} total={12} avgCaseload={8} atRiskOwned={3} avgResponse="2.1h" />);
-  expect(valueOf('At-Risk Owned').style.color).toBe('var(--wa-accent)');
+  expect(valueOf('At-Risk Owned').style.color).toBe('');
+  expect(cardOf('At-Risk Owned').classList.contains('wa-kit-tone--alert')).toBe(true);
 });

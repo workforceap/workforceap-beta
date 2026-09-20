@@ -143,10 +143,10 @@ export function MemberJobsKit({
         />
         <KpiStrip
           items={[
-            { label: 'Saved', value: saved, color: 'text' },
-            { label: 'Applied', value: applied, color: 'text' },
-            { label: 'Interviewing', value: interviewing, color: 'text' },
-            { label: 'Offers', value: offers, color: 'text' },
+            { label: 'Saved', value: saved },
+            { label: 'Applied', value: applied },
+            { label: 'Interviewing', value: interviewing },
+            { label: 'Offers', value: offers },
           ]}
         />
 

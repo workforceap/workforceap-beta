@@ -37,10 +37,10 @@ export interface AnalyticsKitProps {
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
-  { label: 'WAU', value: 0, color: 'info' },
+  { label: 'WAU', value: 0 },
   { label: 'Avg Session', value: '—' },
-  { label: 'AI Tool Uses', value: 0, color: 'accent' },
-  { label: 'Voice Sessions', value: 0, color: 'gold' },
+  { label: 'AI Tool Uses', value: 0 },
+  { label: 'Voice Sessions', value: 0 },
 ];
 
 const EMPTY_HINT = <EmptyState title="No data for this period yet." isCompact />;

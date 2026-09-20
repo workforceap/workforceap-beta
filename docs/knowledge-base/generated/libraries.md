@@ -585,7 +585,7 @@
 | [lib/feature-flags/publicApi.ts](../../../lib/feature-flags/publicApi.ts) | 31 | libraries | hashStringToBucket:3, filterVisibleFlags:13 |
 | [lib/feature-flags/reservedKeys.ts](../../../lib/feature-flags/reservedKeys.ts) | 5 | libraries | CRON_SETTING_PREFIX:2, isOperationalFeatureFlagKey:3 |
 | [lib/feature-flags/useFeatureFlag.test.ts](../../../lib/feature-flags/useFeatureFlag.test.ts) | 28 | libraries |  |
-| [lib/fetchWithTimeout.ts](../../../lib/fetchWithTimeout.ts) | 60 | libraries | fetchWithTimeout:6, fetchAuth:25, getErrorMessageFromResponse:36 |
+| [lib/fetchWithTimeout.ts](../../../lib/fetchWithTimeout.ts) | 69 | libraries | fetchWithTimeout:10, fetchAuth:34, getErrorMessageFromResponse:45 |
 | [lib/formatDate.ts](../../../lib/formatDate.ts) | 46 | libraries | PORTAL_TIMEZONE:10, formatPortalDate:19, formatPortalTime:26, formatPortalDateTime:37 |
 | [lib/formatPhone.ts](../../../lib/formatPhone.ts) | 20 | libraries | formatPhone:6 |
 | [lib/forms/requiredFields.test.ts](../../../lib/forms/requiredFields.test.ts) | 32 | libraries |  |

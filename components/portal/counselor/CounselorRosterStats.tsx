@@ -1,6 +1,13 @@
 import Link from 'next/link';
-import { StatTile } from '@/components/portal/kit';
+import { StatTile, type KitTone } from '@/components/portal/kit';
 import type { CounselorRosterStat } from '@/lib/counselor/rosterStats';
+
+/** rosterStats speaks the attention model's colour names; the tile speaks KitTone (KIT_GUIDE §4 mapping). */
+const ROSTER_STAT_TONE: Record<NonNullable<CounselorRosterStat['tone']>, KitTone> = {
+  accent: 'alert',
+  gold: 'warn',
+  info: 'info',
+};
 
 type Props = {
   stats: CounselorRosterStat[];
@@ -10,8 +17,8 @@ type Props = {
 /**
  * Four stat tiles above the counselor roster, each a link to the page that
  * acts on the number and each captioned with the rule it counts
- * (lib/counselor/rosterStats.ts). Kit `StatTile` on `--wa-*`; the number is
- * painted only when the tile's `tone` says the state warrants it (WAP-99).
+ * (lib/counselor/rosterStats.ts). Kit `StatTile` on `--wa-*`; the number stays
+ * neutral and the tile carries a tone hook only when the state warrants it (WAP-99).
  * One treatment for mobile (2-up) and desktop (4-up).
  */
 export default function CounselorRosterStats({ stats, className }: Props) {
@@ -31,8 +38,8 @@ export default function CounselorRosterStats({ stats, className }: Props) {
             label={stat.label}
             value={stat.value}
             delta={stat.caption}
-            deltaColor="muted"
-            tone={stat.tone}
+            deltaTone="muted"
+            tone={stat.tone ? ROSTER_STAT_TONE[stat.tone] : undefined}
             data-stat={stat.key}
             style={{ height: '100%' }}
           />

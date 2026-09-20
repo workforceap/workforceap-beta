@@ -52,31 +52,28 @@ export function WeeklyRecapKit({
     {
       label: 'New Students',
       value: newStudents,
-      color: 'success',
       delta: `${signed(studentsDelta)} vs last week`,
-      deltaColor: studentsDelta >= 0 ? 'success' : 'accent',
+      deltaTone: studentsDelta >= 0 ? 'ok' : 'alert',
     },
     {
       label: 'Placements',
       value: placements,
-      color: 'success',
       delta: `${signed(placementsDelta)} vs last week`,
-      deltaColor: placementsDelta >= 0 ? 'success' : 'accent',
+      deltaTone: placementsDelta >= 0 ? 'ok' : 'alert',
     },
     {
       label: 'Certs Earned',
       value: certsEarned,
-      color: 'gold',
       delta: `${signed(certsDelta)} vs last week`,
-      deltaColor: certsDelta >= 0 ? 'success' : 'accent',
+      deltaTone: certsDelta >= 0 ? 'ok' : 'alert',
     },
     {
       label: 'At-Risk Δ',
       value: signed(atRiskDelta),
-      // Negative is good (at-risk pool shrank): green when ≤ 0, accent when it grew.
-      color: atRiskDelta <= 0 ? 'success' : 'accent',
+      // Negative is good (at-risk pool shrank): ok when ≤ 0, alert when it grew.
+      tone: atRiskDelta <= 0 ? 'ok' : 'alert',
       delta: atRiskDelta <= 0 ? 'pool shrank or held' : 'pool grew',
-      deltaColor: atRiskDelta <= 0 ? 'success' : 'accent',
+      deltaTone: atRiskDelta <= 0 ? 'ok' : 'alert',
     },
   ];
 

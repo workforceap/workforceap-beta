@@ -1,20 +1,102 @@
-/* Shared button styling + hover/press feedback for CounselorNotesPanel and
-   AdvisorSessionNotesPanel (both colocated in this directory, same button
-   set). Static chrome lives here (not inline) so :hover can override it —
-   inline styles always win over stylesheet rules, so this can't be an
-   inline `background` plus a CSS `:hover` background. */
+/* Layout + button chrome for CounselorNotesPanel and AdvisorSessionNotesPanel
+   (both colocated in this directory, same button set). The card itself is the
+   kit `.wa-kit-card`; the h3 is the kit `.wa-kit-stat-label` card head;
+   captions are `.wa-kit-meta`. --wa-* tokens only, every text size on the
+   13px floor. Static chrome lives here (not inline) so :hover can override
+   it — inline styles always win over stylesheet rules. */
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.compose {
+  margin-bottom: 1rem;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--wa-type-body);
+  font-family: inherit;
+  resize: vertical;
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.status {
+  margin: 0 0 0.5rem;
+}
+
+.alert {
+  margin: 0.25rem 0 0.5rem;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-accent);
+  font-weight: 600;
+}
+
+.empty {
+  margin: 0;
+  font-style: italic;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.note {
+  border-left: 3px solid var(--wa-accent);
+  padding-left: 0.75rem;
+  position: relative;
+}
+
+.noteHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.noteMeta {
+  margin: 0 0 0.25rem;
+}
+
+.noteBody {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+  white-space: pre-wrap;
+}
 
 .addButton {
   min-width: 2.75rem;
   min-height: 2.75rem;
   padding: 0.5rem 0.875rem;
-  background: var(--surface-container-highest);
+  background: var(--wa-surface-2);
   border: none;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
+  border-radius: var(--wa-radius-sm);
+  font-size: var(--wa-type-meta);
   font-weight: 600;
   cursor: pointer;
-  color: var(--color-on-surface);
+  color: var(--wa-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,11 +107,11 @@
   min-width: 2.75rem;
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--wa-accent);
+  color: var(--wa-on-accent);
   border: none;
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
+  border-radius: var(--wa-radius-sm);
+  font-size: var(--wa-type-meta);
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
@@ -43,10 +125,10 @@
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  color: var(--color-on-surface-variant);
-  border: 1px solid var(--outline-variant);
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
+  color: var(--wa-muted);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+  font-size: var(--wa-type-meta);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -57,8 +139,8 @@
 .deleteButton {
   background: none;
   border: none;
-  color: var(--color-on-surface-variant);
-  font-size: 0.875rem;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-body);
   cursor: pointer;
   padding: 0.375rem 0.5rem;
   line-height: 1;
@@ -67,25 +149,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.5rem;
+  border-radius: var(--wa-radius-sm);
   transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .addButton:hover:not(:disabled) {
-  background: var(--surface-container-high);
+  background: var(--wa-border);
 }
 
 .saveButton:hover:not(:disabled) {
-  background: var(--color-accent-dark);
+  background: var(--wa-accent-dark);
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: var(--surface-container-low);
+  background: var(--wa-surface-2);
 }
 
 .deleteButton:hover:not(:disabled) {
-  background: var(--surface-container-high);
-  color: var(--color-accent);
+  background: var(--wa-surface-2);
+  color: var(--wa-accent);
 }
 
 .addButton:active:not(:disabled),

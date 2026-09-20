@@ -2,6 +2,10 @@
  * Fetch with automatic timeout via AbortController.
  * Default timeout: 30s (suitable for most API calls).
  * Auth-critical calls: 15s.
+ *
+ * A caller's own `init.signal` is honoured alongside the timeout: aborting it
+ * (an effect cleanup on unmount or re-render) aborts the request with that
+ * signal's reason, so components can tell a cancellation from a timeout.
  */
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
@@ -9,12 +13,17 @@ export async function fetchWithTimeout(
   timeoutMs = 30000,
 ): Promise<Response> {
   const controller = new AbortController();
+  const external = init.signal ?? null;
+  const forwardAbort = () => controller.abort(external?.reason);
+  if (external?.aborted) forwardAbort();
+  else external?.addEventListener('abort', forwardAbort, { once: true });
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(input, { ...init, signal: controller.signal });
     return response;
   } finally {
     clearTimeout(id);
+    external?.removeEventListener('abort', forwardAbort);
   }
 }
 

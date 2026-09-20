@@ -185,10 +185,10 @@ export default async function AdminGrowthPage({
     }));
 
     const kpis: KpiItem[] = [
-      { label: 'Signups (7d)', value: totalSignups7d.toLocaleString('en-US'), color: 'success' },
-      { label: 'Apply Events (24h)', value: totalApplyEvents24h.toLocaleString('en-US'), color: 'accent' },
-      { label: 'Logins (24h)', value: loginCount24h.toLocaleString('en-US'), color: 'info' },
-      { label: 'UTM Sources (7d)', value: bySourceCount.size.toLocaleString('en-US'), color: 'gold' },
+      { label: 'Signups (7d)', value: totalSignups7d.toLocaleString('en-US') },
+      { label: 'Apply Events (24h)', value: totalApplyEvents24h.toLocaleString('en-US') },
+      { label: 'Logins (24h)', value: loginCount24h.toLocaleString('en-US') },
+      { label: 'UTM Sources (7d)', value: bySourceCount.size.toLocaleString('en-US') },
     ];
 
     return (

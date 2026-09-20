@@ -201,13 +201,13 @@ export function ProgramsCatalogKit({
   const attention = withCompletion.filter((p) => p.completion < HEALTHY_THRESHOLD).length;
 
   const kpis: KpiItem[] = [
-    { label: 'Programs', value: programs.length, color: 'text' },
-    { label: 'Active', value: active, color: 'info' },
-    { label: 'Enrolled', value: enrolled, color: 'accent' },
+    { label: 'Programs', value: programs.length },
+    { label: 'Active', value: active },
+    { label: 'Enrolled', value: enrolled },
     {
       label: 'Need Attention',
       value: attention,
-      color: attention > 0 ? 'accent' : 'success',
+      tone: attention > 0 ? 'alert' : 'ok',
     },
   ];
 

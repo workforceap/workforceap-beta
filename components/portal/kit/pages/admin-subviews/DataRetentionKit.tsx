@@ -78,9 +78,9 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
 
   const kpis: KpiItem[] = [
     { label: 'Tables Monitored', value: storage.length },
-    { label: 'Total Size', value: totalSizeHuman, color: 'info' },
-    { label: 'Rows Eligible for Purge', value: totalExpired.toLocaleString(), color: 'accent' },
-    { label: 'Recent Runs', value: recentRuns.length, color: 'gold' },
+    { label: 'Total Size', value: totalSizeHuman },
+    { label: 'Rows Eligible for Purge', value: totalExpired.toLocaleString(), tone: totalExpired > 0 ? 'alert' : undefined },
+    { label: 'Recent Runs', value: recentRuns.length },
   ];
 
   const policyColumns: Column<PolicyRow>[] = [

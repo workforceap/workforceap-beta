@@ -51,10 +51,10 @@ export default async function AdminMetricsPage({
     // latency/uptime/error-rate, so those tiles honestly render "—" rather
     // than fabricating SLA numbers — there is no APM feeding this page.
     const kpis: KpiItem[] = [
-      { label: 'API p50', value: '—', color: 'muted' },
-      { label: 'API p99', value: '—', color: 'muted' },
-      { label: 'Error rate', value: '—', color: 'muted' },
-      { label: 'Uptime 30d', value: '—', color: 'muted' },
+      { label: 'API p50', value: '—' },
+      { label: 'API p99', value: '—' },
+      { label: 'Error rate', value: '—' },
+      { label: 'Uptime 30d', value: '—' },
     ];
 
     // "Requests by surface (last 24h)". The metrics module tracks real

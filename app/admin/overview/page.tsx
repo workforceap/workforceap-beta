@@ -267,14 +267,13 @@ export default async function AdminOverviewPage() {
     icon: LucideIcon;
     label: string;
     value: string;
-    color: KitColor;
     href: string;
   }> = [
-    { icon: Users, label: 'Total Members', value: totalMembers.toLocaleString(), color: 'accent', href: '/admin/members' },
-    { icon: ListChecks, label: 'Assessments Completed', value: assessmentsCompleted.toLocaleString(), color: 'info', href: '/admin/assessments' },
-    { icon: Activity, label: 'Active in Training', value: activeInTraining.toLocaleString(), color: 'success', href: '/admin/training-progress' },
-    { icon: GraduationCap, label: 'Programs Enrolled', value: programsEnrolled.toLocaleString(), color: 'gold', href: '/admin/programs' },
-    { icon: Award, label: 'Programs Completed', value: programsCompleted.toLocaleString(), color: 'gold', href: '/admin/programs' },
+    { icon: Users, label: 'Total Members', value: totalMembers.toLocaleString(), href: '/admin/members' },
+    { icon: ListChecks, label: 'Assessments Completed', value: assessmentsCompleted.toLocaleString(), href: '/admin/assessments' },
+    { icon: Activity, label: 'Active in Training', value: activeInTraining.toLocaleString(), href: '/admin/training-progress' },
+    { icon: GraduationCap, label: 'Programs Enrolled', value: programsEnrolled.toLocaleString(), href: '/admin/programs' },
+    { icon: Award, label: 'Programs Completed', value: programsCompleted.toLocaleString(), href: '/admin/programs' },
   ];
 
   function timeAgo(date: Date) {
@@ -434,7 +433,7 @@ export default async function AdminOverviewPage() {
           {metricCards.map((card) => (
             <Link key={card.label} href={card.href} className="wa-kit-focus" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
               <div style={{ position: 'relative' }}>
-                <StatSparkTile icon={<card.icon size={16} />} label={card.label} value={card.value} color={card.color} />
+                <StatSparkTile icon={<card.icon size={16} />} label={card.label} value={card.value} />
                 <ArrowUpRight
                   size={14}
                   aria-hidden

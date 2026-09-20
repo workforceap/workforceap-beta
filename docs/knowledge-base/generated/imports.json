@@ -2961,8 +2961,16 @@
   },
   {
     "from": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
-    "specifier": "@/components/admin/ConfirmDialog",
+    "specifier": "@/lib/portal/memberRequestFailure",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
+    "specifier": "@/components/admin/ConfirmDialog",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/admin/ConfirmDialog.tsx"
@@ -2970,7 +2978,7 @@
   {
     "from": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
     "specifier": "./notesPanel.module.css",
-    "line": 8,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/counselor/students/[memberId]/notesPanel.module.css"
@@ -3009,8 +3017,16 @@
   },
   {
     "from": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
-    "specifier": "@/components/admin/ConfirmDialog",
+    "specifier": "@/lib/portal/memberRequestFailure",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
+    "specifier": "@/components/admin/ConfirmDialog",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/admin/ConfirmDialog.tsx"
@@ -3018,7 +3034,7 @@
   {
     "from": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
     "specifier": "./notesPanel.module.css",
-    "line": 8,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/counselor/students/[memberId]/notesPanel.module.css"
@@ -70416,6 +70432,14 @@
     "target": "lib/assessment/reviewRows.ts"
   },
   {
+    "from": "components/admin/AssessmentAnswersReadonly.tsx",
+    "specifier": "./staffReadonly.module.css",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/staffReadonly.module.css"
+  },
+  {
     "from": "components/admin/AssessmentsTable.tsx",
     "specifier": "react",
     "line": 3,
@@ -72440,6 +72464,14 @@
     "target": "lib/wioa/wioaReview.ts"
   },
   {
+    "from": "components/admin/WioaScreeningReadonly.tsx",
+    "specifier": "./staffReadonly.module.css",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/staffReadonly.module.css"
+  },
+  {
     "from": "components/admin/coursera/MapToUserActions.tsx",
     "specifier": "react",
     "line": 3,
@@ -72902,6 +72934,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/wioa/denialReason.ts"
+  },
+  {
+    "from": "components/counselor/CounselorIntakeReviewPanel.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/counselor/CounselorIntakeReviewPanel.tsx",
+    "specifier": "./CounselorIntakeReviewPanel.module.css",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "components/counselor/CounselorIntakeReviewPanel.module.css"
   },
   {
     "from": "components/counselor/StaffMemberResumePanel.tsx",
@@ -81697,8 +81745,16 @@
   },
   {
     "from": "components/portal/kit/CommandCenter.tsx",
-    "specifier": "./tokens",
+    "specifier": "./base",
     "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/base.ts"
+  },
+  {
+    "from": "components/portal/kit/CommandCenter.tsx",
+    "specifier": "./tokens",
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/tokens.ts"
@@ -85074,7 +85130,7 @@
   {
     "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
     "specifier": "@/lib/attention/reasons",
-    "line": 23,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/attention/reasons.ts"
@@ -85082,7 +85138,7 @@
   {
     "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
     "specifier": "@/lib/attention/counselorViews",
-    "line": 24,
+    "line": 23,
     "kind": "type",
     "external": false,
     "target": "lib/attention/counselorViews.ts"
@@ -85090,7 +85146,7 @@
   {
     "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 25,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -129778,7 +129834,7 @@
   {
     "from": "tests/components/audit-ui-fixes.spec.tsx",
     "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
-    "line": 106,
+    "line": 109,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
@@ -129786,7 +129842,7 @@
   {
     "from": "tests/components/audit-ui-fixes.spec.tsx",
     "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
-    "line": 114,
+    "line": 117,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
@@ -130216,6 +130272,70 @@
     "target": "lib/fetchWithTimeout.ts"
   },
   {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "react",
+    "line": 2,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "@/app/(portal)/counselor/students/[memberId]/CounselorNotesPanel",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "@/app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx"
+  },
+  {
+    "from": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "specifier": "@/lib/portal/memberRequestFailure",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
     "from": "tests/components/counselor-priority-queue-tones.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -130302,6 +130422,102 @@
     "kind": "type",
     "external": false,
     "target": "lib/counselor/rosterStats.ts"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "react",
+    "line": 2,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/components/admin/WioaScreeningReadonly",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/WioaScreeningReadonly.tsx"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/components/admin/AssessmentAnswersReadonly",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/AssessmentAnswersReadonly.tsx"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/components/counselor/CounselorIntakeReviewPanel",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/counselor/CounselorIntakeReviewPanel.tsx"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/app/(portal)/counselor/students/[memberId]/CounselorNotesPanel",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/lib/wioa/wioaQualification",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQualification.ts"
+  },
+  {
+    "from": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "specifier": "@/lib/fetchWithTimeout",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/fetchWithTimeout.ts"
   },
   {
     "from": "tests/components/counselor-today.spec.tsx",
@@ -132478,6 +132694,30 @@
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/stat-tile-tones.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/stat-tile-tones.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/stat-tile-tones.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "tests/components/students-roster-identity.spec.tsx",
