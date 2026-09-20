@@ -28,5 +28,3 @@ export function RequiredFieldsHint({
     </p>
   );
 }
-
-export default RequiredFieldsHint;

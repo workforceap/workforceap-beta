@@ -9,7 +9,7 @@
  * tell a typo from an outage.
  */
 
-export type AuthProviderFailureKind = 'duplicate' | 'validation' | 'unavailable' | 'unknown';
+type AuthProviderFailureKind = 'duplicate' | 'validation' | 'unavailable' | 'unknown';
 
 type ProviderErrorShape = {
   name?: unknown;
@@ -70,7 +70,7 @@ export function classifyAuthProviderError(error: unknown): AuthProviderFailureKi
   return 'unknown';
 }
 
-export type AuthProviderAction = 'create' | 'invite';
+type AuthProviderAction = 'create' | 'invite';
 
 /** HTTP status for a classified provider failure. */
 export function authProviderFailureStatus(kind: AuthProviderFailureKind): number {

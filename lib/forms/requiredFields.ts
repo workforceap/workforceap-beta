@@ -12,7 +12,7 @@
  * browser tooltip.
  */
 
-export type RequiredFieldCheck = {
+type RequiredFieldCheck = {
   /** Visible label, e.g. "First name". */
   label: string;
   /** True when the field is satisfied. */
@@ -78,7 +78,7 @@ export function fieldLabelFor(control: ValidatableControl): string {
 }
 
 /** Controls in the form that fail constraint validation, in DOM order. */
-export function invalidControls(form: HTMLFormElement): ValidatableControl[] {
+function invalidControls(form: HTMLFormElement): ValidatableControl[] {
   const out: ValidatableControl[] = [];
   for (const element of Array.from(form.elements)) {
     if (!isValidatable(element)) continue;

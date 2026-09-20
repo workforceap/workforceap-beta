@@ -222,7 +222,7 @@
 | [lib/audit/readOnlyPortalAudit.ts](../../../lib/audit/readOnlyPortalAudit.ts) | 29 | libraries | READ_ONLY_PORTAL_AUDIT_HEADER:1, READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER:2, isValidReadOnlyPortalAuditToken:5, isReadOnlyPortalAuditHeader:25 |
 | [lib/auth/actAsSubject.ts](../../../lib/auth/actAsSubject.ts) | 109 | identity-tenancy | ActOnBehalfResolution:25, resolveActOnBehalf:30 |
 | [lib/auth/authProviderError.test.ts](../../../lib/auth/authProviderError.test.ts) | 53 | identity-tenancy |  |
-| [lib/auth/authProviderError.ts](../../../lib/auth/authProviderError.ts) | 110 | identity-tenancy | AuthProviderFailureKind:12, isAuthProviderConfigError:38, classifyAuthProviderError:43, AuthProviderAction:73, authProviderFailureStatus:76, describeAuthProviderFailure:94 |
+| [lib/auth/authProviderError.ts](../../../lib/auth/authProviderError.ts) | 110 | identity-tenancy | isAuthProviderConfigError:38, classifyAuthProviderError:43, authProviderFailureStatus:76, describeAuthProviderFailure:94 |
 | [lib/auth/authRead.ts](../../../lib/auth/authRead.ts) | 55 | identity-tenancy | AuthReadFailure:2, AUTH_READ_RETRY_DELAY_MS:8, classifyAuthReadFailure:10, readAuthWithRetry:35, reportAuthReadFailure:50 |
 | [lib/auth/client.ts](../../../lib/auth/client.ts) | 23 | identity-tenancy | createSupabaseBrowserClient:10 |
 | [lib/auth/currentUserClient.test.ts](../../../lib/auth/currentUserClient.test.ts) | 84 | identity-tenancy |  |
@@ -576,7 +576,7 @@
 | [lib/formatDate.ts](../../../lib/formatDate.ts) | 46 | libraries | PORTAL_TIMEZONE:10, formatPortalDate:19, formatPortalTime:26, formatPortalDateTime:37 |
 | [lib/formatPhone.ts](../../../lib/formatPhone.ts) | 20 | libraries | formatPhone:6 |
 | [lib/forms/requiredFields.test.ts](../../../lib/forms/requiredFields.test.ts) | 32 | libraries |  |
-| [lib/forms/requiredFields.ts](../../../lib/forms/requiredFields.ts) | 102 | libraries | RequiredFieldCheck:15, missingRequiredLabels:23, describeMissingRequired:31, cleanFieldLabel:42, fieldLabelFor:61, invalidControls:81, collectInvalidFieldLabels:92, focusFirstInvalid:97 |
+| [lib/forms/requiredFields.ts](../../../lib/forms/requiredFields.ts) | 102 | libraries | missingRequiredLabels:23, describeMissingRequired:31, cleanFieldLabel:42, fieldLabelFor:61, collectInvalidFieldLabels:92, focusFirstInvalid:97 |
 | [lib/gdpr/deleteAuthUser.test.ts](../../../lib/gdpr/deleteAuthUser.test.ts) | 56 | libraries |  |
 | [lib/gdpr/deleteAuthUser.ts](../../../lib/gdpr/deleteAuthUser.ts) | 15 | libraries | deleteSupabaseAuthUser:5 |
 | [lib/gdpr/deleteUserStorage.test.ts](../../../lib/gdpr/deleteUserStorage.test.ts) | 175 | libraries |  |

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "3d41dc62e27f5225d31d166296deebaed68b20422fd27f8470f2099be3020326",
+  "inputTreeSha256": "6c249c5128869d8cd4569bc7185b003bb3542530eb3d9773c7c65a06a41b786d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -65900,20 +65900,15 @@
       "path": "components/portal/forms/RequiredFieldsHint.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 967,
-      "lines": 32,
-      "sha256": "d4de77e27996e35fed7f3582c4b20fbbde0a667a97f07d16e640bc42af5e9891",
+      "bytes": 931,
+      "lines": 30,
+      "sha256": "7a90ae84ff72da3b232187dc18ed1f1dedeefd438ac429ac3dec66ba88729bc9",
       "binary": false,
       "exports": [
         {
           "name": "RequiredFieldsHint",
           "line": 12,
           "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "default",
-          "line": 32,
-          "kind": "ExportAssignment"
         }
       ],
       "declarations": [
@@ -96712,16 +96707,11 @@
       "path": "lib/auth/authProviderError.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 4105,
+      "bytes": 4091,
       "lines": 110,
-      "sha256": "8bf87b6886057a903f3085dcde980414267de0cb216b8b15adb02308c70d2be7",
+      "sha256": "ebf20190fb54a2cd60e4122211372b5bb1b2d66db9ddab8dda9bfbd121254669",
       "binary": false,
       "exports": [
-        {
-          "name": "AuthProviderFailureKind",
-          "line": 12,
-          "kind": "TypeAliasDeclaration"
-        },
         {
           "name": "isAuthProviderConfigError",
           "line": 38,
@@ -96731,11 +96721,6 @@
           "name": "classifyAuthProviderError",
           "line": 43,
           "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "AuthProviderAction",
-          "line": 73,
-          "kind": "TypeAliasDeclaration"
         },
         {
           "name": "authProviderFailureStatus",
@@ -117713,16 +117698,11 @@
       "path": "lib/forms/requiredFields.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3850,
+      "bytes": 3836,
       "lines": 102,
-      "sha256": "a4d4d55e0df2c947cea1a4aa22e905477597b6905a0a8c0ca950d89fb7ce5872",
+      "sha256": "0d9e7b3a69ece823b444837ca01d29a2e6e18b4827e1285c970e6987bf4cdf3f",
       "binary": false,
       "exports": [
-        {
-          "name": "RequiredFieldCheck",
-          "line": 15,
-          "kind": "TypeAliasDeclaration"
-        },
         {
           "name": "missingRequiredLabels",
           "line": 23,
@@ -117741,11 +117721,6 @@
         {
           "name": "fieldLabelFor",
           "line": 61,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "invalidControls",
-          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
