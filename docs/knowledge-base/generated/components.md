@@ -138,7 +138,7 @@
 | [components/admin/TestimonialsAdminClient.tsx](../../../components/admin/TestimonialsAdminClient.tsx) | 399 | administration | default:37 |
 | [components/admin/TrainingProgressClient.tsx](../../../components/admin/TrainingProgressClient.tsx) | 818 | administration | CanonicalCatalog:25, CurriculumRow:35, RawCourseraRow:64, default:418 |
 | [components/admin/TrainingProgressRoster.tsx](../../../components/admin/TrainingProgressRoster.tsx) | 272 | administration | TrainingProgressRosterProps:82, default:94 |
-| [components/admin/TriageDigestSection.tsx](../../../components/admin/TriageDigestSection.tsx) | 230 | administration | default:12 |
+| [components/admin/TriageDigestSection.tsx](../../../components/admin/TriageDigestSection.tsx) | 244 | administration | default:12 |
 | [components/admin/WioaReviewFilterBar.tsx](../../../components/admin/WioaReviewFilterBar.tsx) | 28 | partners-funding | default:4 |
 | [components/admin/WioaScreeningReadonly.tsx](../../../components/admin/WioaScreeningReadonly.tsx) | 69 | partners-funding | default:20 |
 | [components/admin/coursera/MapToUserActions.tsx](../../../components/admin/coursera/MapToUserActions.tsx) | 266 | learning-coursera | default:67 |
@@ -416,7 +416,7 @@
 | [components/portal/counselor/CounselorStudentsRosterClient.tsx](../../../components/portal/counselor/CounselorStudentsRosterClient.tsx) | 437 | member-counselor | CounselorRosterClientRow:41, CounselorRosterFilterMeta:58, default:147 |
 | [components/portal/counselor/CounselorTrainingHandoff.test.tsx](../../../components/portal/counselor/CounselorTrainingHandoff.test.tsx) | 40 | member-counselor |  |
 | [components/portal/counselor/CounselorTrainingHandoff.tsx](../../../components/portal/counselor/CounselorTrainingHandoff.tsx) | 64 | member-counselor | CounselorTrainingEnrollment:12, default:21 |
-| [components/portal/counselor/InboxZeroClient.tsx](../../../components/portal/counselor/InboxZeroClient.tsx) | 539 | member-counselor | default:56 |
+| [components/portal/counselor/InboxZeroClient.tsx](../../../components/portal/counselor/InboxZeroClient.tsx) | 556 | member-counselor | default:66 |
 | [components/portal/counselor/LabEvidenceReview.tsx](../../../components/portal/counselor/LabEvidenceReview.tsx) | 161 | member-counselor | default:49 |
 | [components/portal/counselor/LabReviewQueue.tsx](../../../components/portal/counselor/LabReviewQueue.tsx) | 71 | member-counselor | LAB_REVIEW_LABELS:14, labReviewDate:17, default:21 |
 | [components/portal/counselor/MemberProgressTimeline.tsx](../../../components/portal/counselor/MemberProgressTimeline.tsx) | 221 | member-counselor | TimelineStage:5, TimelineEvent:12, default:56 |

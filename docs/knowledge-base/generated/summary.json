@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "b7d5b229abbc8d962569ea85e898b071308030a141d839650e63fb631d65f21c",
+  "inputTreeSha256": "dd49ce6acd34854dfe826f2233e1c3d7ae900468b38d90813900a71247b602a9",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4746,
-    "sourceModules": 3408,
-    "importReferences": 16934,
-    "resolvedLocalReferences": 11291,
+    "files": 4759,
+    "sourceModules": 3421,
+    "importReferences": 16994,
+    "resolvedLocalReferences": 11344,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 852,
-    "testCandidates": 845,
-    "testHelpers": 7,
-    "staticallySelectedTests": 842,
+    "testFiles": 855,
+    "testCandidates": 847,
+    "testHelpers": 8,
+    "staticallySelectedTests": 844,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 995
+      "files": 1007
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 476
+      "files": 477
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 886
+      "references": 885
     },
     {
       "file": "lib/auth/server.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 96
+      "references": 97
     },
     {
       "file": "lib/email.ts",
@@ -235,10 +235,6 @@
       "references": 38
     },
     {
-      "file": "lib/db/queryCaps.ts",
-      "references": 38
-    },
-    {
       "file": "components/LocalizedLink.tsx",
       "references": 37
     },
@@ -248,6 +244,10 @@
     },
     {
       "file": "lib/auth/ensureUser.ts",
+      "references": 35
+    },
+    {
+      "file": "lib/db/queryCaps.ts",
       "references": 35
     }
   ],

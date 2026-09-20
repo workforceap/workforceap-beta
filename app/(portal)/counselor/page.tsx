@@ -11,6 +11,9 @@ import CounselorCommandCenter from '@/components/portal/counselor/CounselorComma
 import CounselorPriorityQueue from '@/components/portal/counselor/CounselorPriorityQueue';
 import AtRiskSummaryWidget from '@/components/portal/counselor/AtRiskSummaryWidget';
 import { getCounselorPriorityQueue } from '@/lib/counselor/priorityQueue';
+import { getCounselorAttention } from '@/lib/attention/counselor';
+import { toPriorityQueue } from '@/lib/attention/counselorViews';
+import { emptyAttentionQueue } from '@/lib/attention/evaluate';
 import CounselorPortalVoiceBlock from '@/components/portal/CounselorPortalVoiceBlock';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
@@ -95,16 +98,17 @@ export default async function CounselorPortalPage({
       };
     }
 
-    let kitQueue: Awaited<ReturnType<typeof getCounselorPriorityQueue>> = {
-      rows: [],
-      totals: { critical: 0, warning: 0, ontrack: 0, total: 0 },
-    };
+    // One attention queue (lib/attention) feeds the "Needs attention" list,
+    // the risk-alert tile and the on-track count, and is the same queue Inbox
+    // zero, Triage and the Work queue render — so the four pages agree.
+    let kitAttention = emptyAttentionQueue();
     try {
-      kitQueue = await getCounselorPriorityQueue(user.id, { isAdmin: kitIsAdmin && !kitCounselor });
+      kitAttention = await getCounselorAttention(user.id, { isAdmin: kitIsAdmin && !kitCounselor });
     } catch (err) {
-      console.error('[counselor:kit] priority queue failed:', err);
+      console.error('[counselor:kit] attention queue failed:', err);
       kitLoadErrors.push('counselor-priority-queue-load-failed');
     }
+    const kitQueue = toPriorityQueue(kitAttention);
 
     const kitQueueRows: CounselorQueueRow[] = selectNeedsAttentionRows(kitQueue.rows, 12).map((row) => ({
       memberId: row.memberId,
@@ -131,7 +135,7 @@ export default async function CounselorPortalPage({
         ))}
         <CounselorHomeKit
         assignedCount={assignedCount}
-        atRiskCount={kitCenter.totals.atRiskCount}
+        atRiskCount={kitAttention.totals.byReason.risk_alert}
         needsReplyCount={kitCenter.totals.needsReplyCount}
         onTrackCount={kitQueue.totals.ontrack}
         slaBreachCount={kitCenter.totals.slaBreachCount}
