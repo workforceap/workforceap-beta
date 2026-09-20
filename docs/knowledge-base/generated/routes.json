@@ -32417,17 +32417,17 @@
     "exports": [
       {
         "name": "viewport",
-        "line": 58,
+        "line": 60,
         "kind": "Variable"
       },
       {
         "name": "metadata",
-        "line": 64,
+        "line": 66,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 89,
+        "line": 91,
         "kind": "FunctionDeclaration",
         "localName": "RootLayout"
       }
@@ -32462,7 +32462,7 @@
       },
       {
         "specifier": "@/lib/db/gucContext",
-        "line": 113,
+        "line": 115,
         "kind": "type"
       }
     ]

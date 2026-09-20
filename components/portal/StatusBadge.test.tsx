@@ -21,16 +21,20 @@ import { STATUS_COLORS } from '@/lib/ui/statusColors';
 type Rgba = { r: number; g: number; b: number; a: number };
 type Scheme = 'light' | 'dark';
 
-const TOKENS_CSS = readFileSync(path.join(__dirname, '../../css/portal-tokens.css'), 'utf8');
+// Brand hues live in css/wa-brand-tokens.css (global, WAP-106); the portal file @imports it.
+const TOKENS_CSS =
+  readFileSync(path.join(__dirname, '../../css/wa-brand-tokens.css'), 'utf8') +
+  '\n' +
+  readFileSync(path.join(__dirname, '../../css/portal-tokens.css'), 'utf8');
 const BRIDGE_CSS = readFileSync(path.join(__dirname, '../../css/astryx-brand-bridge.css'), 'utf8');
 
-/** `--name: value;` declarations from the token file (first :root block). */
+/** `--name: value;` declarations from every :root block in the token source(s). */
 function loadTokens(source = TOKENS_CSS): Map<string, string> {
   const css = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\r/g, '');
-  const root = css.slice(css.indexOf(':root {'));
-  const block = root.slice(0, root.indexOf('\n}\n'));
   const out = new Map<string, string>();
-  for (const m of block.matchAll(/--([\w-]+):\s*([^;]+);/g)) out.set(`--${m[1]}`, m[2].trim());
+  for (const block of css.matchAll(/:root\s*\{([^}]*)\}/g)) {
+    for (const m of block[1].matchAll(/--([\w-]+):\s*([^;]+);/g)) out.set(`--${m[1]}`, m[2].trim());
+  }
   return out;
 }
 

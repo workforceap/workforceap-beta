@@ -17649,42 +17649,42 @@
       {
         "level": 2,
         "title": "4. Status colors — two systems, one mapping (read this twice)",
-        "line": 161
+        "line": 175
       },
       {
         "level": 2,
         "title": "5. The `KitBaseProps` contract",
-        "line": 212
+        "line": 226
       },
       {
         "level": 2,
         "title": "6. Component index (`components/portal/kit/index.ts`)",
-        "line": 228
+        "line": 242
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 327
+        "line": 341
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 352
+        "line": 366
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 377
+        "line": 391
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 414
+        "line": 428
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 424
+        "line": 438
       }
     ],
     "datedFilename": false,

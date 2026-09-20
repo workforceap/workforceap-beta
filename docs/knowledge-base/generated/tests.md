@@ -405,7 +405,7 @@
 | [tests/lib/partner-attention-queue.spec.ts](../../../tests/lib/partner-attention-queue.spec.ts) | 127 | tests |  |
 | [tests/lib/partner-notify-reliability.spec.ts](../../../tests/lib/partner-notify-reliability.spec.ts) | 63 | tests |  |
 | [tests/lib/partner-retention-window.spec.ts](../../../tests/lib/partner-retention-window.spec.ts) | 24 | tests |  |
-| [tests/lib/partner-saved-chip-contrast.spec.ts](../../../tests/lib/partner-saved-chip-contrast.spec.ts) | 61 | tests |  |
+| [tests/lib/partner-saved-chip-contrast.spec.ts](../../../tests/lib/partner-saved-chip-contrast.spec.ts) | 65 | tests |  |
 | [tests/lib/partner-school-schema.spec.ts](../../../tests/lib/partner-school-schema.spec.ts) | 69 | tests |  |
 | [tests/lib/password-reset-self-heal.spec.ts](../../../tests/lib/password-reset-self-heal.spec.ts) | 210 | tests |  |
 | [tests/lib/persisted-risk-command-center.spec.ts](../../../tests/lib/persisted-risk-command-center.spec.ts) | 124 | tests |  |
@@ -429,8 +429,8 @@
 | [tests/lib/students-roster-enrichment.spec.ts](../../../tests/lib/students-roster-enrichment.spec.ts) | 156 | tests |  |
 | [tests/lib/students-roster-facts.spec.ts](../../../tests/lib/students-roster-facts.spec.ts) | 55 | tests |  |
 | [tests/lib/students-roster-sort.spec.ts](../../../tests/lib/students-roster-sort.spec.ts) | 62 | tests |  |
-| [tests/lib/success-chip-text-token-sweep.spec.ts](../../../tests/lib/success-chip-text-token-sweep.spec.ts) | 88 | tests |  |
-| [tests/lib/success-text-token-contrast.spec.ts](../../../tests/lib/success-text-token-contrast.spec.ts) | 82 | tests |  |
+| [tests/lib/success-chip-text-token-sweep.spec.ts](../../../tests/lib/success-chip-text-token-sweep.spec.ts) | 92 | tests |  |
+| [tests/lib/success-text-token-contrast.spec.ts](../../../tests/lib/success-text-token-contrast.spec.ts) | 86 | tests |  |
 | [tests/lib/today-in-portal-timezone.spec.ts](../../../tests/lib/today-in-portal-timezone.spec.ts) | 22 | tests |  |
 | [tests/lib/training-course-practice.spec.ts](../../../tests/lib/training-course-practice.spec.ts) | 47 | tests |  |
 | [tests/lib/training-dashboard-curriculum-cache.spec.ts](../../../tests/lib/training-dashboard-curriculum-cache.spec.ts) | 90 | tests |  |

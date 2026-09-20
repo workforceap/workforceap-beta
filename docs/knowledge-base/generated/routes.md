@@ -1011,7 +1011,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | / | global-error |  | [app/global-error.tsx](../../../app/global-error.tsx) |  |
 | /invite | layout |  | [app/invite/layout.tsx](../../../app/invite/layout.tsx) |  |
 | /invite | page |  | [app/invite/page.tsx](../../../app/invite/page.tsx) | @/lib/auth/safeRedirectPath:9 |
-| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/db/gucContext:19, @/lib/auth/roles:24, @/lib/auth/layoutUserId:25, @/lib/auth/server:26, @/lib/tenant/resolveOrgFromRequest:30, @/lib/db/gucContext:113 |
+| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/db/gucContext:19, @/lib/auth/roles:24, @/lib/auth/layoutUserId:25, @/lib/auth/server:26, @/lib/tenant/resolveOrgFromRequest:30, @/lib/db/gucContext:115 |
 | /mentor/apply | layout |  | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) |  |
 | /mentor/apply | page |  | [app/mentor/apply/page.tsx](../../../app/mentor/apply/page.tsx) |  |
 | / | not-found |  | [app/not-found.tsx](../../../app/not-found.tsx) |  |

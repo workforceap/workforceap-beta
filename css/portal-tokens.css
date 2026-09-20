@@ -18,6 +18,8 @@
  * Nothing in here changes any existing page until a component consumes a token.
  */
 
+@import './wa-brand-tokens.css';
+
 :root {
   /*
    * Every mode-dependent token is a SINGLE light-dark(light, dark) declaration,
@@ -29,48 +31,9 @@
    */
   color-scheme: light;
 
-  /* — brand (mirrors DESIGN.md + tailwind.config.ts wa-brand-*; dark values
-     ported from the Command Center artifact's [data-theme="dark"] block) — */
-  --wa-accent: light-dark(#ad2c4d, #e0658a);
-  --wa-accent-dark: light-dark(#8c0f37, #c94e75);
-  --wa-on-accent: #ffffff;
-  /* Solid accent controls lighten in dark mode; hero gradients keep white.
-     Do not use this foreground on gradients or white secondary-action fills. */
-  --wa-on-accent-control: light-dark(#ffffff, #2a0d16);
-  --wa-accent-text: light-dark(#8c0f37, #f39ab5);
-  /* Text-bearing gradients stay dark in either theme; solid controls use the
-     adaptive accent tokens above. Dedicated pairs prevent white-on-pink. */
-  --wa-hero-crimson: #ad2c4d;
-  --wa-hero-crimson-dark: #8c0f37;
-  --wa-hero-gold: #7d5f26;
-  --wa-hero-gold-dark: #5d461a;
-  --wa-on-hero: #ffffff;
-  --wa-hero-action-bg: #ffffff;
-  --wa-hero-action-text: #8c0f37;
-  --wa-gold: light-dark(#a47f38, #d4ad5a);
-  /* Text-on-gold-tint (e.g. yellow status pills). Artifact has no separate
-     gold-dark, so the dark value borrows its `--warn` (#e0b062) — the closest
-     analog for "readable text over a gold tint on a dark surface." */
-  --wa-gold-dark: light-dark(#7d5f26, #e0b062);
-  --wa-info: light-dark(#2b7bb9, #77ade6);
-  --wa-info-dark: light-dark(#1f5a87, #74b3e3);
-  --wa-success: light-dark(#4a9b4f, #6fc99a);
-  /* Text-on-success-tint (green status pills, "/10" fit scores). --wa-success
-     itself measures 3.1:1 on --wa-success-soft and 3.5:1 on white, so it is a
-     fill/icon colour, not a text colour. Pair this with --wa-success-soft:
-     4.8:1 light, 7.7:1 dark. */
-  --wa-success-dark: light-dark(#357a3a, #8fd9b0);
-  --wa-danger: light-dark(#dc2626, #f0708a);
-  --wa-danger-soft: rgba(220, 38, 38, 0.12); /* alpha tint — reads fine on both modes */
-  --wa-violet: #7c3aed;
-
-  /* brand soft-tints: opaque pastels in light; translucent overlays in dark
-     (opaque pastels "glow" on dark bodies) — dark rgba derived from the
-     dark-mode hex above so the tint and its solid counterpart stay in family */
-  --wa-accent-soft: light-dark(#fdf2f4, rgba(224, 101, 138, 0.18));
-  --wa-gold-soft: light-dark(#fef3c7, rgba(212, 173, 90, 0.2));
-  --wa-info-soft: light-dark(#eef5fb, rgba(119, 173, 230, 0.18));
-  --wa-success-soft: light-dark(#eef6ee, rgba(111, 201, 154, 0.18));
+  /* Brand hues (accent / gold / info / success / danger, hero pairs and the
+     soft tints) live in css/wa-brand-tokens.css, @imported above, so the
+     public routes resolve the same computed values as the portal (WAP-106). */
 
   /* — neutrals (flip per mode; dark values ported from the same artifact) — */
   --wa-bg: light-dark(#f7f8fa, #130d0f);
