@@ -16,6 +16,7 @@ import type {
 } from '@/lib/admin/commandCenter';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { describeInactivity } from '@/lib/counselor/lastActivity';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 type ReviewStatus = 'APPROVED' | 'NEEDS_INFO' | 'DENIED';
 
@@ -47,6 +48,10 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<ReviewStatus | null>(null);
   const [attested, setAttested] = useState(false);
+  // WAP-184 G-3: a bulk denial carries one written reason for the batch; the
+  // server refuses the batch without it, so the dialog collects it up front.
+  const [bulkReason, setBulkReason] = useState('');
+  const bulkReasonMissing = bulkAction === 'DENIED' && isMissingDenialReason('application_decision', bulkAction, bulkReason);
   const [bulkPending, startBulkTransition] = useTransition();
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkResult, setBulkResult] = useState<string | null>(null);
@@ -95,7 +100,9 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
           body: JSON.stringify({
             applicationIds: ids,
             status: bulkAction,
-            notes: `Bulk-reviewed from Command Center (${ids.length} application${ids.length === 1 ? '' : 's'}).`,
+            notes: bulkAction === 'DENIED'
+              ? bulkReason.trim()
+              : `Bulk-reviewed from Command Center (${ids.length} application${ids.length === 1 ? '' : 's'}).`,
             verified: bulkAction === 'APPROVED' ? attested : undefined,
           }),
         });
@@ -123,6 +130,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
         const failedIds = new Set<string>((json.failures ?? []).map((failure: { applicationId: string }) => failure.applicationId));
         setSelected(new Set(ids.filter((id) => failedIds.has(id))));
         setBulkAction(null);
+        setBulkReason('');
         router.refresh();
       } catch {
         setUncertainSnapshot(data);
@@ -240,7 +248,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
         }
         danger={bulkAction === 'DENIED'}
         busy={bulkPending}
-        confirmDisabled={outcomeUncertain}
+        confirmDisabled={outcomeUncertain || bulkReasonMissing}
         body={
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
@@ -264,6 +272,20 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                 <span>I reviewed eligibility for these applicants before approving.</span>
               </label>
             ) : null}
+            {bulkAction === 'DENIED' ? (
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', fontSize: '0.85rem' }}>
+                <span style={{ fontWeight: 600 }}>Reason (required, recorded with each decision)</span>
+                <textarea
+                  value={bulkReason}
+                  onChange={(e) => setBulkReason(e.target.value)}
+                  rows={3}
+                  required
+                  aria-required="true"
+                  placeholder="Why these applications are not a fit"
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', fontFamily: 'inherit' }}
+                />
+              </label>
+            ) : null}
             {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: '#b91c1c' }}>{bulkError}</p> : null}
             {outcomeUncertain ? (
               <button type="button" className="btn btn-outline btn-sm" onClick={() => {
@@ -279,10 +301,17 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
             setBulkError('Check the box confirming you reviewed eligibility before approving.');
             return;
           }
+          if (bulkReasonMissing) {
+            setBulkError(DENIAL_REASON_REQUIRED_MESSAGE);
+            return;
+          }
           submitBulk();
         }}
         onCancel={() => {
-          if (!bulkPending) setBulkAction(null);
+          if (!bulkPending) {
+            setBulkAction(null);
+            setBulkReason('');
+          }
         }}
       />
     </div>
@@ -423,21 +452,37 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
   const [done, setDone] = useState<string | null>(null);
 
   const note = useMemo(() => `Reviewed from Dad Command Center for ${applicantName}.`, [applicantName]);
+  // WAP-184 G-3: "Not a fit" first reveals a required reason field; the
+  // canned note above is not a reason and the server would refuse it.
+  const [denialReason, setDenialReason] = useState('');
+  const [denialOpen, setDenialOpen] = useState(false);
 
   function review(status: ReviewStatus) {
     setError(null);
     setDone(null);
+    if (status === 'DENIED' && !denialOpen) {
+      setDenialOpen(true);
+      return;
+    }
+    if (isMissingDenialReason('application_decision', status, denialReason)) {
+      setError(DENIAL_REASON_REQUIRED_MESSAGE);
+      return;
+    }
+    const notes = status === 'DENIED' ? denialReason.trim() : note;
     startTransition(async () => {
       const response = await fetch(`/api/admin/members/${applicationId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, notes: note }),
+        body: JSON.stringify({ status, notes }),
       });
       if (!response.ok) {
-        setError('Review did not save. Open the student and try again.');
+        const json = await response.json().catch(() => ({}));
+        setError(typeof json.error === 'string' ? json.error : 'Review did not save. Open the student and try again.');
         return;
       }
       setDone(status === 'APPROVED' ? 'Approved' : status === 'NEEDS_INFO' ? 'Marked needs info' : 'Marked not a fit');
+      setDenialOpen(false);
+      setDenialReason('');
       router.refresh();
     });
   }
@@ -454,10 +499,24 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
             disabled={isPending}
             style={action.tone === 'danger' ? { borderColor: '#fecaca', color: '#b91c1c' } : undefined}
           >
-            {isPending ? 'Saving…' : action.label}
+            {isPending ? 'Saving…' : action.status === 'DENIED' && denialOpen ? 'Confirm not a fit' : action.label}
           </button>
         ))}
       </div>
+      {denialOpen ? (
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', fontSize: '0.8125rem' }}>
+          <span style={{ fontWeight: 600 }}>Reason (required)</span>
+          <textarea
+            value={denialReason}
+            onChange={(e) => setDenialReason(e.target.value)}
+            rows={2}
+            required
+            aria-required="true"
+            placeholder={`Why ${applicantName} is not a fit`}
+            style={{ width: '100%', padding: '0.4rem', borderRadius: '6px', fontFamily: 'inherit' }}
+          />
+        </label>
+      ) : null}
       {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#166534' }}>{done}</p> : null}
       {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#b91c1c' }}>{error}</p> : null}
     </div>

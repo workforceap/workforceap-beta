@@ -5,6 +5,7 @@ import { memberProgramProgressPct } from '@/lib/partner/memberProgress';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { getPipelineStage, PIPELINE_STAGE_LABELS, type PipelineStudent } from '@/lib/pipeline/stage';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 const referralMemberSelect = {
   id: true,
@@ -145,7 +146,7 @@ export async function loadPartnerReferralBundle(partnerId: string, tenantOrganiz
         take: 500,
           where: {
             userId: { in: memberIds },
-            eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED',
+            eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') },
             createdAt: { gte: ninetyDaysAgo },
           },
           orderBy: { createdAt: 'desc' },

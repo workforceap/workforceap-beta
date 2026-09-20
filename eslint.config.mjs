@@ -16,6 +16,28 @@ const NO_BARE_TABLE_MESSAGE =
 const NO_RAW_HEX_MESSAGE =
   "No raw hex colors in kit components. Use a semantic token — var(--wa-*) or colorVar() from components/portal/kit/tokens.ts — so dark mode and surface modes stay automatic (docs/KIT_GUIDE.md §1). For tinted backgrounds use color-mix(in srgb, var(--wa-x) 15%, transparent).";
 
+const NO_DIRECT_MEMBER_EVENT_WRITE_MESSAGE =
+  "Do not call memberEvent.create/createMany directly (WAP-39). Write through persistEvent (transaction-aware, throws) or trackEvent (best-effort) from lib/events/track.ts so every MemberEvent name is validated against the typed vocabulary in lib/events/names.ts.";
+
+const NO_DIRECT_COURSE_ENROLLMENT_WRITE_MESSAGE =
+  "Do not call courseEnrollment.create/createMany/upsert directly (WAP-174). Use upsertEquivalentCourseEnrollment from lib/member/courseEnrollmentAssignment.ts, the one canonical program-enrollment writer, so alias rows and the immutable curriculumVersion are handled in one place.";
+
+// AST selectors for `<anything>.memberEvent.create(...)` and
+// `<anything>.courseEnrollment.create|createMany|upsert(...)`. Formatting
+// (line breaks, optional chaining) does not matter to the selector.
+const DIRECT_WRITER_BANS = [
+  {
+    selector:
+      "CallExpression[callee.type='MemberExpression'][callee.property.name=/^(create|createMany)$/][callee.object.type='MemberExpression'][callee.object.property.name='memberEvent']",
+    message: NO_DIRECT_MEMBER_EVENT_WRITE_MESSAGE,
+  },
+  {
+    selector:
+      "CallExpression[callee.type='MemberExpression'][callee.property.name=/^(create|createMany|upsert)$/][callee.object.type='MemberExpression'][callee.object.property.name='courseEnrollment']",
+    message: NO_DIRECT_COURSE_ENROLLMENT_WRITE_MESSAGE,
+  },
+];
+
 const config = [
   {
     // Astro's compiled assets are also staged into public before the Next build.
@@ -67,6 +89,27 @@ const config = [
       // Tests and stories may exercise table markup directly.
       "**/*.test.{ts,tsx}",
       "**/*.stories.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXOpeningElement[name.name='table']",
+          message: NO_BARE_TABLE_MESSAGE,
+        },
+        ...DIRECT_WRITER_BANS,
+      ],
+    },
+  },
+  {
+    // The two canonical writers are the only production modules allowed to
+    // call the banned Prisma delegates. Vitest specs mock or observe these
+    // delegates (`vi.mocked(prisma.memberEvent.create)`) without calling
+    // them, so they are not exempted here; the `*.test.*` ignore above
+    // covers node:test suites that build fake clients.
+    files: [
+      "lib/events/track.ts",
+      "lib/member/courseEnrollmentAssignment.ts",
     ],
     rules: {
       "no-restricted-syntax": [

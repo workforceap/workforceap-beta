@@ -183,6 +183,19 @@ describe('PATCH /api/admin/members/[id]/wioa-review — counselor intake verific
     expect(prisma.user.updateMany).not.toHaveBeenCalled();
   });
 
+  it('requires a written reason before an admin records not_eligible (WAP-184 G-3)', async () => {
+    asAdmin();
+    for (const notes of [undefined, null, '', '   ']) {
+      const res = await PATCH(req(MEMBER_IN_SCOPE, { status: 'not_eligible', notes }), paramsFor(MEMBER_IN_SCOPE));
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toMatch(/written reason/i);
+    }
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(recordWioaReviewSnapshot).not.toHaveBeenCalled();
+    const ok = await PATCH(req(MEMBER_IN_SCOPE, { status: 'not_eligible', notes: 'Not a dislocated worker; referred to AJC.' }), paramsFor(MEMBER_IN_SCOPE));
+    expect(ok.status).toBe(200);
+    expect(recordWioaReviewSnapshot).toHaveBeenCalledWith(expect.objectContaining({ decision: 'not_eligible', notes: 'Not a dislocated worker; referred to AJC.' }), expect.anything());
+  });
   it('keeps the admin path unchanged (org-scoped, any status, no caseload check)', async () => {
     asAdmin();
     const res = await PATCH(req(MEMBER_OUT_OF_SCOPE, { status: 'not_eligible', notes: 'Board said no' }), paramsFor(MEMBER_OUT_OF_SCOPE));

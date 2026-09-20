@@ -10,29 +10,29 @@ flowchart LR
   database["database: 201 files"]
   delivery["delivery: 9 files"]
   documentation["documentation: 357 files"]
-  libraries["libraries: 1013 files"]
+  libraries["libraries: 1014 files"]
   localization["localization: 6 files"]
   operations["operations: 128 files"]
   pages["pages: 635 files"]
   root["root: 55 files"]
   styles["styles: 17 files"]
   supporting_files["supporting-files: 74 files"]
-  tests["tests: 463 files"]
+  tests["tests: 464 files"]
   api -->|"8 static references"| communications
   api -->|"1 static references"| content
-  api -->|"3553 static references"| libraries
+  api -->|"3572 static references"| libraries
   astro_marketing -->|"3 static references"| libraries
   audit_graph -->|"2 static references"| api
   audit_graph -->|"1 static references"| root
   communications -->|"64 static references"| libraries
   components -->|"1 static references"| content
-  components -->|"488 static references"| libraries
+  components -->|"492 static references"| libraries
   components -->|"8 static references"| localization
   components -->|"15 static references"| pages
   components -->|"1 static references"| root
   components -->|"3 static references"| supporting_files
   database -->|"1 static references"| communications
-  database -->|"8 static references"| libraries
+  database -->|"10 static references"| libraries
   libraries -->|"1 static references"| astro_marketing
   libraries -->|"2 static references"| communications
   libraries -->|"12 static references"| components
@@ -46,12 +46,12 @@ flowchart LR
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
   pages -->|"1116 static references"| components
-  pages -->|"1324 static references"| libraries
+  pages -->|"1332 static references"| libraries
   pages -->|"39 static references"| styles
   root -->|"23 static references"| libraries
   root -->|"2 static references"| operations
   supporting_files -->|"2 static references"| libraries
-  tests -->|"381 static references"| api
+  tests -->|"384 static references"| api
   tests -->|"5 static references"| astro_marketing
   tests -->|"6 static references"| communications
   tests -->|"120 static references"| components

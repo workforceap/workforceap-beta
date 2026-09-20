@@ -58,6 +58,7 @@ import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
 import { deriveCareerPlanSignal } from '@/lib/admin/careerPlanSignal';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
+import { eventNameReadCandidates } from '@/lib/events/names';
 type AdminCourseProgressRow = {
   programSlug: string;
   courseSlug: string;
@@ -310,7 +311,7 @@ export default async function AdminMemberDetailPage({
       },
     }).catch(() => null),
     db.memberEvent.findMany({
-      where: { userId: id, eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED' },
+      where: { userId: id, eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') } },
       orderBy: { createdAt: 'desc' },
       take: 1,
       select: { metadata: true, createdAt: true },

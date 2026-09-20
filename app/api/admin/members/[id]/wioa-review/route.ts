@@ -12,6 +12,7 @@ import {
   resolveReviewActor,
 } from '@/lib/counselor/applicationReviewAccess';
 import { recordWioaReviewSnapshot } from '@/lib/wioa/reviewSnapshot';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 import { logAuditEvent, auditRequestMeta } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -85,6 +86,10 @@ async function _PATCH(request: NextRequest, { params }: Props) {
     }
     if (!canReviewActorSetWioaStatus(actor, parsed.data.status)) {
       return NextResponse.json({ error: COUNSELOR_WIOA_STATUS_FORBIDDEN_MESSAGE }, { status: 403 });
+    }
+    // WAP-184 G-3: `not_eligible` must carry a written reason in the notes.
+    if (isMissingDenialReason('wioa_review', parsed.data.status, parsed.data.notes)) {
+      return NextResponse.json({ error: DENIAL_REASON_REQUIRED_MESSAGE }, { status: 400 });
     }
 
     const revision = revisionSchema.safeParse(body);

@@ -6,6 +6,7 @@ import { getUser } from '@/lib/auth/server';
 import { withUserGuc } from '@/lib/db/withRequestGuc';
 import { revalidatePath } from 'next/cache';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
+import { persistEvent } from '@/lib/events/track';
 
 export async function confirmPlacement(jobApplicationId: string) {
   const user = await getUser();
@@ -32,22 +33,20 @@ export async function confirmPlacement(jobApplicationId: string) {
       data: { status: 'ACCEPTED', updatedAt: now },
     });
 
-    await prisma.memberEvent.create({
-      data: {
-        userId: user.id,
-        eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED',
-        entityType: 'JobApplication',
-        entityId: application.id,
-        metadata: {
-          company: application.company,
-          role: application.role,
-          confirmedAt: now.toISOString(),
-          pendingReview: true,
-          note: 'Member self-reported offer acceptance. No placement record created until staff review.',
-        },
-        sourcePage: '/dashboard',
+    await persistEvent({
+      userId: user.id,
+      eventName: 'placement_confirmation_submitted',
+      entityType: 'JobApplication',
+      entityId: application.id,
+      metadata: {
+        company: application.company,
+        role: application.role,
+        confirmedAt: now.toISOString(),
+        pendingReview: true,
+        note: 'Member self-reported offer acceptance. No placement record created until staff review.',
       },
-    });
+      sourcePage: '/dashboard',
+    }, prisma);
 
     const referral = await prisma.partnerReferral.findFirst({
       where: { memberId: user.id },

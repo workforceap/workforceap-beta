@@ -17,6 +17,8 @@
  * `AtRiskAlert` pipeline that the counselor inbox already surfaces.
  */
 
+import type { EventName } from '@/lib/events/names';
+
 export const FIRST90_STAGES = ['week_1', 'day_30', 'day_60', 'day_90'] as const;
 export type First90Stage = (typeof FIRST90_STAGES)[number];
 
@@ -24,7 +26,7 @@ export const FIRST90_RESPONSES = ['going_well', 'have_questions', 'having_troubl
 export type First90Response = (typeof FIRST90_RESPONSES)[number];
 
 /** MemberEvent.eventName used to persist check-in responses. */
-export const FIRST90_CHECK_IN_EVENT = 'first90_check_in_submitted';
+export const FIRST90_CHECK_IN_EVENT = 'first90_check_in_submitted' satisfies EventName;
 
 /** Card stays visible through day 104 (90 days + two-week grace). */
 export const FIRST90_WINDOW_DAYS = 104;
