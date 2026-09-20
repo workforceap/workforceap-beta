@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b1b76f89fa4d92eec719485a72208e04933444d76324b419eab096fdd586e3c7",
+  "inputTreeSha256": "a7ccf6ede84e0136ff08fa69702cb46e6ab76b8814ab9ee6df5d9d71cef2848d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -29887,9 +29887,9 @@
       "path": "app/api/apply/signup/route.test.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 49099,
-      "lines": 1327,
-      "sha256": "3a6e17e702fb8c6b0149a6d3d627c4814b30ea33cd03864bebf645bfdd8b877e",
+      "bytes": 50196,
+      "lines": 1353,
+      "sha256": "dd2047885675b99d9e9082185689e8f16bb2fd93c8278da235de1588de6262f8",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -76037,9 +76037,9 @@
       "path": "docs/knowledge-base/integrations.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 37459,
+      "bytes": 37600,
       "lines": 143,
-      "sha256": "0af98620891ed70f84a93754b0bb3ef3af11e10e622a3ef7da8aa1cf7b59d6bd",
+      "sha256": "d825604ef89a944ae271264cfd11dfebe7056835c75fe4d24c4c911cdb629090",
       "binary": false
     },
     {
@@ -76055,9 +76055,9 @@
       "path": "docs/knowledge-base/operations.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 28757,
+      "bytes": 28901,
       "lines": 172,
-      "sha256": "68fb8396b6fd67e158988caab9e64d7f6ef7c5f3edd23f8f55ce4c354ea3155b",
+      "sha256": "5211f25f0ac90d4d54f44922487d581d94749d7a21c5ab0c0b29268863d1b4e9",
       "binary": false
     },
     {
@@ -79488,14 +79488,14 @@
       "path": "eslint.config.mjs",
       "area": "root",
       "domain": "root",
-      "bytes": 9669,
-      "lines": 218,
-      "sha256": "6332901972d24be0df492504e8f7faa310e5af53531f3276c3c9a8324a69bb7b",
+      "bytes": 15266,
+      "lines": 334,
+      "sha256": "23303b6ce8fbf72c59b2e2b547b0dd087656dc5b099729cde4be7a6022542e48",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 218,
+          "line": 334,
           "kind": "ExportAssignment"
         }
       ],
@@ -79546,8 +79546,53 @@
           "kind": "Variable"
         },
         {
-          "name": "config",
+          "name": "TABLE_BAN",
           "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "NO_ABANDONED_NOTIFY_MESSAGE",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
+          "name": "ABANDONED_NOTIFY_BANS",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "NO_UNBOUNDED_TAKE_MESSAGE",
+          "line": 72,
+          "kind": "Variable"
+        },
+        {
+          "name": "UNBOUNDED_TAKE_BAN",
+          "line": 76,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEGACY_UNBOUNDED_TAKE_FILES",
+          "line": 83,
+          "kind": "Variable"
+        },
+        {
+          "name": "NO_ABANDONED_ROUTE_EMAIL_MESSAGE",
+          "line": 93,
+          "kind": "Variable"
+        },
+        {
+          "name": "ABANDONED_ROUTE_EMAIL_BANS",
+          "line": 99,
+          "kind": "Variable"
+        },
+        {
+          "name": "PRODUCTION_BANS",
+          "line": 120,
+          "kind": "Variable"
+        },
+        {
+          "name": "config",
+          "line": 122,
           "kind": "Variable"
         }
       ],
@@ -80751,23 +80796,12 @@
       "path": "lib/admin-ai-tools-page-structure.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3873,
-      "lines": 95,
-      "sha256": "4372fff6c7834cf1be3e18efc941da5de5de45866f2c84d3d3cd34f5db1cd9e8",
+      "bytes": 1333,
+      "lines": 33,
+      "sha256": "a35455967467fef5aa8edb5f23312ba50cbf2ddb6dae38df7cc8e38e8f9c866e",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "pagePath",
-          "line": 7,
-          "kind": "Variable"
-        },
-        {
-          "name": "analyticsPath",
-          "line": 8,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -80810,51 +80844,12 @@
       "path": "lib/admin-job-ready-query-structure.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1406,
-      "lines": 34,
-      "sha256": "707c5da9b2336e9ea4b6febc02f0e83afbf632d2da681b061c4fe50e66dfb06d",
+      "bytes": 1319,
+      "lines": 29,
+      "sha256": "703482fafd9716365a1cb1ec6173276679b80fe2af2344188486344653ec6def",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "source",
-          "line": 6,
-          "kind": "Variable"
-        },
-        {
-          "name": "pageSource",
-          "line": 10,
-          "kind": "Variable"
-        },
-        {
-          "name": "programsSource",
-          "line": 14,
-          "kind": "Variable"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/admin-programs-structure.test.ts",
-      "area": "libraries",
-      "domain": "libraries",
-      "bytes": 889,
-      "lines": 18,
-      "sha256": "10f2e536b70225b7167719907adefd23ef1da8719673d95c70b677c9c177a335",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "sourcePath",
-          "line": 6,
-          "kind": "Variable"
-        },
-        {
-          "name": "source",
-          "line": 7,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -91893,9 +91888,9 @@
       "path": "lib/analytics/quarterlyOutcomes.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 22427,
-      "lines": 556,
-      "sha256": "365bb6a683a6f7dec3647869f0c14453ced1ef142bf8f6489688e0a46feb408d",
+      "bytes": 22620,
+      "lines": 559,
+      "sha256": "c8c8d5a357480d092f04e39a7440b0aa5e3532645c139ab0b91357076fc8de7e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -111161,15 +111156,15 @@
       "path": "lib/cron/placementSurveySentStatePolicy.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 2314,
-      "lines": 47,
-      "sha256": "9894e1fcddac86774f05699e5c3fc29deea799e755f3fed05455e97e01e21288",
+      "bytes": 2687,
+      "lines": 55,
+      "sha256": "1cb8d168ea639d85f3560e740a8b3934eae9dc2b7f63e229afcef33017a9bcfc",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "read",
-          "line": 5,
+          "name": "field",
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -112047,28 +112042,12 @@
       "path": "lib/db/scanCaps.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3729,
-      "lines": 105,
-      "sha256": "e9fc0243f73413b488626d39ea79bbab67fa7ec989a4a19aa23d3e0bb45b3a14",
+      "bytes": 2202,
+      "lines": 61,
+      "sha256": "f180cfb8fdcb90d9f56d0c0b7ed5829d53925d54f31ac195e768d0103e3e4f71",
       "binary": false,
       "exports": [],
-      "declarations": [
-        {
-          "name": "ROOT",
-          "line": 22,
-          "kind": "Variable"
-        },
-        {
-          "name": "readRepo",
-          "line": 24,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "CLAIMED_FILES",
-          "line": 28,
-          "kind": "Variable"
-        }
-      ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -114234,34 +114213,6 @@
           "name": "sendBrandedEmailOrThrowOnSkip",
           "line": 348,
           "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/email/serverlessAfterGuard.test.ts",
-      "area": "libraries",
-      "domain": "communications",
-      "bytes": 3464,
-      "lines": 111,
-      "sha256": "279dffd4daa211546326a7e5b2feba2e56b77382d53eebe9f89df9cfee98f338",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "ROOT",
-          "line": 11,
-          "kind": "Variable"
-        },
-        {
-          "name": "read",
-          "line": 13,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "ROUTES_REQUIRING_AFTER",
-          "line": 17,
-          "kind": "Variable"
         }
       ],
       "directive": null
@@ -119656,31 +119607,16 @@
       "path": "lib/member/courseEnrollmentMigration.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 5031,
-      "lines": 142,
-      "sha256": "ecd76308a34bf35c28f7301a4417b83ea1e884c1751b44e7e30d121511da7d37",
+      "bytes": 2376,
+      "lines": 53,
+      "sha256": "e0329bf56e293051c5937dd9bf0de65694444608403717278f0d7f6cba92d1f4",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "REPO",
-          "line": 19,
+          "name": "model",
+          "line": 12,
           "kind": "Variable"
-        },
-        {
-          "name": "SCHEMA",
-          "line": 20,
-          "kind": "Variable"
-        },
-        {
-          "name": "MIGRATION",
-          "line": 21,
-          "kind": "Variable"
-        },
-        {
-          "name": "extractCourseEnrollmentBlock",
-          "line": 26,
-          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -126920,29 +126856,6 @@
           "name": "sendPartnerNewMemberAssignedEmail",
           "line": 138,
           "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": null
-    },
-    {
-      "path": "lib/notify/discord.test.ts",
-      "area": "libraries",
-      "domain": "communications",
-      "bytes": 2062,
-      "lines": 49,
-      "sha256": "cf0fed73a7e6bc17cff9e07bada36040d83db5ef5d661fc6d3bfd0a60c95221a",
-      "binary": false,
-      "exports": [],
-      "declarations": [
-        {
-          "name": "originalEnv",
-          "line": 6,
-          "kind": "Variable"
-        },
-        {
-          "name": "durableRouteCallers",
-          "line": 11,
-          "kind": "Variable"
         }
       ],
       "directive": null
@@ -152043,9 +151956,9 @@
       "path": "scripts/source-text-tests-baseline.json",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5131,
-      "lines": 106,
-      "sha256": "f2937dd2f6b8f4df54a9d801de243548a4d83314c5e91484d2aac953670cfbc4",
+      "bytes": 4679,
+      "lines": 96,
+      "sha256": "acecd25a194d86db9c67871ae4f90f60fdc5cb66833b5a73102112582a045513",
       "binary": false
     },
     {
@@ -154102,20 +154015,20 @@
       "path": "tests/api/admin-employer-approval.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6111,
-      "lines": 179,
-      "sha256": "20781ac38645dff075a04db76e79d8fd91314884f7673f921ac1150429de2caa",
+      "bytes": 8134,
+      "lines": 226,
+      "sha256": "b07d8799230fabfeb0dc2c0b7b9a026eaa6e1a356e8768db356afd7d5f23cfaa",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "adminUser",
-          "line": 66,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 68,
+          "line": 72,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -155339,6 +155252,49 @@
       "directive": null
     },
     {
+      "path": "tests/api/application-messages.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7162,
+      "lines": 179,
+      "sha256": "82d8d376288bfd69993710013488b9ad8b1de75ce003cb8e2b41a5c553b7b3ce",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "discord",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "lifetime",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "params",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
+          "name": "makeRequest",
+          "line": 70,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "flushAfter",
+          "line": 79,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "createdMessage",
+          "line": 85,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/api/apply-confirmation-clarity.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -155690,6 +155646,29 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/api/contact-route.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3151,
+      "lines": 94,
+      "sha256": "f1caa7f068343b0e4979c71df07e06f2ea6dded5363e087057615295562a2793",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "resend",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "makeRequest",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -156760,15 +156739,31 @@
       "directive": null
     },
     {
-      "path": "tests/api/employers-page.spec.ts",
+      "path": "tests/api/employers-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2424,
-      "lines": 50,
-      "sha256": "d9c443fd86e335b98c296a8cba68c9894a5e97f14026fdc52b554b307a38d053",
+      "bytes": 5753,
+      "lines": 124,
+      "sha256": "4dd5ce4cdee899c976f96287a4b5cdd87e9d84078c8380b7851f81c46a530adb",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "KNOWN_PRICE_POINTS",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "PER_MONTH_PRICING",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "withIntl",
+          "line": 57,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -158058,9 +158053,9 @@
       "path": "tests/api/placement-survey.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 54105,
-      "lines": 1403,
-      "sha256": "a027c279d176bc293faa91891433c1a881e35199129f0fd4c045500ba2ea7fc6",
+      "bytes": 56560,
+      "lines": 1454,
+      "sha256": "9082c13fba4f9be7598fe0661a1ad7f0d69b13faa5056ab48b2d6605797876f1",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -158499,26 +158494,16 @@
       "path": "tests/api/stripe-billing-migration.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1867,
-      "lines": 37,
-      "sha256": "28648a0f58c21631712701ac72a6d3dcceb3970d3d9c617498fe14d368f22042",
+      "bytes": 2168,
+      "lines": 40,
+      "sha256": "0aac3c0a69112e16b4667869a8587ab4741ee9cc47b532410f5c426df0ac78cd",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "migration",
-          "line": 5,
-          "kind": "Variable"
-        },
-        {
-          "name": "revisionMigration",
-          "line": 9,
-          "kind": "Variable"
-        },
-        {
-          "name": "schema",
-          "line": 13,
-          "kind": "Variable"
+          "name": "field",
+          "line": 10,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -158878,6 +158863,24 @@
       "directive": null
     },
     {
+      "path": "tests/app/admin-ai-tools-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4086,
+      "lines": 91,
+      "sha256": "036ef610b171bd88f79d3a8592a58539b79cb9a204ea1dedafb344500967746b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "legacy",
+          "line": 35,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/admin-command-center-pagination.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -158967,6 +158970,18 @@
       "directive": null
     },
     {
+      "path": "tests/app/admin-job-ready-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3413,
+      "lines": 82,
+      "sha256": "533296477b705661ac3d0776d20dc417237fe282bffe1210cdeeb63711ea3791",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
       "path": "tests/app/admin-partners-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -158976,6 +158991,57 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-placement-surveys-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3608,
+      "lines": 87,
+      "sha256": "1096b67ed1fb806d5335eb822751e4a2dba721e0ad903c7fdc9341115beab7ba",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "sentOnly",
+          "line": 48,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-programs-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6263,
+      "lines": 139,
+      "sha256": "fa683134a6f48b2a3c012a0370cef0e562304f3366383433da68f3c8b56df489",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "kit",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "firstProgram",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "enrollment",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "renderLegacy",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -163778,6 +163844,24 @@
       "directive": null
     },
     {
+      "path": "tests/lib/ai-tools-cohort-analytics.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3898,
+      "lines": 89,
+      "sha256": "35c17e52b2ff82c1b235917aa41802fd6ad81c1cef0aad4c0a66c8562db40706",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "rawQuery",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/ambassador-auto-assign.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -164075,6 +164159,29 @@
         {
           "name": "expectNoMutations",
           "line": 19,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/board-outcomes-official-totals.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5689,
+      "lines": 124,
+      "sha256": "d2e223787ed5b814821eee5cc52fcec3ce2232a3b60e8941a9fe11699e9eb763",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "flatten",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "rawQueries",
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165126,6 +165233,29 @@
       "directive": null
     },
     {
+      "path": "tests/lib/job-ready-candidates.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3554,
+      "lines": 84,
+      "sha256": "2efeb62babecd19a77cd34ad7a301373e836bb34aaf3236f6eaac93ea680da94",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "query",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "baseArgs",
+          "line": 22,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/lab-workspace-access.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -165353,6 +165483,24 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/member-export-placement-survey.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2747,
+      "lines": 88,
+      "sha256": "e4d1d4d42cdb64c58f729e2c5969348445ee078c842d71c4f6a694a22a39fcb1",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "member",
+          "line": 30,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -165818,6 +165966,24 @@
           "name": "prisma",
           "line": 23,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/onet-sync-cap.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2259,
+      "lines": 55,
+      "sha256": "3ba0f8ff019bb6be6609b312ca9ff6756f2881e3705f6055095e8b46501d901c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "sqlOf",
+          "line": 18,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
