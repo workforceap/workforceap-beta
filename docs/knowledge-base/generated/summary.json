@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "ff41a888db3742d8f64a2f619c2b7e17bf88e21b06e34fdb087865fbdb2e2feb",
+  "inputTreeSha256": "a38fee19a2383695e067631177d8817c4b173ffaf636264ad4e48329c9d7d09c",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4946,
-    "sourceModules": 3594,
-    "importReferences": 17897,
-    "resolvedLocalReferences": 12010,
+    "files": 4956,
+    "sourceModules": 3604,
+    "importReferences": 17945,
+    "resolvedLocalReferences": 12042,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1063,
-    "nextRouteFiles": 1029,
-    "apiHandlers": 494,
+    "routeFiles": 1064,
+    "nextRouteFiles": 1030,
+    "apiHandlers": 495,
     "pageFiles": 316,
     "astroPageFiles": 34,
     "configuredCrons": 31,
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 958,
-    "testCandidates": 948,
+    "testFiles": 962,
+    "testCandidates": 952,
     "testHelpers": 10,
-    "staticallySelectedTests": 946,
+    "staticallySelectedTests": 950,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -38,7 +38,7 @@
     },
     {
       "area": "api",
-      "files": 524
+      "files": 525
     },
     {
       "area": "assets",
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 613
+      "files": 615
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1064
+      "files": 1069
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 562
+      "files": 564
     }
   ],
   "mostReferenced": [
@@ -116,15 +116,15 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 750
+      "references": 752
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 439
+      "references": 440
     },
     {
       "file": "lib/db/withRequestGuc.ts",
-      "references": 438
+      "references": 439
     },
     {
       "file": "lib/content/programs.ts",
@@ -164,7 +164,7 @@
     },
     {
       "file": "lib/rate-limit.ts",
-      "references": 110
+      "references": 112
     },
     {
       "file": "lib/email.ts",
@@ -179,11 +179,11 @@
       "references": 102
     },
     {
-      "file": "lib/content/programTitle.ts",
-      "references": 81
+      "file": "lib/events/track.ts",
+      "references": 83
     },
     {
-      "file": "lib/events/track.ts",
+      "file": "lib/content/programTitle.ts",
       "references": 81
     },
     {
