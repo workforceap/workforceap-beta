@@ -9,6 +9,7 @@ import PortalPagination from '@/components/portal/PortalPagination';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useDirectoryNavigation } from './useDirectoryNavigation';
 import { directoryRoleLabel } from '@/lib/admin/roleLabels';
+import { describeMissingRequired, missingRequiredLabels } from '@/lib/forms/requiredFields';
 
 type UserRow = {
   id: string;
@@ -77,6 +78,8 @@ export default function AdminUsersManager({
     [attachVisibleTrap]
   );
   const [creating, setCreating] = useState(false);
+  /** Quick-create failure, rendered inline in the create form (audit 2026-09-20). */
+  const [createError, setCreateError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'ok' | 'err' | 'warn'; text: string } | null>(null);
   const [draft, setDraft] = useState<{ fullName: string; email: string; role: string }>({ fullName: '', email: '', role: 'member' });
   const [createDraft, setCreateDraft] = useState<{ fullName: string; email: string; role: string; sendResetEmail: boolean }>({
@@ -173,8 +176,17 @@ export default function AdminUsersManager({
   }
 
   async function createUser() {
-    setCreating(true);
     setMessage(null);
+    const missing = missingRequiredLabels([
+      { label: 'Full name', ok: createDraft.fullName.trim().length > 0 },
+      { label: 'Email', ok: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(createDraft.email.trim()) },
+    ]);
+    if (missing.length > 0) {
+      setCreateError(describeMissingRequired(missing, { leadIn: 'Before you can create this account' }));
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
@@ -184,7 +196,7 @@ export default function AdminUsersManager({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage({ type: 'err', text: data.error ?? 'Could not create user.' });
+        setCreateError(typeof data.error === 'string' && data.error ? data.error : 'Could not create user.');
         return;
       }
 
@@ -208,7 +220,7 @@ export default function AdminUsersManager({
         text: data.warning ?? 'User created.',
       });
     } catch {
-      setMessage({ type: 'err', text: 'Network error while creating user.' });
+      setCreateError('Network error while creating user. Check your connection and try again.');
     } finally {
       setCreating(false);
     }
@@ -229,6 +241,7 @@ export default function AdminUsersManager({
         <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
           <input
             type="text"
+            aria-label="Full name"
             value={createDraft.fullName}
             onChange={(e) => setCreateDraft((prev) => ({ ...prev, fullName: e.target.value }))}
             placeholder="Full name"
@@ -236,12 +249,14 @@ export default function AdminUsersManager({
           />
           <input
             type="email"
+            aria-label="Email"
             value={createDraft.email}
             onChange={(e) => setCreateDraft((prev) => ({ ...prev, email: e.target.value }))}
             placeholder="name@workforceap.org"
             style={{ padding: '0.65rem 0.8rem', borderRadius: '0.65rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface)' }}
           />
           <select
+            aria-label="Role"
             value={createDraft.role}
             onChange={(e) => setCreateDraft((prev) => ({ ...prev, role: e.target.value }))}
             style={{ padding: '0.65rem 0.8rem', borderRadius: '0.65rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface)' }}
@@ -262,8 +277,26 @@ export default function AdminUsersManager({
           Send password setup email right away
         </label>
 
+        {createError ? (
+          <p
+            id="admin-users-create-error"
+            role="alert"
+            className="admin-inline-feedback admin-inline-feedback--error"
+            style={{ margin: 0 }}
+            data-testid="admin-users-create-error"
+          >
+            {createError}
+          </p>
+        ) : null}
+
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-primary" disabled={creating} onClick={() => void createUser()}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={creating}
+            aria-describedby={createError ? 'admin-users-create-error' : undefined}
+            onClick={() => void createUser()}
+          >
             {creating ? 'Creating…' : 'Create user'}
           </button>
           <a href="/admin/members/new" className="btn btn-outline">Full member intake</a>

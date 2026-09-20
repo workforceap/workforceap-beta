@@ -338,7 +338,7 @@
 | [app/admin/audit-logs/AuditLogsClient.tsx](../../../app/admin/audit-logs/AuditLogsClient.tsx) | 396 | administration | default:37 |
 | [app/admin/audit-logs/loading.tsx](../../../app/admin/audit-logs/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/audit-logs/page.tsx](../../../app/admin/audit-logs/page.tsx) | 295 | administration | generateMetadata:14, default:86 |
-| [app/admin/blog/BlogPostEditor.tsx](../../../app/admin/blog/BlogPostEditor.tsx) | 623 | administration | default:46 |
+| [app/admin/blog/BlogPostEditor.tsx](../../../app/admin/blog/BlogPostEditor.tsx) | 639 | administration | default:47 |
 | [app/admin/blog/\[id\]/edit/page.tsx](../../../app/admin/blog/%5Bid%5D/edit/page.tsx) | 30 | administration | default:9 |
 | [app/admin/blog/ai/BlogAIClient.tsx](../../../app/admin/blog/ai/BlogAIClient.tsx) | 242 | ai-voice | default:15 |
 | [app/admin/blog/ai/loading.tsx](../../../app/admin/blog/ai/loading.tsx) | 6 | ai-voice | default:3 |
@@ -369,7 +369,7 @@
 | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | 102 | learning-coursera | generateMetadata:17, dynamic:26, default:37 |
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
-| [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 399 | member-counselor | default:83 |
+| [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 509 | member-counselor | default:191 |
 | [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 144 | administration | generateMetadata:12, default:82 |
 | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 508 | administration | generateMetadata:18, default:171 |
@@ -380,7 +380,7 @@
 | [app/admin/employer-screening-packs/page.tsx](../../../app/admin/employer-screening-packs/page.tsx) | 171 | administration | metadata:18, dynamic:24, default:71 |
 | [app/admin/employers/AdminEmployerTierSelect.tsx](../../../app/admin/employers/AdminEmployerTierSelect.tsx) | 67 | administration | default:5 |
 | [app/admin/employers/ClearEmployerPortalContext.tsx](../../../app/admin/employers/ClearEmployerPortalContext.tsx) | 35 | administration | default:6 |
-| [app/admin/employers/CreateEmployerAccountClient.tsx](../../../app/admin/employers/CreateEmployerAccountClient.tsx) | 221 | administration | default:8 |
+| [app/admin/employers/CreateEmployerAccountClient.tsx](../../../app/admin/employers/CreateEmployerAccountClient.tsx) | 231 | administration | default:9 |
 | [app/admin/employers/EmployerStatusButton.tsx](../../../app/admin/employers/EmployerStatusButton.tsx) | 141 | administration | default:18 |
 | [app/admin/employers/OpenEmployerPortalButton.tsx](../../../app/admin/employers/OpenEmployerPortalButton.tsx) | 62 | administration | default:6 |
 | [app/admin/employers/\[id\]/page.tsx](../../../app/admin/employers/%5Bid%5D/page.tsx) | 221 | administration | generateMetadata:59, default:83 |
@@ -391,7 +391,7 @@
 | [app/admin/exports/loading.tsx](../../../app/admin/exports/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/exports/page.tsx](../../../app/admin/exports/page.tsx) | 267 | administration | generateMetadata:20, default:28 |
 | [app/admin/feature-flags/loading.tsx](../../../app/admin/feature-flags/loading.tsx) | 7 | administration | default:1 |
-| [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | 91 | administration | generateMetadata:15, default:35 |
+| [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | 95 | administration | generateMetadata:16, default:36 |
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
 | [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
@@ -423,7 +423,7 @@
 | [app/admin/members/job-ready/page.tsx](../../../app/admin/members/job-ready/page.tsx) | 124 | administration | generateMetadata:19, default:27 |
 | [app/admin/members/loading.tsx](../../../app/admin/members/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/merge/page.tsx](../../../app/admin/members/merge/page.tsx) | 35 | administration | metadata:10, default:16 |
-| [app/admin/members/new/AddMemberWizard.tsx](../../../app/admin/members/new/AddMemberWizard.tsx) | 785 | administration | default:93 |
+| [app/admin/members/new/AddMemberWizard.tsx](../../../app/admin/members/new/AddMemberWizard.tsx) | 805 | administration | default:95 |
 | [app/admin/members/new/loading.tsx](../../../app/admin/members/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/new/page.tsx](../../../app/admin/members/new/page.tsx) | 53 | administration | generateMetadata:12, default:20 |
 | [app/admin/members/page.tsx](../../../app/admin/members/page.tsx) | 450 | administration | generateMetadata:31, default:40 |
@@ -474,7 +474,7 @@
 | [app/admin/sessions/page.tsx](../../../app/admin/sessions/page.tsx) | 196 | administration | generateMetadata:19, default:62 |
 | [app/admin/sessions/walk-in/page.tsx](../../../app/admin/sessions/walk-in/page.tsx) | 40 | administration | generateMetadata:9, default:17 |
 | [app/admin/settings/loading.tsx](../../../app/admin/settings/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/settings/page.tsx](../../../app/admin/settings/page.tsx) | 44 | administration | generateMetadata:13, default:21 |
+| [app/admin/settings/page.tsx](../../../app/admin/settings/page.tsx) | 46 | administration | generateMetadata:14, default:22 |
 | [app/admin/students/page.tsx](../../../app/admin/students/page.tsx) | 353 | administration | generateMetadata:34, default:95 |
 | [app/admin/subgroups/\[id\]/edit/page.tsx](../../../app/admin/subgroups/%5Bid%5D/edit/page.tsx) | 59 | administration | generateMetadata:12, default:22 |
 | [app/admin/subgroups/\[id\]/page.tsx](../../../app/admin/subgroups/%5Bid%5D/page.tsx) | 170 | administration | default:16 |
