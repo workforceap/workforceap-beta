@@ -23894,6 +23894,38 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/boardOutcomes.ts",
+        "line": 26
+      },
+      {
+        "file": "lib/db/scanCaps.ts",
+        "line": 27
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 28
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/boardOutcomes.snapshot.test.ts",
     "area": "tests",
     "domain": "tests",

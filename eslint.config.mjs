@@ -200,9 +200,22 @@ const config = [
   {
     // Legacy unbounded takes (see LEGACY_UNBOUNDED_TAKE_FILES): keep every
     // other ban, drop only the take literal ban.
-    files: LEGACY_UNBOUNDED_TAKE_FILES,
+    files: LEGACY_UNBOUNDED_TAKE_FILES.filter((file) => !/^app\/api\/.*\/route\.ts$/.test(file)),
     rules: {
       "no-restricted-syntax": ["error", TABLE_BAN, ...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS],
+    },
+  },
+  {
+    // Legacy-take API routes keep the route email ban as well.
+    files: LEGACY_UNBOUNDED_TAKE_FILES.filter((file) => /^app\/api\/.*\/route\.ts$/.test(file)),
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        TABLE_BAN,
+        ...DIRECT_WRITER_BANS,
+        ...ABANDONED_NOTIFY_BANS,
+        ...ABANDONED_ROUTE_EMAIL_BANS,
+      ],
     },
   },
   {

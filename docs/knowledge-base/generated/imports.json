@@ -133888,6 +133888,46 @@
     "target": "lib/admin/authUserLifecycle.ts"
   },
   {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/admin/boardOutcomes",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/boardOutcomes.ts"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "tests/lib/board-outcomes-official-totals.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
     "from": "tests/lib/boardOutcomes.snapshot.test.ts",
     "specifier": "vitest",
     "line": 1,

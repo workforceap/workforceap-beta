@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "2bb617f776de647074ec64c72411f61a8351a8d8e7ec5e1c021cfb742aa69bab",
+  "inputTreeSha256": "763b531bb5c152cea08e17f9cf666ec511a41662729a4963e6e1ce3234901f93",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -79415,14 +79415,14 @@
       "path": "eslint.config.mjs",
       "area": "root",
       "domain": "root",
-      "bytes": 14837,
-      "lines": 321,
-      "sha256": "a89d24257e143a8b1a3b0309e6d7ed93e493689f4ee3945595de37e05ec4e0a3",
+      "bytes": 15266,
+      "lines": 334,
+      "sha256": "23303b6ce8fbf72c59b2e2b547b0dd087656dc5b099729cde4be7a6022542e48",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 321,
+          "line": 334,
           "kind": "ExportAssignment"
         }
       ],
@@ -91800,9 +91800,9 @@
       "path": "lib/analytics/quarterlyOutcomes.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 22427,
-      "lines": 556,
-      "sha256": "365bb6a683a6f7dec3647869f0c14453ced1ef142bf8f6489688e0a46feb408d",
+      "bytes": 22620,
+      "lines": 559,
+      "sha256": "c8c8d5a357480d092f04e39a7440b0aa5e3532645c139ab0b91357076fc8de7e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163787,6 +163787,29 @@
         {
           "name": "expectNoMutations",
           "line": 19,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/board-outcomes-official-totals.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5689,
+      "lines": 124,
+      "sha256": "d2e223787ed5b814821eee5cc52fcec3ce2232a3b60e8941a9fe11699e9eb763",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "flatten",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "rawQueries",
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],

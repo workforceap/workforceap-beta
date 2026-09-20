@@ -367,6 +367,7 @@
 | [tests/lib/at-risk-curriculum-assignment.spec.ts](../../../tests/lib/at-risk-curriculum-assignment.spec.ts) | 89 | tests |  |
 | [tests/lib/auth-server.test.ts](../../../tests/lib/auth-server.test.ts) | 292 | tests |  |
 | [tests/lib/auth-user-lifecycle.spec.ts](../../../tests/lib/auth-user-lifecycle.spec.ts) | 99 | tests |  |
+| [tests/lib/board-outcomes-official-totals.spec.ts](../../../tests/lib/board-outcomes-official-totals.spec.ts) | 124 | tests |  |
 | [tests/lib/boardOutcomes.snapshot.test.ts](../../../tests/lib/boardOutcomes.snapshot.test.ts) | 17 | tests |  |
 | [tests/lib/career-mapping.spec.ts](../../../tests/lib/career-mapping.spec.ts) | 189 | tests |  |
 | [tests/lib/career-studio-consolidation.spec.ts](../../../tests/lib/career-studio-consolidation.spec.ts) | 134 | tests |  |
