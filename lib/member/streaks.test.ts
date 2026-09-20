@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeNextStreak } from './streaks';
+import { daysSinceLastActive, effectiveStreak } from './streakDisplay';
 
 const day = (iso: string) => new Date(`${iso}T12:00:00.000Z`);
 
@@ -40,5 +41,39 @@ describe('computeNextStreak', () => {
     const next = computeNextStreak(prev, day('2026-06-05'));
     expect(next.currentStreak).toBe(1);
     expect(next.longestStreak).toBe(7);
+  });
+});
+
+describe('effectiveStreak (read side)', () => {
+  const now = new Date('2026-09-20T15:00:00.000Z');
+
+  it('keeps the stored counter when the last activity was today or yesterday (UTC)', () => {
+    expect(effectiveStreak({ currentStreak: 7, lastActiveDate: new Date('2026-09-20T01:00:00.000Z') }, now)).toBe(7);
+    expect(effectiveStreak({ currentStreak: 7, lastActiveDate: new Date('2026-09-19T23:59:00.000Z') }, now)).toBe(7);
+  });
+
+  it('reads a lapsed streak as 0 however large the stored counter is', () => {
+    expect(effectiveStreak({ currentStreak: 12, lastActiveDate: new Date('2026-09-18T12:00:00.000Z') }, now)).toBe(0);
+    expect(effectiveStreak({ currentStreak: 40, lastActiveDate: new Date('2026-06-09T12:00:00.000Z') }, now)).toBe(0);
+    expect(daysSinceLastActive(new Date('2026-06-09T12:00:00.000Z'), now)).toBe(103);
+  });
+
+  it('treats a missing or unparseable last activity as no live streak', () => {
+    expect(effectiveStreak({ currentStreak: 3, lastActiveDate: null }, now)).toBe(0);
+    expect(effectiveStreak({ currentStreak: 3, lastActiveDate: undefined }, now)).toBe(0);
+    expect(effectiveStreak({ currentStreak: 3, lastActiveDate: 'not a date' }, now)).toBe(0);
+    expect(effectiveStreak({ currentStreak: 0, lastActiveDate: new Date('2026-09-20T01:00:00.000Z') }, now)).toBe(0);
+    expect(effectiveStreak({ currentStreak: null, lastActiveDate: new Date('2026-09-20T01:00:00.000Z') }, now)).toBe(0);
+  });
+
+  it('accepts ISO strings (serialized rows) and a slightly future-dated last activity', () => {
+    expect(effectiveStreak({ currentStreak: 2, lastActiveDate: '2026-09-20T10:00:00.000Z' }, now)).toBe(2);
+    expect(effectiveStreak({ currentStreak: 2, lastActiveDate: new Date('2026-09-21T00:30:00.000Z') }, now)).toBe(2);
+  });
+
+  it('agrees with the write side: the day after a 2-day gap the counter would restart at 1', () => {
+    const prev = { currentStreak: 5, longestStreak: 5, lastActiveDate: new Date('2026-09-17T12:00:00.000Z') };
+    expect(effectiveStreak(prev, now)).toBe(0);
+    expect(computeNextStreak(prev, now).currentStreak).toBe(1);
   });
 });

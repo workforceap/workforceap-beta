@@ -17,7 +17,7 @@ import {
   MemberJobsKit,
   type OpenRoleRow,
 } from '@/components/portal/kit/pages/member/MemberJobsKit';
-import { displayJobLocation } from '@/lib/member/jobPipelineDisplay';
+import { displayJobLocation, isActiveApplicationStatus } from '@/lib/member/jobPipelineDisplay';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -257,6 +257,10 @@ export default async function JobsPage({
     const fmtDay = (d: Date) =>
       d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
+    // "N active applications" is the same definition the home tile uses
+    // (ACTIVE_APPLICATION_STATUSES) and is counted on every row, never on the
+    // 20-row table below.
+    const activeApplicationCount = pipelineRows.filter((r) => isActiveApplicationStatus(r.status)).length;
     // Pipeline table excludes pure "saved" rows (those feed the Saved KPI only).
     const applications = pipelineRows
       .filter((r) => r.status !== 'SAVED')
@@ -355,7 +359,7 @@ export default async function JobsPage({
         applied={appliedCount}
         interviewing={interviewingCount}
         offers={offersCount}
-        syncedLabel={`${applications.length} active application${applications.length === 1 ? '' : 's'}`}
+        syncedLabel={`${activeApplicationCount} active application${activeApplicationCount === 1 ? '' : 's'}`}
         browseHref={JOBS_OPEN_ROLES_ANCHOR}
         profileHref="/dashboard/profile"
         // Pass the member's REAL rows (DataTable renders its own empty state).

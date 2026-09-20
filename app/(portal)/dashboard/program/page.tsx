@@ -26,6 +26,7 @@ import CourseraProgressCoverageNotice from '@/components/portal/CourseraProgress
 import { formatDate } from '@/lib/i18n/date';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
+import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { loadTrainingWorkspace } from '@/lib/member/loadTrainingWorkspace';
@@ -270,6 +271,7 @@ export default async function ProgramPage({
         progressPercent={progressPercent}
         modulesComplete={completedCount}
         modulesTotal={totalCourses}
+        modulesNote={describeCourseDenominator(curriculumCourses)}
         estRemaining={hoursRemaining > 0 ? `${hoursRemaining} hrs remaining` : undefined}
         resumeHref="/dashboard/learning"
         courseraLaunchHref={nextCourseLaunchHref}

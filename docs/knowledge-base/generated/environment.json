@@ -662,6 +662,10 @@
       "declaredInRootExample": false,
       "references": [
         {
+          "file": "lib/content/coursera/learningPaths.ts",
+          "line": 303
+        },
+        {
           "file": "lib/coursera/programCourseList.test.ts",
           "line": 22
         },
@@ -676,10 +680,6 @@
         {
           "file": "lib/coursera/programCourseList.test.ts",
           "line": 30
-        },
-        {
-          "file": "lib/coursera/programCourseList.ts",
-          "line": 18
         }
       ]
     },

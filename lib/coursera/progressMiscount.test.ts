@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { getProgramBySlug } from '@/lib/content/programs';
-import { findLearningPathById } from '@/lib/content/coursera/learningPaths';
+import { getProgramBySlug, PROGRAMS } from '@/lib/content/programs';
+import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
+import { COURSERA_UMBRELLA_PROGRAM_ID, findLearningPathById, isProgramLevelCourseraId } from '@/lib/content/coursera/learningPaths';
+import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { indexCanonicalMappingRows } from '@/lib/coursera/canonicalMapping';
 import { emptyCurriculumMappingIndex, legacyCandidatesForProviderCourse, resolveProviderCourseMappings } from '@/lib/coursera/curriculumMapping';
 import { isLearningPathProgressRow, planCourseraProgressPromotion } from '@/lib/coursera/progressPromotion';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import {
+  describeCourseDenominator,
   formatLearningPathLine,
   formatProgramCoursesNote,
   isCourseraDeliveredCourse,
+  isWorkforceApLabRow,
   learningPathPercent,
   summarizeProgramCourseProgress,
 } from '@/lib/coursera/progressTileSummary';
@@ -186,5 +190,123 @@ describe('progress tiles read the same way for a funder and a member', () => {
     assert.equal(learningPathPercent([]), null);
     assert.equal(formatLearningPathLine(41), "Coursera learning path: 41% (Coursera's figure)");
     assert.equal(formatLearningPathLine(null), "Coursera learning path: not reported (Coursera's figure)");
+  });
+});
+
+describe('member progress miscount: stale program-level mappings and lab rows (number audit M2)', () => {
+  const stubDeps = (mappingRows: Array<{ courseraCourseId: string; canonicalProgramSlug: string; canonicalCourseSlug: string }>) => ({
+    loadCourseDbRows: async () => [],
+    loadCanonicalMappingRows: async () => mappingRows,
+    loadCourseraContents: async () => ({ status: 'unavailable' as const, contents: [] as [] }),
+  });
+
+  it('isProgramLevelCourseraId names every registered Learning Path and the B4B umbrella, and nothing else', () => {
+    assert.equal(isProgramLevelCourseraId(IBM_PATH_ID), true);
+    assert.equal(isProgramLevelCourseraId(COURSERA_UMBRELLA_PROGRAM_ID), true);
+    for (const slug of Object.keys(DISCOVERED_COURSERA_PROGRAMS)) {
+      const pathId = DISCOVERED_COURSERA_PROGRAMS[slug]!.learningPathId;
+      if (pathId) assert.equal(isProgramLevelCourseraId(pathId), true, `${slug} path ${pathId}`);
+    }
+    assert.equal(isProgramLevelCourseraId(INTRO_AI_ID), false);
+    assert.equal(isProgramLevelCourseraId(''), false);
+    assert.equal(isProgramLevelCourseraId(null), false);
+  });
+
+  it('the validated course list refuses a canonical mapping that points a Learning Path at a course slot', async () => {
+    const list = await loadValidatedProgramCourses(
+      { organizationId: 'org-1', programSlug: PROGRAM_SLUG, checkB4BContents: false, curriculumVersion: 'legacy-v1' },
+      stubDeps([
+        { courseraCourseId: IBM_PATH_ID, canonicalProgramSlug: PROGRAM_SLUG, canonicalCourseSlug: LAB_SLOT },
+        { courseraCourseId: COURSERA_UMBRELLA_PROGRAM_ID, canonicalProgramSlug: PROGRAM_SLUG, canonicalCourseSlug: 'introduction-to-software-engineering' },
+      ]),
+    );
+    const lab = list.courses.find((course) => course.slug === LAB_SLOT);
+    assert.ok(lab);
+    assert.equal(lab.courseraCourseId, undefined, 'the path id never lands on the lab');
+    assert.equal(isCourseraDeliveredCourse(lab), false, 'the lab stays WorkforceAP\'s own course on the tile');
+    const se = list.courses.find((course) => course.slug === 'introduction-to-software-engineering');
+    assert.equal(se?.courseraCourseId, 'FkAMrrwEEey8ogoy0lwspQ', 'the umbrella id never displaces the real course id');
+    // legacy-v1 keeps the lab as a plain outline row (itSupportLabs.test.ts pins
+    // that it is not a native module), so it is reported as unmapped, never bound.
+    assert.deepEqual(list.unmappedSlugs, [LAB_SLOT]);
+  });
+
+  it('a legitimate mapping row for a Coursera course is still honoured', async () => {
+    const list = await loadValidatedProgramCourses(
+      { organizationId: 'org-1', programSlug: PROGRAM_SLUG, checkB4BContents: false, curriculumVersion: 'legacy-v1' },
+      stubDeps([{ courseraCourseId: 'ABC123', canonicalProgramSlug: PROGRAM_SLUG, canonicalCourseSlug: 'introduction-to-software-engineering' }]),
+    );
+    const se = list.courses.find((course) => course.slug === 'introduction-to-software-engineering');
+    assert.equal(se?.courseraCourseId, 'ABC123');
+  });
+
+  it('reconciliation ignores local rows keyed by a Learning Path or umbrella id, on any slug', () => {
+    const program = ibmProgram();
+    const result = reconcileProgramProgress({
+      validatedCourses: program.courses,
+      localRows: [
+        { courseSlug: LAB_SLOT, courseId: IBM_PATH_ID, percentComplete: 100, status: 'COMPLETED' },
+        { courseSlug: 'introduction-to-software-engineering', courseId: COURSERA_UMBRELLA_PROGRAM_ID, percentComplete: 90, status: 'IN_PROGRESS' },
+        { courseSlug: 'getting-started-with-git-and-github', courseId: null, percentComplete: 100, status: 'COMPLETED' },
+      ],
+    });
+    assert.equal(result.completedCount, 1, 'only the real course completion counts');
+    assert.equal(result.rows.find((row) => row.courseSlug === LAB_SLOT)?.displayPercent, 0);
+    assert.equal(result.rows.find((row) => row.courseSlug === 'introduction-to-software-engineering')?.displayPercent, 0);
+    assert.equal(result.programPercent, Math.round(100 / 17));
+  });
+
+  it('every syllabus program keeps its lab row free of provider ids, so the list and the tile agree', () => {
+    let labs = 0;
+    for (const program of PROGRAMS) {
+      if (!program.syllabus) continue;
+      for (const course of program.courses) {
+        if (!/\bLab\b/.test(course.name)) continue;
+        labs += 1;
+        assert.equal(course.courseraCourseId, undefined, `${program.slug} / ${course.name}`);
+        assert.equal(course.courseraSlug, undefined, `${program.slug} / ${course.name}`);
+        assert.equal(isCourseraDeliveredCourse(course), false);
+      }
+    }
+    assert.equal(labs, 8);
+  });
+});
+
+describe('program tile: the lab stays in the denominator and is named (Mike, 2026-09-20)', () => {
+  it('names the single WorkforceAP lab and the Coursera count for the IBM program', () => {
+    const program = ibmProgram();
+    assert.equal(
+      describeCourseDenominator(program.courses),
+      "17 courses: 16 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path).",
+    );
+    assert.equal(program.courses.filter(isWorkforceApLabRow).map((course) => course.slug)[0], LAB_SLOT);
+  });
+
+  it('is silent for a program without a lab row and never counts an unbound provider row as the lab', () => {
+    const noLab = getProgramBySlug('project-management-professional-certificate-microsoft')!;
+    assert.equal(describeCourseDenominator(noLab.courses), null);
+    const dataScience = getProgramBySlug('data-science-professional-certificate-ibm')!;
+    // Three of its rows are unbound provider courses; none of them is a lab.
+    assert.equal(describeCourseDenominator(dataScience.courses), null);
+    assert.equal(dataScience.courses.filter(isWorkforceApLabRow).length, 0);
+  });
+
+  it('works for every syllabus program that carries a lab, on the approved manifests too', () => {
+    for (const program of PROGRAMS) {
+      if (!program.syllabus) continue;
+      const legacyLabs = program.courses.filter(isWorkforceApLabRow);
+      const note = describeCourseDenominator(program.courses);
+      if (legacyLabs.length === 0) {
+        assert.equal(note, null, program.slug);
+        continue;
+      }
+      assert.match(note ?? '', new RegExp(`^${program.courses.length} courses: ${program.courses.length - 1} on Coursera's learning path plus the WorkforceAP `), program.slug);
+    }
+    // Approved manifest labs are kind:'workforceap' and are named the same way.
+    const approved = describeCourseDenominator([
+      { name: 'Introduction to Technical Support', kind: 'coursera', courseraCourseId: 'x' },
+      { name: 'Lab, Project, and Test Preparation', kind: 'workforceap' },
+    ]);
+    assert.equal(approved, "2 courses: 1 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path).");
   });
 });

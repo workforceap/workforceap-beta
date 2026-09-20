@@ -1,4 +1,5 @@
 import type { ProgramCourse } from '@/lib/content/programs';
+import { isProgramLevelCourseraId } from '@/lib/content/coursera/learningPaths';
 
 export type CourseProgressReconcileRow = {
   courseraCourseId: string;
@@ -80,6 +81,10 @@ export function reconcileProgramProgress(args: {
   const localBySlug = new Map<string, LocalCourseProgressFact>();
   const localByCourseId = new Map<string, LocalCourseProgressFact>();
   for (const row of args.localRows) {
+    // A local row keyed by a Learning Path or umbrella id holds Coursera's
+    // program-level percentage, not a course's. It must not be credited to
+    // any course, however a stale mapping once labelled its slug.
+    if (isProgramLevelCourseraId(row.courseId)) continue;
     const mergedBySlug = mergeLocalFacts(localBySlug.get(row.courseSlug), row);
     localBySlug.set(row.courseSlug, mergedBySlug);
     if (row.courseId) {
