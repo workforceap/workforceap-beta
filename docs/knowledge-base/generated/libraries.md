@@ -397,7 +397,7 @@
 | [lib/counselor/lockMemberForReview.ts](../../../lib/counselor/lockMemberForReview.ts) | 32 | member-counselor | lockMemberForReview:8 |
 | [lib/counselor/memberStatus.ts](../../../lib/counselor/memberStatus.ts) | 48 | member-counselor | counselorEnrollmentStatusBadge:6, counselorStudentStatusBadge:19, counselorStudentStatusBadgeVariant:38 |
 | [lib/counselor/needsAttentionRows.test.ts](../../../lib/counselor/needsAttentionRows.test.ts) | 27 | member-counselor |  |
-| [lib/counselor/needsAttentionRows.ts](../../../lib/counselor/needsAttentionRows.ts) | 20 | member-counselor | NeedsAttentionBucket:8, selectNeedsAttentionRows:10, countNeedsAttention:18 |
+| [lib/counselor/needsAttentionRows.ts](../../../lib/counselor/needsAttentionRows.ts) | 20 | member-counselor | selectNeedsAttentionRows:10, countNeedsAttention:18 |
 | [lib/counselor/nudgeTemplates.test.ts](../../../lib/counselor/nudgeTemplates.test.ts) | 69 | member-counselor |  |
 | [lib/counselor/nudgeTemplates.ts](../../../lib/counselor/nudgeTemplates.ts) | 132 | member-counselor | NudgeTemplateId:20, NudgeTemplate:22, NUDGE_TEMPLATES:30, listTemplates:54, getTemplate:58, NudgeRenderContext:62, barrierAwareNudgeLine:99, renderNudge:115 |
 | [lib/counselor/placementsQuery.test.ts](../../../lib/counselor/placementsQuery.test.ts) | 50 | member-counselor |  |
