@@ -1,3 +1,7 @@
+-- Add testimonial pipeline: table, enums, and indexes
+-- Sources: SURVEY (from post-placement survey), MANUAL (admin-entered), INTERVIEW (recorded interview)
+-- Statuses: PENDING → APPROVED → PUBLISHED, or PENDING → REJECTED
+
 -- Create enum types (idempotent)
 DO $$ BEGIN
     CREATE TYPE "testimonial_source" AS ENUM ('SURVEY', 'MANUAL', 'INTERVIEW');

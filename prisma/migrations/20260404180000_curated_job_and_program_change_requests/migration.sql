@@ -1,3 +1,17 @@
+-- Curated job board ↔ application tracker
+ALTER TABLE "job_applications" ADD COLUMN IF NOT EXISTS "curated_job_id" TEXT;
+CREATE INDEX IF NOT EXISTS "job_applications_curated_job_id_idx" ON "job_applications"("curated_job_id");
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'job_applications_curated_job_id_fkey'
+  ) THEN
+    ALTER TABLE "job_applications"
+      ADD CONSTRAINT "job_applications_curated_job_id_fkey"
+      FOREIGN KEY ("curated_job_id") REFERENCES "jobs"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;
+
 -- Program change requests
 DO $$ BEGIN
   CREATE TYPE "ProgramChangeRequestStatus" AS ENUM ('PENDING', 'APPROVED', 'DENIED', 'CANCELLED');

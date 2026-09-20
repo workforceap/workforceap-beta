@@ -1,3 +1,16 @@
+-- CreateTable: coursera_skillset_progress
+-- Snapshot of Coursera Enterprise skillset progress for a member, written by
+-- the /api/cron/coursera-sync active-pull cron. One row per (user_id, skillset_id).
+CREATE TABLE IF NOT EXISTS "coursera_skillset_progress" (
+    "id"             TEXT NOT NULL,
+    "user_id"        TEXT NOT NULL,
+    "skillset_id"    TEXT NOT NULL,
+    "skillset_name"  TEXT NOT NULL,
+    "progress_pct"   INTEGER NOT NULL,
+    "program_id"     TEXT NOT NULL,
+    "program_slug"   TEXT,
+    "last_synced_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
     CONSTRAINT "coursera_skillset_progress_pkey" PRIMARY KEY ("id")
 );
 

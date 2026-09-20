@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "3e51d2cb08269cfc251a384878c927c9a769b93304fb9fbe77c3439bcf3fb4cb",
+  "inputTreeSha256": "530cf381accf8ccc7715c168badbb48a4a9905e2f214497481acd87ae01a6c46",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -55753,29 +55753,29 @@
       "path": "components/icons/LegacyGlyph.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3399,
-      "lines": 146,
-      "sha256": "d30122856023531cc8e45586da1dac53a9ff1a16a75f743edb0ef75c4a23774a",
+      "bytes": 3642,
+      "lines": 160,
+      "sha256": "cf750c21f6b388e30c2c77f888565d6b09fe309b9ef3b810570b64a910620f9d",
       "binary": false,
       "exports": [
         {
           "name": "LEGACY_GLYPHS",
-          "line": 71,
+          "line": 78,
           "kind": "Variable"
         },
         {
           "name": "legacyGlyph",
-          "line": 129,
+          "line": 143,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LegacyGlyphProps",
-          "line": 133,
+          "line": 147,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "default",
-          "line": 143,
+          "line": 157,
           "kind": "FunctionDeclaration",
           "localName": "LegacyGlyph"
         }
@@ -55783,22 +55783,22 @@
       "declarations": [
         {
           "name": "LEGACY_GLYPHS",
-          "line": 71,
+          "line": 78,
           "kind": "Variable"
         },
         {
           "name": "legacyGlyph",
-          "line": 129,
+          "line": 143,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LegacyGlyphProps",
-          "line": 133,
+          "line": 147,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LegacyGlyph",
-          "line": 143,
+          "line": 157,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60399,14 +60399,14 @@
       "path": "components/portal/NotificationBell.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 22872,
-      "lines": 438,
-      "sha256": "f3de52ba2eab840cf47536aef7cb761ea7551e39b019d46379b39a5c7edd990e",
+      "bytes": 22538,
+      "lines": 439,
+      "sha256": "92d2914803613cadcdec7ac585a1fe93a83aec7b33703e620e4269a4a0103155",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 112,
+          "line": 113,
           "kind": "FunctionDeclaration",
           "localName": "NotificationBell"
         }
@@ -60414,47 +60414,47 @@
       "declarations": [
         {
           "name": "NotificationItem",
-          "line": 9,
+          "line": 10,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BadgeNotification",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getRole",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildBadgeNotifications",
-          "line": 35,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getNotificationLink",
-          "line": 86,
+          "line": 87,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatTimeAgo",
-          "line": 96,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NotificationBellProps",
-          "line": 107,
+          "line": 108,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NotificationBell",
-          "line": 112,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RoleNotificationBell",
-          "line": 118,
+          "line": 119,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63101,14 +63101,14 @@
       "path": "components/portal/UnreviewedLocaleBanner.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2822,
-      "lines": 86,
-      "sha256": "5b65528b4943f05ee76f043b231d74126c07504a1877d0146bcb92d6b42de120",
+      "bytes": 2731,
+      "lines": 81,
+      "sha256": "87c2d34d88f4fa60b6d62fc435bc465dac8a14f49377ab5550d15c7b01db2ddb",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration",
           "localName": "UnreviewedLocaleBanner"
         }
@@ -63116,7 +63116,7 @@
       "declarations": [
         {
           "name": "UnreviewedLocaleBanner",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -74956,9 +74956,9 @@
       "path": "docs/DATABASE-RECOVERY.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 14115,
-      "lines": 199,
-      "sha256": "23b5fe0f7f4b30bebc09f81726865b0c1c0fff76a3854a7bea114e7996c2a7de",
+      "bytes": 14982,
+      "lines": 216,
+      "sha256": "fda710cb98a9cb19a5e5d98faed1eb8246e19b2397658d3391cd1bff56b8d3a5",
       "binary": false
     },
     {
@@ -116457,71 +116457,71 @@
       "path": "lib/email/failureSnapshot.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 3679,
-      "lines": 106,
-      "sha256": "8f8c1a75023b2f6712e4ad01ccb9db7e0dd36ebf53423e1b3dfdbc1a10dcdd4f",
+      "bytes": 3781,
+      "lines": 107,
+      "sha256": "761e7e8a6dc5639ac1a3bda4a4862975fba28658fe5bef53d77c7f331dc2c202",
       "binary": false,
       "exports": [
         {
           "name": "EMAIL_FAILURE_STATUSES",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureDiagnosticSource",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailFailureSnapshotRow",
-          "line": 42,
+          "line": 43,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isEmailFailureDiagnostic",
-          "line": 65,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toEmailFailureSnapshotRow",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "snapshotRunLabel",
-          "line": 104,
+          "line": 105,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EMAIL_FAILURE_STATUSES",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureDiagnosticSource",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailFailureSnapshotRow",
-          "line": 42,
+          "line": 43,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isEmailFailureDiagnostic",
-          "line": 65,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toEmailFailureSnapshotRow",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "snapshotRunLabel",
-          "line": 104,
+          "line": 105,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138758,12 +138758,30 @@
       "directive": null
     },
     {
+      "path": "lib/retention/config.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 2796,
+      "lines": 64,
+      "sha256": "5d8b8d7c7d579f535345f1a4c06e98ce9b2d73290c2a99969c56ba4010cf79ae",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "byModel",
+          "line": 13,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 5461,
-      "lines": 163,
-      "sha256": "8912c9b7e35b6d96b948876735ec766d0b8c7922e97aaae5d73ebaa0377822b6",
+      "bytes": 7180,
+      "lines": 195,
+      "sha256": "4598be9b5d7f2de7502d81cd7c7de4c02d6a8bb032512edbb9a9161238a8f59b",
       "binary": false,
       "exports": [
         {
@@ -138792,23 +138810,38 @@
           "kind": "Variable"
         },
         {
+          "name": "DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
+          "line": 101,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveWorkflowDiagnosticRetentionDays",
+          "line": 103,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
+          "line": 112,
+          "kind": "Variable"
+        },
+        {
           "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
-          "line": 88,
+          "line": 119,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 90,
+          "line": 121,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 155,
+          "line": 187,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 158,
+          "line": 190,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138839,23 +138872,38 @@
           "kind": "Variable"
         },
         {
+          "name": "DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
+          "line": 101,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveWorkflowDiagnosticRetentionDays",
+          "line": 103,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
+          "line": 112,
+          "kind": "Variable"
+        },
+        {
           "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
-          "line": 88,
+          "line": 119,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 90,
+          "line": 121,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 155,
+          "line": 187,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 158,
+          "line": 190,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -147084,9 +147132,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 7915,
-      "lines": 147,
-      "sha256": "e4b5c73d7fe0ed7dcdaf9baa81be355a9308e745458216ba649adce48e3e6c4f",
+      "bytes": 7973,
+      "lines": 149,
+      "sha256": "318faac0faa31e7496f3358134fc4e225b08582e73ae292bb4926ed111a853db",
       "binary": false
     },
     {
@@ -147643,9 +147691,9 @@
       "path": "prisma/migrations/20260331120000_sprint7_organization_catalog_intake/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 7103,
-      "lines": 161,
-      "sha256": "bbabfb916baaa94fead3aa2c83209a674d0774fd97dfe3c8dbe3de3081b42e58",
+      "bytes": 7208,
+      "lines": 163,
+      "sha256": "1445962a6babf6431fc45c166b022d583e64bcedee476d95ea53c8e62e089d45",
       "binary": false
     },
     {
@@ -147688,9 +147736,9 @@
       "path": "prisma/migrations/20260404120000_onboarding_tour_completed/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 0,
-      "lines": 1,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 290,
+      "lines": 4,
+      "sha256": "cc8da8ac99796aa5d1770a1f81818cd7ca95a34675095010110aeb6d98fece3c",
       "binary": false
     },
     {
@@ -147706,9 +147754,9 @@
       "path": "prisma/migrations/20260404180000_curated_job_and_program_change_requests/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 1636,
-      "lines": 41,
-      "sha256": "e2c85fed58046eac2875e18162bf6462dbd1fc13e13e08e384183265db51837d",
+      "bytes": 2205,
+      "lines": 55,
+      "sha256": "192080037571424e1fe1b7d2e472718aa27dcc1ef2cab5941453e0d3736a4970",
       "binary": false
     },
     {
@@ -147922,9 +147970,9 @@
       "path": "prisma/migrations/20260504120000_xapi_course_progress/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 2822,
-      "lines": 69,
-      "sha256": "2a5fc0be7fab71f649d668f5a04731117b91ba411ee3ec67ace30ddea1b48661",
+      "bytes": 2908,
+      "lines": 71,
+      "sha256": "d8aaa6728aae08f856b3afb394029769474762ca4f8ba04c6268d11f6511b077",
       "binary": false
     },
     {
@@ -147940,9 +147988,9 @@
       "path": "prisma/migrations/20260504130000_coursera_skillset_progress/migration.sql",
       "area": "database",
       "domain": "learning-coursera",
-      "bytes": 713,
-      "lines": 16,
-      "sha256": "df259d1e5daaa35548a45d24a3acedf496ee143bb8cf43153329dc65c43bdfae",
+      "bytes": 1294,
+      "lines": 29,
+      "sha256": "6ef7485771b99b1c9e4a749f44fcf87e80d3d1edfdc4d8a4dca23328c24fab16",
       "binary": false
     },
     {
@@ -148003,9 +148051,9 @@
       "path": "prisma/migrations/20260509120000_user_last_coursera_auto_sync_at/migration.sql",
       "area": "database",
       "domain": "learning-coursera",
-      "bytes": 731,
-      "lines": 12,
-      "sha256": "0e751f317305f81495d7f1e381a0db749ef531555da93b985369b394e97c5a1f",
+      "bytes": 1314,
+      "lines": 22,
+      "sha256": "c89155b8be30cc532fd01e1797bb9b2170c1e12dac247bdfb71bf4f0a276b066",
       "binary": false
     },
     {
@@ -148093,9 +148141,9 @@
       "path": "prisma/migrations/20260513000000_add_webhook_events/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 525,
-      "lines": 17,
-      "sha256": "3977c3602bacde734ebbe2f09f6ee5852aa86330d5c13edb8beeb45eea60b1a8",
+      "bytes": 1038,
+      "lines": 33,
+      "sha256": "4b9495b61472263290d59c343f93433c8647b6decc65603665a4140a24008043",
       "binary": false
     },
     {
@@ -148129,9 +148177,9 @@
       "path": "prisma/migrations/20260513030000_add_testimonial/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 2299,
-      "lines": 54,
-      "sha256": "047a5e9854ad86f397a57fb1ce37c1310c5c98c530d463d32361b30b3036ae82",
+      "bytes": 2532,
+      "lines": 58,
+      "sha256": "e476892a8e600ef7b344d33d541f6b08c2da88cc35e1a75cd3ef489381908764",
       "binary": false
     },
     {
@@ -148210,9 +148258,9 @@
       "path": "prisma/migrations/20260514000000_defer_rls_force_authorize_system/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 8091,
-      "lines": 170,
-      "sha256": "6cfc274e09729df0200691c9446bf124df3f86857878667da09099c2ea68ffbe",
+      "bytes": 10080,
+      "lines": 204,
+      "sha256": "738b4e00946b76082e8ff2779b15c8d8077cf9dfbd0cc7409c9f79769d978e28",
       "binary": false
     },
     {
@@ -148237,9 +148285,9 @@
       "path": "prisma/migrations/20260514010000_add_webhook_events/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 1260,
-      "lines": 35,
-      "sha256": "75c8738e9831278f81d2c33cd58cf7f33ab80b5788735397c44be8dbaa947908",
+      "bytes": 1848,
+      "lines": 46,
+      "sha256": "b466b6561180b178bf1686241cc3ce1db418217ba16eb73849d49309977c9a15",
       "binary": false
     },
     {
@@ -148906,6 +148954,15 @@
       "bytes": 1800,
       "lines": 41,
       "sha256": "90962345bf67fedfc067c411b6165fafd1aacfecbd364e20f07506d54164b331",
+      "binary": false
+    },
+    {
+      "path": "prisma/migrations/20260920210000_add_advisor_session_notes/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 3798,
+      "lines": 83,
+      "sha256": "f7da514a2d31cf77cc29b955b2f31fb3cace529a698048eea58aa72a1a3fa948",
       "binary": false
     },
     {
@@ -151360,9 +151417,9 @@
       "path": "scripts/check-duplicate-migrations.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5806,
-      "lines": 134,
-      "sha256": "92e8fba08284550f24e42070c0936c8ffaf3d66f5485a515228e1e23f7272348",
+      "bytes": 6747,
+      "lines": 148,
+      "sha256": "909a6aba46b37efc6b4782bbc1a906cebdac8866aa559ba9c0714122094a1b9b",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -151383,42 +151440,42 @@
         },
         {
           "name": "REVIEWED_SOURCE_COMMIT",
-          "line": 18,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "REVIEWED_BASELINE_SHA256",
-          "line": 19,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "TIMESTAMP",
-          "line": 22,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "requireDirectory",
-          "line": 24,
+          "line": 38,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readPlainFile",
-          "line": 28,
+          "line": 42,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadBaseline",
-          "line": 33,
+          "line": 47,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readMigrations",
-          "line": 70,
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "check",
-          "line": 87,
+          "line": 101,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -151428,9 +151485,9 @@
       "path": "scripts/check-duplicate-migrations.test.cjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 10457,
-      "lines": 252,
-      "sha256": "d80a56e630a55ac5cf96a25573272a909b3216eae108259b9be4843b143116c9",
+      "bytes": 10936,
+      "lines": 261,
+      "sha256": "50d0a7ca87040e4601f977707d0adc91af20f59aec96a36e6fdf697c7fd26446",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -151541,78 +151598,362 @@
       "directive": null
     },
     {
-      "path": "scripts/check-supabase-env.mjs",
+      "path": "scripts/check-migration-history.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4543,
-      "lines": 108,
-      "sha256": "c3e53a20f5fb2a291dbf51e7ab227055f91fae916bf2a6bcc7ae56f68233a6f9",
+      "bytes": 6248,
+      "lines": 152,
+      "sha256": "dc9a0bdf202cbfbc84134ca721adc06f6913e1405084664a49083f891f4cf00a",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ROOT",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "findEmptyMigrations",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findTruncatedMigrations",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "mappedModelTables",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findModelsWithoutTable",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findBuildScriptsThatAutoResolve",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readMigrations",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "check",
+          "line": 107,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ROOT",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONTINUATION",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "CREATE_TABLE",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "entries",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "findEmptyMigrations",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findTruncatedMigrations",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "mappedModelTables",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findModelsWithoutTable",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findBuildScriptsThatAutoResolve",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readMigrations",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "check",
+          "line": 107,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/check-migration-history.test.cjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 4856,
+      "lines": 101,
+      "sha256": "f9b26d1cd80b944a66dc3e98acea0aa45a3bda61d83850088d4e482ee2b73e6c",
       "binary": false,
       "exports": [],
       "declarations": [
         {
-          "name": "checkPoolContract",
-          "line": 33,
+          "name": "test",
+          "line": 8,
           "kind": "Variable"
         },
         {
-          "name": "enforcePoolContract",
-          "line": 34,
+          "name": "assert",
+          "line": 9,
           "kind": "Variable"
         },
         {
-          "name": "DEMO_REF",
-          "line": 36,
+          "name": "guard",
+          "line": 11,
           "kind": "Variable"
         },
         {
-          "name": "PROD_REF",
-          "line": 36,
+          "name": "CREATE",
+          "line": 16,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/check-public-surface-icons.mjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 6236,
+      "lines": 157,
+      "sha256": "29f5198317ce33f322159bd070e114213e11ec774ae4aef9519784ba19e50b93",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ROOT",
+          "line": 29,
           "kind": "Variable"
         },
         {
-          "name": "formatSupabaseEnvGuardFailure",
-          "line": 36,
+          "name": "ENTRY_POINTS",
+          "line": 32,
           "kind": "Variable"
         },
         {
-          "name": "inspectSupabaseEnvironment",
-          "line": 36,
+          "name": "ALLOWED",
+          "line": 55,
           "kind": "Variable"
         },
         {
-          "name": "projectForAnonKey",
-          "line": 36,
+          "name": "isCommentLine",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findLigatureRenders",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "collectModules",
+          "line": 92,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "check",
+          "line": 123,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ROOT",
+          "line": 29,
           "kind": "Variable"
         },
         {
-          "name": "projectForUrl",
-          "line": 36,
+          "name": "ENTRY_POINTS",
+          "line": 32,
           "kind": "Variable"
         },
         {
-          "name": "env",
-          "line": 56,
+          "name": "ALLOWED",
+          "line": 55,
           "kind": "Variable"
         },
         {
-          "name": "urls",
+          "name": "LIGATURE",
+          "line": 57,
+          "kind": "Variable"
+        },
+        {
+          "name": "IMPORT",
           "line": 58,
           "kind": "Variable"
         },
         {
-          "name": "expected",
-          "line": 65,
+          "name": "EXTENSIONS",
+          "line": 59,
           "kind": "Variable"
         },
         {
-          "name": "errors",
+          "name": "isCommentLine",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findLigatureRenders",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "collectModules",
+          "line": 92,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolveOnDisk",
+          "line": 109,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "check",
+          "line": 123,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/check-public-surface-icons.test.cjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 4645,
+      "lines": 101,
+      "sha256": "9ec52a6992ee351b0386142fc5a5fb5e21ab35def76d22ce4a5cc31cc213b1d2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "test",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "assert",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "guard",
+          "line": 11,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/check-supabase-env.mjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 5731,
+      "lines": 130,
+      "sha256": "546129325c8c352e33152cf82b9e953acd4e82f9206b598df9fb1d059de02c3a",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "POOL_CONTRACT_ENFORCED_VERCEL_ENVS",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "checkPoolContract",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEMO_REF",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROD_REF",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "formatSupabaseEnvGuardFailure",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "inspectSupabaseEnvironment",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "projectForAnonKey",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "projectForUrl",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "env",
           "line": 66,
           "kind": "Variable"
         },
         {
+          "name": "urls",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
+          "name": "expected",
+          "line": 75,
+          "kind": "Variable"
+        },
+        {
+          "name": "errors",
+          "line": 76,
+          "kind": "Variable"
+        },
+        {
           "name": "seen",
-          "line": 67,
+          "line": 77,
+          "kind": "Variable"
+        },
+        {
+          "name": "onVercel",
+          "line": 100,
+          "kind": "Variable"
+        },
+        {
+          "name": "enforcePoolContract",
+          "line": 101,
           "kind": "Variable"
         }
       ],
@@ -154983,9 +155324,9 @@
       "path": "scripts/lib/runtime-pool-contract.test.cjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 3728,
-      "lines": 67,
-      "sha256": "76a0f59f5a94e4c1a052f87082de140bb9b0ef7780398f41292146a82237b006",
+      "bytes": 4982,
+      "lines": 86,
+      "sha256": "08cf1d06286cc2cf247d31195af9252d5e10b0a8ab29d0b9c397704cfba1d7cc",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -155022,6 +155363,11 @@
         {
           "name": "params",
           "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "runGuard",
+          "line": 30,
           "kind": "Variable"
         }
       ],
@@ -155584,9 +155930,9 @@
       "path": "scripts/migration-collision-baseline.json",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4626,
+      "bytes": 5046,
       "lines": 137,
-      "sha256": "ba13bd4c04fcfa182335b2f6d717eb318ac36f1106bb0c8a3777c83c5543189e",
+      "sha256": "752abd825d4289fafbcc238accd9566826afe31d76b35ab4aef9067acc3b2a88",
       "binary": false
     },
     {
@@ -156406,25 +156752,25 @@
       "path": "scripts/snapshot-email-failures.ts",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4826,
-      "lines": 116,
-      "sha256": "c5a5d91116abca550f3ec8bc3932062e50008fc2977df211128d8a2421d866a1",
+      "bytes": 5022,
+      "lines": 119,
+      "sha256": "dc1e15b3e5a413d35f2ed22b9135ec85fb30df7e8841a42e0844115eba9e3d85",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "prisma",
-          "line": 27,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "readFlag",
-          "line": 29,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "main",
-          "line": 35,
+          "line": 38,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -157033,9 +157379,9 @@
       "path": "scripts/verify-material-symbols-font-size.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 1272,
-      "lines": 38,
-      "sha256": "30d69ac9c2e3d7294cb0b27195c5a0e8c1d7d90c03ba3341c520bb934c4cdb0a",
+      "bytes": 1644,
+      "lines": 47,
+      "sha256": "1be66c4aaad5386e5e399e55d14fae3d1c39297db08c6ed2c3d951b47a4465f8",
       "binary": false,
       "exports": [],
       "declarations": [
