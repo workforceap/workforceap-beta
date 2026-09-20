@@ -148,6 +148,7 @@ describe('promoteCsvProgressToCanonical', () => {
     expect(result).toEqual({
       upserted: 1,
       unmapped: 0,
+      learningPaths: 0,
       rollupsRefreshed: 1,
       errors: 0,
     });
@@ -203,6 +204,7 @@ describe('promoteCsvProgressToCanonical', () => {
     expect(result.promotion).toEqual({
       upserted: 0,
       unmapped: 0,
+      learningPaths: 0,
       rollupsRefreshed: 0,
       errors: 0,
     });

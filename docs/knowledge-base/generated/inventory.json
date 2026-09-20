@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "5ec36d835278bf772d34e9d36347a616a94a0e72f83f4387e1d73019b3323aa3",
+  "inputTreeSha256": "c7bd504dae95337ad7aee10ff14082329e25fe8384ee551b3914bb31afe7f477",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -74227,7 +74227,7 @@
       "domain": "supporting-files",
       "bytes": 12280,
       "lines": 266,
-      "sha256": "215988867d0682211bfdcc8ec937a27698f5c73a0e52f6d0e2e92f8fc5e1cbf5",
+      "sha256": "f143944ad7eac590f34116bfde1675bd1e7f9f3491a494f3fdcb39706711099e",
       "binary": false
     },
     {
@@ -168508,9 +168508,9 @@
       "path": "tests/lib/coursera-progress-promotion.spec.ts",
       "area": "tests",
       "domain": "learning-coursera",
-      "bytes": 9810,
-      "lines": 292,
-      "sha256": "daac923e4d06fa3a72fa9146478491d0d3c7e6467f2901d81152078a6ec0b7c6",
+      "bytes": 9858,
+      "lines": 294,
+      "sha256": "2354b073097aab2c06c5e907d8f0ff771195cfe2f7471c0bf1404cd5495d49c6",
       "binary": false,
       "exports": [],
       "declarations": [
