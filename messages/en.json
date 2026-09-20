@@ -482,7 +482,7 @@
     "interviewCoachMetaDesc": "Run a text-based mock interview and get instant AI feedback.",
     "interviewPracticeMetaTitle": "Interview Practice Generator",
     "interviewPracticeMetaDesc": "Generate role-specific interview questions with answer frameworks.",
-    "interviewPrepMetaTitle": "WIOA Interview Prep",
+    "interviewPrepMetaTitle": "Interview prep",
     "interviewPrepMetaDesc": "Prepare for your WIOA program interview and job interviews — your AI-built materials pulled together for quick review.",
     "jobMatchScorerMetaTitle": "Job Match Scorer",
     "jobMatchScorerMetaDesc": "See how well your resume matches a job and get specific gaps to address.",
@@ -1091,7 +1091,10 @@
     "messagesTitle": "Messages",
     "messagesDescription": "Chat with your WorkforceAP advisor.",
     "memberPortal": "Member Portal",
-    "noMessagesYet": "No messages yet"
+    "noMessagesYet": "No messages yet",
+    "yourCounselor": "Your counselor",
+    "workforceapSupport": "WorkforceAP support",
+    "supportTeam": "Support team"
   },
   "profile": {
     "edit": "Edit profile",

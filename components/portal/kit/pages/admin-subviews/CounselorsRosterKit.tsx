@@ -103,7 +103,8 @@ export function CounselorsRosterKit({
   const kpis: KpiItem[] = [
     { label: 'Counselors', value: total },
     { label: 'Avg Caseload', value: avgCaseload },
-    { label: 'At-Risk Owned', value: atRiskOwned, color: atRiskOwned > 0 ? 'accent' : 'text' },
+    // Only a real state colours a number: at-risk owned > 0 is one.
+    { label: 'At-Risk Owned', value: atRiskOwned, tone: typeof atRiskOwned === 'number' && atRiskOwned > 0 ? 'accent' : undefined },
     { label: 'Avg Response', value: avgResponse },
   ];
 

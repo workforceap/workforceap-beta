@@ -6,7 +6,10 @@ export interface KpiItem {
   label: string;
   value: string | number;
   delta?: string;
+  /** @deprecated Categorical colour; does not paint the value. Use `tone` for a state derived from the value. */
   color?: KitColor;
+  /** Semantic state derived from the value; the only thing that colours the number. */
+  tone?: KitColor;
   deltaColor?: KitColor;
 }
 

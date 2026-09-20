@@ -2,7 +2,7 @@ import 'server-only';
 
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { calculateHealthStatus, type HealthStatus, getHealthLabel, getHealthColor } from '@/lib/admin/healthScore';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { stalledCheckInAction, TRIAGE_BUCKET_ACCENTS } from '@/lib/admin/triageDigestCopy';
 import {
   inheritMemberOrg,
@@ -98,11 +98,13 @@ export async function getTriageDigest(scope: AdminPageTenantOk): Promise<TriageD
     counselorAssignmentsResult,
   ] = await withAdminPageScope(scope, (db) =>
     Promise.allSettled([
-    // 1. New applicants (last 7 days) with no assigned counselor
+    // 1. New applicants (last 7 days) with no assigned counselor. Staff and
+    //    dogfood admin accounts are never applicants, so this list is
+    //    member-role only (admin audit 2026-09-20, 4.1).
     db.user.findMany({
       where: {
         deletedAt: null,
-        ...MEMBER_OR_DOGFOOD_WHERE,
+        ...MEMBER_ONLY_WHERE,
         createdAt: { gte: sevenDaysAgo },
         counselorAssignments: { none: { active: true } },
       },

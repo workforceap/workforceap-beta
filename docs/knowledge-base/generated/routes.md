@@ -277,6 +277,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /partner/resources | page |  | [app/(portal)/partner/resources/page.tsx](../../../app/%28portal%29/partner/resources/page.tsx) | @/lib/auth/portalGuards:5, @/lib/auth/server:7, @/lib/auth/roles:8 |
 | /partner/settings | loading |  | [app/(portal)/partner/settings/loading.tsx](../../../app/%28portal%29/partner/settings/loading.tsx) |  |
 | /partner/settings | page |  | [app/(portal)/partner/settings/page.tsx](../../../app/%28portal%29/partner/settings/page.tsx) | @/lib/auth/portalGuards:4, @/lib/auth/server:6, @/lib/auth/roles:7 |
+| /partner/signup | page |  | [app/(portal)/partner/signup/page.tsx](../../../app/%28portal%29/partner/signup/page.tsx) |  |
 | /profile | page |  | [app/(portal)/profile/page.tsx](../../../app/%28portal%29/profile/page.tsx) |  |
 | /resources/\[id\] | page |  | [app/(portal)/resources/\[id\]/page.tsx](../../../app/%28portal%29/resources/%5Bid%5D/page.tsx) |  |
 | /resources | page |  | [app/(portal)/resources/page.tsx](../../../app/%28portal%29/resources/page.tsx) |  |

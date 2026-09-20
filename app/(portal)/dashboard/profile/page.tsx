@@ -279,21 +279,21 @@ export default async function DashboardProfilePage({
       profileBadges.push({
         label: `${certCount} ${certCount === 1 ? "cert" : "certs"}`,
         bg: "var(--wa-gold-soft)",
-        color: "var(--wa-gold)",
+        color: "var(--wa-gold-dark)",
       });
     }
     if (readinessScore > 0) {
       profileBadges.push({
         label: `${readinessScore} readiness`,
         bg: "var(--wa-success-soft)",
-        color: "var(--wa-success)",
+        color: "var(--wa-success-dark)",
       });
     }
     if (currentStreak > 0) {
       profileBadges.push({
         label: `${currentStreak}-day streak`,
         bg: "var(--wa-accent-soft)",
-        color: "var(--wa-accent)",
+        color: "var(--wa-accent-text)",
       });
     }
 

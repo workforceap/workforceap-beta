@@ -339,7 +339,7 @@ function Bucket({ title, count, icon, empty, children, queue, pagination }: {
       <header style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.9rem' }}>
         <span className="material-symbols-outlined" aria-hidden style={{ color: 'var(--color-accent)' }}>{icon}</span>
         <h2 style={{ flex: 1, margin: 0, fontSize: '1rem', fontWeight: 800 }}>{title}</h2>
-        <span aria-label={`${count} items`} style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+        <span aria-label={`${count} ${count === 1 ? 'item' : 'items'}`} style={{ fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
       </header>
       {count === 0 ? (
         <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>{empty}</p>
@@ -349,7 +349,7 @@ function Bucket({ title, count, icon, empty, children, queue, pagination }: {
       {pagination ? (
         <Pagination page={pagination.page} pageSize={pagination.pageSize} totalItems={count}
           onChange={(page) => router.push(adminQueueHref(queue, page))} variant="count" size="sm" label={`${title} pages`} />
-      ) : count > 0 ? <p><Link href={adminQueueHref(queue)}>View all {count} items</Link></p> : null}
+      ) : count > 0 ? <p><Link href={adminQueueHref(queue)}>View all {count} {count === 1 ? 'item' : 'items'}</Link></p> : null}
     </section>
   );
 }

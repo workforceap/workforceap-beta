@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "6c249c5128869d8cd4569bc7185b003bb3542530eb3d9773c7c65a06a41b786d",
+  "inputTreeSha256": "71048578da192a4359ffa5cf002a2d3ce40471629b8594ad5f4f111dd9ae05ab",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4849,
-    "sourceModules": 3511,
-    "importReferences": 17141,
-    "resolvedLocalReferences": 11405,
+    "files": 4859,
+    "sourceModules": 3521,
+    "importReferences": 17176,
+    "resolvedLocalReferences": 11423,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1054,
-    "nextRouteFiles": 1021,
+    "routeFiles": 1055,
+    "nextRouteFiles": 1022,
     "apiHandlers": 489,
-    "pageFiles": 313,
+    "pageFiles": 314,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 846,
-    "testCandidates": 839,
+    "testFiles": 852,
+    "testCandidates": 845,
     "testHelpers": 7,
-    "staticallySelectedTests": 836,
+    "staticallySelectedTests": 842,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1018
+      "files": 1024
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 636
+      "files": 637
     },
     {
       "area": "root",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 473
+      "files": 476
     }
   ],
   "mostReferenced": [
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 246
+      "references": 247
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -361,12 +361,12 @@
       "lines": 1209
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1207
+      "file": "components/admin/MembersTable.tsx",
+      "lines": 1208
     },
     {
-      "file": "components/admin/MembersTable.tsx",
-      "lines": 1206
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1207
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",

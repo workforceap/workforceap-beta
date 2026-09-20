@@ -1311,7 +1311,7 @@ html.dark [data-surface] .wa-kit-card,
 .wa-kit-training-filter select { max-width: 70%; }
 .wa-kit-training-notice { padding: var(--wa-pad-sm); border-left: 3px solid var(--wa-info); background: var(--wa-surface-2); margin-block: var(--wa-pad-sm) !important; font-size: var(--wa-type-meta); }
 .wa-kit-training-success, .wa-kit-training-error { display: flex; align-items: center; gap: .5rem; font-size: var(--wa-type-meta); margin-bottom: var(--wa-pad-sm) !important; }
-.wa-kit-training-success { color: var(--wa-success); }
+.wa-kit-training-success { color: var(--wa-success-dark); }
 .wa-kit-training-error { color: var(--wa-danger); }
 .wa-kit-training-tools { border-top: 1px solid var(--wa-border); padding-top: var(--wa-pad-sm); }
 .wa-kit-training-tools a { display: flex; align-items: center; gap: .75rem; min-height: 4rem; padding-block: .75rem; border-bottom: 1px solid var(--wa-border); text-decoration: none; color: var(--wa-text); }

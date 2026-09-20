@@ -118,7 +118,7 @@ export default async function MemberMessagesPage({
   const counselorName = counselor?.fullName ?? null;
   const counselorInitials = counselorName
     ? counselorName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-    : 'CS';
+    : 'WA';
 
   // ── New design-kit inbox (default). Opt out with ?ui=legacy. ──
   // Reuses the same real counselor thread + the existing legacy send endpoint
@@ -143,12 +143,15 @@ export default async function MemberMessagesPage({
       };
     });
 
-    const activeName = counselorName ?? t('inbox');
+    // The thread is addressed to a person or a team, never to "Inbox":
+    // an assigned counselor by name, otherwise WorkforceAP support.
+    const activeName = counselorName ?? t('workforceapSupport');
+    const activeRole = counselorName ? t('yourCounselor') : t('supportTeam');
     const conversations = [
       {
         id: thread.id,
         name: activeName,
-        role: counselorName ? t('memberPortal') : t('inbox'),
+        role: activeRole,
         preview: lastMsgText,
         unread: unreadCount > 0,
         active: true,
@@ -161,7 +164,7 @@ export default async function MemberMessagesPage({
         threadId={thread.id}
         conversations={conversations}
         activeName={activeName}
-        activeRole={counselorName ? 'Career Counselor' : 'Support'}
+        activeRole={activeRole}
         activeInitials={counselorInitials}
         activeOnline={Boolean(thread.counselorUserId)}
         otherInitials={counselorInitials}

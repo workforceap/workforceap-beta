@@ -463,6 +463,13 @@ export const REDIRECT_ONLY_PATHS = {
       target: '/partner/referred-members/[memberId]',
       reason: 'renamed_route_alias',
     },
+    {
+      // Signed-in partners following an old link land on the public sign-up
+      // page instead of the portal 404 (partner audit 2026-09-20).
+      path: '/partner/signup',
+      target: '/partner-signup',
+      reason: 'legacy_alias',
+    },
   ],
   counselor: [],
 };
