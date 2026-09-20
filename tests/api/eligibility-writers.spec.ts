@@ -86,6 +86,7 @@ function transactionClient(draft: any) {
       findUnique: async () => draft.preScreening,
       create: async ({ data }: any) => { if (h.failPreScreening) throw new Error('Response unavailable'); draft.preScreening = { id: 'pre-1', ...data }; return draft.preScreening; },
     },
+    publicWioaScreening: { create: async ({ data }: any) => { draft.leadRecord = { id: 'lead-1', ...data }; return { id: 'lead-1' }; } },
     saveLead: (input: unknown) => { draft.lead = input; },
   };
 }

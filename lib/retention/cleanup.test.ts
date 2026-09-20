@@ -4,6 +4,7 @@ import {
   RETENTION_TABLES,
   CRITICAL_AUDIT_ACTION_PREFIXES,
   RETENTION_AUDIT_DAYS as CRITICAL_AUDIT_RETENTION_DAYS,
+  PUBLIC_LEAD_RETENTION_DAYS,
   getCutoffDate,
 } from './config';
 
@@ -77,8 +78,22 @@ vi.mock('@/lib/db/prisma', () => ({
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
+    publicWioaScreening: {
+      findMany: (...args: unknown[]) => mockFindMany(...args),
+      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      count: (...args: unknown[]) => mockCount(...args),
+    },
   },
 }));
+
+describe('RETENTION_TABLES', () => {
+  it('purges no-account eligibility leads on a TTL under a year (WAP-172)', () => {
+    const cfg = RETENTION_TABLES.find((t) => t.model === 'publicWioaScreening');
+    expect(cfg).toMatchObject({ dateColumn: 'createdAt', days: PUBLIC_LEAD_RETENTION_DAYS });
+    expect(PUBLIC_LEAD_RETENTION_DAYS).toBeGreaterThan(0);
+    expect(PUBLIC_LEAD_RETENTION_DAYS).toBeLessThanOrEqual(365);
+  });
+});
 
 describe('cleanupTable', () => {
   beforeEach(() => {

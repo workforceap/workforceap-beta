@@ -45,13 +45,14 @@ function csvEscape(value: string): string {
     ];
   
     const outcomesHeaders = [...baseHeaders, 'Placed employer', 'Job title', 'Placed date'];
+    // WAP-171: privacy policy §3.3 — a referring partner sees enrollment
+    // status, progress and outcomes. Ethnicity and veteran status are §1.2
+    // eligibility/demographic data and are not exported to partners.
     const demographicsHeaders = [
       ...baseHeaders,
       'City',
       'State',
       'ZIP',
-      'Ethnicity',
-      'Veteran status',
       'Employment status',
       'Education level',
       'Placed employer',
@@ -94,8 +95,6 @@ function csvEscape(value: string): string {
             csvEscape(prof?.city ?? ''),
             csvEscape(prof?.state ?? ''),
             csvEscape(prof?.zip ?? ''),
-            csvEscape(prof?.ethnicity ?? ''),
-            csvEscape(prof?.veteranStatus ?? ''),
             csvEscape(prof?.employmentStatus ?? ''),
             csvEscape(prof?.educationLevel ?? ''),
             csvEscape(verifiedPlacement?.employerName ?? ''),

@@ -68,6 +68,31 @@ export function hasEligibilityScreeningFields(
   );
 }
 
+/**
+ * How many screening answers are present. WAP-170: emails carry this count
+ * (and the quick-fit flag) instead of the answers, so an inbox never becomes a
+ * second store of special-category data.
+ */
+export function eligibilityScreeningAnswerCount(
+  fields: EligibilityScreeningFields | null | undefined,
+): number {
+  if (!fields) return 0;
+  const textAnswers = [
+    fields.q1,
+    fields.q2,
+    fields.q3,
+    fields.receivingUnemployment,
+    fields.exhaustedUnemployment,
+    fields.layoffCompany,
+    fields.snapWic,
+    fields.publicAssistanceHelpRequested,
+    fields.hearAbout,
+    fields.hearAboutOther,
+    fields.partnerAmbassadorReferral,
+  ].filter((value) => typeof value === 'string' && value.trim().length > 0).length;
+  return textAnswers + ((fields.publicAssistancePrograms?.length ?? 0) > 0 ? 1 : 0);
+}
+
 /** Ordered cell values matching {@link ELIGIBILITY_DATASHEET_COLUMNS}. */
 export function eligibilityDatasheetCells(
   fields: EligibilityScreeningFields | null | undefined,
