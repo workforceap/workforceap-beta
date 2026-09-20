@@ -2128,7 +2128,7 @@
       "references": [
         {
           "file": "app/(portal)/partner/page.tsx",
-          "line": 533
+          "line": 538
         },
         {
           "file": "app/api/admin/coursera/reconcile/add-to-wap/route.ts",
@@ -4035,6 +4035,14 @@
         {
           "file": "tests/lib/weekly-recap-label.spec.ts",
           "line": 19
+        },
+        {
+          "file": "tests/tours/employer-overview-anchors.spec.tsx",
+          "line": 1
+        },
+        {
+          "file": "tests/tours/partner-overview-anchors.spec.tsx",
+          "line": 1
         }
       ]
     },

@@ -46,12 +46,13 @@ describe('TourAutoStart (?tour=<key>)', () => {
     render(<Page />);
     expect(screen.queryByRole('dialog')).toBeNull();
     const dialog = await screen.findByRole('dialog', {}, { timeout: TOUR_DEEP_LINK_DELAY_MS + 1500 });
-    expect(dialog).toHaveTextContent('Your dashboard');
-    expect(dialog).toHaveTextContent('Step 1 of 8');
+    // employer.home v3 (tours wave 3): first stop is the overview rail row.
+    expect(dialog).toHaveTextContent('Your hiring dashboard');
+    expect(dialog).toHaveTextContent('Step 1 of 7');
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('/api/tours/employer.home');
-    expect(JSON.parse(String(init.body))).toMatchObject({ status: 'STARTED', version: 2 });
+    expect(JSON.parse(String(init.body))).toMatchObject({ status: 'STARTED', version: 3 });
   });
 
   it('ignores unknown keys and never writes state', async () => {

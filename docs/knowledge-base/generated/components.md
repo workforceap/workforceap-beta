@@ -277,7 +277,7 @@
 | [components/portal/DownloadMyDataButton.tsx](../../../components/portal/DownloadMyDataButton.tsx) | 83 | components | default:5 |
 | [components/portal/EmployerApplicationChatClient.tsx](../../../components/portal/EmployerApplicationChatClient.tsx) | 197 | components | default:21 |
 | [components/portal/EmployerMessagesInboxClient.tsx](../../../components/portal/EmployerMessagesInboxClient.tsx) | 249 | components | default:41 |
-| [components/portal/EmployerPortalShell.tsx](../../../components/portal/EmployerPortalShell.tsx) | 48 | components | default:9 |
+| [components/portal/EmployerPortalShell.tsx](../../../components/portal/EmployerPortalShell.tsx) | 64 | components | EMPLOYER_GUIDE_HREF:12, default:14 |
 | [components/portal/FindYourCareerSection.tsx](../../../components/portal/FindYourCareerSection.tsx) | 105 | components | default:8 |
 | [components/portal/First90DaysCard.tsx](../../../components/portal/First90DaysCard.tsx) | 255 | components | First90DaysCardProps:22, default:38 |
 | [components/portal/GlobalSearch.tsx](../../../components/portal/GlobalSearch.tsx) | 85 | components | default:13 |
@@ -331,7 +331,7 @@
 | [components/portal/PartnerExclusiveServerGate.tsx](../../../components/portal/PartnerExclusiveServerGate.tsx) | 56 | components | default:28 |
 | [components/portal/PartnerInviteMemberButton.tsx](../../../components/portal/PartnerInviteMemberButton.tsx) | 224 | components | default:11 |
 | [components/portal/PartnerMembersList.tsx](../../../components/portal/PartnerMembersList.tsx) | 178 | components | default:40 |
-| [components/portal/PartnerPortalShell.tsx](../../../components/portal/PartnerPortalShell.tsx) | 54 | components | default:9 |
+| [components/portal/PartnerPortalShell.tsx](../../../components/portal/PartnerPortalShell.tsx) | 70 | components | PARTNER_GUIDE_HREF:12, default:14 |
 | [components/portal/PointsWidget.test.tsx](../../../components/portal/PointsWidget.test.tsx) | 95 | components |  |
 | [components/portal/PointsWidget.tsx](../../../components/portal/PointsWidget.tsx) | 348 | components | default:172 |
 | [components/portal/PortalBreadcrumb.tsx](../../../components/portal/PortalBreadcrumb.tsx) | 84 | components | PortalBreadcrumbItem:4, default:26 |
@@ -526,7 +526,7 @@
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 432 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:98, CommandCenterKitProps:111, CommandCenterKit:314 |
 | [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 420 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
 | [components/portal/kit/pages/counselor/CounselorTodayKit.tsx](../../../components/portal/kit/pages/counselor/CounselorTodayKit.tsx) | 263 | member-counselor | CounselorTodayKitProps:50, CounselorTodayKit:191 |
-| [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 387 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
+| [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 390 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |
 | [components/portal/kit/pages/member/CareerBusinessCoachKit.tsx](../../../components/portal/kit/pages/member/CareerBusinessCoachKit.tsx) | 52 | member-counselor | CareerBusinessCoachKit:16 |
 | [components/portal/kit/pages/member/CoverLetterKit.tsx](../../../components/portal/kit/pages/member/CoverLetterKit.tsx) | 52 | member-counselor | CoverLetterKit:15 |
