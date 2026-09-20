@@ -185,7 +185,7 @@
 | [app/(portal)/dashboard/jobs/\[id\]/ReferralCopyButton.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/ReferralCopyButton.tsx) | 43 | applications-enrollment | default:10 |
 | [app/(portal)/dashboard/jobs/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/page.tsx) | 206 | jobs-employers | generateMetadata:68, default:120 |
 | [app/(portal)/dashboard/jobs/loading.tsx](../../../app/%28portal%29/dashboard/jobs/loading.tsx) | 5 | jobs-employers | default:3 |
-| [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | 615 | jobs-employers | generateMetadata:18, default:27 |
+| [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | 644 | jobs-employers | generateMetadata:23, default:32 |
 | [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | 115 | member-counselor | generateMetadata:15, default:20 |
 | [app/(portal)/dashboard/learning/find-your-career/loading.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/loading.tsx) | 6 | learning-coursera | default:3 |
 | [app/(portal)/dashboard/learning/find-your-career/page.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/page.tsx) | 149 | learning-coursera | generateMetadata:9, default:34 |

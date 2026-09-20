@@ -880,8 +880,10 @@
 | [lib/portal/memberProfilePhoto.test.ts](../../../lib/portal/memberProfilePhoto.test.ts) | 25 | libraries |  |
 | [lib/portal/memberProfilePhoto.ts](../../../lib/portal/memberProfilePhoto.ts) | 42 | libraries | PROFILE_PHOTO_BUCKET:1, PROFILE_PHOTO_MAX_BYTES:2, PROFILE_PHOTO_OUTPUT_SIZE:3, PROFILE_PHOTO_ACCEPT:4, profilePhotoStoragePath:15, profilePhotoPrefixForUser:19, isProfilePhotoStoragePath:23, resolveProfilePhotoContentType:30, profilePhotoStorageErrorMessage:36 |
 | [lib/portal/memberProfilePhotoUrl.ts](../../../lib/portal/memberProfilePhotoUrl.ts) | 43 | libraries | getMemberProfilePhotoSignedUrl:7, getMemberProfilePhotoSignedUrlForPath:23 |
-| [lib/portal/memberResumeUpload.test.ts](../../../lib/portal/memberResumeUpload.test.ts) | 44 | libraries |  |
-| [lib/portal/memberResumeUpload.ts](../../../lib/portal/memberResumeUpload.ts) | 56 | libraries | RESUME_UPLOAD_ACCEPT:5, RESUME_UPLOAD_FORMAT_LABEL:6, getResumeUploadFileError:8, uploadMemberResumeFile:24 |
+| [lib/portal/memberRequestFailure.test.ts](../../../lib/portal/memberRequestFailure.test.ts) | 53 | libraries |  |
+| [lib/portal/memberRequestFailure.ts](../../../lib/portal/memberRequestFailure.ts) | 63 | libraries | MEMBER_REQUEST_TIMEOUT_MS:16, MEMBER_REQUEST_FAILURE:18, describeMemberRequestFailure:34, readMemberRequestFailure:48, describeMemberRequestException:60 |
+| [lib/portal/memberResumeUpload.test.ts](../../../lib/portal/memberResumeUpload.test.ts) | 80 | libraries |  |
+| [lib/portal/memberResumeUpload.ts](../../../lib/portal/memberResumeUpload.ts) | 70 | libraries | RESUME_UPLOAD_ACCEPT:12, RESUME_UPLOAD_FORMAT_LABEL:13, getResumeUploadFileError:15, uploadMemberResumeFile:31 |
 | [lib/portal/messagingSurfaces.ts](../../../lib/portal/messagingSurfaces.ts) | 50 | libraries | memberMessagingSurface:12, partnerMessagingSurface:20, employerMessagingSurface:28, counselorStaffMessagingSurface:36, adminMessagingSurface:44 |
 | [lib/portal/mockInterviewVideoUpload.ts](../../../lib/portal/mockInterviewVideoUpload.ts) | 86 | libraries | MockInterviewVideoMeta:7, uploadMockInterviewVideo:14 |
 | [lib/portal/navBadges.ts](../../../lib/portal/navBadges.ts) | 271 | libraries | NavBadgeCounts:13, getNavBadgeCountsForUser:17, isValidPortalBadgeRole:269 |

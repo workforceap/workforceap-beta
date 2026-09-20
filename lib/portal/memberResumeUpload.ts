@@ -1,5 +1,12 @@
 'use client';
 
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import {
+  MEMBER_REQUEST_TIMEOUT_MS,
+  describeMemberRequestException,
+  readMemberRequestFailure,
+} from '@/lib/portal/memberRequestFailure';
+
 const MAX_SIZE = 5 * 1024 * 1024;
 
 export const RESUME_UPLOAD_ACCEPT = '.pdf,.docx,.txt';
@@ -31,15 +38,22 @@ export async function uploadMemberResumeFile(
   formData.append('file', file);
 
   try {
-    const res = await fetch('/api/member/resume/upload', {
-      method: 'POST',
-      body: formData,
-    });
+    // A hung, non-JSON or 5xx answer must surface as a sentence the member can
+    // act on, never as an unchanged page (member audit 7c).
+    const res = await fetchWithTimeout(
+      '/api/member/resume/upload',
+      { method: 'POST', body: formData },
+      MEMBER_REQUEST_TIMEOUT_MS,
+    );
 
-    const data = await res.json();
     if (!res.ok) {
-      return { ok: false, error: data.error ?? 'Upload failed' };
+      return { ok: false, error: await readMemberRequestFailure(res) };
     }
+
+    const data = (await res.json().catch(() => ({}))) as {
+      extractionWarning?: unknown;
+      enhancedInvalidated?: unknown;
+    };
 
     return {
       ok: true,
@@ -50,7 +64,7 @@ export async function uploadMemberResumeFile(
           : '',
       ].filter(Boolean).join(' ') || null,
     };
-  } catch {
-    return { ok: false, error: 'Upload failed (network error)' };
+  } catch (err) {
+    return { ok: false, error: describeMemberRequestException(err) };
   }
 }
