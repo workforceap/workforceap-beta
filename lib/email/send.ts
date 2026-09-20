@@ -340,10 +340,29 @@ export function isTransientProviderError(error: unknown, depth = 0): boolean {
  * Per-message key when the caller supplies none, so a provider retry (ours,
  * or a platform re-invocation the same day) cannot double-deliver the same
  * message. Hashes recipients + subject + body + UTC day: a different body
- * (a second contact-form message, a fresh test send) is a different key.
+ * (a second contact-form message, a fresh test send) is a different key, and
+ * so is the same body with a regenerated attachment.
  */
+/**
+ * Stable fingerprint of the attachment list: filename, byte length and a
+ * content hash per attachment, in caller order. The counselor email packet,
+ * the billing packet and the WIOA report re-send identical html with a
+ * regenerated attachment on the same day; without this the key would repeat
+ * and Resend would answer `invalid_idempotent_request` instead of delivering.
+ */
+export function attachmentsFingerprint(attachments: SendBrandedEmailArgs['attachments']): string {
+  if (!attachments || attachments.length === 0) return '';
+  return attachments
+    .map((attachment) => {
+      const content = typeof attachment.content === 'string' ? Buffer.from(attachment.content) : attachment.content;
+      const contentHash = createHash('sha256').update(content).digest('hex');
+      return `${attachment.filename}:${content.length}:${contentHash}`;
+    })
+    .join('|');
+}
+
 export function defaultIdempotencyKey(
-  args: Pick<SendBrandedEmailArgs, 'to' | 'cc' | 'bcc' | 'replyTo' | 'subject' | 'html' | 'template' | 'templateKey'>,
+  args: Pick<SendBrandedEmailArgs, 'to' | 'cc' | 'bcc' | 'replyTo' | 'subject' | 'html' | 'template' | 'templateKey' | 'attachments'>,
   nowMs: number,
 ): string {
   // Send-log template key first (lib/email/templateKeys.ts), then the resend
@@ -359,7 +378,7 @@ export function defaultIdempotencyKey(
   const digest = createHash('sha256')
     .update([
       addressList(args.to), addressList(args.cc), addressList(args.bcc), addressList(args.replyTo),
-      args.subject, args.html, dayBucket,
+      args.subject, args.html, attachmentsFingerprint(args.attachments), dayBucket,
     ].join('\n'))
     .digest('hex');
   return `${templateKey}/${digest}`;

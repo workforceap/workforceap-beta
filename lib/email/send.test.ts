@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import {
+  attachmentsFingerprint,
   defaultIdempotencyKey,
   isEmailProviderRateLimitError,
   isFixtureEmailRecipient,
@@ -243,6 +244,35 @@ describe('sendBrandedEmail', () => {
     assert.notEqual(defaultIdempotencyKey({ ...args, cc: 'counselor@workforceap.org' }, nowMs), keys[0]);
     assert.notEqual(defaultIdempotencyKey({ ...args, bcc: ['audit@workforceap.org'] }, nowMs), keys[0]);
     assert.notEqual(defaultIdempotencyKey({ ...args, replyTo: 'mike@workforceap.org' }, nowMs), keys[0]);
+  });
+
+  it('folds attachments into the default idempotency key so a regenerated packet is a new message', () => {
+    const nowMs = Date.parse('2026-09-20T15:00:00Z');
+    const base = {
+      to: 'counselor@workforceap.org',
+      subject: 'Session packet',
+      html: '<p>Your packet is attached.</p>',
+    };
+    const pdfV1 = Buffer.from('%PDF-1.4 packet generated 15:00');
+    const pdfV2 = Buffer.from('%PDF-1.4 packet generated 15:07');
+    const withV1 = defaultIdempotencyKey({ ...base, attachments: [{ filename: 'packet.pdf', content: pdfV1 }] }, nowMs);
+    const withV1Again = defaultIdempotencyKey({ ...base, attachments: [{ filename: 'packet.pdf', content: Buffer.from(pdfV1) }] }, nowMs);
+    const withV2 = defaultIdempotencyKey({ ...base, attachments: [{ filename: 'packet.pdf', content: pdfV2 }] }, nowMs);
+    const withoutAttachment = defaultIdempotencyKey(base, nowMs);
+
+    // Identical html + identical attachment bytes: same message, same key.
+    assert.equal(withV1, withV1Again);
+    // Identical html, different attachment bytes (same length): different key.
+    assert.equal(pdfV1.length, pdfV2.length);
+    assert.notEqual(withV1, withV2);
+    // Attachment present vs absent, a renamed file, and string content that
+    // equals the buffer bytes are all distinguished / equated as expected.
+    assert.notEqual(withV1, withoutAttachment);
+    assert.notEqual(withV1, defaultIdempotencyKey({ ...base, attachments: [{ filename: 'packet-final.pdf', content: pdfV1 }] }, nowMs));
+    assert.equal(withV1, defaultIdempotencyKey({ ...base, attachments: [{ filename: 'packet.pdf', content: pdfV1.toString() }] }, nowMs));
+    assert.equal(defaultIdempotencyKey({ ...base, attachments: [] }, nowMs), withoutAttachment);
+    // The fingerprint itself carries name, byte length and a content hash.
+    assert.match(attachmentsFingerprint([{ filename: 'packet.pdf', content: pdfV1 }]), /^packet\.pdf:31:[0-9a-f]{64}$/);
   });
 
   it('does not retry a permanent provider rejection or the CRLF header defect', async () => {

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "3be281f14a2cfc81f555994456a138a7dcce836497deae6da32fce5c7753987e",
+  "inputTreeSha256": "df1e55fb2346d3fa64bf2c5d6d97867d7559d7c796270b674d5e92cf8f56a577",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -116618,9 +116618,9 @@
       "path": "lib/email/send.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 29056,
-      "lines": 746,
-      "sha256": "3f386133cca8f6a84c70da24dcacd0b21af485830b7271d871d2eda2749b19f3",
+      "bytes": 31025,
+      "lines": 776,
+      "sha256": "7bbc00f29c943ccb38b6813e1869cfca50a8207e6ae167fef91697d8852774bb",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -116630,9 +116630,9 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 24281,
-      "lines": 582,
-      "sha256": "642e49e1f3859ddfc7b53cde6f4ef950b08bfb6553efaeb481b9ec7c32e26f81",
+      "bytes": 25283,
+      "lines": 601,
+      "sha256": "ca1cbc18a7f807c048f6715577a52ae717f06301fdcdde869479fa5bc84bbb6c",
       "binary": false,
       "exports": [
         {
@@ -116701,23 +116701,28 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "attachmentsFingerprint",
+          "line": 353,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "defaultIdempotencyKey",
-          "line": 345,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 415,
+          "line": 434,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 426,
+          "line": 445,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 571,
+          "line": 590,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116868,38 +116873,43 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "attachmentsFingerprint",
+          "line": 353,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "defaultIdempotencyKey",
-          "line": 345,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecipientField",
-          "line": 368,
+          "line": 387,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "withoutRecipients",
-          "line": 371,
+          "line": 390,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 380,
+          "line": 399,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 415,
+          "line": 434,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 426,
+          "line": 445,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 571,
+          "line": 590,
           "kind": "FunctionDeclaration"
         }
       ],

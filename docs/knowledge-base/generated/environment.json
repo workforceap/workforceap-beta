@@ -878,71 +878,71 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 17
+          "line": 18
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 77
+          "line": 78
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 126
+          "line": 127
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 165
+          "line": 166
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 203
+          "line": 204
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 249
+          "line": 279
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 278
+          "line": 308
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 298
+          "line": 328
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 335
+          "line": 365
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 373
+          "line": 403
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 435
+          "line": 465
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 473
+          "line": 503
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 555
+          "line": 585
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 596
+          "line": 626
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 647
+          "line": 677
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 699
+          "line": 729
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 725
+          "line": 755
         },
         {
           "file": "lib/email/unsubscribeToken.ts",
@@ -1508,19 +1508,19 @@
       "references": [
         {
           "file": "lib/email/send.test.ts",
-          "line": 79
+          "line": 80
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 81
-        },
-        {
-          "file": "lib/email/send.test.ts",
-          "line": 120
+          "line": 82
         },
         {
           "file": "lib/email/send.test.ts",
           "line": 121
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 122
         },
         {
           "file": "lib/email/send.ts",
@@ -1535,19 +1535,19 @@
       "references": [
         {
           "file": "lib/email/send.test.ts",
-          "line": 18
-        },
-        {
-          "file": "lib/email/send.test.ts",
           "line": 19
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 71
+          "line": 20
         },
         {
           "file": "lib/email/send.test.ts",
           "line": 72
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 73
         },
         {
           "file": "lib/email/send.ts",
@@ -1626,23 +1626,19 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 78
+          "line": 79
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 80
+          "line": 81
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 119
+          "line": 120
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 119
-        },
-        {
-          "file": "lib/email/send.test.ts",
-          "line": 127
+          "line": 120
         },
         {
           "file": "lib/email/send.test.ts",
@@ -1650,11 +1646,15 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 160
+          "line": 129
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 160
+          "line": 161
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 161
         },
         {
           "file": "lib/email/send.ts",
@@ -2324,19 +2324,19 @@
         },
         {
           "file": "lib/email/send.test.ts",
-          "line": 557
-        },
-        {
-          "file": "lib/email/send.test.ts",
-          "line": 558
-        },
-        {
-          "file": "lib/email/send.test.ts",
-          "line": 586
-        },
-        {
-          "file": "lib/email/send.test.ts",
           "line": 587
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 588
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 616
+        },
+        {
+          "file": "lib/email/send.test.ts",
+          "line": 617
         },
         {
           "file": "lib/email/template.ts",
