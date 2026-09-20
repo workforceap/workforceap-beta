@@ -138,7 +138,7 @@ describe('partner portal', () => {
     const src = readFileSync(path.join(root, 'app/(portal)/partner/page.tsx'), 'utf8');
     expect(src).not.toContain('StatusBadge');
     // #2385 moved the import onto the kit barrel; the pill component is what matters.
-    expect(src).toMatch(/import \{[^}]*\bStatusTag\b[^}]*\} from '@\/components\/portal\/kit(?:\/StatusTag)?';/s);
+    expect(src).toMatch(/import \{[^}]*\bStatusTag\b[^}]*\} from '@\/components\/portal\/kit(?:\/StatusTag)?';/);
     expect(src).toContain('<StatusTag tone={row.stage === \'placed\' ? \'ok\' : \'alert\'}>');
   });
 
