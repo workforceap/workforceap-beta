@@ -211,7 +211,7 @@
 | [app/api/admin/webhook-events/export/route.ts](../../../app/api/admin/webhook-events/export/route.ts) | 91 | administration | GET:91 |
 | [app/api/admin/webhooks/process-retries/_processRetries.ts](../../../app/api/admin/webhooks/process-retries/_processRetries.ts) | 78 | administration | RetryResult:7, processRetryEvent:43 |
 | [app/api/admin/webhooks/process-retries/route.test.ts](../../../app/api/admin/webhooks/process-retries/route.test.ts) | 100 | administration |  |
-| [app/api/admin/webhooks/process-retries/route.ts](../../../app/api/admin/webhooks/process-retries/route.ts) | 78 | administration | maxDuration:12, GET:77, POST:78 |
+| [app/api/admin/webhooks/process-retries/route.ts](../../../app/api/admin/webhooks/process-retries/route.ts) | 84 | administration | maxDuration:12, GET:83, POST:84 |
 | [app/api/agent-tools/v1/\[tool\]/route.ts](../../../app/api/agent-tools/v1/%5Btool%5D/route.ts) | 114 | api | runtime:15, dynamic:16, POST:67 |
 | [app/api/ai/cover-letter/route.ts](../../../app/api/ai/cover-letter/route.ts) | 162 | ai-voice | POST:15 |
 | [app/api/ai/elevator-pitch/route.ts](../../../app/api/ai/elevator-pitch/route.ts) | 228 | ai-voice | POST:28 |
@@ -234,7 +234,7 @@
 | [app/api/ai/salary-negotiation/route.ts](../../../app/api/ai/salary-negotiation/route.ts) | 112 | ai-voice | POST:16 |
 | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | 207 | ai-voice | GET:24 |
 | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | 94 | applications-enrollment | POST:94 |
-| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1327 | applications-enrollment |  |
+| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1353 | applications-enrollment |  |
 | [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1082 | applications-enrollment | POST:191 |
 | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | 55 | applications-enrollment | POST:28 |
 | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | 120 | identity-tenancy | GET:14 |

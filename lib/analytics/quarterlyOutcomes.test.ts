@@ -218,6 +218,9 @@ describe('generateQuarterlyOutcomes', () => {
     const report = await generateQuarterlyOutcomes(ORG_ID, makeSpec('Q1', 2026));
 
     expect(report.metrics.totalEnrolled).toBe(4);
+    // Official totals are SQL counts, not a length of hydrated rows.
+    expect(prisma.user.count).toHaveBeenCalledTimes(1);
+    expect(prisma.placementRecord.count).toHaveBeenCalledTimes(1);
     expect(report.metrics.completions).toBe(1);
     expect(report.programBreakdown.find((program) => program.programSlug === DIGITAL_LITERACY_PROGRAM_SLUG)?.completions).toBe(1);
     expect(report.metrics.placements).toBe(1);

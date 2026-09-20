@@ -161,10 +161,8 @@ Provider fallback chain: **Anthropic → Groq → Gemini**. At least one is requ
 | `ELEVENLABS_PARTNER_AGENT_ID` | 🟢 🔒 | ConvAI agent: partner portal | `agent_...` | `lib/ai/elevenlabsAgents.ts` |
 | `ELEVENLABS_WIOA_PREQUAL_AGENT_ID` | 🟢 🔒 | ConvAI agent: WIOA prequal | `agent_...` | `lib/ai/elevenlabsAgents.ts` |
 | `ELEVENLABS_CAREER_BUSINESS_AGENT_ID` | 🟢 🔒 | Legacy member career/business override; restricted to the reviewed Lilley student agent | `agent_...` | `lib/ai/elevenlabsAgents.ts` |
-| `NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: WIOA | `Sarah` | Portal voice surfaces |
-| `NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID` | 🟢 👁️ | Legacy browser TTS voice ID. No code reads it any more (its only consumer, `lib/portal/counselorVoice.ts`, was removed); it never controlled Lilley or staff ConvAI voices, which are configured on each ElevenLabs agent | `...` | None (listed in `.env.example` only) |
-| `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: female interviewer | `...` | Portal voice surfaces |
-| `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID` | 🟢 👁️ | Public TTS voice ID: male interviewer | `...` | Portal voice surfaces |
+
+**Retired (read by no code):** `NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID`, `NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID`, `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID` and `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID`. Their last consumer (`lib/portal/counselorVoice.ts`) was removed; they never controlled Lilley or staff ConvAI voices, which are configured on each ElevenLabs agent, and server text-to-speech uses the default voice in `lib/ai/elevenlabs.ts`. They are no longer listed in `.env.example`; delete them from deployed configuration whenever convenient. `ELEVENLABS_AGENT_ID` is read only by the `scripts/elevenlabs/*` runners described in [the member-agent cutover runbook](runbooks/elevenlabs-member-agent-cutover.md), never by the application.
 
 **Note:** Most agent IDs have reviewed code fallbacks for production resilience, but staff counselor mode intentionally does not. Keep member and staff IDs separate: member/default sessions use Lilley; role-authorized requests with `audience: "staff"` require `ELEVENLABS_COUNSELOR_STAFF_AGENT_ID` and return 503 while it is unset. ConvAI voices are configured on each ElevenLabs agent, not by `NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID`. Both member Lilley entry points accept only reviewed student-agent IDs and require `ELEVENLABS_LILLEY_BRANCH_ID`, so stale or unknown deploy values cannot route students to a staff, unreviewed branch, or unverified voice. The staff and unrelated agents do not inherit the Lilley branch pin.
 
@@ -362,7 +360,6 @@ These **must** be prefixed with `NEXT_PUBLIC_` to be accessible in the browser:
 - `NEXT_PUBLIC_CAPTCHA_ENABLED`
 - `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
 - `NEXT_PUBLIC_SENTRY_DSN`
-- `NEXT_PUBLIC_ELEVENLABS_*_VOICE_ID`
 - `NEXT_PUBLIC_WIOA_ENABLED`
 - `NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD`
 
@@ -386,13 +383,9 @@ These are referenced in the application but absent from `.env.example`. New deve
 - `UNSUBSCRIBE_TOKEN_SECRET`
 
 **AI / Voice:**
-- `ELEVENLABS_CAREER_BUSINESS_AGENT_ID`
-- `ELEVENLABS_WIOA_PREQUAL_AGENT_ID`
 - `GEMINI_API_KEY`
 - `GEMINI_MODEL`
 - `GROQ_MODEL`
-- `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID`
-- `NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID`
 
 **Analytics:**
 - `ENABLE_ANALYTICS_LOGS`
@@ -474,6 +467,7 @@ These are referenced in the application but absent from `.env.example`. New deve
 
 | Date | Change |
 |------|--------|
+| 2026-09-20 | Retired the four `NEXT_PUBLIC_ELEVENLABS_*_VOICE_ID` rows (no code reads them; removed from `.env.example`) and dropped the stale AI/Voice drift bullets: every `ELEVENLABS_*_AGENT_ID` the registry reads is in `.env.example`. |
 | 2026-09-18 | Documented `hub_smoke` on Authenticated Portal Smoke (member/counselor/employer Playwright lane; no read-only audit token). |
 | 2026-09-17 | WAP-66: documented `UNSUBSCRIBE_TOKEN_SECRET` and its rotation caveat, `PORTAL_AUDIT_READ_ONLY_TOKEN`, the pre-audit health gate variables, and the GitHub Actions secrets behind the isolated preview audit. |
 | 2026-08-31 | Documented the fail-closed member-agent gateway, Upstash dependency, reviewed-agent registry, and secure ElevenLabs activation commands. |
