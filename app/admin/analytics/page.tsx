@@ -4,14 +4,19 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/queryCaps';
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getAnalyticsOverview } from '@/lib/admin/analytics';
+import { getAdminMetrics } from '@/lib/admin/metrics';
+import { ANALYTICS_TAB_PARAM, buildEnrollmentOutcomesPanel, parseAnalyticsTab } from '@/lib/admin/analyticsTabs';
+import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import { AnalyticsKit } from '@/components/portal/kit/pages/admin-subviews/AnalyticsKit';
+import { EnrollmentOutcomesPanel } from '@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel';
 import type { KpiItem, RankDatum } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -209,7 +214,7 @@ async function getEngagementData(orgId?: string): Promise<EngagementData> {
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ui?: string }>;
+  searchParams: Promise<{ ui?: string; tab?: string }>;
 }) {
   const user = await getUser();
   if (!user) {
@@ -230,9 +235,14 @@ export default async function AnalyticsPage({
   }
 
   // ── DEFAULT (design-kit) PATH — runs after the auth/role guard so access
-  // control is preserved. Lean engagement loader; empty data → KPIs 0 and
-  // empty RankBars panels. ──
-  const engagement = await getEngagementData(orgId ?? undefined);
+  // control is preserved. Two server-rendered tabs: the lean engagement
+  // loader (empty data → KPIs 0 and empty-state panels) and the enrollment /
+  // outcomes numbers /admin/metrics prints, from its cached loader. ──
+  const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
+  const [engagement, metrics] = await Promise.all([
+    getEngagementData(orgId ?? undefined),
+    getAdminMetrics(scope.orgId, { readOnlyAudit }),
+  ]);
 
   const kpis: KpiItem[] = [
     { label: 'WAU', value: engagement.wau.toLocaleString('en-US') },
@@ -242,10 +252,15 @@ export default async function AnalyticsPage({
   ];
 
   return (
-    <AnalyticsKit
-      kpis={kpis}
-      topTools={engagement.topTools.length > 0 ? engagement.topTools : undefined}
-      activeByProgram={engagement.activeByProgram.length > 0 ? engagement.activeByProgram : undefined}
-    />
+    <>
+      {readOnlyAudit && <span hidden data-portal-audit-suppressed="admin-metrics-shared-cache" />}
+      <AnalyticsKit
+        kpis={kpis}
+        topTools={engagement.topTools.length > 0 ? engagement.topTools : undefined}
+        activeByProgram={engagement.activeByProgram.length > 0 ? engagement.activeByProgram : undefined}
+        initialTab={parseAnalyticsTab(sp[ANALYTICS_TAB_PARAM])}
+        enrollmentPanel={<EnrollmentOutcomesPanel data={buildEnrollmentOutcomesPanel(metrics)} />}
+      />
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
+import { ArrowRight, FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
 import {
   DesignSurface,
   PageOpener,
@@ -17,6 +17,11 @@ import { EmptyState } from '@astryxdesign/core/EmptyState';
  * route the page already exposes (CSV download endpoints) or, for the filterable
  * Member Training Report, into the legacy form view. Server-rendered (plain
  * anchors, no interactivity) so it stays a clean RSC.
+ *
+ * One verb per row type (admin audit §6.6): a file endpoint says "Download"
+ * (or the page's translated download label), carries the `download`
+ * attribute and a download glyph; an in-portal page says "Open" with an
+ * arrow. `exportRowKind` decides from the row itself.
  */
 
 export type ExportTone = 'success' | 'info' | 'accent' | 'gold' | 'muted';
@@ -40,6 +45,18 @@ export interface ExportOption {
   download?: boolean;
   /** Open in a new tab (for export endpoints that stream a file). */
   newTab?: boolean;
+  /**
+   * Row verb override, e.g. the translated "Download funder summary CSV".
+   * Defaults to "Download" for file endpoints and "Open" for portal pages.
+   */
+  actionLabel?: string;
+}
+
+export type ExportRowKind = 'download' | 'open';
+
+/** A row is a file when it says so or points outside the admin portal. */
+export function exportRowKind(option: Pick<ExportOption, 'href' | 'download'>): ExportRowKind {
+  return option.download || !option.href.startsWith('/admin') ? 'download' : 'open';
 }
 
 export interface ExportsKitProps {
@@ -109,10 +126,12 @@ function exportIcon(kind: ExportOption['iconKey']): ReactNode {
 
 function ExportTile({ option }: { option: ExportOption }) {
   const tint = TONE_TINT[option.tone ?? 'muted'];
+  const kind = exportRowKind(option);
   return (
     <a
       href={option.href}
-      {...(option.download ? { download: true } : {})}
+      data-export-action={kind}
+      {...(kind === 'download' ? { download: true } : {})}
       {...(option.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className="wa-kit-card wa-kit-card--hover wa-kit-focus"
       style={{
@@ -161,8 +180,8 @@ function ExportTile({ option }: { option: ExportOption }) {
           borderTop: '1px solid var(--wa-border)',
         }}
       >
-        <Download className="h-3.5 w-3.5" />
-        {option.href.includes('ui=legacy') ? 'Open' : 'Download'}
+        {kind === 'download' ? <Download className="h-3.5 w-3.5" aria-hidden /> : <ArrowRight className="h-3.5 w-3.5" aria-hidden />}
+        {option.actionLabel ?? (kind === 'download' ? 'Download' : 'Open')}
       </div>
     </a>
   );
