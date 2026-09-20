@@ -12,8 +12,13 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import LogExternalApplicationButton from '@/components/portal/jobs/LogExternalApplicationButton';
 import JobsListingClient from './JobsListingClient';
 import JobsBoardSkeleton from './JobsBoardSkeleton';
-import { MemberJobsKit } from '@/components/portal/kit/pages/member/MemberJobsKit';
+import {
+  JOBS_OPEN_ROLES_ANCHOR,
+  MemberJobsKit,
+  type OpenRoleRow,
+} from '@/components/portal/kit/pages/member/MemberJobsKit';
 import { displayJobLocation } from '@/lib/member/jobPipelineDisplay';
+import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -313,6 +318,28 @@ export default async function JobsPage({
         .join(' · '),
     }));
 
+    // Live openings (already fetched above for the public board) listed under
+    // the pipeline so the member can reach a job from the job board (audit 7b).
+    const appliedSet = new Set(appliedJobIds);
+    const LOCATION_TYPE_LABEL: Record<string, string> = {
+      remote: 'Remote',
+      hybrid: 'Hybrid',
+      onsite: 'On-site',
+    };
+    const openRoles: OpenRoleRow[] = initialJobs.map((job) => ({
+      id: job.id,
+      title: job.title,
+      logo: (job.employer.companyName || '?').slice(0, 2).toUpperCase(),
+      applied: appliedSet.has(job.id),
+      meta: [
+        job.employer.companyName,
+        job.location?.trim() ? displayJobLocation(job.location) : LOCATION_TYPE_LABEL[job.locationType] ?? null,
+        formatJobSalaryRange(job.salaryMin, job.salaryMax),
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    }));
+
     return (
       <div
         data-portal-error-state={
@@ -329,11 +356,13 @@ export default async function JobsPage({
         interviewing={interviewingCount}
         offers={offersCount}
         syncedLabel={`${applications.length} active application${applications.length === 1 ? '' : 's'}`}
-        browseHref="/dashboard/jobs?ui=legacy"
+        browseHref={JOBS_OPEN_ROLES_ANCHOR}
         profileHref="/dashboard/profile"
         // Pass the member's REAL rows (DataTable renders its own empty state).
         applications={applications}
-          recommended={recommended}
+        recommended={recommended}
+        openRoles={openRoles}
+        openRolesTotal={initialTotal}
         />
       </div>
     );

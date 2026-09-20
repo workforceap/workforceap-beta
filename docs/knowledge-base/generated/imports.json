@@ -7554,10 +7554,18 @@
   {
     "from": "app/(portal)/dashboard/jobs/page.tsx",
     "specifier": "@/lib/member/jobPipelineDisplay",
-    "line": 16,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/member/jobPipelineDisplay.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/jobs/page.tsx",
+    "specifier": "@/lib/jobs/formatSalary",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/jobs/formatSalary.ts"
   },
   {
     "from": "app/(portal)/dashboard/layout.tsx",
@@ -87984,6 +87992,30 @@
     "target": "components/portal/tools/AiToolError.tsx"
   },
   {
+    "from": "components/portal/tools/ElevatorPitchClient.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "components/portal/tools/ElevatorPitchClient.test.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "components/portal/tools/ElevatorPitchClient.test.tsx",
+    "specifier": "./ElevatorPitchClient",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/tools/ElevatorPitchClient.tsx"
+  },
+  {
     "from": "components/portal/tools/ElevatorPitchClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -88025,8 +88057,24 @@
   },
   {
     "from": "components/portal/tools/ElevatorPitchClient.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/lib/fetchWithTimeout",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/fetchWithTimeout.ts"
+  },
+  {
+    "from": "components/portal/tools/ElevatorPitchClient.tsx",
+    "specifier": "@/lib/portal/memberRequestFailure",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "components/portal/tools/ElevatorPitchClient.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -88034,7 +88082,7 @@
   {
     "from": "components/portal/tools/ElevatorPitchClient.tsx",
     "specifier": "./AiToolLanguageSelector",
-    "line": 16,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/portal/tools/AiToolLanguageSelector.tsx"
@@ -88042,7 +88090,7 @@
   {
     "from": "components/portal/tools/ElevatorPitchClient.tsx",
     "specifier": "./ToolFollowThrough",
-    "line": 17,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "components/portal/tools/ToolFollowThrough.tsx"
@@ -88050,7 +88098,7 @@
   {
     "from": "components/portal/tools/ElevatorPitchClient.tsx",
     "specifier": "./AiToolError",
-    "line": 18,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "components/portal/tools/AiToolError.tsx"
@@ -110960,6 +111008,30 @@
     "target": "lib/portal/memberProfilePhoto.ts"
   },
   {
+    "from": "lib/portal/memberRequestFailure.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/portal/memberRequestFailure.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/portal/memberRequestFailure.test.ts",
+    "specifier": "./memberRequestFailure",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
     "from": "lib/portal/memberResumeUpload.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -110982,6 +111054,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/portal/memberResumeUpload.ts"
+  },
+  {
+    "from": "lib/portal/memberResumeUpload.ts",
+    "specifier": "@/lib/fetchWithTimeout",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/fetchWithTimeout.ts"
+  },
+  {
+    "from": "lib/portal/memberResumeUpload.ts",
+    "specifier": "@/lib/portal/memberRequestFailure",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
   },
   {
     "from": "lib/portal/mockInterviewVideoUpload.ts",
@@ -131368,6 +131456,38 @@
     "target": "components/portal/JobApplicationForm.tsx"
   },
   {
+    "from": "tests/components/member-jobs-open-roles.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/member-jobs-open-roles.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/member-jobs-open-roles.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberJobsKit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberJobsKit.tsx"
+  },
+  {
+    "from": "tests/components/member-jobs-open-roles.spec.tsx",
+    "specifier": "@/lib/member/jobPipelineDisplay",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/jobPipelineDisplay.ts"
+  },
+  {
     "from": "tests/components/member-lab-workspace.test.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -131502,6 +131622,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/content/courseDelivery.ts"
+  },
+  {
+    "from": "tests/components/member-resume-upload-failure.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/member-resume-upload-failure.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/member-resume-upload-failure.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/resume/ResumeClient",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/resume/ResumeClient.tsx"
   },
   {
     "from": "tests/components/member-signup-form.spec.tsx",

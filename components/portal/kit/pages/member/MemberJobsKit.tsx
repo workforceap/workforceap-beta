@@ -2,7 +2,7 @@ import { Compass } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { DesignSurface, KpiStrip, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
-import { JOBS_EMPTY_RECOMMENDATIONS } from '@/lib/member/jobPipelineDisplay';
+import { JOBS_BOARD_EMPTY, JOBS_EMPTY_RECOMMENDATIONS } from '@/lib/member/jobPipelineDisplay';
 
 /**
  * Member Portal — JOB PIPELINE view.
@@ -10,12 +10,21 @@ import { JOBS_EMPTY_RECOMMENDATIONS } from '@/lib/member/jobPipelineDisplay';
  * docs/mockups/workforceap-member-suite.html.
  * Recommended matches use JobListingRow so pipeline, board, and listing share one row.
  *
+ * The live open-roles list renders here too (`#open-roles`, JobListingRow →
+ * `/dashboard/jobs/<id>`), so the page is never a dead end: "Browse openings"
+ * and "Browse jobs" jump to that list instead of round-tripping through
+ * `?ui=legacy` (member audit 7b). An empty list is the honest
+ * `JOBS_BOARD_EMPTY` state, not a hidden section.
+ *
  * Defaults are empty. Proofs and the live route pass real rows — never invent
  * a Deloitte/Accenture pipeline when the caller omits data.
  *
  * Target route: app/(portal)/dashboard/jobs
  * Surface: warm (member-facing).
  */
+
+/** In-page anchor for the live open-roles list; the default `browseHref`. */
+export const JOBS_OPEN_ROLES_ANCHOR = '#open-roles';
 
 interface ApplicationRow {
   id: string;
@@ -35,18 +44,35 @@ interface RecommendedJob {
   meta: string;
 }
 
+/** One live opening on the board (`Job.status = 'live'`, not expired). */
+export interface OpenRoleRow {
+  id: string;
+  title: string;
+  /** Company · location · salary (already joined). */
+  meta: string;
+  /** Employer initials for the row tile; falls back to the briefcase icon. */
+  logo?: string;
+  /** The member already applied to this role (non-SAVED application on file). */
+  applied?: boolean;
+}
+
 export interface MemberJobsKitProps {
   saved?: number;
   applied?: number;
   interviewing?: number;
   offers?: number;
   syncedLabel?: string;
+  /** Where "Browse openings" / "Browse jobs" go. Defaults to the in-page open-roles list. */
   browseHref?: string;
   profileHref?: string;
   /** Match-row destination. Proofs pass a hash so they stay on /dev/member. */
   jobHref?: (jobId: string) => string;
   applications?: ApplicationRow[];
   recommended?: RecommendedJob[];
+  /** Live openings to list under the pipeline; each links through `jobHref`. */
+  openRoles?: OpenRoleRow[];
+  /** Total live openings when more exist than are listed. */
+  openRolesTotal?: number;
 }
 
 function JobsCta({
@@ -75,12 +101,15 @@ export function MemberJobsKit({
   interviewing = 0,
   offers = 0,
   syncedLabel,
-  browseHref = '#',
+  browseHref = JOBS_OPEN_ROLES_ANCHOR,
   profileHref = '/dashboard/profile',
   jobHref = (id: string) => `/dashboard/jobs/${id}`,
   applications = [],
   recommended = [],
+  openRoles = [],
+  openRolesTotal,
 }: MemberJobsKitProps) {
+  const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
   const columns: Column<ApplicationRow>[] = [
     { key: 'role', header: 'Role', render: (r) => <span style={{ fontWeight: 700 }}>{r.role}</span> },
     { key: 'company', header: 'Company', render: (r) => <span className="wa-kit-meta">{r.company}</span> },
@@ -148,6 +177,53 @@ export function MemberJobsKit({
             />
           )}
         </div>
+
+        <section id="open-roles" aria-labelledby="open-roles-heading" style={{ scrollMarginTop: 96 }}>
+          <div className="wa-flex wa-items-end wa-justify-between wa-gap-3 wa-flex-wrap" style={{ marginBottom: 16 }}>
+            <h2 id="open-roles-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', margin: 0 }}>
+              Open roles
+            </h2>
+            {openRolesCount > 0 ? (
+              <p className="wa-kit-meta" style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>
+                {openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}
+              </p>
+            ) : null}
+          </div>
+          {openRoles.length === 0 ? (
+            <div className="wa-kit-card">
+              <KitEmptyState
+                title={JOBS_BOARD_EMPTY.title}
+                description={JOBS_BOARD_EMPTY.description}
+                action={
+                  <div className="wa-flex wa-flex-wrap wa-gap-2">
+                    <JobsCta href={JOBS_BOARD_EMPTY.primaryHref}>{JOBS_BOARD_EMPTY.primaryCta}</JobsCta>
+                    <JobsCta href={JOBS_BOARD_EMPTY.secondaryHref} variant="secondary">
+                      {JOBS_BOARD_EMPTY.secondaryCta}
+                    </JobsCta>
+                  </div>
+                }
+              />
+            </div>
+          ) : (
+            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} data-testid="open-roles-list">
+              {openRoles.map((job, i) => (
+                <JobListingRow
+                  key={job.id}
+                  href={jobHref(job.id)}
+                  title={job.title}
+                  meta={job.meta}
+                  applied={job.applied}
+                  first={i === 0}
+                  icon={
+                    job.logo ? (
+                      <span className="wa-kit-meta" style={{ fontWeight: 800, letterSpacing: '0.04em', color: 'var(--wa-text)' }}>{job.logo}</span>
+                    ) : undefined
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
 
         <div>
           <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Recommended</h2>
