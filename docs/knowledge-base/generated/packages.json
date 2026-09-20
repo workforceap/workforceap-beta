@@ -102,6 +102,7 @@
       "build:with-migrate",
       "check",
       "check-migrations",
+      "check:audit-coverage",
       "check:source-text-tests",
       "check:tenant-routes",
       "coursera:audit-links",

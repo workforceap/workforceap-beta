@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { createPacketSchema, sumLineItems } from '@/lib/billing/packetSchema';
 import { isUniqueViolation, nextPacketNumber } from '@/lib/billing/packetNumber';
@@ -133,6 +135,30 @@ export const POST = withApiGuc(async (request: Request, { params }: { params: Pr
       }
     }
     if (!created) return NextResponse.json({ error: 'Could not allocate an invoice number' }, { status: 500 });
+
+    // Dual audit (WAP-18): a signed billing packet is a financial record.
+    // Metadata carries identifiers and totals only — bill-to details stay on the packet row.
+    void auditLog({
+      actorUserId: user.id,
+      action: 'admin_billing_packet_create',
+      targetType: 'training_billing_packet',
+      targetId: created.id,
+      metadata: {
+        memberId: member.id,
+        programSlug: input.programSlug,
+        packetNumber: created.packetNumber,
+        totalAmount,
+        orgId: member.organizationId,
+      },
+    }).catch(() => {});
+    void logAuditEvent({
+      user: { id: user.id, role: 'admin' },
+      verb: 'created',
+      object: { type: 'TrainingBillingPacket', id: created.id },
+      result: { success: true, extensions: { memberId: member.id, programSlug: input.programSlug, totalAmount } },
+      request: auditRequestMeta(request),
+      orgId: member.organizationId,
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true, packet: serializeBillingPacket(created, programTitle) }, { status: 201 });
   } catch (error) {

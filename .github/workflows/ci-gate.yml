@@ -68,7 +68,7 @@ jobs:
         run: node scripts/prisma-env.js prisma generate
 
       - name: Typecheck
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
 
       # Icon font coverage — fails if source uses a Material Symbols icon
       # missing from the committed subset (would render as raw ligature
@@ -85,33 +85,36 @@ jobs:
       # `scripts/test-unit.mjs` with the reason logged at startup.
       # Required gate — failures block the PR.
       - name: Unit tests
-        run: npm run test:unit
+        run: pnpm run test:unit
 
       # Lint is release-blocking so Vercel cannot strand production on an
       # ESLint error after GitHub CI has already reported success.
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
         timeout-minutes: 5
 
       # Vitest is release-blocking. Playwright e2e and node:test files are
       # excluded by vitest.config.ts and run in their own lanes.
       - name: Vitest
-        run: timeout 480 npm run test:vitest
+        run: timeout 480 pnpm run test:vitest
         timeout-minutes: 10
 
-      # Dead-code detection — report-only. No knip/ts-prune/depcheck config
-      # existed before this; `knip` was added as a devDependency (see
-      # package.json) but hasn't been tuned yet (no knip.json, so it uses
-      # default Next.js/Prisma-aware detection which may have false
-      # positives on this codebase, e.g. dynamic route handlers or
-      # barrel re-exports). Surfaces unused files/exports/deps on every
-      # PR without blocking. Flip to required once the initial report has
-      # been triaged and a knip.json config silences accepted false
-      # positives.
-      - name: Dead code (report-only)
-        run: npm run deadcode
-        continue-on-error: true
+      # Dead-code detection — required gate (WAP-37). `knip.json` tunes the
+      # entry points (route handlers, scripts, emails, marketing/) and
+      # silences the FlatCompat / dynamic-import false positives. Unused
+      # dependencies, unlisted imports, unresolved specifiers and duplicate
+      # exports fail the build; unused files / exports / types are still
+      # reported as warnings while the reviewed deletion batches land.
+      - name: Dead code (knip)
+        run: pnpm run deadcode
         timeout-minutes: 5
+
+      # Audit coverage (WAP-18): every app/api/admin/**/route.ts exporting a
+      # mutating method must call auditLog/logAuditEvent (directly or via a
+      # listed audited helper), or sit on the explicit non-persisting
+      # allowlist inside the script. Required gate.
+      - name: Verify admin mutation audit coverage
+        run: node scripts/verify-admin-mutation-audit.cjs
 
       # Tenant-isolation guardrails. Static-grep check across high-risk
       # routes — expanded in PR 2 of AUDIT-2026-05-16 to cover the
@@ -127,7 +130,7 @@ jobs:
         run: node scripts/verify-no-source-text-tests.mjs
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
         env:
           SKIP_ENV_VALIDATION: "1"
           RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"

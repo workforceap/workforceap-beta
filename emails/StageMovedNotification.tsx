@@ -17,7 +17,7 @@ interface StageMovedNotificationProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.workforceap.org";
 
-export const StageMovedNotification = ({
+const StageMovedNotification = ({
   memberName = "Member",
   previousStage = "Application Review",
   newStage = "Enrolled",

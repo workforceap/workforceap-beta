@@ -14,7 +14,7 @@ interface WelcomeEmailProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.workforceap.org";
 
-export const WelcomeEmail = ({
+const WelcomeEmail = ({
   userName = "there",
   loginUrl = `${baseUrl}/login`,
 }: WelcomeEmailProps) => {

@@ -15,6 +15,7 @@ import {
 } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
+import { rewardReferralOnEnrollment } from '@/lib/member/referrals';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 
 const patchSchema = z.object({
@@ -158,6 +159,12 @@ export const PATCH = withApiGuc(async (
 
   // Lifecycle event for approved program changes
   if (nextStatus === 'APPROVED') {
+    // Approval enrolls the member (CourseEnrollment upsert above): settle any
+    // referral captured at signup (WAP-32). Idempotent, non-blocking.
+    rewardReferralOnEnrollment(existing.userId).catch((err) =>
+      console.error('[program-change] referral settlement failed:', err),
+    );
+
     trackEvent({
       userId: existing.userId,
       eventName: 'program_change_approved',

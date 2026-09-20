@@ -17,13 +17,13 @@
 | [app/api/admin/api-docs/openapi/route.ts](../../../app/api/admin/api-docs/openapi/route.ts) | 15 | administration | dynamic:7, GET:9 |
 | [app/api/admin/applications/bulk-review/route.ts](../../../app/api/admin/applications/bulk-review/route.ts) | 124 | jobs-employers | POST:124 |
 | [app/api/admin/blog/\[id\]/route.ts](../../../app/api/admin/blog/%5Bid%5D/route.ts) | 159 | administration | GET:51, PATCH:128, DELETE:159 |
-| [app/api/admin/blog/ai/draft/route.ts](../../../app/api/admin/blog/ai/draft/route.ts) | 126 | ai-voice | POST:10 |
-| [app/api/admin/blog/ai/from-ideas/route.ts](../../../app/api/admin/blog/ai/from-ideas/route.ts) | 147 | ai-voice | POST:9 |
+| [app/api/admin/blog/ai/draft/route.ts](../../../app/api/admin/blog/ai/draft/route.ts) | 135 | ai-voice | POST:11 |
+| [app/api/admin/blog/ai/from-ideas/route.ts](../../../app/api/admin/blog/ai/from-ideas/route.ts) | 156 | ai-voice | POST:10 |
 | [app/api/admin/blog/ai/review/route.ts](../../../app/api/admin/blog/ai/review/route.ts) | 100 | ai-voice | POST:90 |
 | [app/api/admin/blog/ai/suggest-topics/route.ts](../../../app/api/admin/blog/ai/suggest-topics/route.ts) | 102 | ai-voice | POST:11 |
 | [app/api/admin/blog/generate/route.ts](../../../app/api/admin/blog/generate/route.ts) | 87 | administration | POST:71 |
 | [app/api/admin/blog/route.ts](../../../app/api/admin/blog/route.ts) | 92 | administration | POST:32 |
-| [app/api/admin/certifications/review/route.ts](../../../app/api/admin/certifications/review/route.ts) | 87 | administration | POST:20 |
+| [app/api/admin/certifications/review/route.ts](../../../app/api/admin/certifications/review/route.ts) | 106 | administration | POST:22 |
 | [app/api/admin/chapters/route.ts](../../../app/api/admin/chapters/route.ts) | 89 | administration | GET:88, POST:89 |
 | [app/api/admin/cohort-export/route.ts](../../../app/api/admin/cohort-export/route.ts) | 273 | administration | GET:19 |
 | [app/api/admin/counselors/route.ts](../../../app/api/admin/counselors/route.ts) | 152 | administration | GET:50, POST:152 |
@@ -32,8 +32,8 @@
 | [app/api/admin/coursera/b4b-programs/route.ts](../../../app/api/admin/coursera/b4b-programs/route.ts) | 91 | learning-coursera | GET:91 |
 | [app/api/admin/coursera/backfill-orphans/route.ts](../../../app/api/admin/coursera/backfill-orphans/route.ts) | 52 | learning-coursera | runtime:11, maxDuration:12, POST:31 |
 | [app/api/admin/coursera/backfill-xapi/route.ts](../../../app/api/admin/coursera/backfill-xapi/route.ts) | 190 | learning-coursera | GET:40, POST:63 |
-| [app/api/admin/coursera/canonical-course-mappings/route.ts](../../../app/api/admin/coursera/canonical-course-mappings/route.ts) | 146 | learning-coursera | POST:121, DELETE:145 |
-| [app/api/admin/coursera/csv-import/route.ts](../../../app/api/admin/coursera/csv-import/route.ts) | 163 | learning-coursera | runtime:21, POST:163 |
+| [app/api/admin/coursera/canonical-course-mappings/route.ts](../../../app/api/admin/coursera/canonical-course-mappings/route.ts) | 171 | learning-coursera | POST:138, DELETE:170 |
+| [app/api/admin/coursera/csv-import/route.ts](../../../app/api/admin/coursera/csv-import/route.ts) | 187 | learning-coursera | runtime:22, POST:187 |
 | [app/api/admin/coursera/enroll-member/route.ts](../../../app/api/admin/coursera/enroll-member/route.ts) | 275 | learning-coursera | POST:275 |
 | [app/api/admin/coursera/enrollment-pipeline/route.ts](../../../app/api/admin/coursera/enrollment-pipeline/route.ts) | 33 | learning-coursera | GET:33 |
 | [app/api/admin/coursera/ignored-xapi-summary/route.ts](../../../app/api/admin/coursera/ignored-xapi-summary/route.ts) | 132 | learning-coursera | GET:36 |
@@ -74,8 +74,8 @@
 | [app/api/admin/email-templates/route.test.ts](../../../app/api/admin/email-templates/route.test.ts) | 9 | communications |  |
 | [app/api/admin/email-templates/route.ts](../../../app/api/admin/email-templates/route.ts) | 25 | communications | GET:8 |
 | [app/api/admin/employer-context/route.ts](../../../app/api/admin/employer-context/route.ts) | 82 | administration | GET:42, POST:82 |
-| [app/api/admin/employer-screening-packs/\[id\]/route.ts](../../../app/api/admin/employer-screening-packs/%5Bid%5D/route.ts) | 63 | administration | PATCH:45, DELETE:62 |
-| [app/api/admin/employer-screening-packs/route.ts](../../../app/api/admin/employer-screening-packs/route.ts) | 70 | administration | GET:35, POST:70 |
+| [app/api/admin/employer-screening-packs/\[id\]/route.ts](../../../app/api/admin/employer-screening-packs/%5Bid%5D/route.ts) | 78 | administration | PATCH:53, DELETE:77 |
+| [app/api/admin/employer-screening-packs/route.ts](../../../app/api/admin/employer-screening-packs/route.ts) | 78 | administration | GET:36, POST:78 |
 | [app/api/admin/employers/\[id\]/approve/route.ts](../../../app/api/admin/employers/%5Bid%5D/approve/route.ts) | 115 | administration | POST:14 |
 | [app/api/admin/employers/\[id\]/deactivate/route.ts](../../../app/api/admin/employers/%5Bid%5D/deactivate/route.ts) | 71 | administration | POST:19 |
 | [app/api/admin/employers/\[id\]/reactivate/route.ts](../../../app/api/admin/employers/%5Bid%5D/reactivate/route.ts) | 71 | administration | POST:19 |
@@ -107,12 +107,12 @@
 | [app/api/admin/lifecycle/drift/route.ts](../../../app/api/admin/lifecycle/drift/route.ts) | 99 | administration | GET:8 |
 | [app/api/admin/lifecycle/member/\[id\]/route.ts](../../../app/api/admin/lifecycle/member/%5Bid%5D/route.ts) | 108 | member-counselor | GET:8 |
 | [app/api/admin/members/\[id\]/award-points/route.ts](../../../app/api/admin/members/%5Bid%5D/award-points/route.ts) | 74 | administration | POST:74 |
-| [app/api/admin/members/\[id\]/billing-packets/route.ts](../../../app/api/admin/members/%5Bid%5D/billing-packets/route.ts) | 142 | administration | GET:38, POST:59 |
+| [app/api/admin/members/\[id\]/billing-packets/route.ts](../../../app/api/admin/members/%5Bid%5D/billing-packets/route.ts) | 168 | administration | GET:40, POST:61 |
 | [app/api/admin/members/\[id\]/consent/route.ts](../../../app/api/admin/members/%5Bid%5D/consent/route.ts) | 91 | learning-coursera | PATCH:23 |
 | [app/api/admin/members/\[id\]/counselor/route.ts](../../../app/api/admin/members/%5Bid%5D/counselor/route.ts) | 104 | member-counselor | POST:19 |
 | [app/api/admin/members/\[id\]/coursera-enrollment-approval/route.ts](../../../app/api/admin/members/%5Bid%5D/coursera-enrollment-approval/route.ts) | 87 | learning-coursera | PATCH:87 |
 | [app/api/admin/members/\[id\]/delete/route.ts](../../../app/api/admin/members/%5Bid%5D/delete/route.ts) | 139 | administration | POST:24 |
-| [app/api/admin/members/\[id\]/edit-profile/route.ts](../../../app/api/admin/members/%5Bid%5D/edit-profile/route.ts) | 104 | administration | PATCH:19 |
+| [app/api/admin/members/\[id\]/edit-profile/route.ts](../../../app/api/admin/members/%5Bid%5D/edit-profile/route.ts) | 126 | administration | PATCH:21 |
 | [app/api/admin/members/\[id\]/enrollment-funding/route.ts](../../../app/api/admin/members/%5Bid%5D/enrollment-funding/route.ts) | 125 | administration | POST:22 |
 | [app/api/admin/members/\[id\]/erase/route.ts](../../../app/api/admin/members/%5Bid%5D/erase/route.ts) | 189 | administration | POST:33 |
 | [app/api/admin/members/\[id\]/export-data/route.ts](../../../app/api/admin/members/%5Bid%5D/export-data/route.ts) | 77 | administration | GET:77 |
@@ -122,7 +122,7 @@
 | [app/api/admin/members/\[id\]/partner/route.ts](../../../app/api/admin/members/%5Bid%5D/partner/route.ts) | 88 | partners-funding | PATCH:18 |
 | [app/api/admin/members/\[id\]/pipeline-stage/route.ts](../../../app/api/admin/members/%5Bid%5D/pipeline-stage/route.ts) | 88 | administration | PATCH:88 |
 | [app/api/admin/members/\[id\]/placed-outcome/route.ts](../../../app/api/admin/members/%5Bid%5D/placed-outcome/route.ts) | 203 | administration | POST:33 |
-| [app/api/admin/members/\[id\]/program/route.ts](../../../app/api/admin/members/%5Bid%5D/program/route.ts) | 173 | administration | PATCH:24 |
+| [app/api/admin/members/\[id\]/program/route.ts](../../../app/api/admin/members/%5Bid%5D/program/route.ts) | 176 | administration | PATCH:25 |
 | [app/api/admin/members/\[id\]/readiness/route.ts](../../../app/api/admin/members/%5Bid%5D/readiness/route.ts) | 214 | administration | GET:110, PATCH:213 |
 | [app/api/admin/members/\[id\]/reset-assessment/route.ts](../../../app/api/admin/members/%5Bid%5D/reset-assessment/route.ts) | 62 | administration | POST:13 |
 | [app/api/admin/members/\[id\]/reset-password/route.ts](../../../app/api/admin/members/%5Bid%5D/reset-password/route.ts) | 79 | administration | POST:79 |
@@ -139,7 +139,7 @@
 | [app/api/admin/members/at-risk/route.ts](../../../app/api/admin/members/at-risk/route.ts) | 112 | administration | GET:54, PATCH:112 |
 | [app/api/admin/members/bulk-email/route.ts](../../../app/api/admin/members/bulk-email/route.ts) | 199 | administration | POST:199 |
 | [app/api/admin/members/bulk-export/route.ts](../../../app/api/admin/members/bulk-export/route.ts) | 214 | administration | POST:214 |
-| [app/api/admin/members/bulk-update/route.ts](../../../app/api/admin/members/bulk-update/route.ts) | 292 | administration | POST:292 |
+| [app/api/admin/members/bulk-update/route.ts](../../../app/api/admin/members/bulk-update/route.ts) | 301 | administration | POST:301 |
 | [app/api/admin/members/create/route.ts](../../../app/api/admin/members/create/route.ts) | 343 | administration | POST:38 |
 | [app/api/admin/members/duplicates/route.ts](../../../app/api/admin/members/duplicates/route.ts) | 116 | administration | GET:9 |
 | [app/api/admin/members/enhance-resume/route.ts](../../../app/api/admin/members/enhance-resume/route.ts) | 103 | administration | POST:103 |
@@ -149,10 +149,10 @@
 | [app/api/admin/members/route.ts](../../../app/api/admin/members/route.ts) | 54 | administration | GET:54 |
 | [app/api/admin/members/send-eligibility-campaign/route.ts](../../../app/api/admin/members/send-eligibility-campaign/route.ts) | 155 | administration | POST:155 |
 | [app/api/admin/mentors/\[id\]/route.ts](../../../app/api/admin/mentors/%5Bid%5D/route.ts) | 40 | administration | PATCH:10 |
-| [app/api/admin/messages/stats/route.ts](../../../app/api/admin/messages/stats/route.ts) | 30 | communications | GET:6 |
+| [app/api/admin/messages/stats/route.ts](../../../app/api/admin/messages/stats/route.ts) | 32 | communications | GET:32 |
 | [app/api/admin/messages/thread/\[threadId\]/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/route.ts) | 175 | communications | GET:11 |
 | [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | 107 | communications | POST:79, PATCH:106 |
-| [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | 335 | communications | GET:205, POST:335 |
+| [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | 345 | communications | GET:206, POST:345 |
 | [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 263 | administration | GET:237 |
 | [app/api/admin/milestone-cascades/\[id\]/approve/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/approve/route.ts) | 195 | member-counselor | POST:195 |
 | [app/api/admin/milestone-cascades/\[id\]/dismiss/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/dismiss/route.ts) | 116 | member-counselor | POST:116 |
@@ -161,7 +161,7 @@
 | [app/api/admin/onet/mappings/route.ts](../../../app/api/admin/onet/mappings/route.ts) | 285 | administration | GET:92, POST:225, DELETE:285 |
 | [app/api/admin/onet/search/route.ts](../../../app/api/admin/onet/search/route.ts) | 39 | administration | GET:39 |
 | [app/api/admin/onet/sync/route.ts](../../../app/api/admin/onet/sync/route.ts) | 67 | administration | POST:16 |
-| [app/api/admin/organization/logo/route.ts](../../../app/api/admin/organization/logo/route.ts) | 73 | administration | POST:12 |
+| [app/api/admin/organization/logo/route.ts](../../../app/api/admin/organization/logo/route.ts) | 83 | administration | POST:13 |
 | [app/api/admin/outcomes/pdf/route.ts](../../../app/api/admin/outcomes/pdf/route.ts) | 189 | administration | GET:189 |
 | [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | 280 | administration | GET:280 |
 | [app/api/admin/outcomes/snapshot/route.ts](../../../app/api/admin/outcomes/snapshot/route.ts) | 83 | administration | GET:83 |
@@ -184,12 +184,12 @@
 | [app/api/admin/placement-surveys/resend/route.ts](../../../app/api/admin/placement-surveys/resend/route.ts) | 165 | administration | POST:23 |
 | [app/api/admin/placement-surveys/route.ts](../../../app/api/admin/placement-surveys/route.ts) | 105 | administration | GET:7 |
 | [app/api/admin/placements/route.ts](../../../app/api/admin/placements/route.ts) | 198 | jobs-employers | GET:196, POST:197, PATCH:198 |
-| [app/api/admin/program-change-requests/\[id\]/route.ts](../../../app/api/admin/program-change-requests/%5Bid%5D/route.ts) | 221 | administration | PATCH:25 |
+| [app/api/admin/program-change-requests/\[id\]/route.ts](../../../app/api/admin/program-change-requests/%5Bid%5D/route.ts) | 228 | administration | PATCH:26 |
 | [app/api/admin/program-change-requests/route.ts](../../../app/api/admin/program-change-requests/route.ts) | 40 | administration | GET:8 |
 | [app/api/admin/programs/catalog/route.ts](../../../app/api/admin/programs/catalog/route.ts) | 250 | administration | GET:248, POST:249, PATCH:250 |
 | [app/api/admin/programs/export-twc/route.ts](../../../app/api/admin/programs/export-twc/route.ts) | 104 | administration | GET:104 |
 | [app/api/admin/reports/quarterly-outcomes/route.ts](../../../app/api/admin/reports/quarterly-outcomes/route.ts) | 57 | administration | GET:26 |
-| [app/api/admin/reports/wioa/generate/route.ts](../../../app/api/admin/reports/wioa/generate/route.ts) | 56 | partners-funding | POST:12, GET:41 |
+| [app/api/admin/reports/wioa/generate/route.ts](../../../app/api/admin/reports/wioa/generate/route.ts) | 46 | partners-funding | POST:46 |
 | [app/api/admin/reports/wioa/route.ts](../../../app/api/admin/reports/wioa/route.ts) | 146 | partners-funding | GET:146 |
 | [app/api/admin/search/route.ts](../../../app/api/admin/search/route.ts) | 121 | administration | GET:10 |
 | [app/api/admin/settings/organization/route.ts](../../../app/api/admin/settings/organization/route.ts) | 94 | administration | GET:51, PATCH:93 |
@@ -235,7 +235,7 @@
 | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | 207 | ai-voice | GET:24 |
 | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | 94 | applications-enrollment | POST:94 |
 | [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1327 | applications-enrollment |  |
-| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1068 | applications-enrollment | POST:190 |
+| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1082 | applications-enrollment | POST:191 |
 | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | 55 | applications-enrollment | POST:28 |
 | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | 120 | identity-tenancy | GET:14 |
 | [app/api/auth/forgot-password/route.ts](../../../app/api/auth/forgot-password/route.ts) | 78 | identity-tenancy | POST:10 |
@@ -283,8 +283,8 @@
 | [app/api/counselor/sessions/voice-walkthrough/route.ts](../../../app/api/counselor/sessions/voice-walkthrough/route.ts) | 192 | member-counselor | POST:192 |
 | [app/api/counselor/sessions/walk-in/route.ts](../../../app/api/counselor/sessions/walk-in/route.ts) | 324 | member-counselor | POST:60 |
 | [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) | 89 | communications | maxDuration:11, GET:88, POST:89 |
-| [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 54 | communications | runtime:10, maxDuration:11, GET:53, POST:54 |
-| [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 147 | communications | runtime:18, maxDuration:19, GET:146, POST:147 |
+| [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 59 | communications | runtime:10, maxDuration:11, GET:58, POST:59 |
+| [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 86 | communications | runtime:13, maxDuration:14, GET:85, POST:86 |
 | [app/api/cron/course-accountability/route.ts](../../../app/api/cron/course-accountability/route.ts) | 154 | communications | maxDuration:15, GET:153, POST:154 |
 | [app/api/cron/coursera-auto-heal/route.ts](../../../app/api/cron/coursera-auto-heal/route.ts) | 136 | learning-coursera | maxDuration:16, GET:135, POST:136 |
 | [app/api/cron/coursera-b4b-sync/route.ts](../../../app/api/cron/coursera-b4b-sync/route.ts) | 92 | learning-coursera | maxDuration:13, GET:91, POST:92 |
@@ -300,7 +300,7 @@
 | [app/api/cron/job-expiry/route.ts](../../../app/api/cron/job-expiry/route.ts) | 110 | communications | maxDuration:14, GET:109, POST:110 |
 | [app/api/cron/milestone-cascade-draft/route.ts](../../../app/api/cron/milestone-cascade-draft/route.ts) | 42 | communications | maxDuration:10, GET:41, POST:42 |
 | [app/api/cron/milestone-cascade-expire/route.ts](../../../app/api/cron/milestone-cascade-expire/route.ts) | 30 | communications | maxDuration:10, GET:29, POST:30 |
-| [app/api/cron/milestone-celebration/route.ts](../../../app/api/cron/milestone-celebration/route.ts) | 135 | communications | maxDuration:14, GET:134, POST:135 |
+| [app/api/cron/milestone-celebration/route.ts](../../../app/api/cron/milestone-celebration/route.ts) | 147 | communications | maxDuration:15, GET:146, POST:147 |
 | [app/api/cron/onboarding-stalls/route.ts](../../../app/api/cron/onboarding-stalls/route.ts) | 193 | communications | maxDuration:12, GET:192, POST:193 |
 | [app/api/cron/partner-outcome-digest/route.ts](../../../app/api/cron/partner-outcome-digest/route.ts) | 195 | communications | maxDuration:16, GET:194, POST:195 |
 | [app/api/cron/placement-survey/route.ts](../../../app/api/cron/placement-survey/route.ts) | 49 | communications | maxDuration:7, GET:48, POST:49 |
@@ -423,7 +423,7 @@
 | [app/api/member/profile-photo/route.ts](../../../app/api/member/profile-photo/route.ts) | 79 | member-counselor | GET:15, DELETE:28 |
 | [app/api/member/profile-photo/upload/route.ts](../../../app/api/member/profile-photo/upload/route.ts) | 103 | member-counselor | POST:17 |
 | [app/api/member/profile/completeness/route.ts](../../../app/api/member/profile/completeness/route.ts) | 77 | member-counselor | GET:29 |
-| [app/api/member/profile/route.ts](../../../app/api/member/profile/route.ts) | 126 | member-counselor | GET:48, PATCH:125 |
+| [app/api/member/profile/route.ts](../../../app/api/member/profile/route.ts) | 149 | member-counselor | GET:50, PATCH:148 |
 | [app/api/member/program-change-request/route.ts](../../../app/api/member/program-change-request/route.ts) | 86 | member-counselor | GET:42, POST:86 |
 | [app/api/member/program-comparison/route.ts](../../../app/api/member/program-comparison/route.ts) | 37 | member-counselor | GET:37 |
 | [app/api/member/readiness/route.ts](../../../app/api/member/readiness/route.ts) | 27 | member-counselor | GET:27 |
@@ -503,7 +503,7 @@
 | [app/api/push/subscribe/route.ts](../../../app/api/push/subscribe/route.ts) | 65 | communications | POST:64, DELETE:65 |
 | [app/api/q/\[token\]/submit/route.ts](../../../app/api/q/%5Btoken%5D/submit/route.ts) | 347 | api | POST:82 |
 | [app/api/recommend/route.ts](../../../app/api/recommend/route.ts) | 35 | api | GET:15 |
-| [app/api/referral-sources/route.ts](../../../app/api/referral-sources/route.ts) | 33 | applications-enrollment | GET:12 |
+| [app/api/referral-sources/route.ts](../../../app/api/referral-sources/route.ts) | 32 | applications-enrollment | GET:11 |
 | [app/api/skill-missions/\[courseSlug\]/evaluate/route.ts](../../../app/api/skill-missions/%5BcourseSlug%5D/evaluate/route.ts) | 234 | api | POST:47 |
 | [app/api/skill-missions/\[courseSlug\]/quiz-check/route.ts](../../../app/api/skill-missions/%5BcourseSlug%5D/quiz-check/route.ts) | 122 | api | POST:26 |
 | [app/api/staff/lab-reviews/\[submissionId\]/route.ts](../../../app/api/staff/lab-reviews/%5BsubmissionId%5D/route.ts) | 33 | api | GET:9, POST:20 |
@@ -514,7 +514,6 @@
 | [app/api/subgroup/members/route.ts](../../../app/api/subgroup/members/route.ts) | 113 | api | GET:12 |
 | [app/api/test/xapi-access-token/route.ts](../../../app/api/test/xapi-access-token/route.ts) | 37 | api | GET:12 |
 | [app/api/unsubscribe/route.ts](../../../app/api/unsubscribe/route.ts) | 88 | api | dynamic:21, POST:66, GET:77 |
-| [app/api/waitlist/route.ts](../../../app/api/waitlist/route.ts) | 73 | api | POST:28, GET:52 |
 | [app/api/webhooks/coursera/route.ts](../../../app/api/webhooks/coursera/route.ts) | 396 | learning-coursera | POST:88 |
 | [app/api/webhooks/learning-completion/_webhook.ts](../../../app/api/webhooks/learning-completion/_webhook.ts) | 82 | api | webhookSchema:5, verifyWebhookSecret:11, buildDedupeKey:27, checkIdempotency:33 |
 | [app/api/webhooks/learning-completion/route.test.ts](../../../app/api/webhooks/learning-completion/route.test.ts) | 236 | api |  |

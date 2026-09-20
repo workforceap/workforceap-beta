@@ -26,12 +26,12 @@
 | [LAUNCH-RUNBOOK.md](../../../LAUNCH-RUNBOOK.md) | 283 | root |  |
 | [MEMBER_ICP_AUDIT_REPORT.md](../../../MEMBER_ICP_AUDIT_REPORT.md) | 235 | root |  |
 | [MOBILE_AUDIT.md](../../../MOBILE_AUDIT.md) | 57 | root |  |
-| [NOTIFICATION-AUDIT.md](../../../NOTIFICATION-AUDIT.md) | 158 | communications |  |
+| [NOTIFICATION-AUDIT.md](../../../NOTIFICATION-AUDIT.md) | 157 | communications |  |
 | [PLAN-2026-Q3.md](../../../PLAN-2026-Q3.md) | 544 | root |  |
 | [QA-AUDIT-REPORT-2026-05-12.md](../../../QA-AUDIT-REPORT-2026-05-12.md) | 232 | root |  |
 | [README.md](../../../README.md) | 97 | root |  |
 | [SYSTEM-DOCUMENTATION.md](../../../SYSTEM-DOCUMENTATION.md) | 359 | root |  |
-| [TODOS.md](../../../TODOS.md) | 996 | root |  |
+| [TODOS.md](../../../TODOS.md) | 1003 | root |  |
 | [USER-GUIDE.md](../../../USER-GUIDE.md) | 510 | root |  |
 | [WORKING.md](../../../WORKING.md) | 78 | root |  |
 | [WorkforceAP-Brand-Guide-2026.pdf](../../../WorkforceAP-Brand-Guide-2026.pdf) | binary | root |  |
@@ -39,12 +39,13 @@
 | [brand-guide.html](../../../brand-guide.html) | 921 | root |  |
 | [css-vars-material-symbols.d.ts](../../../css-vars-material-symbols.d.ts) | 14 | root |  |
 | [deploy-to-homelab.sh](../../../deploy-to-homelab.sh) | 74 | root |  |
-| [eslint.config.mjs](../../../eslint.config.mjs) | 209 | root | default:209 |
+| [eslint.config.mjs](../../../eslint.config.mjs) | 205 | root | default:205 |
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 225 | root | onRouterTransitionStart:194, setSentryUser:213 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
+| [knip.json](../../../knip.json) | 61 | root |  |
 | [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
-| [package.json](../../../package.json) | 146 | root |  |
+| [package.json](../../../package.json) | 147 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |
 | [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12644 | root |  |
 | [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 13 | root |  |

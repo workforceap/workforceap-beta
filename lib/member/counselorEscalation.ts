@@ -9,7 +9,7 @@
  *
  *   - Bumps (or opens) an `AtRiskAlert` row so the member surfaces in the
  *     counselor inbox-zero `at_risk` queue and the existing daily
- *     `runDailyAtRiskCounselorAlerts` cron eventually emails the counselor.
+ *     `runAtRiskCounselorAlerts` (weekly at-risk-alerts cron) eventually emails the counselor.
  *   - Writes a readable `CounselorNote` so the concern shows up wherever
  *     counselors already look at member history.
  *

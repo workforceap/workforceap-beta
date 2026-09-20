@@ -39,6 +39,12 @@ vi.mock('@/lib/supabaseCookieOptions', () => ({
   getSupabaseCookieOptions: vi.fn(() => ({})),
 }));
 
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
+vi.mock('@/lib/audit/log', () => ({
+  logAuditEvent: vi.fn(async () => undefined),
+  auditRequestMeta: vi.fn(() => ({})),
+}));
+
 vi.mock('@/lib/auth/server', () => ({
   resolveAuthGucContext: vi.fn(async () => ({ userId: null, orgId: null, role: 'anonymous' })),
   getUser: vi.fn(),

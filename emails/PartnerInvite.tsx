@@ -16,7 +16,7 @@ interface PartnerInviteEmailProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.workforceap.org";
 
-export const PartnerInviteEmail = ({
+const PartnerInviteEmail = ({
   invitedBy = "The WorkforceAP Team",
   invitedEmail = "partner@example.com",
   inviteLink = `${baseUrl}/signup?type=partner`,

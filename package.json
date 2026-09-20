@@ -20,6 +20,7 @@
     "check": "npm run typecheck && npm run lint && node scripts/verify-material-symbols-font-size.mjs",
     "check:tenant-routes": "node scripts/verify-high-risk-tenant-routes.cjs",
     "check:source-text-tests": "node scripts/verify-no-source-text-tests.mjs",
+    "check:audit-coverage": "node scripts/verify-admin-mutation-audit.cjs",
     "test:db-contract": "node scripts/run-db-contract-tests.mjs",
     "check-migrations": "node scripts/check-duplicate-migrations.mjs",
     "build:local": "node scripts/verify-material-symbols-font-size.mjs && node scripts/prisma-env.js prisma generate && next build",

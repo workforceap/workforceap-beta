@@ -495,8 +495,6 @@ export function rankPrograms(occ: OccupationForMatch, programs: ReadonlyArray<Pr
   return ranked;
 }
 
-/** Alias for `rankPrograms` used by the AI career mapping engine. */
-export const autoMatchOccupationToPrograms = rankPrograms;
 
 /** Legacy single-program scorer (signature preserved for unit tests). */
 export function scoreProgram(prog: Program, occTokens: Set<string>, occ: OccupationForMatch): AutoMatchResult {
