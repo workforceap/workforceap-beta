@@ -4815,30 +4815,6 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
-    "file": "lib/counselor/needsAttentionRows.test.ts",
-    "area": "libraries",
-    "domain": "member-counselor",
-    "frameworkImports": [
-      "node:test"
-    ],
-    "localReferences": [
-      {
-        "file": "lib/counselor/needsAttentionRows.ts",
-        "line": 3
-      }
-    ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "node-unit",
-        "source": "scripts/test-unit.mjs",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
     "file": "lib/counselor/nudgeTemplates.test.ts",
     "area": "libraries",
     "domain": "member-counselor",
