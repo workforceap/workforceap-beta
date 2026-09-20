@@ -23,7 +23,7 @@
 | [app/api/admin/blog/ai/suggest-topics/route.ts](../../../app/api/admin/blog/ai/suggest-topics/route.ts) | 102 | ai-voice | POST:11 |
 | [app/api/admin/blog/generate/route.ts](../../../app/api/admin/blog/generate/route.ts) | 87 | administration | POST:71 |
 | [app/api/admin/blog/route.ts](../../../app/api/admin/blog/route.ts) | 92 | administration | POST:32 |
-| [app/api/admin/certifications/review/route.ts](../../../app/api/admin/certifications/review/route.ts) | 106 | administration | POST:22 |
+| [app/api/admin/certifications/review/route.ts](../../../app/api/admin/certifications/review/route.ts) | 115 | administration | POST:27 |
 | [app/api/admin/chapters/route.ts](../../../app/api/admin/chapters/route.ts) | 89 | administration | GET:88, POST:89 |
 | [app/api/admin/cohort-export/route.ts](../../../app/api/admin/cohort-export/route.ts) | 273 | administration | GET:19 |
 | [app/api/admin/counselors/route.ts](../../../app/api/admin/counselors/route.ts) | 152 | administration | GET:50, POST:152 |
@@ -205,7 +205,7 @@
 | [app/api/admin/users/\[id\]/restore/route.ts](../../../app/api/admin/users/%5Bid%5D/restore/route.ts) | 182 | administration | POST:16 |
 | [app/api/admin/users/\[id\]/route.ts](../../../app/api/admin/users/%5Bid%5D/route.ts) | 310 | administration | DELETE:89, PATCH:310 |
 | [app/api/admin/users/_deletedEmail.test.ts](../../../app/api/admin/users/_deletedEmail.test.ts) | 31 | administration |  |
-| [app/api/admin/users/_deletedEmail.ts](../../../app/api/admin/users/_deletedEmail.ts) | 21 | administration | buildDeletedEmail:6, parseDeletedEmail:11, isDeletedEmail:15, isDeletedEmailMarker:19 |
+| [app/api/admin/users/_deletedEmail.ts](../../../app/api/admin/users/_deletedEmail.ts) | 8 | administration | buildDeletedEmail:4, isDeletedEmail:5, isDeletedEmailMarker:6, parseDeletedEmail:7 |
 | [app/api/admin/users/free-deleted-emails/route.ts](../../../app/api/admin/users/free-deleted-emails/route.ts) | 85 | administration | POST:85 |
 | [app/api/admin/users/route.ts](../../../app/api/admin/users/route.ts) | 258 | administration | GET:55, POST:258 |
 | [app/api/admin/webhook-events/export/route.ts](../../../app/api/admin/webhook-events/export/route.ts) | 91 | administration | GET:91 |
@@ -343,7 +343,7 @@
 | [app/api/events/route.ts](../../../app/api/events/route.ts) | 56 | api | POST:19 |
 | [app/api/feature-flags/route.ts](../../../app/api/feature-flags/route.ts) | 46 | api | GET:11 |
 | [app/api/gdpr/consent/route.ts](../../../app/api/gdpr/consent/route.ts) | 74 | learning-coursera | GET:30, PATCH:73 |
-| [app/api/gdpr/delete/route.ts](../../../app/api/gdpr/delete/route.ts) | 159 | api | POST:19 |
+| [app/api/gdpr/delete/route.ts](../../../app/api/gdpr/delete/route.ts) | 134 | api | POST:20 |
 | [app/api/gdpr/export/route.ts](../../../app/api/gdpr/export/route.ts) | 81 | api | GET:6 |
 | [app/api/health/ready/_readyCache.ts](../../../app/api/health/ready/_readyCache.ts) | 20 | api | CACHE_TTL_MS:6, ReadyCacheEntry:8, readyCache:15, __resetReadyCache:18 |
 | [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | 139 | api | dynamic:12, OPTIONS:77, GET:86 |
@@ -371,7 +371,7 @@
 | [app/api/member/career-business-coach/completion/route.ts](../../../app/api/member/career-business-coach/completion/route.ts) | 93 | member-counselor | POST:35 |
 | [app/api/member/career-business-coach/voice-session/route.ts](../../../app/api/member/career-business-coach/voice-session/route.ts) | 76 | member-counselor | POST:11 |
 | [app/api/member/certifications/export/route.ts](../../../app/api/member/certifications/export/route.ts) | 38 | member-counselor | GET:7 |
-| [app/api/member/certifications/route.ts](../../../app/api/member/certifications/route.ts) | 122 | member-counselor | GET:37, POST:121 |
+| [app/api/member/certifications/route.ts](../../../app/api/member/certifications/route.ts) | 96 | member-counselor | GET:33, POST:95 |
 | [app/api/member/certifications/upload/route.ts](../../../app/api/member/certifications/upload/route.ts) | 104 | member-counselor | POST:17 |
 | [app/api/member/coursera/auto-sync/route.ts](../../../app/api/member/coursera/auto-sync/route.ts) | 181 | learning-coursera | POST:181 |
 | [app/api/member/coursera/enroll-in-course/route.ts](../../../app/api/member/coursera/enroll-in-course/route.ts) | 323 | learning-coursera | POST:323 |
@@ -381,7 +381,7 @@
 | [app/api/member/coursera/route.ts](../../../app/api/member/coursera/route.ts) | 105 | learning-coursera | GET:11 |
 | [app/api/member/courses/complete/route.ts](../../../app/api/member/courses/complete/route.ts) | 75 | learning-coursera | POST:75 |
 | [app/api/member/dashboard-profile/route.ts](../../../app/api/member/dashboard-profile/route.ts) | 142 | member-counselor | PATCH:56 |
-| [app/api/member/delete-account/route.ts](../../../app/api/member/delete-account/route.ts) | 76 | member-counselor | POST:15 |
+| [app/api/member/delete-account/route.ts](../../../app/api/member/delete-account/route.ts) | 61 | member-counselor | POST:15 |
 | [app/api/member/eligibility/route.ts](../../../app/api/member/eligibility/route.ts) | 300 | member-counselor | GET:126, PATCH:300 |
 | [app/api/member/enroll/route.ts](../../../app/api/member/enroll/route.ts) | 226 | applications-enrollment | POST:28 |
 | [app/api/member/enrollments/\[id\]/route.ts](../../../app/api/member/enrollments/%5Bid%5D/route.ts) | 51 | member-counselor | GET:6 |
@@ -508,7 +508,7 @@
 | [app/api/skill-missions/\[courseSlug\]/quiz-check/route.ts](../../../app/api/skill-missions/%5BcourseSlug%5D/quiz-check/route.ts) | 122 | api | POST:26 |
 | [app/api/staff/lab-reviews/\[submissionId\]/route.ts](../../../app/api/staff/lab-reviews/%5BsubmissionId%5D/route.ts) | 33 | api | GET:9, POST:20 |
 | [app/api/staff/lab-reviews/route.ts](../../../app/api/staff/lab-reviews/route.ts) | 17 | api | GET:8 |
-| [app/api/stripe/webhook/route.ts](../../../app/api/stripe/webhook/route.ts) | 249 | partners-funding | POST:34 |
+| [app/api/stripe/webhook/route.ts](../../../app/api/stripe/webhook/route.ts) | 295 | partners-funding | POST:35 |
 | [app/api/subgroup/dashboard/route.ts](../../../app/api/subgroup/dashboard/route.ts) | 111 | member-counselor | GET:10 |
 | [app/api/subgroup/members/\[id\]/route.ts](../../../app/api/subgroup/members/%5Bid%5D/route.ts) | 131 | api | GET:13 |
 | [app/api/subgroup/members/route.ts](../../../app/api/subgroup/members/route.ts) | 113 | api | GET:12 |

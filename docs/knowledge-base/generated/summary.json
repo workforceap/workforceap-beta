@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "b1b76f89fa4d92eec719485a72208e04933444d76324b419eab096fdd586e3c7",
+  "inputTreeSha256": "29ae867c2e14ba70151a6717c737921157d93d6d87db31b08b5fa51986dfec3e",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4820,
-    "sourceModules": 3477,
-    "importReferences": 17265,
-    "resolvedLocalReferences": 11542,
+    "files": 4830,
+    "sourceModules": 3485,
+    "importReferences": 17313,
+    "resolvedLocalReferences": 11579,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,14 +22,14 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 893,
-    "testCandidates": 885,
-    "testHelpers": 8,
-    "staticallySelectedTests": 883,
+    "testFiles": 897,
+    "testCandidates": 888,
+    "testHelpers": 9,
+    "staticallySelectedTests": 886,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 201
+    "environmentNames": 202
   },
   "areas": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 202
+      "files": 204
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1027
+      "files": 1031
     },
     {
       "area": "localization",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 506
+      "files": 510
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 890
+      "references": 895
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 735
+      "references": 736
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -136,7 +136,7 @@
     },
     {
       "file": "lib/audit.ts",
-      "references": 225
+      "references": 227
     },
     {
       "file": "components/portal/kit/index.ts",
@@ -148,7 +148,7 @@
     },
     {
       "file": "lib/audit/log.ts",
-      "references": 193
+      "references": 194
     },
     {
       "file": "components/portal/PageHeader.tsx",
@@ -160,7 +160,7 @@
     },
     {
       "file": "lib/observability/captureApiError.ts",
-      "references": 112
+      "references": 113
     },
     {
       "file": "lib/rate-limit.ts",
@@ -184,7 +184,7 @@
     },
     {
       "file": "lib/events/track.ts",
-      "references": 75
+      "references": 77
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",

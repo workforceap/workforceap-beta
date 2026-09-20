@@ -28352,6 +28352,14 @@
     "target": "lib/audit/log.ts"
   },
   {
+    "from": "app/api/admin/certifications/review/route.ts",
+    "specifier": "@/lib/certifications/certificationApproved",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/certifications/certificationApproved.ts"
+  },
+  {
     "from": "app/api/admin/chapters/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -41512,6 +41520,14 @@
     "target": "app/api/admin/users/_deletedEmail.ts"
   },
   {
+    "from": "app/api/admin/users/_deletedEmail.ts",
+    "specifier": "@/lib/member/deletedEmail",
+    "line": 3,
+    "kind": "re-export",
+    "external": false,
+    "target": "lib/member/deletedEmail.ts"
+  },
+  {
     "from": "app/api/admin/users/free-deleted-emails/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -51600,6 +51616,14 @@
     "target": "lib/events/track.ts"
   },
   {
+    "from": "app/api/gdpr/delete/route.ts",
+    "specifier": "@/lib/member/anonymizeMember",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/anonymizeMember.ts"
+  },
+  {
     "from": "app/api/gdpr/export/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -53169,40 +53193,8 @@
   },
   {
     "from": "app/api/member/certifications/route.ts",
-    "specifier": "@/lib/notifications/partner-notify",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/notifications/partner-notify.ts"
-  },
-  {
-    "from": "app/api/member/certifications/route.ts",
-    "specifier": "@/lib/events/track",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/events/track.ts"
-  },
-  {
-    "from": "app/api/member/certifications/route.ts",
-    "specifier": "@/lib/member/points",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/member/points.ts"
-  },
-  {
-    "from": "app/api/member/certifications/route.ts",
-    "specifier": "@/lib/notifications/create",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/notifications/create.ts"
-  },
-  {
-    "from": "app/api/member/certifications/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 11,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -53913,19 +53905,19 @@
   },
   {
     "from": "app/api/member/delete-account/route.ts",
-    "specifier": "@/lib/audit",
+    "specifier": "@/lib/audit/log",
     "line": 5,
     "kind": "import",
     "external": false,
-    "target": "lib/audit.ts"
+    "target": "lib/audit/log.ts"
   },
   {
     "from": "app/api/member/delete-account/route.ts",
-    "specifier": "@/lib/audit/log",
+    "specifier": "@/lib/member/anonymizeMember",
     "line": 6,
     "kind": "import",
     "external": false,
-    "target": "lib/audit/log.ts"
+    "target": "lib/member/anonymizeMember.ts"
   },
   {
     "from": "app/api/member/delete-account/route.ts",
@@ -61753,8 +61745,16 @@
   },
   {
     "from": "app/api/stripe/webhook/route.ts",
-    "specifier": "@/lib/observability/captureApiError",
+    "specifier": "@/lib/webhooks/deadLetter",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/deadLetter.ts"
+  },
+  {
+    "from": "app/api/stripe/webhook/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -61762,7 +61762,7 @@
   {
     "from": "app/api/stripe/webhook/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -61770,7 +61770,7 @@
   {
     "from": "app/api/stripe/webhook/route.ts",
     "specifier": "@/lib/stripe/subscriptionPersistence",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/stripe/subscriptionPersistence.ts"
@@ -61778,7 +61778,7 @@
   {
     "from": "app/api/stripe/webhook/route.ts",
     "specifier": "@/lib/stripe/stripeSubscriptionSnapshot",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/stripe/stripeSubscriptionSnapshot.ts"
@@ -97288,6 +97288,46 @@
     "target": "lib/career/careerQuizAreas.ts"
   },
   {
+    "from": "lib/certifications/certificationApproved.ts",
+    "specifier": "server-only",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "server-only"
+  },
+  {
+    "from": "lib/certifications/certificationApproved.ts",
+    "specifier": "@/lib/events/track",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "lib/certifications/certificationApproved.ts",
+    "specifier": "@/lib/member/points",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/points.ts"
+  },
+  {
+    "from": "lib/certifications/certificationApproved.ts",
+    "specifier": "@/lib/notifications/create",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notifications/create.ts"
+  },
+  {
+    "from": "lib/certifications/certificationApproved.ts",
+    "specifier": "@/lib/notifications/partner-notify",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notifications/partner-notify.ts"
+  },
+  {
     "from": "lib/coach/memory.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -104672,6 +104712,38 @@
     "target": "lib/member/aiToolFollowThrough.ts"
   },
   {
+    "from": "lib/member/anonymizeMember.ts",
+    "specifier": "@prisma/client",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/member/anonymizeMember.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/member/anonymizeMember.ts",
+    "specifier": "@/lib/audit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "lib/member/anonymizeMember.ts",
+    "specifier": "./deletedEmail",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/deletedEmail.ts"
+  },
+  {
     "from": "lib/member/applicationAiFeedback.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -111002,7 +111074,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 27,
+    "line": 32,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -111017,8 +111089,16 @@
   },
   {
     "from": "lib/retention/cleanup.ts",
-    "specifier": "./config",
+    "specifier": "@/lib/member/anonymizeMember",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/anonymizeMember.ts"
+  },
+  {
+    "from": "lib/retention/cleanup.ts",
+    "specifier": "./config",
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/retention/config.ts"
@@ -112222,6 +112302,38 @@
     "kind": "import",
     "external": true,
     "package": "zod"
+  },
+  {
+    "from": "lib/webhooks/deadLetter.ts",
+    "specifier": "server-only",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "server-only"
+  },
+  {
+    "from": "lib/webhooks/deadLetter.ts",
+    "specifier": "@prisma/client",
+    "line": 3,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/webhooks/deadLetter.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/webhooks/deadLetter.ts",
+    "specifier": "./logEvent",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
   },
   {
     "from": "lib/webhooks/logEvent.ts",
@@ -121706,7 +121818,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/app/api/gdpr/delete/route",
-    "line": 69,
+    "line": 74,
     "kind": "import",
     "external": false,
     "target": "app/api/gdpr/delete/route.ts"
@@ -121714,7 +121826,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 70,
+    "line": 75,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -121722,7 +121834,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 71,
+    "line": 76,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -121730,7 +121842,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/gdpr/deleteAuthUser",
-    "line": 72,
+    "line": 77,
     "kind": "import",
     "external": false,
     "target": "lib/gdpr/deleteAuthUser.ts"
@@ -121738,10 +121850,18 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/gdpr/deleteUserStorage",
-    "line": 73,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "lib/gdpr/deleteUserStorage.ts"
+  },
+  {
+    "from": "tests/api/gdpr-delete-route.spec.ts",
+    "specifier": "@/lib/member/anonymizeMember",
+    "line": 79,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/anonymizeMember.ts"
   },
   {
     "from": "tests/api/get-member-resume-plain-text.spec.ts",
@@ -122208,6 +122328,30 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "tests/api/member-certifications.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "tests/api/member-certifications.spec.ts",
+    "specifier": "@/lib/member/points",
+    "line": 46,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/points.ts"
+  },
+  {
+    "from": "tests/api/member-certifications.spec.ts",
+    "specifier": "@/lib/notifications/partner-notify",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notifications/partner-notify.ts"
+  },
+  {
     "from": "tests/api/member-course-complete.spec.ts",
     "specifier": "node:fs",
     "line": 1,
@@ -122306,7 +122450,7 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/app/api/member/delete-account/route",
-    "line": 53,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "app/api/member/delete-account/route.ts"
@@ -122314,7 +122458,7 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 54,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -122322,7 +122466,7 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 55,
+    "line": 60,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -122330,7 +122474,7 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/lib/supabase-admin",
-    "line": 56,
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "lib/supabase-admin.ts"
@@ -122338,7 +122482,7 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/lib/gdpr/deleteUserStorage",
-    "line": 57,
+    "line": 62,
     "kind": "import",
     "external": false,
     "target": "lib/gdpr/deleteUserStorage.ts"
@@ -122346,10 +122490,34 @@
   {
     "from": "tests/api/member-delete-account.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 58,
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/api/member-delete-account.spec.ts",
+    "specifier": "@/lib/member/anonymizeMember",
+    "line": 64,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/anonymizeMember.ts"
+  },
+  {
+    "from": "tests/api/member-delete-account.spec.ts",
+    "specifier": "@/lib/audit",
+    "line": 65,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/api/member-delete-account.spec.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 66,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
   },
   {
     "from": "tests/api/member-enrollments.spec.ts",
@@ -129024,6 +129192,166 @@
     "target": "lib/member/skillMissions.ts"
   },
   {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/lib/webhooks/logEvent",
+    "line": 16,
+    "kind": "type",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/app/api/stripe/webhook/route",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/stripe/webhook/route.ts"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/lib/stripe/client",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/stripe/client.ts"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "specifier": "@/lib/stripe/subscriptionPersistence",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/stripe/subscriptionPersistence.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 21,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/app/api/admin/certifications/review/route",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/certifications/review/route.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/app/(portal)/dashboard/logCertAction",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/logCertAction.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/certifications/certificationApproved",
+    "line": 46,
+    "kind": "import",
+    "external": false,
+    "target": "lib/certifications/certificationApproved.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/audit",
+    "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/certifications/certificationApproved",
+    "line": 150,
+    "kind": "type",
+    "external": false,
+    "target": "lib/certifications/certificationApproved.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 153,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/member/points",
+    "line": 154,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/member/points.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/notifications/create",
+    "line": 155,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/notifications/create.ts"
+  },
+  {
+    "from": "tests/certifications/self-report-pending.spec.ts",
+    "specifier": "@/lib/notifications/partner-notify",
+    "line": 156,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/notifications/partner-notify.ts"
+  },
+  {
     "from": "tests/components/admin-command-center-presentation.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -133536,6 +133864,38 @@
     "target": "lib/admin/boardOutcomes.ts"
   },
   {
+    "from": "tests/gdpr/anonymize-member.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/gdpr/anonymize-member.spec.ts",
+    "specifier": "@prisma/client",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "tests/gdpr/anonymize-member.spec.ts",
+    "specifier": "@/lib/member/anonymizeMember",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/anonymizeMember.ts"
+  },
+  {
+    "from": "tests/gdpr/anonymize-member.spec.ts",
+    "specifier": "@/lib/member/deletedEmail",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/deletedEmail.ts"
+  },
+  {
     "from": "tests/instrumentation-client-hydration-filter.test.ts",
     "specifier": "vitest",
     "line": 1,
@@ -137422,6 +137782,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/xapi/token.ts"
+  },
+  {
+    "from": "tests/migrations/audit-events-actor-set-null.mjs",
+    "specifier": "node:assert/strict",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "tests/migrations/audit-events-actor-set-null.mjs",
+    "specifier": "node:fs",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/migrations/audit-events-actor-set-null.mjs",
+    "specifier": "node:child_process",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "node:child_process"
   },
   {
     "from": "tests/migrations/placement-survey-sent-state.mjs",
