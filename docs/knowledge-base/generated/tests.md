@@ -222,6 +222,7 @@
 | [tests/components/admin-training-progress-roster.test.tsx](../../../tests/components/admin-training-progress-roster.test.tsx) | 275 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
+| [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
 | [tests/components/auth-controls.spec.tsx](../../../tests/components/auth-controls.spec.tsx) | 61 | tests |  |
 | [tests/components/auth-invitation-copy.spec.tsx](../../../tests/components/auth-invitation-copy.spec.tsx) | 166 | tests |  |
@@ -238,6 +239,7 @@
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 74 | tests |  |
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
+| [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 68 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
@@ -256,6 +258,7 @@
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
 | [tests/components/partner-overview-density.spec.tsx](../../../tests/components/partner-overview-density.spec.tsx) | 41 | tests |  |
 | [tests/components/partner-referral-share.spec.tsx](../../../tests/components/partner-referral-share.spec.tsx) | 56 | tests |  |
+| [tests/components/partner-status-pill.spec.ts](../../../tests/components/partner-status-pill.spec.ts) | 19 | tests |  |
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
 | [tests/components/portal-date-inputs-today.spec.tsx](../../../tests/components/portal-date-inputs-today.spec.tsx) | 44 | tests |  |
 | [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 113 | communications |  |
@@ -369,6 +372,7 @@
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
 | [tests/lib/event-persistence.spec.ts](../../../tests/lib/event-persistence.spec.ts) | 37 | tests |  |
 | [tests/lib/firstValueActions.test.ts](../../../tests/lib/firstValueActions.test.ts) | 70 | tests |  |
+| [tests/lib/focus-ring-recipe.spec.ts](../../../tests/lib/focus-ring-recipe.spec.ts) | 131 | tests |  |
 | [tests/lib/google-it-support-completion.spec.ts](../../../tests/lib/google-it-support-completion.spec.ts) | 49 | tests |  |
 | [tests/lib/i18n-page-message-keys.spec.ts](../../../tests/lib/i18n-page-message-keys.spec.ts) | 45 | tests |  |
 | [tests/lib/job-expiry-instant.spec.ts](../../../tests/lib/job-expiry-instant.spec.ts) | 43 | tests |  |

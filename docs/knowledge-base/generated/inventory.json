@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "ea93a703c4f5f4dd8eabcf3b05903659eeddaa915cbf69c8fb85a3e307f59f4a",
+  "inputTreeSha256": "552e663c625dd8265f4780641fa12ab4fe62d9d67a9580e5042a395b7b95ea73",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -151342,6 +151342,178 @@
       "directive": null
     },
     {
+      "path": "scripts/lint/check-type-floor.mjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 11669,
+      "lines": 302,
+      "sha256": "a8a0b2479b53257030d9cb30014aeab8e7029cb56bab587b0796c2aa634ef53e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "FLOOR_PX",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "FLOOR_REM",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "ALLOW_MARKER",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_ROOTS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_EXTENSIONS",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "toPx",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "scanSource",
+          "line": 172,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listSourceFiles",
+          "line": 217,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "runCheck",
+          "line": 251,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "FLOOR_PX",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "ROOT_FONT_PX",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "FLOOR_REM",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "ALLOW_MARKER",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_ROOTS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "SCAN_EXTENSIONS",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "IGNORED_PATH_RE",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "SIZE_RE_SRC",
+          "line": 61,
+          "kind": "Variable"
+        },
+        {
+          "name": "toPx",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "floorLiteral",
+          "line": 75,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "stripComments",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "LINE_PATTERNS",
+          "line": 93,
+          "kind": "Variable"
+        },
+        {
+          "name": "scanSource",
+          "line": 172,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isIgnored",
+          "line": 213,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listSourceFiles",
+          "line": 217,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "runCheck",
+          "line": 251,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 271,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/lint/check-type-floor.test.cjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 3306,
+      "lines": 90,
+      "sha256": "4ecb2e4b81524596bd1a8fe567b0574a643be0ed5d18d2af36546e5f2e6337ab",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "test",
+          "line": 2,
+          "kind": "Variable"
+        },
+        {
+          "name": "assert",
+          "line": 3,
+          "kind": "Variable"
+        },
+        {
+          "name": "load",
+          "line": 5,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "scripts/locked-stakes/check-i18n-safe-diff.mjs",
       "area": "operations",
       "domain": "operations",
@@ -159710,6 +159882,18 @@
       "directive": null
     },
     {
+      "path": "tests/components/at-risk-search-label.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 953,
+      "lines": 17,
+      "sha256": "592704e40d1be745d8011b4541a295f93a835b38561c444f9b915e32d784182a",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
       "path": "tests/components/auth-connection-failure.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -160183,6 +160367,18 @@
       "bytes": 2033,
       "lines": 51,
       "sha256": "8ca580cf3c9e909ed00d677e6b083b7ea0135d9d4028d010036561890017ea8b",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/feature-tile-heading.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 889,
+      "lines": 18,
+      "sha256": "b00be1adcf3c10de3375ac086891802cbb3d7b98d0b6bb01f5cd4bb83f537dda",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -160768,6 +160964,24 @@
         {
           "name": "clipboard",
           "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/partner-status-pill.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 813,
+      "lines": 19,
+      "sha256": "35171550b40fe47fa83fc16f4a624c87356beb6d67aabeb2cff31a8e4aaecee8",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 5,
           "kind": "Variable"
         }
       ],
@@ -163488,6 +163702,49 @@
         {
           "name": "makeCtx",
           "line": 6,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/focus-ring-recipe.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6702,
+      "lines": 131,
+      "sha256": "d16e9f82ef4089ced3e123f3dfe3d5e6b464aaf810c094b7ad30bcf4346c2065",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "CSS_DIR",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "Block",
+          "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "stripComments",
+          "line": 23,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "focusBlocks",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RING_SHADOWS",
+          "line": 67,
+          "kind": "Variable"
+        },
+        {
+          "name": "violation",
+          "line": 69,
           "kind": "FunctionDeclaration"
         }
       ],
