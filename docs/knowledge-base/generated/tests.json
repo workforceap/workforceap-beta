@@ -11344,43 +11344,43 @@
       },
       {
         "file": "app/api/admin/members/bulk-email/route.ts",
-        "line": 137
+        "line": 140
       },
       {
         "file": "app/api/admin/members/bulk-update/route.ts",
-        "line": 138
-      },
-      {
-        "file": "app/api/admin/members/bulk-export/route.ts",
-        "line": 139
-      },
-      {
-        "file": "lib/auth/server.ts",
         "line": 141
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "app/api/admin/members/bulk-export/route.ts",
         "line": 142
       },
       {
-        "file": "lib/tenant/organization.ts",
-        "line": 143
-      },
-      {
-        "file": "lib/email.ts",
+        "file": "lib/auth/server.ts",
         "line": 144
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 145
       },
       {
-        "file": "lib/notifications/create.ts",
+        "file": "lib/tenant/organization.ts",
         "line": 146
       },
       {
-        "file": "lib/member/getMemberState.ts",
+        "file": "lib/email.ts",
         "line": 147
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 148
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 149
+      },
+      {
+        "file": "lib/member/getMemberState.ts",
+        "line": 150
       }
     ],
     "kind": "test-candidate",

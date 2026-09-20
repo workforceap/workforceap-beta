@@ -139,7 +139,7 @@
 | [app/api/admin/members/\[id\]/workspace-email/route.ts](../../../app/api/admin/members/%5Bid%5D/workspace-email/route.ts) | 184 | administration | POST:121, DELETE:184 |
 | [app/api/admin/members/at-risk/route.ts](../../../app/api/admin/members/at-risk/route.ts) | 112 | administration | GET:54, PATCH:112 |
 | [app/api/admin/members/bulk-email/route.ts](../../../app/api/admin/members/bulk-email/route.ts) | 211 | administration | POST:211 |
-| [app/api/admin/members/bulk-export/route.ts](../../../app/api/admin/members/bulk-export/route.ts) | 228 | administration | POST:228 |
+| [app/api/admin/members/bulk-export/route.ts](../../../app/api/admin/members/bulk-export/route.ts) | 244 | administration | POST:244 |
 | [app/api/admin/members/bulk-update/route.ts](../../../app/api/admin/members/bulk-update/route.ts) | 301 | administration | POST:301 |
 | [app/api/admin/members/create/route.ts](../../../app/api/admin/members/create/route.ts) | 343 | administration | POST:38 |
 | [app/api/admin/members/duplicates/route.ts](../../../app/api/admin/members/duplicates/route.ts) | 116 | administration | GET:9 |

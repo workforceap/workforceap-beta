@@ -22,7 +22,7 @@
 | [tests/api/admin-member-erase.spec.ts](../../../tests/api/admin-member-erase.spec.ts) | 181 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
 | [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
-| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 641 | tests |  |
+| [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 681 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
 | [tests/api/admin-members-export-columns.spec.ts](../../../tests/api/admin-members-export-columns.spec.ts) | 222 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
@@ -388,7 +388,7 @@
 | [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 86 | tests |  |
 | [tests/lib/admin-job-match-prisma-scope.spec.ts](../../../tests/lib/admin-job-match-prisma-scope.spec.ts) | 65 | tests |  |
 | [tests/lib/admin-post-commit-notifications.spec.ts](../../../tests/lib/admin-post-commit-notifications.spec.ts) | 30 | communications |  |
-| [tests/lib/admin-roster-health-and-status-filters.spec.ts](../../../tests/lib/admin-roster-health-and-status-filters.spec.ts) | 152 | tests |  |
+| [tests/lib/admin-roster-health-and-status-filters.spec.ts](../../../tests/lib/admin-roster-health-and-status-filters.spec.ts) | 169 | tests |  |
 | [tests/lib/admin-user-provisioning-tenant-race.spec.ts](../../../tests/lib/admin-user-provisioning-tenant-race.spec.ts) | 145 | tests |  |
 | [tests/lib/agent-knowledge-manifest.spec.ts](../../../tests/lib/agent-knowledge-manifest.spec.ts) | 200 | tests |  |
 | [tests/lib/ai-coach-memory-read.spec.ts](../../../tests/lib/ai-coach-memory-read.spec.ts) | 65 | tests |  |

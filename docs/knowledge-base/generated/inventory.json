@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "111ac4169501de570ce84315065fe50c02ae36ff3e9a81be33d82c2502b81ecf",
+  "inputTreeSha256": "7fd58680fc70a60117e2c4f1ee9df8d1e647493988fa1c7eeb341b9b87ac6816",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -18753,9 +18753,9 @@
       "path": "app/admin/members/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 21060,
+      "bytes": 21035,
       "lines": 496,
-      "sha256": "47231cd601761afc68034a1ad19fe81d5d984eba2a42fe1207eabd214edd0b3c",
+      "sha256": "e2ecd1cb7201ab72a39bdfd3bec29596636a368ebc7e6451b7807052b46bf7f7",
       "binary": false,
       "exports": [
         {
@@ -26476,41 +26476,41 @@
       "path": "app/api/admin/members/bulk-export/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 7970,
-      "lines": 228,
-      "sha256": "817c7d05ec784e1b2ff4a6ac6edce120079c50ab124f26f5b7d9d728aa1250d4",
+      "bytes": 8897,
+      "lines": 244,
+      "sha256": "3c123d1f13a778ac6726bf9d981f73dd930d8cc2bfbf593812a84909da83f0b8",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 228,
+          "line": 244,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_MEMBERS",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "bodySchema",
-          "line": 18,
+          "line": 19,
           "kind": "Variable"
         },
         {
           "name": "csvEscape",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_POST",
-          "line": 28,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 228,
+          "line": 244,
           "kind": "Variable"
         }
       ],
@@ -85826,9 +85826,9 @@
       "path": "lib/admin/healthScore.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 4764,
-      "lines": 123,
-      "sha256": "c976448ca3fc3eb92221934f9a2423110b2077b24810c0374bde46b737a20daa",
+      "bytes": 5226,
+      "lines": 135,
+      "sha256": "5078bf2f7b58c53b9f0a9c3e233d484e3096b136ac720237fa6047a1478f0178",
       "binary": false,
       "exports": [
         {
@@ -85843,27 +85843,27 @@
         },
         {
           "name": "MEMBER_ACTIVITY_EVENT_WHERE",
-          "line": 35,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "HealthScoreInput",
-          "line": 60,
+          "line": 72,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "calculateHealthStatus",
-          "line": 82,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 106,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 114,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85880,47 +85880,47 @@
         },
         {
           "name": "MEMBER_ACTIVITY_EVENT_WHERE",
-          "line": 35,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "DAY_MS",
-          "line": 39,
+          "line": 51,
           "kind": "Variable"
         },
         {
           "name": "RECENT_WINDOW_DAYS",
-          "line": 40,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "HealthScoreInput",
-          "line": 60,
+          "line": 72,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "mostRecent",
-          "line": 68,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isWithinRecentWindow",
-          "line": 77,
+          "line": 89,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "calculateHealthStatus",
-          "line": 82,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 106,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 114,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87417,9 +87417,9 @@
       "path": "lib/admin/studentsRosterView.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 7143,
-      "lines": 175,
-      "sha256": "2ab9d0137404f0aa72f467e294b9b3c161e37ec0f315904dc9ebe73e2f931d9d",
+      "bytes": 7290,
+      "lines": 177,
+      "sha256": "644422acf0a883368ec7eb533293be775c24ac0eb7d869f1380d059ad667985a",
       "binary": false,
       "exports": [
         {
@@ -87504,42 +87504,42 @@
         },
         {
           "name": "chipForStudentsNeeds",
-          "line": 81,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "studentsNeedsHref",
-          "line": 88,
+          "line": 90,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterChip",
-          "line": 98,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 117,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 126,
+          "line": 128,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 152,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 170,
+          "line": 172,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87631,42 +87631,42 @@
         },
         {
           "name": "chipForStudentsNeeds",
-          "line": 81,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "studentsNeedsHref",
-          "line": 88,
+          "line": 90,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterChip",
-          "line": 98,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 117,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 126,
+          "line": 128,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 152,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 170,
+          "line": 172,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -158819,9 +158819,9 @@
       "path": "tests/api/admin-members-bulk.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 28478,
-      "lines": 641,
-      "sha256": "cc759f1196e0b868672e3e76bd539edc51b982080133ea7ec76cab82437c1ad1",
+      "bytes": 30715,
+      "lines": 681,
+      "sha256": "bf13a998b059654d8949d7edc49eab41d70f05832508c425bd114c495509db60",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -158832,12 +158832,12 @@
         },
         {
           "name": "uid",
-          "line": 149,
+          "line": 152,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 151,
+          "line": 154,
           "kind": "Variable"
         }
       ],
@@ -169106,9 +169106,9 @@
       "path": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6781,
-      "lines": 152,
-      "sha256": "a8718c9a87cb81fd4de0a5de6d7709f1c8ec8e99ca9e8cecb3e40aa0ef5b28f7",
+      "bytes": 7460,
+      "lines": 169,
+      "sha256": "bee9e6336cc8987df4b21414aa7d46d790ab0f0c1fecc3834218ceb766b91412",
       "binary": false,
       "exports": [],
       "declarations": [

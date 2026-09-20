@@ -36857,8 +36857,16 @@
   },
   {
     "from": "app/api/admin/members/bulk-export/route.ts",
-    "specifier": "@/lib/db/withRequestGuc",
+    "specifier": "@/lib/admin/healthScore",
     "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-export/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -119458,7 +119466,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-email/route",
-    "line": 137,
+    "line": 140,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-email/route.ts"
@@ -119466,7 +119474,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-update/route",
-    "line": 138,
+    "line": 141,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-update/route.ts"
@@ -119474,7 +119482,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-export/route",
-    "line": 139,
+    "line": 142,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-export/route.ts"
@@ -119482,7 +119490,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "next/server",
-    "line": 140,
+    "line": 143,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -119490,7 +119498,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 141,
+    "line": 144,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -119498,7 +119506,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 142,
+    "line": 145,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -119506,7 +119514,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 143,
+    "line": 146,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -119514,7 +119522,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/email",
-    "line": 144,
+    "line": 147,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -119522,7 +119530,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 145,
+    "line": 148,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -119530,7 +119538,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/notifications/create",
-    "line": 146,
+    "line": 149,
     "kind": "import",
     "external": false,
     "target": "lib/notifications/create.ts"
@@ -119538,7 +119546,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/member/getMemberState",
-    "line": 147,
+    "line": 150,
     "kind": "import",
     "external": false,
     "target": "lib/member/getMemberState.ts"

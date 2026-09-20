@@ -17,6 +17,7 @@ export type HealthStatus = 'green' | 'yellow' | 'red';
  * `notIn` is case-sensitive.
  */
 export const SYSTEM_GENERATED_MEMBER_EVENTS = [
+  // Cron / platform mail and digests.
   'inactive_nudge_sent',
   'weekly_recap_generated',
   'course_accountability_sent',
@@ -24,6 +25,17 @@ export const SYSTEM_GENERATED_MEMBER_EVENTS = [
   'counselor_followup_needed',
   'application_reminder_sent',
   'APPLICATION_REMINDER_SENT',
+  'course_kickoff_email_sent',
+  // Staff actions recorded under the member's userId: a counselor nudging or
+  // an admin approving something is the staff member acting, not the member.
+  'application_approved',
+  'application_denied',
+  'counselor_nudge_sent',
+  'counselor_bulk_followup_sent',
+  'counselor_inbox_zero_follow_up_sent',
+  'milestone_cascade_sent',
+  'program_change_approved',
+  'employer_intro_created',
 ] as const;
 
 /**

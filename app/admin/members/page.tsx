@@ -93,7 +93,7 @@ export default async function AdminMembersPage({
   if (validStatus && validStatus !== 'dropped') {
     whereClause.AND = [
       buildDirectorySearchWhere(searchQuery),
-      buildStatusWhere(validStatus) as Prisma.UserWhereInput,
+      buildStatusWhere(validStatus),
     ];
   }
 
