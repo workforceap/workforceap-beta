@@ -191,7 +191,8 @@
 | [tests/app/counselor-member-pageheader.spec.ts](../../../tests/app/counselor-member-pageheader.spec.ts) | 30 | tests |  |
 | [tests/app/counselor-roster-failure.spec.tsx](../../../tests/app/counselor-roster-failure.spec.tsx) | 26 | tests |  |
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
-| [tests/app/counselor-student-detail-messages-rail.spec.tsx](../../../tests/app/counselor-student-detail-messages-rail.spec.tsx) | 150 | tests |  |
+| [tests/app/counselor-student-detail-messages-rail.spec.tsx](../../../tests/app/counselor-student-detail-messages-rail.spec.tsx) | 160 | tests |  |
+| [tests/app/counselor-student-detail-tabs.spec.tsx](../../../tests/app/counselor-student-detail-tabs.spec.tsx) | 329 | tests |  |
 | [tests/app/dashboard-training-redirect.spec.ts](../../../tests/app/dashboard-training-redirect.spec.ts) | 69 | tests |  |
 | [tests/app/diagnostics-read-reliability.spec.tsx](../../../tests/app/diagnostics-read-reliability.spec.tsx) | 57 | tests |  |
 | [tests/app/eligibility-layoff-company.spec.tsx](../../../tests/app/eligibility-layoff-company.spec.tsx) | 62 | tests |  |
@@ -244,6 +245,7 @@
 | [tests/components/board-completion-labels.test.tsx](../../../tests/components/board-completion-labels.test.tsx) | 50 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
+| [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
 | [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 35 | tests |  |
 | [tests/components/counselor-roster-stats.spec.tsx](../../../tests/components/counselor-roster-stats.spec.tsx) | 46 | tests |  |
 | [tests/components/counselor-today.spec.tsx](../../../tests/components/counselor-today.spec.tsx) | 118 | tests |  |

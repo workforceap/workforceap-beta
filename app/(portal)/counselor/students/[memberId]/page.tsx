@@ -25,6 +25,13 @@ import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainin
 import CounselorNotesPanel from './CounselorNotesPanel';
 import styles from './studentDetail.module.css';
 import CounselorTrainingHandoff from '@/components/portal/counselor/CounselorTrainingHandoff';
+import { StatusTag, TabPanel, Tabs, type KitTone } from '@/components/portal/kit';
+import {
+  STUDENT_DETAIL_TABS,
+  STUDENT_DETAIL_TABS_ID_BASE,
+  STUDENT_DETAIL_TAB_PARAM,
+  parseStudentDetailTab,
+} from './studentDetailTabs';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import AdvisorSessionNotesPanel from './AdvisorSessionNotesPanel';
 import StaffMemberResumePanel from '@/components/counselor/StaffMemberResumePanel';
@@ -54,7 +61,11 @@ import type { TimelineEvent } from '@/components/portal/counselor/MemberProgress
 import { getRiskLevel } from '@/lib/member/atRiskScoring';
 import type { CareerMatchResult } from '@/lib/onet/types';
 
-type Props = { params: Promise<{ memberId: string }> };
+type Props = {
+  params: Promise<{ memberId: string }>;
+  /** `?tab=profile|training|notes|messages` picks the opening record tab (default Profile). */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
 function getInitials(name: string): string {
   return name
@@ -66,7 +77,7 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export default async function CounselorStudentDetailPage({ params }: Props) {
+export default async function CounselorStudentDetailPage({ params, searchParams }: Props) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/counselor/students');
 
@@ -74,6 +85,8 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const { memberId } = await params;
+  const query = searchParams ? await searchParams : {};
+  const initialTab = parseStudentDetailTab(query[STUDENT_DETAIL_TAB_PARAM]);
 
   const [counselor, adminUser] = await Promise.all([
     prisma.counselor.findFirst({
@@ -447,11 +460,11 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
       default: return 'Other';
     }
   }
-  function pitchOutcomeColor(outcome: PitchOutcome | undefined): string {
+  function pitchOutcomeTone(outcome: PitchOutcome | undefined): KitTone {
     switch (outcome) {
-      case 'interview': return 'var(--color-green, #16a34a)';
-      case 'pending': return 'var(--color-warning-on-surface, #d97706)';
-      default: return 'var(--color-on-surface-variant)';
+      case 'interview': return 'ok';
+      case 'pending': return 'warn';
+      default: return 'muted';
     }
   }
 
@@ -505,6 +518,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
   const memberTitle = member.fullName ?? t('member');
   const messageHref = `/counselor/messages?memberId=${encodeURIComponent(member.id)}`;
   const sessionHref = `/counselor/sessions/${memberId}/run`;
+  const barrierTypes = member.profile?.hasEmploymentBarrier ? member.profile.barrierTypes : [];
 
   return (
     <PortalPageFrame>
@@ -524,541 +538,66 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
           { label: t('memberDetails') },
         ]}
         action={
-          <>
-            <div className="md:wa-hidden" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <Link href={messageHref} className="btn btn-outline btn-sm">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">
-                  chat
-                </span>
-                {t('priorityQueueActionMessage')}
-              </Link>
-              <Link href={sessionHref} className="btn btn-primary btn-sm">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">
-                  event
-                </span>
-                {t('startSession')}
-              </Link>
-            </div>
-            <div className="wa-hidden md:wa-block">
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <Link href={messageHref} className="btn btn-outline">
-                  {t('priorityQueueActionMessage')}
-                </Link>
-                <Link
-                  href={sessionHref}
-                  className="btn btn-primary"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                >
-                  {t('startInOfficeSession')}
-                </Link>
-              </div>
-            </div>
-          </>
+          <div className={styles.headerActions}>
+            <Link href={messageHref} className="btn btn-outline btn-sm">
+              <span className={`material-symbols-outlined ${styles.actionIcon}`} aria-hidden="true">
+                chat
+              </span>
+              {t('priorityQueueActionMessage')}
+            </Link>
+            <Link href={sessionHref} className="btn btn-primary btn-sm">
+              <span className={`material-symbols-outlined ${styles.actionIcon}`} aria-hidden="true">
+                event
+              </span>
+              <span className="wa-block md:wa-hidden">{t('startSession')}</span>
+              <span className="wa-hidden md:wa-block">{t('startInOfficeSession')}</span>
+            </Link>
+          </div>
         }
       />
 
-      {/* ── Messages ───────────────────────────────────────── */}
-      {/* First on mobile, sticky right rail on desktop: the roster's
-          #counselor-member-messages deep link lands on the composer without
-          scrolling (counselor audit §6 item 2). The id is the public anchor. */}
-      <div className={styles.detailLayout}>
-      <section
-        id="counselor-member-messages"
-        className={styles.messagesRail}
-        aria-labelledby="counselor-member-messages-title"
+      {/* ── Record tabs ─────────────────────────────────────────
+          Counselor audit §6 item 3 / §2 item 4: the ~15 record sections are
+          grouped under Profile / Training / Notes / Messages. Every panel is
+          server-rendered here (no second fetch); the kit Tabs island only
+          toggles `hidden`. `?tab=` picks the opening tab; the roster's
+          `#counselor-member-messages` deep link opens Messages on load. */}
+      <Tabs
+        items={STUDENT_DETAIL_TABS}
+        defaultValue={initialTab}
+        label="Member record"
+        idBase={STUDENT_DETAIL_TABS_ID_BASE}
+        urlParam={STUDENT_DETAIL_TAB_PARAM}
+        className={styles.tabs}
       >
-        <div className="wa-kit-card">
-          <h2 id="counselor-member-messages-title" className="wa-kit-stat-label" style={{ margin: '0 0 0.75rem' }}>
-            Messages
-          </h2>
-          {readOnlyAudit && <span hidden data-portal-audit-suppressed="counselor-member-message-thread-create-read-receipt-and-realtime" />}
-          {messagesTruncated ? (
-            <p className="wa-kit-meta" style={{ margin: '0 0 0.5rem' }}>
-              {messagesLabel}
-            </p>
-          ) : null}
-          {readOnlyAudit && thread ? (
-            <p>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
-          ) : thread ? <AdminMemberCounselorChatClient
-            readCursorMode
-            messagesApiBase={`/api/counselor/members/${member.id}/messages`}
-            initial={{
-              staffUserId: user.id,
-              member: { id: member.id, fullName: member.fullName },
-              thread: {
-                id: thread.id,
-                memberId: thread.memberId,
-                counselorUserId: thread.counselorUserId,
-                memberLastReadAt: thread.memberLastReadAt?.toISOString() ?? null,
-                counselorLastReadAt: thread.counselorLastReadAt?.toISOString() ?? null,
-              },
-              messages: messages.map((m) => ({
-                ...serializeMessage(m),
-                authorName: getMessageAuthorName(nameById, m.authorId),
-              })),
-            }}
-          /> : <p>No counselor conversation has started yet.</p>}
-        </div>
-      </section>
-
-      {/* ── Mobile ─────────────────────────────────────────── */}
-      <div className="wa-block md:wa-hidden" style={{ paddingBottom: '6rem' }}>
-        {/* Member identity card */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <div
-            style={{
-              background: 'var(--wa-surface)',
-              borderRadius: 'var(--wa-radius)',
-              padding: '1.25rem',
-              border: '1px solid var(--wa-border)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <div
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 'var(--wa-radius-sm)',
-                  background: 'var(--wa-accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{ color: 'var(--wa-on-accent)', fontWeight: 900, fontSize: '1.25rem' }}>{initials}</span>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  title={member.fullName ?? undefined}
-                  className="wa-truncate"
-                  style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}
-                >
-                  {memberTitle}
-                </p>
-                <p
-                  className="wa-truncate"
-                  style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', margin: '0 0 0.5rem' }}
-                >
-                  {program}
-                </p>
-                <StatusBadge label={enrollmentBadge.label} variant={enrollmentBadgeVariant} />
-              </div>
-            </div>
-
-            {member.profile?.hasEmploymentBarrier && member.profile.barrierTypes.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
-                {member.profile.barrierTypes.map((bt) => (
-                  <span
-                    key={bt}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 700,
-                      background: 'var(--wa-gold-soft)',
-                      color: 'var(--wa-gold-dark)',
-                      border: '1px solid color-mix(in srgb, var(--wa-gold) 32%, transparent)',
-                    }}
-                  >
-                    {bt.replace(/_/g, ' ')}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ padding: '0 1rem 1rem' }}>{trainingHandoff}</div>
-
-        {/* Program Progress */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <div
-            style={{
-              background: 'var(--surface-container-lowest)',
-              borderRadius: '0.75rem',
-              padding: '1.25rem',
-              border: '1px solid var(--outline-variant)',
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 1rem' }}>
-              Program Progress
-            </h2>
-            {programCourses.length === 0 ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                {activeProgramSlug ? 'No course data available for this program.' : 'Not enrolled in a program yet.'}
-              </p>
-            ) : (
-              <>
-                {/* Overall progress bar */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
-                      Overall Completion
-                    </span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>{progressPct}%</span>
-                  </div>
-                  <div style={{ height: 6, background: 'var(--surface-container)', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--color-accent)', borderRadius: '9999px' }} />
-                  </div>
-                  {trainingView?.averageGradePercentDisplay != null ? (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
-                        Grade (avg, scored courses)
-                      </span>
-                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-info-on-surface)' }}>
-                        {trainingView.averageGradePercentDisplay}%
-                      </span>
-                    </div>
-                  ) : null}
+        {/* ── Profile ─────────────────────────────────────────── */}
+        <TabPanel value="profile">
+          <div className={styles.stack}>
+            <section className="wa-kit-card" aria-label="Member identity">
+              <div className={styles.identity}>
+                <div className={styles.avatar} aria-hidden="true">{initials}</div>
+                <div className={styles.identityCopy}>
+                  <p title={member.fullName ?? undefined} className={`wa-truncate ${styles.identityName}`}>
+                    {memberTitle}
+                  </p>
+                  <p className={`wa-truncate ${styles.identityMeta}`}>{member.email ? `${program} · ${member.email}` : program}</p>
+                  <StatusBadge label={enrollmentBadge.label} variant={enrollmentBadgeVariant} />
                 </div>
-                {/* Course list */}
-                {programCourses.map((course) => {
-                  const done = completedSlugs.has(course.slug);
-                  return (
-                    <div
-                      key={course.slug}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '0.8125rem',
-                        padding: '0.375rem 0',
-                        borderTop: '1px solid var(--outline-variant)',
-                        opacity: done ? 1 : 0.6,
-                      }}
-                    >
-                      <span style={{ color: 'var(--color-on-surface-variant)' }}>{course.name}</span>
-                      {done ? (
-                        <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-green)' }} aria-hidden="true">check_circle</span>
-                      ) : (
-                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Not started</span>
-                      )}
-                    </div>
-                  );
-                })}
-                <SkillsetProgressList rows={skillsetProgress} variant="compact" />
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Other programs this student is in — multi-program-aware. Hidden
-            when the learner only has the primary enrollment, so the
-            single-program experience is unchanged. */}
-        {otherProgramEnrollments.length > 0 ? (
-          <div style={{ padding: '0 1rem 1rem' }}>
-            <div
-              style={{
-                background: 'var(--surface-container-lowest)',
-                borderRadius: '0.75rem',
-                padding: '1.25rem',
-                border: '1px solid var(--outline-variant)',
-              }}
-            >
-              <h2 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>
-                Other programs this student is in
-              </h2>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem' }}>
-                Secondary enrollments outside the primary program shown above.
-              </p>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {otherProgramEnrollments.map((row) => (
-                  <li key={row.programSlug} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.625rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                      {row.programTitle}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Points */}
-        {memberPts && (
-          <div style={{ padding: '0 1rem 1rem' }}>
-            <PointsWidget total={memberPts.total} level={memberPts.level} recent={recentTx} />
-            <div style={{ marginTop: '0.75rem' }}>
-              <AwardPointsButton
-                memberId={member.id}
-                memberName={member.fullName ?? 'this member'}
-                apiHref={`/api/counselor/members/${member.id}/award-points`}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Counselor 360 signals — at-risk, career quiz, next-best-actions */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 0.75rem' }}>
-            Counselor 360 Signals
-          </h2>
-          <Counselor360Signals
-            atRiskAlert={atRiskAlertDisplay}
-            topOccupations={topOccupations}
-            nextBestActions={pendingNextBestActions}
-          />
-        </div>
-
-        {/* Progress Timeline */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <MemberProgressTimeline events={timelineEvents} programAvgDays={programAvgDays} />
-        </div>
-
-        {/* Counselor Notes */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <CounselorNotesPanel key={member.id} memberId={member.id} />
-        </div>
-
-        {/* Session Notes */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <AdvisorSessionNotesPanel key={member.id} memberId={member.id} />
-        </div>
-
-        {/* Elevator pitch deployments — mobile */}
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <div
-            style={{
-              background: 'var(--surface-container-lowest)',
-              borderRadius: '0.75rem',
-              padding: '1.25rem',
-              border: '1px solid var(--outline-variant)',
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>
-              Elevator Pitch
-            </h2>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
-              <strong style={{ color: 'var(--color-on-surface)' }}>Pitch uses:</strong>{' '}
-              {typedPitchDeployments.length}
-            </p>
-            {typedPitchDeployments.length === 0 ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                No pitch deployments logged yet.
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {typedPitchDeployments.map((ev) => (
-                  <div
-                    key={ev.id}
-                    style={{
-                      padding: '0.625rem 0.75rem',
-                      borderRadius: '0.5rem',
-                      background: 'var(--surface-container-low)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0 }}>
-                        {ev.meta.employer ?? '—'}
-                      </p>
-                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
-                        {formatPortalDate(ev.meta.usedAt ?? ev.createdAt)}
-                      </p>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: '0.8125rem',
-                        fontWeight: 700,
-                        color: pitchOutcomeColor(ev.meta.outcome),
-                        flexShrink: 0,
-                      }}
-                    >
-                      {pitchOutcomeLabel(ev.meta.outcome)}
-                    </span>
-                  </div>
-                ))}
               </div>
-            )}
-          </div>
-        </div>
-
-        {wioaSnap ? (
-          <div style={{ padding: '0 1rem 1rem' }}>
-            <WioaScreeningReadonly
-              snapshot={wioaSnap}
-              reviewStatus={member.wioaReviewStatus}
-              reviewedAt={member.wioaReviewedAt?.toISOString() ?? null}
-              reviewerName={wioaReviewerName}
-              reviewNotes={member.wioaReviewNotes}
-            />
-          </div>
-        ) : null}
-        <div style={{ padding: '0 1rem 1rem' }}>{intakeReviewPanel}</div>
-        {assessmentRows ? (
-          <div style={{ padding: '0 1rem 1rem' }}>
-            <AssessmentAnswersReadonly
-              rows={assessmentRows}
-              score={member.assessmentScore}
-              scorePct={member.assessmentScorePct}
-              completedAt={member.assessmentCompletedAt}
-              programInterest={member.programInterest}
-            />
-          </div>
-        ) : null}
-
-        <div style={{ padding: '0 1rem 1.5rem' }}>
-          <div
-            style={{
-              background: 'var(--surface-container-lowest)',
-              borderRadius: '0.75rem',
-              padding: '1.25rem',
-              border: '1px solid var(--outline-variant)',
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 1rem' }}>
-              Resumes
-            </h2>
-            <StaffMemberResumePanel memberId={member.id} />
-          </div>
-        </div>
-
-        <div style={{ padding: '0 1rem 1.5rem' }}>
-          <div
-            style={{
-              background: 'var(--surface-container-lowest)',
-              borderRadius: '0.75rem',
-              padding: '1.25rem',
-              border: '1px solid var(--outline-variant)',
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 0.35rem' }}>
-              Training invoice &amp; cover letter (J5 / J6)
-            </h2>
-            <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
-              Signed by the office and emailed to you and the student. Download the PDFs here anytime.
-            </p>
-            <BillingPacketList packets={billingPackets} emptyText="No signed invoice packet for this student yet." />
-          </div>
-        </div>
-
-        {/* Job Pipeline */}
-        <div style={{ padding: '0 1rem 1.5rem' }}>
-          <div
-            style={{
-              background: 'var(--surface-container-lowest)',
-              borderRadius: '0.75rem',
-              padding: '1.25rem',
-              border: '1px solid var(--outline-variant)',
-            }}
-          >
-            <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 1rem' }}>
-              Job Pipeline
-            </h2>
-
-            {applications.length === 0 && aiMatches.length === 0 ? (
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                No applications or AI matches yet.
-              </p>
-            ) : null}
-
-            {applications.length > 0 ? (
-              <div style={{ marginBottom: '1rem' }}>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Applications
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {applications.map((app) => (
-                    <div
-                      key={app.id}
-                      style={{
-                        padding: '0.75rem',
-                        borderRadius: '0.5rem',
-                        background: 'var(--surface-container-low)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-on-surface)', margin: 0 }}>{app.job.title}</p>
-                          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
-                        </div>
-                        <StatusBadge
-                          label={employerJobPostingApplicationStatusLabel(app.status)}
-                          variant={employerJobPostingApplicationStatusBadgeVariant(app.status)}
-                        />
-                      </div>
-                    </div>
+              {barrierTypes.length > 0 ? (
+                <div className={styles.chips} aria-label="Employment barriers">
+                  {barrierTypes.map((bt) => (
+                    <StatusTag key={bt} tone="warn">
+                      {bt.replace(/_/g, ' ')}
+                    </StatusTag>
                   ))}
                 </div>
-              </div>
-            ) : null}
+              ) : null}
+            </section>
 
-            {aiMatches.length > 0 ? (
-              <div>
-                <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  AI Matches
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {aiMatches.map((m) => (
-                    <div
-                      key={m.id}
-                      style={{
-                        padding: '0.75rem',
-                        borderRadius: '0.5rem',
-                        background: 'var(--surface-container-low)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-on-surface)', margin: 0 }}>{m.job.title}</p>
-                          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
-                        </div>
-                        <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>{matchScoreAsPercent(m.matchScore)}%</div>
-                          <div style={{ marginTop: '0.25rem' }}>
-                            <StatusBadge
-                              label={employerMatchPipelineLabel(m.status)}
-                              variant={employerAiMatchStatusBadgeVariant(m.status)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
+            {intakeReviewPanel}
 
-      {/* ── Desktop ─────────────────────────────────────────── */}
-      <div className="wa-hidden md:wa-block">
-        <div className="portal-main-content">
-          <div className="wa-mt-4 wa-mb-4">{trainingHandoff}</div>
-
-          {/* Employment barrier chips — desktop */}
-          {member.profile?.hasEmploymentBarrier && member.profile.barrierTypes.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', margin: '1rem 0' }}>
-              {member.profile.barrierTypes.map((bt) => (
-                <span
-                  key={bt}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '0.15rem 0.5rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.8125rem',
-                    fontWeight: 700,
-                    background: 'var(--wa-gold-soft)',
-                    color: 'var(--wa-gold-dark)',
-                    border: '1px solid color-mix(in srgb, var(--wa-gold) 32%, transparent)',
-                  }}
-                >
-                  {bt.replace(/_/g, ' ')}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {wioaSnap ? (
-            <section style={{ marginTop: '1.5rem' }}>
+            {wioaSnap ? (
               <WioaScreeningReadonly
                 snapshot={wioaSnap}
                 reviewStatus={member.wioaReviewStatus}
@@ -1066,11 +605,9 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                 reviewerName={wioaReviewerName}
                 reviewNotes={member.wioaReviewNotes}
               />
-            </section>
-          ) : null}
-          <section style={{ marginTop: '1.5rem' }}>{intakeReviewPanel}</section>
-          {assessmentRows ? (
-            <section style={{ marginTop: '1.5rem' }}>
+            ) : null}
+
+            {assessmentRows ? (
               <AssessmentAnswersReadonly
                 rows={assessmentRows}
                 score={member.assessmentScore}
@@ -1078,231 +615,273 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                 completedAt={member.assessmentCompletedAt}
                 programInterest={member.programInterest}
               />
-            </section>
-          ) : null}
+            ) : null}
 
-          {/* Other programs this student is in — multi-program-aware. Hidden
-              when only the primary enrollment exists, preserving the
-              single-program UX. */}
-          {otherProgramEnrollments.length > 0 ? (
-            <section style={{ marginTop: '1.5rem', maxWidth: 640 }}>
-              <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', fontWeight: 700 }}>
-                Other programs this student is in
-              </h2>
-              <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
-                Secondary enrollments outside the primary program ({activeProgramSlug ? programDisplayTitle(activeProgramSlug) : '—'}).
+            {/* Counselor 360 signals — at-risk, career quiz, next-best-actions */}
+            <section aria-labelledby="counselor-member-360-title">
+              <h2 id="counselor-member-360-title" className={styles.sectionTitle}>Counselor 360 Signals</h2>
+              <Counselor360Signals
+                atRiskAlert={atRiskAlertDisplay}
+                topOccupations={topOccupations}
+                nextBestActions={pendingNextBestActions}
+              />
+            </section>
+
+            <section className={styles.narrow} aria-label="Progress timeline">
+              <MemberProgressTimeline events={timelineEvents} programAvgDays={programAvgDays} />
+            </section>
+
+            {memberPts ? (
+              <section className={styles.narrower} aria-labelledby="counselor-member-points-title">
+                <h2 id="counselor-member-points-title" className={styles.sectionTitle}>Member Points</h2>
+                <PointsWidget total={memberPts.total} level={memberPts.level} recent={recentTx} />
+                <div className="wa-mt-3">
+                  <AwardPointsButton
+                    memberId={member.id}
+                    memberName={member.fullName ?? 'this member'}
+                    apiHref={`/api/counselor/members/${member.id}/award-points`}
+                  />
+                </div>
+              </section>
+            ) : null}
+
+            <section aria-labelledby="counselor-member-resumes-title">
+              <h2 id="counselor-member-resumes-title" className={styles.sectionTitle}>Resumes</h2>
+              <div className="wa-kit-card">
+                <StaffMemberResumePanel memberId={member.id} />
+              </div>
+            </section>
+
+            {/* Job Pipeline */}
+            <section aria-labelledby="counselor-member-jobs-title">
+              <h2 id="counselor-member-jobs-title" className={styles.sectionTitle}>Job Pipeline</h2>
+              <div className="wa-kit-card">
+                {applications.length === 0 && aiMatches.length === 0 ? (
+                  <p className={styles.emptyCopy}>No applications or AI matches yet.</p>
+                ) : null}
+
+                {applications.length > 0 ? (
+                  <div className={styles.group}>
+                    <h3 className={`wa-kit-stat-label ${styles.groupLabel}`}>Applications</h3>
+                    <ul className={styles.list}>
+                      {applications.map((app) => (
+                        <li key={app.id} className={`${styles.row} ${styles.rowStart}`}>
+                          <div className={styles.rowCopy}>
+                            <p className={styles.rowTitle}>{app.job.title}</p>
+                            <p className={styles.rowMeta}>{app.job.employer.companyName}</p>
+                          </div>
+                          <StatusBadge
+                            label={employerJobPostingApplicationStatusLabel(app.status)}
+                            variant={employerJobPostingApplicationStatusBadgeVariant(app.status)}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {aiMatches.length > 0 ? (
+                  <div className={styles.group}>
+                    <h3 className={`wa-kit-stat-label ${styles.groupLabel}`}>AI Matches</h3>
+                    <ul className={styles.list}>
+                      {aiMatches.map((m) => (
+                        <li key={m.id} className={`${styles.row} ${styles.rowStart}`}>
+                          <div className={styles.rowCopy}>
+                            <p className={styles.rowTitle}>{m.job.title}</p>
+                            <p className={styles.rowMeta}>{m.job.employer.companyName}</p>
+                          </div>
+                          <div className={styles.rowEnd}>
+                            <div className={styles.accentValue}>{matchScoreAsPercent(m.matchScore)}%</div>
+                            <div>
+                              <StatusBadge
+                                label={employerMatchPipelineLabel(m.status)}
+                                variant={employerAiMatchStatusBadgeVariant(m.status)}
+                              />
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+
+            {/* Elevator pitch deployments */}
+            <section className={styles.narrow} aria-labelledby="counselor-member-pitch-title">
+              <h2 id="counselor-member-pitch-title" className={styles.sectionTitle}>Elevator Pitch Usage</h2>
+              <div className="wa-kit-card">
+                <p className={styles.lede}>
+                  <strong className={styles.strong}>Elevator pitch uses:</strong>{' '}
+                  {typedPitchDeployments.length}
+                </p>
+                {typedPitchDeployments.length === 0 ? (
+                  <p className={styles.emptyCopy}>No pitch deployments logged yet.</p>
+                ) : (
+                  <ul className={styles.list}>
+                    {typedPitchDeployments.map((ev) => (
+                      <li key={ev.id} className={styles.row}>
+                        <div className={styles.rowCopy}>
+                          <p className={styles.rowTitle}>{ev.meta.employer ?? '—'}</p>
+                          <p className={styles.rowMeta}>{formatPortalDate(ev.meta.usedAt ?? ev.createdAt)}</p>
+                        </div>
+                        <StatusTag tone={pitchOutcomeTone(ev.meta.outcome)}>{pitchOutcomeLabel(ev.meta.outcome)}</StatusTag>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+
+            {adminUser ? (
+              <p className={styles.footerNote}>
+                <Link href={`/admin/members/${member.id}`} className="btn btn-outline btn-sm">
+                  Open full member record (admin)
+                </Link>
               </p>
-              <div className="portal-card portal-card--flat" style={{ padding: '1rem', border: '1px solid var(--outline-variant)' }}>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            ) : null}
+          </div>
+        </TabPanel>
+
+        {/* ── Training ────────────────────────────────────────── */}
+        <TabPanel value="training">
+          <div className={styles.stack}>
+            {trainingHandoff}
+
+            {/* Program Progress — real data from enrolled program courses */}
+            <section className="wa-kit-card" aria-labelledby="counselor-member-progress-title">
+              <h2 id="counselor-member-progress-title" className={styles.sectionTitle}>Program Progress</h2>
+              {programCourses.length === 0 ? (
+                <p className={styles.emptyCopy}>
+                  {activeProgramSlug ? 'No course data available for this program.' : 'Not enrolled in a program yet.'}
+                </p>
+              ) : (
+                <>
+                  <div className={styles.progressHead}>
+                    <span>Overall Completion</span>
+                    <span className={styles.accentValue}>{progressPct}%</span>
+                  </div>
+                  <div className={styles.progressTrack} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct} aria-label="Overall completion">
+                    <div className={styles.progressFill} style={{ width: `${progressPct}%` }} />
+                  </div>
+                  {trainingView?.averageGradePercentDisplay != null ? (
+                    <div className={styles.progressHead}>
+                      <span>Grade (avg, scored courses)</span>
+                      <span className={styles.accentValue}>{trainingView.averageGradePercentDisplay}%</span>
+                    </div>
+                  ) : null}
+                  <div className={styles.courses}>
+                    {programCourses.map((course) => {
+                      const done = completedSlugs.has(course.slug);
+                      return (
+                        <div key={course.slug} className={styles.courseRow} data-done={done ? 'true' : 'false'}>
+                          <span>{course.name}</span>
+                          {done ? (
+                            <span className={`material-symbols-outlined ${styles.doneIcon}`} aria-label="Completed" role="img">check_circle</span>
+                          ) : (
+                            <span>Not started</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <SkillsetProgressList rows={skillsetProgress} variant="compact" />
+                </>
+              )}
+            </section>
+
+            {/* Other programs this student is in — multi-program-aware. Hidden
+                when only the primary enrollment exists, preserving the
+                single-program UX. */}
+            {otherProgramEnrollments.length > 0 ? (
+              <section className={`wa-kit-card ${styles.narrow}`} aria-labelledby="counselor-member-other-programs-title">
+                <h2 id="counselor-member-other-programs-title" className={`${styles.sectionTitle} ${styles.sectionTitleTight}`}>
+                  Other programs this student is in
+                </h2>
+                <p className={styles.lede}>
+                  Secondary enrollments outside the primary program ({activeProgramSlug ? programDisplayTitle(activeProgramSlug) : '—'}).
+                </p>
+                <ul className={styles.list}>
                   {otherProgramEnrollments.map((row) => (
-                    <li
-                      key={row.programSlug}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.55rem 0.75rem',
-                        borderRadius: '0.5rem',
-                        background: 'var(--surface-container-low)',
-                      }}
-                    >
-                      <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                        {row.programTitle}
-                      </span>
+                    <li key={row.programSlug} className={styles.row}>
+                      <span className={styles.rowTitle}>{row.programTitle}</span>
                     </li>
                   ))}
                 </ul>
-              </div>
-            </section>
-          ) : null}
+              </section>
+            ) : null}
 
-          {/* Progress Timeline */}
-          <section style={{ marginTop: '1.5rem', maxWidth: 640 }}>
-            <MemberProgressTimeline events={timelineEvents} programAvgDays={programAvgDays} />
-          </section>
-
-          {memberPts && (
-            <section style={{ marginTop: '1.5rem', maxWidth: 480 }}>
-              <h2 className="portal-section-heading" style={{ marginBottom: '0.75rem' }}>Member Points</h2>
-              <PointsWidget total={memberPts.total} level={memberPts.level} recent={recentTx} />
-              <div style={{ marginTop: '0.75rem' }}>
-                <AwardPointsButton
-                  memberId={member.id}
-                  memberName={member.fullName ?? 'this member'}
-                  apiHref={`/api/counselor/members/${member.id}/award-points`}
-                />
-              </div>
-            </section>
-          )}
-
-          {/* Counselor 360 signals — at-risk, career quiz, next-best-actions */}
-          <section style={{ marginTop: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Counselor 360 Signals</h2>
-            <Counselor360Signals
-              atRiskAlert={atRiskAlertDisplay}
-              topOccupations={topOccupations}
-              nextBestActions={pendingNextBestActions}
-            />
-          </section>
-
-          {/* Elevator pitch deployments — desktop */}
-          <section style={{ marginTop: '1.5rem', maxWidth: 640 }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Elevator Pitch Usage</h2>
-            <div
-              className="portal-card portal-card--flat"
-              style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}
-            >
-              <p style={{ fontSize: '0.875rem', marginBottom: '0.875rem', color: 'var(--color-on-surface)' }}>
-                <strong>Elevator pitch uses:</strong>{' '}
-                {typedPitchDeployments.length}
+            <section className="wa-kit-card" aria-labelledby="counselor-member-billing-title">
+              <h2 id="counselor-member-billing-title" className={`${styles.sectionTitle} ${styles.sectionTitleTight}`}>
+                Training invoice &amp; cover letter (J5 / J6)
+              </h2>
+              <p className={styles.lede}>
+                Signed by the office and emailed to you and the student. Download the PDFs here anytime.
               </p>
-              {typedPitchDeployments.length === 0 ? (
-                <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  No pitch deployments logged yet.
+              <BillingPacketList packets={billingPackets} emptyText="No signed invoice packet for this student yet." />
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Notes ───────────────────────────────────────────── */}
+        <TabPanel value="notes">
+          <div className={styles.stack}>
+            <section aria-labelledby="counselor-member-notes-title">
+              <h2 id="counselor-member-notes-title" className={styles.sectionTitle}>Counselor Notes</h2>
+              <CounselorNotesPanel key={member.id} memberId={member.id} />
+            </section>
+
+            <section aria-labelledby="counselor-member-session-notes-title">
+              <h2 id="counselor-member-session-notes-title" className={styles.sectionTitle}>Session Notes</h2>
+              <AdvisorSessionNotesPanel key={member.id} memberId={member.id} />
+            </section>
+          </div>
+        </TabPanel>
+
+        {/* ── Messages ────────────────────────────────────────── */}
+        {/* `counselor-member-messages` is the public anchor the roster and the
+            at-risk page deep-link to (counselor audit §6 item 2); the Tabs
+            island opens this panel when the hash names it. */}
+        <TabPanel value="messages">
+          <section
+            id="counselor-member-messages"
+            aria-labelledby="counselor-member-messages-title"
+          >
+            <div className="wa-kit-card">
+              <h2 id="counselor-member-messages-title" className={styles.sectionTitle}>
+                Messages
+              </h2>
+              {readOnlyAudit && <span hidden data-portal-audit-suppressed="counselor-member-message-thread-create-read-receipt-and-realtime" />}
+              {messagesTruncated ? (
+                <p className={`wa-kit-meta ${styles.lede}`}>
+                  {messagesLabel}
                 </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr auto auto',
-                      gap: '0.5rem',
-                      padding: '0 0.5rem 0.375rem',
-                      borderBottom: '1px solid var(--outline-variant)',
-                    }}
-                  >
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Employer</span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Outcome</span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Date</span>
-                  </div>
-                  {typedPitchDeployments.map((ev) => (
-                    <div
-                      key={ev.id}
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto auto',
-                        gap: '0.5rem',
-                        padding: '0.375rem 0.5rem',
-                        borderRadius: '0.375rem',
-                        background: 'var(--surface-container-lowest)',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>
-                        {ev.meta.employer ?? '—'}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '0.8125rem',
-                          fontWeight: 700,
-                          color: pitchOutcomeColor(ev.meta.outcome),
-                          textAlign: 'right',
-                        }}
-                      >
-                        {pitchOutcomeLabel(ev.meta.outcome)}
-                      </span>
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        {formatPortalDate(ev.meta.usedAt ?? ev.createdAt)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ) : null}
+              {readOnlyAudit && thread ? (
+                <p>Counselor conversation is available. Live sync and read receipts are paused for this audit.</p>
+              ) : thread ? <AdminMemberCounselorChatClient
+                readCursorMode
+                messagesApiBase={`/api/counselor/members/${member.id}/messages`}
+                initial={{
+                  staffUserId: user.id,
+                  member: { id: member.id, fullName: member.fullName },
+                  thread: {
+                    id: thread.id,
+                    memberId: thread.memberId,
+                    counselorUserId: thread.counselorUserId,
+                    memberLastReadAt: thread.memberLastReadAt?.toISOString() ?? null,
+                    counselorLastReadAt: thread.counselorLastReadAt?.toISOString() ?? null,
+                  },
+                  messages: messages.map((m) => ({
+                    ...serializeMessage(m),
+                    authorName: getMessageAuthorName(nameById, m.authorId),
+                  })),
+                }}
+              /> : <p>No counselor conversation has started yet.</p>}
             </div>
           </section>
-
-          <section style={{ marginTop: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Resumes</h2>
-            <div
-              className="portal-card portal-card--flat"
-              style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}
-            >
-              <StaffMemberResumePanel memberId={member.id} />
-            </div>
-          </section>
-
-          <section style={{ marginTop: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Counselor Notes</h2>
-            <CounselorNotesPanel key={member.id} memberId={member.id} />
-          </section>
-
-          <section style={{ marginTop: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Session Notes</h2>
-            <AdvisorSessionNotesPanel key={member.id} memberId={member.id} />
-          </section>
-
-          {/* Job Pipeline — Desktop */}
-          <section style={{ marginTop: '1.5rem' }}>
-            <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Job Pipeline</h2>
-            {applications.length === 0 && aiMatches.length === 0 ? (
-              <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}>
-                <p style={{ color: 'var(--color-on-surface-variant)' }}>No applications or AI matches yet.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gap: '1rem' }}>
-                {applications.length > 0 ? (
-                  <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}>
-                    <h3 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Applications</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {applications.map((app) => (
-                        <div key={app.id} style={{ padding: '0.75rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-                            <div>
-                              <p style={{ fontWeight: 700, margin: 0 }}>{app.job.title}</p>
-                              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
-                            </div>
-                            <StatusBadge
-                              label={employerJobPostingApplicationStatusLabel(app.status)}
-                              variant={employerJobPostingApplicationStatusBadgeVariant(app.status)}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-                {aiMatches.length > 0 ? (
-                  <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}>
-                    <h3 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>AI Matches</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {aiMatches.map((m) => (
-                        <div key={m.id} style={{ padding: '0.75rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-                            <div>
-                              <p style={{ fontWeight: 700, margin: 0 }}>{m.job.title}</p>
-                              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-accent)' }}>{matchScoreAsPercent(m.matchScore)}%</div>
-                              <div style={{ marginTop: '0.25rem' }}>
-                                <StatusBadge
-                                  label={employerMatchPipelineLabel(m.status)}
-                                  variant={employerAiMatchStatusBadgeVariant(m.status)}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </section>
-
-          {adminUser ? (
-            <p style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-              <Link href={`/admin/members/${member.id}`} className="btn btn-outline btn-sm">
-                Open full member record (admin)
-              </Link>
-            </p>
-          ) : null}
-        </div>
-      </div>
-      </div>
-
+        </TabPanel>
+      </Tabs>
     </PortalPageFrame>
   );
 }
@@ -1339,15 +918,13 @@ function Counselor360Signals({
   nextBestActions: NextBestActionRow[];
 }) {
   return (
-    <div style={{ display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+    <div className={styles.signals}>
       <AtRiskSignalCard alert={atRiskAlert} />
       <CareerQuizRecommendationCard occupations={topOccupations} />
       <NextBestActionsCard actions={nextBestActions} />
     </div>
   );
 }
-
-const CARD_STYLE = { padding: '1.25rem', border: '1px solid var(--outline-variant)' } as const;
 
 // Mirrors STATUS_LABEL in components/portal/counselor/AtRiskDashboard.tsx so the
 // raw "acknowledged" / "escalated" enum never reaches the counselor's screen.
@@ -1362,58 +939,47 @@ function atRiskAlertStatusLabel(status: string): string {
   return AT_RISK_ALERT_STATUS_LABEL[status] ?? status;
 }
 
+/** Risk tier → kit tone (docs/KIT_GUIDE.md §4): critical reads as brand attention, not true red. */
+const AT_RISK_LEVEL_TONE: Record<ReturnType<typeof getRiskLevel>, KitTone> = {
+  CRITICAL: 'alert',
+  HIGH: 'warn',
+  MEDIUM: 'info',
+  LOW: 'ok',
+};
+
 function AtRiskSignalCard({ alert }: { alert: AtRiskAlertDisplay }) {
   if (!alert) {
     return (
-      <div className="portal-card portal-card--flat" style={CARD_STYLE}>
-        <h3 style={{ fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.5rem' }}>At-Risk Signal</h3>
-        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
+      <div className="wa-kit-card wa-kit-card--sm">
+        <h3 className={styles.cardTitle}>At-Risk Signal</h3>
+        <p className={styles.emptyCopy}>
           No at-risk alert on file — the nightly risk scan hasn&apos;t flagged this member.
         </p>
       </div>
     );
   }
   const level = getRiskLevel(alert.score);
-  const color =
-    level === 'CRITICAL'
-      ? 'var(--color-accent)'
-      : level === 'HIGH'
-        ? 'var(--color-gold)'
-        : level === 'MEDIUM'
-          ? 'var(--color-blue)'
-          : 'var(--color-green)';
   return (
-    <div className="portal-card portal-card--flat" style={{ ...CARD_STYLE, borderLeft: `4px solid ${color}` }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-        <h3 style={{ fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>At-Risk Signal</h3>
-        <span style={{ fontWeight: 700, fontSize: '0.8125rem', color, whiteSpace: 'nowrap' }}>
+    <div className={`wa-kit-card wa-kit-card--sm wa-kit-tone-edge wa-kit-tone--${AT_RISK_LEVEL_TONE[level]}`} data-risk-level={level}>
+      <div className={styles.cardHead}>
+        <h3 className={styles.cardTitle}>At-Risk Signal</h3>
+        <span className="wa-kit-tone-text">
           {level} · {alert.score}
         </span>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.5rem' }}>
+      <div className={styles.factors}>
         {alert.factors.length > 0 ? (
           alert.factors.map((f) => (
-            <span
-              key={f.name}
-              title={`weight ${f.weight}`}
-              style={{
-                fontSize: '0.8125rem',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '999px',
-                background: 'var(--surface-container-high)',
-                color: 'var(--color-on-surface-variant)',
-                fontWeight: 500,
-              }}
-            >
+            <span key={f.name} title={`weight ${f.weight}`} className={styles.factor}>
               {f.description}
             </span>
           ))
         ) : (
-          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>No specific factors recorded.</span>
+          <span className={styles.emptyCopy}>No specific factors recorded.</span>
         )}
       </div>
-      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-        Status: <strong style={{ color: 'var(--color-on-surface)' }}>{atRiskAlertStatusLabel(alert.status)}</strong> · scanned{' '}
+      <p className={styles.emptyCopy}>
+        Status: <strong className={styles.strong}>{atRiskAlertStatusLabel(alert.status)}</strong> · scanned{' '}
         {formatPortalDate(alert.createdAt)}
       </p>
     </div>
@@ -1422,25 +988,25 @@ function AtRiskSignalCard({ alert }: { alert: AtRiskAlertDisplay }) {
 
 function CareerQuizRecommendationCard({ occupations }: { occupations: CareerMatchResult['topOccupations'] }) {
   return (
-    <div className="portal-card portal-card--flat" style={CARD_STYLE}>
-      <h3 style={{ fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.5rem' }}>Career Quiz Recommendation</h3>
+    <div className="wa-kit-card wa-kit-card--sm">
+      <h3 className={styles.cardTitle}>Career Quiz Recommendation</h3>
       {occupations.length === 0 ? (
-        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
+        <p className={styles.emptyCopy}>
           This member hasn&apos;t completed the career quiz yet.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <ul className={styles.list}>
           {occupations.map((o, idx) => (
-            <div key={o.onetCode ?? o.title} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: idx === 0 ? 700 : 500 }}>{o.title}</span>
+            <li key={o.onetCode ?? o.title} className={styles.cardHead}>
+              <span className={idx === 0 ? styles.rowTitle : undefined}>{o.title}</span>
               {typeof o.confidence === 'number' ? (
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
+                <span className={styles.accentValue}>
                   {Math.round(o.confidence)}% match
                 </span>
               ) : null}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
@@ -1448,27 +1014,27 @@ function CareerQuizRecommendationCard({ occupations }: { occupations: CareerMatc
 
 function NextBestActionsCard({ actions }: { actions: NextBestActionRow[] }) {
   return (
-    <div className="portal-card portal-card--flat" style={CARD_STYLE}>
-      <h3 style={{ fontWeight: 700, fontSize: '0.9rem', margin: '0 0 0.5rem' }}>Next Best Actions</h3>
+    <div className="wa-kit-card wa-kit-card--sm">
+      <h3 className={styles.cardTitle}>Next Best Actions</h3>
       {actions.length === 0 ? (
-        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
+        <p className={styles.emptyCopy}>
           No pending next-best-actions queued for this member.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <ul className={styles.list}>
           {actions.map((a) => (
-            <div key={a.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', padding: '0.5rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: 'var(--color-accent)', flexShrink: 0 }} aria-hidden="true">
+            <li key={a.id} className={styles.nba}>
+              <span className={`material-symbols-outlined ${styles.nbaIcon}`} aria-hidden="true">
                 {a.icon || 'bolt'}
               </span>
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600 }}>{a.title}</p>
-                <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{a.description}</p>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{a.ctaLabel}</p>
+              <div className={styles.rowCopy}>
+                <p className={styles.rowTitle}>{a.title}</p>
+                <p className={styles.rowMeta}>{a.description}</p>
+                <p className={styles.rowMeta}>{a.ctaLabel}</p>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

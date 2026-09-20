@@ -6,9 +6,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 /**
  * Counselor audit §6 item 2: the roster's message icon deep-links to
  * `#counselor-member-messages`. That anchor used to sit at the foot of the
- * desktop body only; it now renders once, ahead of both the mobile and the
- * desktop bodies, with the composer inside it, so the link lands on the
- * composer without scrolling and works at every width.
+ * desktop body only. It now renders once, with the composer inside it, as the
+ * whole of the Messages tab panel (§6 item 3 grouped the record into tabs), so
+ * the link opens Messages and lands on the composer at every width — the tab
+ * switch itself is covered by tests/app/counselor-student-detail-tabs.spec.tsx.
  */
 
 const db = vi.hoisted(() => {
@@ -112,28 +113,37 @@ describe('CounselorStudentDetailPage message rail', () => {
     });
   });
 
-  it('renders the #counselor-member-messages anchor once, with the composer inside, ahead of both bodies', async () => {
+  it('renders the #counselor-member-messages anchor once, with the composer inside, as the Messages tab panel', async () => {
     const html = await renderPage();
 
     expect(html.match(/id="counselor-member-messages"/g)).toHaveLength(1);
 
     const anchorAt = html.indexOf('id="counselor-member-messages"');
     const headerAt = html.indexOf('data-page-header');
-    const mobileBodyAt = html.indexOf('wa-block md:wa-hidden');
-    const desktopBodyAt = html.indexOf('wa-hidden md:wa-block');
+    const tablistAt = html.indexOf('role="tablist"');
     expect(headerAt).toBeGreaterThan(-1);
-    expect(mobileBodyAt).toBeGreaterThan(-1);
-    expect(desktopBodyAt).toBeGreaterThan(-1);
-    // Header, then the thread, then the record — at every width.
+    expect(tablistAt).toBeGreaterThan(-1);
+    // Header, then the tab row, then the thread inside its panel.
     expect(anchorAt).toBeGreaterThan(headerAt);
-    expect(anchorAt).toBeLessThan(mobileBodyAt);
-    expect(anchorAt).toBeLessThan(desktopBodyAt);
+    expect(anchorAt).toBeGreaterThan(tablistAt);
+
+    const doc = document.implementation.createHTMLDocument('rail');
+    doc.body.innerHTML = html;
+    const anchor = doc.getElementById('counselor-member-messages')!;
+    const panel = anchor.closest('[role="tabpanel"]');
+    expect(panel?.id).toBe('counselor-member-record-panel-messages');
+    // The anchor is the panel's whole content — nothing to scroll past.
+    expect(panel?.children).toHaveLength(1);
+    expect(panel?.children[0]).toBe(anchor);
+    const messagesTab = doc.getElementById('counselor-member-record-tab-messages');
+    expect(messagesTab?.getAttribute('aria-controls')).toBe(panel?.id);
+    expect(messagesTab?.getAttribute('role')).toBe('tab');
 
     const section = html.slice(anchorAt, html.indexOf('</section>', anchorAt));
     expect(section).toContain('data-composer="thread-1"');
     expect(section).toContain('aria-labelledby="counselor-member-messages-title"');
     expect(section).toContain('id="counselor-member-messages-title"');
-    // The composer exists only once — the rail did not duplicate the thread.
+    // The composer exists only once — the panel did not duplicate the thread.
     expect(html.match(/data-composer=/g)).toHaveLength(1);
   });
 

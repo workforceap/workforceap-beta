@@ -234,6 +234,11 @@ confirm button). Rationale is in the file header — don't "fix" it.
 Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(status)↔alert`,
 `info↔info`, `neutral↔muted`; kit `danger` (true red) has no `StatusTone` equivalent on purpose.
 
+**Tone hooks** (`.wa-kit-tone--<tone>` in css/portal-kit.css) let a card or row declare its tone once;
+`.wa-kit-tone-edge`, `.wa-kit-tone-icon` and `.wa-kit-tone-text` then paint from `--wa-kit-tone` /
+`--wa-kit-tone-soft`. Use them (with `StatusTag`) instead of `colorVar('gold')`-style inline colours
+when the tone is a *state* (a triage bucket, a risk tier); numbers stay neutral `--wa-text`.
+
 Use `lib/ui/statusToneAdapters.ts` at these boundaries instead of copying color triples.
 `StatusBadge` reads the same palette as `statusColor`; its `error` and `accent` variants
 both preserve the legacy attention meaning. Partner overview pills are `StatusTag` on every
@@ -294,6 +299,7 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `BarChartMini`, `RankBars` | inline mini charts |
 | `FormField`, `Toggle` | form controls |
 | `ChatThread` | message threads |
+| `Tabs`, `TabPanel` | section tabs around server-rendered panels (WAI-ARIA tabs on `useListFocus`; `?tab=` mirrored with `history.replaceState`; an in-page `#anchor` inside a panel opens that panel). Counselor student detail is the reference. |
 | `AppShellSidebar`, `AppShellMember` | shell chrome (dense sidebar / member tabs) |
 | `UniversalSearch` | global search affordance |
 | `MemberDashboardKit` | composed member dashboard |

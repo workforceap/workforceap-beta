@@ -365,6 +365,117 @@ html.dark [data-surface] .wa-kit-card,
   background: light-dark(var(--wa-border), rgba(255, 255, 255, 0.08));
 }
 
+/* Semantic tone hook. A container declares its tone once (the same six
+   tones as .wa-kit-tag--*); descendants paint from --wa-kit-tone /
+   --wa-kit-tone-soft instead of naming a colour. Every value is a light-dark()
+   brand token, so dark mode needs no per-class override and the legacy
+   --color-gold / --color-green / --color-blue never enter the tree. */
+.wa-kit-tone--ok {
+  --wa-kit-tone: var(--wa-success);
+  --wa-kit-tone-soft: var(--wa-success-soft);
+}
+.wa-kit-tone--warn {
+  --wa-kit-tone: var(--wa-gold);
+  --wa-kit-tone-soft: var(--wa-gold-soft);
+}
+.wa-kit-tone--alert {
+  --wa-kit-tone: var(--wa-accent);
+  --wa-kit-tone-soft: var(--wa-accent-soft);
+}
+.wa-kit-tone--danger {
+  --wa-kit-tone: var(--wa-danger);
+  --wa-kit-tone-soft: var(--wa-danger-soft);
+}
+.wa-kit-tone--info {
+  --wa-kit-tone: var(--wa-info);
+  --wa-kit-tone-soft: var(--wa-info-soft);
+}
+.wa-kit-tone--muted {
+  --wa-kit-tone: var(--wa-muted);
+  --wa-kit-tone-soft: var(--wa-surface-2);
+}
+/* Toned edge on a card / row (queue rows, signal cards). */
+.wa-kit-tone-edge {
+  border-left: 3px solid var(--wa-kit-tone, var(--wa-border));
+}
+/* Toned icon chip (StatSparkTile idiom) — soft tint behind the tone colour. */
+.wa-kit-tone-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-kit-tone-soft, var(--wa-surface-2));
+  color: var(--wa-kit-tone, var(--wa-muted));
+}
+/* Toned inline text (a level, a count) — 13px floor, bold. */
+.wa-kit-tone-text {
+  color: var(--wa-kit-tone, var(--wa-text));
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Section tabs (Tabs / TabPanel in components/portal/kit/Tabs.tsx). One row
+   that scrolls sideways on narrow screens instead of wrapping; the selected
+   tab is a state on the wash (accent text + underline), not a second title
+   bar. Inactive panels carry the `hidden` attribute. */
+.wa-kit-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--wa-border);
+  -webkit-overflow-scrolling: touch;
+}
+.wa-kit-tabs::-webkit-scrollbar {
+  display: none;
+}
+.wa-kit-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 44px;
+  padding: 10px 14px;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: var(--wa-radius-sm) var(--wa-radius-sm) 0 0;
+  background: transparent;
+  color: var(--wa-muted);
+  font: inherit;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: color var(--wa-dur-fast) var(--wa-ease), background-color var(--wa-dur-fast) var(--wa-ease);
+}
+.wa-kit-tab:hover {
+  color: var(--wa-text);
+  background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
+}
+.wa-kit-tab[aria-selected='true'] {
+  color: var(--wa-accent);
+  border-bottom-color: var(--wa-accent);
+}
+.wa-kit-tab:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+.wa-kit-tabpanel {
+  padding-top: var(--wa-pad-sm);
+}
+.wa-kit-tabpanel[hidden] {
+  display: none !important;
+}
+.wa-kit-tabpanel:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+  border-radius: var(--wa-radius-sm);
+}
+
 /* Voice-coach cards place badges on saturated gold/crimson surfaces. This
    component-owned badge avoids overriding Astryx internals and keeps white
    text above AA contrast even on the lightest dark-mode gold. */

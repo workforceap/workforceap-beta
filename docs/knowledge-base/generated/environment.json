@@ -3852,6 +3852,10 @@
           "line": 1
         },
         {
+          "file": "tests/app/counselor-student-detail-tabs.spec.tsx",
+          "line": 1
+        },
+        {
           "file": "tests/app/employer-application-detail-dates.spec.tsx",
           "line": 1
         },

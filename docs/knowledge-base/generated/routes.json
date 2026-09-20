@@ -1680,7 +1680,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 69,
+        "line": 80,
         "kind": "FunctionDeclaration",
         "localName": "CounselorStudentDetailPage"
       }

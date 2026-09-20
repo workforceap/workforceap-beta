@@ -16,16 +16,22 @@ import type {
   PriorityBucket,
   PriorityQueueRow,
 } from '@/lib/counselor/priorityQueue';
-import { DesignSurface, SectionHeader, StatSparkTile, colorVar, type KitColor } from '@/components/portal/kit';
+import { DesignSurface, SectionHeader, StatusTag, cx, type KitTone } from '@/components/portal/kit';
 
 /**
  * Counselor Priority Queue — Command Center redesign.
  *
  * Same tactical triage surface (three priority buckets, bulk-select,
  * template fan-out via /api/counselor/bulk-followup) reskinned onto the
- * shared portal kit: bucket totals as StatSparkTiles, rows as severity-coded
+ * shared portal kit: bucket totals as kit stat tiles, rows as severity-coded
  * cards (the QueueRow idiom) instead of a raw HTML table. All data, sorting,
  * selection, and send behavior are unchanged from the legacy version.
+ *
+ * Colour (WAP-137 follow-up, audit §4.4): each bucket maps to one kit tone
+ * (`.wa-kit-tone--alert|warn|ok`, docs/KIT_GUIDE.md §4) and the tile / row
+ * paint from that hook (`.wa-kit-tone-icon`, `.wa-kit-tone-edge`, `StatusTag`).
+ * Totals stay neutral `--wa-text`; no `colorVar('gold')`-style inline colours,
+ * so dark mode resolves the light-dark() brand tokens, never `--color-gold`.
  */
 
 type SortKey = 'severity' | 'days_inactive' | 'last_contact';
@@ -49,11 +55,16 @@ const BUCKET_AUDIENCE: Record<PriorityBucket, FollowUpAudience> = {
   ontrack: 'all',
 };
 
-const BUCKET_STYLE: Record<PriorityBucket, { color: KitColor; icon: LucideIcon }> = {
-  critical: { color: 'accent', icon: TriangleAlert },
-  warning: { color: 'gold', icon: Clock },
-  ontrack: { color: 'success', icon: CheckCircle2 },
+const BUCKET_STYLE: Record<PriorityBucket, { tone: KitTone; icon: LucideIcon }> = {
+  critical: { tone: 'alert', icon: TriangleAlert },
+  warning: { tone: 'warn', icon: Clock },
+  ontrack: { tone: 'ok', icon: CheckCircle2 },
 };
+
+/** Tone hook class for a bucket — the only place a bucket becomes a colour. */
+function priorityBucketToneClass(bucket: PriorityBucket): string {
+  return `wa-kit-tone--${BUCKET_STYLE[bucket].tone}`;
+}
 
 export type CounselorPriorityQueueProps = {
   rows: PriorityQueueRow[];
@@ -171,18 +182,29 @@ export default function CounselorPriorityQueue({ rows, totals }: CounselorPriori
       <section aria-label={t('priorityQueueTitle')} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SectionHeader title={t('priorityQueueTitle')} goal={t('priorityQueueSubtitle')} />
 
-        {/* Bucket totals */}
+        {/* Bucket totals — neutral numbers; the bucket tone lives on the icon chip. */}
         <div className="wa-grid wa-grid-cols-3 wa-gap-3">
           {(['critical', 'warning', 'ontrack'] as const).map((bucket) => {
             const Icon = BUCKET_STYLE[bucket].icon;
             return (
-              <StatSparkTile
+              <div
                 key={bucket}
-                icon={<Icon size={16} />}
-                label={bucketLabel(bucket, t)}
-                value={totals[bucket]}
-                color={BUCKET_STYLE[bucket].color}
-              />
+                className={cx('wa-kit-card wa-kit-card--sm', priorityBucketToneClass(bucket))}
+                data-bucket={bucket}
+                style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+              >
+                <span className="wa-kit-tone-icon" aria-hidden>
+                  <Icon size={16} />
+                </span>
+                <div>
+                  <div className="wa-kit-stat-value" style={{ fontSize: 26 }}>
+                    {totals[bucket]}
+                  </div>
+                  <div className="wa-kit-stat-label" style={{ marginTop: 4 }}>
+                    {bucketLabel(bucket, t)}
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
@@ -334,18 +356,18 @@ function PriorityRow({
   t: ReturnType<typeof useTranslations>;
 }) {
   const style = BUCKET_STYLE[row.bucket];
-  const c = colorVar(style.color);
   const Icon = style.icon;
 
   return (
     <div
-      className="wa-kit-card wa-kit-card--sm"
+      className={cx('wa-kit-card wa-kit-card--sm wa-kit-tone-edge', priorityBucketToneClass(row.bucket))}
+      data-bucket={row.bucket}
+      data-selected={selected ? 'true' : undefined}
       style={{
         display: 'flex',
         alignItems: 'flex-start',
         gap: 12,
-        borderLeft: `3px solid ${c}`,
-        background: selected ? `color-mix(in srgb, ${c} 6%, var(--wa-surface))` : 'var(--wa-surface)',
+        background: selected ? 'var(--wa-kit-tone-soft)' : 'var(--wa-surface)',
       }}
     >
       <input
@@ -355,30 +377,15 @@ function PriorityRow({
         aria-label={t('priorityQueueSelectMember', { name: row.memberName })}
         style={{ cursor: 'pointer', width: 16, height: 16, marginTop: 10, flexShrink: 0 }}
       />
-      <div
-        aria-hidden
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 12,
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: `color-mix(in srgb, ${c} 14%, transparent)`,
-          color: c,
-        }}
-      >
+      <span className="wa-kit-tone-icon" aria-hidden style={{ marginTop: 2 }}>
         <Icon size={18} />
-      </div>
+      </span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Link href={`/counselor/students/${row.memberId}`} style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)', textDecoration: 'none' }}>
             {row.memberName}
           </Link>
-          <span style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
-            {bucketLabel(row.bucket, t)}
-          </span>
+          <StatusTag tone={style.tone}>{bucketLabel(row.bucket, t)}</StatusTag>
         </div>
         <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
           {row.enrolledProgram

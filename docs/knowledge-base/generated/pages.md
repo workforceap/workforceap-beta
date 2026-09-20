@@ -80,8 +80,9 @@
 | [app/(portal)/counselor/students/\[memberId\]/error.tsx](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/error.tsx) | 13 | member-counselor | default:5 |
 | [app/(portal)/counselor/students/\[memberId\]/loading.tsx](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/students/\[memberId\]/notesPanel.module.css](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/notesPanel.module.css) | 119 | member-counselor |  |
-| [app/(portal)/counselor/students/\[memberId\]/page.tsx](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/page.tsx) | 1475 | member-counselor | default:69 |
-| [app/(portal)/counselor/students/\[memberId\]/studentDetail.module.css](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/studentDetail.module.css) | 37 | member-counselor |  |
+| [app/(portal)/counselor/students/\[memberId\]/page.tsx](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/page.tsx) | 1041 | member-counselor | default:80 |
+| [app/(portal)/counselor/students/\[memberId\]/studentDetail.module.css](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/studentDetail.module.css) | 287 | member-counselor |  |
+| [app/(portal)/counselor/students/\[memberId\]/studentDetailTabs.ts](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/studentDetailTabs.ts) | 34 | member-counselor | STUDENT_DETAIL_TABS_ID_BASE:15, STUDENT_DETAIL_TAB_PARAM:18, STUDENT_DETAIL_TABS:20, parseStudentDetailTab:28 |
 | [app/(portal)/counselor/students/error.tsx](../../../app/%28portal%29/counselor/students/error.tsx) | 13 | member-counselor | default:5 |
 | [app/(portal)/counselor/students/loading.tsx](../../../app/%28portal%29/counselor/students/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/students/page.tsx](../../../app/%28portal%29/counselor/students/page.tsx) | 384 | member-counselor | default:30 |
