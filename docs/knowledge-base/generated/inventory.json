@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "36c652bb6cda8ace273f00a3e4ef9e7c9311edfd5dde71cf7eac6be63d012e6d",
+  "inputTreeSha256": "dd311440389b26ada5fbf3e88881d249a13c3931541bf9e332d3b039498589aa",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -40637,9 +40637,9 @@
       "path": "app/apply/apply-funnel-depth.css",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 9839,
-      "lines": 488,
-      "sha256": "f0afd6b71a7c65d0000c97f682cc71d8dfe1a22ace93d5767c5c543627b92c06",
+      "bytes": 10442,
+      "lines": 504,
+      "sha256": "cecaf621bf6f2a3960bf9813515741ec36327e6d5bb5b86696a053e6d82bf2a9",
       "binary": false
     },
     {
@@ -46322,6 +46322,31 @@
       "directive": null
     },
     {
+      "path": "app/wioa-qualification/layout.tsx",
+      "area": "pages",
+      "domain": "partners-funding",
+      "bytes": 804,
+      "lines": 15,
+      "sha256": "63c960f111e229cffeb66a8d43fe6f64333dd84984a8d47d715acc0a3c2deb79",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 12,
+          "kind": "FunctionDeclaration",
+          "localName": "PublicWioaQualificationLayout"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PublicWioaQualificationLayout",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "app/wioa-qualification/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
@@ -47122,40 +47147,40 @@
       "path": "components/CookieConsentBanner.test.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6356,
-      "lines": 143,
-      "sha256": "d7841758f12578bd0138c4a1bf6825792b7bba53b1347f700bb0b268f0145558",
+      "bytes": 8221,
+      "lines": 178,
+      "sha256": "6aae05ab70ee652f18965e12e8c57640b4faae20745267993f3e22a702404290",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "pathname",
-          "line": 12,
-          "kind": "Variable"
-        },
-        {
-          "name": "bannerHeight",
-          "line": 13,
-          "kind": "Variable"
-        },
-        {
-          "name": "navHeight",
           "line": 14,
           "kind": "Variable"
         },
         {
-          "name": "measurements",
+          "name": "bannerHeight",
           "line": 15,
           "kind": "Variable"
         },
         {
-          "name": "gtag",
+          "name": "navHeight",
           "line": 16,
           "kind": "Variable"
         },
         {
+          "name": "measurements",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "gtag",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
           "name": "view",
-          "line": 19,
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -47165,9 +47190,9 @@
       "path": "components/CookieConsentBanner.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3684,
-      "lines": 98,
-      "sha256": "b14a3cd6d93e6f2254f90103b521f16665b307128a5cc116b42859d8dc3ef298",
+      "bytes": 4139,
+      "lines": 104,
+      "sha256": "6dc74cfa26ec1a2bd5bf42555fed1acf5af6c705498f9fa010606df56606fa36",
       "binary": false,
       "exports": [
         {
@@ -75866,9 +75891,9 @@
       "path": "css/main.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 239690,
-      "lines": 8790,
-      "sha256": "11fb166fa640f4fcf24e13d1742bdfae1c399e5152fdb4158ae9d28125a3fc7a",
+      "bytes": 240300,
+      "lines": 8801,
+      "sha256": "3dc7349ef27fa0b246b6d76f7e1f9d5cf758c8433ccf2cf25c08d85addf9a2f7",
       "binary": false
     },
     {
@@ -118546,25 +118571,25 @@
       "path": "lib/i18n/pickRootClientMessages.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 5490,
-      "lines": 115,
-      "sha256": "66de3fe25b35b16102a6db472b208691d6df3e73e2d2ee4c86bd56f2b239a6e2",
+      "bytes": 8204,
+      "lines": 163,
+      "sha256": "1d352a9c57174bb9e2ff8fcaf2178c484c47cccae421587cf995f6b52871f606",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "root",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "catalog",
           "line": 19,
           "kind": "Variable"
         },
         {
+          "name": "catalog",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
           "name": "ns",
-          "line": 23,
+          "line": 24,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -118574,9 +118599,9 @@
       "path": "lib/i18n/pickRootClientMessages.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 5937,
-      "lines": 190,
-      "sha256": "5f2f50bfcd2579808e70efd575cdcd2be7eaaad481f9e201057f9f90ca4a7896",
+      "bytes": 6840,
+      "lines": 210,
+      "sha256": "9637b629a0e9ecaa208880d9dce2a431479c79e78e5860ed8eb05c3d83b263e4",
       "binary": false,
       "exports": [
         {
@@ -118595,53 +118620,63 @@
           "kind": "Variable"
         },
         {
+          "name": "WIOA_CLIENT_NAMESPACES",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 40,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 52,
+          "line": 65,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 88,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 92,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 96,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 100,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 104,
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "pickWioaClientMessages",
+          "line": 121,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 108,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 150,
+          "line": 170,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 155,
+          "line": 175,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -118667,68 +118702,78 @@
           "kind": "Variable"
         },
         {
+          "name": "WIOA_CLIENT_NAMESPACES",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
           "name": "ADMIN_DASHBOARD_CLIENT_KEYS",
-          "line": 40,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "ClientMessageSlice",
-          "line": 52,
+          "line": 65,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "pickNamespaces",
-          "line": 54,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminDashboardClientSlice",
-          "line": 64,
+          "line": 77,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickMarketingClientSlice",
-          "line": 71,
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickRootClientMessages",
-          "line": 88,
+          "line": 101,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickPortalClientMessages",
-          "line": 92,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAdminClientMessages",
-          "line": 96,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickApplyClientMessages",
-          "line": 100,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickAuthClientMessages",
-          "line": 104,
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "pickWioaClientMessages",
+          "line": 121,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickClientMessageSlice",
-          "line": 108,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "clientMessagesBytes",
-          "line": 150,
+          "line": 170,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pickLegacyFatRootClientMessages",
-          "line": 155,
+          "line": 175,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -161714,20 +161759,20 @@
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6093,
-      "lines": 98,
-      "sha256": "712aecb0df1de3845342a2d6afebb2cfb23b92a9a5ae23fc9a2f879d56696df9",
+      "bytes": 7249,
+      "lines": 115,
+      "sha256": "5c4b54cfc104cff3dfb65a256becd4749d4e345d786649a897dba02690127d8a",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "show",
-          "line": 10,
+          "line": 12,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "stage",
-          "line": 16,
+          "line": 18,
           "kind": "Variable"
         }
       ],
@@ -162596,35 +162641,35 @@
       "path": "tests/components/wioa-qualification.spec.tsx",
       "area": "tests",
       "domain": "partners-funding",
-      "bytes": 7631,
-      "lines": 110,
-      "sha256": "1520dee9c09775dfac41eb1e31afb841c1f4b952159dca29eba08c0709d3b03f",
+      "bytes": 9067,
+      "lines": 131,
+      "sha256": "3777bc156661d24c6580135be8d634341ccc80c4b4b828273b994ede51a208cf",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mocks",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "messages",
-          "line": 17,
-          "kind": "Variable"
-        },
-        {
-          "name": "answers",
           "line": 18,
           "kind": "Variable"
         },
         {
-          "name": "saved",
+          "name": "answers",
           "line": 19,
           "kind": "Variable"
         },
         {
-          "name": "show",
+          "name": "saved",
           "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "show",
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163891,9 +163936,9 @@
       "path": "tests/lib/apply-browser-state.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 9197,
-      "lines": 135,
-      "sha256": "ca9735c8d673e93c309bfa196f9c977d4f3d1b4cf62b3e845e3427c90aaded34",
+      "bytes": 10198,
+      "lines": 147,
+      "sha256": "379f5820723bc0b1c5a1babe49d7975774e5f4e261d72ffb39cb5c0b054d2226",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163925,6 +163970,69 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/apply-resume-gate-contrast.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4154,
+      "lines": 82,
+      "sha256": "b1b373b65bd6075b854b57d28c227174098fffb09af7f1b628906d2b155f6cca",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "tokensCss",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "funnelCss",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "depthCss",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "gate",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "lightDark",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "hexToRgb",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "luminance",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contrast",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "rule",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {

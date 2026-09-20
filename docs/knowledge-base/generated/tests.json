@@ -505,31 +505,31 @@
     "localReferences": [
       {
         "file": "components/CookieConsentBanner.tsx",
-        "line": 4
-      },
-      {
-        "file": "lib/consent/state.ts",
-        "line": 5
-      },
-      {
-        "file": "lib/i18n/pickRootClientMessages.ts",
         "line": 6
       },
       {
-        "file": "messages/en.json",
+        "file": "lib/consent/state.ts",
         "line": 7
       },
       {
-        "file": "messages/es.json",
+        "file": "lib/i18n/pickRootClientMessages.ts",
         "line": 8
       },
       {
-        "file": "messages/fr.json",
+        "file": "messages/en.json",
         "line": 9
       },
       {
-        "file": "messages/pt.json",
+        "file": "messages/es.json",
         "line": 10
+      },
+      {
+        "file": "messages/fr.json",
+        "line": 11
+      },
+      {
+        "file": "messages/pt.json",
+        "line": 12
       }
     ],
     "kind": "test-candidate",
@@ -19851,6 +19851,14 @@
       {
         "file": "lib/formatDate.ts",
         "line": 8
+      },
+      {
+        "file": "lib/i18n/pickRootClientMessages.ts",
+        "line": 9
+      },
+      {
+        "file": "messages/es.json",
+        "line": 10
       }
     ],
     "kind": "test-candidate",
@@ -20867,6 +20875,10 @@
       {
         "file": "lib/wioa/wioaQualification.ts",
         "line": 12
+      },
+      {
+        "file": "lib/i18n/pickRootClientMessages.ts",
+        "line": 13
       }
     ],
     "kind": "test-candidate",
@@ -22280,6 +22292,25 @@
         "line": 7
       }
     ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/apply-resume-gate-contrast.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [],
     "kind": "test-candidate",
     "declaredRunners": [
       {

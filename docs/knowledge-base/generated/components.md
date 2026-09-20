@@ -9,8 +9,8 @@
 | [components/AsyncBoundary.tsx](../../../components/AsyncBoundary.tsx) | 70 | components | default:23 |
 | [components/ConditionalMarketingNav.tsx](../../../components/ConditionalMarketingNav.tsx) | 44 | components | default:23 |
 | [components/CookieConsentBanner.module.css](../../../components/CookieConsentBanner.module.css) | 67 | components |  |
-| [components/CookieConsentBanner.test.tsx](../../../components/CookieConsentBanner.test.tsx) | 143 | components |  |
-| [components/CookieConsentBanner.tsx](../../../components/CookieConsentBanner.tsx) | 98 | components | default:21 |
+| [components/CookieConsentBanner.test.tsx](../../../components/CookieConsentBanner.test.tsx) | 178 | components |  |
+| [components/CookieConsentBanner.tsx](../../../components/CookieConsentBanner.tsx) | 104 | components | default:21 |
 | [components/DeferredAnalytics.tsx](../../../components/DeferredAnalytics.tsx) | 46 | components | default:38 |
 | [components/DeferredRootChrome.tsx](../../../components/DeferredRootChrome.tsx) | 18 | components | default:10 |
 | [components/ErrorBoundary.tsx](../../../components/ErrorBoundary.tsx) | 3 | components | default:3 |
