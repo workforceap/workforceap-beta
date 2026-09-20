@@ -5,6 +5,7 @@ import { isAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
 
 const patchSchema = z.object({
   isActive: z.boolean().optional(),
@@ -35,6 +36,13 @@ type RouteContext = { params: Promise<{ id: string }> };async function _PATCH(re
     where: { id },
     data: parsed.data,
   }));
+  void auditLog({
+    actorUserId: user.id,
+    action: 'admin_screening_pack_update',
+    targetType: 'employer_screening_pack',
+    targetId: id,
+    metadata: { fields: Object.keys(parsed.data) },
+  }).catch(() => {});
   return NextResponse.json({ pack });
 
   } catch (error) {
@@ -52,6 +60,13 @@ export const PATCH = withApiGuc(_PATCH);async function _DELETE(_request: Request
   const existing = await prisma.$transaction((tx) => tx.employerScreeningPack.findUnique({ where: { id }, select: { id: true } }));
   if (!existing) return NextResponse.json({ error: 'Screening pack not found' }, { status: 404 });
   await prisma.$transaction((tx) => tx.employerScreeningPack.delete({ where: { id } }));
+  void auditLog({
+    actorUserId: user.id,
+    action: 'admin_screening_pack_delete',
+    targetType: 'employer_screening_pack',
+    targetId: id,
+    metadata: {},
+  }).catch(() => {});
   return NextResponse.json({ ok: true });
 
   } catch (error) {

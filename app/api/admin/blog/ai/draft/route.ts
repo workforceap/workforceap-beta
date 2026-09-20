@@ -7,6 +7,7 @@ import { webSearch, isWebSearchConfigured } from '@/lib/ai/blogAI';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
 export const POST = withApiGuc(async (request: Request) => {
   try {
     const user = await getUser();
@@ -92,7 +93,15 @@ export const POST = withApiGuc(async (request: Request) => {
           published: false,
         },
       }));
-  
+
+      void auditLog({
+        actorUserId: user.id,
+        action: 'admin_blog_ai_draft_create',
+        targetType: 'blog_post',
+        targetId: post.id,
+        metadata: { slug: post.slug, source: 'ai_draft' },
+      }).catch(() => {});
+
       return NextResponse.json({ post: { id: post.id, slug: post.slug } });
     } catch (err) {
       console.error('Blog AI draft error:', err);

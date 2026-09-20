@@ -33,5 +33,3 @@ export const JobApplicationSourceMembers = Object.freeze(
   ) as { [K in JobApplicationSource]: K },
 );
 
-/** Ordered columns for kanban (full pipeline). Matches Prisma enum order. */
-export const JOB_APPLICATION_PIPELINE_COLUMNS = JOB_APPLICATION_STATUS;

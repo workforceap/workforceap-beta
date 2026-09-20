@@ -3,7 +3,7 @@ import { cleanupTable, cleanupDeletedAccounts, foreignKeyConstraintName, runData
 import {
   RETENTION_TABLES,
   CRITICAL_AUDIT_ACTION_PREFIXES,
-  CRITICAL_AUDIT_RETENTION_DAYS,
+  RETENTION_AUDIT_DAYS as CRITICAL_AUDIT_RETENTION_DAYS,
   getCutoffDate,
 } from './config';
 

@@ -402,4 +402,3 @@ export function CommandCenterKit({
   );
 }
 
-export default CommandCenterKit;

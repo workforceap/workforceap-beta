@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import ShareButton from '@/components/ui/ShareButton';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
 
 export type CertRow = {

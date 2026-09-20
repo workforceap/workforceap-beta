@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import type { ProgramCheckpointPack, CourseCheckpointSet, SkillCheckpoint } from '@/lib/content/checkpoints';
 import { ALL_CHECKPOINT_PACKS } from '@/lib/content/checkpoints';
-import ShareButton from '@/components/ui/ShareButton';
+import { ShareButton } from '@/components/ui/ShareButton';
 import { buildSkillCheckpointShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
 import { StatusTag, SegmentedProgress } from '@/components/portal/kit';
 

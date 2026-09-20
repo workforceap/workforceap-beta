@@ -218,7 +218,7 @@ export async function calculateAtRiskScore(userId: string): Promise<AtRiskScore>
   };
 }
 
-function buildRecommendedAction(score: number, factors: AtRiskFactor[]): string {
+export function buildRecommendedAction(score: number, factors: AtRiskFactor[]): string {
   if (score >= THRESHOLDS.CRITICAL) {
     const topFactor = factors.sort((a, b) => b.weight - a.weight)[0];
     return `Immediate outreach needed: ${topFactor?.description ?? 'Multiple risk factors'}. Schedule call within 24 hours.`;
@@ -511,4 +511,36 @@ export async function persistAtRiskAlert(score: AtRiskScore): Promise<void> {
       },
     });
   }
+}
+
+/**
+ * Read the persisted risk picture instead of re-scoring (WAP-30 / TODO-006).
+ * The nightly `at-risk-check` is the single scorer; every consumer that needs
+ * scores between runs — the weekly counselor alert, the command centers, the
+ * at-risk dashboard — reads `AtRiskAlert` so they all agree on the same day.
+ * Returns one score per member with an open/acknowledged alert at or above
+ * `minScore`, newest alert first per member.
+ */
+export async function loadPersistedAtRiskScores(minScore: number = THRESHOLDS.MEDIUM): Promise<AtRiskScore[]> {
+  const alerts = await prisma.atRiskAlert.findMany({
+    where: { status: { in: ['open', 'acknowledged'] }, score: { gte: minScore }, user: { deletedAt: null } },
+    orderBy: [{ userId: 'asc' }, { createdAt: 'desc' }],
+    select: { userId: true, score: true, factors: true, updatedAt: true },
+    take: 2000,
+  });
+  const seen = new Set<string>();
+  const scores: AtRiskScore[] = [];
+  for (const alert of alerts) {
+    if (seen.has(alert.userId)) continue;
+    seen.add(alert.userId);
+    const factors = Array.isArray(alert.factors) ? (alert.factors as unknown as AtRiskFactor[]) : [];
+    scores.push({
+      userId: alert.userId,
+      score: alert.score,
+      factors,
+      lastActivityAt: alert.updatedAt,
+      recommendedAction: buildRecommendedAction(alert.score, [...factors]),
+    });
+  }
+  return scores;
 }

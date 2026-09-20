@@ -9,11 +9,11 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | Area | Files | Catalog |
 | --- | ---: | --- |
 | agent-tooling | 319 | [Open](agent-tooling.md) |
-| api | 520 | [Open](api.md) |
+| api | 519 | [Open](api.md) |
 | assets | 78 | [Open](assets.md) |
 | astro-marketing | 106 | [Open](astro-marketing.md) |
 | audit-graph | 81 | [Open](audit-graph.md) |
-| communications | 71 | [Open](communications.md) |
+| communications | 70 | [Open](communications.md) |
 | components | 685 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
 | database | 201 | [Open](database.md) |
@@ -21,9 +21,9 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | documentation | 357 | [Open](documentation.md) |
 | libraries | 1018 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
-| operations | 128 | [Open](operations.md) |
+| operations | 130 | [Open](operations.md) |
 | pages | 636 | [Open](pages.md) |
-| root | 55 | [Open](root.md) |
+| root | 56 | [Open](root.md) |
 | styles | 17 | [Open](styles.md) |
 | supporting-files | 74 | [Open](supporting-files.md) |
 | tests | 473 | [Open](tests.md) |

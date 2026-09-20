@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  autoMatchOccupationToPrograms,
+  rankPrograms as autoMatchOccupationToPrograms,
   buildOccupationTokens,
   inferExperienceBand,
   type OccupationForMatch,

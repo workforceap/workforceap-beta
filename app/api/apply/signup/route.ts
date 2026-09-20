@@ -23,6 +23,7 @@ import { logger } from '@/lib/observability/logger';
 import { withApiGuc, withSystemGuc } from '@/lib/db/withRequestGuc';
 import { withDbRetry, isConnectionAcquisitionError } from '@/lib/db/withDbRetry';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
+import { MEMBER_REFERRAL_COOKIE, capturePendingReferral } from '@/lib/member/referrals';
 import { ensureSelfServeCounselorAssigned } from '@/lib/counselor/autoAssign';
 import {
   normalizePartnerRef,
@@ -990,6 +991,19 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           logger.warn('apply/signup: counselor auto-assign failed', { userId: user.id, err });
         }),
     );
+
+    // Member-to-member referral (WAP-32): persist the attribution now that the
+    // referee has an account, so enrollment on another device, after the cookie
+    // expires, or by staff still pays the referrer. Pending only — no points
+    // until enrollment. Never user-blocking.
+    const memberReferralCode = cookieStore.get(MEMBER_REFERRAL_COOKIE)?.value;
+    if (memberReferralCode) {
+      after(() =>
+        capturePendingReferral(user.id, memberReferralCode).catch((err) => {
+          logger.warn('apply/signup: member referral capture failed', { userId: user.id, err });
+        }),
+      );
+    }
 
     // Consume the partner ref cookie exactly once. School computer labs,
     // library machines, and family devices are the normal case for this
