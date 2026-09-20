@@ -36,3 +36,12 @@ try {
 } catch {
   process.exit(1);
 }
+
+// WAP-110: and fail the build if the font comes back to the surfaces it was
+// removed from — the twelve public funnel routes and the member shell. The
+// legacy portal/admin trees are out of scope; see the guard's own header.
+try {
+  execFileSync('node', [path.join(__dirname, 'check-public-surface-icons.mjs')], { stdio: 'inherit' });
+} catch {
+  process.exit(1);
+}
