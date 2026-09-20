@@ -16,12 +16,12 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | communications | 72 | [Open](communications.md) |
 | components | 613 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
-| database | 207 | [Open](database.md) |
+| database | 208 | [Open](database.md) |
 | delivery | 9 | [Open](delivery.md) |
 | documentation | 357 | [Open](documentation.md) |
-| libraries | 1063 | [Open](libraries.md) |
+| libraries | 1064 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
-| operations | 137 | [Open](operations.md) |
+| operations | 141 | [Open](operations.md) |
 | pages | 645 | [Open](pages.md) |
 | root | 56 | [Open](root.md) |
 | styles | 17 | [Open](styles.md) |

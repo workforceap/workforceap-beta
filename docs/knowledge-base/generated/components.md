@@ -195,7 +195,7 @@
 | [components/forms/PasswordToggle.tsx](../../../components/forms/PasswordToggle.tsx) | 57 | components | PasswordToggleProps:6, default:34 |
 | [components/forms/PlacementSurveyForm.tsx](../../../components/forms/PlacementSurveyForm.tsx) | 258 | components | default:89 |
 | [components/graphics/DataLandingEmptyArt.tsx](../../../components/graphics/DataLandingEmptyArt.tsx) | 22 | components | DataLandingEmptyArt:4 |
-| [components/icons/LegacyGlyph.tsx](../../../components/icons/LegacyGlyph.tsx) | 146 | components | LEGACY_GLYPHS:71, legacyGlyph:129, LegacyGlyphProps:133, default:143 |
+| [components/icons/LegacyGlyph.tsx](../../../components/icons/LegacyGlyph.tsx) | 160 | components | LEGACY_GLYPHS:78, legacyGlyph:143, LegacyGlyphProps:147, default:157 |
 | [components/marketing/ConversionThankYouPage.tsx](../../../components/marketing/ConversionThankYouPage.tsx) | 160 | public-experience | default:26 |
 | [components/marketing/EnrollRefCookie.tsx](../../../components/marketing/EnrollRefCookie.tsx) | 12 | public-experience | default:7 |
 | [components/marketing/HomePageBelowFold.tsx](../../../components/marketing/HomePageBelowFold.tsx) | 665 | public-experience | HomeProgramShowcaseCard:16, default:37 |
@@ -326,7 +326,7 @@
 | [components/portal/MemberWorkspaceShell.tsx](../../../components/portal/MemberWorkspaceShell.tsx) | 67 | components | default:14 |
 | [components/portal/MentorSessionForm.tsx](../../../components/portal/MentorSessionForm.tsx) | 68 | components | default:5 |
 | [components/portal/MobileProfileSkillsResume.tsx](../../../components/portal/MobileProfileSkillsResume.tsx) | 346 | components | default:50 |
-| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 438 | communications | default:112 |
+| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 439 | communications | default:113 |
 | [components/portal/PageHeader.tsx](../../../components/portal/PageHeader.tsx) | 33 | components | default:4 |
 | [components/portal/PartnerExclusiveServerGate.tsx](../../../components/portal/PartnerExclusiveServerGate.tsx) | 56 | components | default:28 |
 | [components/portal/PartnerInviteMemberButton.tsx](../../../components/portal/PartnerInviteMemberButton.tsx) | 224 | components | default:11 |
@@ -397,7 +397,7 @@
 | [components/portal/TrainingCourseList.enrollment.test.tsx](../../../components/portal/TrainingCourseList.enrollment.test.tsx) | 260 | components |  |
 | [components/portal/TrainingCourseList.mssc.test.tsx](../../../components/portal/TrainingCourseList.mssc.test.tsx) | 53 | components |  |
 | [components/portal/TrainingCourseList.tsx](../../../components/portal/TrainingCourseList.tsx) | 581 | components | CourseProgressUi:27, default:67 |
-| [components/portal/UnreviewedLocaleBanner.tsx](../../../components/portal/UnreviewedLocaleBanner.tsx) | 86 | components | default:17 |
+| [components/portal/UnreviewedLocaleBanner.tsx](../../../components/portal/UnreviewedLocaleBanner.tsx) | 81 | components | default:18 |
 | [components/portal/VoiceAgentSurface.tsx](../../../components/portal/VoiceAgentSurface.tsx) | 150 | components | VoiceAgentSurfaceProps:5, default:33 |
 | [components/portal/VoiceCoachLauncherCard.tsx](../../../components/portal/VoiceCoachLauncherCard.tsx) | 66 | components | default:17 |
 | [components/portal/VoiceCoachesPromo.tsx](../../../components/portal/VoiceCoachesPromo.tsx) | 109 | components | default:25 |
