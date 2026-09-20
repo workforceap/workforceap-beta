@@ -28,7 +28,9 @@
   --color-text-red: var(--wa-accent-text, light-dark(#8c0f37, #f39ab5));
   --color-background-yellow: var(--wa-gold-soft, light-dark(#fef3c7, rgba(212, 173, 90, 0.2)));
   --color-text-yellow: var(--wa-gold-dark, light-dark(#7d5f26, #e0b062));
-  --color-background-green: light-dark(rgba(74, 155, 79, 0.14), rgba(111, 201, 154, 0.2));
+  /* Opaque soft tint like the other categories: the old 14% translucent green
+     let --color-text-green fall to 4.28:1 over the #f7f8fa public surface. */
+  --color-background-green: var(--wa-success-soft, light-dark(#eef6ee, rgba(111, 201, 154, 0.18)));
   --color-text-green: var(--wa-success-dark, light-dark(#357a3a, #8fd9b0));
   --color-background-blue: var(--wa-info-soft, light-dark(#eef5fb, rgba(119, 173, 230, 0.18)));
   --color-text-blue: var(--wa-info-dark, light-dark(#1f5a87, #74b3e3));
@@ -41,7 +43,8 @@
    Dark value matches the portal-wide dark palette (css/portal-tokens.css)
    rather than the old cool-dark #0f1115, so member dark mode isn't a
    different hue family from every other persona. */
-[data-surface='warm'] {
+[data-surface='warm'],
+html[data-portal-role='member'] {
   --wa-bg: light-dark(#fcf9f8, #130d0f);
 }
 

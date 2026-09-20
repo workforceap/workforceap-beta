@@ -141,11 +141,11 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                             : 'var(--surface-container)',
                     color:
                       app.status === 'APPROVED'
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success-dark)'
                         : app.status === 'DENIED'
                           ? 'var(--color-accent)'
                           : app.status === 'NEEDS_INFO'
-                            ? 'var(--color-gold)'
+                            ? 'var(--wa-gold-dark)'
                             : 'var(--color-on-surface-variant)',
                   }}
                 >
@@ -183,7 +183,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                           fontSize: '.8rem',
                           background:
                             opt.value === 'APPROVED'
-                              ? 'var(--color-green)'
+                              ? 'var(--wa-success)'
                               : opt.value === 'DENIED'
                                 ? 'var(--color-accent)'
                                 : 'var(--color-on-surface-variant)',
@@ -251,7 +251,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                     fontSize: '.8rem',
                     background:
                       opt.value === 'APPROVED'
-                        ? 'var(--color-green)'
+                        ? 'var(--wa-success)'
                         : opt.value === 'DENIED'
                           ? 'var(--color-accent)'
                           : 'var(--color-on-surface-variant)',

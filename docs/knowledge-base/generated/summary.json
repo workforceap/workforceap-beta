@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "ebf96721746206c8a198e65c828a2a987925891763cfd68cc722a491f0c6f2bd",
+  "inputTreeSha256": "4575a224a9a696664b49f4f63c41f6aa0391964df3b8b3c91d44d2940f1271b9",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4818,
-    "sourceModules": 3481,
-    "importReferences": 16920,
-    "resolvedLocalReferences": 11283,
+    "files": 4823,
+    "sourceModules": 3485,
+    "importReferences": 16938,
+    "resolvedLocalReferences": 11287,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1054,
     "nextRouteFiles": 1021,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 824,
-    "testCandidates": 817,
+    "testFiles": 827,
+    "testCandidates": 820,
     "testHelpers": 7,
-    "staticallySelectedTests": 814,
+    "staticallySelectedTests": 817,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1009
+      "files": 1013
     },
     {
       "area": "localization",
@@ -98,7 +98,7 @@
     },
     {
       "area": "styles",
-      "files": 16
+      "files": 17
     },
     {
       "area": "supporting-files",
@@ -289,12 +289,12 @@
       "lines": 1679
     },
     {
-      "file": "app/admin/coursera/page.tsx",
-      "lines": 1636
+      "file": "components/portal/kit/pages/VoiceStudioKit.tsx",
+      "lines": 1637
     },
     {
-      "file": "components/portal/kit/pages/VoiceStudioKit.tsx",
-      "lines": 1627
+      "file": "app/admin/coursera/page.tsx",
+      "lines": 1636
     },
     {
       "file": "scripts/audit-portal-routes.mjs",

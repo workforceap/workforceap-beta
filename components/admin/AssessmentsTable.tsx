@@ -118,8 +118,8 @@ export default function AssessmentsTable({
 
   const scoreColor = (pct: number | null) => {
     if (pct === null) return 'var(--color-on-surface-variant)';
-    if (pct >= 80) return 'var(--color-green, #4a9b4f)';
-    if (pct >= 60) return 'var(--color-gold)';
+    if (pct >= 80) return 'var(--wa-success-dark)';
+    if (pct >= 60) return 'var(--wa-gold-dark)';
     return 'var(--color-accent)';
   };
 
@@ -226,8 +226,8 @@ export default function AssessmentsTable({
                       const correct = correctnessByUserId[u.id]?.[q.id] === true;
                       return (
                         <div key={q.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', padding: '0.375rem 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: correct ? 'var(--color-green, #4a9b4f)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
-                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--color-green, #4a9b4f)' : 'var(--color-accent)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, minWidth: '1.5rem' }}>Q{q.id}</span>
+                          <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', color: correct ? 'var(--wa-success-dark)' : 'var(--color-accent)', flexShrink: 0, fontVariationSettings: "'FILL' 1" }}>{correct ? 'check_circle' : 'cancel'}</span>
                           <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.4 }}>{ans ?? '—'}</span>
                         </div>
                       );
