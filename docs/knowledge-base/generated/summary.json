@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "87dfa5f372ddadeef12cd1ecdb6905cdfdf7ddfb93d7ff2bd10f4d64d33ac7c9",
+  "inputTreeSha256": "1a0c954be3ed8060a0929e74fa090c9ef6811f7137082f5c2d5ea2ad867f2b5d",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4942,
-    "sourceModules": 3591,
-    "importReferences": 17893,
-    "resolvedLocalReferences": 12022,
+    "files": 4947,
+    "sourceModules": 3596,
+    "importReferences": 17936,
+    "resolvedLocalReferences": 12058,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 955,
-    "testCandidates": 945,
+    "testFiles": 958,
+    "testCandidates": 948,
     "testHelpers": 10,
-    "staticallySelectedTests": 943,
+    "staticallySelectedTests": 946,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1066
+      "files": 1070
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 561
+      "files": 562
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 929
+      "references": 930
     },
     {
       "file": "lib/auth/server.ts",
@@ -192,7 +192,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 68
+      "references": 70
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -205,6 +205,10 @@
     {
       "file": "lib/supabase-admin.ts",
       "references": 54
+    },
+    {
+      "file": "lib/admin/memberOnlyWhere.ts",
+      "references": 53
     },
     {
       "file": "lib/content/programCurriculumManifest.ts",
@@ -245,10 +249,6 @@
     {
       "file": "lib/notifications/create.ts",
       "references": 38
-    },
-    {
-      "file": "components/LocalizedLink.tsx",
-      "references": 37
     }
   ],
   "largestSourceFiles": [
@@ -317,6 +317,10 @@
       "lines": 1382
     },
     {
+      "file": "lib/admin/boardOutcomes.ts",
+      "lines": 1357
+    },
+    {
       "file": "app/api/apply/signup/route.test.ts",
       "lines": 1353
     },
@@ -339,10 +343,6 @@
     {
       "file": "components/portal/tools/SkillMapperClient.tsx",
       "lines": 1296
-    },
-    {
-      "file": "lib/admin/boardOutcomes.ts",
-      "lines": 1284
     },
     {
       "file": "tests/portal-audit-five-role.test.ts",
