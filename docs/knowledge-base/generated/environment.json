@@ -1653,21 +1653,6 @@
       ]
     },
     {
-      "name": "EXPERIMENT_OVERRIDE_SECRET",
-      "publicPrefix": false,
-      "declaredInRootExample": false,
-      "references": [
-        {
-          "file": "lib/experiments/verify-override.server.ts",
-          "line": 6
-        },
-        {
-          "file": "lib/experiments/verify-override.server.ts",
-          "line": 19
-        }
-      ]
-    },
-    {
       "name": "FIRECRAWL_API_KEY",
       "publicPrefix": false,
       "declaredInRootExample": false,
@@ -1945,10 +1930,6 @@
         {
           "file": "app/employers/signup/page.tsx",
           "line": 15
-        },
-        {
-          "file": "components/partner/PartnerSignupForm.tsx",
-          "line": 12
         }
       ]
     },
@@ -1956,45 +1937,25 @@
       "name": "NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID",
       "publicPrefix": true,
       "declaredInRootExample": true,
-      "references": [
-        {
-          "file": "lib/portal/counselorVoice.ts",
-          "line": 16
-        }
-      ]
+      "references": []
     },
     {
       "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID",
       "publicPrefix": true,
       "declaredInRootExample": true,
-      "references": [
-        {
-          "file": "lib/portal/interviewVoice.ts",
-          "line": 4
-        }
-      ]
+      "references": []
     },
     {
       "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID",
       "publicPrefix": true,
       "declaredInRootExample": true,
-      "references": [
-        {
-          "file": "lib/portal/interviewVoice.ts",
-          "line": 8
-        }
-      ]
+      "references": []
     },
     {
       "name": "NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID",
       "publicPrefix": true,
       "declaredInRootExample": true,
-      "references": [
-        {
-          "file": "lib/portal/counselorVoice.ts",
-          "line": 15
-        }
-      ]
+      "references": []
     },
     {
       "name": "NEXT_PUBLIC_EMPLOYER_CALENDLY_URL",
@@ -2559,10 +2520,6 @@
         {
           "file": "app/employers/signup/page.tsx",
           "line": 16
-        },
-        {
-          "file": "components/partner/PartnerSignupForm.tsx",
-          "line": 13
         }
       ]
     },

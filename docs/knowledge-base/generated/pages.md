@@ -607,7 +607,6 @@
 | [app/employer/outcomes/page.tsx](../../../app/employer/outcomes/page.tsx) | 54 | jobs-employers | generateMetadata:12, default:21 |
 | [app/employer/thank-you/page.tsx](../../../app/employer/thank-you/page.tsx) | 31 | jobs-employers | generateMetadata:6, default:16 |
 | [app/employers/EmployerContactForm.tsx](../../../app/employers/EmployerContactForm.tsx) | 266 | pages | default:41 |
-| [app/employers/EmployerHiringPartnerCta.tsx](../../../app/employers/EmployerHiringPartnerCta.tsx) | 38 | pages | default:14 |
 | [app/employers/signup/layout.tsx](../../../app/employers/signup/layout.tsx) | 15 | applications-enrollment | generateMetadata:4, default:13 |
 | [app/employers/signup/page.tsx](../../../app/employers/signup/page.tsx) | 383 | applications-enrollment | default:18 |
 | [app/employers/signup/signup-depth.css](../../../app/employers/signup/signup-depth.css) | 134 | applications-enrollment |  |

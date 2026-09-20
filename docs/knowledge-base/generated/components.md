@@ -4,7 +4,6 @@
 
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
-| [components/ApplyFormStatusBar.tsx](../../../components/ApplyFormStatusBar.tsx) | 108 | components | default:16 |
 | [components/AsyncBoundary.test.tsx](../../../components/AsyncBoundary.test.tsx) | 94 | components |  |
 | [components/AsyncBoundary.tsx](../../../components/AsyncBoundary.tsx) | 70 | components | default:23 |
 | [components/ConditionalMarketingNav.tsx](../../../components/ConditionalMarketingNav.tsx) | 44 | components | default:23 |
@@ -13,31 +12,24 @@
 | [components/CookieConsentBanner.tsx](../../../components/CookieConsentBanner.tsx) | 104 | components | default:21 |
 | [components/DeferredAnalytics.tsx](../../../components/DeferredAnalytics.tsx) | 46 | components | default:38 |
 | [components/DeferredRootChrome.tsx](../../../components/DeferredRootChrome.tsx) | 18 | components | default:10 |
-| [components/ErrorBoundary.tsx](../../../components/ErrorBoundary.tsx) | 3 | components | default:3 |
 | [components/Footer.test.tsx](../../../components/Footer.test.tsx) | 86 | components |  |
 | [components/Footer.tsx](../../../components/Footer.tsx) | 123 | components | default:7 |
 | [components/FundingBadge.tsx](../../../components/FundingBadge.tsx) | 73 | components | default:8 |
 | [components/JsonLd.tsx](../../../components/JsonLd.tsx) | 60 | components | default:7 |
-| [components/JsonLdArticle.tsx](../../../components/JsonLdArticle.tsx) | 59 | components | default:19 |
-| [components/JsonLdBreadcrumb.tsx](../../../components/JsonLdBreadcrumb.tsx) | 52 | components | BreadcrumbItem:7, default:23 |
 | [components/JsonLdCourse.tsx](../../../components/JsonLdCourse.tsx) | 49 | components | default:22 |
-| [components/JsonLdDataset.tsx](../../../components/JsonLdDataset.tsx) | 45 | components | default:12 |
 | [components/JsonLdEducationalOccupationalProgram.tsx](../../../components/JsonLdEducationalOccupationalProgram.tsx) | 49 | components | default:9 |
-| [components/JsonLdFAQPage.tsx](../../../components/JsonLdFAQPage.tsx) | 39 | components | default:16 |
 | [components/LocalizedLink.tsx](../../../components/LocalizedLink.tsx) | 38 | components | default:28 |
 | [components/LocalizedLinkServer.tsx](../../../components/LocalizedLinkServer.tsx) | 42 | components | default:30 |
 | [components/MainNav.tsx](../../../components/MainNav.tsx) | 571 | components | default:96 |
 | [components/MarkdownPreview.tsx](../../../components/MarkdownPreview.tsx) | 24 | components | default:9 |
 | [components/MobileBottomNav.tsx](../../../components/MobileBottomNav.tsx) | 174 | components | default:65 |
 | [components/PageHero.tsx](../../../components/PageHero.tsx) | 22 | components | default:1 |
-| [components/PhotoHighlight.tsx](../../../components/PhotoHighlight.tsx) | 45 | components | default:13 |
 | [components/ProgramIcon.tsx](../../../components/ProgramIcon.tsx) | 20 | components | ProgramIcon:17 |
 | [components/ProgramsDecisionJourneyNav.tsx](../../../components/ProgramsDecisionJourneyNav.tsx) | 241 | components | ProgramsJourneyStep:8, default:32 |
 | [components/SafeVercelMetrics.tsx](../../../components/SafeVercelMetrics.tsx) | 35 | components | default:28 |
 | [components/ScrollAnimations.tsx](../../../components/ScrollAnimations.tsx) | 185 | components | default:48 |
 | [components/ScrollAnimationsWrapper.tsx](../../../components/ScrollAnimationsWrapper.tsx) | 47 | components | default:9 |
 | [components/ScrollToTopButton.tsx](../../../components/ScrollToTopButton.tsx) | 82 | components | default:11 |
-| [components/TopBanner.tsx](../../../components/TopBanner.tsx) | 12 | components | default:3 |
 | [components/admin/AdminAnalyticsCharts.tsx](../../../components/admin/AdminAnalyticsCharts.tsx) | 267 | administration | default:102 |
 | [components/admin/AdminAnalyticsChartsLazy.tsx](../../../components/admin/AdminAnalyticsChartsLazy.tsx) | 14 | administration | default:14 |
 | [components/admin/AdminChartsLoading.tsx](../../../components/admin/AdminChartsLoading.tsx) | 13 | administration | default:6 |
@@ -119,14 +111,11 @@
 | [components/admin/MemberMergeClient.test.tsx](../../../components/admin/MemberMergeClient.test.tsx) | 128 | administration |  |
 | [components/admin/MemberMergeClient.tsx](../../../components/admin/MemberMergeClient.tsx) | 346 | administration | default:18 |
 | [components/admin/MemberPartnerSection.tsx](../../../components/admin/MemberPartnerSection.tsx) | 87 | administration | default:8 |
-| [components/admin/MemberReviewTable.tsx](../../../components/admin/MemberReviewTable.tsx) | 277 | administration | MemberReviewTable:35 |
 | [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:8 |
 | [components/admin/MembersListNav.tsx](../../../components/admin/MembersListNav.tsx) | 85 | administration | default:53 |
 | [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1208 | administration | default:278 |
-| [components/admin/MentorStatusButtons.tsx](../../../components/admin/MentorStatusButtons.tsx) | 95 | administration | default:12 |
 | [components/admin/MfaStatusBanner.tsx](../../../components/admin/MfaStatusBanner.tsx) | 67 | administration | default:5 |
 | [components/admin/OrgWideChangeNotice.tsx](../../../components/admin/OrgWideChangeNotice.tsx) | 37 | administration | default:9 |
-| [components/admin/OutcomesDashboard.tsx](../../../components/admin/OutcomesDashboard.tsx) | 558 | administration | default:198 |
 | [components/admin/OutcomesSnapshot.tsx](../../../components/admin/OutcomesSnapshot.tsx) | 628 | administration | default:134 |
 | [components/admin/PartnerDeactivateDialog.tsx](../../../components/admin/PartnerDeactivateDialog.tsx) | 128 | administration | default:17 |
 | [components/admin/PartnerDetailActions.tsx](../../../components/admin/PartnerDetailActions.tsx) | 115 | administration | default:47 |
@@ -155,8 +144,6 @@
 | [components/admin/coursera/MapToUserActions.tsx](../../../components/admin/coursera/MapToUserActions.tsx) | 266 | learning-coursera | default:67 |
 | [components/admin/useDirectoryNavigation.ts](../../../components/admin/useDirectoryNavigation.ts) | 86 | administration | useDirectoryNavigation:8 |
 | [components/analytics/ConversionMetrics.tsx](../../../components/analytics/ConversionMetrics.tsx) | 41 | administration | default:26 |
-| [components/analytics/CtaExperimentExposure.tsx](../../../components/analytics/CtaExperimentExposure.tsx) | 34 | administration | default:14 |
-| [components/analytics/ExperimentedCtaLink.tsx](../../../components/analytics/ExperimentedCtaLink.tsx) | 49 | administration | default:18 |
 | [components/analytics/PortalMetrics.tsx](../../../components/analytics/PortalMetrics.tsx) | 33 | administration | default:23 |
 | [components/api-docs/ApiDocsClient.tsx](../../../components/api-docs/ApiDocsClient.tsx) | 352 | components | default:120 |
 | [components/apply/ApplyConfirmationCta.tsx](../../../components/apply/ApplyConfirmationCta.tsx) | 39 | applications-enrollment | default:8 |
@@ -194,7 +181,6 @@
 | [components/employer/EmployerUiActions.test.tsx](../../../components/employer/EmployerUiActions.test.tsx) | 229 | jobs-employers |  |
 | [components/employer/EmployerWorkQueueClient.tsx](../../../components/employer/EmployerWorkQueueClient.tsx) | 321 | jobs-employers | WqApp:11, WqJob:21, default:117 |
 | [components/employer/EmployerWorkflowTimeline.tsx](../../../components/employer/EmployerWorkflowTimeline.tsx) | 43 | jobs-employers | default:12 |
-| [components/employer/InterviewScheduler.tsx](../../../components/employer/InterviewScheduler.tsx) | 161 | jobs-employers | default:13 |
 | [components/employer/JobApplicantsClient.tsx](../../../components/employer/JobApplicantsClient.tsx) | 237 | jobs-employers | default:29 |
 | [components/employer/JobForm.tsx](../../../components/employer/JobForm.tsx) | 472 | jobs-employers | default:66 |
 | [components/employer/JobReadinessIssueList.tsx](../../../components/employer/JobReadinessIssueList.tsx) | 45 | jobs-employers | default:22 |
@@ -204,52 +190,29 @@
 | [components/error/ErrorBoundary.test.tsx](../../../components/error/ErrorBoundary.test.tsx) | 99 | components |  |
 | [components/error/ErrorBoundary.tsx](../../../components/error/ErrorBoundary.tsx) | 145 | components | default:22 |
 | [components/error/RouteErrorFallback.tsx](../../../components/error/RouteErrorFallback.tsx) | 302 | components | ErrorContext:8, default:113 |
-| [components/forms/MemberSignupForm.tsx](../../../components/forms/MemberSignupForm.tsx) | 307 | components | default:27 |
 | [components/forms/ParentalConsentForm.tsx](../../../components/forms/ParentalConsentForm.tsx) | 286 | components | default:22 |
 | [components/forms/PasswordToggle.tsx](../../../components/forms/PasswordToggle.tsx) | 57 | components | PasswordToggleProps:6, default:34 |
 | [components/forms/PlacementSurveyForm.tsx](../../../components/forms/PlacementSurveyForm.tsx) | 258 | components | default:89 |
 | [components/graphics/DataLandingEmptyArt.tsx](../../../components/graphics/DataLandingEmptyArt.tsx) | 22 | components | DataLandingEmptyArt:4 |
 | [components/icons/LegacyGlyph.tsx](../../../components/icons/LegacyGlyph.tsx) | 146 | components | LEGACY_GLYPHS:71, legacyGlyph:129, LegacyGlyphProps:133, default:143 |
 | [components/marketing/ConversionThankYouPage.tsx](../../../components/marketing/ConversionThankYouPage.tsx) | 160 | public-experience | default:26 |
-| [components/marketing/EmployerCaseStudyCard.tsx](../../../components/marketing/EmployerCaseStudyCard.tsx) | 167 | public-experience | default:19 |
 | [components/marketing/EnrollRefCookie.tsx](../../../components/marketing/EnrollRefCookie.tsx) | 12 | public-experience | default:7 |
 | [components/marketing/HomePageBelowFold.tsx](../../../components/marketing/HomePageBelowFold.tsx) | 665 | public-experience | HomeProgramShowcaseCard:16, default:37 |
 | [components/marketing/MarketingRouteLoading.tsx](../../../components/marketing/MarketingRouteLoading.tsx) | 124 | public-experience | default:8 |
 | [components/marketing/PartnerSchoolEnrollMissing.tsx](../../../components/marketing/PartnerSchoolEnrollMissing.tsx) | 111 | public-experience | default:15 |
 | [components/marketing/PartnerSchoolEnrollPage.tsx](../../../components/marketing/PartnerSchoolEnrollPage.tsx) | 236 | public-experience | default:45 |
-| [components/marketing/ProgramsMobileBrowseNav.tsx](../../../components/marketing/ProgramsMobileBrowseNav.tsx) | 32 | public-experience | default:9 |
-| [components/marketing/TestimonialCard.tsx](../../../components/marketing/TestimonialCard.tsx) | 180 | public-experience | TestimonialCardProps:3, default:28 |
-| [components/marketing/TestimonialsCarousel.tsx](../../../components/marketing/TestimonialsCarousel.tsx) | 157 | public-experience | default:24 |
-| [components/marketing/TestimonialsRow.tsx](../../../components/marketing/TestimonialsRow.tsx) | 166 | public-experience | TestimonialsRowProps:5, default:23 |
 | [components/marketing/ThankYouViewTracker.tsx](../../../components/marketing/ThankYouViewTracker.tsx) | 12 | public-experience | default:6 |
 | [components/marketing/TrustStrip.tsx](../../../components/marketing/TrustStrip.tsx) | 21 | public-experience | default:9 |
 | [components/marketing/UtmCapture.tsx](../../../components/marketing/UtmCapture.tsx) | 55 | public-experience | default:20 |
 | [components/marketing/dynamicMarketingChrome.tsx](../../../components/marketing/dynamicMarketingChrome.tsx) | 6 | public-experience | DynamicFooter:4, DynamicMobileBottomNav:6 |
 | [components/marketing/employers/EmployersHeroCtaExperiment.tsx](../../../components/marketing/employers/EmployersHeroCtaExperiment.tsx) | 119 | public-experience | default:40 |
-| [components/marketing/ui/CTABand.tsx](../../../components/marketing/ui/CTABand.tsx) | 63 | public-experience | CTABand:11 |
-| [components/marketing/ui/CohortStatCard.tsx](../../../components/marketing/ui/CohortStatCard.tsx) | 57 | public-experience | CohortStatCard:13 |
-| [components/marketing/ui/ContactInfoCard.tsx](../../../components/marketing/ui/ContactInfoCard.tsx) | 39 | public-experience | ContactInfoCard:12 |
 | [components/marketing/ui/HeroSection.test.tsx](../../../components/marketing/ui/HeroSection.test.tsx) | 73 | public-experience |  |
 | [components/marketing/ui/HeroSection.tsx](../../../components/marketing/ui/HeroSection.tsx) | 78 | public-experience | HeroSection:18 |
-| [components/marketing/ui/InfoCard.tsx](../../../components/marketing/ui/InfoCard.tsx) | 47 | public-experience | InfoCard:12 |
-| [components/marketing/ui/JourneyStep.tsx](../../../components/marketing/ui/JourneyStep.tsx) | 44 | public-experience | JourneyStep:11 |
-| [components/marketing/ui/PageSection.tsx](../../../components/marketing/ui/PageSection.tsx) | 54 | public-experience | PageSection:27 |
-| [components/marketing/ui/PartnershipCard.tsx](../../../components/marketing/ui/PartnershipCard.tsx) | 77 | public-experience | PartnershipCard:15 |
-| [components/marketing/ui/PricingTierCard.tsx](../../../components/marketing/ui/PricingTierCard.tsx) | 85 | public-experience | PricingTierCard:14 |
-| [components/marketing/ui/ProcessStep.tsx](../../../components/marketing/ui/ProcessStep.tsx) | 39 | public-experience | ProcessStep:13 |
-| [components/marketing/ui/QuoteCard.tsx](../../../components/marketing/ui/QuoteCard.tsx) | 68 | public-experience | QuoteCard:10 |
-| [components/marketing/ui/SectionHeader.tsx](../../../components/marketing/ui/SectionHeader.tsx) | 46 | public-experience | SectionHeader:14 |
-| [components/marketing/ui/SplitHero.tsx](../../../components/marketing/ui/SplitHero.tsx) | 67 | public-experience | SplitHero:10 |
-| [components/marketing/ui/StatBand.tsx](../../../components/marketing/ui/StatBand.tsx) | 44 | public-experience | StatBand:13 |
-| [components/marketing/ui/StatCard.tsx](../../../components/marketing/ui/StatCard.tsx) | 69 | public-experience | StatCard:12 |
-| [components/marketing/ui/ValueCard.tsx](../../../components/marketing/ui/ValueCard.tsx) | 35 | public-experience | ValueCard:11 |
-| [components/marketing/ui/index.ts](../../../components/marketing/ui/index.ts) | 16 | public-experience | ContactInfoCard:1, CTABand:2, CohortStatCard:3, HeroSection:4, InfoCard:5, JourneyStep:6, PageSection:7, PartnershipCard:8, PricingTierCard:9, ProcessStep:10, SectionHeader:11, QuoteCard:12, SplitHero:13, StatCard:14, StatBand:15, ValueCard:16 |
 | [components/observability/SentrySetUser.tsx](../../../components/observability/SentrySetUser.tsx) | 25 | components | default:17 |
 | [components/onboarding/EmployerOnboardingWizard.tsx](../../../components/onboarding/EmployerOnboardingWizard.tsx) | 222 | applications-enrollment | EmployerOnboardingWizardProps:11, default:20 |
 | [components/onboarding/MemberOnboardingWizard.tsx](../../../components/onboarding/MemberOnboardingWizard.tsx) | 360 | applications-enrollment | MemberOnboardingWizardProps:11, default:24 |
 | [components/onboarding/OnboardingDevReset.tsx](../../../components/onboarding/OnboardingDevReset.tsx) | 22 | applications-enrollment | default:3 |
 | [components/onboarding/OnboardingWizard.tsx](../../../components/onboarding/OnboardingWizard.tsx) | 241 | applications-enrollment | OnboardingStep:5, OnboardingWizardProps:11, default:25 |
-| [components/onboarding/PartnerOnboardingTour.tsx](../../../components/onboarding/PartnerOnboardingTour.tsx) | 343 | applications-enrollment | PartnerOnboardingTourProps:55, default:59 |
 | [components/onboarding/PartnerOnboardingWizard.tsx](../../../components/onboarding/PartnerOnboardingWizard.tsx) | 166 | applications-enrollment | PartnerOnboardingWizardProps:16, default:26 |
 | [components/onboarding/PortalEntryClient.tsx](../../../components/onboarding/PortalEntryClient.tsx) | 133 | applications-enrollment | default:69 |
 | [components/onboarding/PortalTour.tsx](../../../components/onboarding/PortalTour.tsx) | 297 | applications-enrollment | TourStep:7, default:81 |
@@ -269,7 +232,6 @@
 | [components/partner/PartnerReferralShare.tsx](../../../components/partner/PartnerReferralShare.tsx) | 31 | partners-funding | default:9 |
 | [components/partner/PartnerReferredMembersMobile.tsx](../../../components/partner/PartnerReferredMembersMobile.tsx) | 171 | partners-funding | PartnerMemberRow:9, default:41 |
 | [components/partner/PartnerSettingsEditRequest.tsx](../../../components/partner/PartnerSettingsEditRequest.tsx) | 143 | partners-funding | default:13 |
-| [components/partner/PartnerSignupForm.tsx](../../../components/partner/PartnerSignupForm.tsx) | 261 | partners-funding | default:34 |
 | [components/partner/PartnerWorkflowTimeline.tsx](../../../components/partner/PartnerWorkflowTimeline.tsx) | 45 | partners-funding | default:12 |
 | [components/partner/PendingApprovalBanner.tsx](../../../components/partner/PendingApprovalBanner.tsx) | 34 | partners-funding | default:3 |
 | [components/platform/OrgBrandingBar.tsx](../../../components/platform/OrgBrandingBar.tsx) | 20 | administration | default:5 |
@@ -277,18 +239,12 @@
 | [components/portal/AIHistoryList.tsx](../../../components/portal/AIHistoryList.tsx) | 227 | components | default:80 |
 | [components/portal/AdminPortalShell.tsx](../../../components/portal/AdminPortalShell.tsx) | 40 | components | default:10 |
 | [components/portal/AiResultRenderer.tsx](../../../components/portal/AiResultRenderer.tsx) | 643 | components | AiResultRendererProps:522, default:562 |
-| [components/portal/AiToolsHubSection.tsx](../../../components/portal/AiToolsHubSection.tsx) | 82 | components | default:6 |
 | [components/portal/ApplicationAiFeedbackPrompt.tsx](../../../components/portal/ApplicationAiFeedbackPrompt.tsx) | 118 | components | RecentToolOption:9, default:18 |
-| [components/portal/ApplicationTrackerTable.tsx](../../../components/portal/ApplicationTrackerTable.tsx) | 547 | components | default:42 |
 | [components/portal/AssessmentForm.module.css](../../../components/portal/AssessmentForm.module.css) | 380 | components |  |
 | [components/portal/AssessmentForm.test.tsx](../../../components/portal/AssessmentForm.test.tsx) | 47 | components |  |
 | [components/portal/AssessmentForm.tsx](../../../components/portal/AssessmentForm.tsx) | 404 | components | default:54 |
-| [components/portal/AssessmentRetakeButton.tsx](../../../components/portal/AssessmentRetakeButton.tsx) | 77 | components | default:5 |
 | [components/portal/AwardPointsButton.tsx](../../../components/portal/AwardPointsButton.tsx) | 133 | components | default:5 |
-| [components/portal/BenefitAccessCard.tsx](../../../components/portal/BenefitAccessCard.tsx) | 138 | components | default:33 |
 | [components/portal/BenefitsCliffClient.tsx](../../../components/portal/BenefitsCliffClient.tsx) | 429 | components | default:51 |
-| [components/portal/CareerBriefForYou.tsx](../../../components/portal/CareerBriefForYou.tsx) | 146 | components | default:8 |
-| [components/portal/CareerBriefList.tsx](../../../components/portal/CareerBriefList.tsx) | 38 | components | default:11 |
 | [components/portal/CertificationAddForm.tsx](../../../components/portal/CertificationAddForm.tsx) | 224 | components | default:28 |
 | [components/portal/CertificationReferenceSection.tsx](../../../components/portal/CertificationReferenceSection.tsx) | 49 | components | default:4 |
 | [components/portal/CertificationRoadmap.tsx](../../../components/portal/CertificationRoadmap.tsx) | 165 | components | default:50 |
@@ -331,12 +287,9 @@
 | [components/portal/JobApplicationForm.tsx](../../../components/portal/JobApplicationForm.tsx) | 247 | components | default:14 |
 | [components/portal/JobApplicationKanban.tsx](../../../components/portal/JobApplicationKanban.tsx) | 284 | components | default:190 |
 | [components/portal/JobApplicationsTracker.tsx](../../../components/portal/JobApplicationsTracker.tsx) | 209 | components | default:19 |
-| [components/portal/JobReadinessScore.tsx](../../../components/portal/JobReadinessScore.tsx) | 67 | components | default:14 |
 | [components/portal/JobTailorPanel.tsx](../../../components/portal/JobTailorPanel.tsx) | 347 | components | JOB_TAILOR_PREVIEW_RESULT:50, default:105 |
-| [components/portal/JourneyStageGuide.tsx](../../../components/portal/JourneyStageGuide.tsx) | 190 | components | default:19 |
 | [components/portal/LanguageToggle.test.tsx](../../../components/portal/LanguageToggle.test.tsx) | 52 | components |  |
 | [components/portal/LanguageToggle.tsx](../../../components/portal/LanguageToggle.tsx) | 99 | components | default:23 |
-| [components/portal/LearningCivicBotPanel.tsx](../../../components/portal/LearningCivicBotPanel.tsx) | 94 | components | default:5 |
 | [components/portal/LearningHubDestinationCards.tsx](../../../components/portal/LearningHubDestinationCards.tsx) | 83 | components | default:10 |
 | [components/portal/LearningHubEnrolledCourses.test.tsx](../../../components/portal/LearningHubEnrolledCourses.test.tsx) | 53 | components |  |
 | [components/portal/LearningHubEnrolledCourses.tsx](../../../components/portal/LearningHubEnrolledCourses.tsx) | 204 | components | default:44 |
@@ -369,7 +322,6 @@
 | [components/portal/MentorSessionForm.tsx](../../../components/portal/MentorSessionForm.tsx) | 68 | components | default:5 |
 | [components/portal/MobileProfileSkillsResume.tsx](../../../components/portal/MobileProfileSkillsResume.tsx) | 346 | components | default:50 |
 | [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 422 | communications | default:112 |
-| [components/portal/OtherProgramsList.tsx](../../../components/portal/OtherProgramsList.tsx) | 143 | components | OtherProgram:21, default:28 |
 | [components/portal/PageHeader.tsx](../../../components/portal/PageHeader.tsx) | 33 | components | default:4 |
 | [components/portal/PartnerExclusiveServerGate.tsx](../../../components/portal/PartnerExclusiveServerGate.tsx) | 56 | components | default:28 |
 | [components/portal/PartnerInviteMemberButton.tsx](../../../components/portal/PartnerInviteMemberButton.tsx) | 224 | components | default:11 |
@@ -380,12 +332,10 @@
 | [components/portal/PortalBreadcrumb.tsx](../../../components/portal/PortalBreadcrumb.tsx) | 84 | components | PortalBreadcrumbItem:4, default:26 |
 | [components/portal/PortalEmptyState.tsx](../../../components/portal/PortalEmptyState.tsx) | 74 | components | default:27 |
 | [components/portal/PortalEntryErrorBoundary.tsx](../../../components/portal/PortalEntryErrorBoundary.tsx) | 41 | components | default:13 |
-| [components/portal/PortalFooter.tsx](../../../components/portal/PortalFooter.tsx) | 20 | components | default:4 |
 | [components/portal/PortalHeaderActions.tsx](../../../components/portal/PortalHeaderActions.tsx) | 35 | components | default:11 |
 | [components/portal/PortalInlineSpinner.tsx](../../../components/portal/PortalInlineSpinner.tsx) | 42 | components | pixelToSpinnerSize:8, PortalInlineSpinner:28 |
 | [components/portal/PortalKpiCard.tsx](../../../components/portal/PortalKpiCard.tsx) | 51 | components | default:26 |
 | [components/portal/PortalLayoutClient.tsx](../../../components/portal/PortalLayoutClient.tsx) | 12 | components | default:6 |
-| [components/portal/PortalLoadingState.tsx](../../../components/portal/PortalLoadingState.tsx) | 21 | components | default:5 |
 | [components/portal/PortalNav.tsx](../../../components/portal/PortalNav.tsx) | 45 | components | default:12 |
 | [components/portal/PortalPageFrame.tsx](../../../components/portal/PortalPageFrame.tsx) | 27 | components | default:11 |
 | [components/portal/PortalPagination.tsx](../../../components/portal/PortalPagination.tsx) | 30 | components | default:9 |
@@ -394,7 +344,6 @@
 | [components/portal/PortalRouteFallback.tsx](../../../components/portal/PortalRouteFallback.tsx) | 37 | components | default:12 |
 | [components/portal/PortalRouteLoading.tsx](../../../components/portal/PortalRouteLoading.tsx) | 83 | components | PortalRouteLoadingVariant:1, default:27 |
 | [components/portal/PortalShell.tsx](../../../components/portal/PortalShell.tsx) | 121 | components | default:26 |
-| [components/portal/PortalStatCard.tsx](../../../components/portal/PortalStatCard.tsx) | 38 | components | default:5 |
 | [components/portal/PortalTeamChatClient.test.tsx](../../../components/portal/PortalTeamChatClient.test.tsx) | 66 | components |  |
 | [components/portal/PortalTeamChatClient.tsx](../../../components/portal/PortalTeamChatClient.tsx) | 274 | components | default:56 |
 | [components/portal/PortalVoiceSession.tsx](../../../components/portal/PortalVoiceSession.tsx) | 1313 | components | VoiceSessionPhase:79, ResumeSuggestion:81, PortalVoiceSessionProps:87, default:195 |
@@ -403,19 +352,13 @@
 | [components/portal/PreLaunchTag.tsx](../../../components/portal/PreLaunchTag.tsx) | 75 | components | default:22 |
 | [components/portal/ProactiveInsightCard.module.css](../../../components/portal/ProactiveInsightCard.module.css) | 115 | components |  |
 | [components/portal/ProactiveInsightCard.tsx](../../../components/portal/ProactiveInsightCard.tsx) | 46 | components | default:10 |
-| [components/portal/ProfileForm.tsx](../../../components/portal/ProfileForm.tsx) | 201 | components | default:16 |
-| [components/portal/ProgramChangeRequestForm.tsx](../../../components/portal/ProgramChangeRequestForm.tsx) | 142 | components | default:12 |
 | [components/portal/ProgramChangeRequestModal.tsx](../../../components/portal/ProgramChangeRequestModal.tsx) | 307 | components | default:24 |
-| [components/portal/ProgramChangeRequestPanel.tsx](../../../components/portal/ProgramChangeRequestPanel.tsx) | 204 | components | default:15 |
 | [components/portal/ProgramCommitmentPanel.tsx](../../../components/portal/ProgramCommitmentPanel.tsx) | 82 | components | default:18 |
 | [components/portal/ProgramPicker.test.tsx](../../../components/portal/ProgramPicker.test.tsx) | 101 | components |  |
 | [components/portal/ProgramPicker.tsx](../../../components/portal/ProgramPicker.tsx) | 349 | components | default:136 |
-| [components/portal/ProgressBanner.tsx](../../../components/portal/ProgressBanner.tsx) | 39 | components | default:11 |
 | [components/portal/PushNotificationsToggle.tsx](../../../components/portal/PushNotificationsToggle.tsx) | 124 | communications | default:20 |
-| [components/portal/QueryToast.tsx](../../../components/portal/QueryToast.tsx) | 46 | components | default:6 |
 | [components/portal/ReadinessCoachReturnButton.tsx](../../../components/portal/ReadinessCoachReturnButton.tsx) | 56 | components | default:11 |
 | [components/portal/ReadinessMobileScoreCard.tsx](../../../components/portal/ReadinessMobileScoreCard.tsx) | 109 | components | default:20 |
-| [components/portal/ReadinessProgress.tsx](../../../components/portal/ReadinessProgress.tsx) | 43 | components | default:9 |
 | [components/portal/ReadinessProgressSummary.tsx](../../../components/portal/ReadinessProgressSummary.tsx) | 146 | components | ReadinessProgressSummary:51 |
 | [components/portal/RefreshCourseraProgressButton.tsx](../../../components/portal/RefreshCourseraProgressButton.tsx) | 89 | learning-coursera | default:15 |
 | [components/portal/RequestHelpButton.tsx](../../../components/portal/RequestHelpButton.tsx) | 56 | components | default:5 |
@@ -423,13 +366,10 @@
 | [components/portal/ResourceDownloadButton.tsx](../../../components/portal/ResourceDownloadButton.tsx) | 64 | components | default:11 |
 | [components/portal/ResourceFilters.tsx](../../../components/portal/ResourceFilters.tsx) | 84 | components | default:14 |
 | [components/portal/ResourceProgressActions.tsx](../../../components/portal/ResourceProgressActions.tsx) | 76 | components | default:11 |
-| [components/portal/ResourceProgressSummary.tsx](../../../components/portal/ResourceProgressSummary.tsx) | 37 | components | default:15 |
 | [components/portal/ResourceViewTracker.tsx](../../../components/portal/ResourceViewTracker.tsx) | 14 | components | default:5 |
 | [components/portal/ResumeCoachWorkspace.tsx](../../../components/portal/ResumeCoachWorkspace.tsx) | 856 | components | default:240 |
-| [components/portal/ResumeMobileQuickActions.tsx](../../../components/portal/ResumeMobileQuickActions.tsx) | 134 | components | default:7 |
 | [components/portal/ResumeMobileResumeTools.tsx](../../../components/portal/ResumeMobileResumeTools.tsx) | 244 | components | default:21 |
 | [components/portal/ResumeStudioClient.tsx](../../../components/portal/ResumeStudioClient.tsx) | 214 | components | ResumeStudioView:34, normalizeStudioView:42, default:86 |
-| [components/portal/SalaryTableWrapper.tsx](../../../components/portal/SalaryTableWrapper.tsx) | 12 | components | default:5 |
 | [components/portal/SettingsForm.tsx](../../../components/portal/SettingsForm.tsx) | 102 | components | default:12 |
 | [components/portal/SignOutButton.tsx](../../../components/portal/SignOutButton.tsx) | 66 | components | SignOutButton:15 |
 | [components/portal/SkillCheckpointsClient.test.tsx](../../../components/portal/SkillCheckpointsClient.test.tsx) | 75 | components |  |
@@ -440,10 +380,8 @@
 | [components/portal/SkillMissionTeaserCard.tsx](../../../components/portal/SkillMissionTeaserCard.tsx) | 156 | components | SkillMissionTeaserData:9, default:20 |
 | [components/portal/SkillsetProgressList.tsx](../../../components/portal/SkillsetProgressList.tsx) | 134 | components | default:22 |
 | [components/portal/StaffViewBanner.tsx](../../../components/portal/StaffViewBanner.tsx) | 82 | components | default:19 |
-| [components/portal/StartHereCard.tsx](../../../components/portal/StartHereCard.tsx) | 58 | components | default:25 |
 | [components/portal/StatusBadge.test.tsx](../../../components/portal/StatusBadge.test.tsx) | 216 | components |  |
 | [components/portal/StatusBadge.tsx](../../../components/portal/StatusBadge.tsx) | 37 | components | BadgeVariant:16, default:18 |
-| [components/portal/StatusCard.tsx](../../../components/portal/StatusCard.tsx) | 54 | components | StatusCard:27 |
 | [components/portal/TodayHero.module.css](../../../components/portal/TodayHero.module.css) | 197 | components |  |
 | [components/portal/TodayHero.tsx](../../../components/portal/TodayHero.tsx) | 89 | components | TodayHeroProps:7, default:34 |
 | [components/portal/ToolHistoryPanel.tsx](../../../components/portal/ToolHistoryPanel.tsx) | 93 | components | default:7 |
@@ -453,15 +391,11 @@
 | [components/portal/TrainingCourseList.enrollment.test.tsx](../../../components/portal/TrainingCourseList.enrollment.test.tsx) | 260 | components |  |
 | [components/portal/TrainingCourseList.mssc.test.tsx](../../../components/portal/TrainingCourseList.mssc.test.tsx) | 53 | components |  |
 | [components/portal/TrainingCourseList.tsx](../../../components/portal/TrainingCourseList.tsx) | 581 | components | CourseProgressUi:27, default:67 |
-| [components/portal/TrainingDataFlowStrip.tsx](../../../components/portal/TrainingDataFlowStrip.tsx) | 84 | components | default:43 |
-| [components/portal/TrainingProgramTabs.tsx](../../../components/portal/TrainingProgramTabs.tsx) | 170 | components | TrainingProgramTab:18, default:31 |
 | [components/portal/UnreviewedLocaleBanner.tsx](../../../components/portal/UnreviewedLocaleBanner.tsx) | 86 | components | default:17 |
 | [components/portal/VoiceAgentSurface.tsx](../../../components/portal/VoiceAgentSurface.tsx) | 143 | components | VoiceAgentSurfaceProps:5, default:27 |
 | [components/portal/VoiceCoachLauncherCard.tsx](../../../components/portal/VoiceCoachLauncherCard.tsx) | 66 | components | default:17 |
 | [components/portal/VoiceCoachesPromo.tsx](../../../components/portal/VoiceCoachesPromo.tsx) | 108 | components | default:24 |
 | [components/portal/VoiceSectionErrorBoundary.tsx](../../../components/portal/VoiceSectionErrorBoundary.tsx) | 56 | components | default:13 |
-| [components/portal/WeeklyRecapClient.tsx](../../../components/portal/WeeklyRecapClient.tsx) | 168 | components | default:49 |
-| [components/portal/WeeklyRecapPreview.tsx](../../../components/portal/WeeklyRecapPreview.tsx) | 19 | components | default:9 |
 | [components/portal/WioaQualificationClient.module.css](../../../components/portal/WioaQualificationClient.module.css) | 27 | partners-funding |  |
 | [components/portal/WioaQualificationClient.tsx](../../../components/portal/WioaQualificationClient.tsx) | 193 | partners-funding | default:22 |
 | [components/portal/WioaQualificationLoading.tsx](../../../components/portal/WioaQualificationLoading.tsx) | 8 | partners-funding | default:5 |
@@ -579,7 +513,6 @@
 | [components/portal/kit/pages/admin-subviews/UsersKit.tsx](../../../components/portal/kit/pages/admin-subviews/UsersKit.tsx) | 94 | components | UserRow:19, UsersKitProps:29, UsersKit:49 |
 | [components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx](../../../components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx) | 113 | components | WeeklyRecapKitProps:13, WeeklyRecapKit:37 |
 | [components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx](../../../components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx) | 232 | partners-funding | WioaDetermination:28, WioaScreeningRow:30, WioaScreeningKitProps:47, WioaScreeningKit:69 |
-| [components/portal/kit/pages/admin/AdminSidebarNav.tsx](../../../components/portal/kit/pages/admin/AdminSidebarNav.tsx) | 276 | administration | AdminSidebarNavProps:51, AdminSidebarNav:236, default:276 |
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 404 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:88, CommandCenterKitProps:101, CommandCenterKit:304 |
 | [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 419 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
@@ -597,7 +530,6 @@
 | [components/portal/kit/pages/member/LinkedInHeadlineKit.tsx](../../../components/portal/kit/pages/member/LinkedInHeadlineKit.tsx) | 51 | member-counselor | LinkedInHeadlineKit:14 |
 | [components/portal/kit/pages/member/MemberCertificatesKit.tsx](../../../components/portal/kit/pages/member/MemberCertificatesKit.tsx) | 193 | member-counselor | MemberCertificatesKitProps:39, MemberCertificatesKit:70 |
 | [components/portal/kit/pages/member/MemberCounselorKit.tsx](../../../components/portal/kit/pages/member/MemberCounselorKit.tsx) | 76 | member-counselor | CounselorSessionSummary:16, MemberCounselorKitProps:22, MemberCounselorKit:31 |
-| [components/portal/kit/pages/member/MemberCounselorSessionKit.tsx](../../../components/portal/kit/pages/member/MemberCounselorSessionKit.tsx) | 57 | member-counselor | MemberCounselorSessionKitProps:13, MemberCounselorSessionKit:20 |
 | [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 70 | member-counselor |  |
 | [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 925 | member-counselor | StatSpark:85, WeeklyActivityPoint:95, PointsLedgerEntry:101, MemberHomeKitProps:107, MemberHomeKit:547 |
 | [components/portal/kit/pages/member/MemberJobDetail.tsx](../../../components/portal/kit/pages/member/MemberJobDetail.tsx) | 193 | member-counselor | JobDetailScreeningQuestion:15, MemberJobDetailProps:21, MemberJobDetail:52 |
@@ -610,7 +542,6 @@
 | [components/portal/kit/pages/member/MemberProfileKit.tsx](../../../components/portal/kit/pages/member/MemberProfileKit.tsx) | 411 | member-counselor | MemberProfileAccountPassthrough:53, MemberProfileKitProps:66, MemberProfileKit:98 |
 | [components/portal/kit/pages/member/MemberProgramKit.tsx](../../../components/portal/kit/pages/member/MemberProgramKit.tsx) | 368 | member-counselor | MemberProgramKitProps:37, MemberProgramKit:98 |
 | [components/portal/kit/pages/member/MemberProgressKit.tsx](../../../components/portal/kit/pages/member/MemberProgressKit.tsx) | 211 | member-counselor | MemberProgressKitProps:33, MemberProgressKit:58 |
-| [components/portal/kit/pages/member/MemberToolkitKit.tsx](../../../components/portal/kit/pages/member/MemberToolkitKit.tsx) | 331 | member-counselor | MemberToolkitKitProps:43, MemberToolkitKit:168 |
 | [components/portal/kit/pages/member/MemberTrainingWorkspace.tsx](../../../components/portal/kit/pages/member/MemberTrainingWorkspace.tsx) | 335 | member-counselor | TrainingCourseDestination:22, nextCourseContinueTarget:25, MemberTrainingWorkspaceProps:76, MemberTrainingWorkspace:101 |
 | [components/portal/kit/pages/member/ResumeRewriterKit.tsx](../../../components/portal/kit/pages/member/ResumeRewriterKit.tsx) | 55 | member-counselor | ResumeRewriterKit:15 |
 | [components/portal/kit/pages/member/ResumeStrengthKit.tsx](../../../components/portal/kit/pages/member/ResumeStrengthKit.tsx) | 50 | member-counselor | ResumeStrengthKit:16 |
@@ -624,7 +555,6 @@
 | [components/portal/sessions/WalkInSessionClient.tsx](../../../components/portal/sessions/WalkInSessionClient.tsx) | 194 | components | default:20 |
 | [components/portal/tools/AiToolError.tsx](../../../components/portal/tools/AiToolError.tsx) | 105 | components | default:16 |
 | [components/portal/tools/AiToolLanguageSelector.tsx](../../../components/portal/tools/AiToolLanguageSelector.tsx) | 74 | components | AiToolLanguage:5, default:44 |
-| [components/portal/tools/BrowserSpeechCaptions.tsx](../../../components/portal/tools/BrowserSpeechCaptions.tsx) | 136 | components | default:30 |
 | [components/portal/tools/CareerCounselor.test.tsx](../../../components/portal/tools/CareerCounselor.test.tsx) | 128 | components |  |
 | [components/portal/tools/CareerCounselor.tsx](../../../components/portal/tools/CareerCounselor.tsx) | 512 | components | default:47 |
 | [components/portal/tools/CoverLetterForm.tsx](../../../components/portal/tools/CoverLetterForm.tsx) | 271 | components | default:60 |
@@ -647,32 +577,20 @@
 | [components/portal/tools/ResumeScoreBreakdown.tsx](../../../components/portal/tools/ResumeScoreBreakdown.tsx) | 288 | components | SubscoreBreakdown:6, ResumeScorePayload:12, default:86 |
 | [components/portal/tools/ResumeStrengthForm.tsx](../../../components/portal/tools/ResumeStrengthForm.tsx) | 371 | components | default:125 |
 | [components/portal/tools/SalaryNegotiationForm.tsx](../../../components/portal/tools/SalaryNegotiationForm.tsx) | 289 | components | default:58 |
-| [components/portal/tools/SkillAssessmentForm.tsx](../../../components/portal/tools/SkillAssessmentForm.tsx) | 485 | components | default:68 |
 | [components/portal/tools/SkillMapperClient.tsx](../../../components/portal/tools/SkillMapperClient.tsx) | 1296 | components | default:436 |
 | [components/portal/tools/SkillMapperRadar.tsx](../../../components/portal/tools/SkillMapperRadar.tsx) | 91 | components | default:5 |
 | [components/portal/tools/ToolFollowThrough.tsx](../../../components/portal/tools/ToolFollowThrough.tsx) | 70 | components | default:8 |
 | [components/portal/tools/VoiceInterviewScaffold.tsx](../../../components/portal/tools/VoiceInterviewScaffold.tsx) | 394 | components | default:70 |
-| [components/portal/tools/VoiceSessionIntroStrip.tsx](../../../components/portal/tools/VoiceSessionIntroStrip.tsx) | 38 | components | default:5 |
 | [components/portal/ui/DataTable.tsx](../../../components/portal/ui/DataTable.tsx) | 349 | components | DataTableColumn:35, DataTableProps:67, headerTextForDataLabel:134, default:156 |
-| [components/portal/ui/FormField.tsx](../../../components/portal/ui/FormField.tsx) | 139 | components | FormField:13, TextInput:79, SelectField:99, TextArea:119 |
-| [components/portal/ui/PortalActionCard.tsx](../../../components/portal/ui/PortalActionCard.tsx) | 88 | components | PortalActionCardProps:4, default:19 |
 | [components/portal/ui/PortalCard.tsx](../../../components/portal/ui/PortalCard.tsx) | 37 | components | PortalCardProps:3, default:12 |
 | [components/portal/ui/PortalInput.tsx](../../../components/portal/ui/PortalInput.tsx) | 71 | components | PortalInput:14, PortalTextarea:43 |
 | [components/portal/ui/PortalMetricCard.tsx](../../../components/portal/ui/PortalMetricCard.tsx) | 63 | components | PortalMetricCardProps:4, default:15 |
 | [components/portal/ui/SectionHeader.tsx](../../../components/portal/ui/SectionHeader.tsx) | 79 | components | SectionHeaderProps:22, default:40 |
 | [components/portal/ui/inbox/InboxPrimitives.test.tsx](../../../components/portal/ui/inbox/InboxPrimitives.test.tsx) | 24 | components |  |
 | [components/portal/ui/inbox/InboxPrimitives.tsx](../../../components/portal/ui/inbox/InboxPrimitives.tsx) | 194 | components | InboxShell:6, InboxPane:35, InboxHeader:61, InboxSearch:81, InboxList:103, InboxRowButton:107, InboxRowLink:135, InboxRowLayout:149, InboxUnreadBadge:177, InboxEmpty:182 |
-| [components/portal/useScrollAffordance.ts](../../../components/portal/useScrollAffordance.ts) | 32 | components | useScrollAffordance:5 |
-| [components/programs/ProgramOnetCareerSection.tsx](../../../components/programs/ProgramOnetCareerSection.tsx) | 80 | public-experience | default:14 |
-| [components/programs/ProgramRelatedSection.tsx](../../../components/programs/ProgramRelatedSection.tsx) | 40 | public-experience | default:4 |
 | [components/public/PublicCareerQuizClient.tsx](../../../components/public/PublicCareerQuizClient.tsx) | 361 | components | default:37 |
 | [components/public/PublicInterestProfilerClient.tsx](../../../components/public/PublicInterestProfilerClient.tsx) | 439 | components | default:36 |
 | [components/pwa/PWAInstallPrompt.tsx](../../../components/pwa/PWAInstallPrompt.tsx) | 144 | components | default:16 |
-| [components/skeletons/JobListSkeleton.tsx](../../../components/skeletons/JobListSkeleton.tsx) | 67 | components | JobListSkeleton:7 |
-| [components/skeletons/ProfileSkeleton.tsx](../../../components/skeletons/ProfileSkeleton.tsx) | 82 | components | ProfileSkeleton:7 |
-| [components/skeletons/ProgramListSkeleton.tsx](../../../components/skeletons/ProgramListSkeleton.tsx) | 67 | components | ProgramListSkeleton:7 |
-| [components/skeletons/StatsCardSkeleton.tsx](../../../components/skeletons/StatsCardSkeleton.tsx) | 43 | components | StatsCardSkeleton:7 |
-| [components/skeletons/index.ts](../../../components/skeletons/index.ts) | 4 | components | StatsCardSkeleton:1, ProgramListSkeleton:2, JobListSkeleton:3, ProfileSkeleton:4 |
 | [components/super-admin-view-switcher.tsx](../../../components/super-admin-view-switcher.tsx) | 132 | components | useIsSuperAdmin:31, default:36 |
 | [components/theme/ThemeInitScript.tsx](../../../components/theme/ThemeInitScript.tsx) | 9 | components | default:1 |
 | [components/theme/ThemeSelector.tsx](../../../components/theme/ThemeSelector.tsx) | 29 | components | default:19 |
@@ -685,7 +603,6 @@
 | [hooks/useCopyToClipboard.ts](../../../hooks/useCopyToClipboard.ts) | 22 | components | useCopyToClipboard:6 |
 | [hooks/useCurrentUser.ts](../../../hooks/useCurrentUser.ts) | 57 | components | useCurrentUser:18 |
 | [hooks/useDraftAutosave.ts](../../../hooks/useDraftAutosave.ts) | 80 | components | useDraftAutosave:20 |
-| [hooks/useFeatureFlag.ts](../../../hooks/useFeatureFlag.ts) | 72 | components | useFeatureFlags:39, useFeatureFlag:69 |
 | [hooks/useFocusTrap.ts](../../../hooks/useFocusTrap.ts) | 17 | components | useFocusTrap:15 |
 | [hooks/useHydrateMemberResumePlainText.ts](../../../hooks/useHydrateMemberResumePlainText.ts) | 38 | components | useHydrateMemberResumePlainText:12 |
 | [hooks/useRetryableFetch.ts](../../../hooks/useRetryableFetch.ts) | 104 | components | useRetryableFetch:14 |
