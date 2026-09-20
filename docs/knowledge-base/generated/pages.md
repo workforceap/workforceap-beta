@@ -428,7 +428,7 @@
 | [app/admin/members/new/loading.tsx](../../../app/admin/members/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/members/new/page.tsx](../../../app/admin/members/new/page.tsx) | 53 | administration | generateMetadata:12, default:20 |
 | [app/admin/members/page.tsx](../../../app/admin/members/page.tsx) | 450 | administration | generateMetadata:31, default:40 |
-| [app/admin/members/training/page.tsx](../../../app/admin/members/training/page.tsx) | 59 | learning-coursera | generateMetadata:11, default:28 |
+| [app/admin/members/training/page.tsx](../../../app/admin/members/training/page.tsx) | 75 | learning-coursera | generateMetadata:11, default:37 |
 | [app/admin/mentors/loading.tsx](../../../app/admin/mentors/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/mentors/page.tsx](../../../app/admin/mentors/page.tsx) | 345 | administration | generateMetadata:15, default:107 |
 | [app/admin/messages/loading.tsx](../../../app/admin/messages/loading.tsx) | 6 | communications | default:3 |
@@ -476,7 +476,7 @@
 | [app/admin/sessions/walk-in/page.tsx](../../../app/admin/sessions/walk-in/page.tsx) | 40 | administration | generateMetadata:9, default:17 |
 | [app/admin/settings/loading.tsx](../../../app/admin/settings/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/settings/page.tsx](../../../app/admin/settings/page.tsx) | 46 | administration | generateMetadata:14, default:22 |
-| [app/admin/students/page.tsx](../../../app/admin/students/page.tsx) | 353 | administration | generateMetadata:34, default:95 |
+| [app/admin/students/page.tsx](../../../app/admin/students/page.tsx) | 99 | administration | generateMetadata:21, default:35 |
 | [app/admin/subgroups/\[id\]/edit/page.tsx](../../../app/admin/subgroups/%5Bid%5D/edit/page.tsx) | 59 | administration | generateMetadata:12, default:22 |
 | [app/admin/subgroups/\[id\]/page.tsx](../../../app/admin/subgroups/%5Bid%5D/page.tsx) | 170 | administration | default:16 |
 | [app/admin/subgroups/legacy.tsx](../../../app/admin/subgroups/legacy.tsx) | 170 | administration | default:14 |
@@ -486,7 +486,7 @@
 | [app/admin/subgroups/page.tsx](../../../app/admin/subgroups/page.tsx) | 123 | administration | generateMetadata:15, default:43 |
 | [app/admin/testimonials/loading.tsx](../../../app/admin/testimonials/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/testimonials/page.tsx](../../../app/admin/testimonials/page.tsx) | 33 | administration | generateMetadata:10, default:18 |
-| [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | 739 | administration | generateMetadata:36, dynamic:45, default:47 |
+| [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | 425 | administration | generateMetadata:28, dynamic:37, default:45 |
 | [app/admin/users/deleted/page.tsx](../../../app/admin/users/deleted/page.tsx) | 117 | administration | generateMetadata:12, default:36 |
 | [app/admin/users/loading.tsx](../../../app/admin/users/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/users/page.tsx](../../../app/admin/users/page.tsx) | 185 | administration | generateMetadata:18, default:66 |
@@ -601,7 +601,7 @@
 | [app/dev/staff/placements/layout.tsx](../../../app/dev/staff/placements/layout.tsx) | 11 | jobs-employers | metadata:4, default:9 |
 | [app/dev/staff/placements/page.tsx](../../../app/dev/staff/placements/page.tsx) | 96 | jobs-employers | dynamic:8, default:83 |
 | [app/dev/staff/students-roster/page.tsx](../../../app/dev/staff/students-roster/page.tsx) | 70 | pages | dynamic:12, default:66 |
-| [app/dev/staff/training-progress/page.tsx](../../../app/dev/staff/training-progress/page.tsx) | 63 | pages | dynamic:9, default:53 |
+| [app/dev/staff/training-progress/page.tsx](../../../app/dev/staff/training-progress/page.tsx) | 70 | pages | dynamic:13, default:59 |
 | [app/dev/voice-studio/layout.tsx](../../../app/dev/voice-studio/layout.tsx) | 11 | pages | metadata:4, default:9 |
 | [app/dev/voice-studio/page.tsx](../../../app/dev/voice-studio/page.tsx) | 29 | pages | dynamic:11, default:13 |
 | [app/employer/loi/page.tsx](../../../app/employer/loi/page.tsx) | 31 | jobs-employers | generateMetadata:6, default:15 |

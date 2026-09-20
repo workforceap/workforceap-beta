@@ -137,7 +137,6 @@
 | [components/admin/SubgroupMembersTable.tsx](../../../components/admin/SubgroupMembersTable.tsx) | 306 | administration | default:30 |
 | [components/admin/TestimonialsAdminClient.tsx](../../../components/admin/TestimonialsAdminClient.tsx) | 399 | administration | default:37 |
 | [components/admin/TrainingProgressClient.tsx](../../../components/admin/TrainingProgressClient.tsx) | 818 | administration | CanonicalCatalog:25, CurriculumRow:35, RawCourseraRow:64, default:418 |
-| [components/admin/TrainingProgressRoster.tsx](../../../components/admin/TrainingProgressRoster.tsx) | 272 | administration | TrainingProgressRosterProps:82, default:94 |
 | [components/admin/TriageDigestSection.tsx](../../../components/admin/TriageDigestSection.tsx) | 244 | administration | default:12 |
 | [components/admin/WioaReviewFilterBar.tsx](../../../components/admin/WioaReviewFilterBar.tsx) | 28 | partners-funding | default:4 |
 | [components/admin/WioaScreeningReadonly.tsx](../../../components/admin/WioaScreeningReadonly.tsx) | 79 | partners-funding | default:20 |
@@ -501,10 +500,9 @@
 | [components/portal/kit/pages/admin-subviews/ProgramsCatalogKit.tsx](../../../components/portal/kit/pages/admin-subviews/ProgramsCatalogKit.tsx) | 257 | components | ProgramCard:45, ProgramsCatalogKitProps:63, ProgramsCatalogKit:184 |
 | [components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx](../../../components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx) | 185 | components | ScreeningPackRow:27, ScreeningPacksKitProps:40, ScreeningPacksKit:67 |
 | [components/portal/kit/pages/admin-subviews/SessionsKit.tsx](../../../components/portal/kit/pages/admin-subviews/SessionsKit.tsx) | 228 | components | SessionDisplayStatus:30, SessionKitRow:32, SessionsKitProps:48, SessionsKit:85 |
-| [components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx) | 437 | components | StudentStatus:40, StudentRow:42, StudentFilter:74, StudentsRosterKitProps:76, StudentsRosterKit:174 |
+| [components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx) | 631 | components | StudentStatus:69, StudentTrainingFacts:71, StudentRow:80, StudentFilter:117, StudentsRosterKitProps:119, StudentsRosterKit:231 |
 | [components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx](../../../components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx) | 190 | components | SubgroupKind:38, SubgroupCard:40, SubgroupsDirectoryKitProps:51, SubgroupsDirectoryKit:127 |
 | [components/portal/kit/pages/admin-subviews/SystemHealthKit.tsx](../../../components/portal/kit/pages/admin-subviews/SystemHealthKit.tsx) | 201 | components | TileStatus:33, HealthTile:35, SystemHealthKitProps:46, SystemHealthKit:113, statusToKitColor:199 |
-| [components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx](../../../components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx) | 390 | components | Pace:33, TrainingRow:35, TrainingProgressKitProps:61, TrainingProgressKit:102, TRAINING_PROGRESS_SORT_COLUMNS:390 |
 | [components/portal/kit/pages/admin-subviews/UsersKit.tsx](../../../components/portal/kit/pages/admin-subviews/UsersKit.tsx) | 94 | components | UserRow:19, UsersKitProps:29, UsersKit:49 |
 | [components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx](../../../components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx) | 113 | components | WeeklyRecapKitProps:13, WeeklyRecapKit:37 |
 | [components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx](../../../components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx) | 232 | partners-funding | WioaDetermination:28, WioaScreeningRow:30, WioaScreeningKitProps:47, WioaScreeningKit:69 |

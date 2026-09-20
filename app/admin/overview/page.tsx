@@ -272,7 +272,7 @@ export default async function AdminOverviewPage() {
   }> = [
     { icon: Users, label: 'Total Members', value: totalMembers.toLocaleString(), color: 'accent', href: '/admin/members' },
     { icon: ListChecks, label: 'Assessments Completed', value: assessmentsCompleted.toLocaleString(), color: 'info', href: '/admin/assessments' },
-    { icon: Activity, label: 'Active in Training', value: activeInTraining.toLocaleString(), color: 'success', href: '/admin/members/training' },
+    { icon: Activity, label: 'Active in Training', value: activeInTraining.toLocaleString(), color: 'success', href: '/admin/training-progress' },
     { icon: GraduationCap, label: 'Programs Enrolled', value: programsEnrolled.toLocaleString(), color: 'gold', href: '/admin/programs' },
     { icon: Award, label: 'Programs Completed', value: programsCompleted.toLocaleString(), color: 'gold', href: '/admin/programs' },
   ];

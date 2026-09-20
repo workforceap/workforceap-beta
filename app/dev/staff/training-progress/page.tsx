@@ -1,9 +1,13 @@
 import { notFound } from 'next/navigation';
-import TrainingProgressRoster from '@/components/admin/TrainingProgressRoster';
-import type { TrainingRow } from '@/components/portal/kit/pages/admin-subviews/TrainingProgressKit';
+import {
+  StudentsRosterKit,
+  type StudentRow,
+} from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
+import type { TrainingPace } from '@/lib/admin/trainingProgressPrograms';
+import { initialsFrom } from '@/lib/admin/studentsRosterView';
 
 /**
- * Showcase-only render of the admin Training progress roster — no auth/DB, so
+ * Showcase-only render of the admin roster's training preset — no auth/DB, so
  * screenshot tooling can photograph sorted column headers directly.
  */
 export const dynamic = 'force-dynamic';
@@ -15,9 +19,18 @@ const PROGRAMS = [
   'AWS Cloud Solutions Architect Professional Certificate',
 ] as const;
 
-const PACES = ['On track', 'Ahead', 'Behind', 'Stalled'] as const;
+const PACES: readonly TrainingPace[] = ['On track', 'Ahead', 'Behind', 'Stalled'];
 
-const ROWS: TrainingRow[] = Array.from({ length: 53 }, (_, index) => {
+const NAMES = [
+  'Noel Gonzalez',
+  'Joseph David Ring',
+  'Avery Stone',
+  'Maria Santos',
+  'Priya Kapoor',
+  'James Whitmore',
+] as const;
+
+const ROWS: StudentRow[] = Array.from({ length: 53 }, (_, index) => {
   const program = PROGRAMS[index % PROGRAMS.length];
   const modulesTotal = 10 + (index % 8);
   const modulesDone = Math.min(modulesTotal, Math.floor((index * 7) % (modulesTotal + 1)));
@@ -25,23 +38,16 @@ const ROWS: TrainingRow[] = Array.from({ length: 53 }, (_, index) => {
   const pace = PACES[index % PACES.length];
   const noProgram = index % 11 === 0;
   const unmatched = index === 52;
+  const name = unmatched ? 'Zed Coursera' : NAMES[index % NAMES.length];
   return {
     id: unmatched ? 'coursera:zed@example.com' : `u${index}:prog-${index % 4}`,
-    student: unmatched
-      ? 'Zed Coursera'
-      : [
-          'Noel Gonzalez',
-          'Joseph David Ring',
-          'Avery Stone',
-          'Maria Santos',
-          'Priya Kapoor',
-          'James Whitmore',
-        ][index % 6],
+    name,
+    email: unmatched ? 'zed@example.com' : `${name.toLowerCase().replace(/\s+/g, '.')}@example.test`,
+    initials: initialsFrom(name),
     program: unmatched ? 'Coursera activity' : program,
-    modulesDone,
-    modulesTotal,
-    percentComplete,
-    pace,
+    progress: percentComplete,
+    progressKnown: true,
+    training: { modulesDone, modulesTotal, pace },
     courseraGrade: index % 5 === 0 ? null : 70 + (index % 28),
     inWap: !unmatched,
     noProgram: !unmatched && noProgram,
@@ -54,10 +60,11 @@ export default function DevStaffTrainingProgressPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
   return (
-    <TrainingProgressRoster
-      rows={ROWS}
-      showingLabel="Showing 53 learners"
-      coverageLabel="47 of 128 members have training activity · 81 not in a program or course yet"
+    <StudentsRosterKit
+      view="training"
+      students={ROWS}
+      total={ROWS.length}
+      showingLabel="47 of 128 members have training activity · 81 not in a program or course yet · Showing 53 learners"
     />
   );
 }

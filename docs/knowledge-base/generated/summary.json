@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "d7fa1dd568f935412d5bee3a4e8de76ae44bcf50cf165fa4246bb17f8167e3d6",
+  "inputTreeSha256": "7a6f7b73f4570ca0d0af077f088b44175c670383a8f01fb9cd87a762730a9015",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4783,
-    "sourceModules": 3442,
-    "importReferences": 17081,
-    "resolvedLocalReferences": 11394,
+    "files": 4786,
+    "sourceModules": 3446,
+    "importReferences": 17106,
+    "resolvedLocalReferences": 11417,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 598
+      "files": 601
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1022
+      "files": 1024
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 637
+      "files": 636
     },
     {
       "area": "root",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 483
+      "files": 482
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 886
+      "references": 887
     },
     {
       "file": "lib/auth/server.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 240
+      "references": 242
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -139,12 +139,12 @@
       "references": 225
     },
     {
-      "file": "components/portal/kit/index.ts",
-      "references": 203
-    },
-    {
       "file": "app/seo.ts",
       "references": 202
+    },
+    {
+      "file": "components/portal/kit/index.ts",
+      "references": 200
     },
     {
       "file": "lib/audit/log.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 97
+      "references": 99
     },
     {
       "file": "lib/email.ts",
@@ -180,7 +180,7 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 80
+      "references": 81
     },
     {
       "file": "lib/events/track.ts",
@@ -192,7 +192,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 66
+      "references": 67
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -200,7 +200,7 @@
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
-      "references": 59
+      "references": 60
     },
     {
       "file": "lib/supabase-admin.ts",
@@ -215,11 +215,11 @@
       "references": 52
     },
     {
-      "file": "lib/http/requestFailureCopy.ts",
-      "references": 49
+      "file": "lib/member/curriculumAssignment.ts",
+      "references": 50
     },
     {
-      "file": "lib/member/curriculumAssignment.ts",
+      "file": "lib/http/requestFailureCopy.ts",
       "references": 49
     },
     {
@@ -243,11 +243,11 @@
       "references": 37
     },
     {
-      "file": "lib/auth/ensureUser.ts",
-      "references": 35
+      "file": "lib/db/queryCaps.ts",
+      "references": 36
     },
     {
-      "file": "lib/db/queryCaps.ts",
+      "file": "lib/auth/ensureUser.ts",
       "references": 35
     }
   ],
@@ -302,7 +302,7 @@
     },
     {
       "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
-      "lines": 1475
+      "lines": 1459
     },
     {
       "file": "tests/api/placement-survey.spec.ts",

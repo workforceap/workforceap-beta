@@ -14283,7 +14283,7 @@
       {
         "level": 2,
         "title": "10. Applicant intake triage (auto-review aid)",
-        "line": 195
+        "line": 198
       }
     ],
     "datedFilename": false,
@@ -17664,27 +17664,27 @@
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 404
+        "line": 410
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 441
+        "line": 447
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 466
+        "line": 472
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 503
+        "line": 509
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 513
+        "line": 519
       }
     ],
     "datedFilename": false,

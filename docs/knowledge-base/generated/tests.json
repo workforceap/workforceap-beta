@@ -19452,7 +19452,7 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
-    "file": "tests/components/admin-subgroup-members-table.test.tsx",
+    "file": "tests/components/admin-roster-routes.spec.tsx",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [
@@ -19461,8 +19461,20 @@
     ],
     "localReferences": [
       {
-        "file": "components/admin/SubgroupMembersTable.tsx",
-        "line": 26
+        "file": "lib/admin/studentsRosterLoad.ts",
+        "line": 39
+      },
+      {
+        "file": "app/admin/students/page.tsx",
+        "line": 57
+      },
+      {
+        "file": "app/admin/training-progress/page.tsx",
+        "line": 58
+      },
+      {
+        "file": "app/admin/members/training/page.tsx",
+        "line": 59
       }
     ],
     "kind": "test-candidate",
@@ -19477,7 +19489,7 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
-    "file": "tests/components/admin-training-progress-roster.test.tsx",
+    "file": "tests/components/admin-subgroup-members-table.test.tsx",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [
@@ -19486,12 +19498,8 @@
     ],
     "localReferences": [
       {
-        "file": "components/admin/TrainingProgressRoster.tsx",
-        "line": 21
-      },
-      {
-        "file": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-        "line": 22
+        "file": "components/admin/SubgroupMembersTable.tsx",
+        "line": 26
       }
     ],
     "kind": "test-candidate",
@@ -21391,6 +21399,31 @@
       {
         "file": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/students-roster-kit-views.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+        "line": 47
       }
     ],
     "kind": "test-candidate",
@@ -25814,6 +25847,42 @@
       {
         "file": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
         "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/students-roster-view.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+        "line": 2
+      },
+      {
+        "file": "lib/admin/studentsRosterView.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/admin/studentsRosterSort.ts",
+        "line": 15
+      },
+      {
+        "file": "lib/admin/trainingProgressRoster.ts",
+        "line": 16
       }
     ],
     "kind": "test-candidate",

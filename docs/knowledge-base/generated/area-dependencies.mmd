@@ -5,19 +5,19 @@ flowchart LR
   astro_marketing["astro-marketing: 106 files"]
   audit_graph["audit-graph: 81 files"]
   communications["communications: 70 files"]
-  components["components: 598 files"]
+  components["components: 601 files"]
   content["content: 14 files"]
   database["database: 202 files"]
   delivery["delivery: 9 files"]
   documentation["documentation: 357 files"]
-  libraries["libraries: 1022 files"]
+  libraries["libraries: 1024 files"]
   localization["localization: 6 files"]
   operations["operations: 135 files"]
-  pages["pages: 637 files"]
+  pages["pages: 636 files"]
   root["root: 56 files"]
   styles["styles: 17 files"]
   supporting_files["supporting-files: 74 files"]
-  tests["tests: 483 files"]
+  tests["tests: 482 files"]
   api -->|"8 static references"| communications
   api -->|"1 static references"| content
   api -->|"3603 static references"| libraries
@@ -25,7 +25,7 @@ flowchart LR
   audit_graph -->|"2 static references"| api
   audit_graph -->|"1 static references"| root
   communications -->|"64 static references"| libraries
-  components -->|"464 static references"| libraries
+  components -->|"466 static references"| libraries
   components -->|"8 static references"| localization
   components -->|"11 static references"| pages
   components -->|"1 static references"| root
@@ -34,7 +34,7 @@ flowchart LR
   database -->|"10 static references"| libraries
   libraries -->|"1 static references"| astro_marketing
   libraries -->|"2 static references"| communications
-  libraries -->|"12 static references"| components
+  libraries -->|"15 static references"| components
   libraries -->|"1 static references"| content
   libraries -->|"1 static references"| database
   libraries -->|"7 static references"| operations
@@ -45,8 +45,8 @@ flowchart LR
   operations -->|"47 static references"| libraries
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
-  pages -->|"1123 static references"| components
-  pages -->|"1358 static references"| libraries
+  pages -->|"1124 static references"| components
+  pages -->|"1349 static references"| libraries
   pages -->|"39 static references"| styles
   root -->|"23 static references"| libraries
   root -->|"2 static references"| operations
@@ -54,9 +54,9 @@ flowchart LR
   tests -->|"382 static references"| api
   tests -->|"5 static references"| astro_marketing
   tests -->|"6 static references"| communications
-  tests -->|"132 static references"| components
+  tests -->|"135 static references"| components
   tests -->|"1005 static references"| libraries
   tests -->|"41 static references"| localization
   tests -->|"29 static references"| operations
-  tests -->|"81 static references"| pages
+  tests -->|"83 static references"| pages
   tests -->|"9 static references"| root
