@@ -1304,6 +1304,8 @@
     "workQueueLoadErrorDesc": "Something went wrong fetching the queue. Try refreshing the page.",
     "retry": "Retry",
     "workQueueEmptyDesc": "No member is waiting more than 24 hours for a reply. Nice work.",
+    "workQueueNoRepliesTitle": "No replies overdue",
+    "workQueueOtherFlagged": "{count, plural, one {# member is flagged for another reason} other {# members are flagged for other reasons}} — the same list Inbox zero shows.",
     "emptyMessagePreview": "(no message content)",
     "backToDashboard": "Back to dashboard",
     "workQueueMembersAwaiting": "{count} member{count, plural, =1 {} other {s}} awaiting reply",

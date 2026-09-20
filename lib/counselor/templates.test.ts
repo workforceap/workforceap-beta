@@ -20,7 +20,8 @@ describe('counselor follow-up templates', () => {
   it('matches flags for template filtering', () => {
     const tpl = getFollowUpTemplate('application_stalled');
     expect(tpl).not.toBeNull();
-    expect(templateMatchesFlags(tpl!, ['application_stalled'])).toBe(true);
-    expect(templateMatchesFlags(tpl!, ['doc_missing'])).toBe(false);
+    expect(templateMatchesFlags(tpl!, ['application_stalled_5d'])).toBe(true);
+    expect(templateMatchesFlags(tpl!, ['pending_application'])).toBe(true);
+    expect(templateMatchesFlags(tpl!, ['resume_missing_3d'])).toBe(false);
   });
 });

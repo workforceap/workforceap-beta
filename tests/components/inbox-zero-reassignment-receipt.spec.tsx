@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InboxZeroQueue } from '@/lib/counselor/inboxZero';
+import { emptyReasonCounts } from '@/lib/attention/reasons';
 
 const request = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/fetchWithTimeout', () => ({ fetchWithTimeout: request }));
@@ -12,11 +13,11 @@ import InboxZeroClient from '@/components/portal/counselor/InboxZeroClient';
 
 const queue: InboxZeroQueue = {
   rows: [{ memberId: 'member-1', memberName: 'Synthetic Member', memberEmail: 'synthetic@example.invalid',
-    enrolledProgram: null, primaryFlag: 'last_contact', additionalFlags: [], priorityRank: 2, severity: 8,
+    enrolledProgram: null, primaryFlag: 'no_counselor_contact_7d', additionalFlags: [], priorityRank: 1, severity: 8,
     context: { daysSinceLastContact: 8 } }],
-  totals: { total: 1, dismissedToday: 0, byFlag: { doc_missing: 0, application_stalled: 0, at_risk: 0, last_contact: 1 } },
+  totals: { total: 1, dismissedToday: 0, byFlag: { ...emptyReasonCounts(), no_counselor_contact_7d: 1 } },
 };
-const emptyQueue: InboxZeroQueue = { rows: [], totals: { ...queue.totals, total: 0, byFlag: { ...queue.totals.byFlag, last_contact: 0 } } };
+const emptyQueue: InboxZeroQueue = { rows: [], totals: { ...queue.totals, total: 0, byFlag: emptyReasonCounts() } };
 const warning = 'Counselor assigned, but audit history needs review. Contact an administrator; do not repeat the reassignment.';
 function setupReceipt(receipt: object, refreshFails = false) {
   request.mockImplementation(async (url: string) => {

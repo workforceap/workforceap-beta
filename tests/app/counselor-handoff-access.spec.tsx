@@ -13,6 +13,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: { counselor: { findFirst: vi.fn() },
 vi.mock('@/lib/counselor/staffMemberAccess', () => ({ assertStaffCanAccessMemberRecord: vi.fn() }));
 vi.mock('@/lib/counselor/workQueue', () => ({
   getCounselorWorkQueue: vi.fn(),
+  getCounselorWorkQueueContext: vi.fn(async () => ({ flaggedTotal: 1, awaitingReply: 1 })),
   formatTimeWaiting: () => '2d ago',
   previewMessageBody: (body: string) => body,
 }));

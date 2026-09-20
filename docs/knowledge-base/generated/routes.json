@@ -1236,7 +1236,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 46,
+        "line": 49,
         "kind": "FunctionDeclaration",
         "localName": "CounselorPortalPage"
       }
@@ -1403,12 +1403,12 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 18,
+        "line": 20,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 85,
+        "line": 87,
         "kind": "FunctionDeclaration",
         "localName": "CounselorWorkQueuePage"
       }
@@ -1802,12 +1802,12 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 32,
+        "line": 35,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 70,
+        "line": 73,
         "kind": "FunctionDeclaration",
         "localName": "CounselorTriagePage"
       }
@@ -10197,12 +10197,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 26,
+        "line": 29,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 41,
+        "line": 44,
         "kind": "FunctionDeclaration",
         "localName": "AdminTodayPage"
       }

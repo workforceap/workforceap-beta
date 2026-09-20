@@ -1212,6 +1212,8 @@
     "workQueueLoadErrorDesc": "Algo deu errado ao buscar a fila. Tente atualizar a página.",
     "retry": "Tentar novamente",
     "workQueueEmptyDesc": "Nenhum membro está aguardando uma resposta há mais de 24 horas. Bom trabalho.",
+    "workQueueNoRepliesTitle": "Nenhuma resposta atrasada",
+    "workQueueOtherFlagged": "{count, plural, one {# membro está sinalizado por outro motivo} other {# membros estão sinalizados por outros motivos}} — a mesma lista que o Inbox zero mostra.",
     "emptyMessagePreview": "(sem conteúdo de mensagem)",
     "backToDashboard": "Voltar ao painel",
     "workQueueMembersAwaiting": "{count} membro{count, plural, =1 {} other {s}} aguardando resposta",
