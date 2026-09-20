@@ -1,0 +1,86 @@
+/* Admin member record — Notes tab card layout. Kit chrome carries the look;
+   --wa-* tokens only, 13px floor. Colocated with AdminMemberNotesPanel.tsx. */
+
+.panel {
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.compose {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 88px;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--wa-radius-sm);
+  border: 1px solid var(--wa-control-border, var(--wa-border));
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  font: inherit;
+  font-size: var(--wa-type-body);
+  resize: vertical;
+}
+
+.textarea:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--wa-focus-ring);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.alert {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-danger);
+}
+
+.status {
+  margin: 0 0 0.5rem;
+}
+
+.empty {
+  margin: 0;
+}
+
+.list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.note {
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
+.noteMeta {
+  margin: 0 0 0.25rem;
+}
+
+.noteBody {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
