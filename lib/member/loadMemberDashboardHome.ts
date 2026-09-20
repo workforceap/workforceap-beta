@@ -8,6 +8,9 @@ import {
   programSlugsEquivalent,
 } from '@/lib/content/programSlug';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
+import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
+import { effectiveStreak } from '@/lib/member/streakDisplay';
+import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
@@ -42,7 +45,8 @@ import {
 export const MEMBER_DASHBOARD_HOME_PRISMA_BUDGET = 2;
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const ACTIVE_JOB_STATUSES_EXCLUDED = ['REJECTED', 'ACCEPTED'] as const;
+/** Recent pipeline rows shown on the home card: anything not yet closed. */
+const PIPELINE_ROW_STATUSES_EXCLUDED = ['REJECTED', 'ACCEPTED'] as const;
 
 export type DashboardPipelineRow = {
   role: string;
@@ -77,6 +81,11 @@ export type MemberDashboardHomeView = {
   points: number;
   currentStreak: number;
   longestStreak: number;
+  /**
+   * Plain line under the program tile naming the WorkforceAP lab inside the
+   * course denominator (null when the program has no lab row).
+   */
+  programCoursesNote: string | null;
   goals: DashboardGoalSummary[];
   /**
    * Real next step title. For an enrolled member this is the program's next
@@ -161,6 +170,7 @@ type DashboardUserRow = MemberApprovalFacts & {
     totalPoints: number;
     currentStreak: number;
     longestStreak: number;
+    lastActiveDate: Date | null;
   } | null;
   nextBestActions: Array<{
     id: string;
@@ -399,6 +409,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     certs: 0,
     points: 0,
     currentStreak: 0,
+    programCoursesNote: null,
     longestStreak: 0,
     goals: [],
     nextLesson: doThisNext.title,
@@ -471,10 +482,11 @@ function shapeHome(args: {
   const pct = reconciliation.programPercent;
   const allCoursesComplete = reconciliation.allComplete;
   const firstName = displayFirstName(args.row.fullName, args.fallbackDisplayName);
+  // Same ledger as the count above: a completion recorded under a Coursera id
+  // (or an old synthetic slug) is complete here too, so "Next:" can never name
+  // a course the header already counts as finished.
   const completedSlugs = new Set(
-    matchingCourseProgress
-      .filter((row) => row.status === 'COMPLETED')
-      .map((row) => row.courseSlug),
+    reconciliation.rows.filter((row) => row.displayCompleted).map((row) => row.courseSlug),
   );
   const nextIncompleteCourse = validatedCourses.find((course) => !completedSlugs.has(course.slug));
   // The cert-path card must name a module, not the hero action: when the top
@@ -534,7 +546,11 @@ function shapeHome(args: {
     activeJobs: args.row._count.jobApplications,
     certs: args.row._count.userCertifications,
     points: totalPoints,
-    currentStreak: args.row.memberPoints?.currentStreak ?? 0,
+    currentStreak: effectiveStreak({
+      currentStreak: args.row.memberPoints?.currentStreak,
+      lastActiveDate: args.row.memberPoints?.lastActiveDate,
+    }),
+    programCoursesNote: program ? describeCourseDenominator(validatedCourses) : null,
     longestStreak: args.row.memberPoints?.longestStreak ?? 0,
     goals: mapGoalSummaries(args.row.goals),
     nextLesson: nextModule?.title ?? doThisNext.title,
@@ -619,7 +635,7 @@ function userSelect() {
       },
     },
     memberPoints: {
-      select: { totalPoints: true, currentStreak: true, longestStreak: true },
+      select: { totalPoints: true, currentStreak: true, longestStreak: true, lastActiveDate: true },
     },
     nextBestActions: {
       where: { status: 'PENDING' },
@@ -635,7 +651,7 @@ function userSelect() {
       },
     },
     jobApplications: {
-      where: { status: { notIn: [...ACTIVE_JOB_STATUSES_EXCLUDED] } },
+      where: { status: { notIn: [...PIPELINE_ROW_STATUSES_EXCLUDED] } },
       orderBy: { updatedAt: 'desc' as const },
       take: 4,
       select: { role: true, company: true, status: true, updatedAt: true },
@@ -661,8 +677,9 @@ function userSelect() {
     _count: {
       select: {
         userCertifications: true,
+        // "Active jobs" tile: one shared definition with the Jobs page.
         jobApplications: {
-          where: { status: { notIn: [...ACTIVE_JOB_STATUSES_EXCLUDED] } },
+          where: { status: { in: [...ACTIVE_APPLICATION_STATUSES] } },
         },
       },
     },

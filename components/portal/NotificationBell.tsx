@@ -109,6 +109,9 @@ type NotificationBellProps = {
   readOnlyAudit?: boolean;
 };
 
+/** Rows fetched for the dropdown; the API caps a page at 50. */
+export const NOTIFICATION_LIST_LIMIT = 20;
+
 export default function NotificationBell(props: NotificationBellProps) {
   const role = getRole(usePathname() ?? '');
   // Role transitions discard old results and abort the previous request.
@@ -148,7 +151,10 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
       setLoading(true);
       setFetchError(null);
       const [notificationsResponse, badgesResponse] = await Promise.all([
-        fetch('/api/member/notifications?limit=5', { credentials: 'include', signal: controller.signal }),
+        // Unread rows first and enough of them that the list can reach every
+        // unread row the badge counts (the list used to stop at 5 while the
+        // badge said 8, with no page to open the rest).
+        fetch(`/api/member/notifications?limit=${NOTIFICATION_LIST_LIMIT}&unreadFirst=1`, { credentials: 'include', signal: controller.signal }),
         needBadges
           ? fetch(`/api/portal/nav-badges?role=${encodeURIComponent(role)}`, { credentials: 'include', signal: controller.signal })
           : Promise.resolve(null),

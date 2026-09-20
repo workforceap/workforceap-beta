@@ -27,6 +27,33 @@ export function isCourseraDeliveredCourse(course: Pick<ProgramCourse, 'kind' | '
   return Boolean(course.courseraCourseId?.trim() || course.courseraSlug?.trim());
 }
 
+/**
+ * The lab / project / test-prep block every TWC syllabus carries. WorkforceAP
+ * delivers it, so it is never a Coursera course: on the approved curricula it
+ * is `kind: 'workforceap'`; on legacy-v1 it is the one unbound outline row
+ * (lib/content/itSupportLabs.test.ts pins that it stays a plain outline).
+ */
+export function isWorkforceApLabRow(course: Pick<ProgramCourse, 'name' | 'kind' | 'courseraCourseId' | 'courseraSlug'>): boolean {
+  return !isCourseraDeliveredCourse(course) && /\bLab\b/.test(course.name);
+}
+
+/**
+ * Plain wording for the program tile so nobody wonders why Coursera's path
+ * covers one course fewer than the program: the denominator keeps the lab
+ * (Mike, 2026-09-20: "keep lab but call it out"). Null when the program has
+ * no lab row, so surfaces can omit the line.
+ */
+export function describeCourseDenominator(courses: ReadonlyArray<Pick<ProgramCourse, 'name' | 'kind' | 'courseraCourseId' | 'courseraSlug'>>): string | null {
+  const labs = courses.filter(isWorkforceApLabRow);
+  if (labs.length === 0) return null;
+  const total = courses.length;
+  const coursera = total - labs.length;
+  if (labs.length === 1) {
+    return `${total} courses: ${coursera} on Coursera's learning path plus the WorkforceAP ${labs[0]!.name} (delivered by WorkforceAP, not part of the Coursera path).`;
+  }
+  return `${total} courses: ${coursera} on Coursera's learning path plus ${labs.length} WorkforceAP labs (delivered by WorkforceAP, not part of the Coursera path).`;
+}
+
 export function summarizeProgramCourseProgress(args: {
   courses: readonly ProgramCourse[];
   reconciliation: Pick<ProgramProgressReconciliation, 'rows'> | null | undefined;

@@ -25,6 +25,7 @@
 | [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 597 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
+| [tests/api/admin-message-notification.spec.ts](../../../tests/api/admin-message-notification.spec.ts) | 131 | communications |  |
 | [tests/api/admin-onet-mappings.spec.ts](../../../tests/api/admin-onet-mappings.spec.ts) | 174 | tests |  |
 | [tests/api/admin-outcomes-snapshot.spec.ts](../../../tests/api/admin-outcomes-snapshot.spec.ts) | 125 | tests |  |
 | [tests/api/admin-outcomes.spec.ts](../../../tests/api/admin-outcomes.spec.ts) | 209 | tests |  |
@@ -82,7 +83,7 @@
 | [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 157 | tests |  |
 | [tests/api/cron-course-accountability.spec.ts](../../../tests/api/cron-course-accountability.spec.ts) | 71 | tests |  |
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
-| [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 207 | tests |  |
+| [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 216 | tests |  |
 | [tests/api/cron-interview-reminders.spec.ts](../../../tests/api/cron-interview-reminders.spec.ts) | 124 | tests |  |
 | [tests/api/cron-settings-namespace.spec.ts](../../../tests/api/cron-settings-namespace.spec.ts) | 53 | tests |  |
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
@@ -121,6 +122,7 @@
 | [tests/api/member-feedback.spec.ts](../../../tests/api/member-feedback.spec.ts) | 346 | tests |  |
 | [tests/api/member-goals.spec.ts](../../../tests/api/member-goals.spec.ts) | 416 | tests |  |
 | [tests/api/member-messages.spec.ts](../../../tests/api/member-messages.spec.ts) | 521 | tests |  |
+| [tests/api/member-nav-badge-unread.spec.ts](../../../tests/api/member-nav-badge-unread.spec.ts) | 129 | tests |  |
 | [tests/api/member-nba-reliability.spec.ts](../../../tests/api/member-nba-reliability.spec.ts) | 76 | tests |  |
 | [tests/api/member-onboard.spec.ts](../../../tests/api/member-onboard.spec.ts) | 523 | tests |  |
 | [tests/api/member-profile.spec.ts](../../../tests/api/member-profile.spec.ts) | 475 | tests |  |
@@ -333,7 +335,7 @@
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
-| [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
+| [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 129 | communications |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
@@ -461,6 +463,7 @@
 | [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 33 | tests |  |
 | [tests/lib/member-export-placement-survey.spec.ts](../../../tests/lib/member-export-placement-survey.spec.ts) | 88 | tests |  |
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
+| [tests/lib/member-progress-parity.spec.ts](../../../tests/lib/member-progress-parity.spec.ts) | 256 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |
 | [tests/lib/member-resume-plain-text-missing-admin-env.spec.ts](../../../tests/lib/member-resume-plain-text-missing-admin-env.spec.ts) | 87 | tests |  |
 | [tests/lib/member-status-text-token-contrast.spec.ts](../../../tests/lib/member-status-text-token-contrast.spec.ts) | 154 | tests |  |
@@ -476,7 +479,7 @@
 | [tests/lib/notification-triggers-course.spec.ts](../../../tests/lib/notification-triggers-course.spec.ts) | 412 | communications |  |
 | [tests/lib/notification-triggers-job.spec.ts](../../../tests/lib/notification-triggers-job.spec.ts) | 156 | communications |  |
 | [tests/lib/notification-triggers-survey.spec.ts](../../../tests/lib/notification-triggers-survey.spec.ts) | 142 | communications |  |
-| [tests/lib/notifications/create.spec.ts](../../../tests/lib/notifications/create.spec.ts) | 219 | communications |  |
+| [tests/lib/notifications/create.spec.ts](../../../tests/lib/notifications/create.spec.ts) | 266 | communications |  |
 | [tests/lib/onet-sync-cap.spec.ts](../../../tests/lib/onet-sync-cap.spec.ts) | 55 | tests |  |
 | [tests/lib/outcomesSocialProof.test.ts](../../../tests/lib/outcomesSocialProof.test.ts) | 129 | tests |  |
 | [tests/lib/partner-attention-page-loader.spec.ts](../../../tests/lib/partner-attention-page-loader.spec.ts) | 57 | tests |  |

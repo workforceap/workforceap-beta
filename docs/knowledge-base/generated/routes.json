@@ -3364,12 +3364,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 28,
+        "line": 30,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 36,
+        "line": 38,
         "kind": "FunctionDeclaration",
         "localName": "DashboardCertificationsPage"
       }
@@ -3379,7 +3379,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 5,
+        "line": 7,
         "kind": "import"
       }
     ]
@@ -4511,12 +4511,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 69,
+        "line": 70,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 77,
+        "line": 78,
         "kind": "FunctionDeclaration",
         "localName": "DashboardProfilePage"
       }
@@ -4526,7 +4526,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -4613,12 +4613,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 35,
+        "line": 36,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 44,
+        "line": 45,
         "kind": "FunctionDeclaration",
         "localName": "ProgramPage"
       }
@@ -15960,17 +15960,17 @@
     "exports": [
       {
         "name": "GET",
-        "line": 72,
+        "line": 74,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 132,
+        "line": 144,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 167,
+        "line": 179,
         "kind": "Variable"
       }
     ],
@@ -17428,12 +17428,12 @@
     "exports": [
       {
         "name": "POST",
-        "line": 79,
+        "line": 94,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 106,
+        "line": 121,
         "kind": "Variable"
       }
     ],
@@ -17455,7 +17455,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -22886,12 +22886,12 @@
       },
       {
         "name": "GET",
-        "line": 119,
+        "line": 122,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 120,
+        "line": 123,
         "kind": "Variable"
       }
     ],
@@ -22918,12 +22918,12 @@
       },
       {
         "name": "GET",
-        "line": 107,
+        "line": 110,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 108,
+        "line": 111,
         "kind": "Variable"
       }
     ],
@@ -26699,7 +26699,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 54,
+        "line": 60,
         "kind": "Variable"
       }
     ],

@@ -291,6 +291,37 @@ export function learningPathProgramSlug(path: CourseraLearningPath | null | unde
 }
 
 /** Every registered path id, for SQL exclusions and seeder guards. Collection-only entries have none. */
+/**
+ * The shared Coursera Business B4B program every WorkforceAP learner is
+ * enrolled through. It names the umbrella, never a course.
+ */
+export const COURSERA_UMBRELLA_PROGRAM_ID = 'TpIlAogTQ8-SJQKIE8PP9w';
+
+export function isUmbrellaB4BProgramId(id: string | null | undefined): boolean {
+  const normalized = id?.trim() ?? '';
+  if (!normalized) return false;
+  const configuredUmbrellaId = process.env.COURSERA_ORG_PROGRAM_ID?.trim() ?? '';
+  return (
+    normalized === COURSERA_UMBRELLA_PROGRAM_ID ||
+    (configuredUmbrellaId.length > 0 && normalized === configuredUmbrellaId)
+  );
+}
+
+/**
+ * A Coursera id that names program-level progress (a registered Learning
+ * Path or the B4B umbrella) can never be a course. A canonical mapping row or
+ * a local progress row that carries one is stale data, not a binding:
+ * honouring it would write Coursera's path percentage onto whichever syllabus
+ * slot it points at (it once pointed the IBM path at "Lab, Project, and Test
+ * Preparation").
+ */
+export function isProgramLevelCourseraId(id: string | null | undefined): boolean {
+  if (typeof id !== 'string') return false;
+  const trimmed = id.trim();
+  if (!trimmed) return false;
+  return isUmbrellaB4BProgramId(trimmed) || findLearningPathById(trimmed) !== null;
+}
+
 export const KNOWN_LEARNING_PATH_IDS: readonly string[] = Object.freeze(
   COURSERA_LEARNING_PATHS.flatMap((path) => (path.learningPathId ? [path.learningPathId] : [])),
 );

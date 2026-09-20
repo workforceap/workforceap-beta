@@ -35,6 +35,38 @@ function formatTimeLabel(iso: string): string {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) + ', ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
+/**
+ * Unread member-authored messages per thread, as the counselor inbox counts
+ * them: a thread the counselor has never opened (`counselor_last_read_at IS
+ * NULL`) has every member message unread. The rail badge sums the same rows,
+ * so the two can never disagree about which messages are unread. (Whether the
+ * badge should count messages or threads is still an open product question.)
+ */
+export async function countUnreadMemberMessagesByThread(
+  threadIds: readonly string[],
+): Promise<Map<string, number>> {
+  const unique = [...new Set(threadIds)];
+  const counts = new Map<string, number>(unique.map((id) => [id, 0]));
+  if (unique.length === 0) return counts;
+  const rows = await prisma.$queryRaw<Array<{ threadId: string; unread: number }>>`
+    SELECT
+      t.id AS "threadId",
+      COUNT(m.id)::int AS unread
+    FROM message_threads t
+    LEFT JOIN messages m
+      ON m.thread_id = t.id
+     AND m.author_id = t.member_id
+     AND (
+       t.counselor_last_read_at IS NULL
+       OR m.created_at > t.counselor_last_read_at
+     )
+    WHERE t.id IN (${Prisma.join(unique)})
+    GROUP BY t.id
+  `;
+  for (const row of rows) counts.set(row.threadId, Number(row.unread ?? 0));
+  return counts;
+}
+
 export async function buildCounselorInboxRows(
   memberIds: string[],
   opts: { readOnlyAudit?: boolean } = {},
@@ -121,7 +153,6 @@ export async function buildCounselorInboxRows(
     body: string;
     createdAt: Date;
   };
-  type UnreadRow = { threadId: string; unread: number };
   type LastEventRow = { userId: string; createdAt: Date };
 
   const orderedMembers = memberIds.filter((id) => memberById.has(id));
@@ -135,7 +166,7 @@ export async function buildCounselorInboxRows(
   const threadIds = [...new Set(threadsOrdered.map((x) => x.thread.id))];
   const uniqueMemberIds = [...new Set(orderedMembers)];
 
-  const [latestMsgs, unreadRows, lastEventRows] = await Promise.all([
+  const [latestMsgs, unreadByThread, lastEventRows] = await Promise.all([
     threadIds.length === 0
       ? ([] as LastMsgRow[])
       : prisma.$queryRaw<LastMsgRow[]>`
@@ -148,23 +179,7 @@ export async function buildCounselorInboxRows(
           WHERE m.thread_id IN (${Prisma.join(threadIds)})
           ORDER BY m.thread_id ASC, m.created_at DESC
         `,
-    threadIds.length === 0
-      ? ([] as UnreadRow[])
-      : prisma.$queryRaw<UnreadRow[]>`
-          SELECT
-            t.id AS "threadId",
-            COUNT(m.id)::int AS unread
-          FROM message_threads t
-          LEFT JOIN messages m
-            ON m.thread_id = t.id
-           AND m.author_id = t.member_id
-           AND (
-             t.counselor_last_read_at IS NULL
-             OR m.created_at > t.counselor_last_read_at
-           )
-          WHERE t.id IN (${Prisma.join(threadIds)})
-          GROUP BY t.id
-        `,
+    countUnreadMemberMessagesByThread(threadIds),
     uniqueMemberIds.length === 0
       ? ([] as LastEventRow[])
       : prisma.$queryRaw<LastEventRow[]>`
@@ -178,10 +193,6 @@ export async function buildCounselorInboxRows(
   ]);
 
   const lastMsgByThread = new Map(latestMsgs.map((r) => [r.threadId, r]));
-  const unreadByThread = new Map(threadIds.map((id) => [id, 0]));
-  for (const u of unreadRows) {
-    unreadByThread.set(u.threadId, u.unread);
-  }
   const lastEventByUser = new Map(lastEventRows.map((r) => [r.userId, r.createdAt]));
 
   const rows: CounselorInboxRow[] = [];

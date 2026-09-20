@@ -4846,6 +4846,46 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/content/syllabusCatalogParity.test.ts",
+    "area": "libraries",
+    "domain": "public-experience",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/content/courseraDiscoveredCatalog.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/content/programCurriculumManifest.ts",
+        "line": 5
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 6
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 7
+      },
+      {
+        "file": "shared/programSyllabi.ts",
+        "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/content/workforceApModule.test.ts",
     "area": "libraries",
     "domain": "public-experience",
@@ -5609,28 +5649,36 @@
         "line": 4
       },
       {
-        "file": "lib/content/coursera/learningPaths.ts",
+        "file": "lib/content/courseraDiscoveredCatalog.ts",
         "line": 5
       },
       {
-        "file": "lib/coursera/canonicalMapping.ts",
+        "file": "lib/content/coursera/learningPaths.ts",
         "line": 6
       },
       {
-        "file": "lib/coursera/curriculumMapping.ts",
+        "file": "lib/coursera/programCourseList.ts",
         "line": 7
       },
       {
-        "file": "lib/coursera/progressPromotion.ts",
+        "file": "lib/coursera/canonicalMapping.ts",
         "line": 8
       },
       {
-        "file": "lib/coursera/progressReconciliation.ts",
+        "file": "lib/coursera/curriculumMapping.ts",
         "line": 9
       },
       {
-        "file": "lib/coursera/progressTileSummary.ts",
+        "file": "lib/coursera/progressPromotion.ts",
         "line": 10
+      },
+      {
+        "file": "lib/coursera/progressReconciliation.ts",
+        "line": 11
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 12
       }
     ],
     "kind": "test-candidate",
@@ -8183,6 +8231,10 @@
       {
         "file": "lib/member/streaks.ts",
         "line": 2
+      },
+      {
+        "file": "lib/member/streakDisplay.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -11477,6 +11529,42 @@
       {
         "file": "lib/db/prisma.ts",
         "line": 57
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/admin-message-notification.spec.ts",
+    "area": "tests",
+    "domain": "communications",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/admin/members/[id]/messages/route.ts",
+        "line": 58
+      },
+      {
+        "file": "app/api/admin/messages/thread/[threadId]/staff/route.ts",
+        "line": 59
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 60
+      },
+      {
+        "file": "lib/messages/staffMessageNotification.ts",
+        "line": 61
       }
     ],
     "kind": "test-candidate",
@@ -15566,6 +15654,34 @@
       {
         "file": "lib/messages/unassignedNotify.ts",
         "line": 137
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/member-nav-badge-unread.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/portal/navBadges.ts",
+        "line": 50
+      },
+      {
+        "file": "lib/messages/counselorInbox.ts",
+        "line": 51
       }
     ],
     "kind": "test-candidate",
@@ -26937,6 +27053,66 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/member-progress-parity.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/coursera/programCourseList.ts",
+        "line": 46
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 59
+      },
+      {
+        "file": "lib/coursera/progressReconciliation.ts",
+        "line": 60
+      },
+      {
+        "file": "lib/coursera/programCourseList.ts",
+        "line": 61
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 62
+      },
+      {
+        "file": "lib/member/jobPipelineDisplay.ts",
+        "line": 63
+      },
+      {
+        "file": "lib/member/loadMemberDashboardHome.ts",
+        "line": 64
+      },
+      {
+        "file": "lib/member/memberProgramTrainingView.ts",
+        "line": 65
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 152
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 244
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/member-resources.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -27435,11 +27611,11 @@
       },
       {
         "file": "lib/notifications/create.ts",
-        "line": 21
+        "line": 23
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 22
+        "line": 24
       }
     ],
     "kind": "test-candidate",

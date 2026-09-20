@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
+import { countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
@@ -82,17 +83,16 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 
   let counselor_messages_unread = 0;
   if (thread) {
-    // If memberLastReadAt is null, the member hasn't explicitly read the thread.
-    // Counting every message as unread inflates the badge and undermines trust.
-    counselor_messages_unread = thread.memberLastReadAt
-      ? await prisma.message.count({
-          where: {
-            threadId: thread.id,
-            authorId: { not: userId },
-            createdAt: { gt: thread.memberLastReadAt },
-          },
-        })
-      : 0;
+    // A member who has never opened Messages has read nothing, so every
+    // staff-authored message is unread. (Treating the missing read marker as
+    // "nothing unread" hid an 81-day-old staff reply behind no badge at all.)
+    counselor_messages_unread = await prisma.message.count({
+      where: {
+        threadId: thread.id,
+        authorId: { not: userId },
+        ...(thread.memberLastReadAt ? { createdAt: { gt: thread.memberLastReadAt } } : {}),
+      },
+    });
   }
 
   return {
@@ -184,26 +184,10 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
 
   if (threads.length === 0) return { counselor_notifications_unread };
 
-  // Batch unread counts into a single SQL query (eliminates N message.count calls).
-  const threadIds = threads.map((t) => t.id);
-  const unreadRows = await prisma.$queryRawUnsafe<
-    Array<{ threadId: string; count: bigint }>
-  >(
-    `SELECT m.thread_id as "threadId", COUNT(*) as count
-     FROM messages m
-     JOIN message_threads t ON m.thread_id = t.id
-     WHERE m.thread_id = ANY($1)
-       AND m.author_id = t.member_id
-       AND t.counselor_last_read_at IS NOT NULL
-       AND m.created_at > t.counselor_last_read_at
-     GROUP BY m.thread_id`,
-    threadIds,
-  );
-  const unreadMap = new Map<string, bigint>();
-  for (const row of unreadRows) {
-    unreadMap.set(row.threadId, row.count);
-  }
-  const unreadCounts = threads.map((t) => Number(unreadMap.get(t.id) ?? 0));
+  // One batched query shared with the counselor inbox, so the rail badge and
+  // the inbox rows count the same unread messages (never-opened threads included).
+  const unreadMap = await countUnreadMemberMessagesByThread(threads.map((t) => t.id));
+  const unreadCounts = threads.map((t) => unreadMap.get(t.id) ?? 0);
 
   const slaRows = await getSlaStatusForThreads(threads.map((thread) => thread.id));
   let counselor_sla_breach_48h = 0;

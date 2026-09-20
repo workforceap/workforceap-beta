@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "1f3bad1f4a0820432c93fc87a32fa214939e64eab0aaf291f0a684b86d692633",
+  "inputTreeSha256": "6878e02321731ed6354cb329d706301b7c49e14395d6193d1fe3f05164177f51",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4936,
-    "sourceModules": 3585,
-    "importReferences": 17845,
-    "resolvedLocalReferences": 11980,
+    "files": 4942,
+    "sourceModules": 3591,
+    "importReferences": 17893,
+    "resolvedLocalReferences": 12022,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 951,
-    "testCandidates": 941,
+    "testFiles": 955,
+    "testCandidates": 945,
     "testHelpers": 10,
-    "staticallySelectedTests": 939,
+    "staticallySelectedTests": 943,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1063
+      "files": 1066
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 558
+      "files": 561
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 927
+      "references": 929
     },
     {
       "file": "lib/auth/server.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 246
+      "references": 248
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -191,12 +191,12 @@
       "references": 71
     },
     {
-      "file": "lib/email/escapeHtml.ts",
+      "file": "lib/content/programSlug.ts",
       "references": 68
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 67
+      "file": "lib/email/escapeHtml.ts",
+      "references": 68
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
@@ -207,11 +207,11 @@
       "references": 54
     },
     {
-      "file": "components/portal/ui/DataTable.tsx",
-      "references": 52
+      "file": "lib/content/programCurriculumManifest.ts",
+      "references": 53
     },
     {
-      "file": "lib/content/programCurriculumManifest.ts",
+      "file": "components/portal/ui/DataTable.tsx",
       "references": 52
     },
     {
@@ -243,11 +243,11 @@
       "references": 39
     },
     {
-      "file": "components/LocalizedLink.tsx",
-      "references": 37
+      "file": "lib/notifications/create.ts",
+      "references": 38
     },
     {
-      "file": "lib/db/queryCaps.ts",
+      "file": "components/LocalizedLink.tsx",
       "references": 37
     }
   ],
@@ -358,7 +358,7 @@
     },
     {
       "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1209
+      "lines": 1210
     },
     {
       "file": "components/admin/MembersTable.tsx",
