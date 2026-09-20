@@ -2072,7 +2072,7 @@
     "target": "components/portal/counselor/CounselorNotificationCenter.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "next/navigation",
     "line": 1,
     "kind": "import",
@@ -2080,7 +2080,7 @@
     "package": "next"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "next-intl/server",
     "line": 2,
     "kind": "import",
@@ -2088,7 +2088,7 @@
     "package": "next-intl"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/auth/server",
     "line": 3,
     "kind": "import",
@@ -2096,7 +2096,7 @@
     "target": "lib/auth/server.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/auth/roles",
     "line": 4,
     "kind": "import",
@@ -2104,7 +2104,7 @@
     "target": "lib/auth/roles.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/db/prisma",
     "line": 5,
     "kind": "import",
@@ -2112,7 +2112,7 @@
     "target": "lib/db/prisma.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/db/queryCaps",
     "line": 6,
     "kind": "import",
@@ -2120,7 +2120,7 @@
     "target": "lib/db/queryCaps.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "next/link",
     "line": 7,
     "kind": "import",
@@ -2128,7 +2128,7 @@
     "package": "next"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/counselor/counselorLabels",
     "line": 8,
     "kind": "import",
@@ -2136,7 +2136,7 @@
     "target": "lib/counselor/counselorLabels.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/counselor/commandCenter",
     "line": 9,
     "kind": "import",
@@ -2144,7 +2144,7 @@
     "target": "lib/counselor/commandCenter.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/counselor/CounselorCommandCenter",
     "line": 10,
     "kind": "import",
@@ -2152,7 +2152,7 @@
     "target": "components/portal/counselor/CounselorCommandCenter.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/counselor/CounselorPriorityQueue",
     "line": 11,
     "kind": "import",
@@ -2160,7 +2160,7 @@
     "target": "components/portal/counselor/CounselorPriorityQueue.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/counselor/AtRiskSummaryWidget",
     "line": 12,
     "kind": "import",
@@ -2168,7 +2168,7 @@
     "target": "components/portal/counselor/AtRiskSummaryWidget.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/counselor/priorityQueue",
     "line": 13,
     "kind": "import",
@@ -2176,7 +2176,7 @@
     "target": "lib/counselor/priorityQueue.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/attention/counselor",
     "line": 14,
     "kind": "import",
@@ -2184,7 +2184,7 @@
     "target": "lib/attention/counselor.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/attention/counselorViews",
     "line": 15,
     "kind": "import",
@@ -2192,7 +2192,7 @@
     "target": "lib/attention/counselorViews.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/attention/evaluate",
     "line": 16,
     "kind": "import",
@@ -2200,7 +2200,7 @@
     "target": "lib/attention/evaluate.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/CounselorPortalVoiceBlock",
     "line": 17,
     "kind": "import",
@@ -2208,7 +2208,7 @@
     "target": "components/portal/CounselorPortalVoiceBlock.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/counselor/memberStatus",
     "line": 18,
     "kind": "import",
@@ -2216,7 +2216,7 @@
     "target": "lib/counselor/memberStatus.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
     "line": 19,
     "kind": "import",
@@ -2224,7 +2224,7 @@
     "target": "components/portal/PortalPageFrame.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/PageHeader",
     "line": 20,
     "kind": "import",
@@ -2232,7 +2232,7 @@
     "target": "components/portal/PageHeader.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/PortalEmptyState",
     "line": 21,
     "kind": "import",
@@ -2240,7 +2240,7 @@
     "target": "components/portal/PortalEmptyState.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/StatusBadge",
     "line": 22,
     "kind": "import",
@@ -2248,7 +2248,7 @@
     "target": "components/portal/StatusBadge.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/time/greeting",
     "line": 23,
     "kind": "import",
@@ -2256,7 +2256,7 @@
     "target": "lib/time/greeting.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/content/programs",
     "line": 24,
     "kind": "import",
@@ -2264,7 +2264,7 @@
     "target": "lib/content/programs.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/content/programTitle",
     "line": 25,
     "kind": "import",
@@ -2272,7 +2272,7 @@
     "target": "lib/content/programTitle.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/member/trainingProgress",
     "line": 26,
     "kind": "import",
@@ -2280,7 +2280,7 @@
     "target": "lib/member/trainingProgress.ts"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
     "line": 30,
     "kind": "import",
@@ -2288,7 +2288,7 @@
     "target": "components/portal/ui/PortalCard.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
     "line": 31,
     "kind": "import",
@@ -2296,12 +2296,20 @@
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
   },
   {
-    "from": "app/(portal)/counselor/page.tsx",
+    "from": "app/(portal)/counselor/overview/page.tsx",
     "specifier": "@/lib/counselor/needsAttentionRows",
     "line": 36,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/needsAttentionRows.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
   },
   {
     "from": "app/(portal)/counselor/placements/error.tsx",
@@ -3574,6 +3582,62 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/trainingProgress.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/lib/auth/roles",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/lib/attention/counselor",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/counselor.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/lib/attention/counselorViews",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/counselorViews.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/lib/attention/evaluate",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/evaluate.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/today/page.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorTodayKit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx"
   },
   {
     "from": "app/(portal)/counselor/triage/error.tsx",
@@ -84752,6 +84816,62 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "next/link",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "lucide-react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "lucide-react",
+    "line": 11,
+    "kind": "type",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "@/lib/attention/reasons",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/reasons.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "@/lib/attention/counselorViews",
+    "line": 24,
+    "kind": "type",
+    "external": false,
+    "target": "lib/attention/counselorViews.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+    "specifier": "@/lib/content/programTitle",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programTitle.ts"
+  },
+  {
     "from": "components/portal/kit/pages/employer/EmployerHomeKit.tsx",
     "specifier": "lucide-react",
     "line": 3,
@@ -95289,8 +95409,16 @@
   },
   {
     "from": "lib/attention/counselorAgreement.test.ts",
+    "specifier": "./reasons",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/reasons.ts"
+  },
+  {
+    "from": "lib/attention/counselorAgreement.test.ts",
     "specifier": "@/tests/fixtures/attentionRoster",
-    "line": 11,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "tests/fixtures/attentionRoster.ts"
@@ -95298,7 +95426,7 @@
   {
     "from": "lib/attention/counselorViews.ts",
     "specifier": "./reasons",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/attention/reasons.ts"
@@ -95306,7 +95434,7 @@
   {
     "from": "lib/attention/counselorViews.ts",
     "specifier": "./evaluate",
-    "line": 18,
+    "line": 19,
     "kind": "type",
     "external": false,
     "target": "lib/attention/evaluate.ts"
@@ -108194,7 +108322,7 @@
   {
     "from": "lib/nav/portalNav.ts",
     "specifier": "@/lib/wioa/wioaAvailability",
-    "line": 46,
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaAvailability.ts"
@@ -129462,6 +129590,54 @@
     "kind": "type",
     "external": false,
     "target": "lib/counselor/rosterStats.ts"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorTodayKit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "@/lib/attention/evaluate",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/evaluate.ts"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "@/lib/attention/counselorViews",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/counselorViews.ts"
+  },
+  {
+    "from": "tests/components/counselor-today.spec.tsx",
+    "specifier": "@/tests/fixtures/attentionRoster",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "tests/fixtures/attentionRoster.ts"
   },
   {
     "from": "tests/components/coursera-diagnostics-evidence.spec.tsx",

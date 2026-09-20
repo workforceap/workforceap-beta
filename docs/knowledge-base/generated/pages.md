@@ -57,7 +57,8 @@
 | [app/(portal)/counselor/messages/page.tsx](../../../app/%28portal%29/counselor/messages/page.tsx) | 95 | communications | default:23 |
 | [app/(portal)/counselor/not-found.tsx](../../../app/%28portal%29/counselor/not-found.tsx) | 20 | member-counselor | default:3 |
 | [app/(portal)/counselor/notifications/page.tsx](../../../app/%28portal%29/counselor/notifications/page.tsx) | 49 | communications | default:10 |
-| [app/(portal)/counselor/page.tsx](../../../app/%28portal%29/counselor/page.tsx) | 696 | member-counselor | default:49 |
+| [app/(portal)/counselor/overview/page.tsx](../../../app/%28portal%29/counselor/overview/page.tsx) | 701 | member-counselor | default:54 |
+| [app/(portal)/counselor/page.tsx](../../../app/%28portal%29/counselor/page.tsx) | 17 | member-counselor | default:10 |
 | [app/(portal)/counselor/placements/error.tsx](../../../app/%28portal%29/counselor/placements/error.tsx) | 13 | jobs-employers | default:5 |
 | [app/(portal)/counselor/placements/loading.tsx](../../../app/%28portal%29/counselor/placements/loading.tsx) | 5 | jobs-employers | default:3 |
 | [app/(portal)/counselor/placements/page.tsx](../../../app/%28portal%29/counselor/placements/page.tsx) | 422 | jobs-employers | default:72 |
@@ -85,6 +86,7 @@
 | [app/(portal)/counselor/students/loading.tsx](../../../app/%28portal%29/counselor/students/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/students/page.tsx](../../../app/%28portal%29/counselor/students/page.tsx) | 384 | member-counselor | default:30 |
 | [app/(portal)/counselor/students/students.module.css](../../../app/%28portal%29/counselor/students/students.module.css) | 56 | member-counselor |  |
+| [app/(portal)/counselor/today/page.tsx](../../../app/%28portal%29/counselor/today/page.tsx) | 35 | member-counselor | dynamic:9, default:17 |
 | [app/(portal)/counselor/triage/error.tsx](../../../app/%28portal%29/counselor/triage/error.tsx) | 13 | member-counselor | default:5 |
 | [app/(portal)/counselor/triage/loading.tsx](../../../app/%28portal%29/counselor/triage/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/triage/page.tsx](../../../app/%28portal%29/counselor/triage/page.tsx) | 313 | member-counselor | dynamic:35, default:73 |

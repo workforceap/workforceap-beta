@@ -2,12 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildAttentionQueue, flaggedMemberIds } from './evaluate';
 import {
+  TODAY_GROUP_ORDER,
+  TODAY_GROUPS,
+  todayGroupForReason,
   toInboxZeroQueue,
   toPriorityQueue,
+  toTodayQueue,
   toTriageQueue,
   toWorkQueueContext,
   toWorkQueueRows,
 } from './counselorViews';
+import { ATTENTION_REASONS } from './reasons';
 import {
   FIXTURE_AWAITING_REPLY_IDS,
   FIXTURE_FLAGGED_IDS,
@@ -16,8 +21,8 @@ import {
 } from '@/tests/fixtures/attentionRoster';
 
 /**
- * Overview, Inbox zero, Triage and Work queue render the same queue. The
- * first three must flag exactly the same members; the Work queue is the
+ * Today, Overview, Inbox zero, Triage and Work queue render the same queue.
+ * The first four must flag exactly the same members; the Work queue is the
  * "waiting on a reply" slice and must never flag anyone outside that set.
  */
 
@@ -82,4 +87,65 @@ test('a caseload with nothing flagged is clear on every surface', () => {
   assert.equal(toInboxZeroQueue(clear).totals.total, 0);
   assert.equal(toTriageQueue(clear).totals.total, 0);
   assert.deepEqual(toWorkQueueRows(clear, FIXTURE_NOW), []);
+});
+
+test('Today lists the flagged set once, grouped by primary reason, plus celebrations — never on-track members', () => {
+  const today = toTodayQueue(queue);
+  const listed = today.groups.flatMap((group) => group.rows.map((row) => row.memberId));
+  assert.deepEqual(sorted(listed.filter((id) => id !== 'm-celebrate')), flagged);
+  assert.equal(new Set(listed).size, listed.length, 'each member appears exactly once');
+  assert.ok(!listed.includes('m-ok') && !listed.includes('m-ok2'), 'on-track members are not in the queue');
+  assert.deepEqual(today.groups.map((group) => group.key), [...TODAY_GROUP_ORDER]);
+  const byGroup = Object.fromEntries(today.groups.map((group) => [group.key, group.rows.map((row) => row.memberId)]));
+  assert.deepEqual(byGroup, {
+    at_risk: ['m-risk', 'm-quiet30'],
+    reply_owed: ['m-sla', 'm-reply24'],
+    quiet: ['m-warn'],
+    follow_ups: ['m-app'],
+    new: ['m-new'],
+    celebrate: ['m-celebrate'],
+  });
+  for (const group of today.groups) {
+    for (const row of group.rows) {
+      assert.equal(todayGroupForReason(row.primaryReason), group.key, `${row.memberId} sits in its primary reason's group`);
+      assert.ok(TODAY_GROUPS[group.key].reasons.includes(row.primaryReason));
+    }
+  }
+  assert.equal(today.groups.find((g) => g.key === 'reply_owed')?.rows[0].threadId, 'thread-sla');
+});
+
+test('every attention reason maps to exactly one Today group', () => {
+  const seen = new Map<string, string>();
+  for (const key of TODAY_GROUP_ORDER) {
+    for (const reason of TODAY_GROUPS[key].reasons) {
+      assert.equal(seen.get(reason), undefined, `${reason} is listed under two groups`);
+      seen.set(reason, key);
+    }
+  }
+  assert.deepEqual(sorted([...seen.keys()]), sorted([...ATTENTION_REASONS]));
+  for (const reason of ATTENTION_REASONS) assert.equal(todayGroupForReason(reason), seen.get(reason));
+});
+
+test('Today\'s tiles print the same numbers as the other four surfaces', () => {
+  const today = toTodayQueue(queue);
+  assert.equal(today.totals.flagged, queue.totals.flagged);
+  assert.equal(today.totals.flagged, toInboxZeroQueue(queue).totals.total);
+  assert.equal(today.totals.critical + today.totals.warning, toTriageQueue(queue).totals.red + toTriageQueue(queue).totals.yellow);
+  assert.equal(today.totals.awaitingReply, toWorkQueueRows(queue, FIXTURE_NOW).length);
+  assert.deepEqual(
+    today.groups.find((g) => g.key === 'reply_owed')?.rows.map((r) => r.memberId),
+    toWorkQueueRows(queue, FIXTURE_NOW).map((r) => r.memberId),
+    'the Reply owed group is the Work queue, in the same order',
+  );
+  assert.equal(today.totals.onTrack, 2);
+  assert.equal(today.totals.celebrate, 1);
+  assert.equal(today.totals.roster, fixtureRoster().length);
+});
+
+test('a clear caseload gives Today six empty groups and zero on every tile', () => {
+  const clear = buildAttentionQueue(fixtureRoster().filter((m) => m.memberId.startsWith('m-ok')), FIXTURE_NOW);
+  const today = toTodayQueue(clear);
+  assert.equal(today.groups.length, TODAY_GROUP_ORDER.length);
+  assert.ok(today.groups.every((group) => group.rows.length === 0));
+  assert.deepEqual(today.totals, { flagged: 0, critical: 0, warning: 0, awaitingReply: 0, celebrate: 0, onTrack: 2, roster: 2 });
 });

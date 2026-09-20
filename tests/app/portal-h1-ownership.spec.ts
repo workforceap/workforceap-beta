@@ -68,7 +68,7 @@ const RAW_H1_ALLOWLIST = new Set(['app/admin/blog/preview/[slug]/page.tsx', 'app
  * these should collapse to one `PageOpener`/`PageHeader` outside the split.
  */
 const LEGACY_SR_ONLY_H1 = new Set([
-  'app/(portal)/counselor/page.tsx',
+  'app/(portal)/counselor/overview/page.tsx',
   'app/(portal)/dashboard/certifications/page.tsx',
   'app/(portal)/dashboard/learning/page.tsx',
   'app/(portal)/dashboard/page.tsx',

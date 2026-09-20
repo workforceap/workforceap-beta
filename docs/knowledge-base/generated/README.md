@@ -14,7 +14,7 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | astro-marketing | 106 | [Open](astro-marketing.md) |
 | audit-graph | 81 | [Open](audit-graph.md) |
 | communications | 70 | [Open](communications.md) |
-| components | 596 | [Open](components.md) |
+| components | 597 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
 | database | 202 | [Open](database.md) |
 | delivery | 9 | [Open](delivery.md) |
@@ -22,8 +22,8 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | libraries | 1029 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
 | operations | 136 | [Open](operations.md) |
-| pages | 637 | [Open](pages.md) |
+| pages | 639 | [Open](pages.md) |
 | root | 56 | [Open](root.md) |
 | styles | 17 | [Open](styles.md) |
 | supporting-files | 74 | [Open](supporting-files.md) |
-| tests | 490 | [Open](tests.md) |
+| tests | 491 | [Open](tests.md) |

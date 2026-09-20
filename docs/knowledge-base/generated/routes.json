@@ -1226,9 +1226,9 @@
     ]
   },
   {
-    "file": "app/(portal)/counselor/page.tsx",
+    "file": "app/(portal)/counselor/overview/page.tsx",
     "kind": "page",
-    "path": "/counselor",
+    "path": "/counselor/overview",
     "groups": [
       "(portal)"
     ],
@@ -1236,7 +1236,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 49,
+        "line": 54,
         "kind": "FunctionDeclaration",
         "localName": "CounselorPortalPage"
       }
@@ -1255,6 +1255,26 @@
         "kind": "import"
       }
     ]
+  },
+  {
+    "file": "app/(portal)/counselor/page.tsx",
+    "kind": "page",
+    "path": "/counselor",
+    "groups": [
+      "(portal)"
+    ],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "default",
+        "line": 10,
+        "kind": "FunctionDeclaration",
+        "localName": "CounselorRootPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": []
   },
   {
     "file": "app/(portal)/counselor/placements/error.tsx",
@@ -1747,6 +1767,44 @@
       {
         "specifier": "@/lib/auth/roles",
         "line": 4,
+        "kind": "import"
+      }
+    ]
+  },
+  {
+    "file": "app/(portal)/counselor/today/page.tsx",
+    "kind": "page",
+    "path": "/counselor/today",
+    "groups": [
+      "(portal)"
+    ],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 9,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 17,
+        "kind": "FunctionDeclaration",
+        "localName": "CounselorTodayPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 2,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/roles",
+        "line": 3,
         "kind": "import"
       }
     ]
