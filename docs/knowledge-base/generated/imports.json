@@ -68016,6 +68016,30 @@
     "target": "lib/content/programTitle.ts"
   },
   {
+    "from": "app/wioa-qualification/layout.tsx",
+    "specifier": "next-intl",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/wioa-qualification/layout.tsx",
+    "specifier": "next-intl/server",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/wioa-qualification/layout.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
     "from": "app/wioa-qualification/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -68185,8 +68209,24 @@
   },
   {
     "from": "components/CookieConsentBanner.test.tsx",
-    "specifier": "@testing-library/react",
+    "specifier": "node:fs",
     "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "components/CookieConsentBanner.test.tsx",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "components/CookieConsentBanner.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "@testing-library/react"
@@ -68194,7 +68234,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "next-intl",
-    "line": 3,
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -68202,7 +68242,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "./CookieConsentBanner",
-    "line": 4,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/CookieConsentBanner.tsx"
@@ -68210,7 +68250,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/lib/consent/state",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/consent/state.ts"
@@ -68218,7 +68258,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/lib/i18n/pickRootClientMessages",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/pickRootClientMessages.ts"
@@ -68226,7 +68266,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/en.json",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
@@ -68234,7 +68274,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/es.json",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "messages/es.json"
@@ -68242,7 +68282,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/fr.json",
-    "line": 9,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "messages/fr.json"
@@ -68250,7 +68290,7 @@
   {
     "from": "components/CookieConsentBanner.test.tsx",
     "specifier": "@/messages/pt.json",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "messages/pt.json"
@@ -130336,6 +130376,22 @@
     "target": "lib/formatDate.ts"
   },
   {
+    "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
+    "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "@/messages/es.json",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "messages/es.json"
+  },
+  {
     "from": "tests/components/member-form-connection-failure.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 8,
@@ -131824,6 +131880,14 @@
     "target": "lib/wioa/wioaQualification.ts"
   },
   {
+    "from": "tests/components/wioa-qualification.spec.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
     "from": "tests/components/wioa-review-revision.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -132934,6 +132998,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyProgramPage.ts"
+  },
+  {
+    "from": "tests/lib/apply-resume-gate-contrast.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/apply-resume-gate-contrast.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/lib/apply-resume-gate-contrast.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
   },
   {
     "from": "tests/lib/at-risk-curriculum-assignment.spec.ts",

@@ -9,7 +9,7 @@
 | [css/counselor.css](../../../css/counselor.css) | 513 | styles |  |
 | [css/enroll-school.css](../../../css/enroll-school.css) | 228 | styles |  |
 | [css/language-toggle.css](../../../css/language-toggle.css) | 129 | styles |  |
-| [css/main.css](../../../css/main.css) | 8794 | styles |  |
+| [css/main.css](../../../css/main.css) | 8805 | styles |  |
 | [css/marketing-a11y.css](../../../css/marketing-a11y.css) | 34 | styles |  |
 | [css/marketing-depth.css](../../../css/marketing-depth.css) | 265 | styles |  |
 | [css/marketing.css](../../../css/marketing.css) | 1502 | styles |  |

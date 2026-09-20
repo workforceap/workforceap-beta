@@ -53,7 +53,12 @@ export default function CookieConsentBanner() {
       banner.style.setProperty('--cookie-consent-bottom', `${bottom}px`);
       // Reserve actual visible height, including wrapped translations.
       // Suppressed portal routes never run this layout effect.
-      document.body.style.paddingBottom = `${basePadding + banner.getBoundingClientRect().height + bottom}px`;
+      const reserve = banner.getBoundingClientRect().height + bottom;
+      document.body.style.paddingBottom = `${basePadding + reserve}px`;
+      // Body padding cannot move content inside a 100vh-centered screen (login),
+      // so keyboard focus there landed under the banner. css/main.css reads this
+      // as scroll-margin-bottom on focusable elements so focus() clears the banner.
+      document.documentElement.style.setProperty('--cookie-consent-reserve', `${reserve}px`);
     };
 
     measure();
@@ -65,6 +70,7 @@ export default function CookieConsentBanner() {
       observer?.disconnect();
       window.removeEventListener('resize', measure);
       document.body.style.paddingBottom = previousPadding;
+      document.documentElement.style.removeProperty('--cookie-consent-reserve');
     };
   }, [shouldShow, pathname]);
 
