@@ -1026,6 +1026,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /r/\[code\] | route | GET | [app/r/\[code\]/route.ts](../../../app/r/%5Bcode%5D/route.ts) |  |
 | /share/achievement | page |  | [app/share/achievement/page.tsx](../../../app/share/achievement/page.tsx) |  |
 | /survey/placement/\[token\] | page |  | [app/survey/placement/\[token\]/page.tsx](../../../app/survey/placement/%5Btoken%5D/page.tsx) | @/lib/security/placementSurveyToken:2 |
+| /wioa-qualification | layout |  | [app/wioa-qualification/layout.tsx](../../../app/wioa-qualification/layout.tsx) |  |
 | /wioa-qualification | page |  | [app/wioa-qualification/page.tsx](../../../app/wioa-qualification/page.tsx) |  |
 | /\[lang\] | astro-page |  | [marketing/src/pages/\[lang\]/index.astro](../../../marketing/src/pages/%5Blang%5D/index.astro) |  |
 | /about | astro-page |  | [marketing/src/pages/about.astro](../../../marketing/src/pages/about.astro) |  |
