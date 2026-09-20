@@ -115,7 +115,7 @@ vi.mock('@/app/admin/members/[id]/AdminMemberNotesPanel', () => panelMock('notes
 
 
 import AdminMemberDetailPage from '@/app/admin/members/[id]/page';
-import { summarizeUnassignedTrainingEvidence } from '@/app/admin/members/[id]/page';
+import { summarizeUnassignedTrainingEvidence } from '@/app/admin/members/[id]/unassignedTrainingEvidence';
 
 const INSTANT = new Date('2026-09-19T02:30:00Z');
 

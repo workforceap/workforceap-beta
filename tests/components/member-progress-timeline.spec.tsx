@@ -38,7 +38,8 @@ describe('MemberProgressTimeline', () => {
     expect(screen.queryByText(/Avg program/)).toBeNull();
     expect(screen.queryByText('On track')).toBeNull();
     expect(screen.queryByText('Slower than avg')).toBeNull();
-    // Real per-stage durations stay: they are measured, not derived.
-    expect(screen.getByText(/2d/)).toBeInTheDocument();
+    // Real per-stage durations stay: they are measured, not derived. Both the
+    // stage line and the "Total:" line carry a day count, hence getAllByText.
+    expect(screen.getAllByText(/2d/).length).toBeGreaterThanOrEqual(1);
   });
 });
