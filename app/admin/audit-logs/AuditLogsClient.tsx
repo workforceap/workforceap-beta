@@ -225,7 +225,7 @@ export default function AuditLogsClient({
                   padding: '0.5rem',
                   borderRadius: 'var(--radius-sm)',
                   background: 'var(--surface-container-highest)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.8125rem',
                   overflow: 'auto',
                   maxHeight: '240px',
                   whiteSpace: 'pre-wrap',
@@ -280,7 +280,7 @@ export default function AuditLogsClient({
               cell: (e) => (
                 <>
                   <div style={{ fontWeight: 500 }}>{e.userName ?? '—'}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{e.userEmail ?? '—'}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{e.userEmail ?? '—'}</div>
                 </>
               ),
             },
@@ -353,16 +353,16 @@ export default function AuditLogsClient({
                   borderRadius: 'var(--radius-sm)',
                   background: 'rgba(173,44,77,0.1)',
                   color: 'var(--color-accent)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 600,
                 }}
               >
                 {e.eventName}
               </span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{formatTime(e.createdAt)}</span>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatTime(e.createdAt)}</span>
             </div>
             <div style={{ fontWeight: 500, fontSize: '0.875rem' }}>{e.userName ?? '—'}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {e.entityType && `${e.entityType} `}
               {e.sourcePage && `· ${e.sourcePage}`}
             </div>
@@ -373,7 +373,7 @@ export default function AuditLogsClient({
                   padding: '0.5rem',
                   borderRadius: 'var(--radius-sm)',
                   background: 'var(--surface-container-highest)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.8125rem',
                   overflow: 'auto',
                   maxHeight: '200px',
                   whiteSpace: 'pre-wrap',

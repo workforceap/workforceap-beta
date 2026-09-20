@@ -89,7 +89,7 @@ export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps
               <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: 13,
                     fontWeight: 700,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
@@ -121,7 +121,7 @@ export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps
         {noteCaption ? (
           <p
             style={{
-              fontSize: 11,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               margin: '8px 0 0',
               display: 'flex',

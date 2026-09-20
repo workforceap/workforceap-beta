@@ -146,7 +146,7 @@ export default async function DashboardResumePage() {
               </h1>
               <p
                 style={{
-                  fontSize: "0.78rem",
+                  fontSize: "0.8125rem",
                   color: "var(--wa-muted)",
                   margin: "0.1rem 0 0",
                 }}

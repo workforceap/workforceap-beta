@@ -161,7 +161,7 @@ function Banner({
       <span aria-hidden style={{ color, flexShrink: 0, marginTop: 1 }}>
         {icon}
       </span>
-      <div style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--wa-text)', lineHeight: 1.5 }}>{children}</div>
+      <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: 'var(--wa-text)', lineHeight: 1.5 }}>{children}</div>
       {onDismiss ? (
         <button
           type="button"
@@ -170,7 +170,7 @@ function Banner({
           className="wa-kit-focus"
           style={{
             flexShrink: 0,
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: 700,
             color: 'var(--wa-muted)',
             background: 'transparent',
@@ -192,7 +192,7 @@ const pillBase: React.CSSProperties = {
   gap: 6,
   padding: '7px 14px',
   borderRadius: 999,
-  fontSize: 12,
+  fontSize: 13,
   fontWeight: 700,
   textDecoration: 'none',
   border: '1px solid var(--wa-border)',
@@ -772,7 +772,7 @@ export default function EmployerJobsBoard({
           >
             Mass delete…
           </button>
-          <span style={{ fontSize: 12, color: 'var(--wa-muted)' }}>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
             Selects every removable posting in this view ({deletableIdsInFilter.length}) and asks for confirmation.
             Live jobs cannot be removed here.
           </span>
@@ -785,7 +785,7 @@ export default function EmployerJobsBoard({
           role="region"
           aria-label="Bulk actions for selected postings"
         >
-          <p style={{ margin: 0, fontSize: 12.5 }} aria-live="polite">
+          <p style={{ margin: 0, fontSize: 13 }} aria-live="polite">
             {selected.size === 0 ? (
               <span style={{ color: 'var(--wa-muted)' }}>Select postings below for bulk actions.</span>
             ) : (
@@ -902,13 +902,13 @@ export default function EmployerJobsBoard({
                       </div>
                       <time
                         dateTime={j.updatedAt}
-                        style={{ fontSize: 10.5, color: 'var(--wa-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}
+                        style={{ fontSize: 13, color: 'var(--wa-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}
                       >
                         Updated {new Date(j.updatedAt).toLocaleDateString()}
                       </time>
                     </div>
 
-                    {next && <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--wa-muted)' }}>{next}</div>}
+                    {next && <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-muted)' }}>{next}</div>}
 
                     {showPendingNote && (
                       <Banner tone="info" icon={<Info size={14} aria-hidden />}>
@@ -936,24 +936,24 @@ export default function EmployerJobsBoard({
 
                     <dl className="wa-grid wa-grid-cols-3 wa-gap-2" style={{ margin: 0 }}>
                       <div>
-                        <dt className="wa-kit-stat-label" style={{ fontSize: 9 }}>Where</dt>
-                        <dd style={{ margin: '2px 0 0', fontSize: 12, fontWeight: 600 }}>{j.location}</dd>
+                        <dt className="wa-kit-stat-label" style={{ fontSize: 13 }}>Where</dt>
+                        <dd style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600 }}>{j.location}</dd>
                       </div>
                       <div>
-                        <dt className="wa-kit-stat-label" style={{ fontSize: 9 }}>Pay</dt>
-                        <dd style={{ margin: '2px 0 0', fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{pay}</dd>
+                        <dt className="wa-kit-stat-label" style={{ fontSize: 13 }}>Pay</dt>
+                        <dd style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{pay}</dd>
                       </div>
                       <div>
-                        <dt className="wa-kit-stat-label" style={{ fontSize: 9 }}>How</dt>
-                        <dd style={{ margin: '2px 0 0', fontSize: 12, fontWeight: 600 }}>{workStyle}</dd>
+                        <dt className="wa-kit-stat-label" style={{ fontSize: 13 }}>How</dt>
+                        <dd style={{ margin: '2px 0 0', fontSize: 13, fontWeight: 600 }}>{workStyle}</dd>
                       </div>
                     </dl>
 
-                    <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.5, flex: 1 }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.5, flex: 1 }}>
                       {j.descriptionPreview}
                     </p>
 
-                    <p className="wa-flex wa-items-center wa-gap-1" style={{ fontSize: 12, margin: 0, color: 'var(--wa-text)' }}>
+                    <p className="wa-flex wa-items-center wa-gap-1" style={{ fontSize: 13, margin: 0, color: 'var(--wa-text)' }}>
                       <Users size={13} aria-hidden style={{ color: 'var(--wa-muted)' }} />
                       <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{j.applicationsCount}</strong> application
                       {j.applicationsCount === 1 ? '' : 's'}
@@ -1037,7 +1037,7 @@ export default function EmployerJobsBoard({
                   Previous
                 </Link>
               )}
-              <span style={{ fontSize: 12, color: 'var(--wa-muted)' }}>
+              <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
                 Page <strong style={{ color: 'var(--wa-text)' }}>{page}</strong> of{' '}
                 <strong style={{ color: 'var(--wa-text)' }}>{totalPages}</strong>
                 <span> ({totalInFilter} in this view)</span>
@@ -1159,7 +1159,7 @@ export default function EmployerJobsBoard({
                 </>
               )}
             </p>
-            <ul style={{ margin: '0 0 12px', paddingLeft: 18, fontSize: 12.5, color: 'var(--wa-text)' }}>
+            <ul style={{ margin: '0 0 12px', paddingLeft: 18, fontSize: 13, color: 'var(--wa-text)' }}>
               {(confirmMode === 'delete' ? selectedDeletable : selectedClosable).slice(0, 6).map((id) => (
                 <li key={id}>{resolveTitle(id)}</li>
               ))}
@@ -1178,7 +1178,7 @@ export default function EmployerJobsBoard({
               </p>
             )}
             {bulkError && (
-              <p role="alert" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--wa-danger)', margin: '0 0 12px' }}>
+              <p role="alert" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-danger)', margin: '0 0 12px' }}>
                 {bulkError}
               </p>
             )}

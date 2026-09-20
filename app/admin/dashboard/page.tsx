@@ -143,7 +143,7 @@ export default function ExecutiveDashboardPage() {
     <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <nav style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+        <nav style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
           <Link href="/admin" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>Admin</Link>
           <span style={{ margin: '0 0.35rem' }}>/</span>
           <span style={{ fontWeight: 600 }}>Executive Dashboard</span>
@@ -275,7 +275,7 @@ export default function ExecutiveDashboardPage() {
                   {f.rate}%
                 </span>
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
                 {f.description}
               </p>
               {/* Progress bar */}
@@ -302,7 +302,7 @@ export default function ExecutiveDashboardPage() {
                   }}
                 />
               </div>
-              <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', textAlign: 'right' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', textAlign: 'right' }}>
                 {f.current} of {f.target}
               </p>
             </div>
@@ -327,7 +327,7 @@ export default function ExecutiveDashboardPage() {
       </ErrorBoundary>
 
       {/* Footer note */}
-      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
         Metrics refresh on page load. Data sourced from member_events and user tables.
         <br />
         Placement tracking KPIs coming soon (waiting on placement workflow completion).
@@ -356,12 +356,12 @@ function SummaryCard({
         border: '1px solid var(--outline-variant)',
       }}
     >
-      <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+      <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
         {label}
       </p>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
         <span style={{ fontSize: '1.5rem', fontWeight: 800, color, lineHeight: 1.2 }}>{value}</span>
-        {suffix && <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>{suffix}</span>}
+        {suffix && <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>{suffix}</span>}
       </div>
     </div>
   );
@@ -404,7 +404,7 @@ function WorkQueueCard({
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-        <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
           {label}
         </span>
         <span style={{ fontSize: '1.5rem', fontWeight: 800, color }}>{value}</span>

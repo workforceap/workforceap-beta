@@ -230,7 +230,7 @@
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/counselor-analytics.spec.tsx](../../../tests/components/counselor-analytics.spec.tsx) | 145 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
-| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 25 | tests |  |
+| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 35 | tests |  |
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
 | [tests/components/coursera-provisioning-queue-last-activity.spec.tsx](../../../tests/components/coursera-provisioning-queue-last-activity.spec.tsx) | 134 | learning-coursera |  |

@@ -296,14 +296,14 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-container-high)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
               >
-                <span style={{ fontSize: '0.7rem', fontWeight: 800, fontFamily: 'monospace', color: 'var(--color-accent)', flexShrink: 0, paddingTop: '0.2rem' }}>{o.code}</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 800, fontFamily: 'monospace', color: 'var(--color-accent)', flexShrink: 0, paddingTop: '0.2rem' }}>{o.code}</span>
                 <span style={{ fontSize: '0.9rem', color: 'var(--color-on-surface)', lineHeight: 1.3 }}>{o.title}</span>
               </button>
             ))}
           </div>
         )}
         {searchError && (
-          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', color: 'var(--color-accent)', fontSize: '0.8rem' }}>
+          <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', color: 'var(--color-accent)', fontSize: '0.8125rem' }}>
             {searchError}
           </div>
         )}
@@ -320,7 +320,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
         <div>
           <div className="portal-dash-section-header" style={{ marginBottom: '1rem' }}>
             <h2 className="portal-dash-section-header__title">All Programs in Catalog</h2>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{PROGRAMS.length} programs</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{PROGRAMS.length} programs</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem' }}>
             {PROGRAMS.map((p) => (
@@ -330,16 +330,16 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     <span className="material-symbols-outlined" style={{ fontSize: '1.125rem', color: p.categoryColor ?? 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>school</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>{p.category ?? 'Program'}</p>
+                    <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>{p.category ?? 'Program'}</p>
                     <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{p.title}</p>
                   </div>
                 </div>
                 {p.skills && p.skills.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                     {p.skills.slice(0, 4).map((s) => (
-                      <span key={s} style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }}>{s}</span>
+                      <span key={s} style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }}>{s}</span>
                     ))}
-                    {p.skills.length > 4 && <span style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)', padding: '0.15rem 0' }}>+{p.skills.length - 4}</span>}
+                    {p.skills.length > 4 && <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', padding: '0.15rem 0' }}>+{p.skills.length - 4}</span>}
                   </div>
                 )}
                 <button
@@ -353,7 +353,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     setSearchQ(words.slice(0, 3).join(' '));
                     searchRef.current?.focus();
                   }}
-                  style={{ marginTop: '0.875rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  style={{ marginTop: '0.875rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                 >
                   Find O*NET matches
                   <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }}>search</span>
@@ -377,7 +377,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>arrow_back</span>
                   All programs
                 </button>
-                <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-on-surface-variant)', background: 'var(--surface-container)', padding: '0.15rem 0.4rem', borderRadius: '0.25rem' }}>
+                <span style={{ fontSize: '0.8125rem', fontFamily: 'monospace', fontWeight: 700, color: 'var(--color-on-surface-variant)', background: 'var(--surface-container)', padding: '0.15rem 0.4rem', borderRadius: '0.25rem' }}>
                   {selectedOcc.code}
                 </span>
               </div>
@@ -407,7 +407,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                   <h3 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
                     AI-Suggested Matches
                   </h3>
-                  {loadingAuto && <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Analyzing…</span>}
+                  {loadingAuto && <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Analyzing…</span>}
                 </div>
 
                 {loadingAuto ? (
@@ -438,10 +438,10 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                               <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{match.programTitle}</p>
-                              <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[match.recommendationType]}22`, color: REC_TYPE_COLOR[match.recommendationType], textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[match.recommendationType]}22`, color: REC_TYPE_COLOR[match.recommendationType], textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 {match.recommendationType}
                               </span>
-                              <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                 {BAND_LABEL[match.experienceBand]}
                               </span>
                             </div>
@@ -453,10 +453,10 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                               <span style={{ fontSize: '1.125rem', fontWeight: 800, color: match.score >= 0.7 ? 'var(--color-green, #4a9b4f)' : match.score >= 0.4 ? 'var(--color-gold)' : 'var(--color-on-surface-variant)', letterSpacing: '-0.02em' }}>
                                 {Math.round(match.score * 100)}%
                               </span>
-                              <span style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)' }}>match</span>
+                              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>match</span>
                             </div>
                             {already ? (
-                              <span style={{ fontSize: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                              <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                                 Mapped
                               </span>
@@ -466,7 +466,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                                   type="button"
                                   onClick={() => void approveAutoMatch(match)}
                                   disabled={loading || approvingSlug === match.programSlug}
-                                  style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.375rem 0.875rem', borderRadius: '0.5rem', background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}
+                                  style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.375rem 0.875rem', borderRadius: '0.5rem', background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', whiteSpace: 'nowrap' }}
                                 >
                                   {approvingSlug === match.programSlug ? (
                                     <><span className="material-symbols-outlined" style={{ fontSize: '0.875rem', animation: 'spin 1s linear infinite' }}>progress_activity</span>Approving…</>
@@ -478,7 +478,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                                   type="button"
                                   onClick={() => rejectAutoMatch(match)}
                                   title="Dismiss suggestion"
-                                  style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.375rem 0.625rem', borderRadius: '0.5rem', background: 'transparent', color: 'var(--color-on-surface-variant)', border: '1px solid var(--outline-variant)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                  style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.375rem 0.625rem', borderRadius: '0.5rem', background: 'transparent', color: 'var(--color-on-surface-variant)', border: '1px solid var(--outline-variant)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                                 >
                                   <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }}>close</span>
                                 </button>
@@ -498,7 +498,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                   <h3 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
                     Saved Mappings
                   </h3>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{mappings.length} total</span>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{mappings.length} total</span>
                 </div>
                 {mappings.length === 0 ? (
                   <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>No mappings yet for this occupation.</p>
@@ -513,21 +513,21 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                               <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>
                                 {prog?.title ?? programDisplayTitle(m.programSlug)}
                               </p>
-                              <span style={{ fontSize: '0.6rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'}22`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: `${REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)'}22`, color: REC_TYPE_COLOR[m.recommendationType] ?? 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 {m.recommendationType}
                               </span>
-                              <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                              <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                 {BAND_LABEL[m.experienceBand] ?? m.experienceBand}
                               </span>
                               {!m.isActive && (
-                                <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'rgba(185,28,28,0.1)', color: '#b91c1c', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Inactive</span>
+                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'rgba(185,28,28,0.1)', color: '#b91c1c', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Inactive</span>
                               )}
                             </div>
                             {m.whyRecommended && (
-                              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{m.whyRecommended}</p>
+                              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{m.whyRecommended}</p>
                             )}
                           </div>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>p{m.priority}</span>
+                          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>p{m.priority}</span>
                         </div>
                       );
                     })}
@@ -552,7 +552,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 {showManualForm && (
                   <div id="manual-mapping-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
                     <div>
-                      <label htmlFor="careermappingsclient-program-field" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Program</label>
+                      <label htmlFor="careermappingsclient-program-field" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Program</label>
                       <select id="careermappingsclient-program-field"
                         value={programSlug}
                         onChange={(e) => setProgramSlug(e.target.value)}
@@ -565,7 +565,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem' }}>
                       <div>
-                        <label htmlFor="careermappingsclient-band-field" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Band</label>
+                        <label htmlFor="careermappingsclient-band-field" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Band</label>
                         <select id="careermappingsclient-band-field"
                           value={experienceBand}
                           onChange={(e) => setExperienceBand(e.target.value as typeof experienceBand)}
@@ -575,7 +575,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                         </select>
                       </div>
                       <div>
-                        <label htmlFor="careermappingsclient-type-field" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Type</label>
+                        <label htmlFor="careermappingsclient-type-field" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Type</label>
                         <select id="careermappingsclient-type-field"
                           value={recommendationType}
                           onChange={(e) => setRecommendationType(e.target.value as typeof recommendationType)}
@@ -586,7 +586,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                       </div>
                     </div>
                     <div>
-                      <label htmlFor="careermappingsclient-priority-1-highest-field" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Priority (1 = highest)</label>
+                      <label htmlFor="careermappingsclient-priority-1-highest-field" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Priority (1 = highest)</label>
                       <input id="careermappingsclient-priority-1-highest-field"
                         type="number"
                         min={1} max={99}
@@ -596,7 +596,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                       />
                     </div>
                     <div>
-                      <label htmlFor="careermappingsclient-why-recommended-optional-field" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Why Recommended (optional)</label>
+                      <label htmlFor="careermappingsclient-why-recommended-optional-field" style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Why Recommended (optional)</label>
                       <textarea id="careermappingsclient-why-recommended-optional-field"
                         rows={3}
                         value={whyRecommended}
@@ -629,7 +629,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
       <div style={{ marginTop: '2rem' }}>
         <div className="portal-dash-section-header" style={{ marginBottom: '0.75rem' }}>
           <h2 className="portal-dash-section-header__title">History</h2>
-          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             Last {history.length} {history.length === 1 ? 'change' : 'changes'}
           </span>
         </div>
@@ -658,7 +658,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
               >
                 <span
                   style={{
-                    fontSize: '0.625rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 800,
                     padding: '0.15rem 0.4rem',
                     borderRadius: '9999px',
@@ -676,7 +676,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 <span
                   style={{
                     fontFamily: 'monospace',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     color: 'var(--color-on-surface)',
                     flex: 1,
                     minWidth: 0,
@@ -689,7 +689,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                 </span>
                 <span
                   style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     color: 'var(--color-on-surface-variant)',
                     flexShrink: 0,
                     maxWidth: '8rem',
@@ -701,7 +701,7 @@ export default function CareerMappingsClient({ history = [] }: Props = {}) {
                   {entry.actorName ?? 'system'}
                 </span>
                 <span
-                  style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}
+                  style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}
                 >
                   {formatTimestamp(entry.createdAt)}
                 </span>

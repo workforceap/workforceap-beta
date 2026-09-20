@@ -96,7 +96,7 @@ export default function PartnerSettingsEditRequest({
         { label: 'Organization type', value: orgType, set: setOrgType, type: 'text' },
       ].map(({ label, value, set, type }) => (
         <div key={label}>
-          <label htmlFor={`${idPrefix}-${label.toLowerCase().replace(/\s+/g, '-')}`} style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+          <label htmlFor={`${idPrefix}-${label.toLowerCase().replace(/\s+/g, '-')}`} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
             {label}
           </label>
           <input
@@ -109,7 +109,7 @@ export default function PartnerSettingsEditRequest({
         </div>
       ))}
       <div>
-        <label htmlFor="partnersettingseditrequest-additional-notes-optional-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+        <label htmlFor="partnersettingseditrequest-additional-notes-optional-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
           Additional notes (optional)
         </label>
         <textarea id="partnersettingseditrequest-additional-notes-optional-field"

@@ -224,7 +224,7 @@ html.dark [data-surface] .astryx-card,
 
 /* Small uppercase label — used above or inside cards as eyebrow text */
 .portal-section-title {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -232,7 +232,7 @@ html.dark [data-surface] .astryx-card,
   margin: 0;
 }
 .portal-section-action {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-accent);
   text-decoration: none;
@@ -284,7 +284,7 @@ html.dark [data-surface] .astryx-card,
   margin: 0;
 }
 .portal-stat-label {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-on-surface-variant);
   margin: 0.25rem 0 0;
@@ -350,8 +350,9 @@ html.dark [data-surface] .astryx-card,
   text-underline-offset: 0.15em;
 }
 .portal-breadcrumb a:focus-visible {
-  outline: 2px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 .portal-breadcrumb [aria-current='page'] {
   color: var(--wa-text);
@@ -431,7 +432,7 @@ html.dark [data-surface] .astryx-card,
   margin-bottom: 0.125rem;
 }
 .portal-action-row__desc {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
 }
 
@@ -450,7 +451,7 @@ html.dark [data-surface] .astryx-card,
   color: var(--color-on-surface);
 }
 .portal-pipeline-item__meta {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
 }
 
@@ -469,7 +470,7 @@ html.dark [data-surface] .astryx-card,
   margin-bottom: 0.5rem;
 }
 .portal-promo-card__desc {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   margin-bottom: 1rem;
   opacity: 0.9;
 }
@@ -479,7 +480,7 @@ html.dark [data-surface] .astryx-card,
   background: rgba(255, 255, 255, 0.9);
   color: var(--color-accent);
   border-radius: 0.5rem;
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -519,7 +520,7 @@ html.dark [data-surface] .astryx-card,
 .dashboard-table th {
   text-align: left;
   padding: 0.75rem 1rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -543,7 +544,7 @@ html.dark [data-surface] .astryx-card,
   align-items: center;
   padding: 0.2rem 0.625rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -557,7 +558,7 @@ html.dark [data-surface] .astryx-card,
   align-items: center;
   padding: 0.25rem 0.75rem;
   border-radius: var(--radius-full, 50px);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .status-badge-active {
@@ -592,7 +593,7 @@ html.dark [data-surface] .astryx-card,
 }
 
 .member-prescreen-progress-text {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   color: var(--color-gray-600);
 }
 
@@ -659,7 +660,7 @@ html.dark [data-surface] .astryx-card,
     background: rgba(173, 44, 77, 0.05);
   }
   .mobile-bottom-nav .nav-label {
-    font-size: 0.625rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -1090,7 +1091,7 @@ html.dark [data-surface] .astryx-card,
   .application-tracker-table tbody td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1122,7 +1123,7 @@ html.dark [data-surface] .astryx-card,
   .salary-table tbody td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1173,7 +1174,7 @@ html.dark [data-surface] .astryx-card,
   .program-comparison-matrix tbody td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1205,7 +1206,7 @@ html.dark [data-surface] .astryx-card,
   .program-comparison-table-pick tbody td::before {
     content: attr(data-label);
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1243,7 +1244,7 @@ html.dark [data-surface] .astryx-card,
   min-width: 0;
 }
 .resume-analysis-preview-label {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1352,9 +1353,10 @@ html.dark [data-surface] .astryx-card,
 }
 
 .portal-messages-search-input:focus-visible {
-  outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 .portal-messages-search-wrap {
@@ -1403,7 +1405,7 @@ html.dark [data-surface] .astryx-card,
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   flex-shrink: 0;
   background: linear-gradient(
     135deg,
@@ -1431,7 +1433,7 @@ html.dark [data-surface] .astryx-card,
 .portal-messages-badge {
   flex-shrink: 0;
   color: #fff;
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 700;
   height: 20px;
   min-width: 20px;
@@ -1507,7 +1509,7 @@ html.dark [data-surface] .astryx-card,
 }
 .portal-messages-tip-card__title {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1516,7 +1518,7 @@ html.dark [data-surface] .astryx-card,
 }
 .portal-messages-tip-card__body {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -1610,7 +1612,7 @@ html.dark .portal-kanban-column--rejected {
 }
 
 .portal-kanban-column-title {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1688,7 +1690,7 @@ html.dark .job-app-card:hover {
   z-index: 1;
   background: color-mix(in srgb, var(--surface-container) 92%, transparent);
   backdrop-filter: blur(8px);
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-on-surface-variant);
@@ -1869,7 +1871,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-metric-card__label {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1878,7 +1880,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-metric-card__hint {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   margin: 0;
   opacity: 0.65;
@@ -1888,7 +1890,7 @@ html.dark .employer-applications-table.admin-table thead th {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   padding: 0.15rem 0.45rem;
   border-radius: 9999px;
@@ -1945,7 +1947,7 @@ html.dark .employer-applications-table.admin-table thead th {
   left: 0.75rem;
   padding: 0.2rem 0.625rem;
   border-radius: 9999px;
-  font-size: 0.6rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1989,7 +1991,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-action-card__eyebrow {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -2083,7 +2085,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-quick-action-item__desc {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   margin: 0.1rem 0 0;
   line-height: 1.3;
@@ -2098,7 +2100,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-section-divider__label {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2115,7 +2117,7 @@ html.dark .employer-applications-table.admin-table thead th {
 /* ── Sidebar section group label ── */
 .dashboard-sidebar-group-label {
   padding: 1.125rem 0.75rem 0.375rem;
-  font-size: 0.6rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -2466,7 +2468,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-dash-section-header__title {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2475,7 +2477,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-dash-section-header__action {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--color-accent);
   text-decoration: none;
@@ -2547,7 +2549,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-app-progress__label {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-align: center;
   color: var(--color-on-surface-variant);
@@ -2584,7 +2586,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-milestone-step__label {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   text-align: center;
@@ -2619,7 +2621,7 @@ html.dark .employer-applications-table.admin-table thead th {
 
 .portal-completeness-ring__label {
   position: absolute;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   color: var(--color-accent);
 }
@@ -2693,7 +2695,7 @@ html.dark .portal-kpi-card {
 }
 
 .portal-kpi-card__label {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -2710,7 +2712,7 @@ html.dark .portal-kpi-card {
 }
 
 .portal-kpi-card__hint {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   margin: 0.375rem 0 0;
   opacity: 0.7;
@@ -2894,14 +2896,14 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 .import-job-draft-card__status {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--color-gold);
 }
 .import-job-draft-card__source {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
 }
 .import-job-draft-card__title {
@@ -2911,7 +2913,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   line-height: 1.3;
 }
 .import-job-draft-card__cta {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--color-accent);
   margin-top: 0.375rem;
@@ -2957,7 +2959,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 .import-job-more summary::after {
   content: "▼";
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   transition: transform 0.2s;
 }
@@ -3048,7 +3050,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   gap: 0.25rem;
   padding: 0.2rem 0.5rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 .import-review-summary__field.is-filled {
@@ -3062,8 +3064,9 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 
 /* ── Icon button focus ring (notification bell, search trigger, etc.) ── */
 .portal-icon-btn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* ── Notification dropdown item hover ── */
@@ -3105,7 +3108,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 
 .portal-inbox__subtitle {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   margin: 0.2rem 0 0;
 }
@@ -3114,7 +3117,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   display: inline-flex;
   align-items: center;
   padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-on-surface);
   background: var(--surface-container-high);
@@ -3140,7 +3143,7 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 .portal-details > summary::after {
   content: "▾";
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
   transition: transform 0.2s;
   flex-shrink: 0;
@@ -3225,8 +3228,9 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     color: var(--wa-text);
   }
   .member-portal-top-nav__link:focus-visible {
-    outline: 2px solid var(--wa-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
   }
   .member-portal-top-nav__link--active {
     background: color-mix(in srgb, var(--wa-accent) 14%, transparent);

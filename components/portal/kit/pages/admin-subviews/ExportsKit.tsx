@@ -146,7 +146,7 @@ function ExportTile({ option }: { option: ExportOption }) {
 
       <div style={{ minWidth: 0 }}>
         <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', margin: 0 }}>{option.title}</h3>
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{option.description}</p>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{option.description}</p>
       </div>
 
       <div
@@ -154,7 +154,7 @@ function ExportTile({ option }: { option: ExportOption }) {
           display: 'flex',
           alignItems: 'center',
           gap: 6,
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 700,
           color: colorVar('accent'),
           paddingTop: 12,

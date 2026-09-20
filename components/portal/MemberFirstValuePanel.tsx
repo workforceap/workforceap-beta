@@ -131,7 +131,7 @@ function PanelHeader({ t }: { t: ReturnType<typeof useTranslations<'dashboard'>>
     >
       <h3
         style={{
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
@@ -141,7 +141,7 @@ function PanelHeader({ t }: { t: ReturnType<typeof useTranslations<'dashboard'>>
       >
         {t('firstValuePanelTitle')}
       </h3>
-      <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         {t('firstValuePanelSubtitle')}
       </span>
     </div>

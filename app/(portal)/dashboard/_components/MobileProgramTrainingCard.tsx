@@ -63,12 +63,12 @@ export default function MobileProgramTrainingCard({
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.9rem', position: 'relative' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', flex: 1, minWidth: 0, paddingRight: '0.25rem' }}>
-                <p style={{ margin: 0, fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
                   {t('memberDashboard')}
                 </p>
                 {programTitle && (
                   <div style={{ display: 'inline-flex', alignSelf: 'flex-start', maxWidth: '100%', padding: '0.5rem 0.7rem', borderRadius: '0.9rem', background: 'color-mix(in srgb, var(--surface-container-lowest) 90%, transparent)', border: '1px solid color-mix(in srgb, var(--color-accent) 10%, var(--outline-variant))', overflow: 'hidden' }}>
-                    <p style={{ fontSize: '0.76rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.35, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.35, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
                       {programTitle}
                     </p>
                   </div>
@@ -115,15 +115,15 @@ export default function MobileProgramTrainingCard({
                     <span className="material-symbols-outlined" style={{ fontSize: '1.35rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
                       school
                     </span>
-                    <span className="wa-text-[11px] wa-font-extrabold wa-uppercase wa-tracking-[0.08em] wa-text-[var(--color-accent-dark)]" style={{ lineHeight: 1.2 }}>
+                    <span className="wa-text-[13px] wa-font-extrabold wa-uppercase wa-tracking-[0.08em] wa-text-[var(--color-accent-dark)]" style={{ lineHeight: 1.2 }}>
                       {t('myTrainingMetricLabel')}
                     </span>
-                    <span className="wa-text-[10px] wa-font-semibold wa-text-[var(--color-on-surface-variant)]" style={{ lineHeight: 1.3 }}>
+                    <span className="wa-text-[13px] wa-font-semibold wa-text-[var(--color-on-surface-variant)]" style={{ lineHeight: 1.3 }}>
                       {t('myTrainingMetricValue')}
                     </span>
                   </Link>
                   {nextIncompleteCourseName ? (
-                    <p style={{ margin: 0, fontSize: '0.65rem', lineHeight: 1.35, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', lineHeight: 1.35, color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
                       {t('myTrainingHubNextUp', { course: nextIncompleteCourseName })}
                     </p>
                   ) : null}

@@ -90,7 +90,7 @@ const cardStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.75rem',
+  fontSize: '0.8125rem',
   fontWeight: 700,
   color: 'var(--color-on-surface-variant)',
   textTransform: 'uppercase',
@@ -341,17 +341,17 @@ export default function CourseraMappingsAdmin({
           }}
         >
           <div className="content-chip" style={{ padding: '0.85rem 1rem', display: 'grid', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Last xAPI received</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Last xAPI received</span>
             <strong style={{ fontSize: '1rem' }}>{fmtDate(syncStatus.lastXapiReceivedAt)}</strong>
           </div>
           <div className="content-chip" style={{ padding: '0.85rem 1rem', display: 'grid', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Members with course progress
             </span>
             <strong style={{ fontSize: '1rem' }}>{syncStatus.distinctMembersWithCourseProgress}</strong>
           </div>
           <div className="content-chip" style={{ padding: '0.85rem 1rem', display: 'grid', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Statements needing attention
             </span>
             <strong style={{ fontSize: '1rem' }}>{syncStatus.attentionStatementCount}</strong>
@@ -367,7 +367,7 @@ export default function CourseraMappingsAdmin({
               Bind a Coursera learner email or actor ID to a WAP member when direct email matching is not enough.
             </p>
             <div style={{ marginTop: '0.85rem' }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
                 Data path (this page)
               </p>
               <CourseraPipelineFlow variant="compact" />
@@ -425,7 +425,7 @@ export default function CourseraMappingsAdmin({
                 placeholder="learner@example.com"
               />
               {selectedMember?.workspaceEmail ? (
-                <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   Suggested from training seat: <strong>{selectedMember.workspaceEmail}</strong>
                   {selectedMember.workspaceEmailProvisioned ? ' (provisioned)' : ''}
                 </p>
@@ -775,7 +775,7 @@ export default function CourseraMappingsAdmin({
                   <div className="coursera-unmatched-card__value">
                     <div>{mapping.actorIdentifier || '—'}</div>
                     {mapping.actorHomePage ? (
-                      <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem' }}>{mapping.actorHomePage}</div>
+                      <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>{mapping.actorHomePage}</div>
                     ) : null}
                   </div>
 
@@ -961,7 +961,7 @@ export default function CourseraMappingsAdmin({
                   <div className="coursera-unmatched-card__value">
                     {row.courseName || '—'}
                     {row.statementId ? (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
                         stmt: {row.statementId}
                       </div>
                     ) : null}
@@ -1026,7 +1026,7 @@ export default function CourseraMappingsAdmin({
                           <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>id: {row.courseId}</div>
                         ) : null}
                         {row.statementId ? (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>stmt: {row.statementId}</div>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>stmt: {row.statementId}</div>
                         ) : null}
                       </>
                     ),

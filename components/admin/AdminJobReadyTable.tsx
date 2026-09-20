@@ -45,9 +45,9 @@ export default function AdminJobReadyTable({ rows }: { rows: JobReadyRow[] }) {
             cell: (r) => (
               <>
                 <Link href={`/admin/members/${r.id}`}>{r.fullName}</Link>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
                 {r.phone ? (
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{r.phone}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.phone}</div>
                 ) : null}
               </>
             ),
@@ -59,7 +59,7 @@ export default function AdminJobReadyTable({ rows }: { rows: JobReadyRow[] }) {
             cell: (r) => (
               <>
                 <strong>{r.trainingPct}%</strong>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   {r.completedCount}/{r.totalCourses} courses
                 </div>
               </>

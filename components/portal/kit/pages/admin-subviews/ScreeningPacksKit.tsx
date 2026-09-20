@@ -147,7 +147,7 @@ export function ScreeningPacksKit({
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -167,7 +167,7 @@ export function ScreeningPacksKit({
                 alignItems: 'center',
                 justifyContent: 'flex-end',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}

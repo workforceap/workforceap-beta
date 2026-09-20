@@ -47,7 +47,7 @@ export default function BoardOutcomesView({
         <p
           style={{
             margin: 0,
-            fontSize: '0.7rem',
+            fontSize: '0.8125rem',
             fontWeight: 800,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
@@ -135,7 +135,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'program',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Program
                     </span>
                   ),
@@ -144,7 +144,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'enrolled',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Enrolled
                     </span>
                   ),
@@ -154,7 +154,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'certified',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Training completed
                     </span>
                   ),
@@ -164,7 +164,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'placed',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Placed
                     </span>
                   ),
@@ -176,7 +176,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'rate',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Placement rate
                     </span>
                   ),
@@ -237,7 +237,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'job',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Job title
                     </span>
                   ),
@@ -246,7 +246,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'prog',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Program
                     </span>
                   ),
@@ -255,7 +255,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'wage',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Annual wage
                     </span>
                   ),
@@ -269,7 +269,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'weeks',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Weeks to placement
                     </span>
                   ),
@@ -281,7 +281,7 @@ export default function BoardOutcomesView({
                 {
                   key: 'placed',
                   header: (
-                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       Placed
                     </span>
                   ),
@@ -361,7 +361,7 @@ function PilotPhaseBanner({ totals }: { totals: BoardOutcomes['totals'] }) {
         <p
           style={{
             margin: 0,
-            fontSize: '0.7rem',
+            fontSize: '0.8125rem',
             fontWeight: 800,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
@@ -423,7 +423,7 @@ function Kpi({
       <p
         style={{
           margin: '0.75rem 0 0.25rem',
-          fontSize: '0.7rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           letterSpacing: '0.06em',
           textTransform: 'uppercase',

@@ -174,7 +174,7 @@ export default function MemberMergeClient() {
                       style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.625rem 0.875rem', border: 'none', background: 'transparent', cursor: 'pointer', borderBottom: '1px solid var(--outline-variant)' }}
                     >
                       <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{s.fullName}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{s.email}</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{s.email}</div>
                     </button>
                   ))}
                 </div>
@@ -221,7 +221,7 @@ export default function MemberMergeClient() {
                       style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.625rem 0.875rem', border: 'none', background: 'transparent', cursor: 'pointer', borderBottom: '1px solid var(--outline-variant)' }}
                     >
                       <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{s.fullName}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{s.email}</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{s.email}</div>
                     </button>
                   ))}
                 </div>
@@ -255,7 +255,7 @@ export default function MemberMergeClient() {
           {/* Summary cards */}
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: '1fr 1fr' }}>
             <div style={cardStyle}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-green, #4a9b4f)', marginBottom: '0.5rem' }}>Primary (kept)</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-green, #4a9b4f)', marginBottom: '0.5rem' }}>Primary (kept)</div>
               <div style={{ fontWeight: 700, fontSize: '1rem' }}>{preview.primary.fullName}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{preview.primary.email}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
@@ -263,7 +263,7 @@ export default function MemberMergeClient() {
               </div>
             </div>
             <div style={cardStyle}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
               <div style={{ fontWeight: 700, fontSize: '1rem' }}>{preview.secondary.fullName}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{preview.secondary.email}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
@@ -281,7 +281,7 @@ export default function MemberMergeClient() {
                 <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.375rem' }}>Fields filled from duplicate</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
                   {preview.scalarFieldsToMerge.map((f) => (
-                    <span key={f} style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: '#166534', fontWeight: 600 }}>{f}</span>
+                    <span key={f} style={{ fontSize: '0.8125rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.1)', color: '#166534', fontWeight: 600 }}>{f}</span>
                   ))}
                 </div>
               </div>

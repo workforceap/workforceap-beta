@@ -456,27 +456,27 @@ export default function EmailCronsClient({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
                     <h3 style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>{cron.name}</h3>
-                    <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: `color-mix(in srgb, ${accentColor} 10%, transparent)`, color: accentColor, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: `color-mix(in srgb, ${accentColor} 10%, transparent)`, color: accentColor, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                       {cron.category}
                     </span>
                     {!cron.enabled && (
-                      <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                         Disabled
                       </span>
                     )}
                     {!cron.lastRunAt && (
-                      <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(255,187,0,0.12)', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(255,187,0,0.12)', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                         Never run
                       </span>
                     )}
                     {(cron.lastRunStatus === 'error' || cron.lastRunStatus === 'errored') && (
-                      <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                         Failed last run
                       </span>
                     )}
                   </div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.375rem', lineHeight: 1.45 }}>{cron.description}</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '0.9rem' }}>schedule</span>
                       {cron.scheduleLabel}
@@ -503,7 +503,7 @@ export default function EmailCronsClient({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0, alignItems: 'flex-end' }}>
                   {/* Enable/disable toggle */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
                       {cron.enabled ? 'Enabled' : 'Disabled'}
                     </span>
                     <div
@@ -605,7 +605,7 @@ export default function EmailCronsClient({
                   <button
                     type="button"
                     onClick={() => setExpandedId(isExpanded ? null : cron.id)}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.375rem 0.625rem', borderRadius: '0.5rem', border: 'none', background: 'transparent', color: 'var(--color-on-surface-variant)', fontWeight: 600, fontSize: '0.75rem', cursor: 'pointer' }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.375rem 0.625rem', borderRadius: '0.5rem', border: 'none', background: 'transparent', color: 'var(--color-on-surface-variant)', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer' }}
                   >
                     {isExpanded ? 'Hide history' : `History (${cron.recentRuns.length})`}
                     <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>expand_more</span>
@@ -625,7 +625,7 @@ export default function EmailCronsClient({
                     </span>
                   </div>
                   {triggerResult.ok && triggerResult.result !== null && triggerResult.result !== undefined && (
-                    <pre style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
+                    <pre style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>
                       {JSON.stringify(triggerResult.result as Record<string, unknown>, null, 2)}
                     </pre>
                   )}
@@ -640,7 +640,7 @@ export default function EmailCronsClient({
               {/* Preview recipients panel */}
               {isPreviewOpen && (
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1rem 1.25rem' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
                     Would-receive recipients
                   </p>
                   {!previewResult ? (
@@ -664,7 +664,7 @@ export default function EmailCronsClient({
                               {r.name ?? r.email}
                             </span>
                             {r.name && (
-                              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', marginLeft: 'auto', flexShrink: 0 }}>{r.email}</span>
+                              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', marginLeft: 'auto', flexShrink: 0 }}>{r.email}</span>
                             )}
                           </div>
                         ))}
@@ -677,7 +677,7 @@ export default function EmailCronsClient({
               {/* Run history */}
               {isExpanded && (
                 <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '1rem 1.25rem' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>Run History</p>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>Run History</p>
                   {cron.recentRuns.length === 0 ? (
                     <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>No runs recorded yet.</p>
                   ) : (
@@ -692,9 +692,9 @@ export default function EmailCronsClient({
                             <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: runColor, fontVariationSettings: "'FILL' 1", flexShrink: 0, marginTop: '0.1rem' }}>{runIcon}</span>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: runColor, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{run.status}</span>
-                                {isManual && <span style={{ fontSize: '0.625rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'rgba(43,123,185,0.1)', color: 'var(--color-blue, #2b7bb9)' }}>Manual</span>}
-                                <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>{timeAgo(run.createdAt)}</span>
+                                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: runColor, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{run.status}</span>
+                                {isManual && <span style={{ fontSize: '0.8125rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '9999px', background: 'rgba(43,123,185,0.1)', color: 'var(--color-blue, #2b7bb9)' }}>Manual</span>}
+                                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>{timeAgo(run.createdAt)}</span>
                               </div>
                               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const }}>
                                 {run.summary}
@@ -705,7 +705,7 @@ export default function EmailCronsClient({
                       })}
                     </div>
                   )}
-                  <div style={{ marginTop: '0.875rem', padding: '0.625rem 0.75rem', background: 'var(--surface-container-low)', borderRadius: '0.5rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontFamily: 'ui-monospace, monospace' }}>
+                  <div style={{ marginTop: '0.875rem', padding: '0.625rem 0.75rem', background: 'var(--surface-container-low)', borderRadius: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontFamily: 'ui-monospace, monospace' }}>
                     API path: <strong style={{ color: 'var(--color-on-surface)' }}>{cron.method} {cron.apiPath}</strong>
                     <span style={{ marginLeft: '0.75rem' }}>Schedule: <strong style={{ color: 'var(--color-on-surface)' }}>{cron.schedule}</strong></span>
                   </div>
@@ -757,7 +757,7 @@ export default function EmailCronsClient({
         body={
           pendingDryRun && (
             <div style={{ maxHeight: '60vh', overflow: 'auto' }}>
-              <p style={{ margin: '0 0 0.875rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Simulated — no emails were sent.</p>
+              <p style={{ margin: '0 0 0.875rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Simulated — no emails were sent.</p>
 
               {pendingDryRun.note && (
                 <div style={{ padding: '0.75rem 1rem', background: 'rgba(173,44,77,0.08)', borderRadius: '0.625rem', marginBottom: '1rem', fontSize: '0.875rem', color: 'var(--color-accent)' }}>
@@ -794,7 +794,7 @@ export default function EmailCronsClient({
                 <div>
                   <p style={{ fontWeight: 700, fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>HTML Preview</p>
                   <div style={{ padding: '0.75rem', background: 'var(--surface-container)', borderRadius: '0.5rem', fontSize: '0.8125rem', maxHeight: '16rem', overflow: 'auto', border: '1px solid var(--outline-variant)' }}>
-                    <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'ui-monospace, monospace', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{pendingDryRun.htmlPreview}</pre>
+                    <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'ui-monospace, monospace', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{pendingDryRun.htmlPreview}</pre>
                   </div>
                 </div>
               )}

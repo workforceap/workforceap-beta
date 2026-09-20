@@ -283,7 +283,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
             type="button"
             onClick={() => setActionFeedback(null)}
             className="wa-kit-focus"
-            style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, fontWeight: 700, color: 'inherit', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', padding: 0, fontSize: 13, fontWeight: 700, color: 'inherit', cursor: 'pointer' }}
           >
             Dismiss
           </button>
@@ -411,7 +411,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
                 </button>
               </div>
               {rejectReasonError ? (
-                <p id="admin-job-reject-reason-error" style={{ margin: 0, fontSize: 12, color: 'var(--wa-danger)' }}>
+                <p id="admin-job-reject-reason-error" style={{ margin: 0, fontSize: 13, color: 'var(--wa-danger)' }}>
                   {rejectReasonError}
                 </p>
               ) : null}
@@ -478,7 +478,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
             Last suggestion email: <strong style={{ color: 'var(--wa-text)' }}>{formatAdminDate(job.matchSuggestionsLastSentAt)}</strong>
           </div>
           {job.matchSuggestionsLastError && (
-            <p style={{ margin: '8px 0 0', color: 'var(--wa-danger)', fontSize: 12 }}>
+            <p style={{ margin: '8px 0 0', color: 'var(--wa-danger)', fontSize: 13 }}>
               Last error: {job.matchSuggestionsLastError}
             </p>
           )}

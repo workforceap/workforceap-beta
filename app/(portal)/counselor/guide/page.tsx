@@ -100,14 +100,14 @@ export default async function CounselorGuidePage() {
     <div className="wa-pb-24 md:wa-pb-0" style={{ maxWidth: '64rem', margin: '0 auto' }}>
       {/* Breadcrumb */}
       <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/counselor" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
+        <Link href="/counselor" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
           ← Back to dashboard
         </Link>
       </nav>
 
       {/* Header */}
       <header style={{ marginBottom: '2.5rem' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
           Counselor Guide
         </p>
         <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15 }}>
@@ -126,7 +126,7 @@ export default async function CounselorGuidePage() {
           gap: '1rem',
         }}>
           <div className="portal-card portal-card--flat" style={{ padding: '1.5rem', borderLeft: '4px solid var(--color-accent)' }}>
-            <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
               Members assigned
             </p>
             <p style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
@@ -134,7 +134,7 @@ export default async function CounselorGuidePage() {
             </p>
           </div>
           <div className="portal-card portal-card--flat" style={{ padding: '1.5rem', borderLeft: needsAttentionCount > 0 ? '4px solid var(--color-gold)' : '4px solid color-mix(in srgb, var(--outline-variant) 10%, transparent)' }}>
-            <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
               Need attention this week
             </p>
             <p style={{ fontSize: '2.25rem', fontWeight: 800, color: needsAttentionCount > 0 ? 'var(--color-gold)' : 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
@@ -246,7 +246,7 @@ export default async function CounselorGuidePage() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 fontWeight: 800,
                 color: s.done ? 'var(--color-green)' : 'var(--color-accent)',
               }}>
@@ -254,7 +254,7 @@ export default async function CounselorGuidePage() {
               </div>
               <div>
                 <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '0.25rem' }}>{s.label}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{s.desc}</p>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{s.desc}</p>
               </div>
             </div>
           ))}

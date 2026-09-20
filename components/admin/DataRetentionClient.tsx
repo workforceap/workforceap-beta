@@ -239,7 +239,7 @@ export default function DataRetentionClient({
                     display: 'inline-block',
                     padding: '0.125rem 0.5rem',
                     borderRadius: '999px',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     textTransform: 'uppercase',
                     background: STATUS_COLOR[r.status] || 'transparent',

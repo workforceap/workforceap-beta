@@ -156,7 +156,7 @@ export function BlogKit({ posts = DEFAULT_POSTS }: BlogKitProps) {
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -176,7 +176,7 @@ export function BlogKit({ posts = DEFAULT_POSTS }: BlogKitProps) {
                 alignItems: 'baseline',
                 justifyContent: 'flex-end',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}

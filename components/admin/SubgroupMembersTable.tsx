@@ -179,7 +179,7 @@ export default function SubgroupMembersTable({ subgroupId, members }: Props) {
                   <button
                     type="button"
                     className="btn btn-outline"
-                    style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                    style={{ fontSize: '0.8125rem', padding: '0.25rem 0.5rem' }}
                     onClick={() => setRemoveTarget({ id: m.id, name: m.fullName })}
                     disabled={!!removing}
                     aria-haspopup="dialog"

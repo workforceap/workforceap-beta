@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "c74fb79d0ac1d3233304c55bdcc10d8f0f064341e86de9ac2503d4a24e72119e",
+  "inputTreeSha256": "ea93a703c4f5f4dd8eabcf3b05903659eeddaa915cbf69c8fb85a3e307f59f4a",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3599,9 +3599,9 @@
       "path": "app/(auth)/login/LoginForm.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 26277,
+      "bytes": 26279,
       "lines": 688,
-      "sha256": "8ee6b52c0cf2cea3064794a408b0327a821a7571a4f6c0583d6592744f91f1da",
+      "sha256": "da7ae32ffd204d35bf80f28a2a7aa427b6dfac8536f9b516159a0cf171d5eb55",
       "binary": false,
       "exports": [
         {
@@ -3869,9 +3869,9 @@
       "path": "app/(auth)/setup-mfa/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 12248,
+      "bytes": 12251,
       "lines": 316,
-      "sha256": "41d3405ec052b02fdda387849d030141d3e03c59717345fc7bf7b55241ab8ce7",
+      "sha256": "a0fdaf41f85865ccf195179c796e7490d981bcb63652223befec8f70e739da74",
       "binary": false,
       "exports": [
         {
@@ -3899,9 +3899,9 @@
       "path": "app/(auth)/signup/SignupForm.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 25588,
+      "bytes": 25598,
       "lines": 642,
-      "sha256": "76addff82a38cbf00ed976546b869b59b39e3ca9b7ef09a0de485f219d6011df",
+      "sha256": "788ad21d87ad505a671a7f07f7862bdff2bd5251d967671bc5aade7521a35a83",
       "binary": false,
       "exports": [
         {
@@ -4099,9 +4099,9 @@
       "path": "app/(auth)/verify-mfa/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 7994,
+      "bytes": 7997,
       "lines": 211,
-      "sha256": "f1b8cd4775a79a7961a9e7684b76082f3144d960bd03c58785f9458c5d0cf349",
+      "sha256": "75629f76289d69c5cc8d56fabdd9263386d8bb54e1f2de99ab92f7a55bd1c482",
       "binary": false,
       "exports": [
         {
@@ -4154,9 +4154,9 @@
       "path": "app/(decision-journey)/find-your-path/FindYourPathClient.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 39642,
+      "bytes": 39666,
       "lines": 970,
-      "sha256": "7008bb46709bb2cf84398bb0caa55fb0341855666f9eb0e815fae1f1f883bed4",
+      "sha256": "03d761fc28d987c58e0e97afa55183350b860cee8417e1981904dad33a14509e",
       "binary": false,
       "exports": [
         {
@@ -4319,9 +4319,9 @@
       "path": "app/(decision-journey)/not-found.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 1641,
+      "bytes": 1644,
       "lines": 59,
-      "sha256": "327e3d943a0e3626e7d7d9e654e8bf6a4f96d064d3691e365b9a244144379e6e",
+      "sha256": "c121368e0751ef044c91ae5d8d774838e011697e38550ea6b457b1154aa7941a",
       "binary": false,
       "exports": [
         {
@@ -4369,9 +4369,9 @@
       "path": "app/(portal)/account/privacy/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 12207,
+      "bytes": 12213,
       "lines": 306,
-      "sha256": "2225a4909d74414cd04e98d2a7e6de2fce28f77af6a840175f5db9a3ffa116cc",
+      "sha256": "aae244366bfc5dccd3895357cb14257f398065b51f589dce15ed6e18aa9fb56c",
       "binary": false,
       "exports": [
         {
@@ -4399,9 +4399,9 @@
       "path": "app/(portal)/admin/chapters/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 10315,
+      "bytes": 10317,
       "lines": 310,
-      "sha256": "e70f2bd4b8326ab7d2870be66d7d6f993a2b2fd503b44c3bf2da6d1c9756cdb0",
+      "sha256": "78ec52a144de43424f7f4de4cdb9de54663046264397699b6199280d1facc513",
       "binary": false,
       "exports": [
         {
@@ -4698,9 +4698,9 @@
       "path": "app/(portal)/counselor/guide/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 14373,
+      "bytes": 14383,
       "lines": 285,
-      "sha256": "9a2fe90a4da6d71fcebdc2469654c8248f4adb68aba87ab2a977e55f684b7723",
+      "sha256": "40d978b1c7d94bf10d0cf45c24868d1ffeb424146c12d7ed294917d0065d7804",
       "binary": false,
       "exports": [
         {
@@ -4803,9 +4803,9 @@
       "path": "app/(portal)/counselor/inactive-members/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 12735,
+      "bytes": 12747,
       "lines": 361,
-      "sha256": "c72a7318639fbee007a28cdb833cde544e430067ebb65cb0584465b90d2c07c8",
+      "sha256": "07ee190e12d297852080cc1ceaef5440663103adb80fd3a59d878450f8294adf",
       "binary": false,
       "exports": [
         {
@@ -5168,9 +5168,9 @@
       "path": "app/(portal)/counselor/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 37028,
+      "bytes": 37036,
       "lines": 691,
-      "sha256": "f1e23c6b22dab5e0321211458a3aa5ae86d2394b18ade9195b395176babf9cfd",
+      "sha256": "f020115959f23b1b991a7ce26bb5f0fd3aaf9816a11aec1d8f7fe56be06546fe",
       "binary": false,
       "exports": [
         {
@@ -5248,9 +5248,9 @@
       "path": "app/(portal)/counselor/placements/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 14513,
+      "bytes": 14517,
       "lines": 422,
-      "sha256": "458746bc3fa0c8429286d068693e06f5bd16b41d8992c795380443d4eaa1a903",
+      "sha256": "5b48361705cbeee6bbfa3b3691043195765fe452478b99242f74e80b09441c24",
       "binary": false,
       "exports": [
         {
@@ -5410,7 +5410,7 @@
       "domain": "member-counselor",
       "bytes": 6635,
       "lines": 164,
-      "sha256": "dd2150573c6d027760ded3f1cee79f49210b1912639a2774bff680fd640efee7",
+      "sha256": "f3142d6a16c301baa3121a54484e6215b78fc035b78f3b95c71b1e8bf5c051ca",
       "binary": false,
       "exports": [
         {
@@ -5517,9 +5517,9 @@
       "path": "app/(portal)/counselor/resources/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 6415,
+      "bytes": 6417,
       "lines": 144,
-      "sha256": "674f818fa320d46f3994ea6c0f475e807968fa69ff10052038d035c05d076de1",
+      "sha256": "6a920f37adf521a4ffd1fd78c78b4e111e86d140d3f9f51a974dc856cd849c70",
       "binary": false,
       "exports": [
         {
@@ -5681,9 +5681,9 @@
       "path": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 9554,
+      "bytes": 9577,
       "lines": 256,
-      "sha256": "d6a01466997e72e8d229cec6aeb322266e01d2d1f8a0247926eec2063266fb4f",
+      "sha256": "28cc5e889f3377f883faebddff482ea5ab95b5c7069255c0c1c880cf9edd43ea",
       "binary": false,
       "exports": [
         {
@@ -5716,9 +5716,9 @@
       "path": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 9420,
+      "bytes": 9443,
       "lines": 248,
-      "sha256": "9bf7065f75a72f6df4c91d5470528eb2d8b61d5f773075d48fd58a8168b475fe",
+      "sha256": "928d25db23d9b20f973f57cce9fc1588ef2ef28f0da492caa1b07d4fe601722f",
       "binary": false,
       "exports": [
         {
@@ -5796,18 +5796,18 @@
       "path": "app/(portal)/counselor/students/[memberId]/notesPanel.module.css",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2864,
+      "bytes": 2873,
       "lines": 119,
-      "sha256": "8c216f0cd53d606a3a07fc09eda35696d8f73c8920526b72ca5c4bcf7b2f4c27",
+      "sha256": "88783e35d06eb2fe563d3f5a611e508605bf9164e9b32185a2f1ad4b1a29647f",
       "binary": false
     },
     {
       "path": "app/(portal)/counselor/students/[memberId]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 65940,
+      "bytes": 66042,
       "lines": 1459,
-      "sha256": "ea3d942d81333a85347b2a68d374433ac3c806595d6a9ce9792f8a84d7f394e2",
+      "sha256": "68010f4f79949dd5b7b5af33c88f1aa4e4b8cd72489e53f1e05856387f0d7b44",
       "binary": false,
       "exports": [
         {
@@ -5935,9 +5935,9 @@
       "path": "app/(portal)/counselor/students/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 20357,
+      "bytes": 20370,
       "lines": 473,
-      "sha256": "743b1b1fdeb43d22e442fd5d32d0a2ad17de35684847125311d1d80eec94ddbf",
+      "sha256": "a31a7a0a1cfb144aa922dd9287a9a5da2ef9bc2c544910b09cb8506b8356aec4",
       "binary": false,
       "exports": [
         {
@@ -6036,7 +6036,7 @@
       "domain": "member-counselor",
       "bytes": 11688,
       "lines": 326,
-      "sha256": "defca7b69a84b6d0da93cf88ecece4155055fafb1f0c48855bd20b70cab707bd",
+      "sha256": "e17fbddea0bc9fd22fdcfaf90e98ab7734b44545fffd489e134876c0db83c1e4",
       "binary": false,
       "exports": [
         {
@@ -6119,9 +6119,9 @@
       "path": "app/(portal)/dashboard/LogCertificationModal.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4885,
+      "bytes": 4891,
       "lines": 134,
-      "sha256": "6677c169c4485c37a29f35a62f6271b8b3eb63ccfbdb26a6e620ca8684738269",
+      "sha256": "8d75f8726e0313523e1348ae51ed4a25c4f5eb2fe6b8fc0c60f9abac7e3288d3",
       "binary": false,
       "exports": [
         {
@@ -6149,9 +6149,9 @@
       "path": "app/(portal)/dashboard/PlacementConfirmationStrip.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4317,
+      "bytes": 4320,
       "lines": 79,
-      "sha256": "de792e7e916633d711a8e42c4a538cf7ea10f5be120d378959cb5b07c4303461",
+      "sha256": "6d4b058c7f3bc7805da2e64f1846aed7dcd29d7f96d716403d8c7513e4f22a96",
       "binary": false,
       "exports": [
         {
@@ -6225,7 +6225,7 @@
       "domain": "member-counselor",
       "bytes": 14418,
       "lines": 323,
-      "sha256": "cf67cb83eea86bf07b020b7552e873fbe202ef3e75f6db147489207cd6694a35",
+      "sha256": "ba771e90e8825f7be656eea28e40551f7d0f9726fcec6dfbfba994173eb56926",
       "binary": false,
       "exports": [
         {
@@ -6275,7 +6275,7 @@
       "domain": "member-counselor",
       "bytes": 6811,
       "lines": 119,
-      "sha256": "bc271f63a4b3cb13834e396dd8099d1f0ce57125e37dee04fbba8e4e4c8426b5",
+      "sha256": "5a2629b01d7de5f8c9eaa97a48c09f796a48e51241271f67e657b65426389bce",
       "binary": false,
       "exports": [
         {
@@ -6303,9 +6303,9 @@
       "path": "app/(portal)/dashboard/_components/MobileJourneyTimeline.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5029,
+      "bytes": 5033,
       "lines": 122,
-      "sha256": "1ad1389b8a3c088fabde48633717c5020684c9f56af5b095c8c9faadfad47f99",
+      "sha256": "f4d6230eece725090bae2076543c5093503a88e39e3a612967ccf50113e1fab6",
       "binary": false,
       "exports": [
         {
@@ -6383,9 +6383,9 @@
       "path": "app/(portal)/dashboard/_components/MobileProgramTrainingCard.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7043,
+      "bytes": 7049,
       "lines": 144,
-      "sha256": "7c0a55509b443af014caa22af90edb147036ecfd35d6d04f8b38f3430d54b20a",
+      "sha256": "fc896a04773b3a24179637c2aaa9f4eb31414dd2aec21911c1262e97dfef66a3",
       "binary": false,
       "exports": [
         {
@@ -6433,9 +6433,9 @@
       "path": "app/(portal)/dashboard/_components/MobileRecentActivity.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3657,
+      "bytes": 3659,
       "lines": 71,
-      "sha256": "bbed36662c120a6ddc71d61ffd414065d57a313c2e2cbae1f9bb6ffd4b530618",
+      "sha256": "f9c6e784f28295ed96241be02f5fc130b49b44dc9901acb956c66815d43294c3",
       "binary": false,
       "exports": [
         {
@@ -6458,9 +6458,9 @@
       "path": "app/(portal)/dashboard/_components/MobileStateANextStepCard.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2738,
+      "bytes": 2739,
       "lines": 51,
-      "sha256": "424b0cdb15f8fea663a3d609042f8d55acb0e954961b2d13f4aa3efd57b66fcf",
+      "sha256": "99351c915137dc29d1628614d2e2d08f7774c65091704e6d7d94a8c1cd5488dd",
       "binary": false,
       "exports": [
         {
@@ -6994,7 +6994,7 @@
       "domain": "member-counselor",
       "bytes": 5788,
       "lines": 149,
-      "sha256": "ff55c0a0b9209c73b64810423cab07bdcc554b15663018ea594db3720c412afb",
+      "sha256": "76c47e48861f827b89d24c5fcce06da5ca592c46c045451eac75f0fbec72f8de",
       "binary": false,
       "exports": [
         {
@@ -8257,9 +8257,9 @@
       "path": "app/(portal)/dashboard/career-brief/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 18953,
+      "bytes": 18962,
       "lines": 472,
-      "sha256": "1f333a0d3c76812c5f76bc304a6a1aeb0585c9a07c9bb7b5301496a22b05e8f4",
+      "sha256": "f98b57022f2cc6046d6ab59233fa50f7a0b42d34ea08b01c44d375dc64017061",
       "binary": false,
       "exports": [
         {
@@ -8417,9 +8417,9 @@
       "path": "app/(portal)/dashboard/certifications/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 35947,
+      "bytes": 35954,
       "lines": 807,
-      "sha256": "d50f2b255fbba992d58b697656cc3f22dfd7fcb2f7a559904c72fd89f3d648c2",
+      "sha256": "59f4921c213e975cd152b37d732bf130c135c99f4e1181760a870a3d36bab238",
       "binary": false,
       "exports": [
         {
@@ -8846,9 +8846,9 @@
       "path": "app/(portal)/dashboard/guide/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 15341,
+      "bytes": 15342,
       "lines": 354,
-      "sha256": "6a3cca42dfb12af525793e099f3fcc247a361d3f8efd51f2acafd0ab106d3e13",
+      "sha256": "89409746fb9f25feec511a635bc9547500c206f1d7df3e2f07c133e830f9ec68",
       "binary": false,
       "exports": [
         {
@@ -9141,9 +9141,9 @@
       "path": "app/(portal)/dashboard/jobs/[id]/MobileApplyFunnel.module.css",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 6706,
+      "bytes": 6714,
       "lines": 367,
-      "sha256": "5e8c963f9ce8cd20c37cf004f173da256171c37b4d29db0d563c07c5972f6395",
+      "sha256": "974a5be65375b3727fe373c0fd808432d18192519180ee1c6c501d4bf9da7b0d",
       "binary": false
     },
     {
@@ -9152,7 +9152,7 @@
       "domain": "jobs-employers",
       "bytes": 20822,
       "lines": 565,
-      "sha256": "bccc0c4caa694b58df74417524b9a8e23180fb18ba382491af06f006ec05ffd2",
+      "sha256": "985177f2020925a69640fee79fa340e833357aa3b5459782ae4422a78b4e30cb",
       "binary": false,
       "exports": [
         {
@@ -9302,7 +9302,7 @@
       "domain": "jobs-employers",
       "bytes": 22783,
       "lines": 615,
-      "sha256": "0e2f7491fbb5c5ea00fc88d054e2f800e71b262d5e47fcab59abb7fe5ece6223",
+      "sha256": "e59a47a889da195287b47f7d49faff9111b3807e999d05d2e2c4980a1c7ab9e9",
       "binary": false,
       "exports": [
         {
@@ -9395,9 +9395,9 @@
       "path": "app/(portal)/dashboard/learning/find-your-career/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 6231,
+      "bytes": 6236,
       "lines": 149,
-      "sha256": "2cab22638002a371596eb422cb76b3fe535c0028316d91b13c63e7e2b81373b7",
+      "sha256": "75e0d4307121a1c668846b5d604fa36b906fa65db4afc11d873a09c5343f4374",
       "binary": false,
       "exports": [
         {
@@ -9600,9 +9600,9 @@
       "path": "app/(portal)/dashboard/learning/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 26696,
+      "bytes": 26698,
       "lines": 562,
-      "sha256": "4bd94403b3962a9b06f42e658fcac6ea4528cb04920fe22a4bab9a4b54383a57",
+      "sha256": "6ed0d99edc8393f52e10166394ffa9fdb825365806328e35c8db6905f83b4c33",
       "binary": false,
       "exports": [
         {
@@ -10222,9 +10222,9 @@
       "path": "app/(portal)/dashboard/profile/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 33594,
+      "bytes": 33607,
       "lines": 958,
-      "sha256": "fc18d0d684f0b42186a008db818794a9f47988850b5a36aa3392c52acec04f13",
+      "sha256": "cb876c240cdc6327c6ba476dc0d7c3f2ccfbe20d48ecd1c51fec017b2fb7a27d",
       "binary": false,
       "exports": [
         {
@@ -10297,9 +10297,9 @@
       "path": "app/(portal)/dashboard/program/employer-screening/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5400,
+      "bytes": 5402,
       "lines": 140,
-      "sha256": "a91d041c31871f233d0a1518b99a7673e0356c0530816a7b4691320b94a56abd",
+      "sha256": "ae085e97d5027b263168ead9af8b45b53f93a316cf691e2503b197d8d3b3a3ab",
       "binary": false,
       "exports": [
         {
@@ -10362,9 +10362,9 @@
       "path": "app/(portal)/dashboard/program/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 20079,
+      "bytes": 20083,
       "lines": 426,
-      "sha256": "92c04e54d11c095cf05e10d3f45a777b3ee6e60da7f2b1e78816764b7497116c",
+      "sha256": "ce68c16cd2dd55de19710f2b982551e8c0e5e3cdcc14a82ec581d0884567e78d",
       "binary": false,
       "exports": [
         {
@@ -10497,9 +10497,9 @@
       "path": "app/(portal)/dashboard/readiness/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 10153,
+      "bytes": 10161,
       "lines": 209,
-      "sha256": "436f71939cb156aa0fe597910774561adb473db1b4dc1acf3df8d7c1f69874be",
+      "sha256": "517f19f39e68ea1080eeb8b0eb6a07123b11ad7fefd01e701146a17c9d891519",
       "binary": false,
       "exports": [
         {
@@ -10572,9 +10572,9 @@
       "path": "app/(portal)/dashboard/resources/ResourcesClient.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4960,
+      "bytes": 4965,
       "lines": 127,
-      "sha256": "8d3bd7c727e1b6653a75071c67f4fb3c18d090859b84f12487484670fa2adfa7",
+      "sha256": "06b91a362cf4d84ed14c0f27df2b9e26387618f908636ae28ca5720bf139e8b2",
       "binary": false,
       "exports": [
         {
@@ -10667,9 +10667,9 @@
       "path": "app/(portal)/dashboard/resume/ResumeClient.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 34646,
+      "bytes": 34655,
       "lines": 951,
-      "sha256": "e754562f0e42cf569937075607e522398a58540889c8ec7760744366129370e9",
+      "sha256": "7a9debec99aa3daa28674a324c862561635dc8423a61fa3570160b49093670ba",
       "binary": false,
       "exports": [
         {
@@ -10732,9 +10732,9 @@
       "path": "app/(portal)/dashboard/resume/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7032,
+      "bytes": 7034,
       "lines": 218,
-      "sha256": "0b7598d4aacaf6a15d9145839b86a4375d6c2aed4192c4ac87005bcef10ce6be",
+      "sha256": "84bbcb4497585b29c7452aa65dfd6d1ddcea60e9bdf3b55a5e2996c1b61ec44f",
       "binary": false,
       "exports": [
         {
@@ -11067,9 +11067,9 @@
       "path": "app/(portal)/dashboard/weekly-recap/MotivatingRecapClient.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 14996,
+      "bytes": 15012,
       "lines": 339,
-      "sha256": "b70fec94f50fb6c8d2105e74f034b6584a2038a34c6411774f49026460f5e90f",
+      "sha256": "f5eedc46b292817a44852d58536587fad76ea5b230dac523d971e3a33dc50c74",
       "binary": false,
       "exports": [
         {
@@ -11232,9 +11232,9 @@
       "path": "app/(portal)/employer/applications/[id]/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 10226,
+      "bytes": 10240,
       "lines": 237,
-      "sha256": "0782cd4076cbd6dc2696ffbc30a2bfee0daccb7d0a3ed182e1965b16080cb952",
+      "sha256": "fac3ef505bbfa0a26bab1e7be9df0aaf744fa1fb1e0b36e83f89be9a854f0b77",
       "binary": false,
       "exports": [
         {
@@ -11387,9 +11387,9 @@
       "path": "app/(portal)/employer/billing/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 7681,
+      "bytes": 7685,
       "lines": 199,
-      "sha256": "ba24d9e515283b900743fd4f786d350a5742d598ebf988900cce8dceb5011239",
+      "sha256": "ce80a56ab501bdd4241e2bf47235cf6e06b96b45be11842941a0a0a0c16053a2",
       "binary": false,
       "exports": [
         {
@@ -11447,9 +11447,9 @@
       "path": "app/(portal)/employer/candidates/[studentId]/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 40387,
+      "bytes": 40480,
       "lines": 733,
-      "sha256": "0b5f31b9c4298004881dfa8a5f3dfab4b337783d762ece774f4aa218f5970a79",
+      "sha256": "56d2ba24eaf90d00e34f476facbeb7e46196500c9f86da0e153539edd21736f5",
       "binary": false,
       "exports": [
         {
@@ -11567,9 +11567,9 @@
       "path": "app/(portal)/employer/guide/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 14783,
+      "bytes": 14789,
       "lines": 321,
-      "sha256": "d5ad4f7cec99a66e1002faf9175b4af829f065a58160b12bec8f5af83acf2947",
+      "sha256": "2c25633ce7d626783349dd8063f6fad894a8f696637a75b701a8c31518d4dad8",
       "binary": false,
       "exports": [
         {
@@ -11772,9 +11772,9 @@
       "path": "app/(portal)/employer/jobs/[id]/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 14724,
+      "bytes": 14752,
       "lines": 285,
-      "sha256": "a3cb97359086c82e13b71931443655301e77420b49535311c37a2b8e88da3a88",
+      "sha256": "4a2e76f8b59bb63d390dc3f6fc3ba18828b7684bfdbc60198b3f4608895c4c1a",
       "binary": false,
       "exports": [
         {
@@ -11992,9 +11992,9 @@
       "path": "app/(portal)/employer/jobs/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 13091,
+      "bytes": 13096,
       "lines": 282,
-      "sha256": "b08393a0b02a1a5b91dc7c637279cd2eb3d2dd3507cc242ce298e23979619598",
+      "sha256": "271ff132f40c0e15d39d20bcc49bac13d1efab39d4a4bdfd7a55dbad78078203",
       "binary": false,
       "exports": [
         {
@@ -12179,7 +12179,7 @@
       "domain": "jobs-employers",
       "bytes": 3484,
       "lines": 94,
-      "sha256": "4f2527929def6a2e2dcfbcbd57b5d3bc230828621313e0fc48f2dfca02fd2741",
+      "sha256": "55404fcadfc4348ce5df903c2aa793e060b790a837193ffe3b4e85effdb3ca7d",
       "binary": false,
       "exports": [
         {
@@ -12302,9 +12302,9 @@
       "path": "app/(portal)/employer/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 37549,
+      "bytes": 37562,
       "lines": 739,
-      "sha256": "543667e694622b5b2400498cd6b0f8398c2d200f5a672c55f8fb3ff0c77f9b4d",
+      "sha256": "4337f811d1db37f0d7f5bbe9bfe3a4f8d73e0928739c30010aa1236704abaf5f",
       "binary": false,
       "exports": [
         {
@@ -12362,9 +12362,9 @@
       "path": "app/(portal)/employer/pipeline/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 12745,
+      "bytes": 12754,
       "lines": 230,
-      "sha256": "4c7496a3c3be7dc1e11e5edb3bc6ae95641b973f1a4236a2fee8ac86b9acff47",
+      "sha256": "5fa3ae3926fae85e039fe41234d244ba0ededeab8d3b8e7251e868d6374de2b0",
       "binary": false,
       "exports": [
         {
@@ -12422,9 +12422,9 @@
       "path": "app/(portal)/employer/settings/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 4764,
+      "bytes": 4767,
       "lines": 106,
-      "sha256": "f6e27b5184128ecfef47bff96bf31c5e1df57bfef7834a10531430f1d6ad3738",
+      "sha256": "454ed70de7ca66900a82f568399739b1f1118de20a468a1780b74db5917718d0",
       "binary": false,
       "exports": [
         {
@@ -12612,9 +12612,9 @@
       "path": "app/(portal)/leader/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13607,
+      "bytes": 13620,
       "lines": 375,
-      "sha256": "88ff499722643ef25d3b4548f4f91e312f5ab4fd014c25676216de6d3f8ecc3f",
+      "sha256": "0617ae1b369d0ce1dad5d4fb444831549787efcb9efbd094d887aeb745561b41",
       "binary": false,
       "exports": [
         {
@@ -12834,7 +12834,7 @@
       "domain": "partners-funding",
       "bytes": 4695,
       "lines": 151,
-      "sha256": "9d5e8e9910d6c6501b5869f8e1c386df4b11250cb217049c7eb4dca63fd71c94",
+      "sha256": "d7b7295f1398e2c6f67dffd2542c35d47532cd9f23cf0e83ff2b92079c9a57d5",
       "binary": false,
       "exports": [
         {
@@ -12917,9 +12917,9 @@
       "path": "app/(portal)/partner/guide/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 12976,
+      "bytes": 12982,
       "lines": 260,
-      "sha256": "77000ae0f733243b95565a12565c1135052b153b5e61bc2dbfcfa72926bdeb1b",
+      "sha256": "d040cfd103cb42f8b7b2c0eebf75384f73e4a8579464e5501a4525f5b02727c7",
       "binary": false,
       "exports": [
         {
@@ -13099,7 +13099,7 @@
       "domain": "communications",
       "bytes": 6488,
       "lines": 160,
-      "sha256": "06a2a3b5f283088e381165d8fd46774ac9319c2523db587c833fe0b8cf122277",
+      "sha256": "ea4d68b809bc31972991b53413e85d900d10351aa425fee3090a8c5ee7930580",
       "binary": false,
       "exports": [
         {
@@ -13249,7 +13249,7 @@
       "domain": "partners-funding",
       "bytes": 6059,
       "lines": 163,
-      "sha256": "43012528193b4a06592d3943d66a42c2ed88d9cbaef743bbace3c4c15a52b194",
+      "sha256": "d4baaaeb9924fd21de4e7462ddbf3e293c4c6d144d5b6d93690b0f3e670df13d",
       "binary": false,
       "exports": [
         {
@@ -13292,9 +13292,9 @@
       "path": "app/(portal)/partner/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 62034,
-      "lines": 1389,
-      "sha256": "9a4108db3d4651a82d79f2fd56a831d6e28bd785ee7cada246cb737ee8dcecf8",
+      "bytes": 61925,
+      "lines": 1386,
+      "sha256": "4448ed18e2d33bd1b72f848fa9735b05ed5ab2c3c82bb19df66e6be9c9c6256c",
       "binary": false,
       "exports": [
         {
@@ -13332,9 +13332,9 @@
       "path": "app/(portal)/partner/referred-members/[memberId]/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 25183,
+      "bytes": 25219,
       "lines": 533,
-      "sha256": "d22f91d9e9a76abcaa969f59a67b23109e3251c7de79808aeb1fe4e4e7fec9cf",
+      "sha256": "de1954dc7ad98e32bd2e14414b9ae5c06b9baa52a64abe2f1a7ce3d3d9faa0cb",
       "binary": false,
       "exports": [
         {
@@ -13417,9 +13417,9 @@
       "path": "app/(portal)/partner/referred-members/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 3182,
+      "bytes": 3184,
       "lines": 80,
-      "sha256": "febe5cad461aedad1644a3b7c852b0dc42cfbbf8e11ac1b179c2092740fe43b4",
+      "sha256": "c790bdf50a8c666af406165ddb07e6b7177ef05ccd36378a179d7612f2739671",
       "binary": false,
       "exports": [
         {
@@ -13477,9 +13477,9 @@
       "path": "app/(portal)/partner/resources/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 4471,
-      "lines": 133,
-      "sha256": "60194982c1b0e689aec7e73f5cb635f8a78f9c4380d4319ac8597889447e8016",
+      "bytes": 4502,
+      "lines": 134,
+      "sha256": "6743c6340d7e59ce0307e076bce2f9370acc1254e0b11725a259551ddb0c3e28",
       "binary": false,
       "exports": [
         {
@@ -13544,7 +13544,7 @@
       "domain": "partners-funding",
       "bytes": 5156,
       "lines": 145,
-      "sha256": "63b229c7c6253b28ca4e768b280406de58375b2e02152ae751f16ca4f65dc285",
+      "sha256": "541da60f50048bffe06a09fee4cca57690ccc12c637363ef17a6412902bef595",
       "binary": false,
       "exports": [
         {
@@ -13707,9 +13707,9 @@
       "path": "app/admin/agent-inbox/AgentInboxClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 17665,
+      "bytes": 17673,
       "lines": 524,
-      "sha256": "e41768ba5a9bda934dfab0e9c7dcfc8af3ae0734d475f4388803652b4f074a45",
+      "sha256": "5a82de8bfbd125fe6bdb380bc3468202771694b22b3a331e03f59d9bde9dce62",
       "binary": false,
       "exports": [
         {
@@ -13781,9 +13781,9 @@
       "path": "app/admin/agent-inbox/InboxStatsBlock.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 3071,
+      "bytes": 3076,
       "lines": 103,
-      "sha256": "63ea279c77edc2d226c7768c8e94095db6c76cf6f123953830bfb17614a192fc",
+      "sha256": "8059e43e7b360cd983266857c8d9e3299652d9fb89eef8a02a79110bf7d81acb",
       "binary": false,
       "exports": [
         {
@@ -13940,9 +13940,9 @@
       "path": "app/admin/ai-tools/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6811,
+      "bytes": 6814,
       "lines": 167,
-      "sha256": "1856f820ec2ef5b61c241298e52f35e9bb083a523e1c373563ffba6bd070b66f",
+      "sha256": "b8ae6250e7ffc39301befd91e12ae09a08d95df7a8466c4cc312f20ea8eab565",
       "binary": false,
       "exports": [
         {
@@ -13975,9 +13975,9 @@
       "path": "app/admin/analytics/ai-efficacy/AIEfficacyDashboard.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 20685,
+      "bytes": 20688,
       "lines": 450,
-      "sha256": "bb81367a63e8bbbfac9936a6d14970f80ca49312d61e8856b5343f7276272786",
+      "sha256": "100f972351e1f238626d19f94985e2326b090116ffab591fbbebbb91cdfdeea5",
       "binary": false,
       "exports": [
         {
@@ -14274,9 +14274,9 @@
       "path": "app/admin/audit-logs/AuditLogsClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 13394,
+      "bytes": 13406,
       "lines": 396,
-      "sha256": "5ea723be2cb41a23e3198ed88509b155f97928a8c73ce9198bd4293e48927759",
+      "sha256": "272659e52a69d7503cf0b273e03fe9e98f090650fdd535ef0059d53425cfa94c",
       "binary": false,
       "exports": [
         {
@@ -14409,9 +14409,9 @@
       "path": "app/admin/blog/BlogPostEditor.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 23000,
+      "bytes": 23006,
       "lines": 623,
-      "sha256": "c5587ad4231d508e3d8061aa28d4b6e356ff607fe37ad6345b3ad4f9413420f2",
+      "sha256": "dea7620b5c1cc68d4bfc5cdf8255ff9865da6c67fb23e842dfffe3adf14be72a",
       "binary": false,
       "exports": [
         {
@@ -14479,9 +14479,9 @@
       "path": "app/admin/blog/ai/BlogAIClient.tsx",
       "area": "pages",
       "domain": "ai-voice",
-      "bytes": 9199,
+      "bytes": 9204,
       "lines": 242,
-      "sha256": "c9b5072265becc617a5037c07963dd564fc2e621f8cabf77e2a3bdf5144008c3",
+      "sha256": "52a50e903e53e38c86b537b53e511d0dbb7676116307d55b162c153fbb65bf40",
       "binary": false,
       "exports": [
         {
@@ -14634,9 +14634,9 @@
       "path": "app/admin/blog/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9053,
+      "bytes": 9056,
       "lines": 224,
-      "sha256": "230344a7cac3b54fbd94641a8dee626853fdd6c69810e6f7378f5f21c5493f64",
+      "sha256": "58f2ecf536370356282f64ad3e9f2efe18383718f91e1d1f09aa59cd314c810a",
       "binary": false,
       "exports": [
         {
@@ -14844,9 +14844,9 @@
       "path": "app/admin/career-mappings/CareerMappingsClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 39268,
+      "bytes": 39330,
       "lines": 715,
-      "sha256": "350ee0e83b5d4d9468a242aeef4a61772b8c97421c67e98e7e4a0e51e32dceb2",
+      "sha256": "105b2d7bfd89bd883a2b137e443091f3a3ad3446086fbd063fd69127dea666f7",
       "binary": false,
       "exports": [
         {
@@ -15039,9 +15039,9 @@
       "path": "app/admin/certifications/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 11741,
+      "bytes": 11749,
       "lines": 237,
-      "sha256": "04a46c36aaf4c478a54d1f36163c9b6977dc0c7b450dd5373f9701467db642bb",
+      "sha256": "593d757f9b211a7b80645140a8e41fcd8ebb06262df6e02b8cc6db911ca2bff7",
       "binary": false,
       "exports": [
         {
@@ -15234,9 +15234,9 @@
       "path": "app/admin/coursera/enrollment/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 4117,
+      "bytes": 4123,
       "lines": 90,
-      "sha256": "9d7fb9d55ac07719be2c55d5a34008549b22af512bdc65c495a6301c380bc7aa",
+      "sha256": "2118b74faf7c5b0e000293f7c9a72adbd24b924fd93f63d008650890ee343b54",
       "binary": false,
       "exports": [
         {
@@ -15284,9 +15284,9 @@
       "path": "app/admin/coursera/health/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 50185,
+      "bytes": 50192,
       "lines": 1386,
-      "sha256": "79415a04ffaf4de9ae282a2bd3e1a321ecd2d32ee95903a7bb202f3f63a1c49a",
+      "sha256": "115c921c19e2f2dd85120882ee26c095cdbc35a6860f10f1f10bd7208121cf08",
       "binary": false,
       "exports": [
         {
@@ -15504,9 +15504,9 @@
       "path": "app/admin/coursera/learners/[userId]/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 14151,
+      "bytes": 14163,
       "lines": 379,
-      "sha256": "7ae00a0523c4fc96ce6f2b68db51fe9fddd986c0cb8a0b256f781db7b784ea34",
+      "sha256": "fdee07e4662071a4da4c9f14654136c0183eedf43fd0ebd186e70acb999e0be1",
       "binary": false,
       "exports": [
         {
@@ -15564,9 +15564,9 @@
       "path": "app/admin/coursera/learners/unmatched/[externalEmail]/events/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 9980,
+      "bytes": 9990,
       "lines": 250,
-      "sha256": "17d77b37219837fa225285c84c4f3775451d262af94bd90ad495248ce1e34a83",
+      "sha256": "4eab2b62bcdd9451a797b481627a8b6d0312f63b8422dad4cc98661fd835ef96",
       "binary": false,
       "exports": [
         {
@@ -15629,9 +15629,9 @@
       "path": "app/admin/coursera/learners/unmatched/[externalEmail]/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 19234,
+      "bytes": 19253,
       "lines": 463,
-      "sha256": "df881de9d7374f6a3b893ed0a99f183971e57a28ef4bb560e10e8777fbdd6de8",
+      "sha256": "1257e215890e35c70cb8fb1354163ae61567109db783006f0b2d83d8aef9bf14",
       "binary": false,
       "exports": [
         {
@@ -15689,9 +15689,9 @@
       "path": "app/admin/coursera/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 67890,
+      "bytes": 67937,
       "lines": 1636,
-      "sha256": "7428f821380778d668f907ce94044502737f8eb71c4b806e7fc5ef1d320990be",
+      "sha256": "01e929398b04cb05049eeeb036a6c9e1f342299a77a24cc3a3f3970166a95c4a",
       "binary": false,
       "exports": [
         {
@@ -15799,9 +15799,9 @@
       "path": "app/admin/coursera/provisioning/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 4293,
+      "bytes": 4299,
       "lines": 102,
-      "sha256": "3ae18b81cf3e6f3eca60bc97c423937846019d97422b97b00f473aea5d8f6c9f",
+      "sha256": "6193ceb804bbc914257c79f7f409de83380c46e7b7187911444e9305a7604190",
       "binary": false,
       "exports": [
         {
@@ -15944,9 +15944,9 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13839,
+      "bytes": 13857,
       "lines": 415,
-      "sha256": "6197df6314d04587272fcbd2edecdb4c59a8b087e36d013e18eae9671d3f91d9",
+      "sha256": "8b675babb6545f80d4e3153633308623cb984b88cdd35171564e6b83a8613b7f",
       "binary": false,
       "exports": [
         {
@@ -16074,9 +16074,9 @@
       "path": "app/admin/diagnostics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 24912,
+      "bytes": 24951,
       "lines": 508,
-      "sha256": "340473981368b3f2a890844eca5bc6bebf34d139a3ebdce1cc8416cf0842bb4e",
+      "sha256": "3ac894b4d15a8aa5afd167308851f2647343a06f5693b8186368b540156d399c",
       "binary": false,
       "exports": [
         {
@@ -16159,9 +16159,9 @@
       "path": "app/admin/email-crons/page.tsx",
       "area": "pages",
       "domain": "communications",
-      "bytes": 8295,
+      "bytes": 8301,
       "lines": 195,
-      "sha256": "d36ffc61abedf83b43c2ebd63f3103b2e8adff736ed3f1ae12f861b58ee16929",
+      "sha256": "1edfcd3d232e5fc41407f8eb040b06c30c6a5bdb9637c3e84d9fbab1c03c5943",
       "binary": false,
       "exports": [
         {
@@ -16279,9 +16279,9 @@
       "path": "app/admin/employer-screening-packs/EmployerScreeningPacksAdmin.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6958,
+      "bytes": 6960,
       "lines": 173,
-      "sha256": "80208bb1ca7ec7daa0259595ac2df6d85020f093ec5ac7891b4a470133b7eb7f",
+      "sha256": "3fbcd2f4a0484eb3bcc61f3ab33aa230556c0b9eb872e371a1b1b50a081144ba",
       "binary": false,
       "exports": [
         {
@@ -16379,9 +16379,9 @@
       "path": "app/admin/employers/AdminEmployerTierSelect.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 1808,
+      "bytes": 1810,
       "lines": 67,
-      "sha256": "74109cd8dce4fbd20ab88338b30f5e0c7f54458556d453561406f591d72594d1",
+      "sha256": "55a5042190a2a615c2135d2dd29ef2ce47e7a8ac4b950aa5ccffa6c0cf6d25e8",
       "binary": false,
       "exports": [
         {
@@ -16619,9 +16619,9 @@
       "path": "app/admin/employers/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 18895,
+      "bytes": 18905,
       "lines": 427,
-      "sha256": "b8b0fcb09b06967911d8116cde6ce0b9560ce6423cb91a744c744689178f9c7e",
+      "sha256": "f2754a3cdeed9ff1ad219fbf239590d96dbebe6dc52ab48a6a7a3be62e80514a",
       "binary": false,
       "exports": [
         {
@@ -16719,9 +16719,9 @@
       "path": "app/admin/exports/AdminExportForm.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 8612,
+      "bytes": 8614,
       "lines": 233,
-      "sha256": "80fa6ca9f8030871b3efcf96f38f541f5f61729a927d056cb7e79bb0433d8735",
+      "sha256": "a6aa61158f116cf29f68d2dda544493bce2eaf79abe445cab729138e1d79a9b4",
       "binary": false,
       "exports": [
         {
@@ -17079,9 +17079,9 @@
       "path": "app/admin/health/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 21287,
+      "bytes": 21300,
       "lines": 677,
-      "sha256": "c70414b84afe539e63dd630dadae8728f47332424519ab92ee0936e5eedd980d",
+      "sha256": "c36acca26a645628ca20c1c03d7a168ad9e70c36a49c630220db9f105513a101",
       "binary": false,
       "exports": [
         {
@@ -17469,9 +17469,9 @@
       "path": "app/admin/jobs/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 15683,
+      "bytes": 15690,
       "lines": 416,
-      "sha256": "f208fee724efea3a63b14f6b5f9403747584b479b6fd20387cd82a9f82220a72",
+      "sha256": "276c4f78b72088b592247f5245cd072d4b80a94d98ecafb0e6c495e1edccc657",
       "binary": false,
       "exports": [
         {
@@ -17674,9 +17674,9 @@
       "path": "app/admin/members/[id]/billing/BillingPacketClient.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 19117,
+      "bytes": 19125,
       "lines": 405,
-      "sha256": "acd661bad05bd2c8923ad6d17763fea8421ecc041591fcc1f1d2bbde16212748",
+      "sha256": "7467631be39005297c4a21da8d58fcc299af56b66e8418b56ebaaa067249e581",
       "binary": false,
       "exports": [
         {
@@ -17793,9 +17793,9 @@
       "path": "app/admin/members/[id]/lifecycle/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9471,
+      "bytes": 9487,
       "lines": 225,
-      "sha256": "dda0f3d52e0317fcc654b6a45b1bd336564ac76faef1f6bc2357c6fec73afe34",
+      "sha256": "cb407e6754eda42d740b8fe8f8f631ccb28dc5201b7a7f4d67d2f2495f29aac1",
       "binary": false,
       "exports": [
         {
@@ -17828,9 +17828,9 @@
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 59191,
+      "bytes": 59259,
       "lines": 1206,
-      "sha256": "b3199290894b398720a9283c07b89166693f68349d7d59c3b25cc2cb4c24de6a",
+      "sha256": "fbe40338bb29fadbca02ac2f3e6e4d3632fce8d2b6fa706a6793ba1793ea0d7b",
       "binary": false,
       "exports": [
         {
@@ -17948,9 +17948,9 @@
       "path": "app/admin/members/[id]/stakeholder/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 24677,
+      "bytes": 24720,
       "lines": 697,
-      "sha256": "0e5103873fc75435c58c66606144b546e82026d444c766318cf0711bee9761d4",
+      "sha256": "1e20ea448a13e55ebe7911341a6e5a267f10468af7bdd27331b42810fe069701",
       "binary": false,
       "exports": [
         {
@@ -18238,9 +18238,9 @@
       "path": "app/admin/members/new/AddMemberWizard.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 35354,
+      "bytes": 35357,
       "lines": 784,
-      "sha256": "9c59cd3d77b88084157f446ee3728ddbecb16a94b980a6640511685693e0c660",
+      "sha256": "728187987574253acb371f502e5d3abe6f5aeced69f07e214abf46afcd9fb111",
       "binary": false,
       "exports": [
         {
@@ -18418,9 +18418,9 @@
       "path": "app/admin/members/training/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 2829,
+      "bytes": 2831,
       "lines": 59,
-      "sha256": "23e8d12f55caa7424ab4fe8f38eb856b10067a73dfbc31849df3b722e27ea825",
+      "sha256": "a6112b2fa68da7fea0b4c77b85acfe044b28e1aa03b2ce2efbf5c75d80fd4b8c",
       "binary": false,
       "exports": [
         {
@@ -18483,9 +18483,9 @@
       "path": "app/admin/mentors/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 13810,
+      "bytes": 13814,
       "lines": 345,
-      "sha256": "305d4cabaaa2a5fc67e1f61f7fa684fbd7285d6a4e1acd7b09d2e31dba4bd842",
+      "sha256": "c8db15264e507fb4957f51868e3831e9c9c912c739fefff3a122b30c984f1cff",
       "binary": false,
       "exports": [
         {
@@ -18658,9 +18658,9 @@
       "path": "app/admin/metrics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9094,
+      "bytes": 9097,
       "lines": 192,
-      "sha256": "89f3cb9fc855c7fa7eaef70aff081ea33dcafed0308e2698a8bba0593e995036",
+      "sha256": "47610a440a25f0aa36647936a98fb8a1c6e50e8ce215be9a3b5f8a2ef4092b72",
       "binary": false,
       "exports": [
         {
@@ -18912,9 +18912,9 @@
       "path": "app/admin/overview/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 30374,
+      "bytes": 30370,
       "lines": 725,
-      "sha256": "f6555698d31661402c5f5c3fafdeea68e8aaaf30138564f4c508bf72843b7dce",
+      "sha256": "efc4223eed9b6c51498533a770429cbef021a7dba875ec522403fa9aa3e5ae14",
       "binary": false,
       "exports": [
         {
@@ -18967,9 +18967,9 @@
       "path": "app/admin/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 17687,
+      "bytes": 17690,
       "lines": 448,
-      "sha256": "7df685035cb3586d24b6685fbd7389e6635a8250e7fa67701f7df865b9e13a22",
+      "sha256": "9d9098ba8f515ffcdeeff8c9545ceadb78ad3a69bf88023b7c51d592c0e8aad3",
       "binary": false,
       "exports": [
         {
@@ -19029,7 +19029,7 @@
       "domain": "partners-funding",
       "bytes": 15413,
       "lines": 390,
-      "sha256": "80ba51f59cebd1dc71b5a0203a3bf8456ac6e52470a13411fcf59397e6220499",
+      "sha256": "cbd5156542b4fa27eb3d323fc1e48ef66804f2052debcba3ce562e4d300e200e",
       "binary": false,
       "exports": [
         {
@@ -19062,9 +19062,9 @@
       "path": "app/admin/partners/[id]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 17151,
+      "bytes": 17159,
       "lines": 476,
-      "sha256": "ecaeacbe5f1a95ba3882acff835a4d556e297e20a04c97195d5a4bdaae594a61",
+      "sha256": "014f68fdfdf8af6ab4255144074efb8c8a3296f1d09b49a7e62009521f67cc59",
       "binary": false,
       "exports": [
         {
@@ -19327,9 +19327,9 @@
       "path": "app/admin/pipeline/PipelineLegacyView.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 8827,
+      "bytes": 8833,
       "lines": 167,
-      "sha256": "57eb09c6ab61abaa3c2393381751e93bb95c36b9764ad59c611d7990e73ca954",
+      "sha256": "9eba7df1474552180d3dd3124206a634d91358846177c8aca7a754a36caff191",
       "binary": false,
       "exports": [
         {
@@ -19387,9 +19387,9 @@
       "path": "app/admin/pipeline/StaleApplicationsBanner.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 2495,
+      "bytes": 2498,
       "lines": 53,
-      "sha256": "2b3a4f80970ca0c1d9c95705756557e48dec0b22eef9bca7e0ba9f7254a5c58e",
+      "sha256": "a3e6f023ca66e044828b0310ca82a977e4b4b13bf1cd00a2df2c45c986436593",
       "binary": false,
       "exports": [
         {
@@ -19621,9 +19621,9 @@
       "path": "app/admin/placements/new/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 14144,
+      "bytes": 14152,
       "lines": 353,
-      "sha256": "0e1021e1f577db2293024401a06ab799948f40b117b430befd797bb09d39f115",
+      "sha256": "4e1f3b06d503061e917a0126f992e9e9940697e7aa946b7bccb8edc03ac0ab5f",
       "binary": false,
       "exports": [
         {
@@ -19781,9 +19781,9 @@
       "path": "app/admin/program-change-requests/ProgramChangeRequestsAdminClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 5282,
+      "bytes": 5285,
       "lines": 135,
-      "sha256": "48b52d5a404de80ca54b02e0ab155858fc91201347b0bd5508ee7daf4b9d6bec",
+      "sha256": "0189d858d81ffc4edee61a8c980980e81b7c89144c640edef42fd865f84b3fa0",
       "binary": false,
       "exports": [
         {
@@ -19911,9 +19911,9 @@
       "path": "app/admin/programs/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 13085,
+      "bytes": 13089,
       "lines": 293,
-      "sha256": "627dd8d2f5b34abf7671fed84f6ee5294b39ae0844bcdf7b5f4d7f53905d5206",
+      "sha256": "5e628c3a6f4f9d3d75300e3adc28f3b037907809d1fa25a5f45240477d3377f9",
       "binary": false,
       "exports": [
         {
@@ -19951,9 +19951,9 @@
       "path": "app/admin/reports/quarterly-outcomes/QuarterlyOutcomesClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 17545,
+      "bytes": 17551,
       "lines": 460,
-      "sha256": "f6480f724a8f9370dcf0308aa498de4fb649489bef55b37e4426d37d9662fa71",
+      "sha256": "021ab2276a198dac631fd3c6afe03c9b1c15e8e278db0e5222a401b146240b8f",
       "binary": false,
       "exports": [
         {
@@ -20351,9 +20351,9 @@
       "path": "app/admin/subgroups/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6509,
+      "bytes": 6512,
       "lines": 170,
-      "sha256": "0d434cb2576204d58e12b1bfdd4a73f9cddc6ed1780f59eb180b17fc4c80b820",
+      "sha256": "012da293e681c9bcf1795534bfcaebcca0c6127862ce6c855cf3b3ead760b401",
       "binary": false,
       "exports": [
         {
@@ -20381,9 +20381,9 @@
       "path": "app/admin/subgroups/legacy.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6400,
+      "bytes": 6409,
       "lines": 170,
-      "sha256": "69605fb56a5a9be4038451cafaadd3b1ef1c22fd1edf5c7fd1a2a0600eb99999",
+      "sha256": "96d292ccd6774c17673a752070dbab09055b18aff4f9f970adab3b8ba0cff9a6",
       "binary": false,
       "exports": [
         {
@@ -20771,9 +20771,9 @@
       "path": "app/admin/webhook-events/WebhookEventsClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 16265,
+      "bytes": 16273,
       "lines": 466,
-      "sha256": "b9271ea867efe2da341f60272cb807a7eb6f4fdaa7c9841b3aa532b93986baf9",
+      "sha256": "1f55b817de1143c29da75a0958bfec997d5cc4a60812c01385f627c876381fd3",
       "binary": false,
       "exports": [
         {
@@ -20916,9 +20916,9 @@
       "path": "app/admin/weekly-recap/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 15786,
+      "bytes": 15790,
       "lines": 313,
-      "sha256": "1313f3f01bd60312fe130086c8320738cc8c764307a9e73b113f3e3462d0703e",
+      "sha256": "ae23f7df0598d5c080e8372f8a4936c0524b9b5a503fa48f83e52a4930265ccd",
       "binary": false,
       "exports": [
         {
@@ -40537,9 +40537,9 @@
       "path": "app/apply/ApplyEligibilityClient.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 42224,
+      "bytes": 42226,
       "lines": 987,
-      "sha256": "39c7aebc017c3ec04897f4a6fc9b7bae5f7c28c8daa65ab72baf86e9b22d7cd2",
+      "sha256": "986ad821d81178ab705c889387bc61456e4eea272d5712aa5d828df0fc277b24",
       "binary": false,
       "exports": [
         {
@@ -40760,9 +40760,9 @@
       "path": "app/apply/create-account/ApplyCreateAccountForm.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 44664,
+      "bytes": 44667,
       "lines": 1039,
-      "sha256": "bc97dc13720b839e1cb0c376fb7c80e17cbeeb41977d7daea45a8ff8c155f60f",
+      "sha256": "3400b80734a6387802f487098ce196ee66c75a6026c9ea97e0790f245ea80ef0",
       "binary": false,
       "exports": [
         {
@@ -41045,9 +41045,9 @@
       "path": "app/apply/results/ApplyResultsClient.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 17901,
+      "bytes": 17908,
       "lines": 430,
-      "sha256": "70cb701c9b70bcf421ea58e13a880ab198e6ffc1e73610289ab7f41bd66cce55",
+      "sha256": "07584a138b32be1a0ff1539ffbef106ee10a3b7e49fcd55b5e5966d177cb9bbc",
       "binary": false,
       "exports": [
         {
@@ -41309,9 +41309,9 @@
       "path": "app/careers/CareersInterestForm.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 9931,
+      "bytes": 9943,
       "lines": 286,
-      "sha256": "a626f428f970fb764c926573ca05b60c8e8caa539c7e70e36b87fced31b4e31a",
+      "sha256": "38ba5b4002175e52951a1dab8a3bba002656c4a8a75b432dd8cf9750f9a97ef9",
       "binary": false,
       "exports": [
         {
@@ -42416,7 +42416,7 @@
       "domain": "pages",
       "bytes": 3262,
       "lines": 90,
-      "sha256": "ac1f37499009e4e0d5c885bd3982299d1c1b8a3fe4457ab9bca2fd910b62e618",
+      "sha256": "651ec57dcdbad2f60c2f41085d044bea04d7bd7ccea2e18a94b00bb0fcfcdbf3",
       "binary": false,
       "exports": [
         {
@@ -42496,7 +42496,7 @@
       "domain": "member-counselor",
       "bytes": 6963,
       "lines": 131,
-      "sha256": "45514054ef4fea0558a163be0e1e6606eb790c9a2aad269b3e879e72cf630baa",
+      "sha256": "6adad51e34028a06cd7b7253a348ac36eb9ef3370ec3e1235e73a2541d0109c6",
       "binary": false,
       "exports": [
         {
@@ -42591,7 +42591,7 @@
       "domain": "pages",
       "bytes": 9838,
       "lines": 203,
-      "sha256": "1e41573de1de243beb3b1360580bd3c3abd1af0e7ebe54d006e8cb3e5b05aafd",
+      "sha256": "273bc0f0adfd689175cc6325b50d696211a4ef8d6115a7437628cb2b2f97cfb7",
       "binary": false,
       "exports": [
         {
@@ -45646,9 +45646,9 @@
       "path": "app/org/[slug]/outcomes/OrgOutcomesClient.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 10515,
+      "bytes": 10521,
       "lines": 325,
-      "sha256": "07dc2806e7fbee0261f89523e0f3b161e868958a37061f7e1145e85533044a61",
+      "sha256": "b32ffbc310087c5d8ee33de78e5a079aa9f304638eefc51d67952226d25ddcb6",
       "binary": false,
       "exports": [
         {
@@ -46199,9 +46199,9 @@
       "path": "app/share/achievement/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 5319,
+      "bytes": 5322,
       "lines": 144,
-      "sha256": "cba94cf46ccfd8f997de6247b26a3030e714de43baa85096539e38013f7e5b88",
+      "sha256": "d67268a31a34543deff88cb5cfed71b6d4be77991e5273f22fbeb482ad57a5c8",
       "binary": false,
       "exports": [
         {
@@ -47400,9 +47400,9 @@
       "path": "components/FundingBadge.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3154,
+      "bytes": 3167,
       "lines": 72,
-      "sha256": "8d9c04689e60abc9a316a4ac007f3e0ed1a19e8bc3b85343a75d9467c3b95cf2",
+      "sha256": "4c65f98b7549c24d64f3e310752012d9be5473b34366b8829f82d8958768f246",
       "binary": false,
       "exports": [
         {
@@ -47850,9 +47850,9 @@
       "path": "components/MobileBottomNav.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7250,
+      "bytes": 7252,
       "lines": 181,
-      "sha256": "157c3fa3e75164f179bbb5c5dc19173842656848df41b5460634ac597268a0f6",
+      "sha256": "c2c367ed538e15e1eec23b6d00e89b1198a89fe8ff7192a7c8bbdc423259610a",
       "binary": false,
       "exports": [
         {
@@ -47999,9 +47999,9 @@
       "path": "components/ProgramsDecisionJourneyNav.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8492,
+      "bytes": 8499,
       "lines": 244,
-      "sha256": "d18b1d30a66094adb851cf3d8801b77cb7f77fbc8b4ecc8acd194441a1216152",
+      "sha256": "283132a75f586b20b181036a5f2d12500ff4f04b8298318ded1a3f325c606f27",
       "binary": false,
       "exports": [
         {
@@ -48184,9 +48184,9 @@
       "path": "components/admin/AdminAnalyticsCharts.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12974,
+      "bytes": 12981,
       "lines": 267,
-      "sha256": "494bd4a097cc51b5f0e9eab1897a66473bb4c6b1a7b50a53e5b7d7ddcf0ce06b",
+      "sha256": "82ce27a01465bc77b9f8b9f8c6e779b279f7de5a359356a0444a396f8b3ec286",
       "binary": false,
       "exports": [
         {
@@ -48318,9 +48318,9 @@
       "path": "components/admin/AdminCommandCenterClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 23527,
+      "bytes": 23547,
       "lines": 490,
-      "sha256": "11495f564279a3e8a12f1d87c177b122cf8c17643a5a7bd54d4156cfe53438f7",
+      "sha256": "cd93d0bd89f44eb764691ceedb277f7dc7bed2100c3f2ef89a0feb9e95a4f6f2",
       "binary": false,
       "exports": [
         {
@@ -48413,9 +48413,9 @@
       "path": "components/admin/AdminCounselorsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11386,
+      "bytes": 11402,
       "lines": 186,
-      "sha256": "e487122b35d92d77fad6f1ae006a859e04e6b75983a2e09c3a89777820a7656d",
+      "sha256": "25886b0b4ab14b07c2fdbac373a06c6c32b79f39294fbf0cef98997db79237a0",
       "binary": false,
       "exports": [
         {
@@ -48481,9 +48481,9 @@
       "path": "components/admin/AdminCronsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9240,
+      "bytes": 9248,
       "lines": 269,
-      "sha256": "34e72b9a857c6424d6e20b9ba03e466ce9937621cf048395a2e95ddfa209946c",
+      "sha256": "c7fdca1e0ccd82c46a50c4833bd5ade7f29ed31e642c5ddf28899d3aa58d318f",
       "binary": false,
       "exports": [
         {
@@ -48556,9 +48556,9 @@
       "path": "components/admin/AdminFeatureFlagsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 21314,
+      "bytes": 21320,
       "lines": 511,
-      "sha256": "8641a9f4a1a4a2756709d891b14fba5fa607d0ee8acc2be9bf4db00c465c64f8",
+      "sha256": "5018ca7b840cc9b0ab7a858f4b0c2ef7e15aa45f473b64c4eafd0b676dcb7f9b",
       "binary": false,
       "exports": [
         {
@@ -48596,9 +48596,9 @@
       "path": "components/admin/AdminFeedbackClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13252,
+      "bytes": 13263,
       "lines": 272,
-      "sha256": "03c17ca2112e1b01ccf835241027680519f4cc250f634b82cc734156a7c73bef",
+      "sha256": "e653365e03fec3b1583aace5011cb0df16585bf4869c4d3031ce74b65c843c6d",
       "binary": false,
       "exports": [
         {
@@ -48671,9 +48671,9 @@
       "path": "components/admin/AdminInterviewReadyTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 4634,
+      "bytes": 4637,
       "lines": 145,
-      "sha256": "6a61c948e6661cb102367981d1f1db791976262c481a3a946a98d34f7ba08589",
+      "sha256": "20605c5e14232551f808ac3d0b4794c2e3b439cd4d35b5a2993783f679249cc6",
       "binary": false,
       "exports": [
         {
@@ -48711,9 +48711,9 @@
       "path": "components/admin/AdminJobReadyTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 2884,
+      "bytes": 2893,
       "lines": 91,
-      "sha256": "c457399dd44b101fd68a92a04d2346b7d72d7d44951ba28dab728daf45c06ad9",
+      "sha256": "1b3f10159f2ae94731c9246727e3b74da64e07683659542cd1d754a94e1c84d6",
       "binary": false,
       "exports": [
         {
@@ -48748,7 +48748,7 @@
       "domain": "administration",
       "bytes": 21476,
       "lines": 550,
-      "sha256": "28d4585574db4d7f6130ac1b19048b992378a15c542083e2a7fc4badf55faa30",
+      "sha256": "dd8ff365828c2eb2ec2ddbaec9f85998f6c6dd3384340a473fe9a47c0978dc72",
       "binary": false,
       "exports": [
         {
@@ -48806,9 +48806,9 @@
       "path": "components/admin/AdminJobsFilterTabs.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 1348,
+      "bytes": 1350,
       "lines": 49,
-      "sha256": "2a361f1aa80e76c9d863ad4a26acfb7ed89f5d98b5970049568fb79362347ec6",
+      "sha256": "9f24e7b2d226660608435196ec18b24925d67085f0e644d74677fd7837308058",
       "binary": false,
       "exports": [
         {
@@ -48989,9 +48989,9 @@
       "path": "components/admin/AdminMemberDbActions.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9220,
+      "bytes": 9232,
       "lines": 174,
-      "sha256": "da62bba82021381e866683a2d0bfa272628f66d114e6f7546d8e7bb5e9919d7f",
+      "sha256": "ec336b70f7317b49d978543b5dd50182f7fcc0a9450a0bcbf167e0a294b55574",
       "binary": false,
       "exports": [
         {
@@ -49087,9 +49087,9 @@
       "path": "components/admin/AdminMemberPlacedOutcomeForm.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12167,
+      "bytes": 12170,
       "lines": 243,
-      "sha256": "b92799cf4b547664d16261a326bc9543f39de43ce4c29e694b23f2eead2c8830",
+      "sha256": "86752627b56b01984db34b0e6886dc517697dc3c5a6530b453b7c72faae1709a",
       "binary": false,
       "exports": [
         {
@@ -49137,9 +49137,9 @@
       "path": "components/admin/AdminMemberQuickSummary.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 3319,
+      "bytes": 3322,
       "lines": 110,
-      "sha256": "8709a4610b7460fbbb8ca717d83ab82f893d04a51ef44b8d61fa868251eb68f0",
+      "sha256": "e760c4196c000b2417932633b1388d280f272b496e4babccb3b16e8ee2d26d63",
       "binary": false,
       "exports": [
         {
@@ -49222,9 +49222,9 @@
       "path": "components/admin/AdminMemberSkillCheckpointPanel.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 14762,
+      "bytes": 14792,
       "lines": 460,
-      "sha256": "a245fcc82606e0e612378dca056924f81589d3e9d346985de6844884ca5954f9",
+      "sha256": "fc48829e68687ce730417d755dcda1da3bca63dd7709bea205f110e299977042",
       "binary": false,
       "exports": [
         {
@@ -49297,9 +49297,9 @@
       "path": "components/admin/AdminMemberWioaReviewPanel.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8903,
+      "bytes": 8906,
       "lines": 230,
-      "sha256": "c3aa4b44c60c12eb4ed8dbfa017674429a46f2c4a78e7bfa3fbd1eef379b004f",
+      "sha256": "638d02874416a2c96bb9c9601299613faf7bedd64cf5564ceb4adab71dbb1e8c",
       "binary": false,
       "exports": [
         {
@@ -49337,9 +49337,9 @@
       "path": "components/admin/AdminMemberWorkspaceEmail.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 4102,
+      "bytes": 4105,
       "lines": 122,
-      "sha256": "e983e3326066125ccc03a3ef17352faf1c341d86688ab1fbee5d8da5d01cb1a1",
+      "sha256": "688043dc51f595eb37a1c3f0aee5ce9caed506c47faea648208ebde2654363a2",
       "binary": false,
       "exports": [
         {
@@ -49369,7 +49369,7 @@
       "domain": "administration",
       "bytes": 7664,
       "lines": 218,
-      "sha256": "1cab12df461a3dabbad3b028348051b4772a443d3a91b0c162902893762c344c",
+      "sha256": "480faf746a187f6d3a33cfc0bc2642005ebe0ec5f8def9855d27c3f8a0239022",
       "binary": false,
       "exports": [
         {
@@ -49397,9 +49397,9 @@
       "path": "components/admin/AdminPipelineKanban.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9587,
+      "bytes": 9596,
       "lines": 262,
-      "sha256": "fd924278eba436986fb2f948960a0b9fc572f71f2e629d36207dfbd3a86267fa",
+      "sha256": "440b0f600456fd7d96257e7977dd092867638f07b4df003b9ce33c4f36388f66",
       "binary": false,
       "exports": [
         {
@@ -49447,9 +49447,9 @@
       "path": "components/admin/AdminProgramCatalogClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12281,
+      "bytes": 12284,
       "lines": 323,
-      "sha256": "5db2dfc367546cf353c00c2493ef97ec75b923b536f95d4f1fee06262ad69ba4",
+      "sha256": "ee179fa6040feecd6aa463b1aea7c064c90d1571b812d922c063accf7c7a5e7f",
       "binary": false,
       "exports": [
         {
@@ -49487,9 +49487,9 @@
       "path": "components/admin/AdminResumeUpload.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 3710,
+      "bytes": 3713,
       "lines": 102,
-      "sha256": "71caba709dce7adcbfeb72284c0233304eb0abf9034cc3394d8fd346a4b3414e",
+      "sha256": "3d6c8386c45cb5f1d721096c3933978ff32fed6a9ca772c663d7676f27631dcc",
       "binary": false,
       "exports": [
         {
@@ -49627,9 +49627,9 @@
       "path": "components/admin/AdminTrainingDashboardTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9663,
+      "bytes": 9686,
       "lines": 246,
-      "sha256": "1a89e8a6ab8130d8ff3bf19a8555fab6a3600f487722c8bb3ed6060a6a95b23d",
+      "sha256": "fce282b15e6013df940977c6734b2214ce08a864d1c08e1a306f30d9214159fb",
       "binary": false,
       "exports": [
         {
@@ -49672,9 +49672,9 @@
       "path": "components/admin/AdminUsersManager.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 23192,
+      "bytes": 23194,
       "lines": 528,
-      "sha256": "5d067d537b8f564f1ca165410b46a60232a3bf1904efcb8cf40e1bf722869a33",
+      "sha256": "cfc42554fb2f65bbcf3eec68eef8b299ee194fc66b22e7a473017a3ac896965e",
       "binary": false,
       "exports": [
         {
@@ -49712,9 +49712,9 @@
       "path": "components/admin/AnalyticsDashboard.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13617,
+      "bytes": 13626,
       "lines": 352,
-      "sha256": "2bf659ec46c17f3e9369c5527ec9c31a7b1e45bbc5d8875265de5df6fa91b8c8",
+      "sha256": "8d507a7dab198c5f776f09d075a27f92cb2176aa71c98db01a51b1412cf2a5dc",
       "binary": false,
       "exports": [
         {
@@ -49797,9 +49797,9 @@
       "path": "components/admin/ApplicantTriageChecklist.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 3288,
+      "bytes": 3290,
       "lines": 79,
-      "sha256": "77b05a8ad221139f23eb62c7be060a2edc686ccd20340d05229fb77adced2b98",
+      "sha256": "1d268eee6c7f0c5a0877a48e1e92340c40786dd017efcf0f9f1537ad80bd0e86",
       "binary": false,
       "exports": [
         {
@@ -49902,9 +49902,9 @@
       "path": "components/admin/AssessmentsTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 18908,
+      "bytes": 18919,
       "lines": 419,
-      "sha256": "da021ccfe40af5d683c0f4ef534bae75352dc1844e09c0f2a73164459a19f41c",
+      "sha256": "370cb8480c7cb6f43c20e59af01bd5d169d5e429035e0426ac2b545390ee0b09",
       "binary": false,
       "exports": [
         {
@@ -49937,9 +49937,9 @@
       "path": "components/admin/B4BBindingsSuggestionsCard.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8559,
+      "bytes": 8576,
       "lines": 229,
-      "sha256": "078aed211a9fa511ee2e9c2b14e5cc527b4ee16fb2147f621ffb84b41cffd1a1",
+      "sha256": "b2e2c1fc79d1555284bc48b9a138df78eb0bf16c7bc12c47db36d50557158c6b",
       "binary": false,
       "exports": [
         {
@@ -49987,9 +49987,9 @@
       "path": "components/admin/B4BProgramsListButton.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 4708,
+      "bytes": 4714,
       "lines": 127,
-      "sha256": "bd55457995802c7c66d0725577e823a13e6d356a1f6479d35b6ee111dd01b4a5",
+      "sha256": "d8c1465d1bb57d2277c0c2f4e6db57fd638cec954c8ffc3adcd66bbb9a916f89",
       "binary": false,
       "exports": [
         {
@@ -50052,9 +50052,9 @@
       "path": "components/admin/BoardOutcomesView.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 21406,
+      "bytes": 21435,
       "lines": 538,
-      "sha256": "dce48dc92315b4042060db1b8b033815775d5aec7d4114153687ac51924f9f8e",
+      "sha256": "2d93af6506b17b647719915adb52c102cba6821ad7d9839eecf28c0f43e1caf3",
       "binary": false,
       "exports": [
         {
@@ -50102,9 +50102,9 @@
       "path": "components/admin/BulkEmailModal.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12285,
+      "bytes": 12296,
       "lines": 275,
-      "sha256": "e2e5dfaf93a9172cbda20218ebf9645cb203bdcf00e64af46e8468cd4c37ca7f",
+      "sha256": "1763363a79e139280eeeed5f469cc193e948dec6b27f8ea56601ca8c1bbc6f89",
       "binary": false,
       "exports": [
         {
@@ -50157,9 +50157,9 @@
       "path": "components/admin/BulkUpdateModal.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11600,
+      "bytes": 11608,
       "lines": 262,
-      "sha256": "65071a730d405cc9b561076bbd4667cff79ccd512ab0fcd746ecac4881998509",
+      "sha256": "36f57ac2d63ae12a713042c9f40bd0a1ae702fd06533280104fbd2b4818505a0",
       "binary": false,
       "exports": [
         {
@@ -50237,9 +50237,9 @@
       "path": "components/admin/CourseraCsvImportClient.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 10903,
+      "bytes": 10911,
       "lines": 310,
-      "sha256": "12c1e12e967b4e918b77303812b9368a28a576f9e05e19e94e99293b24c45977",
+      "sha256": "0e54fe7357ad14b787773b2c9c6bfa3df67fa7ae80fb506aba343f5cb52a45cb",
       "binary": false,
       "exports": [
         {
@@ -50327,9 +50327,9 @@
       "path": "components/admin/CourseraEnrollmentPipelineTable.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 20624,
+      "bytes": 20652,
       "lines": 516,
-      "sha256": "979f16d87d2acda3343b9fc3fcdf8ba56009f4291cc4caa4ee16b47c1e8226e2",
+      "sha256": "f5f2d5bf127a1d1b0e03808895b7e891510326facec361d4de03ba29ec26fbe6",
       "binary": false,
       "exports": [
         {
@@ -50367,9 +50367,9 @@
       "path": "components/admin/CourseraInspectByEmailCard.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 24259,
+      "bytes": 24303,
       "lines": 687,
-      "sha256": "666b1541bd970aded8074f58ffaa694ab0f4a96128f2ed5fe5f9066924fafbc7",
+      "sha256": "f893d38ced8624eac86c973b0aee9fae5e501bc643fc973967f315d3b7461c41",
       "binary": false,
       "exports": [
         {
@@ -50437,9 +50437,9 @@
       "path": "components/admin/CourseraMappingsAdmin.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 44838,
+      "bytes": 44856,
       "lines": 1091,
-      "sha256": "9ad0fcb0a497fa208063348afb89e4d52a5efbf9f7296619826c6bf55c8fecf2",
+      "sha256": "7259ce713c168a5c4b53c8204c66ad6e641f7235242065d578f9494f5fbe1b5c",
       "binary": false,
       "exports": [
         {
@@ -50567,9 +50567,9 @@
       "path": "components/admin/CourseraProvisioningQueueTable.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 12339,
+      "bytes": 12364,
       "lines": 329,
-      "sha256": "d53222e009eb5b58233d254a2bbf1fe934d639ff3a18afcfc23d219ecea86752",
+      "sha256": "480d4bfad9d81579b4de18ba61aece82e8e7c65c262c09debc602f2120b8e0ff",
       "binary": false,
       "exports": [
         {
@@ -50622,9 +50622,9 @@
       "path": "components/admin/CourseraReconcileCard.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 16037,
+      "bytes": 16056,
       "lines": 448,
-      "sha256": "6027af7fb4753034a328c3d4b1e2112fabedc4895fd77f62bc80d2ac071f1581",
+      "sha256": "d1d0d8e9b0d61d3057a689678a3a0ef059980bfa4e3da7ef7717f5de86044676",
       "binary": false,
       "exports": [
         {
@@ -50712,9 +50712,9 @@
       "path": "components/admin/CourseraSelfTest.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 11784,
+      "bytes": 11804,
       "lines": 320,
-      "sha256": "ebe7917c0b10c8bfa2e14c0cfdc5792597c9bec33d299fb792bc490af6836bdc",
+      "sha256": "4b9893e93baa7a4add914210c944d2120ebdacd97182d836ff91ca025c07f8be",
       "binary": false,
       "exports": [
         {
@@ -50777,9 +50777,9 @@
       "path": "components/admin/CourseraSyncProgressButton.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 3250,
+      "bytes": 3256,
       "lines": 94,
-      "sha256": "0a1c9e2e93198289c14a2a24f18b86a3405cb014d897b3a9debb412153df09a5",
+      "sha256": "0e6f4c2551e930f7a5af8faea4163f6f33e195c0f452bff8cbc08c80d77fa328",
       "binary": false,
       "exports": [
         {
@@ -50807,9 +50807,9 @@
       "path": "components/admin/CourseraUnmatchedLearners.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 13220,
+      "bytes": 13230,
       "lines": 328,
-      "sha256": "3436f853abdab34849331ba21c4ea95e3f074711ab3376f2f91062fdeb722c46",
+      "sha256": "986d35a35f6cc79ffc5b1c67233d47e947ae746ab3842bfbe7132b067c7b43d8",
       "binary": false,
       "exports": [
         {
@@ -50875,9 +50875,9 @@
       "path": "components/admin/DataRetentionClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8862,
+      "bytes": 8864,
       "lines": 273,
-      "sha256": "aea148bb8139f24458288a92336c91bc420227186128a508acf32d5149eee423",
+      "sha256": "a8faca098fa2276783feffea445faaf540cce954acf0f0c740f4d651e832a737",
       "binary": false,
       "exports": [
         {
@@ -50940,9 +50940,9 @@
       "path": "components/admin/DeletedUsersClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11750,
+      "bytes": 11761,
       "lines": 316,
-      "sha256": "6be46ec7a0a70e882df7c90039b2d5906bf9be6dae5ad4c286f092d7046afac7",
+      "sha256": "d7dd47ee6109d7b1bd0e49a773c9877298e82536716806860eeb32109a15819b",
       "binary": false,
       "exports": [
         {
@@ -50980,9 +50980,9 @@
       "path": "components/admin/EligibilityDatasheetPanel.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6861,
+      "bytes": 6864,
       "lines": 213,
-      "sha256": "5e0d2257c9abc834e61f73a8574cbc4c17a87eb508f99d5986f5bd82b504a523",
+      "sha256": "bdc533340b4827dcb5573029ad1bce1b89eb668809c3d49c1c4a1ec97b75e4ad",
       "binary": false,
       "exports": [
         {
@@ -51020,9 +51020,9 @@
       "path": "components/admin/EmailCronsClient.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 43471,
+      "bytes": 43502,
       "lines": 807,
-      "sha256": "951481b3e8337ecb7231ecbe104c12c2e01d9c8722102719b17034ea3f02e5f9",
+      "sha256": "6ebcae64f9596433ddc7dface8b8d006ca3074c09de5ffe8a6578c2303428bfc",
       "binary": false,
       "exports": [
         {
@@ -51093,9 +51093,9 @@
       "path": "components/admin/EmailTemplatesClient.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 27882,
+      "bytes": 27896,
       "lines": 842,
-      "sha256": "8957b6616951c7fd2b7cf389649b4802ff8d867192ee0a8e73da402a4c9630ff",
+      "sha256": "b747cd50e38029a0e0c11bab7ab2ee5e3da41886dd6fed6a690ac47f1061d6d2",
       "binary": false,
       "exports": [
         {
@@ -51133,9 +51133,9 @@
       "path": "components/admin/EmployersTableClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12644,
+      "bytes": 12657,
       "lines": 393,
-      "sha256": "0a47a00ba6ccd7b2f7d15191c700adf5776a8159b99faa4e2ec5008672ecc67d",
+      "sha256": "17a3758d27b0368444ef34f44ca0797c41e7971a5e67f2562b523dedfd312721",
       "binary": false,
       "exports": [
         {
@@ -51230,7 +51230,7 @@
       "domain": "administration",
       "bytes": 3085,
       "lines": 82,
-      "sha256": "cb5cebad94b5c34735cb562bc69361cebdc3fc15adb29338eebf0ee26ee0d065",
+      "sha256": "54294f6e6d0c9e7535fef844b933151e9c66aa981d3a5cd1755cfd9073009904",
       "binary": false,
       "exports": [
         {
@@ -51263,9 +51263,9 @@
       "path": "components/admin/GtmSetupCheck.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 1487,
+      "bytes": 1489,
       "lines": 42,
-      "sha256": "f7610a60bf27e96565326913a7b4c105065f4813053d7edeeec9bae3c07a643b",
+      "sha256": "c7bd0df07cd22291ab9afcca135beec8e56b2d977210966a0329d3efe0f5291b",
       "binary": false,
       "exports": [
         {
@@ -51293,9 +51293,9 @@
       "path": "components/admin/IgnoredXapiSummaryCard.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 5699,
+      "bytes": 5704,
       "lines": 171,
-      "sha256": "29d4e79c33f12a94d4bbbefa1cc48a3885f45ef8b827b0ebe80a78e6c936db83",
+      "sha256": "ee1b08b68288db9481d2fc1f090a5f6921ede65beeaa4d71a1dff23dd59645e4",
       "binary": false,
       "exports": [
         {
@@ -51328,9 +51328,9 @@
       "path": "components/admin/InviteForm.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13453,
+      "bytes": 13462,
       "lines": 356,
-      "sha256": "c8bf05f21b46f869395b436d7abb4eb42be29f30395c24441ad1198548c80dec",
+      "sha256": "2a1187d230953184fc012611cb5e4dcaa4495c17ef5c395992635125c41b0896",
       "binary": false,
       "exports": [
         {
@@ -51403,9 +51403,9 @@
       "path": "components/admin/InvitesTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 17457,
+      "bytes": 17469,
       "lines": 456,
-      "sha256": "e1b1910e4489254211f1abd33ecd478e7d189b2799dbee4d14c105aa686fd994",
+      "sha256": "32d830bdcfd8a24ffe052837d73a624ad8038f9d3964e4dc1478d34e5a6438b2",
       "binary": false,
       "exports": [
         {
@@ -51488,9 +51488,9 @@
       "path": "components/admin/JobsTableClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8810,
+      "bytes": 8812,
       "lines": 264,
-      "sha256": "8b98f2e7466410361b5b21e57a5f2e4cbe7346d1f7caed8a463fe6515297ef09",
+      "sha256": "9849083e9d0ca8c4211ba12c844d50df3b3f43caea6599e4ff69dff4ff5513fa",
       "binary": false,
       "exports": [
         {
@@ -51568,9 +51568,9 @@
       "path": "components/admin/MemberCourseraDiagnoseButton.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 8831,
+      "bytes": 8848,
       "lines": 206,
-      "sha256": "c92bca0479c419665d8a9218d04f3fcd34f792427851fbda80c696e4664385ab",
+      "sha256": "0ee86c3233d350535ca967de8b1a675bdad7c8935e0e0c077b4ac71049b07188",
       "binary": false,
       "exports": [
         {
@@ -51696,9 +51696,9 @@
       "path": "components/admin/MemberDuplicatesClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12600,
+      "bytes": 12603,
       "lines": 256,
-      "sha256": "50f5ec646e5bd2feec2188156da084bd7129934c881bff8c87f1a3da64382415",
+      "sha256": "0e63ee9291e6e19838b6a76fa512df6db88e61a9266c74d6975c01f3e6bbc08f",
       "binary": false,
       "exports": [
         {
@@ -51754,9 +51754,9 @@
       "path": "components/admin/MemberMergeClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 17811,
+      "bytes": 17821,
       "lines": 346,
-      "sha256": "519bdf68148df83d95e5dfdbd3fd2e093661cd2255a7ac9376c1918b3f790bbc",
+      "sha256": "eca6e990bc61bbf3df67a80a6e25c3fc4c95e51cd1d87c6b6219333969dcf8fc",
       "binary": false,
       "exports": [
         {
@@ -51819,9 +51819,9 @@
       "path": "components/admin/MemberReviewTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 10207,
+      "bytes": 10219,
       "lines": 271,
-      "sha256": "85727e4dc7e81cdfce695c5e5367719f0d1c2c18ab37030eab62cd0e684eef05",
+      "sha256": "44a342ca73e2024d063f3a4b633e051a096e9c014ead35945351a69ae15ff3a4",
       "binary": false,
       "exports": [
         {
@@ -51858,9 +51858,9 @@
       "path": "components/admin/MemberSubgroupSection.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 5015,
+      "bytes": 5017,
       "lines": 143,
-      "sha256": "d363c0e8372364c76f5dd0531584dbd6ecc4d5e7e6c3ea99be18c384ca377bc1",
+      "sha256": "fbea2e58b62c147449a211dc9cc22df790811d0e1d503f88e9af3400dd103aa7",
       "binary": false,
       "exports": [
         {
@@ -51923,9 +51923,9 @@
       "path": "components/admin/MembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 51897,
+      "bytes": 51927,
       "lines": 1205,
-      "sha256": "d84f3ff16cb1accd51ddbb3672c3b06e664623b5019e78aaee50467151c39a02",
+      "sha256": "37ed5c3755419031c76cfb6fb8be2f2c25def30d9397f6234116971c24f8fe5e",
       "binary": false,
       "exports": [
         {
@@ -52043,9 +52043,9 @@
       "path": "components/admin/MentorStatusButtons.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 2805,
+      "bytes": 2807,
       "lines": 95,
-      "sha256": "424bab7c1ea4070d4ccd20a829c76441fcd9f2819b71142b5faf73f951f9ce39",
+      "sha256": "e2df1395dd093f48bc039eb6dfda86a8cf217ad89b1230b553e4268943f818f5",
       "binary": false,
       "exports": [
         {
@@ -52073,9 +52073,9 @@
       "path": "components/admin/MfaStatusBanner.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 2428,
+      "bytes": 2430,
       "lines": 67,
-      "sha256": "823cad1ba3c8091c4e78109f1d55048967a92555d19a677152e4be084dbdc6cb",
+      "sha256": "6b5ed4ee91103b3c82e5cc355154caccc8eb100a42e72fe4977f288438af4738",
       "binary": false,
       "exports": [
         {
@@ -52098,9 +52098,9 @@
       "path": "components/admin/OutcomesDashboard.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 24270,
+      "bytes": 24285,
       "lines": 558,
-      "sha256": "c9c04249c215c880d9740494d383a99606f24b0a066b51d4a59c077e8772935e",
+      "sha256": "fd05566d14d1130f579b6fc8ebc8d4c1442ad8818bb2beedbe2059558d201d33",
       "binary": false,
       "exports": [
         {
@@ -52208,9 +52208,9 @@
       "path": "components/admin/OutcomesSnapshot.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 28616,
+      "bytes": 28634,
       "lines": 628,
-      "sha256": "e0ff3fb2a0a93922a42c8c23eb1289b2236b26265bd4e50e79ca6cd59a69e5ae",
+      "sha256": "6090b8e37da8d7f14a243f0f2885409781ac9284082db4b72b65aca653edc99f",
       "binary": false,
       "exports": [
         {
@@ -52383,9 +52383,9 @@
       "path": "components/admin/PartnerEditModal.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 15121,
+      "bytes": 15125,
       "lines": 355,
-      "sha256": "8bee54d37823a7382af9059b2de51086463f024aec20d46df632f60da9fc8149",
+      "sha256": "2b5577f567795463b40f97abb026438f8819f4ba33be1c6fe88401d146eddefa",
       "binary": false,
       "exports": [
         {
@@ -52435,7 +52435,7 @@
       "domain": "administration",
       "bytes": 2065,
       "lines": 58,
-      "sha256": "1f653203c82df766d8a5ffa5b951ee2894f40757207c503a8b2232d7cd49dd58",
+      "sha256": "74f073b6626d048db36c0f944667c04bb8f6184861ee3aca30e1d50729e551f4",
       "binary": false,
       "exports": [
         {
@@ -52468,9 +52468,9 @@
       "path": "components/admin/PartnerPayoutsPanel.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6276,
+      "bytes": 6279,
       "lines": 154,
-      "sha256": "b5d06363bbb63f655c508e6b2a5812bf32a855589111bbfd36dd4ce444c8ef8c",
+      "sha256": "2f785878f9742d5da74ecd47d2bb80a51de4baa3ea53de4f988966e3109088ac",
       "binary": false,
       "exports": [
         {
@@ -52588,9 +52588,9 @@
       "path": "components/admin/PartnersTableClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 19627,
+      "bytes": 19647,
       "lines": 524,
-      "sha256": "b4ec9d56e93675bfb60cf5bef9f9c26a42cb659383f67a55f411d611fa477e7f",
+      "sha256": "3ef86e291c2fd8d70ad7a3b0e63abad80b53b56c89a07264297a9befd3044e6d",
       "binary": false,
       "exports": [
         {
@@ -52826,9 +52826,9 @@
       "path": "components/admin/SeedCanonicalMappingsButton.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 4416,
+      "bytes": 4422,
       "lines": 130,
-      "sha256": "137004c796b609be984e1210dbd4a55b00af1012ba0cdbd869f321f2573886d8",
+      "sha256": "4b70b1457b874af494b608a13e63152d0d488b8ecf26388d7275c8c657b14b7c",
       "binary": false,
       "exports": [
         {
@@ -52861,9 +52861,9 @@
       "path": "components/admin/SeedCanonicalMappingsFromB4BButton.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6024,
+      "bytes": 6030,
       "lines": 165,
-      "sha256": "35844f876a37b5d681ae4f1b998f71f4b5b112112c6340b94cc198d600a77fc2",
+      "sha256": "adc4830d8c5157cd7cdd7a2a3016286bd878cf02d11fa46f4b006003f120ce72",
       "binary": false,
       "exports": [
         {
@@ -52936,9 +52936,9 @@
       "path": "components/admin/SubgroupForm.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6969,
+      "bytes": 6975,
       "lines": 184,
-      "sha256": "b362e700e1c3ab1daefe7540004c828f22ea5e67967d8249147887a92f96b6fc",
+      "sha256": "2f5a82dbf9c93418d94036eedfe50706beaaabdcade64f692f9e331b154eaa9a",
       "binary": false,
       "exports": [
         {
@@ -52976,9 +52976,9 @@
       "path": "components/admin/SubgroupMembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13369,
+      "bytes": 13372,
       "lines": 351,
-      "sha256": "5ace093144e9520397a823f44ba25d6ecf39217b1a1502dbddb8d999174296a4",
+      "sha256": "0e4ac5a0722a4c5c773a7efc19d0f044a9773da2847f5b8b1f6e65dba2c9e890",
       "binary": false,
       "exports": [
         {
@@ -53011,9 +53011,9 @@
       "path": "components/admin/TestimonialsAdminClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 16469,
+      "bytes": 16479,
       "lines": 399,
-      "sha256": "9ef4fde6ec3e52e4e1dd676243e595d62c1e98fb7906aafb14a25bd7815d6e5d",
+      "sha256": "15836a3f2e0631fb7eca0e52f35dc422f62df90b403ad935306553a1dde09354",
       "binary": false,
       "exports": [
         {
@@ -53046,9 +53046,9 @@
       "path": "components/admin/TrainingProgressClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 25201,
+      "bytes": 25243,
       "lines": 818,
-      "sha256": "b8bdfb6e7cb8f98580d3feb8a13077b67c9eb548bc144a990811cef1c58872ab",
+      "sha256": "e62cf5eb099505a1b767a98d7a2c7b7790110dac439c7caaccc59a27f5f22f99",
       "binary": false,
       "exports": [
         {
@@ -53168,7 +53168,7 @@
       "domain": "administration",
       "bytes": 8035,
       "lines": 272,
-      "sha256": "c9fa92b0f4730609b72b0c0deccebda6535b9508babb72b97435c6ecf5d7034f",
+      "sha256": "b06c84394d7614d61c6af592cd79831c6192c3454bc946f9ab6b72cdf334520b",
       "binary": false,
       "exports": [
         {
@@ -53221,9 +53221,9 @@
       "path": "components/admin/TriageDigestSection.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 7759,
+      "bytes": 7763,
       "lines": 230,
-      "sha256": "daee46e901b275748b4af5a386cf1a31d32392d630a068952100f10c96031157",
+      "sha256": "986d8e95825f4477c0674224cabe2885671d47a89efe31b2e557d0ed40908374",
       "binary": false,
       "exports": [
         {
@@ -53306,9 +53306,9 @@
       "path": "components/admin/coursera/MapToUserActions.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 10085,
+      "bytes": 10089,
       "lines": 266,
-      "sha256": "db2abb31395056931cf7322eb1510efa361361fcb6c64ed6766db667f783e079",
+      "sha256": "46f96678cdbb28203cb5e90dfc011dfb9a9430481f829c384158bf985816f20c",
       "binary": false,
       "exports": [
         {
@@ -53928,9 +53928,9 @@
       "path": "components/billing/BillingPacketList.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 6405,
+      "bytes": 6408,
       "lines": 129,
-      "sha256": "427ffb33b4ad396ee4185f51bc2627eb1130901f3be583eae0540fd0d2bbfebf",
+      "sha256": "6aa72163357b423621b3813cc74a760313045ed47b69512fd50a436ce5b359b4",
       "binary": false,
       "exports": [
         {
@@ -53968,9 +53968,9 @@
       "path": "components/counselor/CounselorIntakeReviewPanel.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 14084,
+      "bytes": 14087,
       "lines": 365,
-      "sha256": "cc247c0786e3d56e7323616ca7c8f261a91140335f422761747fc5a2202b45a5",
+      "sha256": "f8bf75189d8e71660b2779ee9c8495a179512ac2c5d4ec6d38c6eee0ebd010f5",
       "binary": false,
       "exports": [
         {
@@ -54058,9 +54058,9 @@
       "path": "components/counselor/StaffMemberResumePanel.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 12952,
+      "bytes": 12958,
       "lines": 367,
-      "sha256": "3883615d23720c93ecb27b912934d5c2d6e7e1f7e40f8bd5d54f3be4c31dc901",
+      "sha256": "3e0cbb94deffca875018376949dccbc3f29d84d6e8dcd66c54a4bab441bbc6a8",
       "binary": false,
       "exports": [
         {
@@ -54148,9 +54148,9 @@
       "path": "components/employer/ApplicationStatusUpdater.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 2721,
+      "bytes": 2725,
       "lines": 87,
-      "sha256": "73b2abce7f888e84eb16b3d02ef1715afe02dfe873743f385b0102b2546c6867",
+      "sha256": "4fd36dc9ec0d540f770093261fc24d41beb3df21366a4722ec8e4920d37ffc2b",
       "binary": false,
       "exports": [
         {
@@ -54313,9 +54313,9 @@
       "path": "components/employer/EmployerJobQuickActions.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 4104,
+      "bytes": 4114,
       "lines": 138,
-      "sha256": "94dccf8babc0401e9b23d786c6f7d44745db455be036e5ee366cf73d4191fcc8",
+      "sha256": "236ef25c05dd068de020333ea58c85ac713f2e572e2846f2b5bbabfc87ebea58",
       "binary": false,
       "exports": [
         {
@@ -54338,9 +54338,9 @@
       "path": "components/employer/EmployerJobsBoard.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 46826,
+      "bytes": 46819,
       "lines": 1204,
-      "sha256": "895e75366136914623051e166efe25c437504c5ae0b214961eb9ac71d7e41f75",
+      "sha256": "3a44e3dcc2bf9fe902e937d5d87590c8a57ea7742e3591040ab40686eea44f79",
       "binary": false,
       "exports": [
         {
@@ -54448,9 +54448,9 @@
       "path": "components/employer/EmployerKanban.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 12382,
+      "bytes": 12374,
       "lines": 284,
-      "sha256": "7220003b3225d34a0ac0bc3d47707a8cbf8179fbb25897a584a1e25711ae1637",
+      "sha256": "141877d32576d5ba8372614d91a5d78dcff0d5e9378bc0a8baa2d50e83780af1",
       "binary": false,
       "exports": [
         {
@@ -54530,7 +54530,7 @@
       "domain": "jobs-employers",
       "bytes": 10418,
       "lines": 303,
-      "sha256": "7a5482c015372156dd2981d879c2e58e7b5efce97310aa7552126e37b3d4d8cb",
+      "sha256": "e7efc0b16c8a549e01fd2815b1f5e65f18402dd354f58ca1f0ca279cf232b1c4",
       "binary": false,
       "exports": [
         {
@@ -54593,9 +54593,9 @@
       "path": "components/employer/EmployerMatchStatusSelect.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 2822,
+      "bytes": 2826,
       "lines": 96,
-      "sha256": "af197d0516bffa1795a793d30cb4a1b5e1203fa6b8107b583111351cb9b67bd2",
+      "sha256": "b30e52b354bee76871ded4ff78828f7cdbb1f97f93334ef63cc890a089a6e167",
       "binary": false,
       "exports": [
         {
@@ -54702,9 +54702,9 @@
       "path": "components/employer/EmployerPipelineClient.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 6282,
+      "bytes": 6278,
       "lines": 157,
-      "sha256": "f02eb9358784c567103034852f61a034fa1306ffcefdf22c6058776de4f2670a",
+      "sha256": "e276fec90501c5200d53817d36f29eae7798572e59b6cd3914b86a065afe5c5b",
       "binary": false,
       "exports": [
         {
@@ -54847,7 +54847,7 @@
       "domain": "jobs-employers",
       "bytes": 10708,
       "lines": 321,
-      "sha256": "f19318b3fb88891423637554a73a9453ca632d6489714bdd782db5053cedf314",
+      "sha256": "3ababdf12b4bae99ffadf59c56b1455f94dca5730d1625c329a6de78f4c08709",
       "binary": false,
       "exports": [
         {
@@ -54985,9 +54985,9 @@
       "path": "components/employer/JobApplicantsClient.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 10182,
+      "bytes": 10198,
       "lines": 237,
-      "sha256": "da59710fc1667737b07c19d98cbd29c79c12e27e6b25f5c65d3bad7a1be62167",
+      "sha256": "67921c07377d9410e9076f11965cc67aa7cd5eb67602afc4cabd7cfbd5c90b47",
       "binary": false,
       "exports": [
         {
@@ -55200,9 +55200,9 @@
       "path": "components/error/DashboardErrorFallback.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3070,
+      "bytes": 3072,
       "lines": 124,
-      "sha256": "0a979103a2c4bb4e823a13c6e05a543f3fc1ea3d47fefefcedb0f6f759b5458f",
+      "sha256": "66b1ea805498eb913533bd8e0f9aaedf03d47451a1edf198fccd25ba98eb751b",
       "binary": false,
       "exports": [
         {
@@ -55295,7 +55295,7 @@
       "domain": "components",
       "bytes": 8625,
       "lines": 333,
-      "sha256": "2fa3c56eeeb028f28aaf61d033aad850cc7976ea7eb941480cba45e8226787e3",
+      "sha256": "4a21c4bcfae17c3b0f56f9be516fb03e9d34c8d1cb3634f645e011891403eb47",
       "binary": false,
       "exports": [
         {
@@ -55532,9 +55532,9 @@
       "path": "components/marketing/EmployerCaseStudyCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 5410,
+      "bytes": 5416,
       "lines": 167,
-      "sha256": "7d8490971e212c1ad96aa8cd3ea0dd01101a890d6f68c46cab2d3f70dd0e3dc3",
+      "sha256": "de23b7edc1a9bf61f0cac7a897a94a684cfe06b33227b78de10713d5b9ea6db0",
       "binary": false,
       "exports": [
         {
@@ -55592,9 +55592,9 @@
       "path": "components/marketing/HomePageBelowFold.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 32088,
+      "bytes": 32109,
       "lines": 704,
-      "sha256": "a75e86ad27b21a23c38885b0099e1080704f583603987c7fdfd7844355578cbe",
+      "sha256": "12455b1f3eb04545d6e972d18709f3973ed7e0f0fcb898fa7d4cb61232e5fcbc",
       "binary": false,
       "exports": [
         {
@@ -55757,9 +55757,9 @@
       "path": "components/marketing/TestimonialCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 5138,
+      "bytes": 5140,
       "lines": 180,
-      "sha256": "1b3fbef4bbaf6a4ba9fe8056bfba6ad885e4ff6393b717a776860f81410625e3",
+      "sha256": "d0792a04d619b00250fafd68f2401a4d92f062d16a32be0f685ff24a91f60b9e",
       "binary": false,
       "exports": [
         {
@@ -55797,9 +55797,9 @@
       "path": "components/marketing/TestimonialsCarousel.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 4920,
+      "bytes": 4922,
       "lines": 157,
-      "sha256": "59ea50cbc1d3a670ba14a8086cbf91a014b534622d31680a5277f70986750d3c",
+      "sha256": "45b1029d7ef226bcdbfe016ddd45ce76697b1bd49a6dfd673336551b84e2cfb2",
       "binary": false,
       "exports": [
         {
@@ -56050,9 +56050,9 @@
       "path": "components/marketing/ui/CohortStatCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 2091,
+      "bytes": 2093,
       "lines": 57,
-      "sha256": "d2b13fbb564963090fcab9676f8d2e7fa016eafa759ad8d583be80e078e5e3f8",
+      "sha256": "dbdbc62439dfc30dc541c9b34669f95801d0eef8ac75a9425c4354244d03bcdc",
       "binary": false,
       "exports": [
         {
@@ -56149,9 +56149,9 @@
       "path": "components/marketing/ui/InfoCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 1560,
+      "bytes": 1562,
       "lines": 47,
-      "sha256": "4929ddffa0ceaba3a4cfae7feaa6da610c1f788dd319d78529d308d0ebda3ebc",
+      "sha256": "c4b9e73c3ec39791df15c1e3542c7594ea5e0f539f9920aee42f14c0f1697803",
       "binary": false,
       "exports": [
         {
@@ -56246,9 +56246,9 @@
       "path": "components/marketing/ui/PartnershipCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 2047,
+      "bytes": 2050,
       "lines": 78,
-      "sha256": "2f67f46ff085bd88b9a7c38ff5db31545190377fd1d8fd9097c31658628a8b1e",
+      "sha256": "f1292befd07a0117170412208d4ab5bdd62d05dc25f592f01170093e14cbc15d",
       "binary": false,
       "exports": [
         {
@@ -56275,9 +56275,9 @@
       "path": "components/marketing/ui/PricingTierCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 2807,
+      "bytes": 2809,
       "lines": 84,
-      "sha256": "1598729723e2796e398728e2fdd9eda2a25b684280782bc0c7f75461da68e380",
+      "sha256": "c76f37e8f8ab0e8c3d99335058a8464d4ae2cb18134a09fa426db189c931a974",
       "binary": false,
       "exports": [
         {
@@ -56333,9 +56333,9 @@
       "path": "components/marketing/ui/QuoteCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 1870,
+      "bytes": 1872,
       "lines": 68,
-      "sha256": "cdd5f7690d3ce907b49cef5e4a157db1972a8b798cd2c8acedb59388d2613757",
+      "sha256": "1cb131997efb05a710f4e1ed62e06afeb1e0d61ba0d83566d5d20dc65089e0c8",
       "binary": false,
       "exports": [
         {
@@ -56362,9 +56362,9 @@
       "path": "components/marketing/ui/SectionHeader.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 1639,
+      "bytes": 1641,
       "lines": 46,
-      "sha256": "d716cd954bf4c8267c8cf962cd946f2f3eda06076badff0d5620788cb74af715",
+      "sha256": "e288ebd53af940928152e4629536b4ef25b860a51859d9922ad8f7e989e4c4ab",
       "binary": false,
       "exports": [
         {
@@ -56391,9 +56391,9 @@
       "path": "components/marketing/ui/SplitHero.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 1661,
+      "bytes": 1664,
       "lines": 67,
-      "sha256": "ae105a4a9a72fd5c1f7abd0e1bab273224d95417f5bc43d9ac8a4ce49b49769e",
+      "sha256": "1e1b5e3ff9beb948669a1a55fb1b0a0a2342a6a5cc0eb3cefc6646e65da04c2a",
       "binary": false,
       "exports": [
         {
@@ -56454,9 +56454,9 @@
       "path": "components/marketing/ui/StatCard.tsx",
       "area": "components",
       "domain": "public-experience",
-      "bytes": 1994,
+      "bytes": 1995,
       "lines": 69,
-      "sha256": "d009b844c927d78fb86afb55523c0bf2b9178439685cdfc37ad3fcb3544e221c",
+      "sha256": "e9ef26c9ca103a2c7dba0f54dd999530b96591dc90c5fb3c6b7e58267a879499",
       "binary": false,
       "exports": [
         {
@@ -56782,7 +56782,7 @@
       "domain": "applications-enrollment",
       "bytes": 10268,
       "lines": 343,
-      "sha256": "c4897ba387b02f922541ecdd367f7cf516ad4865f8b83aeecd32b5177f64a59b",
+      "sha256": "d7697bff1497b36a6e9d84fd185e9d3af2f209d647eb26ce0948e852da544cfe",
       "binary": false,
       "exports": [
         {
@@ -57121,7 +57121,7 @@
       "domain": "partners-funding",
       "bytes": 23023,
       "lines": 494,
-      "sha256": "70fb0862bfe7e8c1ac4eee873a0d9728bad07ed60f1a6633574fdf9d8cafdbd0",
+      "sha256": "1b56682021a84239a0f89aa82c7a7d93ccf8d488898a3f940928165df63d29b4",
       "binary": false,
       "exports": [
         {
@@ -57279,9 +57279,9 @@
       "path": "components/partner/PartnerMilestonesMobile.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 6720,
+      "bytes": 6721,
       "lines": 172,
-      "sha256": "2f6851c582bcdc82d48d3143b5255045fac4394e18700c4be65975060db77d0c",
+      "sha256": "3afb6e2e032b098e0d667b7ab01c3279bc804bdb64cda7ac843d538b01d4c0ce",
       "binary": false,
       "exports": [
         {
@@ -57321,7 +57321,7 @@
       "domain": "partners-funding",
       "bytes": 6999,
       "lines": 204,
-      "sha256": "fe703b63fbefe98d6ccc2e37b9d38306e087b9f8dc1321b6d359b3c1c0cdf88c",
+      "sha256": "62231e58eb09bfe96b6c43e91abda13cf298f6fd5cb331eebf53e439f3b008a3",
       "binary": false,
       "exports": [
         {
@@ -57381,7 +57381,7 @@
       "domain": "communications",
       "bytes": 2659,
       "lines": 75,
-      "sha256": "b0129612a1a0c4a8da9e0e0669a0cc90e471ce5c737a0ddad3afd20b54844041",
+      "sha256": "1d5aa405701d3a02670cf250b82098ef4c9e4ddf86be8fb4b980fe9c263c2b2c",
       "binary": false,
       "exports": [
         {
@@ -57414,9 +57414,9 @@
       "path": "components/partner/PartnerReferralResourcesSection.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 3770,
+      "bytes": 3774,
       "lines": 96,
-      "sha256": "b3ec08cfc5c8f42e7f0e208116a44d9b12d5faee37a5ab5984e15792fb7fc0aa",
+      "sha256": "3763a626686de1b38bcbfbbffe172494c2d0acbc9b97bdce4b17107599a46f37",
       "binary": false,
       "exports": [
         {
@@ -57473,9 +57473,9 @@
       "path": "components/partner/PartnerReferredMembersMobile.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 6478,
+      "bytes": 6482,
       "lines": 171,
-      "sha256": "fe95d6cde0a1a4a2594524cc5a074e04d6b6f6702be048ad299d0bdbb9550b58",
+      "sha256": "1a77650779bc9d1be97649c79d587cd934ea33fd1087439eae56723825bc53b0",
       "binary": false,
       "exports": [
         {
@@ -57528,9 +57528,9 @@
       "path": "components/partner/PartnerSettingsEditRequest.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 6256,
+      "bytes": 6260,
       "lines": 143,
-      "sha256": "81a194ba147a3ba8967fb7e48519b5997ef017790bc56519e64a2845dbe7ff61",
+      "sha256": "0bad4bad131df806b43f7fc98be694f476aeb0c224869d27c1fc951b0fce8153",
       "binary": false,
       "exports": [
         {
@@ -57558,9 +57558,9 @@
       "path": "components/partner/PartnerSignupForm.tsx",
       "area": "components",
       "domain": "partners-funding",
-      "bytes": 9961,
+      "bytes": 9970,
       "lines": 261,
-      "sha256": "10ec6a17642a36767829f921ec2f1ba57ce9aea79d6b97f2e61ad387c8ce1312",
+      "sha256": "ac0bdc061b09f083ea3102cc7f15b3bbb1b27eb3d92544c695b9392d65b709b4",
       "binary": false,
       "exports": [
         {
@@ -57713,9 +57713,9 @@
       "path": "components/portal/AIHistoryList.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8482,
+      "bytes": 8489,
       "lines": 227,
-      "sha256": "686a11b26d9f7f3b3c21b075edc1429d7d0b4a3d22485ce4caa178f20623e429",
+      "sha256": "f6f9848a5d109874cf0d06d003d40bb92f69234816b13b2b655afe5a7b1c8362",
       "binary": false,
       "exports": [
         {
@@ -57783,9 +57783,9 @@
       "path": "components/portal/AiResultRenderer.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 35777,
+      "bytes": 35807,
       "lines": 643,
-      "sha256": "465088fb19cb91b00a599f9eb16f60049f89de07e524d999fd7d84e34ce69b32",
+      "sha256": "fa4347cd842be3d76e7db43db49ab3e61ca9029fbde41a2891a1e2586619e0d7",
       "binary": false,
       "exports": [
         {
@@ -57933,9 +57933,9 @@
       "path": "components/portal/AiToolsHubSection.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3227,
+      "bytes": 3230,
       "lines": 82,
-      "sha256": "08ce3dbeedfc73054eb32824f61acfb9768439294535620882434ab4f0d8c5d5",
+      "sha256": "269d214b33398df1ecc428b653b683860231d640ae7f0eaf891c5bd714f0d8f9",
       "binary": false,
       "exports": [
         {
@@ -58145,9 +58145,9 @@
       "path": "components/portal/AwardPointsButton.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4494,
+      "bytes": 4516,
       "lines": 133,
-      "sha256": "456434200804c50642695718f290885594a404b3616486a5ec1e567260291c4e",
+      "sha256": "cd20b41f6dd8975da44cacc22c309eed16103e98f4dc34101c915f7cd959274a",
       "binary": false,
       "exports": [
         {
@@ -58215,9 +58215,9 @@
       "path": "components/portal/BenefitsCliffClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 15812,
+      "bytes": 15822,
       "lines": 429,
-      "sha256": "462c49dcadc08472a191efda5a8c6ac6e6468a6db3aa35395138c16fb618b9c7",
+      "sha256": "ba309b1d9f9eebf0e9ce0ac746101a8228e150f1f406ca10d685aa7cd139c4f8",
       "binary": false,
       "exports": [
         {
@@ -58265,9 +58265,9 @@
       "path": "components/portal/CareerBriefForYou.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5885,
+      "bytes": 5891,
       "lines": 146,
-      "sha256": "2a3c7a49b18b0e6a0becc6ef278898a909fc0074fbb9cef3cdaf8b4027c6a574",
+      "sha256": "dff3dbaa8527bc124d42412d1a0c37daf37f2626a6caefc04d5ed065b6f8cbaf",
       "binary": false,
       "exports": [
         {
@@ -58325,9 +58325,9 @@
       "path": "components/portal/CertificationAddForm.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10235,
+      "bytes": 10243,
       "lines": 224,
-      "sha256": "ddb3cee37833ac0bbd63fe855d6b4c7ed106f63a08b464bc1efc8fc4c9a4b239",
+      "sha256": "91c6b229cbda088773c4036498b87f9f50fa620669be6fb661b03e6c43a1b03a",
       "binary": false,
       "exports": [
         {
@@ -58489,9 +58489,9 @@
       "path": "components/portal/CoachChat.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 8592,
+      "bytes": 8599,
       "lines": 353,
-      "sha256": "8d779c7dece7996b39458fda5d774888cc346739e0e2c0f0509c439e9f9330ad",
+      "sha256": "5de2d235e0b21db30ae3024b8b1e7a9e7b9af9509a46342bf07adee1b0c83897",
       "binary": false
     },
     {
@@ -58578,9 +58578,9 @@
       "path": "components/portal/CompactReadinessCoach.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2046,
+      "bytes": 2048,
       "lines": 75,
-      "sha256": "f0152ac36225d1a456bfbf8e1fd3445d0ea7de0f7a37db44f3f8bddf08f99c5b",
+      "sha256": "ba77cf196f58747d74ee903b249126bd4e1e08dcf9df424b5a177855bc6bca1c",
       "binary": false,
       "exports": [
         {
@@ -58848,9 +58848,9 @@
       "path": "components/portal/CourseraProgressCardView.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 12664,
+      "bytes": 12675,
       "lines": 346,
-      "sha256": "64ee48152aeae3d878d2e8a5bc396d15cd3b0b3fc1cb1b232595beabbc4d5273",
+      "sha256": "564aa8b37755dec9af80edd520466863c515397427396890e33a086578655267",
       "binary": false,
       "exports": [
         {
@@ -58963,9 +58963,9 @@
       "path": "components/portal/DashboardHomeClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 41550,
+      "bytes": 41567,
       "lines": 803,
-      "sha256": "8c0ebb97759178f16bac457ec80135ab05a76b2fdb5a57362f87f187df9dd817",
+      "sha256": "44dd373881cfb112f4a9f7da7b4ea6f80e3bba17fc635a0fad00a33cf3ab92c4",
       "binary": false,
       "exports": [
         {
@@ -59106,9 +59106,9 @@
       "path": "components/portal/DashboardProgramSelector.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5823,
+      "bytes": 5826,
       "lines": 177,
-      "sha256": "260ff9183507c6afbd57ea8f8962fd7fb840fd498f938aa3fc9dfeb75924686c",
+      "sha256": "b7b393eb0abf6fc4c5f38f8acf7c40496a6ed299205aaa9d1535521bcd210348",
       "binary": false,
       "exports": [
         {
@@ -59171,9 +59171,9 @@
       "path": "components/portal/DevViewToggle.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2524,
+      "bytes": 2530,
       "lines": 82,
-      "sha256": "32f8c39bc87b6d7a3f84f5e95616e3afb8bb18d62b95a75b22278654824042d7",
+      "sha256": "4901b6494c035e3d36171cea7f1143a849914becea61d036180427e12562d6f9",
       "binary": false,
       "exports": [
         {
@@ -59213,9 +59213,9 @@
       "path": "components/portal/DownloadMyDataButton.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2424,
+      "bytes": 2426,
       "lines": 83,
-      "sha256": "dc7f71f8ef8e82b955ce5d6dcd29965105bdfb4c6398973e15034b616534979a",
+      "sha256": "6ba38ee5f6ed62bb8e692c1b86bec9797ab1ef39b805f51700908a109a7ce164",
       "binary": false,
       "exports": [
         {
@@ -59238,9 +59238,9 @@
       "path": "components/portal/EmployerApplicationChatClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5679,
+      "bytes": 5684,
       "lines": 197,
-      "sha256": "b7e389edeee902e2f42d6c2edac1c45fec969f8d20e8772956c4dd2720e3e897",
+      "sha256": "8ce8ad8d5a69c53b8965cf3c5df0f2e72f37c56d87b6d53c697214a2d722f90e",
       "binary": false,
       "exports": [
         {
@@ -59368,9 +59368,9 @@
       "path": "components/portal/First90DaysCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9332,
+      "bytes": 9345,
       "lines": 255,
-      "sha256": "e61158a19dcb83f454c6a5e0d486416cdc16387ad45717807864db91a96eded7",
+      "sha256": "992766dc753c4f90056bcc054a0058330c568dfab7c539199a15fbf5bfe00b86",
       "binary": false,
       "exports": [
         {
@@ -59433,9 +59433,9 @@
       "path": "components/portal/GoalsModule.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 18301,
+      "bytes": 18309,
       "lines": 530,
-      "sha256": "1429b803d8b20aff63c53e679848ec247058ed416812312e71a89827af673a58",
+      "sha256": "7c3b5d4a5177a17ed0f02f725e293b0745aeba6ed4d6eddc835dc0f11ee62f0e",
       "binary": false,
       "exports": [
         {
@@ -59503,9 +59503,9 @@
       "path": "components/portal/GoogleDocsStyleResumeEditor.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6928,
+      "bytes": 6930,
       "lines": 242,
-      "sha256": "1617643551d2679e8616267cb986569bcb8c3f23086889ab2700fbe4990de45a",
+      "sha256": "cec87a2164d856b7e39dc9ec47e3572ac0eb406c8276faa265d4dee6718bebc6",
       "binary": false,
       "exports": [
         {
@@ -59587,9 +59587,9 @@
       "path": "components/portal/InterestProfilerClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 21335,
+      "bytes": 21342,
       "lines": 539,
-      "sha256": "7bd9a68a857643c8d78d350e65c5ae0eb25bcdb3593ce28162395f52c01ade9d",
+      "sha256": "8d2d9d206504a6417e13eb344f62511557e2e6c6e637012e93030579498f8e80",
       "binary": false,
       "exports": [
         {
@@ -59679,7 +59679,7 @@
       "domain": "components",
       "bytes": 8287,
       "lines": 262,
-      "sha256": "9fd0e3efbbf65f551d12fee9b679a28f066f5892187bb3c7f1f7ad110eea14f5",
+      "sha256": "60d470f9e7bbadad6490b999bb089dcd478306eb6733e98da0a86ebb4d510c7c",
       "binary": false,
       "exports": [
         {
@@ -59859,7 +59859,7 @@
       "domain": "components",
       "bytes": 11065,
       "lines": 345,
-      "sha256": "02973c091e2d4660ffc1750fb43daf3a50dfd4f3007e64251a5c491a4299a51d",
+      "sha256": "a6ef3c0d7449d459b57941fc0904ae58a9478c152707890c5d93a3f1a45fe6c5",
       "binary": false,
       "exports": [
         {
@@ -59927,9 +59927,9 @@
       "path": "components/portal/JourneyStageGuide.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7566,
+      "bytes": 7575,
       "lines": 190,
-      "sha256": "635105a85c2e11bd632ed6b8fa4d7224cba53fbcdd3186373867bb10480ff490",
+      "sha256": "6aea1e3ff26589bbebdb812b24ade797bcadb11a5970a62f6d30619277f25249",
       "binary": false,
       "exports": [
         {
@@ -60010,9 +60010,9 @@
       "path": "components/portal/LearningCivicBotPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3167,
+      "bytes": 3171,
       "lines": 94,
-      "sha256": "25d9401c44dcadf54ae734e3ceadc7c911a5bf8e47b7caea3a53b82dac4d2e26",
+      "sha256": "90439693b365e7d45a7fa4d4c14394196ce9966cd78afacd415fd71ec43b3034",
       "binary": false,
       "exports": [
         {
@@ -60083,9 +60083,9 @@
       "path": "components/portal/LearningHubEnrolledCourses.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7136,
+      "bytes": 7140,
       "lines": 204,
-      "sha256": "57aec71c6ab83ef67946e50a98da1d21510c83688c94e85166aa8fb3da03c560",
+      "sha256": "5c849290cee586dd989bca7a95a631837470daa35398ad61393acfbc125d4c2a",
       "binary": false,
       "exports": [
         {
@@ -60193,9 +60193,9 @@
       "path": "components/portal/MatchedRoles.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5831,
+      "bytes": 5834,
       "lines": 156,
-      "sha256": "d144671b9680f85854ba171f3889262dab4db5fd10c3a07ca410b620e7598fae",
+      "sha256": "29347c616a815ab63e16cb085a89415ba99e235c2584954e79237e4d7fb64e9a",
       "binary": false,
       "exports": [
         {
@@ -60248,9 +60248,9 @@
       "path": "components/portal/MemberCareerPathSection.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3526,
+      "bytes": 3534,
       "lines": 88,
-      "sha256": "0c67cd42ded2a40ae291c75bd31ca587cc741dc4611f6f09328bf64d540c50c1",
+      "sha256": "5a441de27c1a4760705cf15a621dd4ed1319d153f86f9b3dce23d49a010b18ef",
       "binary": false,
       "exports": [
         {
@@ -60438,9 +60438,9 @@
       "path": "components/portal/MemberFeedbackModal.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10084,
+      "bytes": 10092,
       "lines": 258,
-      "sha256": "0a166b17d1fcd7fba8b951374e87a7182abac821976188192126e74cb2eabedd",
+      "sha256": "e5240a2d2ec6865e949f2349de442cebdfa8ac424b47f1f8507f19f65963cc0c",
       "binary": false,
       "exports": [
         {
@@ -60478,9 +60478,9 @@
       "path": "components/portal/MemberFirstCertProgressBar.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3691,
+      "bytes": 3695,
       "lines": 133,
-      "sha256": "55f7b5a91c62b5e592d5163b7e926a780b6663e8188bcd4956087a80f3e22999",
+      "sha256": "995bb3bc21321700a15ce8b794cae0455a58a74126df388fa500e4bbd354a903",
       "binary": false,
       "exports": [
         {
@@ -60518,9 +60518,9 @@
       "path": "components/portal/MemberFirstValuePanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4116,
+      "bytes": 4121,
       "lines": 149,
-      "sha256": "4d638b84b6ed0bf55887de13bee24b967ce9f74dfca4d26dd89bf74f0da13d09",
+      "sha256": "a6cc3d1d89cde773f439a7a11b71b51d3d76cc081105d73a232463a18e68d6e3",
       "binary": false,
       "exports": [
         {
@@ -60643,7 +60643,7 @@
       "domain": "components",
       "bytes": 16391,
       "lines": 404,
-      "sha256": "343e0bd3d907a62f3a9802f31d6fdcf685aafcc792032f4328d6379252422696",
+      "sha256": "46fc198be4dffe248788431d562e3628cfa78d440283453525d8fc5c9464465b",
       "binary": false,
       "exports": [
         {
@@ -60704,9 +60704,9 @@
       "path": "components/portal/MemberNextStepsStrip.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10123,
+      "bytes": 10127,
       "lines": 285,
-      "sha256": "659a02e52fbfbeb60ea7477836c52d43c8be0de9dfcd27c860e6a62148e8e431",
+      "sha256": "2f46bd75317bb5f1e0313b321b4d70785262a0e091a88c595fc6e9ddf8e41b5a",
       "binary": false,
       "exports": [
         {
@@ -60816,7 +60816,7 @@
       "domain": "components",
       "bytes": 5788,
       "lines": 187,
-      "sha256": "62d42324685be7e9ab6970ebd0c85652512b8531a20db870345a32c9046221bb",
+      "sha256": "d3ed8df648df4ffb110d6cea4fec6e06dd8edf549652ee342a629613b3189937",
       "binary": false,
       "exports": [
         {
@@ -60849,9 +60849,9 @@
       "path": "components/portal/MemberSessionCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3239,
+      "bytes": 3242,
       "lines": 99,
-      "sha256": "eebb2a6aa1e6785169cc8c4da3795746a67b5e7517d0fb1d70a44359cb28a64c",
+      "sha256": "b2942400fc863a9db7ae46f73eb3286770746cf5bdafdc697451f96066f6a1e2",
       "binary": false,
       "exports": [
         {
@@ -60987,9 +60987,9 @@
       "path": "components/portal/MobileProfileSkillsResume.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 15989,
+      "bytes": 15993,
       "lines": 346,
-      "sha256": "c53e96ed1706d892bc4efeeac043b004677a707223a10c600eeeab0ea0172613",
+      "sha256": "53ae146ca4ef20617409a6e3026a9865efe6c21679666287e35b35469c8e5563",
       "binary": false,
       "exports": [
         {
@@ -61042,9 +61042,9 @@
       "path": "components/portal/NotificationBell.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 22041,
+      "bytes": 22060,
       "lines": 422,
-      "sha256": "74c6a54af26ae375808cb52bf5e766cc78d0dfa66fc7bba70ec441675855e96f",
+      "sha256": "4a8e44ad1fa2422d704a582cdceab828ed61fbbeac7877dbdf96f43af5620fce",
       "binary": false,
       "exports": [
         {
@@ -61197,9 +61197,9 @@
       "path": "components/portal/PartnerInviteMemberButton.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7923,
+      "bytes": 7925,
       "lines": 224,
-      "sha256": "503d9d71992b27c3ea516162a2846a06f2409c60de1f40310174e53b4bf9b059",
+      "sha256": "05ac2fd11e1a7a335c33b79e0f6b6b9c8a85c414f89820c18eb7570627dd2072",
       "binary": false,
       "exports": [
         {
@@ -61229,7 +61229,7 @@
       "domain": "components",
       "bytes": 6027,
       "lines": 178,
-      "sha256": "a9d076ec46e2ad665cb6a3aca9dc2e7c31de8dc04dc9f2395836425b24fc41be",
+      "sha256": "446b684e36029a13c2382546db5dd058d39fcaee847a59b6aa0b89fbb83aa815",
       "binary": false,
       "exports": [
         {
@@ -61309,9 +61309,9 @@
       "path": "components/portal/PointsWidget.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 12429,
+      "bytes": 12449,
       "lines": 348,
-      "sha256": "ef1dfd3e3184787e6d6cdbd036d0a399419850915c1f95a339301ee41bff2127",
+      "sha256": "68bb0dd2b5eb479c6afb2636a987c686c073b2b3095c30a5ba32377bce8148fc",
       "binary": false,
       "exports": [
         {
@@ -61733,9 +61733,9 @@
       "path": "components/portal/PortalRoleSwitcher.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 2581,
+      "bytes": 2586,
       "lines": 124,
-      "sha256": "5bec74c926f631c3de837ee2bb9ad77f35252b75244c9ee0925a1b619a465c6d",
+      "sha256": "0b4e454aec54ecee8e90dd25853500684cdf796c99c2cc6a9e1aafeed9d2d444",
       "binary": false
     },
     {
@@ -61995,9 +61995,9 @@
       "path": "components/portal/PortalVoiceSession.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 47885,
+      "bytes": 47905,
       "lines": 1313,
-      "sha256": "621eb4af4341a606a7da071be1f8a29f7a7058686f6364ebd9829e3457fb7bcb",
+      "sha256": "d4dfa1eb1448e76abf7a3af417b705e63ca1dae91a3f78320b6f92740efc3079",
       "binary": false,
       "exports": [
         {
@@ -62130,9 +62130,9 @@
       "path": "components/portal/PreLaunchTag.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 2251,
+      "bytes": 2262,
       "lines": 116,
-      "sha256": "850a9f928ac337e5cee1826d30d97f6ea02c007b89584fbdbc04eded060f158a",
+      "sha256": "de8cdb09ed6be88a3ed15a6024662799cde81f9621e84f38539440d498e89232",
       "binary": false
     },
     {
@@ -62169,9 +62169,9 @@
       "path": "components/portal/ProactiveInsightCard.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 3117,
+      "bytes": 3121,
       "lines": 115,
-      "sha256": "68bac944f269b1ab97e26829e8254fee21c467097d06544c87f31493526e3867",
+      "sha256": "1cca0802085a8d5a9cafc004c606a010f9ce33f722ff17b092261bcedaac7068",
       "binary": false
     },
     {
@@ -62233,9 +62233,9 @@
       "path": "components/portal/ProgramChangeRequestForm.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4631,
+      "bytes": 4634,
       "lines": 142,
-      "sha256": "53d0554834c98f79c17e54c9de00cec488095e78ac22b810545955b94c461763",
+      "sha256": "874ced438addaf58aaaa14e281f4c856d4497eeb4f50018a7beeb370008b5675",
       "binary": false,
       "exports": [
         {
@@ -62263,9 +62263,9 @@
       "path": "components/portal/ProgramChangeRequestModal.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 12242,
+      "bytes": 12245,
       "lines": 307,
-      "sha256": "4795b0ef28ccfe7d86987326f850c5da8c00d0cc079cc0519050f899bedd7d1c",
+      "sha256": "f010ba36a4a212b0e29333b14ed7dd375a09037e9f4f05628534907de3746dcb",
       "binary": false,
       "exports": [
         {
@@ -62328,9 +62328,9 @@
       "path": "components/portal/ProgramCommitmentPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3363,
+      "bytes": 3367,
       "lines": 82,
-      "sha256": "2a7c073b45c48f7c975b93beb29b5274817112731740654e46811128a509d946",
+      "sha256": "90e95bde5aeb3a9a0006dd2cd08b1109ad7b9c1783b39021e56e07d73b4ed9f1",
       "binary": false,
       "exports": [
         {
@@ -62393,7 +62393,7 @@
       "domain": "components",
       "bytes": 12765,
       "lines": 349,
-      "sha256": "b473f96f88450c415df74c0415e6977fd3eadd82a1c39346e84e2b51fb7b9dae",
+      "sha256": "a4287bc4131eb603ff54bb2bd4af7698586aff5c29165648302d4532eddf5ca9",
       "binary": false,
       "exports": [
         {
@@ -62486,9 +62486,9 @@
       "path": "components/portal/PushNotificationsToggle.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 4462,
+      "bytes": 4468,
       "lines": 124,
-      "sha256": "c919dca915f65625ee2312b578e7b920e7191b405d2009e65f1e87df9d8af991",
+      "sha256": "31d66bd271e568116ae47ac21de9d8a355d59f5ae691e0221d84ba8cfebdd2eb",
       "binary": false,
       "exports": [
         {
@@ -62583,7 +62583,7 @@
       "domain": "components",
       "bytes": 4834,
       "lines": 109,
-      "sha256": "b7130cee3c0d13c2a4fe72f7f6706afb5495c821dd271c1dcfd1acbcf022ee16",
+      "sha256": "6a2ba4162d327b4dd624e792113de0bf90822c6dd86354bd571801e7bd3e989d",
       "binary": false,
       "exports": [
         {
@@ -62690,9 +62690,9 @@
       "path": "components/portal/RefreshCourseraProgressButton.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 2973,
+      "bytes": 2975,
       "lines": 89,
-      "sha256": "96736249ff93b08d2e2f78a7422eeb04d672bfbfcba85aed4d9e30faf64a9262",
+      "sha256": "38af96d32d3a08d76ceea6516d0b8f87cf6aebaecc8b69be5ac313025985d97a",
       "binary": false,
       "exports": [
         {
@@ -62740,9 +62740,9 @@
       "path": "components/portal/ResourceCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4255,
+      "bytes": 4257,
       "lines": 134,
-      "sha256": "de434f9c9e7c7fe85631c9668cac39c93ed238a08efb8811c74b862015ad15bc",
+      "sha256": "44357db5b1b1f722342d4c3140b2bb5d1daf6ae5390eb95bcb424431eccba827",
       "binary": false,
       "exports": [
         {
@@ -62920,9 +62920,9 @@
       "path": "components/portal/ResumeCoachWorkspace.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 30869,
+      "bytes": 30894,
       "lines": 856,
-      "sha256": "989f54dfd8f7c30f75fd03d34f7b46b22180f58f59da5557cb9bf2b821a64762",
+      "sha256": "4c252a8955598b99b67bff2d2142974f821a371c52d007ff28d84dc6e464ef96",
       "binary": false,
       "exports": [
         {
@@ -62995,9 +62995,9 @@
       "path": "components/portal/ResumeMobileQuickActions.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4518,
+      "bytes": 4526,
       "lines": 134,
-      "sha256": "a1180a91c1e830a6223c21373fc9690f6122d87e8bebe034dc982e9135546291",
+      "sha256": "022548d5b1a75300ba038cda54b53dfe947b8949c623aad5e70b42e8111ce46b",
       "binary": false,
       "exports": [
         {
@@ -63020,9 +63020,9 @@
       "path": "components/portal/ResumeMobileResumeTools.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9210,
+      "bytes": 9213,
       "lines": 244,
-      "sha256": "7888c4bd35a49423affb66622beb40d20f05e136a437cf40803af7149ae821df",
+      "sha256": "7c7fdfa63720ff686ba3404f66f26c35f2fa68b1aa421d7803b63ab14efcb5a4",
       "binary": false,
       "exports": [
         {
@@ -63257,9 +63257,9 @@
       "path": "components/portal/SkillCheckpointsClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 19809,
+      "bytes": 19827,
       "lines": 532,
-      "sha256": "f68fe9ea8b8d164e1d263f5cf18d2437deb660d783eb3ce88d76f7398c3c321a",
+      "sha256": "491b602c865351ee4016799d02bf74905b22f9ae6b19654c764546bea003e4f0",
       "binary": false,
       "exports": [
         {
@@ -63606,9 +63606,9 @@
       "path": "components/portal/SkillsetProgressList.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4293,
+      "bytes": 4295,
       "lines": 134,
-      "sha256": "575f087c9afb0a22055f7ca48dfa53b607f125fba1034f65a650f7be5f1f1537",
+      "sha256": "96c9c754fb2248c8b21b01dd5edd4de01c2b46bdf9ec64a9826160fc723b3b05",
       "binary": false,
       "exports": [
         {
@@ -63848,9 +63848,9 @@
       "path": "components/portal/TodayHero.module.css",
       "area": "components",
       "domain": "components",
-      "bytes": 4402,
+      "bytes": 4406,
       "lines": 197,
-      "sha256": "001339208fd8eef8403f1c30caea9cc5301c4ea2fc9a3363852a72b04bb37f0d",
+      "sha256": "35fb0fa60e698c2c372919a723e8b106b6bcc3975129e4716862f01126f6fa9a",
       "binary": false
     },
     {
@@ -63892,9 +63892,9 @@
       "path": "components/portal/ToolHistoryPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3225,
+      "bytes": 3228,
       "lines": 93,
-      "sha256": "c2089a8de3d8a38a894996427d08fb3b9f4cf5af13dcf74cc7683b19920dc8f0",
+      "sha256": "3d5021c899db2eabecd1f8f3a521c841bbcfb0dd4e41d1ff64548847ae254f66",
       "binary": false,
       "exports": [
         {
@@ -63917,9 +63917,9 @@
       "path": "components/portal/ToolHistoryPanelClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6000,
+      "bytes": 6002,
       "lines": 117,
-      "sha256": "964d51e394b2fed17fce6a96d31eace44122d88f0f473f230bbb90c242fa02e9",
+      "sha256": "dc89b2e7741559322a4dac719f9bfc226299a61c6bc9c42c864b20909837a8b8",
       "binary": false,
       "exports": [
         {
@@ -63987,9 +63987,9 @@
       "path": "components/portal/TrainingBridgeClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8541,
+      "bytes": 8547,
       "lines": 237,
-      "sha256": "a91c7fd101e78277d76e0cc058c7678e97c37a003eac341345b574349028ef06",
+      "sha256": "b111be2123f71de1c5dc7247fe9c954acdb2f96c069efbe0aa64d321ff6f35d3",
       "binary": false,
       "exports": [
         {
@@ -64098,9 +64098,9 @@
       "path": "components/portal/TrainingCourseList.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 24158,
+      "bytes": 24166,
       "lines": 581,
-      "sha256": "567fe91d8b7b7ef7a295ba240c94bb9bcbcbbed2ab0f1e6a3bd95aa20e7fe7c7",
+      "sha256": "378ad062324b93c2aeaf0845afb414d5fb7685ea731248de369d3c702e38bcab",
       "binary": false,
       "exports": [
         {
@@ -64205,7 +64205,7 @@
       "domain": "components",
       "bytes": 5335,
       "lines": 170,
-      "sha256": "56aa46a4d3a756e187395afbf6d4baa3deff62abe3ed213c83f339331c422047",
+      "sha256": "2737f6c0baf637c383fede6fe82f7240de58c03ed2771190f8c6107b891c272a",
       "binary": false,
       "exports": [
         {
@@ -64270,7 +64270,7 @@
       "domain": "components",
       "bytes": 3948,
       "lines": 143,
-      "sha256": "fa46bdeac66d1181ee08284fde622a116893fba82fe1f8be717c5b377fa301ce",
+      "sha256": "1d72a3f73555fb98989948826f47a7af83aae6f3b490ddc9ee3c816674b86b0e",
       "binary": false,
       "exports": [
         {
@@ -64333,9 +64333,9 @@
       "path": "components/portal/VoiceCoachesPromo.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4388,
+      "bytes": 4391,
       "lines": 108,
-      "sha256": "2579d801b777f61cdcbafe5a8056c97b504a3b7772ba814c762fa352a994ae52",
+      "sha256": "072acc513103a92c8d1b431586c590313e64b313c2b6463b7b5fb81990fc17b8",
       "binary": false,
       "exports": [
         {
@@ -64398,9 +64398,9 @@
       "path": "components/portal/WeeklyRecapClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8877,
+      "bytes": 8887,
       "lines": 168,
-      "sha256": "c0fffa18517181c7aa7bd45787080dbf7fda51f0ae5e315049e0b1edd609218b",
+      "sha256": "c870c448388026faa212783c3521bbca8b4d36cf72dc32eb69d8f2798d33bbb0",
       "binary": false,
       "exports": [
         {
@@ -64645,9 +64645,9 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 31350,
+      "bytes": 31353,
       "lines": 742,
-      "sha256": "b5995b0967a1909f39d616052e4c1dfc219245f2862b9770b58fd9b608235b78",
+      "sha256": "3dfec744d9d846e7e33e23e712cb9a17c52be653c7cd93c97f93e8b1a9ec50ec",
       "binary": false,
       "exports": [
         {
@@ -64700,9 +64700,9 @@
       "path": "components/portal/counselor/AtRiskDashboard.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 38934,
-      "lines": 1058,
-      "sha256": "8e7d3604005676208841d88a16fc031b3e2a1fbaa4e6f392529fbdbd506ed8fc",
+      "bytes": 39093,
+      "lines": 1062,
+      "sha256": "1900498e504cf34c10a3e0f35a4c45403d89e2781692990646605626b8f5253d",
       "binary": false,
       "exports": [
         {
@@ -64727,7 +64727,7 @@
         },
         {
           "name": "default",
-          "line": 730,
+          "line": 734,
           "kind": "FunctionDeclaration",
           "localName": "AtRiskDashboard"
         }
@@ -64825,32 +64825,32 @@
         },
         {
           "name": "AtRiskDashboard",
-          "line": 730,
+          "line": 734,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortModeButton",
-          "line": 806,
+          "line": 810,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterChip",
-          "line": 829,
+          "line": 833,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterTag",
-          "line": 884,
+          "line": 888,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FactorChips",
-          "line": 911,
+          "line": 915,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RiskRow",
-          "line": 934,
+          "line": 938,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64860,9 +64860,9 @@
       "path": "components/portal/counselor/AtRiskDetailModal.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 19738,
+      "bytes": 19763,
       "lines": 550,
-      "sha256": "41604f93bda2d5c55506b933f4b57b437d5c9a4fda7a45253c5b78602b9f0be0",
+      "sha256": "9860b5d577596f06bb0628baf256e5f8de786c6b3ac5b8932387dc2207e6bbdd",
       "binary": false,
       "exports": [
         {
@@ -64922,9 +64922,9 @@
       "path": "components/portal/counselor/AtRiskMemberList.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 3651,
+      "bytes": 3659,
       "lines": 113,
-      "sha256": "364bfd0db46aeea19219e3b214f48db87312334917650a2f06860e7ce135cc96",
+      "sha256": "ee70896693812bec1994444044503698ac8ae5750f9a81157f19cf399e931c25",
       "binary": false,
       "exports": [
         {
@@ -64962,9 +64962,9 @@
       "path": "components/portal/counselor/AtRiskSummaryWidget.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 6704,
+      "bytes": 6713,
       "lines": 185,
-      "sha256": "b8f728c8781635c59fb601ec3fd76bfd749efda860d1f222d4619808491231d2",
+      "sha256": "e0c2b890e0297a54f810930c6a2ab5fc1a1df41425af55d0c7507adb7458480a",
       "binary": false,
       "exports": [
         {
@@ -64994,7 +64994,7 @@
       "domain": "member-counselor",
       "bytes": 6202,
       "lines": 224,
-      "sha256": "8a75e91b73f43639606c505e0162ef69cd2593b70adc64951142e7f2479eb19f",
+      "sha256": "20d5fe2e295eaaed74ba865537a42ff1a1db7847b16bd0252e36073c4aa53ac4",
       "binary": false,
       "exports": [
         {
@@ -65042,9 +65042,9 @@
       "path": "components/portal/counselor/CounselorCommandCenter.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 9017,
+      "bytes": 9029,
       "lines": 243,
-      "sha256": "13648cd53594ee4f92ca25d3c515ff8e7964d1b95523f9eb90b1ec2d15718924",
+      "sha256": "1fbe9321f004ee9733ff6cff8837fff3315d2e5de55c86b0cef4a2d5168b98f8",
       "binary": false,
       "exports": [
         {
@@ -65089,7 +65089,7 @@
       "domain": "communications",
       "bytes": 13044,
       "lines": 333,
-      "sha256": "733dd72ffe827a902d506e12ee91ff344e52be494a13a23e448363c16e9d19ce",
+      "sha256": "c2b136dd6e75208b775cbfb5ab25aed6d4e005a95adc7fa0a09dc94968dea289",
       "binary": false,
       "exports": [
         {
@@ -65164,7 +65164,7 @@
       "domain": "member-counselor",
       "bytes": 14533,
       "lines": 408,
-      "sha256": "03b9487c366897fb51a2332c6487b190d54b663c479587386b3e7429d8f726ab",
+      "sha256": "daab5e1fe1b85d43752f88b6cf6d56adf4ef16d1286b13ee341f4fe2b97a80c4",
       "binary": false,
       "exports": [
         {
@@ -65234,7 +65234,7 @@
       "domain": "member-counselor",
       "bytes": 17382,
       "lines": 437,
-      "sha256": "de5fa1e659d66414737628ef621a3cf6dd827de8e50ef546be3c822347f670c0",
+      "sha256": "61b0f87da0b92fd57ad3585889da389a8d5000d95a0aad648ac8cf027e8febd1",
       "binary": false,
       "exports": [
         {
@@ -65392,7 +65392,7 @@
       "domain": "member-counselor",
       "bytes": 20401,
       "lines": 539,
-      "sha256": "76d6e1c0ad9512095497f5eb5670cde8c1c5688b5e838364296b11f941e498c9",
+      "sha256": "fcc524f34f2ff2712bf21ee9b1e96db1e5bf342470e54d1ab593b4aa0bf43c92",
       "binary": false,
       "exports": [
         {
@@ -65555,9 +65555,9 @@
       "path": "components/portal/counselor/MemberProgressTimeline.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 7835,
+      "bytes": 7848,
       "lines": 221,
-      "sha256": "90b3e4e1eec79e0a67b7ad25563999d4b215c1fb9911ebb088a105d9272d73d5",
+      "sha256": "a915d5765fece2ef232e5ab235c39d896488ac753e7cd6b284c47ea120870334",
       "binary": false,
       "exports": [
         {
@@ -65617,7 +65617,7 @@
       "domain": "member-counselor",
       "bytes": 2168,
       "lines": 79,
-      "sha256": "b403b75ad574e601f38b04054d39f43a9a69ca7aaed597468d028a48588a84a6",
+      "sha256": "10ee050c358127e962b2139c9f100f0a1517315846956e5898146b6f765bc58f",
       "binary": false,
       "exports": [
         {
@@ -65674,9 +65674,9 @@
       "path": "components/portal/counselor/RecentActivityFeed.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 3963,
+      "bytes": 3967,
       "lines": 130,
-      "sha256": "1408003a7906bbd9e981daa48c78e8870a5f5d56d394f9ed8ae77b57e3f6d641",
+      "sha256": "d1c73a1257be8cb67941884d0869460efb24fd33b9a5b5c2b32d394f2f1c2525",
       "binary": false,
       "exports": [
         {
@@ -65719,9 +65719,9 @@
       "path": "components/portal/counselor/TriageNudgePanel.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 5185,
+      "bytes": 5199,
       "lines": 176,
-      "sha256": "74e267c5d7ee1da9dc1fa17f5d6bbd0a8266ab930824226d3993de5b5f5e5e42",
+      "sha256": "571cbd7d56c43b7f964ba9a5a5586b5a17197d274fe041cd8e4987d9f3d8ca88",
       "binary": false,
       "exports": [
         {
@@ -65815,7 +65815,7 @@
       "domain": "components",
       "bytes": 3970,
       "lines": 113,
-      "sha256": "627b75726d7bbf26bfbb6bd1139c7b62f44463c5da96b3823d3a2c60b0d648d7",
+      "sha256": "038a23047d8bd8f1fb24852d6b15ee86dbe6d2a20619fa3c606800c030478868",
       "binary": false,
       "exports": [
         {
@@ -65854,7 +65854,7 @@
       "domain": "components",
       "bytes": 5430,
       "lines": 117,
-      "sha256": "e5c23f565b57e93b64f36416c042a99495015b5db20ad158c2d18e43dff055a5",
+      "sha256": "89a30244dec887b3b7fd4cfd86190e9e80e6efd6400b95f2c7063a1d63419418",
       "binary": false,
       "exports": [
         {
@@ -65930,9 +65930,9 @@
       "path": "components/portal/kit/Charts.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7006,
+      "bytes": 7007,
       "lines": 200,
-      "sha256": "e37162c90a2a1d7c7ae7c4ef369f546700595230a75c9cd98244d4113de234ea",
+      "sha256": "eff7b4f251f3c3f3ca790848734e3a6ac80191ee0769317f6640c66af621373f",
       "binary": false,
       "exports": [
         {
@@ -66225,14 +66225,14 @@
       "path": "components/portal/kit/FeatureTile.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1751,
-      "lines": 55,
-      "sha256": "bc6969d52fd14ec00ef27e68229fd1ffdc92e709bd6ed7f632c74b13e7b282e7",
+      "bytes": 2052,
+      "lines": 70,
+      "sha256": "9da29f6fa326f08989470a8c663ced3aaa085407cb0ebd01aa8c75997ba22bcd",
       "binary": false,
       "exports": [
         {
           "name": "FeatureTile",
-          "line": 22,
+          "line": 28,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -66244,7 +66244,7 @@
         },
         {
           "name": "FeatureTile",
-          "line": 22,
+          "line": 28,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -66344,7 +66344,7 @@
       "domain": "components",
       "bytes": 1947,
       "lines": 57,
-      "sha256": "fb0cc1fce3e8f3ea40b6506705a2add3e767586db38f53ce6b9153fe5572ca5e",
+      "sha256": "0c5fcea21d1261d911b99d5a32b722e93b9da9eb4b7d2a8107a588652bb31b46",
       "binary": false,
       "exports": [
         {
@@ -66714,7 +66714,7 @@
       "domain": "components",
       "bytes": 3115,
       "lines": 101,
-      "sha256": "75c267ff28a01f3020ec38f6a76c42cf678dd72242dd7611c8202b4d9d0e62c9",
+      "sha256": "f8eb811eb1e5b4c8eb2bebe2770966f99d001dfdc7218ca512a2bcbc04884990",
       "binary": false,
       "exports": [
         {
@@ -66928,7 +66928,7 @@
       "domain": "components",
       "bytes": 1688,
       "lines": 59,
-      "sha256": "71100f2deec053da4baf2c1f6bdb157da619635706a9e045dcafdb48208f79e0",
+      "sha256": "768bfbed166a2f5cd2f5b561228c34e24541c8611a37b54dd170123afe7452e6",
       "binary": false,
       "exports": [
         {
@@ -67689,7 +67689,7 @@
       "domain": "components",
       "bytes": 8739,
       "lines": 268,
-      "sha256": "c3a1d13edf76823c667fbb9679c6face5791f6546f8ebfc3df80bc17b48fe9db",
+      "sha256": "d4794acb55d3b43b1bec15401df89f53fe5bf788054bca7b85ed41ff774990f8",
       "binary": false,
       "exports": [
         {
@@ -68077,7 +68077,7 @@
       "domain": "components",
       "bytes": 10953,
       "lines": 370,
-      "sha256": "08e1049edac244099d0afb259b06b231bd2fe687c5cd0f65dd8f098c23caffb9",
+      "sha256": "1e0fa384905cc2b1990cc95bd67c34c2b952381442e5fdbfd6ad79e23bfc108f",
       "binary": false,
       "exports": [
         {
@@ -68171,7 +68171,7 @@
       "domain": "components",
       "bytes": 6809,
       "lines": 225,
-      "sha256": "e3fce92cbb974868a180ae18580953c1b8b75f22c7f7d796809b1a97451037d0",
+      "sha256": "507d13a3fc210339dfce3e397522a76f3a189dad43e0b13c52a80f22a692b1c0",
       "binary": false,
       "exports": [
         {
@@ -68254,7 +68254,7 @@
       "domain": "components",
       "bytes": 7716,
       "lines": 196,
-      "sha256": "a33b01ea282d8e792fc4dcd53db6305cc297e601f340c9e9213409ed069a96ae",
+      "sha256": "910f42b0609075a1ea0e91f9a3bf0c597f8240b524ae1eec0960601ddb9e2ef3",
       "binary": false,
       "exports": [
         {
@@ -68343,7 +68343,7 @@
       "domain": "components",
       "bytes": 3070,
       "lines": 90,
-      "sha256": "1bc3a408ff4df36446ef524b43d01b6f17acce770ce6173b32323c5d5fde6ecc",
+      "sha256": "e0558f8a51f0a6f0706aec57f06c1c95e9b2e6f6f6407cbd248ad78700f21562",
       "binary": false,
       "exports": [
         {
@@ -68387,7 +68387,7 @@
       "domain": "components",
       "bytes": 6667,
       "lines": 223,
-      "sha256": "b50c133a10b75a81c736538ab46826fe8d66fa7cacc4ed0c6fa6b3c95df45aaf",
+      "sha256": "404b21550c66505417c9ea5ef5348ec4825a7f20b7f8b4f8c79470d54c497295",
       "binary": false,
       "exports": [
         {
@@ -68451,7 +68451,7 @@
       "domain": "components",
       "bytes": 6202,
       "lines": 222,
-      "sha256": "80f670dacbe183583167b6e330844cddac37134358f0263bd7aea99bb90a5e3d",
+      "sha256": "a1cc362a073e5a8c5dd0ce0f351d4f6f0ad542e66e021a401ebf1ae47397c377",
       "binary": false,
       "exports": [
         {
@@ -68500,7 +68500,7 @@
       "domain": "components",
       "bytes": 5459,
       "lines": 193,
-      "sha256": "4abd48e8e725088aa3050f36e248f10ad03405d34ace6cea67fc678ae30a593d",
+      "sha256": "5fd793a9077253b6ce974c1fecf3899c3b84b9878f9b986b512427f5d3b0f5de",
       "binary": false,
       "exports": [
         {
@@ -68564,7 +68564,7 @@
       "domain": "components",
       "bytes": 7216,
       "lines": 195,
-      "sha256": "ca333ef9ea5a14516ce021c7f44a730ba76d80f9c6c33887a78cfe6e18bc5a99",
+      "sha256": "ce296e8e92873a900ec2df5558934905f380fb4dbfa99ed9dd712d25ddc396ee",
       "binary": false,
       "exports": [
         {
@@ -68623,7 +68623,7 @@
       "domain": "components",
       "bytes": 7069,
       "lines": 193,
-      "sha256": "7c8bd7e92f6e11d2728317c1ecd80bee5e6b8bc4876b0df6e3e343153b57d7f6",
+      "sha256": "7b5ca9306b00b71553610d7ccb6545cda9d3c73b453954687935c6c2153566f5",
       "binary": false,
       "exports": [
         {
@@ -68687,7 +68687,7 @@
       "domain": "components",
       "bytes": 12175,
       "lines": 344,
-      "sha256": "5c17fb495da85ad09598947f9b321a13f7561e309e7e60dd336b2fb9ae4c13fc",
+      "sha256": "8d04b69d90a972bc658ec0fb5b209f10eaf7ee98c27638e0ee7583052db7f225",
       "binary": false,
       "exports": [
         {
@@ -68739,9 +68739,9 @@
       "path": "components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9740,
-      "lines": 300,
-      "sha256": "1c6a957ffe4bcf336db5de32c86bad7c254dfd7f00c2587c2d955f47a6922478",
+      "bytes": 10011,
+      "lines": 304,
+      "sha256": "2bda03297bba840569eee60991e250a8f1dbcb4b682e0e8a69fa0c7c54e03905",
       "binary": false,
       "exports": [
         {
@@ -68790,7 +68790,7 @@
       "domain": "learning-coursera",
       "bytes": 13531,
       "lines": 378,
-      "sha256": "51132375477ba6ed49647aa4a4f408a1045bc572cc007760f45ab9a6fa140bd5",
+      "sha256": "8413acddcf87322af1c067b8400e5394eab56b95396d0fa198f82cbd778328a3",
       "binary": false,
       "exports": [
         {
@@ -68864,7 +68864,7 @@
       "domain": "components",
       "bytes": 6271,
       "lines": 208,
-      "sha256": "50a16ced5247f3d0713e34f112c7a201db4924f4e7dcc025aae1c9ba81b20c6c",
+      "sha256": "c7b11ecde104c52381d5ff125015b0da8453bc815af97c537945fe85662dea15",
       "binary": false,
       "exports": [
         {
@@ -68923,7 +68923,7 @@
       "domain": "components",
       "bytes": 10944,
       "lines": 361,
-      "sha256": "0cc0e17be2e22d48981b09528fd935b8503bef2e9f87e9ada2311e9cba83d1ac",
+      "sha256": "e4de4ff40c365a2268849692d783fa6f5db7690a7d8465fa4a50b8833382082b",
       "binary": false,
       "exports": [
         {
@@ -69002,7 +69002,7 @@
       "domain": "components",
       "bytes": 4927,
       "lines": 140,
-      "sha256": "bfee37986a38725b06b10c8395e59eb114b374bbde2cb5c398a5db86106e25f1",
+      "sha256": "88d84ab99a1789fda9497f1b6e04f8d66f24810b5ed11b842bf2526ea34dee19",
       "binary": false,
       "exports": [
         {
@@ -69066,7 +69066,7 @@
       "domain": "components",
       "bytes": 5754,
       "lines": 183,
-      "sha256": "b358e9083ef43934a1f65fa0244f17a642989f5ae89a7c02b7f5defb99cc3d8c",
+      "sha256": "848508bddc067fec4ff991dd134f7ec85d2e9c741d2c56447d5bce5c7393bfad",
       "binary": false,
       "exports": [
         {
@@ -69120,7 +69120,7 @@
       "domain": "communications",
       "bytes": 5619,
       "lines": 195,
-      "sha256": "be3b48c4a0d5809d9afd27a77533c388fad2f61fd774d59de1ec26804aef018a",
+      "sha256": "76c60a17f17249c6566ce059d296be91c655ea05ed8b5ff07aa23420f3c7819e",
       "binary": false,
       "exports": [
         {
@@ -69179,7 +69179,7 @@
       "domain": "communications",
       "bytes": 6713,
       "lines": 237,
-      "sha256": "153d9ba54dedd3e83213497cf1c81191feada38f1794de2d33cf37646bbd033f",
+      "sha256": "7c49f571a077a3fd8ce089b30e512c1229b8cdd70db671c9986d12245513e330",
       "binary": false,
       "exports": [
         {
@@ -69228,7 +69228,7 @@
       "domain": "components",
       "bytes": 8796,
       "lines": 233,
-      "sha256": "09b6f5aa8d503c3f0fa01e22c56d2d04470abf39a7458f527351ae981abbcbc6",
+      "sha256": "c9daf0308026c7e985ab8d6dedaceaccbae02d1146a45f1447dddd0e18a32c5d",
       "binary": false,
       "exports": [
         {
@@ -69307,7 +69307,7 @@
       "domain": "components",
       "bytes": 6149,
       "lines": 195,
-      "sha256": "3bb6227376e496475a7adccdb870d5ba50bffa71ed978a154380e2152f916283",
+      "sha256": "0e7409b9d710ad4971f6944b7885357269d696343382e219c42dcad239c2b6c2",
       "binary": false,
       "exports": [
         {
@@ -69386,7 +69386,7 @@
       "domain": "components",
       "bytes": 5951,
       "lines": 219,
-      "sha256": "119ee84e22f8767a5099ea82b47e0292f722998449b13568b8d4601608371604",
+      "sha256": "f797a8bb8212d46ecbf2a40b09ccf80efb7914a02b65df58d92b5be7dc7dc314",
       "binary": false,
       "exports": [
         {
@@ -69430,7 +69430,7 @@
       "domain": "components",
       "bytes": 6945,
       "lines": 252,
-      "sha256": "12bc44505489800059b9e391978e9a2a80a180ace93106f7308b7b04252f67b6",
+      "sha256": "e2abd2d2cc17a6a911043a83670c4c7f92b119af5c468b56e7f49cc38f63b422",
       "binary": false,
       "exports": [
         {
@@ -69499,7 +69499,7 @@
       "domain": "components",
       "bytes": 7316,
       "lines": 213,
-      "sha256": "ef18037679163257e35d869cc0d6df52aa145d4c1f53042169c3ce79b33ddab0",
+      "sha256": "a9148afb351c50ffe02de302677eca4f575b210fb69da1e0cfec82d8cbbfe201",
       "binary": false,
       "exports": [
         {
@@ -69588,7 +69588,7 @@
       "domain": "components",
       "bytes": 5233,
       "lines": 198,
-      "sha256": "aa0fd8254d786dabcbfc21ee44cd4815bf118d65dcfc2fa9df8dfc363d561c07",
+      "sha256": "dd348cd64a65f393ccbe1f4de264c53cbd08fd9a07d5af12dcf029676c138594",
       "binary": false,
       "exports": [
         {
@@ -69642,7 +69642,7 @@
       "domain": "components",
       "bytes": 7807,
       "lines": 270,
-      "sha256": "ddd6f331409177777f97aab1a043a0f7ef787d09e02bb4fd50367721ad7ded9e",
+      "sha256": "c8fd7bd3ff15e0887c26b32b54bc7ef5da77e1d6979e51a006230a465f897971",
       "binary": false,
       "exports": [
         {
@@ -69706,7 +69706,7 @@
       "domain": "components",
       "bytes": 4987,
       "lines": 132,
-      "sha256": "36f0c7472ead543d1de9b941916fcfb670db3fcdeac59369117d5a12e5a3228f",
+      "sha256": "7151d941a520ff31ed38881f2030790581dedef36c249a2d68c361ae4f7da933",
       "binary": false,
       "exports": [
         {
@@ -69760,7 +69760,7 @@
       "domain": "components",
       "bytes": 5676,
       "lines": 200,
-      "sha256": "36c14e4222a6c7940f031e2ee5cf416825d9860c73631d72c303be85eefd2209",
+      "sha256": "c06da0aa1e0e9d75d7d1cf58ac2a9d4afdb62f1244f9ad5423a2d03057b763e3",
       "binary": false,
       "exports": [
         {
@@ -69834,7 +69834,7 @@
       "domain": "components",
       "bytes": 2899,
       "lines": 85,
-      "sha256": "37caeffbc8aa039c3f239d86e23b69c54f6fac92dc24dc7bd430eca7a8599bb7",
+      "sha256": "b5bdb508826f7c5719b101a0335e05691e3171b8e7a1ec5d1bb54e8b1105b06e",
       "binary": false,
       "exports": [
         {
@@ -69878,7 +69878,7 @@
       "domain": "components",
       "bytes": 9253,
       "lines": 220,
-      "sha256": "f584942271308096922ddc0e9ee62056b73311bd6ab6bb8c445060e1891b01d4",
+      "sha256": "e056fba142b71207c66c1175c9f2456eea0d4b3cb0590c7ffe5c69fffcc6894d",
       "binary": false,
       "exports": [
         {
@@ -69947,7 +69947,7 @@
       "domain": "components",
       "bytes": 2791,
       "lines": 85,
-      "sha256": "ec5ae1bdc1405d64a59b542d4155e2dced68febb66f4cd7a047dae05da565f80",
+      "sha256": "caed34f8bc6f9376143e55815579d1dfd6f8232529846af548bf0442c0378d7f",
       "binary": false,
       "exports": [
         {
@@ -69986,7 +69986,7 @@
       "domain": "components",
       "bytes": 5529,
       "lines": 186,
-      "sha256": "283ecf9f4d87d013dc399120c149b99096ff2d5ffcae19d51d582d0b0f5daf1e",
+      "sha256": "ccded99bca7533e1e732bcaf4babb3ce3d5906828a61375df8315df847c4cc09",
       "binary": false,
       "exports": [
         {
@@ -70035,7 +70035,7 @@
       "domain": "components",
       "bytes": 10730,
       "lines": 330,
-      "sha256": "0d4ed3da3e288c9479eced30a92b57b19c3ae7869b7a9cbf7fb1f53b4e30c6aa",
+      "sha256": "1ab654c3bf508c4de3d660e506415f192fc4313dc2520116f3f9bce2be5a6778",
       "binary": false,
       "exports": [
         {
@@ -70109,7 +70109,7 @@
       "domain": "components",
       "bytes": 5657,
       "lines": 193,
-      "sha256": "c735d640cd016287dea37186b17c04b0c0210646902e0821b4af159a41c9f589",
+      "sha256": "5655e7adcc6c134e234a0b99d2c1ede8932cbf595446e804b1fe7dac274da7fd",
       "binary": false,
       "exports": [
         {
@@ -70173,7 +70173,7 @@
       "domain": "components",
       "bytes": 9209,
       "lines": 257,
-      "sha256": "94e0c8651e4d944b38a265395ec46f64cf8b4994a52d85eab030725508cd2cf4",
+      "sha256": "dafcec9d4d9e7ee578c40e9635e2a0b69f88556c5c932e8d1f1e6f38b19b002d",
       "binary": false,
       "exports": [
         {
@@ -70247,7 +70247,7 @@
       "domain": "components",
       "bytes": 5417,
       "lines": 185,
-      "sha256": "1ec14f936e7270fef8b8da976e1d4f64bee06ba4aa269d8741cc933239ab308a",
+      "sha256": "828fcd671740a8e4ebae7eefeccbb80f195b034d68181c2ce485765c62a830ee",
       "binary": false,
       "exports": [
         {
@@ -70296,7 +70296,7 @@
       "domain": "components",
       "bytes": 6637,
       "lines": 228,
-      "sha256": "f7d0fd833a1224e3979b60d5ca940cbf0561d863aa9179fa1fbccf5b6992c9c5",
+      "sha256": "5e968ce89445248786f81ce81d95509e5d71055277a0044c2c9c8460afc06c76",
       "binary": false,
       "exports": [
         {
@@ -70360,7 +70360,7 @@
       "domain": "components",
       "bytes": 14452,
       "lines": 428,
-      "sha256": "debcbd1b297f1ed3ed6f20f09b9d26a0ddea75e057dacced2262b17fb9e7ee9e",
+      "sha256": "90b65cbc9f95eabbf9dfcc740b46ad080eee6881443f5e6b54d459f74e02c7e6",
       "binary": false,
       "exports": [
         {
@@ -70459,7 +70459,7 @@
       "domain": "components",
       "bytes": 6800,
       "lines": 190,
-      "sha256": "d72779bc3afd19ce7e04128c684dc48cd2972f511609d7534dadfea8d3518cd0",
+      "sha256": "377a92742af1d9c8b2873f751c1849ed9ab485a6112a0972006ac8cf1ca84231",
       "binary": false,
       "exports": [
         {
@@ -70533,7 +70533,7 @@
       "domain": "components",
       "bytes": 6301,
       "lines": 201,
-      "sha256": "29c749e5a7f4a0578028fcb6f119523debeff3deb93f1821fc8b97709e827816",
+      "sha256": "d88ca7e405a45106dfcb3860f5a72cbfeef64b192877b3d1298011a5876b9e0c",
       "binary": false,
       "exports": [
         {
@@ -70617,7 +70617,7 @@
       "domain": "components",
       "bytes": 12503,
       "lines": 390,
-      "sha256": "02f88fc56fc5d7767a1c66ecba652f701ddb714d7f763c4bce9e1040468c64ad",
+      "sha256": "d742ddff67c2ffe92065d29ff1fcb8ab8b81453adbd4a8083339c8cddb8c6aa1",
       "binary": false,
       "exports": [
         {
@@ -70784,7 +70784,7 @@
       "domain": "partners-funding",
       "bytes": 7022,
       "lines": 232,
-      "sha256": "433b1aeb002e9d00478376518ebb4e3c6ab8cd352511c5eb90db3e6f4bc00897",
+      "sha256": "99a7ed5ae1be5d4f38d6b79c36f106e4555ef32caaeb34b18372df554c78291b",
       "binary": false,
       "exports": [
         {
@@ -70843,7 +70843,7 @@
       "domain": "administration",
       "bytes": 8750,
       "lines": 276,
-      "sha256": "a21926400013b33d5035abba1d1f9469d56cd1b2e4def8cba18195d6d3cb5733",
+      "sha256": "c4990a4406e6c11d0b6c67cea8853db1cc6ca4d5a75babf916ab8b533084c45c",
       "binary": false,
       "exports": [
         {
@@ -70926,7 +70926,7 @@
       "domain": "administration",
       "bytes": 15748,
       "lines": 405,
-      "sha256": "ad6bcf36ca2c10f726b8cdee369ef041e07b83c257e07911dccb17c63c5be955",
+      "sha256": "0a1b56de7a6f5cdd56dd6b802e7cae440d4d2d8b63d2a995ae115d72e54e94b2",
       "binary": false,
       "exports": [
         {
@@ -71060,7 +71060,7 @@
       "domain": "member-counselor",
       "bytes": 16116,
       "lines": 414,
-      "sha256": "138cbc625694c70ed88d93c93f7dda5c4e84897e81f92618831d80afe7558bdb",
+      "sha256": "38c389ce20bfcf717ae9edc9e75589e777595847597c4d515451559d59f1e7c2",
       "binary": false,
       "exports": [
         {
@@ -71169,7 +71169,7 @@
       "domain": "jobs-employers",
       "bytes": 15717,
       "lines": 389,
-      "sha256": "a8dd679a986b6aafdae1669d4252c07d9b3fea368c1434706822bd839c0c47ac",
+      "sha256": "c2d3eddbf6e8c7ce6ed1c54f78080aa6603c6bd24d8962db4d956896c65a3d5b",
       "binary": false,
       "exports": [
         {
@@ -72661,9 +72661,9 @@
       "path": "components/portal/sessions/SessionRunClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 67580,
+      "bytes": 67605,
       "lines": 1350,
-      "sha256": "8deba60d7c8f9aa8a6af000a47779b30e8c8cf1a8d3cdcbb6b96c3b5f7ef7db4",
+      "sha256": "f60bc63b57aabac651098a4dbfcdf8c1db4f988b8b55f53984a1447b9ba46a65",
       "binary": false,
       "exports": [
         {
@@ -72741,9 +72741,9 @@
       "path": "components/portal/sessions/SessionsHistoryClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6963,
+      "bytes": 6968,
       "lines": 214,
-      "sha256": "c45e2c5b8c7444b2c07815c3364b9d9a930fb3553b8a77427e3d602d28f13159",
+      "sha256": "09f06cacda98b8b503d162c7fa9aba754785b1bce9d2424dcdbb3d0b12eb3208",
       "binary": false,
       "exports": [
         {
@@ -72926,9 +72926,9 @@
       "path": "components/portal/tools/BrowserSpeechCaptions.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4233,
+      "bytes": 4236,
       "lines": 136,
-      "sha256": "4b90b67424d2e5637472d3ea72d8f2b71627c11b612b5b0ff7fd8a3f2463a29a",
+      "sha256": "89e2785dfe47bbf5b17afa8b1be6d5e04418dad6d0677b5b178e07da9bb0a8e3",
       "binary": false,
       "exports": [
         {
@@ -73014,9 +73014,9 @@
       "path": "components/portal/tools/CareerCounselor.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 20834,
+      "bytes": 20853,
       "lines": 512,
-      "sha256": "3b01b9b14a0558949929917ede33112e182454229f349ac91dc3c1eef5c38ee4",
+      "sha256": "5accbb83a86b12afad5e8d920a777c70cb4a35928e844e10b8061b38d95d064c",
       "binary": false,
       "exports": [
         {
@@ -73194,9 +73194,9 @@
       "path": "components/portal/tools/ElevatorPitchDeploymentLogger.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 14021,
+      "bytes": 14023,
       "lines": 325,
-      "sha256": "bbf651912059dd8b572bc94a0354a182742e8e0c2900b700cb02f96a90253d97",
+      "sha256": "3dc85a409d120f4fc8dda395f0392f82f58dab02920de4041d663306860853c3",
       "binary": false,
       "exports": [
         {
@@ -73437,9 +73437,9 @@
       "path": "components/portal/tools/InterviewCoachingPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6390,
+      "bytes": 6409,
       "lines": 176,
-      "sha256": "01d47167763af4d7635d07400812c9c3e8d8f8c2f035319a757bab835e16d5b4",
+      "sha256": "2b7918c5ea40409123c6551d57879cf67d7b4c329cc8cfeb51e460d26566640f",
       "binary": false,
       "exports": [
         {
@@ -73787,9 +73787,9 @@
       "path": "components/portal/tools/MockInterviewVideoRecorder.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10774,
+      "bytes": 10776,
       "lines": 351,
-      "sha256": "900986cdd5b1118af68a5ebd83274d1b1353bc94d0e9b8d847208746bfa61d71",
+      "sha256": "e825a34c64e25d133bdcefb0b580abfabd2a4c2a9f413e0e099bbd6562ea0124",
       "binary": false,
       "exports": [
         {
@@ -74147,9 +74147,9 @@
       "path": "components/portal/tools/SkillAssessmentForm.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 18819,
+      "bytes": 18832,
       "lines": 485,
-      "sha256": "a4febf8d25c7d7bde5c862e73a7ac72437e995588ded43b488fdf6d472115435",
+      "sha256": "57e65a7d42847a9a84f7997d4b153a0a96dcdc4c527e9fddd91671c99de09c3b",
       "binary": false,
       "exports": [
         {
@@ -74227,9 +74227,9 @@
       "path": "components/portal/tools/SkillMapperClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 69711,
+      "bytes": 69778,
       "lines": 1296,
-      "sha256": "ab0ed70a1f3006082e62c88728669b5767ec7eb6962cda8ac49d90026d0968ae",
+      "sha256": "0e7330ff0f5ea20c3f7bfa1b1eca1e66f6d10c0efd45413006d96baf3479011c",
       "binary": false,
       "exports": [
         {
@@ -74314,7 +74314,7 @@
       "domain": "components",
       "bytes": 2554,
       "lines": 91,
-      "sha256": "f832a57cad77f47a9451ebb600a53e7f2354b0aab6c7125c89406e403c94eec8",
+      "sha256": "41c95abebec9da03c4fe2939d7c2f4c13af7af709edeec35c78379f6e5275a8d",
       "binary": false,
       "exports": [
         {
@@ -74680,9 +74680,9 @@
       "path": "components/portal/ui/PortalMetricCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1744,
+      "bytes": 1746,
       "lines": 63,
-      "sha256": "6fc9240c78bd016a0570056ede64d62d111b97c348eea3d8a8bdc8004f0c49f1",
+      "sha256": "7e77a8dffe5d89f82dbfcedaeebdfb07c49118b1cc14f4f2e44da1426376e6ef",
       "binary": false,
       "exports": [
         {
@@ -74960,9 +74960,9 @@
       "path": "components/public/PublicCareerQuizClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 15795,
+      "bytes": 15798,
       "lines": 361,
-      "sha256": "e70b5a10600346f89f3fdb0c1c8a1215f3b356529ec2a68620553efa4998305a",
+      "sha256": "0e5e49cfd03a29a66065bbdcfb019be439fbb493c6b1bf1c57993734bfa9326f",
       "binary": false,
       "exports": [
         {
@@ -75000,9 +75000,9 @@
       "path": "components/public/PublicInterestProfilerClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 16702,
+      "bytes": 16709,
       "lines": 438,
-      "sha256": "f2775f87af7c90f24a678fa02f09f6971d60af64ecbe5d0c39f108645ee4810a",
+      "sha256": "90b4a1de817450a0bda84a28a7c5fc11250631a36bf3e97077e52d62d2f95aa4",
       "binary": false,
       "exports": [
         {
@@ -75788,54 +75788,54 @@
       "path": "css/auth-depth.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 7733,
+      "bytes": 7714,
       "lines": 217,
-      "sha256": "646fca8ba2c79ff5197b1b0f6c06dd09679c6da4c2f4aeb8db0394f510a1f360",
+      "sha256": "1d575c5e1123da14121a6749f9b8a5a2c1091cc902a54246c0da53649609f832",
       "binary": false
     },
     {
       "path": "css/counselor.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 14931,
+      "bytes": 14934,
       "lines": 513,
-      "sha256": "3bf942d96d8f9678667bd2eba79c3a00d895b576113792e1c5613e530f918de3",
+      "sha256": "af96f74ff0dbde8b7e18512f1bb0b89429518ff91bdbe9f3264484c9d390819d",
       "binary": false
     },
     {
       "path": "css/enroll-school.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 16920,
+      "bytes": 16905,
       "lines": 228,
-      "sha256": "f6735585b7fcf9f8c093ef4cad4ce37b8e2cd4b5772c361c977bdd0d702f9937",
+      "sha256": "1c7cae1000b8af885f21550e7682542f5056193706fa2fc8e3fd5cd3d3c6ab92",
       "binary": false
     },
     {
       "path": "css/language-toggle.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 3192,
-      "lines": 128,
-      "sha256": "d5510c8048a744b9eb923014255279bb06a1f683512e3764a41cfe4458e8e8eb",
+      "bytes": 3193,
+      "lines": 129,
+      "sha256": "6214c13f1fc6e6b902399e1e4a5ce14e1d9790f101c86a6ecc8f073ad7f1f478",
       "binary": false
     },
     {
       "path": "css/main.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 237643,
-      "lines": 8752,
-      "sha256": "3c7ddd20c13d67f28cf2cbcfed08f32b693c5b830936855ba6fa0138284be47b",
+      "bytes": 237697,
+      "lines": 8745,
+      "sha256": "bb7daf5305555ad64d09457de21edf1ffdd0f5250141f4e5f57607fadf3cb464",
       "binary": false
     },
     {
       "path": "css/marketing-a11y.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 1024,
-      "lines": 33,
-      "sha256": "dc7eef2ae5d5a14b345ae32a9faff41e4d02651e6ca8b65d15426dea243f6638",
+      "bytes": 1042,
+      "lines": 34,
+      "sha256": "9f87bd98099c7626d725a744328ca4c4f5684e93b82f685ba7fc35ae72c3598f",
       "binary": false
     },
     {
@@ -75844,52 +75844,52 @@
       "domain": "styles",
       "bytes": 13873,
       "lines": 257,
-      "sha256": "4b04ce2447f4f636891e8cd167064b3d49fe9639d165f4890352f45393376d42",
+      "sha256": "72d1ae7017c829bcc4ef55d64643ffa8c5693732d86d0922a20e095509c62873",
       "binary": false
     },
     {
       "path": "css/marketing.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 44981,
-      "lines": 1498,
-      "sha256": "9aa7a79775998f09a6225ba7d0837f9dd68cc6228d9b834af9956cfe051179cb",
+      "bytes": 45075,
+      "lines": 1501,
+      "sha256": "f40b34d818b8c14e2ff695292e72edc55f953e895255ed87ed0a2842e69738ca",
       "binary": false
     },
     {
       "path": "css/mobile-dashboard-fixes.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 5466,
+      "bytes": 5469,
       "lines": 160,
-      "sha256": "5358a770ef89fc62c1783a9194564748fa87514877c758ea5229a19cd1b281e4",
+      "sha256": "259c2e11bbbe70174763c61681c2968d2683cd2a98a15789caa7505bda7fe107",
       "binary": false
     },
     {
       "path": "css/portal-a11y.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 969,
-      "lines": 30,
-      "sha256": "4c46c04d2b0cc5a5f881a22383c04f96b2192701a6d0ff0a4a85b9d9aa2d5e1c",
+      "bytes": 1102,
+      "lines": 32,
+      "sha256": "6b28c37673507dfe2210a5aa6838a46bf7ac24c234156624ddca8a4bb2865901",
       "binary": false
     },
     {
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 38560,
-      "lines": 1198,
-      "sha256": "04623f2257ca517499acc921390559802029de03b6029f3e8c75fcc92e5c0129",
+      "bytes": 38657,
+      "lines": 1200,
+      "sha256": "13ccebba87e51d0361ade6dc66bb9999774c19e7d7a35c5283deacf88eca4da2",
       "binary": false
     },
     {
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 271345,
-      "lines": 10048,
-      "sha256": "6050f1dbc92c2094e46162e6bda9c41373f5324c82bdc4fa37f3864b4877fa08",
+      "bytes": 272265,
+      "lines": 10070,
+      "sha256": "b40a7f68f3d685acb65018467abd172d11e9dc39bbf24ae96c8e6a221af82cb2",
       "binary": false
     },
     {
@@ -75905,18 +75905,18 @@
       "path": "css/portal-ui-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 7357,
-      "lines": 268,
-      "sha256": "7e016a20d880104fd2e2ab2e1b65fa6181f5d918bddf350ad844887cf492fc73",
+      "bytes": 7373,
+      "lines": 270,
+      "sha256": "9a1637329bcb362b2a9c9c787a079a6122cc4619189204206eb40bce21489664",
       "binary": false
     },
     {
       "path": "css/portal.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 80286,
-      "lines": 3397,
-      "sha256": "f8c88740c6ba1861ab72b1ed97853b997e34617c022852463ac82c5b98c1fe8c",
+      "bytes": 80468,
+      "lines": 3401,
+      "sha256": "2c18d5e1f8054a64720bcf4a4faf13c73574c9c938180a4998188300dc67afc1",
       "binary": false
     },
     {
@@ -76337,9 +76337,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 30198,
-      "lines": 432,
-      "sha256": "9b24052955163bbabc05be8bf7aeffd9f91ee067fbe9acd86519692cd2bc38af",
+      "bytes": 31215,
+      "lines": 444,
+      "sha256": "95f66b9c65960669b6dd3b1932af541f70a5a9df3f9e44789479f9f043e25bf9",
       "binary": false
     },
     {
@@ -142774,117 +142774,117 @@
       "path": "marketing/src/pages/about.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 9503,
+      "bytes": 9501,
       "lines": 189,
-      "sha256": "d8e8b3f60ade7b89fa7bad6cc59f4689921c2bebfacc3b5c4cd30b146f1793fd",
+      "sha256": "3c26b3370a13d361bc093a4ab49047aa5acbda534a4658e7194f18d6d7453bca",
       "binary": false
     },
     {
       "path": "marketing/src/pages/accessibility.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 16154,
+      "bytes": 16152,
       "lines": 254,
-      "sha256": "04b04b5344c7c0713091b25a1772270379c64adb2cc06a8d938a41bc89ee02f9",
+      "sha256": "811a8b68d2c4c2a67ec2e57955d7c53d36ecb6cccfbbb5e73110937cf49bf579",
       "binary": false
     },
     {
       "path": "marketing/src/pages/blog.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 15516,
+      "bytes": 15512,
       "lines": 295,
-      "sha256": "9c4f9939183dfc83fff1180cbd1f85daa416818f1c346d06025c2dc411d519d1",
+      "sha256": "1f0ede3fc34d3492da32137487075814d5e689e85866897dac9f5002124e3f13",
       "binary": false
     },
     {
       "path": "marketing/src/pages/blog/[slug].astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 11128,
+      "bytes": 11126,
       "lines": 256,
-      "sha256": "d9b852429c04e68bc7610c0d26402e983ecef854ad7f691537bf1f6d5afeed25",
+      "sha256": "64557759f6267f0cf647add08b28a69c0cac286c7e88d1309044e2f7488dd17a",
       "binary": false
     },
     {
       "path": "marketing/src/pages/career-quiz.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 8659,
+      "bytes": 8655,
       "lines": 127,
-      "sha256": "228cc5699b252dac68def66737aeb366faf8434b8dffad3022ae711d86e34ec4",
+      "sha256": "db396035234eb408f6dce794e6b60d830b7f0de4af2880ae3aa08cc44fc8c7f7",
       "binary": false
     },
     {
       "path": "marketing/src/pages/careers.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 18600,
+      "bytes": 18598,
       "lines": 381,
-      "sha256": "f25e43453009610fda71d3b3bdbfec21855397cc1faf776a5bc85f353159793b",
+      "sha256": "e9e22b98913e9f49cfb78510996b3b97c6d93ccec7b08a666ea9c05ccf62616d",
       "binary": false
     },
     {
       "path": "marketing/src/pages/careers/thank-you.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 9335,
+      "bytes": 9333,
       "lines": 177,
-      "sha256": "5006c1dc7390973e6899bf6ca42da30ee827cf96d145c646524faf151f0f7b50",
+      "sha256": "0cfe7a8d85ea9c7f1144316ec5c064dd45e357dc91a4e83153df5410cbee71cb",
       "binary": false
     },
     {
       "path": "marketing/src/pages/contact.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 21246,
+      "bytes": 21244,
       "lines": 391,
-      "sha256": "db39c7cbc5b2077fe23c6b872bf1ded97553b258d85f2b9f2913f6ca17ca1316",
+      "sha256": "92abece14cc612b3f1f90f264d695038559f1905a54101a027444617c9f5e014",
       "binary": false
     },
     {
       "path": "marketing/src/pages/donate.astro",
       "area": "astro-marketing",
       "domain": "partners-funding",
-      "bytes": 29694,
+      "bytes": 29701,
       "lines": 522,
-      "sha256": "71c06a1331e2833030e1a69f6c8a30a51c774694f58d6944a6be542840320c3a",
+      "sha256": "5887981779c8973f0b5c3e1acd1bb6e3aa8e786faaae9f9bc191db9123bfcbb5",
       "binary": false
     },
     {
       "path": "marketing/src/pages/employers.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 36091,
+      "bytes": 36087,
       "lines": 583,
-      "sha256": "0d17cc90d59a615b76b20594e8a69d20c2ba2bf89ecd03a83b7683e310d0ae4d",
+      "sha256": "d4ed4d1829cc686a69f03c657714ba75aa36c45ce6201b081a86c6369888cc71",
       "binary": false
     },
     {
       "path": "marketing/src/pages/faq.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 29067,
+      "bytes": 29065,
       "lines": 422,
-      "sha256": "756e69454e0d33111cfd3127d697f46276a435cc5e8cbca9f3e18a67fbe8fae6",
+      "sha256": "d6fd539715831b371a9c5837a4da231471e8ad25e539d912483a997c67a85eef",
       "binary": false
     },
     {
       "path": "marketing/src/pages/find-your-path.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 13967,
+      "bytes": 13995,
       "lines": 193,
-      "sha256": "dad29618d630a65a1399f0155b5556b653132c4c220ee6ca70237f7983848b1d",
+      "sha256": "d1d033d6de23f4bd3df61d7e23ded378ca68c57d811a4f4f0237abb39981dca3",
       "binary": false
     },
     {
       "path": "marketing/src/pages/how-it-works.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 24451,
+      "bytes": 24449,
       "lines": 443,
-      "sha256": "1b6ba85ce52aade49616d10137f968b8aa766a800b39f9a6b02908c28c1a77fe",
+      "sha256": "5c71023e080e41cca1fd4ab11fca693f646e1980664f9a8ed68bddfa06a9a7ab",
       "binary": false
     },
     {
@@ -142900,126 +142900,126 @@
       "path": "marketing/src/pages/index.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 26239,
+      "bytes": 26237,
       "lines": 456,
-      "sha256": "97ebdbc6309de351e2b2cdf9126708bdbb368a76a026313d8f3bb86f2fe1a34b",
+      "sha256": "3ecef6995b206acfe437628bcba76981643edabcbdab620b5a6d023b43d3fa11",
       "binary": false
     },
     {
       "path": "marketing/src/pages/insights/empowering-nonprofits-through-skill.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 8851,
+      "bytes": 8849,
       "lines": 105,
-      "sha256": "94a2a36c7991ca3f4e191fff92aeb1a46de2f40db80a467a13168e215dfcd590",
+      "sha256": "c3d266a2c8e451f319490cd64cfbb3a57dff8d517fbe14507e57877a7bfeddd9",
       "binary": false
     },
     {
       "path": "marketing/src/pages/interest-profiler.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 12479,
+      "bytes": 12475,
       "lines": 207,
-      "sha256": "6be2e1f02d54b7bac878dd1e31f78a4df6768834f67c3d8f71f623b2a4491f0c",
+      "sha256": "22651d8c53d5ced1ead45ddb961de5f9a76bca9b2182e39193856aa3ddf142ae",
       "binary": false
     },
     {
       "path": "marketing/src/pages/leadership.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 14487,
+      "bytes": 14485,
       "lines": 266,
-      "sha256": "77ed9c3af4c88a8fadf66cc849698331023cf087410d1455dc833131fd18cc19",
+      "sha256": "bc793e539f09749f3d157523459591183c0756555890b5c4daf7457bfbc14e6d",
       "binary": false
     },
     {
       "path": "marketing/src/pages/leadership/[slug].astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 20830,
+      "bytes": 20824,
       "lines": 416,
-      "sha256": "c4a06fe8700539523281af25fb8b99c977a6636bc9c60c5bf045c8aea4a51c5e",
+      "sha256": "c80a8f21bc42be528b5efd36c492ecf4acf9958cc5c4062b9a78f8b2b4c520e9",
       "binary": false
     },
     {
       "path": "marketing/src/pages/lp/google-it-automation.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 22880,
+      "bytes": 22878,
       "lines": 367,
-      "sha256": "72093907b98cafb2643fda421b1852a7ea11a746a85a0dc699cd28bbda80734b",
+      "sha256": "694bf49ac6b9c86f64945369dd92407157ba840bac10fcf486293dc80f5cc3c2",
       "binary": false
     },
     {
       "path": "marketing/src/pages/mentor.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 12945,
+      "bytes": 12943,
       "lines": 259,
-      "sha256": "68755fd46befae34d1873b598b15cf3865605e4461486950043930da462913d4",
+      "sha256": "5d1fd6ec664c545e10538fcae6cfadd1fcda7c3f7e5591cc0a0cb46de0f1015e",
       "binary": false
     },
     {
       "path": "marketing/src/pages/partners.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 36416,
+      "bytes": 36414,
       "lines": 642,
-      "sha256": "2ca12f38f85ea65d262641718ac7b207ceacd054220bd1093f07a6f7e7282cb7",
+      "sha256": "7352ec91383668febc9849cb5c298ac57e8c167829944f0614c6cee16e6a89a5",
       "binary": false
     },
     {
       "path": "marketing/src/pages/partners/thank-you.astro",
       "area": "astro-marketing",
       "domain": "partners-funding",
-      "bytes": 11488,
+      "bytes": 11486,
       "lines": 214,
-      "sha256": "0018f63ff102fff5c9efb23cc4478dd931155a9d60b74307e11536a4e2927007",
+      "sha256": "272327e69234170a5784c3fba1580e96b2815405f4e77759ed0477c58bb12564",
       "binary": false
     },
     {
       "path": "marketing/src/pages/privacy.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 31617,
+      "bytes": 31615,
       "lines": 621,
-      "sha256": "f80d768022fb23dce1eec0370049a683bbd070a96536944026a5f0b2b4be2649",
+      "sha256": "e0027c34bf646e844ce8a0289049ca5183dab7c4eb9a234767ed878f608938fa",
       "binary": false
     },
     {
       "path": "marketing/src/pages/program-comparison.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 37056,
+      "bytes": 37052,
       "lines": 699,
-      "sha256": "730b264009f53203b4d61b382a90bd484543f121c2e263c7e5e462269f1003cd",
+      "sha256": "38bf8273b5b182b7310a595cdc292db633bbdeb27441a6d569fa7fc39501b015",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 34624,
+      "bytes": 34622,
       "lines": 623,
-      "sha256": "ba57e099672c3ab49b51a610ce5f691a4fe46cecada249bcf7593a624db80f28",
+      "sha256": "964e0e7382248beaea7df3bcaac06c29af960c6cc3f6c7355d8be122c58a2ee0",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs/[slug].astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 28656,
+      "bytes": 28654,
       "lines": 577,
-      "sha256": "33aad8e48fcd41608e4cc74b6d56a9ce4c4c16f7639b8abe54a585a5bc01157f",
+      "sha256": "82cf4df41bc90e2dccb30c51dcc15273684020c1fc788abf774c92c6e548fcd6",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs/google-it-support.astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 18179,
+      "bytes": 18177,
       "lines": 327,
-      "sha256": "d57f96ad1d305b3f69d32f974b2e1ab50b6c54c7e1e7ec4190c48505b0d0343d",
+      "sha256": "b12c37adfcd87d6cb847d3f8881943099b0c3b66864581af4cffa675624c6af6",
       "binary": false
     },
     {
@@ -143044,18 +143044,18 @@
       "path": "marketing/src/pages/terms.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 21296,
+      "bytes": 21294,
       "lines": 386,
-      "sha256": "f8c7339faa17da0b9d935351b9238c1bcc6770c8f90dec7ed5a87221faa43fce",
+      "sha256": "ccd6cc6ad4ecacd9db8023d5bb5f399141c9b0927a13fb29606a7cbc72e51214",
       "binary": false
     },
     {
       "path": "marketing/src/pages/what-we-do.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 17278,
+      "bytes": 17276,
       "lines": 281,
-      "sha256": "710e7773560f42a822b7a67c68002a8b3d3060fe95db6b7e686278ba8f89fb8c",
+      "sha256": "542921e3cd40e52741f1583db0ebaaac773e098510c2573151004abb5bb58e60",
       "binary": false
     },
     {
@@ -143064,7 +143064,7 @@
       "domain": "astro-marketing",
       "bytes": 28260,
       "lines": 379,
-      "sha256": "8cdf50fa0b88df4ae0766f4d1b195e5f9482efb491f38b937290a8d8aac30b04",
+      "sha256": "9cd749c7bfaecca74abcecadb28c4ed7bf28d3999451bd6bc10ad8d1631be9b6",
       "binary": false
     },
     {
@@ -143298,9 +143298,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 7460,
+      "bytes": 7502,
       "lines": 143,
-      "sha256": "b585bc8579f76c46da17be8eb200e04352e94f0a4d69a514b8edd2ff40cf29fd",
+      "sha256": "bb654ef3d356f9a9c1e062582768315ebe415ebffeac32a047275a1f3b4d834e",
       "binary": false
     },
     {
@@ -153734,14 +153734,14 @@
       "path": "tailwind.config.ts",
       "area": "root",
       "domain": "root",
-      "bytes": 2383,
-      "lines": 71,
-      "sha256": "63fa85e1a7f6f345009010d7cfdeea4971df6d52d10ace3c9545ccb08f1f11c8",
+      "bytes": 2749,
+      "lines": 78,
+      "sha256": "b1dffe4b67b9e24295c17c404da8b0325d62685abb245865210ae91cf32c5895",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 71,
+          "line": 78,
           "kind": "ExportAssignment"
         }
       ],
@@ -159990,9 +159990,9 @@
       "path": "tests/components/counselor-roster-pagination.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1953,
-      "lines": 25,
-      "sha256": "0abc5818f24e9fc7bd1f0473fb027df4368f6a8753ac02810c41c0ee110aad18",
+      "bytes": 2732,
+      "lines": 35,
+      "sha256": "6978a603dfc3792b911d4387000b6732851b100934e54b2b836d2ba9f3a89598",
       "binary": false,
       "exports": [],
       "declarations": [],

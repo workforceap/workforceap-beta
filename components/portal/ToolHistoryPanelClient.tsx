@@ -54,7 +54,7 @@ export default function ToolHistoryPanelClient({ rows }: { rows: Row[] }) {
                 <p style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {row.inputSummary || 'Result'}
                 </p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.1rem 0 0' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.1rem 0 0' }}>
                   {formatPortalDate(new Date(row.createdAt))}
                 </p>
               </div>
@@ -81,7 +81,7 @@ export default function ToolHistoryPanelClient({ rows }: { rows: Row[] }) {
                   const regenerateHref = getRegenerateHref(row.toolType, row.id);
                   return (
                     <div style={{ marginTop: '0.875rem', borderLeft: '4px solid var(--color-accent)', background: 'var(--surface-container)', borderRadius: '0.75rem', padding: '0.875rem' }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.6875rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
+                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
                         Do this next
                       </p>
                       <p style={{ margin: '0 0 0.25rem', fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>

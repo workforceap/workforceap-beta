@@ -139,7 +139,7 @@ export function PlacementSurveysKit({
                 >
                   {row.student}
                 </div>
-                <div style={{ fontSize: 10, color: 'var(--wa-muted)' }}>{row.stage}</div>
+                <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{row.stage}</div>
               </div>
               <div style={{ flexShrink: 0 }}>
                 <Token label={row.status} size="sm" color={STATUS_TONE[row.status]} />
@@ -152,7 +152,7 @@ export function PlacementSurveysKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 margin: '12px 0 0',
               }}
@@ -174,7 +174,7 @@ export function PlacementSurveysKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

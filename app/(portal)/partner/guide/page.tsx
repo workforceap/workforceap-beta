@@ -75,14 +75,14 @@ export default async function PartnerGuidePage() {
     <div style={{ maxWidth: '56rem', margin: '0 auto', paddingBottom: '6rem' }} className="md:wa-pb-12">
       {/* Breadcrumb */}
       <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/partner" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
+        <Link href="/partner" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
           ← Back to dashboard
         </Link>
       </nav>
 
       {/* Header */}
       <header style={{ marginBottom: '2.5rem' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
           Referral Guide
         </p>
         <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15 }}>
@@ -206,7 +206,7 @@ export default async function PartnerGuidePage() {
               <p className="wa-tabular-nums" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.375rem' }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
                 {stat.label}
               </p>
             </div>

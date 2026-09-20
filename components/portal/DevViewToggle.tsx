@@ -53,7 +53,7 @@ export default function DevViewToggle() {
         onClick={() => handleToggle('student')}
         style={{
           padding: '0.35rem 0.6rem',
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           border: mode === 'student' ? '2px solid var(--color-accent)' : '1px solid var(--outline-variant)',
           borderRadius: '4px',
           background: mode === 'student' ? 'rgba(74, 155, 79, 0.1)' : 'transparent',
@@ -68,7 +68,7 @@ export default function DevViewToggle() {
         onClick={() => handleToggle('admin')}
         style={{
           padding: '0.35rem 0.6rem',
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           border: mode === 'admin' ? '2px solid var(--color-accent)' : '1px solid var(--outline-variant)',
           borderRadius: '4px',
           background: mode === 'admin' ? 'rgba(74, 155, 79, 0.1)' : 'transparent',

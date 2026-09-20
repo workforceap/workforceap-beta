@@ -163,7 +163,7 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
                   <code
                     style={{
                       flex: '1 1 200px',
-                      fontSize: '0.8rem',
+                      fontSize: '0.8125rem',
                       wordBreak: 'break-all',
                       background: 'white',
                       padding: '0.35rem 0.5rem',
@@ -253,7 +253,7 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
                   <option value="partner">Partner-organisation counselor</option>
                   <option value="independent">Independent advisor</option>
                 </select>
-                <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
                   Community Ambassadors get a counselor sign-in and a login code, set up their counselor profile,
                   and see only the members you assign to them.
                 </p>
@@ -278,7 +278,7 @@ export default function InviteForm({ subgroups, programs, partners, onClose }: P
                     </option>
                   ))}
                 </select>
-                <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
                   Leave as WorkforceAP for internal staff, or choose a partner for partner-affiliated counselors.
                 </p>
               </div>

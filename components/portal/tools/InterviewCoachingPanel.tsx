@@ -84,7 +84,7 @@ export default function InterviewCoachingPanel({ targetRole, lastUserText, class
 
   const bar = (label: string, value: number, color: string) => (
     <div style={{ marginBottom: '0.85rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
         <span>{label}</span>
         <span style={{ color: 'var(--color-on-surface)' }}>{value}%</span>
       </div>
@@ -121,10 +121,10 @@ export default function InterviewCoachingPanel({ targetRole, lastUserText, class
         minHeight: 280,
       }}
     >
-      <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+      <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
         Real-time coaching
       </h3>
-      <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
+      <p style={{ margin: '0 0 1rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
         Heuristic scores from your latest answers (clarity, hedging, role keywords). Not a grade — use it to notice patterns.
       </p>
       {bar('Speech clarity', metrics.clarity, '#2563eb')}
@@ -139,10 +139,10 @@ export default function InterviewCoachingPanel({ targetRole, lastUserText, class
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>Watch fillers:</span>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>Watch fillers:</span>
         <span
           style={{
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             padding: '0.15rem 0.5rem',
             borderRadius: 999,
@@ -156,7 +156,7 @@ export default function InterviewCoachingPanel({ targetRole, lastUserText, class
       {metrics.lastSnippet ? (
         <div
           style={{
-            fontSize: '0.78rem',
+            fontSize: '0.8125rem',
             lineHeight: 1.45,
             color: 'var(--color-on-surface)',
             padding: '0.65rem 0.75rem',
@@ -165,11 +165,11 @@ export default function InterviewCoachingPanel({ targetRole, lastUserText, class
             border: '1px solid rgba(127,127,127,0.15)',
           }}
         >
-          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>Last answer</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>Last answer</span>
           <p style={{ margin: '0.35rem 0 0' }}>{metrics.lastSnippet}{lastUserText.length > 160 ? '…' : ''}</p>
         </div>
       ) : (
-        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>Speak to see live feedback.</p>
+        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>Speak to see live feedback.</p>
       )}
     </aside>
   );

@@ -68,14 +68,14 @@ export default async function EmployerGuidePage() {
     <div className="wa-pb-24 md:wa-pb-0" style={{ maxWidth: '64rem', margin: '0 auto' }}>
       {/* Breadcrumb */}
       <nav style={{ marginBottom: '1.5rem', marginTop: '0.5rem' }}>
-        <Link href="/employer" style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
+        <Link href="/employer" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textDecoration: 'none', fontWeight: 500 }}>
           ← {t('backToDashboard')}
         </Link>
       </nav>
 
       {/* Header */}
       <header style={{ marginBottom: '3rem' }}>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>
           {t('employerGuideTitle')}
         </p>
         <h1 style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', marginBottom: '0.75rem', lineHeight: 1.15, maxWidth: '28rem' }}>
@@ -160,7 +160,7 @@ export default async function EmployerGuidePage() {
                 </Link>
               )}
               {i === 2 && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic', marginTop: '0.75rem' }}>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic', marginTop: '0.75rem' }}>
                   Optional but appreciated — it funds the next candidate's training.
                 </p>
               )}

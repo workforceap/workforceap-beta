@@ -79,7 +79,7 @@ export function FeatureFlagsKit({
       </div>
       <code
         style={{
-          fontSize: 10,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -180,7 +180,7 @@ export function FeatureFlagsKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}
@@ -207,7 +207,7 @@ export function FeatureFlagsKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

@@ -41,7 +41,7 @@ export default function CompactReadinessCoach() {
         </span>
         <span
           style={{
-            fontSize: '0.72rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             color: ACCENT,
             letterSpacing: '0.04em',

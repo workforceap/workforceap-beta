@@ -134,7 +134,7 @@ export default async function AIHistoryPage({ searchParams }: Props) {
             <>
               <div className="wa-flex wa-items-center wa-gap-2" style={{ marginBottom: '0.875rem' }}>
                 <HistoryIcon size={16} color="var(--wa-accent)" aria-hidden="true" />
-                <span className="wa-kit-stat-label" style={{ fontSize: 11 }}>
+                <span className="wa-kit-stat-label" style={{ fontSize: 13 }}>
                   {withLabels.length} saved result{withLabels.length !== 1 ? 's' : ''}
                 </span>
               </div>

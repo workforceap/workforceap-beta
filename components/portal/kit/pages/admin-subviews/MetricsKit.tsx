@@ -74,7 +74,7 @@ export function MetricsKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em' }}>
             Requests by surface
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
             {surfaceCaption}
           </p>
           <RankBars data={bySurface} />

@@ -229,7 +229,7 @@ export default function EmployersTableClient({
               justifyContent: 'center',
               color: '#fff',
               fontWeight: 700,
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               flexShrink: 0,
             }}
           >
@@ -252,7 +252,7 @@ export default function EmployersTableClient({
       cell: (e) => (
         <>
           <div style={{ fontSize: '0.875rem' }}>{e.contactName}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{e.contactEmail}</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{e.contactEmail}</div>
         </>
       ),
     },
@@ -262,7 +262,7 @@ export default function EmployersTableClient({
       cell: (e) => (
         <>
           <div style={{ fontSize: '0.875rem' }}>{e.user.fullName}</div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{e.user.email}</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{e.user.email}</div>
         </>
       ),
     },
@@ -276,7 +276,7 @@ export default function EmployersTableClient({
             style={{
               padding: '0.2rem 0.5rem',
               borderRadius: '999px',
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               background: style.background,
               color: style.color,
               fontWeight: 600,
@@ -308,7 +308,7 @@ export default function EmployersTableClient({
             style={{
               padding: '0.2rem 0.5rem',
               borderRadius: '999px',
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               background: style.background,
               color: style.color,
               fontWeight: 600,
@@ -335,7 +335,7 @@ export default function EmployersTableClient({
             style={{
               padding: '0.2rem 0.5rem',
               borderRadius: '999px',
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               background: pt.bg,
               color: pt.color,
               fontWeight: 600,

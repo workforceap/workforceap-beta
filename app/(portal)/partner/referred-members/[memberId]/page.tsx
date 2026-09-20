@@ -55,7 +55,7 @@ function formatSalary(value: number | null | undefined) {
 }
 
 function sectionHeading(title: string) {
-  return <h2 style={{ fontSize: '0.75rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</h2>;
+  return <h2 style={{ fontSize: '0.8125rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</h2>;
 }
 
 export default async function PartnerReferredMemberDetailPage({ params }: Props) {
@@ -317,7 +317,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontWeight: 800,
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                       }}
                     >
                       {step.done ? '✓' : idx + 1}
@@ -329,7 +329,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                       </p>
                       <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: 'var(--color-on-surface-variant)' }}>{step.detail}</p>
                       {step.date ? (
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>{formatDate(step.date)}</p>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatDate(step.date)}</p>
                       ) : null}
                     </div>
                   </li>
@@ -338,7 +338,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
             </section>
 
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                 Member snapshot
               </p>
               <p style={{ margin: '0.35rem 0 0.2rem', fontSize: '1.25rem', fontWeight: 800 }}>{member.fullName}</p>
@@ -354,7 +354,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                     style={{ padding: '0.75rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}
                   >
                     <div className="wa-tabular-nums" style={{ fontSize: '1rem', fontWeight: 800 }}>{item.value}</div>
-                    <div style={{ fontSize: '0.65rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {item.label}
                     </div>
                   </div>
@@ -366,15 +366,15 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
               {sectionHeading('Program')}
               <div style={{ display: 'grid', gap: '0.7rem', marginTop: '0.75rem' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Enrolled</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Enrolled</p>
                   <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{program?.title ?? '—'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Enrolled date</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Enrolled date</p>
                   <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{formatDate(member.enrolledAt)}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Overall progress</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Overall progress</p>
                   <p className="wa-tabular-nums" style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{progressPct}%</p>
                 </div>
               </div>
@@ -420,19 +420,19 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
               {member.placementRecord ? (
                 <div style={{ display: 'grid', gap: '0.7rem', marginTop: '0.75rem' }}>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employer</p>
                     <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.employerName}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Role</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Role</p>
                     <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{member.placementRecord.jobTitle}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Placed</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Placed</p>
                     <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{formatDate(member.placementRecord.placedAt)}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Salary</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Salary</p>
                     <p className="wa-tabular-nums" style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>
                       {formatSalary(member.placementRecord.salaryOffered)}
                     </p>
@@ -474,7 +474,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                   {recentEvents.map((event) => (
                     <div key={event.id} style={{ padding: '0.8rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
                       <p style={{ margin: 0, fontWeight: 700 }}>{formatEventLabel(event)}</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>{formatDateTime(event.createdAt)}</p>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{formatDateTime(event.createdAt)}</p>
                     </div>
                   ))}
                 </div>
@@ -490,7 +490,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
                   {outreachLogs.map((log) => (
                     <div key={log.id} style={{ padding: '0.8rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
                       <p style={{ margin: 0, fontWeight: 700, textTransform: 'capitalize' }}>{log.channel}</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {log.createdBy?.fullName ?? 'User'} · {formatDateTime(log.createdAt)}
                       </p>
                       <p style={{ color: 'var(--color-on-surface-variant)', margin: '0.45rem 0 0', lineHeight: 1.5 }}>{log.note}</p>
@@ -506,19 +506,19 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
               {sectionHeading('At a glance')}
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '0.9rem' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Status</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Status</p>
                   <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{memberStatus}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Latest activity</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest activity</p>
                   <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{recentEvent ? formatEventLabel(recentEvent) : '—'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Latest outreach</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest outreach</p>
                   <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{outreachLogs[0] ? formatDateTime(outreachLogs[0].createdAt) : 'No outreach yet'}</p>
                 </div>
                 <div>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Certifications</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Certifications</p>
                   <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>
                     {certificateCount === 0 ? 'None on file' : `${certificateCount} certificate${certificateCount === 1 ? '' : 's'} earned`}
                   </p>

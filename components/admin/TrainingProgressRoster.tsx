@@ -237,7 +237,7 @@ export default function TrainingProgressRoster({
         <p
           aria-live="polite"
           data-testid="training-roster-count"
-          style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}
+          style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}
         >
           {isFiltered
             ? `Showing ${visibleRows.length} of ${rows.length} learner${rows.length === 1 ? '' : 's'} · KPIs reflect this filter`

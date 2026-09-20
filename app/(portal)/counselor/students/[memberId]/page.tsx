@@ -593,7 +593,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                 </p>
                 <p
                   className="wa-truncate"
-                  style={{ fontSize: '0.8rem', color: 'var(--wa-muted)', margin: '0 0 0.5rem' }}
+                  style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', margin: '0 0 0.5rem' }}
                 >
                   {program}
                 </p>
@@ -611,7 +611,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       alignItems: 'center',
                       padding: '0.15rem 0.5rem',
                       borderRadius: '9999px',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       background: 'var(--wa-gold-soft)',
                       color: 'var(--wa-gold-dark)',
@@ -642,7 +642,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
               Program Progress
             </h2>
             {programCourses.length === 0 ? (
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {activeProgramSlug ? 'No course data available for this program.' : 'Not enrolled in a program yet.'}
               </p>
             ) : (
@@ -650,20 +650,20 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                 {/* Overall progress bar */}
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
                       Overall Completion
                     </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>{progressPct}%</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>{progressPct}%</span>
                   </div>
                   <div style={{ height: 6, background: 'var(--surface-container)', borderRadius: '9999px', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${progressPct}%`, background: 'var(--color-accent)', borderRadius: '9999px' }} />
                   </div>
                   {trainingView?.averageGradePercentDisplay != null ? (
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
                         Grade (avg, scored courses)
                       </span>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-info-on-surface)' }}>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-info-on-surface)' }}>
                         {trainingView.averageGradePercentDisplay}%
                       </span>
                     </div>
@@ -679,7 +679,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        fontSize: '0.8rem',
+                        fontSize: '0.8125rem',
                         padding: '0.375rem 0',
                         borderTop: '1px solid var(--outline-variant)',
                         opacity: done ? 1 : 0.6,
@@ -689,7 +689,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       {done ? (
                         <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-green)' }} aria-hidden="true">check_circle</span>
                       ) : (
-                        <span style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)' }}>Not started</span>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Not started</span>
                       )}
                     </div>
                   );
@@ -716,7 +716,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
               <h2 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>
                 Other programs this student is in
               </h2>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem' }}>
                 Secondary enrollments outside the primary program shown above.
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -786,12 +786,12 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
             <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>
               Elevator Pitch
             </h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
               <strong style={{ color: 'var(--color-on-surface)' }}>Pitch uses:</strong>{' '}
               {typedPitchDeployments.length}
             </p>
             {typedPitchDeployments.length === 0 ? (
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 No pitch deployments logged yet.
               </p>
             ) : (
@@ -810,16 +810,16 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                     }}
                   >
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: '0.8rem', color: 'var(--color-on-surface)', margin: 0 }}>
+                      <p style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0 }}>
                         {ev.meta.employer ?? '—'}
                       </p>
-                      <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
                         {formatPortalDate(ev.meta.usedAt ?? ev.createdAt)}
                       </p>
                     </div>
                     <span
                       style={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         color: pitchOutcomeColor(ev.meta.outcome),
                         flexShrink: 0,
@@ -908,14 +908,14 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
             </h2>
 
             {applications.length === 0 && aiMatches.length === 0 ? (
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 No applications or AI matches yet.
               </p>
             ) : null}
 
             {applications.length > 0 ? (
               <div style={{ marginBottom: '1rem' }}>
-                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Applications
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -931,7 +931,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <div style={{ minWidth: 0 }}>
                           <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-on-surface)', margin: 0 }}>{app.job.title}</p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
+                          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
                         </div>
                         <StatusBadge
                           label={employerJobPostingApplicationStatusLabel(app.status)}
@@ -946,7 +946,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
 
             {aiMatches.length > 0 ? (
               <div>
-                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   AI Matches
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -962,10 +962,10 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
                         <div style={{ minWidth: 0 }}>
                           <p style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--color-on-surface)', margin: 0 }}>{m.job.title}</p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
+                          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
                         </div>
                         <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>{matchScoreAsPercent(m.matchScore)}%</div>
+                          <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>{matchScoreAsPercent(m.matchScore)}%</div>
                           <div style={{ marginTop: '0.25rem' }}>
                             <StatusBadge
                               label={employerMatchPipelineLabel(m.status)}
@@ -999,7 +999,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                     alignItems: 'center',
                     padding: '0.15rem 0.5rem',
                     borderRadius: '9999px',
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     background: 'var(--wa-gold-soft)',
                     color: 'var(--wa-gold-dark)',
@@ -1127,9 +1127,9 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       borderBottom: '1px solid var(--outline-variant)',
                     }}
                   >
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Employer</span>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Outcome</span>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Date</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Employer</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Outcome</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', textAlign: 'right' }}>Date</span>
                   </div>
                   {typedPitchDeployments.map((ev) => (
                     <div
@@ -1149,7 +1149,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       </span>
                       <span
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 700,
                           color: pitchOutcomeColor(ev.meta.outcome),
                           textAlign: 'right',
@@ -1157,7 +1157,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                       >
                         {pitchOutcomeLabel(ev.meta.outcome)}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', whiteSpace: 'nowrap' }}>
                         {formatPortalDate(ev.meta.usedAt ?? ev.createdAt)}
                       </span>
                     </div>
@@ -1190,7 +1190,7 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
           <section id="counselor-member-messages" style={{ marginTop: '1.5rem' }}>
             {readOnlyAudit && <span hidden data-portal-audit-suppressed="counselor-member-message-thread-create-read-receipt-and-realtime" />}
             {messagesTruncated ? (
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
                 {messagesLabel}
               </p>
             ) : null}
@@ -1228,14 +1228,14 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
               <div style={{ display: 'grid', gap: '1rem' }}>
                 {applications.length > 0 ? (
                   <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}>
-                    <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Applications</h3>
+                    <h3 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Applications</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {applications.map((app) => (
                         <div key={app.id} style={{ padding: '0.75rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                             <div>
                               <p style={{ fontWeight: 700, margin: 0 }}>{app.job.title}</p>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
+                              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{app.job.employer.companyName}</p>
                             </div>
                             <StatusBadge
                               label={employerJobPostingApplicationStatusLabel(app.status)}
@@ -1249,14 +1249,14 @@ export default async function CounselorStudentDetailPage({ params }: Props) {
                 ) : null}
                 {aiMatches.length > 0 ? (
                   <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', border: '1px solid var(--outline-variant)' }}>
-                    <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>AI Matches</h3>
+                    <h3 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem', color: 'var(--color-on-surface-variant)' }}>AI Matches</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {aiMatches.map((m) => (
                         <div key={m.id} style={{ padding: '0.75rem', borderRadius: '0.5rem', background: 'var(--surface-container-low)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                             <div>
                               <p style={{ fontWeight: 700, margin: 0 }}>{m.job.title}</p>
-                              <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
+                              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{m.job.employer.companyName}</p>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-accent)' }}>{matchScoreAsPercent(m.matchScore)}%</div>
@@ -1370,7 +1370,7 @@ function AtRiskSignalCard({ alert }: { alert: AtRiskAlertDisplay }) {
     <div className="portal-card portal-card--flat" style={{ ...CARD_STYLE, borderLeft: `4px solid ${color}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
         <h3 style={{ fontWeight: 700, fontSize: '0.9rem', margin: 0 }}>At-Risk Signal</h3>
-        <span style={{ fontWeight: 700, fontSize: '0.8rem', color, whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 700, fontSize: '0.8125rem', color, whiteSpace: 'nowrap' }}>
           {level} · {alert.score}
         </span>
       </div>
@@ -1381,7 +1381,7 @@ function AtRiskSignalCard({ alert }: { alert: AtRiskAlertDisplay }) {
               key={f.name}
               title={`weight ${f.weight}`}
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 padding: '0.2rem 0.5rem',
                 borderRadius: '999px',
                 background: 'var(--surface-container-high)',
@@ -1393,10 +1393,10 @@ function AtRiskSignalCard({ alert }: { alert: AtRiskAlertDisplay }) {
             </span>
           ))
         ) : (
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>No specific factors recorded.</span>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>No specific factors recorded.</span>
         )}
       </div>
-      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         Status: <strong style={{ color: 'var(--color-on-surface)' }}>{atRiskAlertStatusLabel(alert.status)}</strong> · scanned{' '}
         {formatPortalDate(alert.createdAt)}
       </p>
@@ -1418,7 +1418,7 @@ function CareerQuizRecommendationCard({ occupations }: { occupations: CareerMatc
             <div key={o.onetCode ?? o.title} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.85rem', fontWeight: idx === 0 ? 700 : 500 }}>{o.title}</span>
               {typeof o.confidence === 'number' ? (
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
                   {Math.round(o.confidence)}% match
                 </span>
               ) : null}
@@ -1447,8 +1447,8 @@ function NextBestActionsCard({ actions }: { actions: NextBestActionRow[] }) {
               </span>
               <div style={{ minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600 }}>{a.title}</p>
-                <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>{a.description}</p>
-                <p style={{ margin: '0.25rem 0 0', fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>{a.ctaLabel}</p>
+                <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{a.description}</p>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{a.ctaLabel}</p>
               </div>
             </div>
           ))}

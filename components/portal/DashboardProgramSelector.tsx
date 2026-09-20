@@ -69,7 +69,7 @@ export default function DashboardProgramSelector({
           border: '1px solid color-mix(in srgb, var(--color-accent) 14%, var(--outline-variant))',
           background: 'rgba(255,255,255,0.92)',
           color: 'var(--color-on-surface)',
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           cursor: isPending ? 'wait' : 'pointer',
           letterSpacing: '0.02em',
@@ -152,7 +152,7 @@ export default function DashboardProgramSelector({
                       aria-label="Primary program"
                       title="Primary program"
                       style={{
-                        fontSize: '0.625rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         padding: '0.125rem 0.4rem',
                         borderRadius: '999px',

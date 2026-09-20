@@ -14897,16 +14897,8 @@
   },
   {
     "from": "app/(portal)/partner/page.tsx",
-    "specifier": "@/components/portal/StatusBadge",
-    "line": 31,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/StatusBadge.tsx"
-  },
-  {
-    "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/PortalKpiCard",
-    "line": 32,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalKpiCard.tsx"
@@ -14914,7 +14906,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 33,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -14922,7 +14914,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 34,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -14930,7 +14922,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 35,
+    "line": 34,
     "kind": "type",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -14938,7 +14930,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PartnerReferralResourcesSection",
-    "line": 36,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/partner/PartnerReferralResourcesSection.tsx"
@@ -14946,7 +14938,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PendingApprovalBanner",
-    "line": 37,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/partner/PendingApprovalBanner.tsx"
@@ -14954,7 +14946,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PartnerConnectPayoutButton",
-    "line": 38,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/partner/PartnerConnectPayoutButton.tsx"
@@ -14962,7 +14954,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/partner/partnerPayout",
-    "line": 39,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/partner/partnerPayout.ts"
@@ -14970,7 +14962,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/partner/partnerType",
-    "line": 40,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/partner/partnerType.ts"
@@ -14978,7 +14970,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/outcomes/socialProof",
-    "line": 41,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/outcomes/socialProof.ts"
@@ -14986,7 +14978,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 42,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -14994,7 +14986,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 43,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"

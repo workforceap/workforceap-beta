@@ -273,7 +273,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
                   gap: '0.5rem',
                   padding: '0 0.3rem',
                   color: 'var(--color-muted, #64748b)',
-                  fontSize: '0.78rem',
+                  fontSize: '0.8125rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}
@@ -353,7 +353,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           <label style={labelStyle}>
             <span style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
               J6 cover letter body
-              <button type="button" className="btn btn-outline" style={{ minHeight: 32, fontSize: '0.8rem' }} onClick={resetLetter}>
+              <button type="button" className="btn btn-outline" style={{ minHeight: 32, fontSize: '0.8125rem' }} onClick={resetLetter}>
                 Regenerate from the rows above
               </button>
             </span>
@@ -363,7 +363,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
               onChange={(e) => set('coverLetterBody', e.target.value)}
               required
             />
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted, #64748b)', fontWeight: 400 }}>
               Date, addressee, RE line, salutation, closing and signature are added automatically. Start lines with &ldquo;- &rdquo; for bullets.
             </span>
           </label>

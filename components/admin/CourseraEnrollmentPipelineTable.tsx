@@ -300,7 +300,7 @@ export default function CourseraEnrollmentPipelineTable({
         className="content-card"
         style={{ padding: '0.6rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.6rem', flexWrap: 'wrap' }}
       >
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}>
           <input type="checkbox" checked={allFilteredSelected} onChange={toggleAllFiltered} disabled={filteredIds.length === 0} />
           {selected.size > 0 ? `${selected.size} selected` : 'Select all shown'}
         </label>
@@ -309,14 +309,14 @@ export default function CourseraEnrollmentPipelineTable({
             type="button"
             className="btn btn-primary btn-sm"
             onClick={() => setConfirmBulkApprove(true)}
-            style={{ fontSize: '0.75rem', padding: '0.3rem 0.7rem' }}
+            style={{ fontSize: '0.8125rem', padding: '0.3rem 0.7rem' }}
           >
             Approve {selected.size} selected
           </button>
         ) : null}
       </div>
       {bulkResult ? (
-        <p role="status" style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-success, #166534)' }}>
+        <p role="status" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-success, #166534)' }}>
           {bulkResult}
         </p>
       ) : null}
@@ -364,7 +364,7 @@ export default function CourseraEnrollmentPipelineTable({
                   <Link href={`/admin/members/${row.memberId}`} style={{ fontWeight: 600 }}>
                     {row.memberName}
                   </Link>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{row.memberEmail}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.memberEmail}</div>
                 </div>
               </div>
             ),
@@ -383,7 +383,7 @@ export default function CourseraEnrollmentPipelineTable({
                   {row.approved ? 'Yes' : 'No'}
                 </span>
                 {row.approved && row.approvedAt ? (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {fmtDateTime(row.approvedAt)}
                     {row.approvedByName ? ` by ${row.approvedByName}` : ''}
                   </div>
@@ -397,9 +397,9 @@ export default function CourseraEnrollmentPipelineTable({
             cell: (row) => (
               <div>
                 <StatusBadge label={SIGNAL_CONFIG[row.signal].label} variant={SIGNAL_CONFIG[row.signal].variant} />
-                {row.hasEnrollmentReceipt ? <div style={{ fontSize: '0.75rem' }}>Enrollment receipt recorded</div> : null}
+                {row.hasEnrollmentReceipt ? <div style={{ fontSize: '0.8125rem' }}>Enrollment receipt recorded</div> : null}
                 {row.lastActivityAt ? (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.2rem' }}>
                     last activity {fmtDateTime(row.lastActivityAt)}
                   </div>
                 ) : null}
@@ -422,7 +422,7 @@ export default function CourseraEnrollmentPipelineTable({
                       className={row.approved ? 'btn btn-outline btn-sm' : 'btn btn-primary btn-sm'}
                       disabled={isApprovePending}
                       onClick={() => handleApproveToggle(row)}
-                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                      style={{ fontSize: '0.8125rem', padding: '0.3rem 0.6rem' }}
                     >
                       {isApprovePending ? 'Working…' : row.approved ? 'Revoke' : 'Approve'}
                     </button>
@@ -432,7 +432,7 @@ export default function CourseraEnrollmentPipelineTable({
                         className="btn btn-primary btn-sm"
                         disabled={isEnrolling || !row.programSlug}
                         onClick={() => setConfirmEnrollRow(row)}
-                        style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}
+                        style={{ fontSize: '0.8125rem', padding: '0.3rem 0.6rem' }}
                       >
                         {isEnrolling ? 'Enrolling…' : 'Enroll now'}
                       </button>
@@ -441,13 +441,13 @@ export default function CourseraEnrollmentPipelineTable({
                   {message ? (
                     <span
                       role={message.ok ? 'status' : 'alert'}
-                      style={{ fontSize: '0.75rem', color: message.ok ? 'var(--color-success, #166534)' : 'var(--color-error, #c83232)' }}
+                      style={{ fontSize: '0.8125rem', color: message.ok ? 'var(--color-success, #166534)' : 'var(--color-error, #c83232)' }}
                     >
                       {message.text}
                     </span>
                   ) : null}
                   {error ? (
-                    <span role="alert" style={{ fontSize: '0.75rem', color: 'var(--color-error, #c83232)' }}>
+                    <span role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-error, #c83232)' }}>
                       {error}
                     </span>
                   ) : null}
@@ -498,7 +498,7 @@ export default function CourseraEnrollmentPipelineTable({
               paid Coursera seat. Only approve once funding is confirmed and a counselor has assigned a program.
             </p>
             {bulkError ? (
-              <p role="alert" style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-error, #c83232)' }}>
+              <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-error, #c83232)' }}>
                 {bulkError}
               </p>
             ) : null}

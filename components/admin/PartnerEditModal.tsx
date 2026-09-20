@@ -243,7 +243,7 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
               style={{ width: '100%', padding: '0.5rem 0.75rem', border: '1px solid var(--outline-variant)', borderRadius: '6px' }}
               disabled={saving}
             />
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
               Shown in the partner portal header. Falls back to WorkforceAP branding if blank.
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
                 disabled={saving}
               />
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
               6-digit hex (e.g. #1E3A8A). Used as the partner-scoped accent in the portal header.
             </div>
           </div>

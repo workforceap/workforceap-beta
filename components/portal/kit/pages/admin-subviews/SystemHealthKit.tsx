@@ -182,7 +182,7 @@ export function SystemHealthKit({
                 Integration uptime (30d)
               </h3>
               {uptimeCaption ? (
-                <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginBottom: 16 }}>{uptimeCaption}</p>
+                <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginBottom: 16 }}>{uptimeCaption}</p>
               ) : (
                 <div style={{ marginBottom: 16 }} />
               )}

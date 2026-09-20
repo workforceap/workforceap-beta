@@ -60,7 +60,7 @@ export default function CourseraSyncProgressButton() {
         {running ? 'Syncing…' : 'Sync training progress →'}
       </button>
       {result && (
-        <div role="status" style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
+        <div role="status" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
           ✓ xAPI: {result.xapi.replayed} replayed
           {result.xapi.breakdown ? (
             <>
@@ -85,7 +85,7 @@ export default function CourseraSyncProgressButton() {
         </div>
       )}
       {error && (
-        <div role="alert" style={{ fontSize: '0.8rem', color: 'var(--color-error, #dc2626)' }}>
+        <div role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-error, #dc2626)' }}>
           Error: {error}
         </div>
       )}

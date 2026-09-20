@@ -77,7 +77,7 @@ export default async function AdminSubgroupsLegacy() {
                     <>
                       <div style={{ fontWeight: 600 }}>{sg.name}</div>
                       {sg.description ? (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', maxWidth: 200 }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', maxWidth: 200 }}>
                           {sg.description}
                         </div>
                       ) : null}
@@ -92,7 +92,7 @@ export default async function AdminSubgroupsLegacy() {
                       style={{
                         padding: '0.2rem 0.5rem',
                         borderRadius: '4px',
-                        fontSize: '0.8rem',
+                        fontSize: '0.8125rem',
                         textTransform: 'capitalize',
                         background: 'var(--color-light)',
                       }}
@@ -107,7 +107,7 @@ export default async function AdminSubgroupsLegacy() {
                   cell: (sg) => (
                     <>
                       <div style={{ fontSize: '0.9rem' }}>{sg.leader.fullName}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{sg.leader.email}</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{sg.leader.email}</div>
                     </>
                   ),
                 },

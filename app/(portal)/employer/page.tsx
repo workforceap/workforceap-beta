@@ -390,7 +390,7 @@ export default async function EmployerDashboardPage({
         {/* Hero */}
         <div style={{ paddingLeft:"1.5rem", paddingRight:"1.5rem", paddingTop:"1.5rem", paddingBottom:"0.5rem" }}>
           <p
-            className="wa-text-[11px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold"
+            className="wa-text-[13px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold"
             style={{ marginBottom:"0.25rem", color: 'var(--color-accent)' }}
           >
             {t('employerPortal')}
@@ -426,7 +426,7 @@ export default async function EmployerDashboardPage({
           ].map((s, i, arr) => (
             <div key={s.label} style={{ display:"flex", alignItems:"center", gap:"0.5rem" }}>
               <div style={{ flex:1, textAlign:"center" }}>
-                <p className="wa-text-[11px] wa-font-bold text-on-surface-variant/50 wa-uppercase wa-tracking-tighter">{s.label}</p>
+                <p className="wa-text-[13px] wa-font-bold text-on-surface-variant/50 wa-uppercase wa-tracking-tighter">{s.label}</p>
                 <p className="wa-text-sm wa-font-bold text-on-surface">{s.value}</p>
               </div>
               {i < arr.length - 1 && <div className="bg-outline-variant/30" style={{ width: '1px', height:"1.25rem" }} />}
@@ -513,7 +513,7 @@ export default async function EmployerDashboardPage({
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                       <h4 className="wa-font-bold text-on-surface wa-text-sm wa-truncate">{app.student.fullName}</h4>
-                      <span className="wa-text-[11px] text-on-surface-variant/60 wa-font-medium" style={{ marginLeft:"0.5rem", flexShrink:0 }}>
+                      <span className="wa-text-[13px] text-on-surface-variant/60 wa-font-medium" style={{ marginLeft:"0.5rem", flexShrink:0 }}>
                         {app.appliedAt ? formatPortalDate(app.appliedAt) : '—'}
                       </span>
                     </div>
@@ -622,7 +622,7 @@ export default async function EmployerDashboardPage({
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">{card.icon}</span>
                 </div>
                 <p className="portal-metric-card__value" style={{ fontSize: '1.5rem' }}>{card.value}</p>
-                <p className="portal-metric-card__label" style={{ fontSize: '0.6rem' }}>{card.label}</p>
+                <p className="portal-metric-card__label" style={{ fontSize: '0.8125rem' }}>{card.label}</p>
               </div>
             ))}
           </div>
@@ -669,7 +669,7 @@ export default async function EmployerDashboardPage({
                 </div>
               ))}
             </div>
-            <Link href="/employer/jobs" className="btn btn-outline" style={{ display: 'block', width: '100%', marginTop: '1.5rem', textAlign: 'center', fontSize: '0.75rem' }}>
+            <Link href="/employer/jobs" className="btn btn-outline" style={{ display: 'block', width: '100%', marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8125rem' }}>
               {t('managePostings')}
             </Link>
           </div>
@@ -678,10 +678,10 @@ export default async function EmployerDashboardPage({
             <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '6rem', opacity: 0.08, color: '#fff' }} aria-hidden="true">school</span>
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>{t('workforceAdvancement')}</h3>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
                 {t('accessCredentialedGraduates')}
               </p>
-              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.9)', color: 'var(--color-accent)', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none' }}>
+              <Link href="/employer/jobs/new" style={{ display: 'inline-block', padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.9)', color: 'var(--color-accent)', borderRadius: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, textDecoration: 'none' }}>
                 {t('postAJob')}
               </Link>
             </div>
@@ -717,10 +717,10 @@ export default async function EmployerDashboardPage({
               >
                 <div style={{ marginBottom: '1rem' }}>
                   <h4 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--color-on-surface)' }}>{app.student.fullName}</h4>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 500, marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 500, marginBottom: '0.75rem' }}>
                     {t('appliedTo')} {app.job.title}
                   </p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
                     {app.appliedAt ? formatPortalDate(app.appliedAt) : '—'}
                   </p>
                   <StatusBadge

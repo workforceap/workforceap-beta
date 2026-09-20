@@ -35,7 +35,7 @@ export function StatCard({
             borderRadius: 'var(--radius-full, 9999px)',
             border: '1px solid var(--outline-variant)',
             background: 'var(--surface-container-high)',
-            fontSize: '0.625rem',
+            fontSize: '0.8125rem',
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',

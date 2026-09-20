@@ -139,7 +139,7 @@ function EmployerTile({ card, index }: { card: EmployerCard; index: number }) {
           >
             {card.name}
           </h3>
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{card.industry}</p>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{card.industry}</p>
           <div style={{ marginTop: 6 }}>
             <Token label={lastActive.label} size="sm" color={TONE_TOKEN_COLOR[lastActive.tone]} />
           </div>
@@ -151,7 +151,7 @@ function EmployerTile({ card, index }: { card: EmployerCard; index: number }) {
             alignItems: 'baseline',
             justifyContent: 'space-between',
             gap: 10,
-            fontSize: 12,
+            fontSize: 13,
             paddingTop: 12,
             borderTop: '1px solid var(--wa-border)',
           }}

@@ -128,7 +128,7 @@ export default function InactiveMembersPage() {
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{m.email}</div>
           {m.phone ? (
-            <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>{m.phone}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>{m.phone}</div>
           ) : null}
         </div>
       ),
@@ -183,7 +183,7 @@ export default function InactiveMembersPage() {
               background: sent ? 'var(--wa-success)' : 'var(--wa-accent)',
               color: 'var(--wa-on-accent)',
               fontWeight: 700,
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               cursor: sending || sent ? 'not-allowed' : 'pointer',
               opacity: sending ? 0.7 : 1,
               display: 'inline-flex',
@@ -281,7 +281,7 @@ export default function InactiveMembersPage() {
             title={t('needsAttention')}
             goal={t('membersThreshold', { count: members.length, days })}
             action={
-              <span style={{ fontSize: '0.75rem', color: 'var(--wa-muted)' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
                 Updated {new Date().toLocaleTimeString()}
               </span>
             }
@@ -302,7 +302,7 @@ export default function InactiveMembersPage() {
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{m.email}</div>
                       {m.phone ? (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>{m.phone}</div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', marginTop: '0.15rem' }}>{m.phone}</div>
                       ) : null}
                     </div>
                     <div style={{ flexShrink: 0 }}>
@@ -317,7 +317,7 @@ export default function InactiveMembersPage() {
                       flexWrap: 'wrap',
                       justifyContent: 'space-between',
                       gap: 8,
-                      fontSize: 11,
+                      fontSize: 13,
                       color: 'var(--wa-muted)',
                       margin: '12px 0',
                     }}
@@ -341,7 +341,7 @@ export default function InactiveMembersPage() {
                       background: sent ? 'var(--wa-success)' : 'var(--wa-accent)',
                       color: 'var(--wa-on-accent)',
                       fontWeight: 700,
-                      fontSize: '0.8rem',
+                      fontSize: '0.8125rem',
                       cursor: sending || sent ? 'not-allowed' : 'pointer',
                       opacity: sending ? 0.7 : 1,
                     }}

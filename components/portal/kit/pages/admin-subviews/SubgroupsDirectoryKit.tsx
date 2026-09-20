@@ -115,7 +115,7 @@ function SubgroupTile({ card, index }: { card: SubgroupCard; index: number }) {
           >
             {card.name}
           </h3>
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>
             {card.members} {card.members === 1 ? 'member' : 'members'} · {card.focus}
           </p>
         </div>

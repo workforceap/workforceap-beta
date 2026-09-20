@@ -57,7 +57,7 @@ type Props = {
 };
 
 const SUBTLE_LABEL: React.CSSProperties = {
-  fontSize: '0.7rem',
+  fontSize: '0.8125rem',
   fontWeight: 800,
   textTransform: 'uppercase',
   letterSpacing: '0.1em',
@@ -144,7 +144,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
                 flexShrink: 0,
               }}
             >
-              <p style={{ ...SUBTLE_LABEL, fontSize: '0.6rem', marginBottom: '0.2rem' }}>Readiness</p>
+              <p style={{ ...SUBTLE_LABEL, fontSize: '0.8125rem', marginBottom: '0.2rem' }}>Readiness</p>
               <p style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>
                 {score}
                 <span style={{ fontSize: '0.95rem', color: 'var(--color-on-surface-variant)' }}>%</span>
@@ -215,7 +215,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
         )}
 
         {pointsThisWeek > 0 && (
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.75rem 0 0' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '0.95rem', verticalAlign: '-2px', color: 'var(--color-gold, #c9a227)' }}>bolt</span>{' '}
             You earned <strong style={{ color: 'var(--color-on-surface)' }}>{pointsThisWeek}</strong> momentum point{pointsThisWeek === 1 ? '' : 's'} this week
             {data.pointsTotal ? <> — {data.pointsTotal} total</> : null}.
@@ -248,7 +248,7 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
                         {g.title}
                       </span>
                     </span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>{goalDetail(g)}</span>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>{goalDetail(g)}</span>
                   </div>
                   <div style={{ height: '0.5rem', borderRadius: '999px', background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
                     <div
@@ -310,12 +310,12 @@ export default function MotivatingRecapClient({ recap, recapData, weekStart }: P
                     <span className="material-symbols-outlined" style={{ fontSize: '1.15rem', fontVariationSettings: "'FILL' 1" }}>{p.icon ?? 'arrow_forward'}</span>
                   </span>
                   {p.source === 'goal' && (
-                    <span style={{ ...SUBTLE_LABEL, fontSize: '0.58rem', color: 'var(--color-accent)' }}>Goal step</span>
+                    <span style={{ ...SUBTLE_LABEL, fontSize: '0.8125rem', color: 'var(--color-accent)' }}>Goal step</span>
                   )}
                 </div>
                 <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.35 }}>{p.title}</p>
                 {p.body && (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>{p.body}</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>{p.body}</p>
                 )}
                 <span style={{ marginTop: 'auto', fontSize: '0.82rem', fontWeight: 800, color: 'var(--color-accent)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
                   {p.cta ?? 'Get started'}

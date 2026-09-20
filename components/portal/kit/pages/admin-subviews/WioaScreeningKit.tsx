@@ -193,7 +193,7 @@ export function WioaScreeningKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 margin: '12px 0 0',
               }}
@@ -220,7 +220,7 @@ export function WioaScreeningKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

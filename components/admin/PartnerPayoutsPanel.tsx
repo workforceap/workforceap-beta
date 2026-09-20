@@ -106,7 +106,7 @@ export default function PartnerPayoutsPanel({
                 row.paid ? (
                   <span style={{ color: '#166534', fontWeight: 600 }}>Paid</span>
                 ) : row.blockedReason || !payoutsAvailable ? (
-                  <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {row.blockedReason ?? payoutsUnavailableReason}
                   </span>
                 ) : (

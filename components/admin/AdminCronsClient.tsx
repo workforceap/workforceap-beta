@@ -143,7 +143,7 @@ export default function AdminCronsClient({
               key: 'jobName',
               header: 'Job',
               cell: (row) => (
-                <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8rem', fontWeight: 600 }}>
+                <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8125rem', fontWeight: 600 }}>
                   {row.jobName}
                 </span>
               ),
@@ -161,7 +161,7 @@ export default function AdminCronsClient({
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.25rem',
-                      fontSize: '0.625rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 800,
                       padding: '0.15rem 0.5rem',
                       borderRadius: '9999px',
@@ -227,7 +227,7 @@ export default function AdminCronsClient({
                     <button
                       onClick={() => toggleError(row.id)}
                       style={{
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         color: 'var(--color-accent)',
                         background: 'none',
                         border: 'none',
@@ -241,7 +241,7 @@ export default function AdminCronsClient({
                     {isExpanded && (
                       <p
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           color: 'var(--color-accent)',
                           margin: '0.25rem 0 0',
                           maxWidth: '300px',

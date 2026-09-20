@@ -84,7 +84,7 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
           <div style={{ fontWeight: 700 }}>{row.name}</div>
           <div
             style={{
-              fontSize: 11,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               fontFamily: 'var(--wa-mono, monospace)',
             }}
@@ -190,7 +190,7 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -210,7 +210,7 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}

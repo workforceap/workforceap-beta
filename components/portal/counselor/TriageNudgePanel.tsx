@@ -84,7 +84,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
         type="button"
         onClick={() => setOpen(true)}
         className="btn btn-muted"
-        style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}
+        style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
       >
         Send nudge
       </button>
@@ -114,7 +114,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
             type="button"
             onClick={() => handleSelect(t.id)}
             className={selected === t.id ? 'btn btn-primary' : 'btn btn-muted'}
-            style={{ fontSize: '0.75rem', padding: '0.35rem 0.6rem' }}
+            style={{ fontSize: '0.8125rem', padding: '0.35rem 0.6rem' }}
           >
             {t.label}
           </button>
@@ -139,7 +139,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
       ) : null}
 
       {error ? (
-        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-error, #b00020)' }}>
+        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-error, #b00020)' }}>
           {error}
         </p>
       ) : null}
@@ -153,7 +153,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
             setError(null);
           }}
           className="btn btn-muted"
-          style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}
+          style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
           disabled={isPending}
         >
           Cancel
@@ -162,7 +162,7 @@ export default function TriageNudgePanel({ memberId, memberName, templates, mile
           type="button"
           onClick={handleSend}
           className="btn btn-primary"
-          style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}
+          style={{ fontSize: '0.8125rem', padding: '0.4rem 0.75rem' }}
           disabled={isPending || !selected}
           aria-busy={isPending}
         >

@@ -358,7 +358,7 @@ export default async function JobsPage({
           >
             <p
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 700,
                 color: 'var(--wa-accent)',
                 margin: '0 0 6px',
@@ -391,7 +391,7 @@ export default async function JobsPage({
                     background: 'var(--wa-surface)',
                     border: '1px solid var(--wa-border)',
                     borderRadius: 999,
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: 'var(--wa-accent)',
                     textDecoration: 'none',
@@ -404,7 +404,7 @@ export default async function JobsPage({
                 href="/dashboard/certifications"
                 className="wa-kit-focus"
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 600,
                   color: 'var(--wa-muted)',
                   textDecoration: 'none',
@@ -437,13 +437,13 @@ export default async function JobsPage({
           <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 4px' }}>
             {t('searchBeyondBoard')}
           </p>
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
             {user && profileCity
               ? `Using your profile location: ${primaryLocation}.`
               : 'If no city is saved yet, start with Austin metro and nearby suburbs.'}
           </p>
           {user ? (
-            <p style={{ fontSize: 12, margin: '6px 0 0' }}>
+            <p style={{ fontSize: 13, margin: '6px 0 0' }}>
               <a
                 href="/dashboard/profile"
                 className="wa-kit-focus"
@@ -475,7 +475,7 @@ export default async function JobsPage({
                 </p>
                 <p
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: 700,
                     color: 'var(--wa-accent)',
                     margin: '0 0 4px',
@@ -485,14 +485,14 @@ export default async function JobsPage({
                 >
                   Best for: {engine.bestFor}
                 </p>
-                <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.45 }}>
+                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.45 }}>
                   {engine.note}
                 </p>
               </a>
             ))}
           </div>
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--wa-border)' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 8px' }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 8px' }}>
               {t('quickAustinPresets')}
             </p>
             <div className="wa-flex wa-flex-wrap" style={{ gap: 8, marginBottom: 14 }}>
@@ -510,7 +510,7 @@ export default async function JobsPage({
                     padding: '6px 12px',
                     border: '1px solid var(--wa-border)',
                     borderRadius: 999,
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: 'var(--wa-accent)',
                     textDecoration: 'none',
@@ -522,13 +522,13 @@ export default async function JobsPage({
                 </a>
               ))}
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 6px' }}>
+            <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 6px' }}>
               {t('bestRoutineForMembers')}
             </p>
-            <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--wa-muted)', lineHeight: 1.45 }}>
+            <p style={{ margin: '0 0 8px', fontSize: 13, color: 'var(--wa-muted)', lineHeight: 1.45 }}>
               {t('bestRoutineDescription')}
             </p>
-            <ul style={{ margin: 0, paddingLeft: 16, color: 'var(--wa-muted)', fontSize: 12, lineHeight: 1.5 }}>
+            <ul style={{ margin: 0, paddingLeft: 16, color: 'var(--wa-muted)', fontSize: 13, lineHeight: 1.5 }}>
               <li>{t('checkIndeedLinkedIn')}</li>
               <li>{t('useWorkInTexas')}</li>
               <li>{t('logEveryApplication')}</li>

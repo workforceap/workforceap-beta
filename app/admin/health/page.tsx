@@ -185,7 +185,7 @@ function StatusCard({
         </div>
         <span
           style={{
-            fontSize: '0.625rem',
+            fontSize: '0.8125rem',
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -200,13 +200,13 @@ function StatusCard({
       </div>
 
       {latencyMs !== undefined && (
-        <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
           Latency: <strong>{latencyMs}ms</strong>
         </p>
       )}
 
       {detail && (
-        <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem', lineHeight: 1.4 }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem', lineHeight: 1.4 }}>
           {detail}
         </p>
       )}
@@ -214,7 +214,7 @@ function StatusCard({
       {history && history.length > 0 && (
         <div style={{ marginTop: '0.5rem' }}>
           <Sparkline data={history} color={color} />
-          <p style={{ fontSize: '0.6rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', textAlign: 'right' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', textAlign: 'right' }}>
             Last {history.length} checks
           </p>
         </div>
@@ -269,7 +269,7 @@ function AlertLog({ alerts }: { alerts: AlertEntry[] }) {
                   {alert.subsystem}
                 </span>
               </div>
-              <span style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                 {new Date(alert.timestamp).toLocaleTimeString()}
               </span>
             </div>
@@ -504,7 +504,7 @@ function LegacyHealthView({
           <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: 0 }}>
             Overall: {status.toUpperCase()}
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
             Checked at {new Date(generatedAt).toLocaleString()} · Auto-refreshes every 30s
           </p>
         </div>
@@ -593,7 +593,7 @@ function LegacyHealthView({
           <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
             Active Alerts
             {alerts.length > 0 && (
-              <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>
                 ({alerts.length})
               </span>
             )}

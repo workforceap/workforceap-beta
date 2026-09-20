@@ -314,7 +314,7 @@ export default async function CareerBriefPage() {
             </span>
             <h2
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.8125rem',
                 fontWeight: 800,
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
@@ -374,7 +374,7 @@ export default async function CareerBriefPage() {
               </span>
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -408,7 +408,7 @@ export default async function CareerBriefPage() {
           </span>
           <h2
             style={{
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               fontWeight: 800,
               textTransform: 'uppercase',
               letterSpacing: '0.1em',

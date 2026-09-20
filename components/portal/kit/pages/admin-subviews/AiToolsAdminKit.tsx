@@ -123,7 +123,7 @@ function ToolCard({ tool, uses }: { tool: AiToolDef; uses: number | null }) {
         <h4 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', margin: 0 }}>
           {tool.name}
         </h4>
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
           {countText} · {tool.state}
         </p>
       </div>
@@ -187,7 +187,7 @@ export function AiToolsAdminKit({ usage = [], tools = DEFAULT_TOOLS }: AiToolsAd
         />
       )}
 
-      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--wa-muted)', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+      <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <GraduationCap className="h-4 w-4" style={{ opacity: 0.6 }} />
         {tools.length} tool{tools.length === 1 ? '' : 's'} · {totalUses.toLocaleString()} total uses
       </p>

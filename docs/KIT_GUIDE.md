@@ -42,7 +42,8 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   `--wa-hero-gold(-dark)` stay dark in both themes and pair with `--wa-on-hero`.
   A white hero action uses `--wa-hero-action-bg` and `--wa-hero-action-text`;
   do not substitute the theme-adaptive solid-control foreground. Categorical
-  KPI totals use neutral text; retain semantic color for an actual state.
+  KPI totals use neutral text; retain semantic color for an actual state
+  (the counselors roster colours "At-Risk Owned" only while it is above zero).
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
   sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
@@ -77,7 +78,12 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 - **Type floors (flip per surface):** `--wa-type-body` (16px warm / 14px dense) and
   `--wa-type-meta` (13px both). Member body copy, form controls, and CTAs use
   `--wa-type-body`. Kickers, tags, table headers, and captions use `--wa-type-meta`.
-  Do not set kit metadata below 13px.   Member pills use `.wa-kit-cta` /
+  Do not set kit metadata below 13px. The floor is enforced repo-wide by
+  `scripts/lint/check-type-floor.mjs` (part of `npm run lint`): any literal
+  `font-size` / `fontSize` / `wa-text-[…]` that resolves below 13px fails lint,
+  `wa-text-xs` is 13px (`tailwind.config.ts`), and `--fix` raises offenders to
+  the floor. Prefer the type tokens over any literal; `em`/`%` are not judged.
+  Member pills use `.wa-kit-cta` /
   `.wa-kit-cta--ghost` (44px, `--wa-type-body`) instead of a 13–14px inline size.
   Lesson-start and other “must look like a button” member actions use
   `.wa-kit-cta--xl` (52px, full-width on mobile) with `.wa-kit-cta--block`.
@@ -190,7 +196,8 @@ Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(st
 
 Use `lib/ui/statusToneAdapters.ts` at these boundaries instead of copying color triples.
 `StatusBadge` reads the same palette as `statusColor`; its `error` and `accent` variants
-both preserve the legacy attention meaning. Do not infer a reverse conversion for kit
+both preserve the legacy attention meaning. Partner overview pills are `StatusTag` on every
+reachable path (kit default and `?ui=legacy`), not `StatusBadge`. Do not infer a reverse conversion for kit
 `danger`: keep genuinely destructive/failed kit statuses on their existing red path.
 
 | Legacy StatusTone | StatusBadge variant | KitTone | Astryx Token |
@@ -241,7 +248,7 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
 | `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). |
-| `FeatureTile` | member-facing gradient/pop tiles |
+| `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
 | `QueueRow`, `WorkQueueItem` | staff work queues |
 | `KanbanBoard`, `KanbanColumnHeader` | pipeline boards |
 | `BarChartMini`, `RankBars` | inline mini charts |
@@ -334,9 +341,14 @@ kit table cells beyond `Token` for Pace.
   `wa-kit-tag--*`, `wa-kit-table`, `wa-kit-focus`, …). Follow that naming for new kit CSS.
 - Focus rings: use the `.wa-kit-focus` / `.wa-kit-focus--on-dark` utilities — don't restyle
   outlines per component.
-  The general portal focus fallback excludes these opted-in controls. Kit rings
-  use one shadow treatment plus a transparent outline that becomes a system
-  Highlight outline in forced-colors mode; the on-dark variant uses a white ring.
+  There is exactly one ring recipe (WAP-157): `outline: 2px solid transparent;
+  outline-offset: 2px; box-shadow: var(--wa-focus-ring)` (or
+  `var(--wa-focus-ring-on-dark)` on the dark rail / hero scrims), with a system
+  `Highlight` outline under forced-colors. The tokens are defined once in
+  `css/main.css`; the global element rule, the portal/marketing fallbacks, shell
+  chrome (sidebar, header, tabs), `.btn-*` hero CTAs and inputs all consume them.
+  A `:focus` / `:focus-visible` rule that restates a ring with its own colour,
+  width or offset fails `tests/lib/focus-ring-recipe.spec.ts`.
 - **Motion:** use the `--wa-dur-fast|base|slow` + `--wa-ease` tokens, never literal durations.
   Where motion helps: state feedback (hover/press within `--wa-dur-fast`), entering overlays,
   progress. Where it hurts: table row hovers and list reflows at perceptible durations (the UI

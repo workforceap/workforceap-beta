@@ -146,7 +146,7 @@ function ProgramTile({ card }: { card: ProgramCard }) {
           </h3>
           <p
             style={{
-              fontSize: 12,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               margin: '2px 0 0',
               overflow: 'hidden',
@@ -164,7 +164,7 @@ function ProgramTile({ card }: { card: ProgramCard }) {
             alignItems: 'baseline',
             justifyContent: 'space-between',
             gap: 10,
-            fontSize: 12,
+            fontSize: 13,
             paddingTop: 12,
             borderTop: '1px solid var(--wa-border)',
           }}
@@ -248,7 +248,7 @@ export function ProgramsCatalogKit({
       )}
 
       {avgCompletion != null ? (
-        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--wa-muted)', marginTop: 16 }}>
+        <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}>
           {programs.length} program{programs.length === 1 ? '' : 's'} · {avgCompletion}% avg completion
         </p>
       ) : null}

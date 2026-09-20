@@ -227,14 +227,14 @@ export default function DeletedUsersClient({
                     }}
                   >
                     {r.fullName || '(no name)'}
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.78rem', fontWeight: 400, color: 'var(--color-on-surface-variant)' }}>
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 400, color: 'var(--color-on-surface-variant)' }}>
                       {r.originalEmail}
                     </span>
                     {r.isFreed ? (
                       <span
                         style={{
                           marginLeft: '0.5rem',
-                          fontSize: '0.7rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.06em',
@@ -251,7 +251,7 @@ export default function DeletedUsersClient({
                       <span
                         style={{
                           marginLeft: '0.5rem',
-                          fontSize: '0.7rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.06em',
@@ -266,7 +266,7 @@ export default function DeletedUsersClient({
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
                     Deleted {new Date(r.deletedAt).toLocaleString()}
                     {' · '}
                     Joined {new Date(r.createdAt).toLocaleDateString()}

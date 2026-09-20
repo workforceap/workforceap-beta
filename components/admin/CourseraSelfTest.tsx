@@ -157,7 +157,7 @@ export default function CourseraSelfTest() {
             <strong style={{ fontSize: '1.05rem' }}>
               {result.ok ? 'All checks passed' : 'Some checks failed'}
             </strong>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
               {new Date(result.ranAt).toLocaleString()}
             </span>
           </div>
@@ -184,10 +184,10 @@ export default function CourseraSelfTest() {
             <div>
               Org: <code>{result.config.orgId}</code> / <code>{result.config.orgSlug}</code>
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               OAuth URL: <code>{result.config.oauthUrl}</code>
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               API base: <code>{result.config.apiBase}</code>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function CourseraSelfTest() {
                   {statusBadge(result.inbound.tokenOk).text}
                 </span>
                 <span>/api/xapi/oauth/token</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   {result.inbound.tokenDetail}
                 </span>
               </div>
@@ -212,7 +212,7 @@ export default function CourseraSelfTest() {
                   {statusBadge(result.inbound.statementOk).text}
                 </span>
                 <span>/api/xapi/statements</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   {result.inbound.statementDetail}
                 </span>
               </div>
@@ -231,7 +231,7 @@ export default function CourseraSelfTest() {
               <span style={{ fontFamily: 'var(--font-mono, ui-monospace, monospace)', fontSize: '0.85rem' }}>
                 {result.config.oauthUrl || 'OAuth'}
               </span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {result.outbound.tokenDetail}
               </span>
             </div>
@@ -254,7 +254,7 @@ export default function CourseraSelfTest() {
                       <span style={{ flex: 1 }}>{ep.label}</span>
                       <span
                         title={ep.payloadPreview || ep.message || undefined}
-                        style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', maxWidth: '40%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', maxWidth: '40%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                       >
                         {ep.payloadPreview || ep.message || ''}
                       </span>
@@ -291,7 +291,7 @@ export default function CourseraSelfTest() {
                       <span style={{ minWidth: '12rem' }}>{p.method}</span>
                       <span
                         title={p.preview || p.detail}
-                        style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', overflow: 'hidden', textOverflow: 'ellipsis' }}
                       >
                         {p.preview || p.detail}
                       </span>

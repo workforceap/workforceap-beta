@@ -271,8 +271,8 @@ export default async function DashboardCertificationsPage({
               </svg>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.375rem' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{pathwayPct}% complete</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{pathwayPct}% complete</span>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {primaryPathway.estimatedWeeks > 0
                   ? `~${primaryPathway.estimatedWeeks} wk program`
                   : `${completedSteps}/${primaryPathway.steps.length} steps`}
@@ -767,14 +767,14 @@ export default async function DashboardCertificationsPage({
                 <text x="48" y="45" textAnchor="middle" fill="var(--color-gold)" fontSize="22" fontWeight="700">
                   {pathwayPct}%
                 </text>
-                <text x="48" y="62" textAnchor="middle" fill="var(--color-on-surface-variant)" fontSize="10">
+                <text x="48" y="62" textAnchor="middle" fill="var(--color-on-surface-variant)" fontSize="13">
                   pathway
                 </text>
               </svg>
               <div style={{ marginTop: 'var(--space-3)', fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-medium)' }}>
                 Pathway progress
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{primaryPathway.title}</div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{primaryPathway.title}</div>
             </div>
             )}
           </div>

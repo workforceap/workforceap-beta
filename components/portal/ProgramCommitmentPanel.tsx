@@ -53,7 +53,7 @@ export default function ProgramCommitmentPanel({
         }}
       >
         <div style={{ background: 'var(--surface-container-lowest)', borderRadius: '0.75rem', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
             We will
           </h3>
           <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--color-on-surface)' }}>
@@ -65,7 +65,7 @@ export default function ProgramCommitmentPanel({
           </ul>
         </div>
         <div style={{ background: 'var(--surface-container-lowest)', borderRadius: '0.75rem', padding: '1rem' }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' } as CSSProperties}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' } as CSSProperties}>
             We will not
           </h3>
           <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.875rem', lineHeight: 1.55, color: 'var(--color-on-surface)' }}>

@@ -120,7 +120,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
               cell: (row) => (
                 <>
                   <Link href={`/admin/members/${row.id}`}>{row.fullName}</Link>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{row.email}</div>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{row.email}</div>
                 </>
               ),
             },
@@ -133,7 +133,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
                   {row.noProgram ? (
                     <span className="portal-badge portal-badge-warning">No program</span>
                   ) : null}
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {row.noProgram
                       ? 'Coursera progress saved; enrollment needed'
                       : `Enrolled ${formatDate(row.enrolledAt)}`}
@@ -152,7 +152,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
                       display: 'inline-flex',
                       padding: '0.2rem 0.55rem',
                       borderRadius: '999px',
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 800,
                       color: badge.color,
                       background: badge.bg,
@@ -170,7 +170,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
               cell: (row) => (
                 <>
                   <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{row.progressPercent}%</strong>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
                     {row.completedCount}/{row.totalCourses} complete · {row.activeCourseCount} active
                   </div>
                 </>
@@ -194,7 +194,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
                         display: 'inline-flex',
                         padding: '0.2rem 0.55rem',
                         borderRadius: '999px',
-                        fontSize: '0.72rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 800,
                         color: '#1d4ed8',
                         background: 'rgba(37,99,235,0.1)',
@@ -203,14 +203,14 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
                     >
                       {formatCareerPlanStage(signal.stage)}
                     </span>
-                    <div style={{ marginTop: '0.35rem', fontSize: '0.8rem', fontWeight: 700 }}>
+                    <div style={{ marginTop: '0.35rem', fontSize: '0.8125rem', fontWeight: 700 }}>
                       {signal.topCareerTitle ?? 'Career target pending'}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {signal.typeLabel ?? 'Quiz type pending'}
                       {signal.selectedProgramSlug ? ` · ${signal.selectedProgramSlug}` : ''}
                     </div>
-                    <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#92400e' }}>
+                    <div style={{ marginTop: '0.25rem', fontSize: '0.8125rem', color: '#92400e' }}>
                       {signal.staffAction}
                     </div>
                   </div>
@@ -223,7 +223,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
               cell: (row) => (
                 <>
                   <div>{row.partnerName ?? 'No partner'}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {row.counselorName ?? 'No counselor'}
                   </div>
                 </>

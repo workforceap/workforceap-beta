@@ -32,7 +32,7 @@ export default function StaleApplicationsBanner({ staleApps }: { staleApps: any[
             <div style={{ flex: '1 1 16rem', minWidth: 0, wordBreak: 'break-word' }}>
               <span style={{ fontWeight: 500 }}>{app.user?.fullName}</span> ({app.user?.email}) - Applied {new Date(app.createdAt).toLocaleDateString()}
               {errors[app.id] ? (
-                <div role="alert" style={{ color: 'rgb(153,27,27)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
+                <div role="alert" style={{ color: 'rgb(153,27,27)', fontSize: '0.8125rem', marginTop: '0.25rem' }}>
                   {errors[app.id]}
                 </div>
               ) : null}

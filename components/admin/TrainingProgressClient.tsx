@@ -194,7 +194,7 @@ function MapThisAction({
           type="button"
           onClick={() => setOpen(true)}
           className="btn btn-outline"
-          style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}
+          style={{ fontSize: '0.8125rem', padding: '0.2rem 0.5rem' }}
         >
           Map this →
         </button>
@@ -221,7 +221,7 @@ function MapThisAction({
           setProgramSlug(e.target.value);
           setCourseSlug('');
         }}
-        style={{ fontSize: '0.78rem', padding: '0.25rem' }}
+        style={{ fontSize: '0.8125rem', padding: '0.25rem' }}
         aria-label="Canonical program"
       >
         <option value="">— pick program —</option>
@@ -235,7 +235,7 @@ function MapThisAction({
         value={courseSlug}
         onChange={(e) => setCourseSlug(e.target.value)}
         disabled={!program}
-        style={{ fontSize: '0.78rem', padding: '0.25rem' }}
+        style={{ fontSize: '0.8125rem', padding: '0.25rem' }}
         aria-label="Canonical course"
       >
         <option value="">— pick course —</option>
@@ -247,7 +247,7 @@ function MapThisAction({
         ))}
       </select>
       {error && (
-        <span style={{ color: 'var(--color-error, #b91c1c)', fontSize: '0.7rem' }}>{error}</span>
+        <span style={{ color: 'var(--color-error, #b91c1c)', fontSize: '0.8125rem' }}>{error}</span>
       )}
       <div style={{ display: 'flex', gap: '0.35rem' }}>
         <button
@@ -255,7 +255,7 @@ function MapThisAction({
           onClick={onSubmit}
           disabled={submitting}
           className="btn btn-primary"
-          style={{ fontSize: '0.7rem', padding: '0.25rem 0.55rem' }}
+          style={{ fontSize: '0.8125rem', padding: '0.25rem 0.55rem' }}
         >
           {submitting ? 'Saving…' : 'Save mapping'}
         </button>
@@ -266,7 +266,7 @@ function MapThisAction({
             setError(null);
           }}
           className="btn btn-outline"
-          style={{ fontSize: '0.7rem', padding: '0.25rem 0.55rem' }}
+          style={{ fontSize: '0.8125rem', padding: '0.25rem 0.55rem' }}
         >
           Cancel
         </button>
@@ -377,14 +377,14 @@ function PerItemSubRow({
 
   if (state.status === 'loading') {
     return (
-      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         Loading per-item activity…
       </div>
     );
   }
   if (state.status === 'error') {
     return (
-      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.78rem', color: 'var(--color-error, #b91c1c)' }}>
+      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.8125rem', color: 'var(--color-error, #b91c1c)' }}>
         {state.message}
       </div>
     );
@@ -393,7 +393,7 @@ function PerItemSubRow({
 
   if (state.rows.length === 0) {
     return (
-      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+      <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         No item-level xAPI statements for this learner on this Coursera course.
         {' '}This is expected when only course-level rollups have been ingested.
       </div>
@@ -402,7 +402,7 @@ function PerItemSubRow({
 
   return (
     <div style={{ padding: '0.5rem 0.6rem', background: 'var(--surface-container-low, #fafafa)' }}>
-      <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
+      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
         {state.rows.length} item{state.rows.length === 1 ? '' : 's'} from xapi_statements (item-level only).
       </div>
       <DataTable
@@ -529,7 +529,7 @@ export default function TrainingProgressClient({
             aria-expanded={isOpen}
             aria-label={isOpen ? 'Hide per-item activity' : 'Show per-item activity'}
             className="btn btn-outline"
-            style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', lineHeight: 1 }}
+            style={{ fontSize: '0.8125rem', padding: '0.1rem 0.4rem', lineHeight: 1 }}
           >
             {isOpen ? '▾' : '▸'}
           </button>
@@ -567,7 +567,7 @@ export default function TrainingProgressClient({
         <>
           {r.courseName}
           {r.courseraCourseId && (
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {r.courseraCourseId}
             </div>
           )}
@@ -643,7 +643,7 @@ export default function TrainingProgressClient({
         <>
           {r.courseraProgramName ?? r.courseraProgramSlug}
           {r.courseraProgramSlug && r.courseraProgramName && (
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {r.courseraProgramSlug}
             </div>
           )}
@@ -658,7 +658,7 @@ export default function TrainingProgressClient({
         <>
           {r.courseName}
           {r.courseraCourseSlug && (
-            <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {r.courseraCourseSlug}
             </div>
           )}
@@ -670,7 +670,7 @@ export default function TrainingProgressClient({
       header: sortHeader('Mapped to canonical', 'mappedCourseSlug'),
       cell: (r) =>
         r.mappedCourseSlug ? (
-          <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             <div>{r.mappedProgramSlug}</div>
             <div>{r.mappedCourseSlug}</div>
             {r.mappingSource === 'db' && (
@@ -738,7 +738,7 @@ export default function TrainingProgressClient({
             style={{ fontSize: '0.85rem' }}
           >
             Curriculum view
-            <span style={{ marginLeft: 6, opacity: 0.75, fontSize: '0.75rem' }}>
+            <span style={{ marginLeft: 6, opacity: 0.75, fontSize: '0.8125rem' }}>
               ({curriculumRows.length})
             </span>
           </button>
@@ -750,7 +750,7 @@ export default function TrainingProgressClient({
             style={{ fontSize: '0.85rem' }}
           >
             Raw Coursera view
-            <span style={{ marginLeft: 6, opacity: 0.75, fontSize: '0.75rem' }}>
+            <span style={{ marginLeft: 6, opacity: 0.75, fontSize: '0.8125rem' }}>
               ({rawRows.length})
             </span>
           </button>
@@ -771,7 +771,7 @@ export default function TrainingProgressClient({
         />
       </div>
 
-      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         {view === 'curriculum'
           ? 'Row per (learner × enrolled program × canonical course). Pulls from the DB course_progress table — what the member dashboard renders. Click ▸ on any row to drill into per-item xAPI activity (lectures, quizzes, labs, peer reviews) for that learner on that Coursera course. A learner showing 0% here when their portal shows progress means raw Coursera activity exists in the Raw view but never promoted into course_progress (usually because no canonical mapping exists yet — open the Raw view and click "Map this →").'
           : 'Row per (learner × actual Coursera course they’re enrolled in). Pulls from coursera_course_progress (CSV import + B4B refresh). Includes every Coursera email — learners with no WAP account are flagged “Not in WAP” and need an identity mapping in /admin/coursera before progress can promote to the member dashboard.'}

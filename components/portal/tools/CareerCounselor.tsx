@@ -230,7 +230,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
           Speak naturally about your training, job search, or next step.
         </p>
 
-        <p id="lilley-data-use" style={{ marginBottom: '1.25rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', lineHeight: 1.5 }}>
+        <p id="lilley-data-use" style={{ marginBottom: '1.25rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', lineHeight: 1.5 }}>
           ElevenLabs processes your microphone audio and live transcript during this session.
           WorkforceAP may share only the saved next-step, program, and progress facts needed for
           Lilley through approved read-only tools. If a transcript is captured, WorkforceAP saves it
@@ -262,7 +262,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
         </button>
 
         <div style={{ borderTop: `1px solid var(--surface-container-high)`, paddingTop: '1.25rem' }}>
-          <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             What to expect
           </p>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -333,7 +333,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
             display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
             padding: '0.25rem 0.75rem', borderRadius: 999,
             background: ACCENT_BG, border: `1px solid ${ACCENT_BORDER}`,
-            fontSize: '0.8rem', color: ACCENT, fontWeight: 600,
+            fontSize: '0.8125rem', color: ACCENT, fontWeight: 600,
           }}>
             {agentSpeaking ? (
               <>
@@ -408,7 +408,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
           <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0 }}>
             Here&rsquo;s your action plan
           </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
             Three things to move forward this week
           </p>
         </div>
@@ -444,7 +444,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
             </div>
             <div>
               <div style={{
-                fontSize: '0.75rem', fontWeight: 700, color: ACCENT,
+                fontSize: '0.8125rem', fontWeight: 700, color: ACCENT,
                 marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.05em',
               }}>
                 Step {i + 1}
@@ -469,7 +469,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
         background: ACCENT_BG, border: `1px solid ${ACCENT_BORDER}`,
         borderRadius: 10, padding: '1rem', marginBottom: '1.5rem',
       }}>
-        <p style={{ fontSize: '0.8rem', fontWeight: 600, color: ACCENT, marginBottom: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: ACCENT, marginBottom: '0.625rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Ready to act? Jump to a tool:
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '0.5rem' }}>
@@ -486,7 +486,7 @@ export default function CareerCounselor({ firstName }: { firstName?: string }) {
                 padding: '0.375rem 0.75rem', borderRadius: 999,
                 background: 'var(--surface-container-low)',
                 border: '1px solid var(--surface-container-high)',
-                color: 'var(--color-on-surface)', fontSize: '0.8rem',
+                color: 'var(--color-on-surface)', fontSize: '0.8125rem',
                 fontWeight: 500, textDecoration: 'none',
                 transition: 'border-color 0.15s',
               }}

@@ -107,7 +107,7 @@ export default async function EmployerBillingPage({
       <div className="portal-card portal-card--flat portal-card--padded" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>
               {t('currentPlan')}
             </p>
             <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-on-surface)', margin: 0 }}>
@@ -118,7 +118,7 @@ export default async function EmployerBillingPage({
             </p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>
               {t('jobUsage')}
             </p>
             <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0, fontVariantNumeric: 'tabular-nums' }}>
@@ -155,7 +155,7 @@ export default async function EmployerBillingPage({
               {tier.isCurrent && (
                 <span
                   style={{
-                    fontSize: '0.6875rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',

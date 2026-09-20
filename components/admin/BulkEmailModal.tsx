@@ -173,7 +173,7 @@ export default function BulkEmailModal({ open, memberIds, onClose, onSent }: Pro
                           background: 'var(--color-white)',
                           padding: '0.15rem 0.4rem',
                           borderRadius: '4px',
-                          fontSize: '0.8rem',
+                          fontSize: '0.8125rem',
                           border: '1px solid var(--outline-variant)',
                         }}>
                           {'{'}{v.key}{'}'}
@@ -184,7 +184,7 @@ export default function BulkEmailModal({ open, memberIds, onClose, onSent }: Pro
                 </div>
 
                 <div>
-                  <label htmlFor="bulkemailmodal-subject-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkemailmodal-subject-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Subject
                   </label>
                   <input id="bulkemailmodal-subject-field"
@@ -204,13 +204,13 @@ export default function BulkEmailModal({ open, memberIds, onClose, onSent }: Pro
                       fontSize: '0.875rem',
                     }}
                   />
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
                     {subject.length}/{MAX_SUBJECT}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="bulkemailmodal-message-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+                  <label htmlFor="bulkemailmodal-message-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                     Message
                   </label>
                   <textarea id="bulkemailmodal-message-field"
@@ -232,7 +232,7 @@ export default function BulkEmailModal({ open, memberIds, onClose, onSent }: Pro
                       boxSizing: 'border-box',
                     }}
                   />
-                  <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
                     {body.length}/{MAX_BODY}
                   </div>
                 </div>

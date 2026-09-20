@@ -388,7 +388,7 @@ export default async function DashboardProfilePage({
                     alignItems: "center",
                     padding: "0.2rem 0.625rem",
                     borderRadius: "9999px",
-                    fontSize: "0.75rem",
+                    fontSize: "0.8125rem",
                     fontWeight: 700,
                     background:
                       "color-mix(in srgb, var(--color-accent) 12%, transparent)",
@@ -426,7 +426,7 @@ export default async function DashboardProfilePage({
               </div>
               <span
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.8125rem",
                   fontWeight: 700,
                   color: "var(--color-on-surface-variant)",
                 }}
@@ -524,7 +524,7 @@ export default async function DashboardProfilePage({
                 <div>
                   <p
                     style={{
-                      fontSize: "0.6875rem",
+                      fontSize: "0.8125rem",
                       fontWeight: 700,
                       textTransform: "uppercase",
                       letterSpacing: "0.08em",
@@ -546,7 +546,7 @@ export default async function DashboardProfilePage({
                   </p>
                   <p
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: "0.8125rem",
                       color: "var(--color-on-surface-variant)",
                       margin: "0.25rem 0 0",
                     }}
@@ -567,7 +567,7 @@ export default async function DashboardProfilePage({
                 <Link
                   href="/dashboard/program"
                   style={{
-                    fontSize: "0.75rem",
+                    fontSize: "0.8125rem",
                     fontWeight: 700,
                     color: "var(--color-accent)",
                     textDecoration: "none",
@@ -624,7 +624,7 @@ export default async function DashboardProfilePage({
                   alignItems: "center",
                   padding: "0.2rem 0.625rem",
                   borderRadius: "9999px",
-                  fontSize: "0.7rem",
+                  fontSize: "0.8125rem",
                   fontWeight: 700,
                   background:
                     "color-mix(in srgb, var(--color-green) 10%, transparent)",
@@ -646,7 +646,7 @@ export default async function DashboardProfilePage({
                 <div>
                   <p
                     style={{
-                      fontSize: "0.6875rem",
+                      fontSize: "0.8125rem",
                       fontWeight: 700,
                       textTransform: "uppercase",
                       letterSpacing: "0.08em",
@@ -671,7 +671,7 @@ export default async function DashboardProfilePage({
                   </p>
                   <p
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: "0.8125rem",
                       color: "var(--color-on-surface-variant)",
                       margin: "0.25rem 0 0",
                     }}
@@ -683,7 +683,7 @@ export default async function DashboardProfilePage({
                   <div>
                     <p
                       style={{
-                        fontSize: "0.6875rem",
+                        fontSize: "0.8125rem",
                         fontWeight: 700,
                         textTransform: "uppercase",
                         letterSpacing: "0.08em",

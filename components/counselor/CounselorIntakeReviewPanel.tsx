@@ -212,7 +212,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
                   </span>
                 </div>
                 {app.submittedAt ? (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0.75rem' }}>
                     Submitted {formatPortalDate(app.submittedAt)}
                   </p>
                 ) : (

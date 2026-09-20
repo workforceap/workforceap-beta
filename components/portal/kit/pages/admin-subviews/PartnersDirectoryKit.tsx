@@ -183,11 +183,11 @@ export function PartnersDirectoryKit({
                   </div>
 
                   <h4 style={{ fontWeight: 800, fontSize: 15, marginTop: 12 }}>{p.name}</h4>
-                  <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>
+                  <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
                     {p.referrals.toLocaleString()} referrals · {p.placed.toLocaleString()} placed
                   </p>
                   {meta.isSchool || meta.enrollPath || meta.referralCode ? (
-                    <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 4 }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
                       {[
                         meta.referralCode ? `ref ${meta.referralCode}` : null,
                         meta.enrollPath,
@@ -200,7 +200,7 @@ export function PartnersDirectoryKit({
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      fontSize: 12,
+                      fontSize: 13,
                       marginTop: 12,
                       paddingTop: 12,
                       borderTop: '1px solid var(--wa-border)',

@@ -78,7 +78,7 @@ export default function B4BProgramsListButton() {
 
       {data && data.ok ? (
         <div style={{ marginTop: '0.75rem' }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem' }}>
             {data.count} program{data.count === 1 ? '' : 's'} returned by Coursera B4B. Paste an
             <code> id</code> into a WorkforceAP program's <code>courseraB4BProgramId</code> field to
             wire org-scoped URLs.
@@ -88,7 +88,7 @@ export default function B4BProgramsListButton() {
               style={{
                 width: '100%',
                 borderCollapse: 'collapse',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 fontFamily: "ui-monospace, SFMono-Regular, monospace",
               }}
             >

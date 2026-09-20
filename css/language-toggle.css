@@ -47,9 +47,10 @@
 }
 
 .language-toggle-select:focus-visible {
-  outline: none;
   border-color: currentColor;
-  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 25%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* Native <option> rendering is OS-controlled and ignores `color: currentColor`

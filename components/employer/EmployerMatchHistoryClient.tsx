@@ -55,7 +55,7 @@ function FitBadge({ pct }: { pct: number }) {
   const varName =
     color === 'success' ? 'var(--wa-success)' : color === 'gold' ? 'var(--wa-gold)' : color === 'accent' ? 'var(--wa-accent)' : 'var(--wa-muted)';
   if (pct < 60) {
-    return <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-muted)' }}>Possible fit</span>;
+    return <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-muted)' }}>Possible fit</span>;
   }
   return (
     <span style={{ fontWeight: 800, fontSize: 13, fontVariantNumeric: 'tabular-nums', color: varName }}>{pct}%</span>
@@ -188,7 +188,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
           <Avatar initials={initialsFor(row.student.fullName)} size={30} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-accent)' }}>{row.student.fullName}</div>
-            <div style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 600 }}>{row.job.title}</div>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600 }}>{row.job.title}</div>
           </div>
         </Link>
       ),
@@ -216,7 +216,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
       header: 'Last update',
       align: 'right',
       render: (row) => (
-        <span style={{ fontSize: 12, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
           {new Date(row.statusUpdatedAt ?? row.createdAt).toLocaleString()}
         </span>
       ),
@@ -227,7 +227,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
       align: 'right',
       render: (row) =>
         row.applicationId ? (
-          <Link href={`/employer/applications/${encodeURIComponent(row.applicationId)}`} style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-accent)' }}>
+          <Link href={`/employer/applications/${encodeURIComponent(row.applicationId)}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>
             Open
           </Link>
         ) : (
@@ -270,7 +270,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
                 <Avatar initials={initialsFor(row.student.fullName)} size={32} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--wa-text)' }}>{row.student.fullName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 1 }}>{row.job.title}</div>
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 1 }}>{row.job.title}</div>
                 </div>
               </Link>
               <FitBadge pct={matchScoreAsPercent(row.matchScore)} />
@@ -285,13 +285,13 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
               {row.applicationId ? (
                 <Link
                   href={`/employer/applications/${encodeURIComponent(row.applicationId)}`}
-                  style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-accent)' }}
+                  style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}
                 >
                   Open application
                 </Link>
               ) : null}
             </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
+            <div style={{ marginTop: 8, fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
               Updated {new Date(row.statusUpdatedAt ?? row.createdAt).toLocaleString()}
             </div>
           </div>
