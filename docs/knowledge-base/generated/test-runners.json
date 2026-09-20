@@ -3,7 +3,7 @@
   "sources": [
     {
       "file": "scripts/test-unit.mjs",
-      "sha256": "a3fd48b2f441aa4d154d4e966bcdcc01f2d5c83bd7fa4456eeaeb7cbd78fea5e"
+      "sha256": "73020d4501d74f95bd096402b4ccd1c6ff55f3f05a423d5b3e64aff8ac55b58f"
     },
     {
       "file": "scripts/vitest-library-specs.mjs",
@@ -19,7 +19,7 @@
     },
     {
       "file": "package.json",
-      "sha256": "5f173f109656ab64f7c2cb2d2d3ee4cd6b1eb3b7fa992d209439f68476df864c"
+      "sha256": "e4b5c73d7fe0ed7dcdaf9baa81be355a9308e745458216ba649adce48e3e6c4f"
     }
   ],
   "directNodeScripts": [],
@@ -42,13 +42,7 @@
         "source": "app\\/api\\/apply\\/signup\\/route\\.test\\.ts",
         "flags": "",
         "reason": "vitest",
-        "line": 84
-      },
-      {
-        "source": "lib\\/auth\\/roles\\.test\\.ts",
-        "flags": "",
-        "reason": "realDb",
-        "line": 89
+        "line": 95
       }
     ],
     "delegatedVitestFiles": [

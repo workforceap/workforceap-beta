@@ -40,12 +40,12 @@
 | [css-vars-material-symbols.d.ts](../../../css-vars-material-symbols.d.ts) | 14 | root |  |
 | [deploy-to-homelab.sh](../../../deploy-to-homelab.sh) | 74 | root |  |
 | [eslint.config.mjs](../../../eslint.config.mjs) | 205 | root | default:205 |
-| [instrumentation-client.ts](../../../instrumentation-client.ts) | 277 | root | onRouterTransitionStart:246, setSentryUser:265 |
+| [instrumentation-client.ts](../../../instrumentation-client.ts) | 270 | root | onRouterTransitionStart:239, setSentryUser:258 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [knip.json](../../../knip.json) | 61 | root |  |
 | [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
-| [package.json](../../../package.json) | 144 | root |  |
+| [package.json](../../../package.json) | 147 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |
 | [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12644 | root |  |
 | [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 13 | root |  |

@@ -12,13 +12,14 @@ export type SavedEligibility = Omit<Partial<ApplyFlowDraftV1>, 'version'> & {
 };
 
 const textFields = ['firstName', 'lastName', 'email', 'phone', 'ageGroup', 'city', 'state', 'zip', 'county', 'primaryBarrier', 'layoffCompany', 'hearAbout', 'hearAboutOther', 'partnerAmbassadorReferral', 'gradeLevel', 'parentGuardianName', 'parentGuardianEmail', 'parentGuardianPhone', 'schoolName'] as const;
-const answerFields = ['q1', 'q2', 'q3', 'receivingUnemployment', 'exhaustedUnemployment', 'snapWic'] as const;
+const answerFields = ['q1', 'q2', 'q3', 'receivingUnemployment', 'exhaustedUnemployment', 'snapWic', 'publicAssistanceHelpRequested'] as const;
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const answer = (value: unknown) => value === 'yes' || value === 'no' || value === null;
 function fieldsValid(value: Record<string, unknown>): boolean {
   return textFields.every((key) => value[key] === undefined || typeof value[key] === 'string') &&
     answerFields.every((key) => value[key] === undefined || answer(value[key])) &&
     (value.primaryBarriers === undefined || (Array.isArray(value.primaryBarriers) && value.primaryBarriers.every((item) => typeof item === 'string'))) &&
+    (value.publicAssistancePrograms === undefined || (Array.isArray(value.publicAssistancePrograms) && value.publicAssistancePrograms.every((item) => typeof item === 'string'))) &&
     (value.ageGroup === undefined || ['', 'under_18', '18_24', '25_50', '50_plus'].includes(value.ageGroup as string));
 }
 function freshTimestamp(value: unknown, now: number): boolean {

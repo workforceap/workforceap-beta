@@ -11,6 +11,11 @@ import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { normalizeHearAbout, normalizeYesNo } from '@/lib/apply/eligibilityExtendedFields';
 import {
+  normalizePublicAssistanceFollowUp,
+  publicAssistanceFollowUpIssue,
+  publicAssistanceFollowUpSchema,
+} from '@/lib/apply/publicAssistance';
+import {
   sendEligibilityScreeningAdminEmail,
   sendEligibilityScreeningConfirmationEmail,
 } from '@/lib/email';
@@ -42,6 +47,8 @@ const eligibilitySchema = z.object({
   exhaustedUnemployment: z.enum(['yes', 'no']).optional().nullable(),
   layoffCompany: z.string().trim().max(200).optional().nullable(),
   snapWic: z.enum(['yes', 'no']).optional().nullable(),
+  // WAP-53 follow-ups after snapWic = yes; optional so older clients still parse.
+  ...publicAssistanceFollowUpSchema,
   hearAbout: z.string().trim().max(200).optional().nullable(),
   hearAboutOther: z.string().trim().max(200).optional().nullable(),
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
@@ -69,6 +76,8 @@ async function _GET() {
             exhaustedUnemployment: true,
             layoffCompany: true,
             snapWic: true,
+            publicAssistancePrograms: true,
+            publicAssistanceHelpRequested: true,
             hearAbout: true,
             hearAboutOther: true,
             partnerAmbassadorReferral: true,
@@ -101,6 +110,9 @@ async function _GET() {
       exhaustedUnemployment: meta?.exhaustedUnemployment ?? screening?.exhaustedUnemployment ?? null,
       layoffCompany: meta?.layoffCompany ?? screening?.layoffCompany ?? null,
       snapWic: meta?.snapWic ?? screening?.snapWic ?? null,
+      publicAssistancePrograms: meta?.publicAssistancePrograms ?? screening?.publicAssistancePrograms ?? [],
+      publicAssistanceHelpRequested:
+        meta?.publicAssistanceHelpRequested ?? screening?.publicAssistanceHelpRequested ?? null,
       hearAbout: meta?.hearAbout ?? screening?.hearAbout ?? null,
       hearAboutOther: meta?.hearAboutOther ?? screening?.hearAboutOther ?? null,
       partnerAmbassadorReferral:
@@ -147,10 +159,14 @@ async function _PATCH(request: Request) {
       exhaustedUnemployment,
       layoffCompany,
       snapWic,
+      publicAssistancePrograms,
+      publicAssistanceHelpRequested,
       hearAbout,
       hearAboutOther,
       partnerAmbassadorReferral,
     } = parsed.data;
+    const followUpIssue = publicAssistanceFollowUpIssue({ snapWic, publicAssistancePrograms });
+    if (followUpIssue) return NextResponse.json({ error: followUpIssue }, { status: 400 });
     const barrierTypes = (primaryBarriers ?? [])
       .map((b) => b.trim())
       .filter((b) => b && b !== 'none');
@@ -162,6 +178,7 @@ async function _PATCH(request: Request) {
       exhaustedUnemployment: normalizeYesNo(exhaustedUnemployment),
       layoffCompany: layoffCompany?.trim() ? layoffCompany.trim().slice(0, 200) : null,
       snapWic: normalizeYesNo(snapWic),
+      ...normalizePublicAssistanceFollowUp({ snapWic, publicAssistancePrograms, publicAssistanceHelpRequested }),
       hearAbout: normalizeHearAbout(hearAbout),
       hearAboutOther: normalizeHearAbout(hearAboutOther),
       partnerAmbassadorReferral: partnerAmbassadorReferral?.trim()

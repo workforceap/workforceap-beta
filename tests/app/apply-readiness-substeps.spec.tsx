@@ -33,11 +33,18 @@ describe('short eligibility panels preserve existing rules and drafts', () => {
     fireEvent.click(screen.getByRole('button', { name: en.apply.eligibilityPanelNext }));
     await waitFor(() => expect(document.activeElement).toBe(screen.getAllByRole('radio')[0]));
     for (const radio of screen.getAllByRole('radio', { name: /yes/i })) fireEvent.click(radio);
+    // WAP-53: answering yes to TANF/WIC/SNAP reveals the benefit follow-ups and blocks the panel until they are answered.
+    expect(screen.getByRole('group', { name: en.apply.eligibilityPublicAssistanceProgramsPrompt })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: en.apply.eligibilityPanelNext }));
+    expect(screen.getAllByRole('alert').map((node) => node.textContent)).toContain(en.apply.eligibilityPublicAssistanceProgramsError);
+    expect(screen.queryByLabelText(en.form.firstNameRequired)).toBeNull();
+    fireEvent.click(screen.getByRole('checkbox', { name: en.apply.publicAssistanceTanf }));
+    fireEvent.click(screen.getByRole('radio', { name: en.apply.answerYes, checked: false }));
     fireEvent.click(screen.getByRole('button', { name: en.apply.eligibilityPanelNext }));
     await waitFor(() => expect(document.activeElement).toHaveTextContent(en.apply.eligibilityPanelContact));
     expect(screen.getByLabelText(en.form.firstNameRequired)).toBeVisible();
     expect(screen.queryByRole('radio')).toBeNull();
-    expect(JSON.parse(localStorage.getItem(APPLY_FLOW_DRAFT_KEY)!)).toMatchObject({ version: 1, panel: 'contact', q1: 'yes', q2: 'yes' });
+    expect(JSON.parse(localStorage.getItem(APPLY_FLOW_DRAFT_KEY)!)).toMatchObject({ version: 1, panel: 'contact', q1: 'yes', q2: 'yes', snapWic: 'yes', publicAssistancePrograms: ['tanf'], publicAssistanceHelpRequested: 'yes' });
     expect(mocks.push).not.toHaveBeenCalled();
   });
   it('hydrates a legacy v1 draft, advances locally, and keeps the program URL on successful storage', () => {

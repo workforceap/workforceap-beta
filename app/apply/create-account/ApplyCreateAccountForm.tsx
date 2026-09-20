@@ -403,6 +403,8 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
           exhaustedUnemployment: schoolSignup ? undefined : eligibilityPayload?.exhaustedUnemployment,
           layoffCompany: schoolSignup ? undefined : eligibilityPayload?.layoffCompany,
           snapWic: schoolSignup ? undefined : eligibilityPayload?.snapWic,
+          publicAssistancePrograms: schoolSignup ? undefined : eligibilityPayload?.publicAssistancePrograms,
+          publicAssistanceHelpRequested: schoolSignup ? undefined : eligibilityPayload?.publicAssistanceHelpRequested,
           hearAbout: schoolSignup ? undefined : eligibilityPayload?.hearAbout,
           hearAboutOther: schoolSignup ? undefined : eligibilityPayload?.hearAboutOther,
           partnerAmbassadorReferral: schoolSignup

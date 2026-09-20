@@ -63,6 +63,8 @@ export async function loadApplicantTriageByUserIds(
           q3: true,
           receivingUnemployment: true,
           snapWic: true,
+          publicAssistancePrograms: true,
+          publicAssistanceHelpRequested: true,
           partnerAmbassadorReferral: true,
         },
       },
@@ -102,6 +104,8 @@ export async function loadApplicantTriageByUserIds(
             q3: asYesNo(screening.q3),
             receivingUnemployment: asYesNo(screening.receivingUnemployment),
             snapWic: asYesNo(screening.snapWic),
+            publicAssistancePrograms: screening.publicAssistancePrograms,
+            publicAssistanceHelpRequested: asYesNo(screening.publicAssistanceHelpRequested),
             partnerAmbassadorReferral: screening.partnerAmbassadorReferral,
           }
         : null,

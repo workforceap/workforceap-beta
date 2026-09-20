@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { formatPublicAssistancePrograms } from '@/lib/apply/publicAssistance';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
@@ -68,6 +69,8 @@ export default async function AdminExportsPage({
             receivingUnemployment: true,
             layoffCompany: true,
             snapWic: true,
+            publicAssistancePrograms: true,
+            publicAssistanceHelpRequested: true,
             hearAbout: true,
             createdAt: true,
           },
@@ -86,6 +89,10 @@ export default async function AdminExportsPage({
       receivingUnemployment: s?.receivingUnemployment ?? null,
       layoffCompany: s?.layoffCompany ?? null,
       snapWic: s?.snapWic ?? null,
+      publicAssistancePrograms: s?.publicAssistancePrograms?.length
+        ? formatPublicAssistancePrograms(s.publicAssistancePrograms)
+        : null,
+      publicAssistanceHelpRequested: s?.publicAssistanceHelpRequested ?? null,
       hearAbout: s?.hearAbout ?? null,
       screeningAt: s?.createdAt
         ? s.createdAt.toLocaleDateString('en-US', {

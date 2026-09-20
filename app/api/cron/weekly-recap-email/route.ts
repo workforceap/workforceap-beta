@@ -6,6 +6,10 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 
+// WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
+// by data-cleanup instead of pinning a RUNNING row forever.
+export const maxDuration = 300;
+
 /**
  * Cron endpoint to send weekly admin recap email.
  * Runs Friday 4 PM CT (10 PM UTC: "0 22 * * 5").

@@ -11,6 +11,13 @@ import {
   normalizeYesNo,
   type YesNo,
 } from '@/lib/apply/eligibilityExtendedFields';
+import {
+  PUBLIC_ASSISTANCE_PROGRAM_LABELS,
+  PUBLIC_ASSISTANCE_PROGRAM_VALUES,
+  normalizePublicAssistancePrograms,
+  publicAssistanceFollowUpComplete,
+  type PublicAssistanceProgram,
+} from '@/lib/apply/publicAssistance';
 
 // Mirror the apply flow's option lists so member-supplied data stays
 // consistent with the public application (app/apply/ApplyEligibilityClient.tsx).
@@ -36,6 +43,9 @@ export type EligibilityInitial = {
   exhaustedUnemployment?: YesNo | null;
   layoffCompany?: string;
   snapWic?: YesNo | null;
+  /** WAP-53 follow-ups after snapWic = yes. */
+  publicAssistancePrograms?: string[] | null;
+  publicAssistanceHelpRequested?: YesNo | null;
   hearAbout?: string;
   hearAboutOther?: string;
   partnerAmbassadorReferral?: string;
@@ -123,6 +133,12 @@ export default function EligibilityForm({ initial }: { initial: EligibilityIniti
   );
   const [layoffCompany, setLayoffCompany] = useState(initial.layoffCompany ?? '');
   const [snapWic, setSnapWic] = useState<YesNo | null>(normalizeYesNo(initial.snapWic));
+  const [publicAssistancePrograms, setPublicAssistancePrograms] = useState<PublicAssistanceProgram[]>(
+    normalizePublicAssistancePrograms(initial.publicAssistancePrograms),
+  );
+  const [publicAssistanceHelpRequested, setPublicAssistanceHelpRequested] = useState<YesNo | null>(
+    normalizeYesNo(initial.publicAssistanceHelpRequested),
+  );
   const [hearAbout, setHearAbout] = useState(initial.hearAbout ?? '');
   const [hearAboutOther, setHearAboutOther] = useState(initial.hearAboutOther ?? '');
   const [partnerAmbassadorReferral, setPartnerAmbassadorReferral] = useState(
@@ -154,9 +170,25 @@ export default function EligibilityForm({ initial }: { initial: EligibilityIniti
     );
   };
 
+  const followUpComplete = publicAssistanceFollowUpComplete({
+    snapWic,
+    publicAssistancePrograms,
+    publicAssistanceHelpRequested,
+  });
+  const toggleProgram = (program: PublicAssistanceProgram) =>
+    setPublicAssistancePrograms((current) =>
+      normalizePublicAssistancePrograms(
+        current.includes(program) ? current.filter((item) => item !== program) : [...current, program],
+      ),
+    );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
+    if (!followUpComplete) {
+      setFeedback({ ok: false, message: 'Tell us which benefits you receive and whether you want help applying.' });
+      return;
+    }
     startTransition(async () => {
       try {
         const res = await fetch('/api/member/eligibility', {
@@ -176,6 +208,8 @@ export default function EligibilityForm({ initial }: { initial: EligibilityIniti
             exhaustedUnemployment,
             layoffCompany: layoffCompany.trim() || null,
             snapWic,
+            publicAssistancePrograms: snapWic === 'yes' ? publicAssistancePrograms : [],
+            publicAssistanceHelpRequested: snapWic === 'yes' ? publicAssistanceHelpRequested : null,
             hearAbout: hearAbout.trim() || null,
             hearAboutOther: hearAboutNeedsOther(hearAbout) ? hearAboutOther.trim() || null : null,
             partnerAmbassadorReferral: partnerAmbassadorReferral.trim() || null,
@@ -231,6 +265,56 @@ export default function EligibilityForm({ initial }: { initial: EligibilityIniti
       ) : null}
       <YesNoRow name="q2" label="Household income below $60,000?" value={q2} onChange={setQ2} />
       <YesNoRow name="snapWic" label="Receiving TANF, WIC, and/or Food stamps (SNAP)?" value={snapWic} onChange={setSnapWic} />
+      {snapWic === 'yes' ? (
+        <>
+          <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>
+            <legend style={{ ...labelStyle, marginBottom: '0.5rem' }}>Which of these do you receive? (select all that apply)</legend>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              {PUBLIC_ASSISTANCE_PROGRAM_VALUES.map((program) => {
+                const checked = publicAssistancePrograms.includes(program);
+                return (
+                  <label
+                    key={program}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                      minHeight: '44px',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: 'var(--radius-md, 8px)',
+                      border: checked
+                        ? '1px solid var(--color-accent)'
+                        : '1px solid var(--outline-variant, rgba(0,0,0,0.18))',
+                      background: checked
+                        ? 'color-mix(in srgb, var(--color-accent) 8%, transparent)'
+                        : 'var(--surface-container-lowest)',
+                      fontSize: '0.875rem',
+                      color: 'var(--color-on-surface)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="publicAssistancePrograms"
+                      value={program}
+                      checked={checked}
+                      onChange={() => toggleProgram(program)}
+                      style={{ flexShrink: 0, accentColor: 'var(--color-accent)' }}
+                    />
+                    <span>{PUBLIC_ASSISTANCE_PROGRAM_LABELS[program]}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </fieldset>
+          <YesNoRow
+            name="publicAssistanceHelpRequested"
+            label="Would you like help applying for these or other benefits?"
+            value={publicAssistanceHelpRequested}
+            onChange={setPublicAssistanceHelpRequested}
+          />
+        </>
+      ) : null}
       <YesNoRow name="q3" label="Authorized to work in the U.S.?" value={q3} onChange={setQ3} />
 
       <div>

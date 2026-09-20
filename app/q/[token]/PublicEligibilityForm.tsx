@@ -11,6 +11,13 @@ import {
   type YesNo,
 } from '@/lib/apply/eligibilityExtendedFields';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
+import {
+  PUBLIC_ASSISTANCE_PROGRAM_LABELS,
+  PUBLIC_ASSISTANCE_PROGRAM_VALUES,
+  normalizePublicAssistancePrograms,
+  publicAssistanceFollowUpComplete,
+  type PublicAssistanceProgram,
+} from '@/lib/apply/publicAssistance';
 
 // Option values copied EXACTLY from app/apply/ApplyEligibilityClient.tsx so the
 // public no-account form writes the same canonical values the rest of the app
@@ -39,6 +46,9 @@ export type PublicEligibilityPrefill = {
   exhaustedUnemployment?: YesNo | null;
   layoffCompany?: string;
   snapWic?: YesNo | null;
+  /** WAP-53 follow-ups after snapWic = yes. */
+  publicAssistancePrograms?: string[] | null;
+  publicAssistanceHelpRequested?: YesNo | null;
   hearAbout?: string;
   hearAboutOther?: string;
   partnerAmbassadorReferral?: string;
@@ -117,6 +127,12 @@ export default function PublicEligibilityForm({
   );
   const [layoffCompany, setLayoffCompany] = useState(prefill.layoffCompany ?? '');
   const [snapWic, setSnapWic] = useState<YesNo | null>(prefill.snapWic ?? null);
+  const [publicAssistancePrograms, setPublicAssistancePrograms] = useState<PublicAssistanceProgram[]>(
+    normalizePublicAssistancePrograms(prefill.publicAssistancePrograms),
+  );
+  const [publicAssistanceHelpRequested, setPublicAssistanceHelpRequested] = useState<YesNo | null>(
+    prefill.publicAssistanceHelpRequested ?? null,
+  );
   const [hearAbout, setHearAbout] = useState(prefill.hearAbout ?? '');
   const [hearAboutOther, setHearAboutOther] = useState(prefill.hearAboutOther ?? '');
   const [partnerAmbassadorReferral, setPartnerAmbassadorReferral] = useState(
@@ -143,7 +159,14 @@ export default function PublicEligibilityForm({
     q3 !== null &&
     receivingUnemployment !== null &&
     exhaustedUnemployment !== null &&
-    snapWic !== null;
+    snapWic !== null &&
+    publicAssistanceFollowUpComplete({ snapWic, publicAssistancePrograms, publicAssistanceHelpRequested });
+  const toggleProgram = (program: PublicAssistanceProgram) =>
+    setPublicAssistancePrograms((current) =>
+      normalizePublicAssistancePrograms(
+        current.includes(program) ? current.filter((item) => item !== program) : [...current, program],
+      ),
+    );
   const canSubmit =
     firstName.trim().length > 0 &&
     lastName.trim().length > 0 &&
@@ -185,6 +208,8 @@ export default function PublicEligibilityForm({
           exhaustedUnemployment,
           layoffCompany: layoffCompany.trim() || null,
           snapWic,
+          publicAssistancePrograms: snapWic === 'yes' ? publicAssistancePrograms : [],
+          publicAssistanceHelpRequested: snapWic === 'yes' ? publicAssistanceHelpRequested : null,
           hearAbout: hearAbout.trim(),
           hearAboutOther: hearAboutNeedsOther(hearAbout) ? hearAboutOther.trim() || null : null,
           partnerAmbassadorReferral: partnerAmbassadorReferral.trim() || null,
@@ -267,6 +292,33 @@ export default function PublicEligibilityForm({
       ) : null}
       <YesNoGroup name="q2" label="Household income below $60,000?" value={q2} onChange={setQ2} />
       <YesNoGroup name="snapWic" label="Receiving TANF, WIC, and/or Food stamps (SNAP)?" value={snapWic} onChange={setSnapWic} />
+      {snapWic === 'yes' ? (
+        <>
+          <fieldset style={{ ...fieldGroup, border: 'none', padding: 0, margin: 0 }}>
+            <legend style={labelStyle}>Which of these do you receive? Check all that apply *</legend>
+            <div role="group" aria-label="Benefits received" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.35rem' }}>
+              {PUBLIC_ASSISTANCE_PROGRAM_VALUES.map((program) => (
+                <label key={program} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minHeight: '44px' }}>
+                  <input
+                    type="checkbox"
+                    name="publicAssistancePrograms"
+                    value={program}
+                    checked={publicAssistancePrograms.includes(program)}
+                    onChange={() => toggleProgram(program)}
+                  />
+                  {PUBLIC_ASSISTANCE_PROGRAM_LABELS[program]}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <YesNoGroup
+            name="publicAssistanceHelpRequested"
+            label="Would you like help applying for these or other benefits?"
+            value={publicAssistanceHelpRequested}
+            onChange={setPublicAssistanceHelpRequested}
+          />
+        </>
+      ) : null}
       <YesNoGroup name="q3" label="Authorized to work in the U.S.?" value={q3} onChange={setQ3} />
 
       <div style={fieldGroup}>

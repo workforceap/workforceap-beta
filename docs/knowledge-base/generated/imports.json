@@ -6808,6 +6808,14 @@
     "target": "lib/apply/eligibilityExtendedFields.ts"
   },
   {
+    "from": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/eligibility/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -19793,8 +19801,16 @@
   },
   {
     "from": "app/admin/exports/page.tsx",
-    "specifier": "next/navigation",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "app/admin/exports/page.tsx",
+    "specifier": "next/navigation",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -19802,7 +19818,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/app/seo",
-    "line": 3,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -19810,7 +19826,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 4,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -19818,7 +19834,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -19826,7 +19842,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -19834,7 +19850,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/lib/pipeline/stage",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/pipeline/stage.ts"
@@ -19842,7 +19858,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -19850,7 +19866,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -19858,7 +19874,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "next-intl/server",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -19866,7 +19882,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "./AdminExportForm",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "app/admin/exports/AdminExportForm.tsx"
@@ -19874,7 +19890,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/components/admin/EligibilityDatasheetPanel",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/admin/EligibilityDatasheetPanel.tsx"
@@ -19882,7 +19898,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -19890,7 +19906,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/ExportsKit",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx"
@@ -19898,7 +19914,7 @@
   {
     "from": "app/admin/exports/page.tsx",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -43977,8 +43993,16 @@
   },
   {
     "from": "app/api/apply/signup/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "app/api/apply/signup/route.ts",
+    "specifier": "@/lib/email",
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -47937,8 +47961,24 @@
   },
   {
     "from": "app/api/cron/data-cleanup/route.ts",
-    "specifier": "@/lib/retention/cleanup",
+    "specifier": "@/lib/cron/staleExecutions",
     "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/staleExecutions.ts"
+  },
+  {
+    "from": "app/api/cron/data-cleanup/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/cron/data-cleanup/route.ts",
+    "specifier": "@/lib/retention/cleanup",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/retention/cleanup.ts"
@@ -53921,8 +53961,16 @@
   },
   {
     "from": "app/api/member/eligibility/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "app/api/member/eligibility/route.ts",
+    "specifier": "@/lib/email",
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -53930,7 +53978,7 @@
   {
     "from": "app/api/member/eligibility/route.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 17,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -53938,7 +53986,7 @@
   {
     "from": "app/api/member/eligibility/route.ts",
     "specifier": "@/lib/observability/logger",
-    "line": 18,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/observability/logger.ts"
@@ -53946,7 +53994,7 @@
   {
     "from": "app/api/member/eligibility/route.ts",
     "specifier": "@/lib/counselor/ambassadorAutoAssign",
-    "line": 19,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/ambassadorAutoAssign.ts"
@@ -61201,8 +61249,16 @@
   },
   {
     "from": "app/api/q/[token]/submit/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "app/api/q/[token]/submit/route.ts",
+    "specifier": "@/lib/email",
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -61210,7 +61266,7 @@
   {
     "from": "app/api/q/[token]/submit/route.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 21,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -61218,7 +61274,7 @@
   {
     "from": "app/api/q/[token]/submit/route.ts",
     "specifier": "@/lib/observability/logger",
-    "line": 22,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/observability/logger.ts"
@@ -61226,7 +61282,7 @@
   {
     "from": "app/api/q/[token]/submit/route.ts",
     "specifier": "@/lib/counselor/ambassadorAutoAssign",
-    "line": 23,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/ambassadorAutoAssign.ts"
@@ -61234,7 +61290,7 @@
   {
     "from": "app/api/q/[token]/submit/route.ts",
     "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 24,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
@@ -62553,8 +62609,16 @@
   },
   {
     "from": "app/apply/ApplyEligibilityClient.tsx",
-    "specifier": "@/lib/apply/schoolCollection",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "app/apply/ApplyEligibilityClient.tsx",
+    "specifier": "@/lib/apply/schoolCollection",
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "lib/apply/schoolCollection.ts"
@@ -68110,6 +68174,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/validation/postalCode.ts"
+  },
+  {
+    "from": "app/q/[token]/PublicEligibilityForm.tsx",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
   },
   {
     "from": "app/q/[token]/page.tsx",
@@ -81489,8 +81561,16 @@
   },
   {
     "from": "components/portal/WioaQualificationClient.tsx",
-    "specifier": "./WioaQualificationClient.module.css",
+    "specifier": "@/lib/apply/publicAssistance",
     "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "components/portal/WioaQualificationClient.tsx",
+    "specifier": "./WioaQualificationClient.module.css",
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/portal/WioaQualificationClient.module.css"
@@ -90488,6 +90568,14 @@
     "target": "lib/apply/eligibilityScreeningFields.ts"
   },
   {
+    "from": "emails/eligibility-screening-summary.ts",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "node:test",
     "line": 4,
@@ -91610,7 +91698,7 @@
   {
     "from": "instrumentation-client.ts",
     "specifier": "@sentry/nextjs",
-    "line": 128,
+    "line": 130,
     "kind": "dynamic-import",
     "external": true,
     "package": "@sentry/nextjs"
@@ -91618,7 +91706,7 @@
   {
     "from": "instrumentation-client.ts",
     "specifier": "@sentry/nextjs",
-    "line": 162,
+    "line": 155,
     "kind": "dynamic-import",
     "external": true,
     "package": "@sentry/nextjs"
@@ -91626,7 +91714,7 @@
   {
     "from": "instrumentation-client.ts",
     "specifier": "@sentry/nextjs",
-    "line": 275,
+    "line": 268,
     "kind": "dynamic-import",
     "external": true,
     "package": "@sentry/nextjs"
@@ -91990,6 +92078,14 @@
     "kind": "type",
     "external": false,
     "target": "lib/wioa/wioaQualification.ts"
+  },
+  {
+    "from": "lib/admin/applicantTriage.ts",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
   },
   {
     "from": "lib/admin/applicantTriageLoad.ts",
@@ -96200,6 +96296,14 @@
     "target": "lib/referralSources.ts"
   },
   {
+    "from": "lib/apply/eligibilityScreeningFields.ts",
+    "specifier": "./publicAssistance",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
     "from": "lib/apply/layoffCompanyUi.test.ts",
     "specifier": "node:test",
     "line": 5,
@@ -96312,6 +96416,54 @@
     "target": "lib/partner/sponsoredEnrollment.ts"
   },
   {
+    "from": "lib/apply/publicAssistance.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/apply/publicAssistance.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/apply/publicAssistance.test.ts",
+    "specifier": "zod",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "zod"
+  },
+  {
+    "from": "lib/apply/publicAssistance.test.ts",
+    "specifier": "./publicAssistance",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
+    "from": "lib/apply/publicAssistance.ts",
+    "specifier": "zod",
+    "line": 16,
+    "kind": "import",
+    "external": true,
+    "package": "zod"
+  },
+  {
+    "from": "lib/apply/publicAssistance.ts",
+    "specifier": "./eligibilityExtendedFields",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/eligibilityExtendedFields.ts"
+  },
+  {
     "from": "lib/apply/resolveSchoolApply.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -96342,6 +96494,14 @@
     "kind": "type",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
+  },
+  {
+    "from": "lib/apply/saveEligibilityScreening.ts",
+    "specifier": "./publicAssistance",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
   },
   {
     "from": "lib/apply/schoolCollection.test.ts",
@@ -97410,7 +97570,7 @@
   {
     "from": "lib/auth/roles.test.ts",
     "specifier": "node:test",
-    "line": 1,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "node:test"
@@ -97418,15 +97578,23 @@
   {
     "from": "lib/auth/roles.test.ts",
     "specifier": "node:assert/strict",
-    "line": 2,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "node:assert"
   },
   {
     "from": "lib/auth/roles.test.ts",
+    "specifier": "node:crypto",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/auth/roles.test.ts",
     "specifier": "./roles",
-    "line": 4,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -97434,7 +97602,7 @@
   {
     "from": "lib/auth/roles.test.ts",
     "specifier": "../db/prisma",
-    "line": 5,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -102696,6 +102864,30 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "lib/cron/cronSecretPolicy.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/cron/cronSecretPolicy.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/cron/cronSecretPolicy.test.ts",
+    "specifier": "./cronSecretPolicy",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/cronSecretPolicy.ts"
+  },
+  {
     "from": "lib/cron/isCronEnabled.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -102840,6 +103032,46 @@
     "package": "node:test"
   },
   {
+    "from": "lib/cron/staleExecutions.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/cron/staleExecutions.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/cron/staleExecutions.test.ts",
+    "specifier": "./staleExecutions",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/staleExecutions.ts"
+  },
+  {
+    "from": "lib/cron/staleExecutions.ts",
+    "specifier": "@prisma/client",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/cron/staleExecutions.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
     "from": "lib/cron/wioa-report.test.ts",
     "specifier": "vitest",
     "line": 1,
@@ -102937,8 +103169,16 @@
   },
   {
     "from": "lib/cron/withCronLogging.ts",
-    "specifier": "./cronExecution",
+    "specifier": "./cronSecretPolicy",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/cronSecretPolicy.ts"
+  },
+  {
+    "from": "lib/cron/withCronLogging.ts",
+    "specifier": "./cronExecution",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -108992,6 +109232,38 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "lib/messages/unansweredBackfill.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/messages/unansweredBackfill.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/messages/unansweredBackfill.test.ts",
+    "specifier": "./unansweredBackfill",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/messages/unansweredBackfill.ts"
+  },
+  {
+    "from": "lib/messages/unansweredBackfill.ts",
+    "specifier": "@prisma/client",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
     "from": "lib/messages/unassignedNotify.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -113856,6 +114128,14 @@
     "target": "lib/wioa/wioaQualification.ts"
   },
   {
+    "from": "lib/wioa/wioaQualification.ts",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicAssistance.ts"
+  },
+  {
     "from": "lib/workflows/careerOS.ts",
     "specifier": "../db/prisma",
     "line": 1,
@@ -115440,6 +115720,22 @@
     "target": "lib/content/programs.ts"
   },
   {
+    "from": "scripts/backfill-unanswered-member-message-notifications.ts",
+    "specifier": "@prisma/client",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/backfill-unanswered-member-message-notifications.ts",
+    "specifier": "../lib/messages/unansweredBackfill",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/messages/unansweredBackfill.ts"
+  },
+  {
     "from": "scripts/canonicalize-course-progress-slugs.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -116800,6 +117096,38 @@
     "package": "child_process"
   },
   {
+    "from": "scripts/run-db-contract-tests.mjs",
+    "specifier": "node:child_process",
+    "line": 21,
+    "kind": "import",
+    "external": true,
+    "package": "node:child_process"
+  },
+  {
+    "from": "scripts/run-db-contract-tests.mjs",
+    "specifier": "node:fs",
+    "line": 22,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/run-db-contract-tests.mjs",
+    "specifier": "node:path",
+    "line": 23,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/run-db-contract-tests.mjs",
+    "specifier": "node:url",
+    "line": 24,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
     "from": "scripts/safe-migrate.cjs",
     "specifier": "./ensure-prisma-env.cjs",
     "line": 1,
@@ -117214,6 +117542,54 @@
     "kind": "require",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.mjs",
+    "specifier": "node:fs",
+    "line": 23,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.mjs",
+    "specifier": "node:path",
+    "line": 24,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.mjs",
+    "specifier": "node:url",
+    "line": 25,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/verify-no-source-text-tests.test.ts",
+    "specifier": "./verify-no-source-text-tests.mjs",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "scripts/verify-no-source-text-tests.mjs"
   },
   {
     "from": "scripts/verify-pdf-deployment.mjs",
@@ -121641,8 +122017,16 @@
   },
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-    "specifier": "@/lib/observability/captureApiError",
+    "specifier": "@/lib/admin/logCronRun",
     "line": 74,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/logCronRun.ts"
+  },
+  {
+    "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 75,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -125809,8 +126193,16 @@
   },
   {
     "from": "tests/api/placement-survey.spec.ts",
+    "specifier": "@/lib/admin/logCronRun",
+    "line": 1244,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/admin/logCronRun.ts"
+  },
+  {
+    "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1262,
+    "line": 1268,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -125818,7 +126210,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1319,
+    "line": 1325,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -125826,7 +126218,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1344,
+    "line": 1350,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"
@@ -125834,7 +126226,7 @@
   {
     "from": "tests/api/placement-survey.spec.ts",
     "specifier": "@/lib/cron/placement-surveys",
-    "line": 1362,
+    "line": 1368,
     "kind": "type",
     "external": false,
     "target": "lib/cron/placement-surveys.ts"

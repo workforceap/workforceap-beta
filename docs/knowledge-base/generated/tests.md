@@ -75,7 +75,7 @@
 | [tests/api/coursera-replay-email-pacing.spec.ts](../../../tests/api/coursera-replay-email-pacing.spec.ts) | 62 | learning-coursera |  |
 | [tests/api/coursera-rest-webhook.spec.ts](../../../tests/api/coursera-rest-webhook.spec.ts) | 280 | learning-coursera |  |
 | [tests/api/cover-letter.spec.ts](../../../tests/api/cover-letter.spec.ts) | 167 | tests |  |
-| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 188 | tests |  |
+| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 203 | tests |  |
 | [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 157 | tests |  |
 | [tests/api/cron-course-accountability.spec.ts](../../../tests/api/cron-course-accountability.spec.ts) | 71 | tests |  |
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
@@ -85,7 +85,7 @@
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 232 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
-| [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 118 | tests |  |
+| [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
 | [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 281 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |
@@ -147,7 +147,7 @@
 | [tests/api/partner-signup.spec.ts](../../../tests/api/partner-signup.spec.ts) | 526 | tests |  |
 | [tests/api/password-recovery-destination.spec.ts](../../../tests/api/password-recovery-destination.spec.ts) | 172 | tests |  |
 | [tests/api/pathway-progress.spec.ts](../../../tests/api/pathway-progress.spec.ts) | 713 | tests |  |
-| [tests/api/placement-survey.spec.ts](../../../tests/api/placement-survey.spec.ts) | 1397 | tests |  |
+| [tests/api/placement-survey.spec.ts](../../../tests/api/placement-survey.spec.ts) | 1403 | tests |  |
 | [tests/api/points-routes.spec.ts](../../../tests/api/points-routes.spec.ts) | 451 | tests |  |
 | [tests/api/portal-nav-badges.spec.ts](../../../tests/api/portal-nav-badges.spec.ts) | 69 | tests |  |
 | [tests/api/program-enrollment.spec.ts](../../../tests/api/program-enrollment.spec.ts) | 409 | tests |  |
@@ -183,7 +183,7 @@
 | [tests/app/admin-weekly-recap-page.spec.tsx](../../../tests/app/admin-weekly-recap-page.spec.tsx) | 109 | tests |  |
 | [tests/app/api-docs-page-access.spec.tsx](../../../tests/app/api-docs-page-access.spec.tsx) | 35 | tests |  |
 | [tests/app/apply-funnel-token-scope.spec.ts](../../../tests/app/apply-funnel-token-scope.spec.ts) | 125 | tests |  |
-| [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 177 | tests |  |
+| [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 184 | tests |  |
 | [tests/app/apply-school-recovery.spec.tsx](../../../tests/app/apply-school-recovery.spec.tsx) | 65 | tests |  |
 | [tests/app/counselor-contextual-messages.spec.tsx](../../../tests/app/counselor-contextual-messages.spec.tsx) | 97 | tests |  |
 | [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 75 | tests |  |
@@ -390,7 +390,7 @@
 | [tests/lib/firstValueActions.test.ts](../../../tests/lib/firstValueActions.test.ts) | 70 | tests |  |
 | [tests/lib/focus-ring-recipe.spec.ts](../../../tests/lib/focus-ring-recipe.spec.ts) | 131 | tests |  |
 | [tests/lib/google-it-support-completion.spec.ts](../../../tests/lib/google-it-support-completion.spec.ts) | 49 | tests |  |
-| [tests/lib/hydration-telemetry.spec.ts](../../../tests/lib/hydration-telemetry.spec.ts) | 88 | tests |  |
+| [tests/lib/hydration-telemetry.spec.ts](../../../tests/lib/hydration-telemetry.spec.ts) | 107 | tests |  |
 | [tests/lib/i18n-page-message-keys.spec.ts](../../../tests/lib/i18n-page-message-keys.spec.ts) | 45 | tests |  |
 | [tests/lib/job-expiry-instant.spec.ts](../../../tests/lib/job-expiry-instant.spec.ts) | 43 | tests |  |
 | [tests/lib/lab-workspace-access.spec.ts](../../../tests/lib/lab-workspace-access.spec.ts) | 220 | tests |  |

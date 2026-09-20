@@ -21,6 +21,7 @@
 | [scripts/auto-sync-master.ps1](../../../scripts/auto-sync-master.ps1) | 123 | operations |  |
 | [scripts/backfill-coursera-courseids.cjs](../../../scripts/backfill-coursera-courseids.cjs) | 381 | learning-coursera | scanProgramsFromSource:374 |
 | [scripts/backfill-courses.ts](../../../scripts/backfill-courses.ts) | 82 | operations |  |
+| [scripts/backfill-unanswered-member-message-notifications.ts](../../../scripts/backfill-unanswered-member-message-notifications.ts) | 45 | communications |  |
 | [scripts/canonicalize-course-progress-slugs.test.ts](../../../scripts/canonicalize-course-progress-slugs.test.ts) | 67 | operations |  |
 | [scripts/canonicalize-course-progress-slugs.ts](../../../scripts/canonicalize-course-progress-slugs.ts) | 339 | operations | mergeCourseProgressCollision:72 |
 | [scripts/capture-roster-after-screenshots.mjs](../../../scripts/capture-roster-after-screenshots.mjs) | 85 | operations |  |
@@ -108,15 +109,17 @@
 | [scripts/resolve-failed-migration.cjs](../../../scripts/resolve-failed-migration.cjs) | 74 | operations |  |
 | [scripts/resolve-migration.mjs](../../../scripts/resolve-migration.mjs) | 49 | operations |  |
 | [scripts/run-codex-agents.sh](../../../scripts/run-codex-agents.sh) | 52 | operations |  |
+| [scripts/run-db-contract-tests.mjs](../../../scripts/run-db-contract-tests.mjs) | 89 | operations |  |
 | [scripts/safe-migrate.cjs](../../../scripts/safe-migrate.cjs) | 165 | operations |  |
 | [scripts/seed-partner-school.ts](../../../scripts/seed-partner-school.ts) | 188 | operations |  |
 | [scripts/seed-test-user.sql](../../../scripts/seed-test-user.sql) | 39 | operations |  |
 | [scripts/send-eligibility-campaign.ts](../../../scripts/send-eligibility-campaign.ts) | 96 | operations |  |
+| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 118 | operations |  |
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |
 | [scripts/sync-portal-test-auth.ts](../../../scripts/sync-portal-test-auth.ts) | 285 | operations | syncPortalTestAuth:235 |
-| [scripts/test-unit.mjs](../../../scripts/test-unit.mjs) | 171 | operations |  |
+| [scripts/test-unit.mjs](../../../scripts/test-unit.mjs) | 189 | operations |  |
 | [scripts/validate-approved-coursera-catalog.ts](../../../scripts/validate-approved-coursera-catalog.ts) | 44 | learning-coursera |  |
 | [scripts/validate-approved-coursera-track.ts](../../../scripts/validate-approved-coursera-track.ts) | 67 | learning-coursera |  |
 | [scripts/vercel-build.cjs](../../../scripts/vercel-build.cjs) | 69 | operations | appBuildScriptForEnvironment:65, copyMarketingBuild:66, main:67, runNpm:68 |
@@ -127,6 +130,8 @@
 | [scripts/verify-i18n-completeness.cjs](../../../scripts/verify-i18n-completeness.cjs) | 153 | operations |  |
 | [scripts/verify-material-symbols-font-size.mjs](../../../scripts/verify-material-symbols-font-size.mjs) | 38 | operations |  |
 | [scripts/verify-no-per-query-guc.cjs](../../../scripts/verify-no-per-query-guc.cjs) | 71 | operations | findViolations:56, TARGET:56 |
+| [scripts/verify-no-source-text-tests.mjs](../../../scripts/verify-no-source-text-tests.mjs) | 120 | operations | ROOT:27, BASELINE_PATH:28, listTestFiles:43, readsApplicationSource:61, findSourceTextTests:66, loadBaseline:70, evaluate:78 |
+| [scripts/verify-no-source-text-tests.test.ts](../../../scripts/verify-no-source-text-tests.test.ts) | 41 | operations |  |
 | [scripts/verify-pdf-deployment.mjs](../../../scripts/verify-pdf-deployment.mjs) | 141 | operations | PDF_DEPLOYMENT_RESULT_PREFIX:14, parsePdfDeploymentResult:17, pdfDeploymentAssets:49, verifyPdfDeploymentAssets:64 |
 | [scripts/verify-rippling-bulk-import.ts](../../../scripts/verify-rippling-bulk-import.ts) | 194 | operations |  |
 | [scripts/verify-rippling-job-sanitizer.ts](../../../scripts/verify-rippling-job-sanitizer.ts) | 75 | operations |  |

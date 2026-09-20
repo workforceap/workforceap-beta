@@ -11666,8 +11666,8 @@
           "relationFields": []
         },
         {
-          "name": "hearAbout",
-          "type": "String?",
+          "name": "publicAssistancePrograms",
+          "type": "String[]",
           "line": 2147,
           "id": false,
           "unique": false,
@@ -11675,7 +11675,7 @@
           "relationFields": []
         },
         {
-          "name": "hearAboutOther",
+          "name": "publicAssistanceHelpRequested",
           "type": "String?",
           "line": 2149,
           "id": false,
@@ -11684,7 +11684,7 @@
           "relationFields": []
         },
         {
-          "name": "partnerAmbassadorReferral",
+          "name": "hearAbout",
           "type": "String?",
           "line": 2151,
           "id": false,
@@ -11693,9 +11693,27 @@
           "relationFields": []
         },
         {
+          "name": "hearAboutOther",
+          "type": "String?",
+          "line": 2153,
+          "id": false,
+          "unique": false,
+          "relation": false,
+          "relationFields": []
+        },
+        {
+          "name": "partnerAmbassadorReferral",
+          "type": "String?",
+          "line": 2155,
+          "id": false,
+          "unique": false,
+          "relation": false,
+          "relationFields": []
+        },
+        {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2152,
+          "line": 2156,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11704,7 +11722,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2154,
+          "line": 2158,
           "id": false,
           "unique": false,
           "relation": true,
@@ -11715,7 +11733,7 @@
         {
           "name": "organization",
           "type": "Organization",
-          "line": 2155,
+          "line": 2159,
           "id": false,
           "unique": false,
           "relation": true,
@@ -11730,12 +11748,12 @@
       "name": "PublicWioaScreening",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2161,
+      "line": 2165,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2162,
+          "line": 2166,
           "id": true,
           "unique": false,
           "relation": false,
@@ -11744,7 +11762,7 @@
         {
           "name": "organizationId",
           "type": "String",
-          "line": 2163,
+          "line": 2167,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11753,7 +11771,7 @@
         {
           "name": "fullName",
           "type": "String",
-          "line": 2164,
+          "line": 2168,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11762,7 +11780,7 @@
         {
           "name": "email",
           "type": "String",
-          "line": 2165,
+          "line": 2169,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11771,7 +11789,7 @@
         {
           "name": "phone",
           "type": "String?",
-          "line": 2166,
+          "line": 2170,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11780,7 +11798,7 @@
         {
           "name": "snapshot",
           "type": "Json",
-          "line": 2167,
+          "line": 2171,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11789,7 +11807,7 @@
         {
           "name": "emailSent",
           "type": "Boolean",
-          "line": 2168,
+          "line": 2172,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11798,7 +11816,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2169,
+          "line": 2173,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11807,7 +11825,7 @@
         {
           "name": "organization",
           "type": "Organization",
-          "line": 2171,
+          "line": 2175,
           "id": false,
           "unique": false,
           "relation": true,
@@ -11822,38 +11840,38 @@
       "name": "JobPostingApplicationStatus",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2178,
+      "line": 2182,
       "fields": [],
       "values": [
         {
           "name": "pending",
           "mappedValue": null,
-          "line": 2179
+          "line": 2183
         },
         {
           "name": "reviewing",
           "mappedValue": null,
-          "line": 2180
+          "line": 2184
         },
         {
           "name": "interview",
           "mappedValue": null,
-          "line": 2181
+          "line": 2185
         },
         {
           "name": "offered",
           "mappedValue": null,
-          "line": 2182
+          "line": 2186
         },
         {
           "name": "hired",
           "mappedValue": null,
-          "line": 2183
+          "line": 2187
         },
         {
           "name": "rejected",
           "mappedValue": null,
-          "line": 2184
+          "line": 2188
         }
       ],
       "table": "job_posting_application_status"
@@ -11862,12 +11880,12 @@
       "name": "JobPostingApplication",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2189,
+      "line": 2193,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2190,
+          "line": 2194,
           "id": true,
           "unique": false,
           "relation": false,
@@ -11876,7 +11894,7 @@
         {
           "name": "jobId",
           "type": "String",
-          "line": 2191,
+          "line": 2195,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11885,7 +11903,7 @@
         {
           "name": "studentId",
           "type": "String",
-          "line": 2192,
+          "line": 2196,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11894,7 +11912,7 @@
         {
           "name": "status",
           "type": "JobPostingApplicationStatus",
-          "line": 2193,
+          "line": 2197,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11903,7 +11921,7 @@
         {
           "name": "coverLetter",
           "type": "String?",
-          "line": 2194,
+          "line": 2198,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11912,7 +11930,7 @@
         {
           "name": "resumeUrl",
           "type": "String?",
-          "line": 2195,
+          "line": 2199,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11921,7 +11939,7 @@
         {
           "name": "resumePath",
           "type": "String?",
-          "line": 2196,
+          "line": 2200,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11930,7 +11948,7 @@
         {
           "name": "profileShared",
           "type": "Boolean",
-          "line": 2197,
+          "line": 2201,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11939,7 +11957,7 @@
         {
           "name": "appliedAt",
           "type": "DateTime",
-          "line": 2198,
+          "line": 2202,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11948,7 +11966,7 @@
         {
           "name": "employerNotes",
           "type": "String?",
-          "line": 2199,
+          "line": 2203,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11957,7 +11975,7 @@
         {
           "name": "statusUpdatedAt",
           "type": "DateTime?",
-          "line": 2200,
+          "line": 2204,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11966,7 +11984,7 @@
         {
           "name": "interviewScheduledAt",
           "type": "DateTime?",
-          "line": 2201,
+          "line": 2205,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11975,7 +11993,7 @@
         {
           "name": "interviewNotes",
           "type": "String?",
-          "line": 2202,
+          "line": 2206,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11984,7 +12002,7 @@
         {
           "name": "lastEmployerMessageAt",
           "type": "DateTime?",
-          "line": 2203,
+          "line": 2207,
           "id": false,
           "unique": false,
           "relation": false,
@@ -11993,7 +12011,7 @@
         {
           "name": "lastApplicantMessageAt",
           "type": "DateTime?",
-          "line": 2204,
+          "line": 2208,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12002,7 +12020,7 @@
         {
           "name": "job",
           "type": "Job",
-          "line": 2206,
+          "line": 2210,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12013,7 +12031,7 @@
         {
           "name": "student",
           "type": "User",
-          "line": 2207,
+          "line": 2211,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12024,7 +12042,7 @@
         {
           "name": "messages",
           "type": "ApplicationMessage[]",
-          "line": 2208,
+          "line": 2212,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12037,12 +12055,12 @@
       "name": "ApplicationMessage",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2217,
+      "line": 2221,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2218,
+          "line": 2222,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12051,7 +12069,7 @@
         {
           "name": "applicationId",
           "type": "String",
-          "line": 2219,
+          "line": 2223,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12060,7 +12078,7 @@
         {
           "name": "authorId",
           "type": "String?",
-          "line": 2220,
+          "line": 2224,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12069,7 +12087,7 @@
         {
           "name": "body",
           "type": "String",
-          "line": 2221,
+          "line": 2225,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12078,7 +12096,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2222,
+          "line": 2226,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12087,7 +12105,7 @@
         {
           "name": "readAt",
           "type": "DateTime?",
-          "line": 2223,
+          "line": 2227,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12096,7 +12114,7 @@
         {
           "name": "application",
           "type": "JobPostingApplication",
-          "line": 2225,
+          "line": 2229,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12107,7 +12125,7 @@
         {
           "name": "author",
           "type": "User?",
-          "line": 2226,
+          "line": 2230,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12122,12 +12140,12 @@
       "name": "PartnerOutreachLog",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2233,
+      "line": 2237,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2234,
+          "line": 2238,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12136,7 +12154,7 @@
         {
           "name": "partnerId",
           "type": "String",
-          "line": 2235,
+          "line": 2239,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12145,7 +12163,7 @@
         {
           "name": "memberId",
           "type": "String",
-          "line": 2236,
+          "line": 2240,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12154,7 +12172,7 @@
         {
           "name": "channel",
           "type": "String",
-          "line": 2237,
+          "line": 2241,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12163,7 +12181,7 @@
         {
           "name": "note",
           "type": "String",
-          "line": 2238,
+          "line": 2242,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12172,7 +12190,7 @@
         {
           "name": "createdByUserId",
           "type": "String?",
-          "line": 2239,
+          "line": 2243,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12181,7 +12199,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2240,
+          "line": 2244,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12190,7 +12208,7 @@
         {
           "name": "partner",
           "type": "Partner",
-          "line": 2242,
+          "line": 2246,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12201,7 +12219,7 @@
         {
           "name": "member",
           "type": "User",
-          "line": 2243,
+          "line": 2247,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12212,7 +12230,7 @@
         {
           "name": "createdBy",
           "type": "User?",
-          "line": 2244,
+          "line": 2248,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12227,12 +12245,12 @@
       "name": "PortalWorkflowEvent",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2252,
+      "line": 2256,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2253,
+          "line": 2257,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12241,7 +12259,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2254,
+          "line": 2258,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12250,7 +12268,7 @@
         {
           "name": "scope",
           "type": "String",
-          "line": 2255,
+          "line": 2259,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12259,7 +12277,7 @@
         {
           "name": "employerId",
           "type": "String?",
-          "line": 2256,
+          "line": 2260,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12268,7 +12286,7 @@
         {
           "name": "partnerId",
           "type": "String?",
-          "line": 2257,
+          "line": 2261,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12277,7 +12295,7 @@
         {
           "name": "actorUserId",
           "type": "String?",
-          "line": 2258,
+          "line": 2262,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12286,7 +12304,7 @@
         {
           "name": "kind",
           "type": "String",
-          "line": 2259,
+          "line": 2263,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12295,7 +12313,7 @@
         {
           "name": "headline",
           "type": "String",
-          "line": 2260,
+          "line": 2264,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12304,7 +12322,7 @@
         {
           "name": "detail",
           "type": "String?",
-          "line": 2261,
+          "line": 2265,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12313,7 +12331,7 @@
         {
           "name": "entityType",
           "type": "String?",
-          "line": 2262,
+          "line": 2266,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12322,7 +12340,7 @@
         {
           "name": "entityId",
           "type": "String?",
-          "line": 2263,
+          "line": 2267,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12331,7 +12349,7 @@
         {
           "name": "employer",
           "type": "Employer?",
-          "line": 2265,
+          "line": 2269,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12342,7 +12360,7 @@
         {
           "name": "partner",
           "type": "Partner?",
-          "line": 2266,
+          "line": 2270,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12353,7 +12371,7 @@
         {
           "name": "actor",
           "type": "User?",
-          "line": 2267,
+          "line": 2271,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12368,43 +12386,43 @@
       "name": "AIJobMatchStatus",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2275,
+      "line": 2279,
       "fields": [],
       "values": [
         {
           "name": "suggested",
           "mappedValue": null,
-          "line": 2276
+          "line": 2280
         },
         {
           "name": "employer_notified",
           "mappedValue": null,
-          "line": 2277
+          "line": 2281
         },
         {
           "name": "student_notified",
           "mappedValue": null,
-          "line": 2278
+          "line": 2282
         },
         {
           "name": "rejected",
           "mappedValue": null,
-          "line": 2279
+          "line": 2283
         },
         {
           "name": "contacted",
           "mappedValue": null,
-          "line": 2280
+          "line": 2284
         },
         {
           "name": "interviewing",
           "mappedValue": null,
-          "line": 2281
+          "line": 2285
         },
         {
           "name": "hired",
           "mappedValue": null,
-          "line": 2282
+          "line": 2286
         }
       ],
       "table": "ai_job_match_status"
@@ -12413,12 +12431,12 @@
       "name": "AIJobMatch",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2287,
+      "line": 2291,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2288,
+          "line": 2292,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12427,7 +12445,7 @@
         {
           "name": "jobId",
           "type": "String",
-          "line": 2289,
+          "line": 2293,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12436,7 +12454,7 @@
         {
           "name": "studentId",
           "type": "String",
-          "line": 2290,
+          "line": 2294,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12445,7 +12463,7 @@
         {
           "name": "matchScore",
           "type": "Int",
-          "line": 2291,
+          "line": 2295,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12454,7 +12472,7 @@
         {
           "name": "matchReasons",
           "type": "String[]",
-          "line": 2292,
+          "line": 2296,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12463,7 +12481,7 @@
         {
           "name": "status",
           "type": "AIJobMatchStatus",
-          "line": 2293,
+          "line": 2297,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12472,7 +12490,7 @@
         {
           "name": "statusUpdatedAt",
           "type": "DateTime?",
-          "line": 2294,
+          "line": 2298,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12481,7 +12499,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2295,
+          "line": 2299,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12490,7 +12508,7 @@
         {
           "name": "job",
           "type": "Job",
-          "line": 2297,
+          "line": 2301,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12501,7 +12519,7 @@
         {
           "name": "student",
           "type": "User",
-          "line": 2298,
+          "line": 2302,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12516,12 +12534,12 @@
       "name": "MentorSpecialty",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2308,
+      "line": 2312,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2309,
+          "line": 2313,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12530,7 +12548,7 @@
         {
           "name": "mentorId",
           "type": "String",
-          "line": 2310,
+          "line": 2314,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12539,7 +12557,7 @@
         {
           "name": "name",
           "type": "String",
-          "line": 2311,
+          "line": 2315,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12548,7 +12566,7 @@
         {
           "name": "mentor",
           "type": "Mentor",
-          "line": 2313,
+          "line": 2317,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12563,12 +12581,12 @@
       "name": "Mentor",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2319,
+      "line": 2323,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2320,
+          "line": 2324,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12577,7 +12595,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2321,
+          "line": 2325,
           "id": false,
           "unique": true,
           "relation": false,
@@ -12586,7 +12604,7 @@
         {
           "name": "fullName",
           "type": "String",
-          "line": 2322,
+          "line": 2326,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12595,7 +12613,7 @@
         {
           "name": "title",
           "type": "String",
-          "line": 2323,
+          "line": 2327,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12604,7 +12622,7 @@
         {
           "name": "company",
           "type": "String",
-          "line": 2324,
+          "line": 2328,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12613,7 +12631,7 @@
         {
           "name": "industry",
           "type": "String",
-          "line": 2325,
+          "line": 2329,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12622,7 +12640,7 @@
         {
           "name": "bio",
           "type": "String",
-          "line": 2326,
+          "line": 2330,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12631,7 +12649,7 @@
         {
           "name": "linkedinUrl",
           "type": "String?",
-          "line": 2327,
+          "line": 2331,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12640,7 +12658,7 @@
         {
           "name": "availableHours",
           "type": "Int",
-          "line": 2328,
+          "line": 2332,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12649,7 +12667,7 @@
         {
           "name": "totalHoursDonated",
           "type": "Float",
-          "line": 2329,
+          "line": 2333,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12658,7 +12676,7 @@
         {
           "name": "isActive",
           "type": "Boolean",
-          "line": 2330,
+          "line": 2334,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12667,7 +12685,7 @@
         {
           "name": "approvedAt",
           "type": "DateTime?",
-          "line": 2331,
+          "line": 2335,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12676,7 +12694,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2332,
+          "line": 2336,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12685,7 +12703,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2333,
+          "line": 2337,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12694,7 +12712,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2335,
+          "line": 2339,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12705,7 +12723,7 @@
         {
           "name": "sessions",
           "type": "MentorSession[]",
-          "line": 2336,
+          "line": 2340,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12714,7 +12732,7 @@
         {
           "name": "specialties",
           "type": "MentorSpecialty[]",
-          "line": 2337,
+          "line": 2341,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12727,12 +12745,12 @@
       "name": "MentorSession",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2342,
+      "line": 2346,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2343,
+          "line": 2347,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12741,7 +12759,7 @@
         {
           "name": "mentorId",
           "type": "String",
-          "line": 2344,
+          "line": 2348,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12750,7 +12768,7 @@
         {
           "name": "memberId",
           "type": "String",
-          "line": 2345,
+          "line": 2349,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12759,7 +12777,7 @@
         {
           "name": "scheduledAt",
           "type": "DateTime",
-          "line": 2346,
+          "line": 2350,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12768,7 +12786,7 @@
         {
           "name": "durationMin",
           "type": "Int",
-          "line": 2347,
+          "line": 2351,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12777,7 +12795,7 @@
         {
           "name": "status",
           "type": "MentorSessionStatus",
-          "line": 2348,
+          "line": 2352,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12786,7 +12804,7 @@
         {
           "name": "topic",
           "type": "String?",
-          "line": 2349,
+          "line": 2353,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12795,7 +12813,7 @@
         {
           "name": "notes",
           "type": "String?",
-          "line": 2350,
+          "line": 2354,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12804,7 +12822,7 @@
         {
           "name": "memberFeedback",
           "type": "String?",
-          "line": 2351,
+          "line": 2355,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12813,7 +12831,7 @@
         {
           "name": "hoursLogged",
           "type": "Float?",
-          "line": 2352,
+          "line": 2356,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12822,7 +12840,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2353,
+          "line": 2357,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12831,7 +12849,7 @@
         {
           "name": "mentor",
           "type": "Mentor",
-          "line": 2355,
+          "line": 2359,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12842,7 +12860,7 @@
         {
           "name": "member",
           "type": "User",
-          "line": 2356,
+          "line": 2360,
           "id": false,
           "unique": false,
           "relation": true,
@@ -12857,28 +12875,28 @@
       "name": "MentorSessionStatus",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2363,
+      "line": 2367,
       "fields": [],
       "values": [
         {
           "name": "PENDING",
           "mappedValue": null,
-          "line": 2364
+          "line": 2368
         },
         {
           "name": "CONFIRMED",
           "mappedValue": null,
-          "line": 2365
+          "line": 2369
         },
         {
           "name": "COMPLETED",
           "mappedValue": null,
-          "line": 2366
+          "line": 2370
         },
         {
           "name": "CANCELLED",
           "mappedValue": null,
-          "line": 2367
+          "line": 2371
         }
       ],
       "table": null
@@ -12887,23 +12905,23 @@
       "name": "CareerExperienceBand",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2372,
+      "line": 2376,
       "fields": [],
       "values": [
         {
           "name": "beginner",
           "mappedValue": null,
-          "line": 2373
+          "line": 2377
         },
         {
           "name": "some_experience",
           "mappedValue": null,
-          "line": 2374
+          "line": 2378
         },
         {
           "name": "experienced",
           "mappedValue": null,
-          "line": 2375
+          "line": 2379
         }
       ],
       "table": "career_experience_band"
@@ -12912,23 +12930,23 @@
       "name": "CareerRecommendationType",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2380,
+      "line": 2384,
       "fields": [],
       "values": [
         {
           "name": "primary",
           "mappedValue": null,
-          "line": 2381
+          "line": 2385
         },
         {
           "name": "bridge",
           "mappedValue": null,
-          "line": 2382
+          "line": 2386
         },
         {
           "name": "stretch",
           "mappedValue": null,
-          "line": 2383
+          "line": 2387
         }
       ],
       "table": "career_recommendation_type"
@@ -12937,12 +12955,12 @@
       "name": "OnetOccupation",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2388,
+      "line": 2392,
       "fields": [
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2389,
+          "line": 2393,
           "id": true,
           "unique": false,
           "relation": false,
@@ -12951,7 +12969,7 @@
         {
           "name": "title",
           "type": "String",
-          "line": 2390,
+          "line": 2394,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12960,7 +12978,7 @@
         {
           "name": "description",
           "type": "String?",
-          "line": 2391,
+          "line": 2395,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12969,7 +12987,7 @@
         {
           "name": "jobFamily",
           "type": "String?",
-          "line": 2392,
+          "line": 2396,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12978,7 +12996,7 @@
         {
           "name": "brightOutlook",
           "type": "Boolean?",
-          "line": 2393,
+          "line": 2397,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12987,7 +13005,7 @@
         {
           "name": "educationLevel",
           "type": "String?",
-          "line": 2394,
+          "line": 2398,
           "id": false,
           "unique": false,
           "relation": false,
@@ -12996,7 +13014,7 @@
         {
           "name": "experienceLevel",
           "type": "String?",
-          "line": 2395,
+          "line": 2399,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13005,7 +13023,7 @@
         {
           "name": "trainingLevel",
           "type": "String?",
-          "line": 2396,
+          "line": 2400,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13014,7 +13032,7 @@
         {
           "name": "salaryLow",
           "type": "Int?",
-          "line": 2397,
+          "line": 2401,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13023,7 +13041,7 @@
         {
           "name": "salaryMedian",
           "type": "Int?",
-          "line": 2398,
+          "line": 2402,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13032,7 +13050,7 @@
         {
           "name": "salaryHigh",
           "type": "Int?",
-          "line": 2399,
+          "line": 2403,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13041,7 +13059,7 @@
         {
           "name": "outlookSummary",
           "type": "String?",
-          "line": 2400,
+          "line": 2404,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13050,7 +13068,7 @@
         {
           "name": "isActive",
           "type": "Boolean",
-          "line": 2401,
+          "line": 2405,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13059,7 +13077,7 @@
         {
           "name": "rawJson",
           "type": "Json?",
-          "line": 2402,
+          "line": 2406,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13068,7 +13086,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2403,
+          "line": 2407,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13077,7 +13095,7 @@
         {
           "name": "skills",
           "type": "OnetOccupationSkill[]",
-          "line": 2405,
+          "line": 2409,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13086,7 +13104,7 @@
         {
           "name": "tasks",
           "type": "OnetOccupationTask[]",
-          "line": 2406,
+          "line": 2410,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13095,7 +13113,7 @@
         {
           "name": "technologies",
           "type": "OnetOccupationTech[]",
-          "line": 2407,
+          "line": 2411,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13104,7 +13122,7 @@
         {
           "name": "relatedFrom",
           "type": "OnetRelatedOccupation[]",
-          "line": 2408,
+          "line": 2412,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13113,7 +13131,7 @@
         {
           "name": "relatedTo",
           "type": "OnetRelatedOccupation[]",
-          "line": 2409,
+          "line": 2413,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13122,7 +13140,7 @@
         {
           "name": "programMappings",
           "type": "CareerProgramMapping[]",
-          "line": 2410,
+          "line": 2414,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13135,12 +13153,12 @@
       "name": "OnetOccupationSkill",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2415,
+      "line": 2419,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2416,
+          "line": 2420,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13149,7 +13167,7 @@
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2417,
+          "line": 2421,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13158,7 +13176,7 @@
         {
           "name": "skillName",
           "type": "String",
-          "line": 2418,
+          "line": 2422,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13167,7 +13185,7 @@
         {
           "name": "importance",
           "type": "Int?",
-          "line": 2419,
+          "line": 2423,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13176,7 +13194,7 @@
         {
           "name": "level",
           "type": "Int?",
-          "line": 2420,
+          "line": 2424,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13185,7 +13203,7 @@
         {
           "name": "occupation",
           "type": "OnetOccupation",
-          "line": 2422,
+          "line": 2426,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13200,12 +13218,12 @@
       "name": "OnetOccupationTask",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2428,
+      "line": 2432,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2429,
+          "line": 2433,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13214,7 +13232,7 @@
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2430,
+          "line": 2434,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13223,7 +13241,7 @@
         {
           "name": "taskText",
           "type": "String",
-          "line": 2431,
+          "line": 2435,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13232,7 +13250,7 @@
         {
           "name": "importance",
           "type": "Int?",
-          "line": 2432,
+          "line": 2436,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13241,7 +13259,7 @@
         {
           "name": "occupation",
           "type": "OnetOccupation",
-          "line": 2434,
+          "line": 2438,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13256,12 +13274,12 @@
       "name": "OnetOccupationTech",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2440,
+      "line": 2444,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2441,
+          "line": 2445,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13270,7 +13288,7 @@
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2442,
+          "line": 2446,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13279,7 +13297,7 @@
         {
           "name": "technologyName",
           "type": "String",
-          "line": 2443,
+          "line": 2447,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13288,7 +13306,7 @@
         {
           "name": "category",
           "type": "String?",
-          "line": 2444,
+          "line": 2448,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13297,7 +13315,7 @@
         {
           "name": "occupation",
           "type": "OnetOccupation",
-          "line": 2446,
+          "line": 2450,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13312,12 +13330,12 @@
       "name": "OnetRelatedOccupation",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2452,
+      "line": 2456,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2453,
+          "line": 2457,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13326,7 +13344,7 @@
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2454,
+          "line": 2458,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13335,7 +13353,7 @@
         {
           "name": "relatedOnetCode",
           "type": "String",
-          "line": 2455,
+          "line": 2459,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13344,7 +13362,7 @@
         {
           "name": "relationshipType",
           "type": "String?",
-          "line": 2456,
+          "line": 2460,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13353,7 +13371,7 @@
         {
           "name": "occupation",
           "type": "OnetOccupation",
-          "line": 2458,
+          "line": 2462,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13364,7 +13382,7 @@
         {
           "name": "relatedOccupation",
           "type": "OnetOccupation",
-          "line": 2459,
+          "line": 2463,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13379,12 +13397,12 @@
       "name": "CareerProgramMapping",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2466,
+      "line": 2470,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2467,
+          "line": 2471,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13393,7 +13411,7 @@
         {
           "name": "onetCode",
           "type": "String",
-          "line": 2468,
+          "line": 2472,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13402,7 +13420,7 @@
         {
           "name": "programSlug",
           "type": "String",
-          "line": 2469,
+          "line": 2473,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13411,7 +13429,7 @@
         {
           "name": "priority",
           "type": "Int",
-          "line": 2470,
+          "line": 2474,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13420,7 +13438,7 @@
         {
           "name": "experienceBand",
           "type": "CareerExperienceBand",
-          "line": 2471,
+          "line": 2475,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13429,7 +13447,7 @@
         {
           "name": "recommendationType",
           "type": "CareerRecommendationType",
-          "line": 2472,
+          "line": 2476,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13438,7 +13456,7 @@
         {
           "name": "whyRecommended",
           "type": "String?",
-          "line": 2473,
+          "line": 2477,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13447,7 +13465,7 @@
         {
           "name": "isActive",
           "type": "Boolean",
-          "line": 2474,
+          "line": 2478,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13456,7 +13474,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2475,
+          "line": 2479,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13465,7 +13483,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2476,
+          "line": 2480,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13474,7 +13492,7 @@
         {
           "name": "occupation",
           "type": "OnetOccupation",
-          "line": 2478,
+          "line": 2482,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13489,12 +13507,12 @@
       "name": "CareerQuizRule",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2486,
+      "line": 2490,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2487,
+          "line": 2491,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13503,7 +13521,7 @@
         {
           "name": "ruleKey",
           "type": "String",
-          "line": 2488,
+          "line": 2492,
           "id": false,
           "unique": true,
           "relation": false,
@@ -13512,7 +13530,7 @@
         {
           "name": "inputSignal",
           "type": "Json",
-          "line": 2489,
+          "line": 2493,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13521,7 +13539,7 @@
         {
           "name": "boostOnetCode",
           "type": "String",
-          "line": 2490,
+          "line": 2494,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13530,7 +13548,7 @@
         {
           "name": "weight",
           "type": "Int",
-          "line": 2491,
+          "line": 2495,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13539,7 +13557,7 @@
         {
           "name": "reasonText",
           "type": "String?",
-          "line": 2492,
+          "line": 2496,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13548,7 +13566,7 @@
         {
           "name": "isActive",
           "type": "Boolean",
-          "line": 2493,
+          "line": 2497,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13557,7 +13575,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2494,
+          "line": 2498,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13566,7 +13584,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2495,
+          "line": 2499,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13579,12 +13597,12 @@
       "name": "MemberNextBestAction",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2500,
+      "line": 2504,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2501,
+          "line": 2505,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13593,7 +13611,7 @@
         {
           "name": "memberId",
           "type": "String",
-          "line": 2502,
+          "line": 2506,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13602,7 +13620,7 @@
         {
           "name": "title",
           "type": "String",
-          "line": 2503,
+          "line": 2507,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13611,7 +13629,7 @@
         {
           "name": "description",
           "type": "String",
-          "line": 2504,
+          "line": 2508,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13620,7 +13638,7 @@
         {
           "name": "ctaLabel",
           "type": "String",
-          "line": 2505,
+          "line": 2509,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13629,7 +13647,7 @@
         {
           "name": "ctaHref",
           "type": "String",
-          "line": 2506,
+          "line": 2510,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13638,7 +13656,7 @@
         {
           "name": "icon",
           "type": "String?",
-          "line": 2507,
+          "line": 2511,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13647,7 +13665,7 @@
         {
           "name": "priority",
           "type": "Int",
-          "line": 2508,
+          "line": 2512,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13656,7 +13674,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 2509,
+          "line": 2513,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13665,7 +13683,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2510,
+          "line": 2514,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13674,7 +13692,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2511,
+          "line": 2515,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13683,7 +13701,7 @@
         {
           "name": "member",
           "type": "User",
-          "line": 2513,
+          "line": 2517,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13698,12 +13716,12 @@
       "name": "MemberPoints",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2521,
+      "line": 2525,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2522,
+          "line": 2526,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13712,7 +13730,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2523,
+          "line": 2527,
           "id": false,
           "unique": true,
           "relation": false,
@@ -13721,7 +13739,7 @@
         {
           "name": "totalPoints",
           "type": "Int",
-          "line": 2524,
+          "line": 2528,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13730,7 +13748,7 @@
         {
           "name": "level",
           "type": "String",
-          "line": 2525,
+          "line": 2529,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13739,7 +13757,7 @@
         {
           "name": "currentStreak",
           "type": "Int",
-          "line": 2527,
+          "line": 2531,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13748,7 +13766,7 @@
         {
           "name": "longestStreak",
           "type": "Int",
-          "line": 2528,
+          "line": 2532,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13757,7 +13775,7 @@
         {
           "name": "lastActiveDate",
           "type": "DateTime?",
-          "line": 2529,
+          "line": 2533,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13766,7 +13784,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2530,
+          "line": 2534,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13775,7 +13793,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2531,
+          "line": 2535,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13784,7 +13802,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2533,
+          "line": 2537,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13799,12 +13817,12 @@
       "name": "PointsTransaction",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2538,
+      "line": 2542,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2539,
+          "line": 2543,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13813,7 +13831,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2540,
+          "line": 2544,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13822,7 +13840,7 @@
         {
           "name": "event",
           "type": "String",
-          "line": 2541,
+          "line": 2545,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13831,7 +13849,7 @@
         {
           "name": "entityId",
           "type": "String",
-          "line": 2542,
+          "line": 2546,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13840,7 +13858,7 @@
         {
           "name": "points",
           "type": "Int",
-          "line": 2543,
+          "line": 2547,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13849,7 +13867,7 @@
         {
           "name": "note",
           "type": "String?",
-          "line": 2544,
+          "line": 2548,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13858,7 +13876,7 @@
         {
           "name": "awardedBy",
           "type": "String?",
-          "line": 2545,
+          "line": 2549,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13867,7 +13885,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2546,
+          "line": 2550,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13876,7 +13894,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2548,
+          "line": 2552,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13887,7 +13905,7 @@
         {
           "name": "awarder",
           "type": "User?",
-          "line": 2549,
+          "line": 2553,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13902,12 +13920,12 @@
       "name": "ReferralCode",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2562,
+      "line": 2566,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2563,
+          "line": 2567,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13916,7 +13934,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2564,
+          "line": 2568,
           "id": false,
           "unique": true,
           "relation": false,
@@ -13925,7 +13943,7 @@
         {
           "name": "code",
           "type": "String",
-          "line": 2565,
+          "line": 2569,
           "id": false,
           "unique": true,
           "relation": false,
@@ -13934,7 +13952,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2566,
+          "line": 2570,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13943,7 +13961,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2568,
+          "line": 2572,
           "id": false,
           "unique": false,
           "relation": true,
@@ -13958,12 +13976,12 @@
       "name": "ReferralConversion",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2576,
+      "line": 2580,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2577,
+          "line": 2581,
           "id": true,
           "unique": false,
           "relation": false,
@@ -13972,7 +13990,7 @@
         {
           "name": "referrerUserId",
           "type": "String",
-          "line": 2578,
+          "line": 2582,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13981,7 +13999,7 @@
         {
           "name": "refereeUserId",
           "type": "String",
-          "line": 2579,
+          "line": 2583,
           "id": false,
           "unique": true,
           "relation": false,
@@ -13990,7 +14008,7 @@
         {
           "name": "code",
           "type": "String",
-          "line": 2580,
+          "line": 2584,
           "id": false,
           "unique": false,
           "relation": false,
@@ -13999,7 +14017,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 2581,
+          "line": 2585,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14008,7 +14026,7 @@
         {
           "name": "rewardedAt",
           "type": "DateTime?",
-          "line": 2582,
+          "line": 2586,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14017,7 +14035,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2583,
+          "line": 2587,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14026,7 +14044,7 @@
         {
           "name": "referrer",
           "type": "User",
-          "line": 2585,
+          "line": 2589,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14037,7 +14055,7 @@
         {
           "name": "referee",
           "type": "User",
-          "line": 2586,
+          "line": 2590,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14052,12 +14070,12 @@
       "name": "CourseraCourseProgress",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2600,
+      "line": 2604,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2601,
+          "line": 2605,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14066,7 +14084,7 @@
         {
           "name": "userId",
           "type": "String?",
-          "line": 2602,
+          "line": 2606,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14075,7 +14093,7 @@
         {
           "name": "organizationId",
           "type": "String?",
-          "line": 2606,
+          "line": 2610,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14084,7 +14102,7 @@
         {
           "name": "externalEmail",
           "type": "String",
-          "line": 2607,
+          "line": 2611,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14093,7 +14111,7 @@
         {
           "name": "externalName",
           "type": "String?",
-          "line": 2608,
+          "line": 2612,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14102,7 +14120,7 @@
         {
           "name": "courseraCourseId",
           "type": "String",
-          "line": 2609,
+          "line": 2613,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14111,7 +14129,7 @@
         {
           "name": "courseraCourseSlug",
           "type": "String?",
-          "line": 2610,
+          "line": 2614,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14120,7 +14138,7 @@
         {
           "name": "courseName",
           "type": "String",
-          "line": 2611,
+          "line": 2615,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14129,7 +14147,7 @@
         {
           "name": "university",
           "type": "String?",
-          "line": 2612,
+          "line": 2616,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14138,7 +14156,7 @@
         {
           "name": "collectionName",
           "type": "String?",
-          "line": 2613,
+          "line": 2617,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14147,7 +14165,7 @@
         {
           "name": "collectionId",
           "type": "String?",
-          "line": 2614,
+          "line": 2618,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14156,7 +14174,7 @@
         {
           "name": "programSlug",
           "type": "String",
-          "line": 2615,
+          "line": 2619,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14165,7 +14183,7 @@
         {
           "name": "programName",
           "type": "String?",
-          "line": 2616,
+          "line": 2620,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14174,7 +14192,7 @@
         {
           "name": "enrollmentTime",
           "type": "DateTime?",
-          "line": 2617,
+          "line": 2621,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14183,7 +14201,7 @@
         {
           "name": "classStartTime",
           "type": "DateTime?",
-          "line": 2618,
+          "line": 2622,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14192,7 +14210,7 @@
         {
           "name": "classEndTime",
           "type": "DateTime?",
-          "line": 2619,
+          "line": 2623,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14201,7 +14219,7 @@
         {
           "name": "lastActivityTime",
           "type": "DateTime?",
-          "line": 2620,
+          "line": 2624,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14210,7 +14228,7 @@
         {
           "name": "completionTime",
           "type": "DateTime?",
-          "line": 2621,
+          "line": 2625,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14219,7 +14237,7 @@
         {
           "name": "overallProgress",
           "type": "Decimal",
-          "line": 2622,
+          "line": 2626,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14228,7 +14246,7 @@
         {
           "name": "learningHours",
           "type": "Decimal",
-          "line": 2623,
+          "line": 2627,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14237,7 +14255,7 @@
         {
           "name": "isCompleted",
           "type": "Boolean",
-          "line": 2624,
+          "line": 2628,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14246,7 +14264,7 @@
         {
           "name": "isRemovedFromProgram",
           "type": "Boolean",
-          "line": 2625,
+          "line": 2629,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14255,7 +14273,7 @@
         {
           "name": "courseGrade",
           "type": "String?",
-          "line": 2626,
+          "line": 2630,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14264,7 +14282,7 @@
         {
           "name": "certificateUrl",
           "type": "String?",
-          "line": 2627,
+          "line": 2631,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14273,7 +14291,7 @@
         {
           "name": "contractName",
           "type": "String?",
-          "line": 2628,
+          "line": 2632,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14282,7 +14300,7 @@
         {
           "name": "contractActive",
           "type": "Boolean?",
-          "line": 2629,
+          "line": 2633,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14291,7 +14309,7 @@
         {
           "name": "source",
           "type": "String",
-          "line": 2630,
+          "line": 2634,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14300,7 +14318,7 @@
         {
           "name": "lastSyncedAt",
           "type": "DateTime",
-          "line": 2631,
+          "line": 2635,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14309,7 +14327,7 @@
         {
           "name": "user",
           "type": "User?",
-          "line": 2633,
+          "line": 2637,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14324,12 +14342,12 @@
       "name": "CourseraCanonicalCourseMapping",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2654,
+      "line": 2658,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2655,
+          "line": 2659,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14338,7 +14356,7 @@
         {
           "name": "courseraCourseId",
           "type": "String",
-          "line": 2656,
+          "line": 2660,
           "id": false,
           "unique": true,
           "relation": false,
@@ -14347,7 +14365,7 @@
         {
           "name": "courseraCourseSlug",
           "type": "String?",
-          "line": 2657,
+          "line": 2661,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14356,7 +14374,7 @@
         {
           "name": "canonicalProgramSlug",
           "type": "String",
-          "line": 2658,
+          "line": 2662,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14365,7 +14383,7 @@
         {
           "name": "canonicalCourseSlug",
           "type": "String",
-          "line": 2659,
+          "line": 2663,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14374,7 +14392,7 @@
         {
           "name": "notes",
           "type": "String?",
-          "line": 2660,
+          "line": 2664,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14383,7 +14401,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2661,
+          "line": 2665,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14392,7 +14410,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2662,
+          "line": 2666,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14401,7 +14419,7 @@
         {
           "name": "createdById",
           "type": "String?",
-          "line": 2663,
+          "line": 2667,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14410,7 +14428,7 @@
         {
           "name": "createdBy",
           "type": "User?",
-          "line": 2665,
+          "line": 2669,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14425,12 +14443,12 @@
       "name": "CourseraCurriculumCourseMapping",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2677,
+      "line": 2681,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2678,
+          "line": 2682,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14439,7 +14457,7 @@
         {
           "name": "courseraCourseId",
           "type": "String",
-          "line": 2679,
+          "line": 2683,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14448,7 +14466,7 @@
         {
           "name": "courseraCourseSlug",
           "type": "String?",
-          "line": 2680,
+          "line": 2684,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14457,7 +14475,7 @@
         {
           "name": "canonicalProgramSlug",
           "type": "String",
-          "line": 2681,
+          "line": 2685,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14466,7 +14484,7 @@
         {
           "name": "curriculumVersion",
           "type": "String",
-          "line": 2682,
+          "line": 2686,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14475,7 +14493,7 @@
         {
           "name": "canonicalCourseSlug",
           "type": "String",
-          "line": 2683,
+          "line": 2687,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14484,7 +14502,7 @@
         {
           "name": "notes",
           "type": "String?",
-          "line": 2684,
+          "line": 2688,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14493,7 +14511,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2685,
+          "line": 2689,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14502,7 +14520,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2686,
+          "line": 2690,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14515,12 +14533,12 @@
       "name": "CourseraIdentityMapping",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2706,
+      "line": 2710,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2707,
+          "line": 2711,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14529,7 +14547,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2708,
+          "line": 2712,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14538,7 +14556,7 @@
         {
           "name": "courseraEmail",
           "type": "String?",
-          "line": 2709,
+          "line": 2713,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14547,7 +14565,7 @@
         {
           "name": "actorIdentifier",
           "type": "String?",
-          "line": 2710,
+          "line": 2714,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14556,7 +14574,7 @@
         {
           "name": "actorHomePage",
           "type": "String?",
-          "line": 2711,
+          "line": 2715,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14565,7 +14583,7 @@
         {
           "name": "source",
           "type": "String",
-          "line": 2712,
+          "line": 2716,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14574,7 +14592,7 @@
         {
           "name": "notes",
           "type": "String?",
-          "line": 2713,
+          "line": 2717,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14583,7 +14601,7 @@
         {
           "name": "createdByUserId",
           "type": "String?",
-          "line": 2714,
+          "line": 2718,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14592,7 +14610,7 @@
         {
           "name": "lastSeenAt",
           "type": "DateTime?",
-          "line": 2715,
+          "line": 2719,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14601,7 +14619,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2716,
+          "line": 2720,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14610,7 +14628,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2717,
+          "line": 2721,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14623,12 +14641,12 @@
       "name": "CourseraBadgeProgress",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2730,
+      "line": 2734,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2731,
+          "line": 2735,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14637,7 +14655,7 @@
         {
           "name": "userId",
           "type": "String?",
-          "line": 2732,
+          "line": 2736,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14646,7 +14664,7 @@
         {
           "name": "organizationId",
           "type": "String?",
-          "line": 2736,
+          "line": 2740,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14655,7 +14673,7 @@
         {
           "name": "externalEmail",
           "type": "String",
-          "line": 2737,
+          "line": 2741,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14664,7 +14682,7 @@
         {
           "name": "externalName",
           "type": "String?",
-          "line": 2738,
+          "line": 2742,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14673,7 +14691,7 @@
         {
           "name": "badgeSlug",
           "type": "String",
-          "line": 2739,
+          "line": 2743,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14682,7 +14700,7 @@
         {
           "name": "badgeTitle",
           "type": "String",
-          "line": 2740,
+          "line": 2744,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14691,7 +14709,7 @@
         {
           "name": "badgeLink",
           "type": "String?",
-          "line": 2741,
+          "line": 2745,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14700,7 +14718,7 @@
         {
           "name": "numberOfCourses",
           "type": "Int",
-          "line": 2742,
+          "line": 2746,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14709,7 +14727,7 @@
         {
           "name": "progressPercent",
           "type": "Decimal",
-          "line": 2743,
+          "line": 2747,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14718,7 +14736,7 @@
         {
           "name": "coursesCompleted",
           "type": "Int",
-          "line": 2744,
+          "line": 2748,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14727,7 +14745,7 @@
         {
           "name": "currentCourseName",
           "type": "String?",
-          "line": 2745,
+          "line": 2749,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14736,7 +14754,7 @@
         {
           "name": "badgeCompleted",
           "type": "Boolean",
-          "line": 2746,
+          "line": 2750,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14745,7 +14763,7 @@
         {
           "name": "badgeCompletionTime",
           "type": "DateTime?",
-          "line": 2747,
+          "line": 2751,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14754,7 +14772,7 @@
         {
           "name": "lastActivityTime",
           "type": "DateTime?",
-          "line": 2748,
+          "line": 2752,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14763,7 +14781,7 @@
         {
           "name": "totalLearningHours",
           "type": "Decimal",
-          "line": 2749,
+          "line": 2753,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14772,7 +14790,7 @@
         {
           "name": "collectionId",
           "type": "String?",
-          "line": 2750,
+          "line": 2754,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14781,7 +14799,7 @@
         {
           "name": "collectionName",
           "type": "String?",
-          "line": 2751,
+          "line": 2755,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14790,7 +14808,7 @@
         {
           "name": "source",
           "type": "String",
-          "line": 2752,
+          "line": 2756,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14799,7 +14817,7 @@
         {
           "name": "lastSyncedAt",
           "type": "DateTime",
-          "line": 2753,
+          "line": 2757,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14808,7 +14826,7 @@
         {
           "name": "user",
           "type": "User?",
-          "line": 2755,
+          "line": 2759,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14823,12 +14841,12 @@
       "name": "AtRiskAlert",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2766,
+      "line": 2770,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2767,
+          "line": 2771,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14837,7 +14855,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2768,
+          "line": 2772,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14846,7 +14864,7 @@
         {
           "name": "score",
           "type": "Int",
-          "line": 2769,
+          "line": 2773,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14855,7 +14873,7 @@
         {
           "name": "factors",
           "type": "Json",
-          "line": 2770,
+          "line": 2774,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14864,7 +14882,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 2771,
+          "line": 2775,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14873,7 +14891,7 @@
         {
           "name": "counselorId",
           "type": "String?",
-          "line": 2772,
+          "line": 2776,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14882,7 +14900,7 @@
         {
           "name": "acknowledgedAt",
           "type": "DateTime?",
-          "line": 2773,
+          "line": 2777,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14891,7 +14909,7 @@
         {
           "name": "resolvedAt",
           "type": "DateTime?",
-          "line": 2774,
+          "line": 2778,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14900,7 +14918,7 @@
         {
           "name": "notifiedCounselorAt",
           "type": "DateTime?",
-          "line": 2775,
+          "line": 2779,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14909,7 +14927,7 @@
         {
           "name": "escalatedAt",
           "type": "DateTime?",
-          "line": 2776,
+          "line": 2780,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14918,7 +14936,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2777,
+          "line": 2781,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14927,7 +14945,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2778,
+          "line": 2782,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14936,7 +14954,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2780,
+          "line": 2784,
           "id": false,
           "unique": false,
           "relation": true,
@@ -14951,12 +14969,12 @@
       "name": "MemberNudgeLog",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2792,
+      "line": 2796,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2793,
+          "line": 2797,
           "id": true,
           "unique": false,
           "relation": false,
@@ -14965,7 +14983,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2794,
+          "line": 2798,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14974,7 +14992,7 @@
         {
           "name": "tier",
           "type": "String",
-          "line": 2795,
+          "line": 2799,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14983,7 +15001,7 @@
         {
           "name": "kind",
           "type": "String",
-          "line": 2796,
+          "line": 2800,
           "id": false,
           "unique": false,
           "relation": false,
@@ -14992,7 +15010,7 @@
         {
           "name": "reasons",
           "type": "Json?",
-          "line": 2797,
+          "line": 2801,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15001,7 +15019,7 @@
         {
           "name": "sentAt",
           "type": "DateTime",
-          "line": 2798,
+          "line": 2802,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15010,7 +15028,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2800,
+          "line": 2804,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15025,28 +15043,28 @@
       "name": "PlacementSurveyWave",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2808,
+      "line": 2812,
       "fields": [],
       "values": [
         {
           "name": "thirty_day",
           "mappedValue": null,
-          "line": 2809
+          "line": 2813
         },
         {
           "name": "sixty_day",
           "mappedValue": null,
-          "line": 2810
+          "line": 2814
         },
         {
           "name": "ninety_day",
           "mappedValue": null,
-          "line": 2811
+          "line": 2815
         },
         {
           "name": "hundred_eighty_day",
           "mappedValue": null,
-          "line": 2815
+          "line": 2819
         }
       ],
       "table": "placement_survey_wave"
@@ -15055,12 +15073,12 @@
       "name": "PlacementSurvey",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2825,
+      "line": 2829,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2826,
+          "line": 2830,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15069,7 +15087,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2827,
+          "line": 2831,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15078,7 +15096,7 @@
         {
           "name": "placementId",
           "type": "String",
-          "line": 2828,
+          "line": 2832,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15087,7 +15105,7 @@
         {
           "name": "wave",
           "type": "PlacementSurveyWave",
-          "line": 2829,
+          "line": 2833,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15096,7 +15114,7 @@
         {
           "name": "sentAt",
           "type": "DateTime?",
-          "line": 2831,
+          "line": 2835,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15105,7 +15123,7 @@
         {
           "name": "tokenExpiresAt",
           "type": "DateTime",
-          "line": 2833,
+          "line": 2837,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15114,7 +15132,7 @@
         {
           "name": "deliveryAttempt",
           "type": "Int",
-          "line": 2834,
+          "line": 2838,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15123,7 +15141,7 @@
         {
           "name": "acceptedAttempt",
           "type": "Int",
-          "line": 2835,
+          "line": 2839,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15132,7 +15150,7 @@
         {
           "name": "deliveryPayload",
           "type": "Json?",
-          "line": 2837,
+          "line": 2841,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15141,7 +15159,7 @@
         {
           "name": "completedAt",
           "type": "DateTime?",
-          "line": 2838,
+          "line": 2842,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15150,7 +15168,7 @@
         {
           "name": "escalatedAt",
           "type": "DateTime?",
-          "line": 2839,
+          "line": 2843,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15159,7 +15177,7 @@
         {
           "name": "jobSatisfaction",
           "type": "Int?",
-          "line": 2842,
+          "line": 2846,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15168,7 +15186,7 @@
         {
           "name": "trainingRelevance",
           "type": "Int?",
-          "line": 2843,
+          "line": 2847,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15177,7 +15195,7 @@
         {
           "name": "supportQuality",
           "type": "Int?",
-          "line": 2844,
+          "line": 2848,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15186,7 +15204,7 @@
         {
           "name": "whatHelpedMost",
           "type": "String?",
-          "line": 2847,
+          "line": 2851,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15195,7 +15213,7 @@
         {
           "name": "whatCouldImprove",
           "type": "String?",
-          "line": 2848,
+          "line": 2852,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15204,7 +15222,7 @@
         {
           "name": "stillEmployed",
           "type": "Boolean?",
-          "line": 2851,
+          "line": 2855,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15213,7 +15231,7 @@
         {
           "name": "currentSalary",
           "type": "Int?",
-          "line": 2852,
+          "line": 2856,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15222,7 +15240,7 @@
         {
           "name": "allowTestimonial",
           "type": "Boolean",
-          "line": 2855,
+          "line": 2859,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15231,7 +15249,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2857,
+          "line": 2861,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15242,7 +15260,7 @@
         {
           "name": "placement",
           "type": "PlacementRecord",
-          "line": 2858,
+          "line": 2862,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15257,23 +15275,23 @@
       "name": "TestimonialSource",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2869,
+      "line": 2873,
       "fields": [],
       "values": [
         {
           "name": "SURVEY",
           "mappedValue": null,
-          "line": 2870
+          "line": 2874
         },
         {
           "name": "MANUAL",
           "mappedValue": null,
-          "line": 2871
+          "line": 2875
         },
         {
           "name": "INTERVIEW",
           "mappedValue": null,
-          "line": 2872
+          "line": 2876
         }
       ],
       "table": "testimonial_source"
@@ -15282,28 +15300,28 @@
       "name": "TestimonialStatus",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 2877,
+      "line": 2881,
       "fields": [],
       "values": [
         {
           "name": "PENDING",
           "mappedValue": null,
-          "line": 2878
+          "line": 2882
         },
         {
           "name": "APPROVED",
           "mappedValue": null,
-          "line": 2879
+          "line": 2883
         },
         {
           "name": "REJECTED",
           "mappedValue": null,
-          "line": 2880
+          "line": 2884
         },
         {
           "name": "PUBLISHED",
           "mappedValue": null,
-          "line": 2881
+          "line": 2885
         }
       ],
       "table": "testimonial_status"
@@ -15312,12 +15330,12 @@
       "name": "Testimonial",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2886,
+      "line": 2890,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2887,
+          "line": 2891,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15326,7 +15344,7 @@
         {
           "name": "memberId",
           "type": "String",
-          "line": 2888,
+          "line": 2892,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15335,7 +15353,7 @@
         {
           "name": "content",
           "type": "String",
-          "line": 2889,
+          "line": 2893,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15344,7 +15362,7 @@
         {
           "name": "rating",
           "type": "Int?",
-          "line": 2890,
+          "line": 2894,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15353,7 +15371,7 @@
         {
           "name": "programId",
           "type": "String?",
-          "line": 2891,
+          "line": 2895,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15362,7 +15380,7 @@
         {
           "name": "placementId",
           "type": "String?",
-          "line": 2892,
+          "line": 2896,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15371,7 +15389,7 @@
         {
           "name": "source",
           "type": "TestimonialSource",
-          "line": 2893,
+          "line": 2897,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15380,7 +15398,7 @@
         {
           "name": "status",
           "type": "TestimonialStatus",
-          "line": 2894,
+          "line": 2898,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15389,7 +15407,7 @@
         {
           "name": "photoUrl",
           "type": "String?",
-          "line": 2895,
+          "line": 2899,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15398,7 +15416,7 @@
         {
           "name": "consentGiven",
           "type": "Boolean",
-          "line": 2896,
+          "line": 2900,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15407,7 +15425,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2897,
+          "line": 2901,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15416,7 +15434,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2898,
+          "line": 2902,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15425,7 +15443,7 @@
         {
           "name": "reviewedBy",
           "type": "String?",
-          "line": 2899,
+          "line": 2903,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15434,7 +15452,7 @@
         {
           "name": "reviewedAt",
           "type": "DateTime?",
-          "line": 2900,
+          "line": 2904,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15443,7 +15461,7 @@
         {
           "name": "rejectionReason",
           "type": "String?",
-          "line": 2901,
+          "line": 2905,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15452,7 +15470,7 @@
         {
           "name": "deletedAt",
           "type": "DateTime?",
-          "line": 2902,
+          "line": 2906,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15461,7 +15479,7 @@
         {
           "name": "member",
           "type": "User",
-          "line": 2904,
+          "line": 2908,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15472,7 +15490,7 @@
         {
           "name": "reviewer",
           "type": "User?",
-          "line": 2905,
+          "line": 2909,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15487,12 +15505,12 @@
       "name": "CourseraSkillsetProgress",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2920,
+      "line": 2924,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2921,
+          "line": 2925,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15501,7 +15519,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2922,
+          "line": 2926,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15510,7 +15528,7 @@
         {
           "name": "skillsetId",
           "type": "String",
-          "line": 2923,
+          "line": 2927,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15519,7 +15537,7 @@
         {
           "name": "skillsetName",
           "type": "String",
-          "line": 2924,
+          "line": 2928,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15528,7 +15546,7 @@
         {
           "name": "progressPct",
           "type": "Int",
-          "line": 2925,
+          "line": 2929,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15537,7 +15555,7 @@
         {
           "name": "programId",
           "type": "String",
-          "line": 2926,
+          "line": 2930,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15546,7 +15564,7 @@
         {
           "name": "programSlug",
           "type": "String?",
-          "line": 2927,
+          "line": 2931,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15555,7 +15573,7 @@
         {
           "name": "lastSyncedAt",
           "type": "DateTime",
-          "line": 2928,
+          "line": 2932,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15564,7 +15582,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2930,
+          "line": 2934,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15579,12 +15597,12 @@
       "name": "MilestoneCascade",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2947,
+      "line": 2951,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2948,
+          "line": 2952,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15593,7 +15611,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2949,
+          "line": 2953,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15602,7 +15620,7 @@
         {
           "name": "milestoneType",
           "type": "String",
-          "line": 2952,
+          "line": 2956,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15611,7 +15629,7 @@
         {
           "name": "milestoneRef",
           "type": "String",
-          "line": 2955,
+          "line": 2959,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15620,7 +15638,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 2957,
+          "line": 2961,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15629,7 +15647,7 @@
         {
           "name": "programSlug",
           "type": "String?",
-          "line": 2959,
+          "line": 2963,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15638,7 +15656,7 @@
         {
           "name": "contextSnapshot",
           "type": "Json",
-          "line": 2960,
+          "line": 2964,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15647,7 +15665,7 @@
         {
           "name": "sourceEventId",
           "type": "String?",
-          "line": 2961,
+          "line": 2965,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15656,7 +15674,7 @@
         {
           "name": "counselorBrief",
           "type": "String?",
-          "line": 2963,
+          "line": 2967,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15665,7 +15683,7 @@
         {
           "name": "drafts",
           "type": "Json?",
-          "line": 2964,
+          "line": 2968,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15674,7 +15692,7 @@
         {
           "name": "draftModel",
           "type": "String?",
-          "line": 2965,
+          "line": 2969,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15683,7 +15701,7 @@
         {
           "name": "draftPromptVersion",
           "type": "String?",
-          "line": 2966,
+          "line": 2970,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15692,7 +15710,7 @@
         {
           "name": "draftedAt",
           "type": "DateTime?",
-          "line": 2967,
+          "line": 2971,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15701,7 +15719,7 @@
         {
           "name": "approvedByUserId",
           "type": "String?",
-          "line": 2969,
+          "line": 2973,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15710,7 +15728,7 @@
         {
           "name": "approvedAt",
           "type": "DateTime?",
-          "line": 2970,
+          "line": 2974,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15719,7 +15737,7 @@
         {
           "name": "dismissedAt",
           "type": "DateTime?",
-          "line": 2971,
+          "line": 2975,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15728,7 +15746,7 @@
         {
           "name": "dismissedReason",
           "type": "String?",
-          "line": 2972,
+          "line": 2976,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15737,7 +15755,7 @@
         {
           "name": "sentAt",
           "type": "DateTime?",
-          "line": 2973,
+          "line": 2977,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15746,7 +15764,7 @@
         {
           "name": "dispatchState",
           "type": "Json?",
-          "line": 2975,
+          "line": 2979,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15755,7 +15773,7 @@
         {
           "name": "expiresAt",
           "type": "DateTime",
-          "line": 2978,
+          "line": 2982,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15764,7 +15782,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 2980,
+          "line": 2984,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15773,7 +15791,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 2981,
+          "line": 2985,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15782,7 +15800,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 2983,
+          "line": 2987,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15797,12 +15815,12 @@
       "name": "MemberFeedback",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 2993,
+      "line": 2997,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 2994,
+          "line": 2998,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15811,7 +15829,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 2995,
+          "line": 2999,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15820,7 +15838,7 @@
         {
           "name": "type",
           "type": "String",
-          "line": 2996,
+          "line": 3000,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15829,7 +15847,7 @@
         {
           "name": "rating",
           "type": "Int",
-          "line": 2997,
+          "line": 3001,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15838,7 +15856,7 @@
         {
           "name": "comment",
           "type": "String?",
-          "line": 2998,
+          "line": 3002,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15847,7 +15865,7 @@
         {
           "name": "metadata",
           "type": "Json?",
-          "line": 2999,
+          "line": 3003,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15856,7 +15874,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3000,
+          "line": 3004,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15865,7 +15883,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 3002,
+          "line": 3006,
           "id": false,
           "unique": false,
           "relation": true,
@@ -15880,12 +15898,12 @@
       "name": "FeatureFlag",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3013,
+      "line": 3017,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3014,
+          "line": 3018,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15894,7 +15912,7 @@
         {
           "name": "key",
           "type": "String",
-          "line": 3015,
+          "line": 3019,
           "id": false,
           "unique": true,
           "relation": false,
@@ -15903,7 +15921,7 @@
         {
           "name": "name",
           "type": "String",
-          "line": 3016,
+          "line": 3020,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15912,7 +15930,7 @@
         {
           "name": "description",
           "type": "String?",
-          "line": 3017,
+          "line": 3021,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15921,7 +15939,7 @@
         {
           "name": "enabled",
           "type": "Boolean",
-          "line": 3018,
+          "line": 3022,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15930,7 +15948,7 @@
         {
           "name": "rolloutPercentage",
           "type": "Int",
-          "line": 3019,
+          "line": 3023,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15939,7 +15957,7 @@
         {
           "name": "allowedRoles",
           "type": "String[]",
-          "line": 3020,
+          "line": 3024,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15948,7 +15966,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3021,
+          "line": 3025,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15957,7 +15975,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 3022,
+          "line": 3026,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15970,12 +15988,12 @@
       "name": "WebhookEvent",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3037,
+      "line": 3041,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3038,
+          "line": 3042,
           "id": true,
           "unique": false,
           "relation": false,
@@ -15984,7 +16002,7 @@
         {
           "name": "source",
           "type": "String",
-          "line": 3039,
+          "line": 3043,
           "id": false,
           "unique": false,
           "relation": false,
@@ -15993,7 +16011,7 @@
         {
           "name": "eventType",
           "type": "String?",
-          "line": 3040,
+          "line": 3044,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16002,7 +16020,7 @@
         {
           "name": "eventId",
           "type": "String?",
-          "line": 3041,
+          "line": 3045,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16011,7 +16029,7 @@
         {
           "name": "payloadSize",
           "type": "Int",
-          "line": 3042,
+          "line": 3046,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16020,7 +16038,7 @@
         {
           "name": "processingTimeMs",
           "type": "Int?",
-          "line": 3043,
+          "line": 3047,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16029,7 +16047,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 3044,
+          "line": 3048,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16038,7 +16056,7 @@
         {
           "name": "httpStatusCode",
           "type": "Int?",
-          "line": 3045,
+          "line": 3049,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16047,7 +16065,7 @@
         {
           "name": "errorMessage",
           "type": "String?",
-          "line": 3046,
+          "line": 3050,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16056,7 +16074,7 @@
         {
           "name": "retryCount",
           "type": "Int",
-          "line": 3047,
+          "line": 3051,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16065,7 +16083,7 @@
         {
           "name": "nextRetryAt",
           "type": "DateTime?",
-          "line": 3048,
+          "line": 3052,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16074,7 +16092,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3049,
+          "line": 3053,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16083,7 +16101,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 3050,
+          "line": 3054,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16096,12 +16114,12 @@
       "name": "EmailTemplate",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3062,
+      "line": 3066,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3063,
+          "line": 3067,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16110,7 +16128,7 @@
         {
           "name": "key",
           "type": "String",
-          "line": 3064,
+          "line": 3068,
           "id": false,
           "unique": true,
           "relation": false,
@@ -16119,7 +16137,7 @@
         {
           "name": "name",
           "type": "String",
-          "line": 3065,
+          "line": 3069,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16128,7 +16146,7 @@
         {
           "name": "subject",
           "type": "String",
-          "line": 3066,
+          "line": 3070,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16137,7 +16155,7 @@
         {
           "name": "body",
           "type": "String",
-          "line": 3067,
+          "line": 3071,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16146,7 +16164,7 @@
         {
           "name": "variables",
           "type": "String[]",
-          "line": 3068,
+          "line": 3072,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16155,7 +16173,7 @@
         {
           "name": "active",
           "type": "Boolean",
-          "line": 3069,
+          "line": 3073,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16164,7 +16182,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3070,
+          "line": 3074,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16173,7 +16191,7 @@
         {
           "name": "updatedAt",
           "type": "DateTime",
-          "line": 3071,
+          "line": 3075,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16186,12 +16204,12 @@
       "name": "Notification",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3080,
+      "line": 3084,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3081,
+          "line": 3085,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16200,7 +16218,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 3082,
+          "line": 3086,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16209,7 +16227,7 @@
         {
           "name": "type",
           "type": "String",
-          "line": 3083,
+          "line": 3087,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16218,7 +16236,7 @@
         {
           "name": "title",
           "type": "String",
-          "line": 3084,
+          "line": 3088,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16227,7 +16245,7 @@
         {
           "name": "body",
           "type": "String",
-          "line": 3085,
+          "line": 3089,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16236,7 +16254,7 @@
         {
           "name": "data",
           "type": "Json?",
-          "line": 3086,
+          "line": 3090,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16245,7 +16263,7 @@
         {
           "name": "readAt",
           "type": "DateTime?",
-          "line": 3087,
+          "line": 3091,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16254,7 +16272,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3088,
+          "line": 3092,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16263,7 +16281,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 3090,
+          "line": 3094,
           "id": false,
           "unique": false,
           "relation": true,
@@ -16278,12 +16296,12 @@
       "name": "PushSubscription",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3102,
+      "line": 3106,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3103,
+          "line": 3107,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16292,7 +16310,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 3104,
+          "line": 3108,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16301,7 +16319,7 @@
         {
           "name": "endpoint",
           "type": "String",
-          "line": 3105,
+          "line": 3109,
           "id": false,
           "unique": true,
           "relation": false,
@@ -16310,7 +16328,7 @@
         {
           "name": "p256dh",
           "type": "String",
-          "line": 3106,
+          "line": 3110,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16319,7 +16337,7 @@
         {
           "name": "auth",
           "type": "String",
-          "line": 3107,
+          "line": 3111,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16328,7 +16346,7 @@
         {
           "name": "userAgent",
           "type": "String?",
-          "line": 3108,
+          "line": 3112,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16337,7 +16355,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3109,
+          "line": 3113,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16346,7 +16364,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 3111,
+          "line": 3115,
           "id": false,
           "unique": false,
           "relation": true,
@@ -16361,12 +16379,12 @@
       "name": "SavedJob",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3117,
+      "line": 3121,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3118,
+          "line": 3122,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16375,7 +16393,7 @@
         {
           "name": "userId",
           "type": "String",
-          "line": 3119,
+          "line": 3123,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16384,7 +16402,7 @@
         {
           "name": "jobId",
           "type": "String",
-          "line": 3120,
+          "line": 3124,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16393,7 +16411,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3121,
+          "line": 3125,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16402,7 +16420,7 @@
         {
           "name": "user",
           "type": "User",
-          "line": 3123,
+          "line": 3127,
           "id": false,
           "unique": false,
           "relation": true,
@@ -16413,7 +16431,7 @@
         {
           "name": "job",
           "type": "Job",
-          "line": 3124,
+          "line": 3128,
           "id": false,
           "unique": false,
           "relation": true,
@@ -16428,12 +16446,12 @@
       "name": "WapJob",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3134,
+      "line": 3138,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3135,
+          "line": 3139,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16442,7 +16460,7 @@
         {
           "name": "title",
           "type": "String",
-          "line": 3136,
+          "line": 3140,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16451,7 +16469,7 @@
         {
           "name": "location",
           "type": "String",
-          "line": 3137,
+          "line": 3141,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16460,7 +16478,7 @@
         {
           "name": "type",
           "type": "String",
-          "line": 3138,
+          "line": 3142,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16469,7 +16487,7 @@
         {
           "name": "descriptionMd",
           "type": "String",
-          "line": 3139,
+          "line": 3143,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16478,7 +16496,7 @@
         {
           "name": "applyUrl",
           "type": "String",
-          "line": 3140,
+          "line": 3144,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16487,7 +16505,7 @@
         {
           "name": "status",
           "type": "String",
-          "line": 3141,
+          "line": 3145,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16496,7 +16514,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3142,
+          "line": 3146,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16509,23 +16527,23 @@
       "name": "TokenLinkType",
       "kind": "enum",
       "file": "prisma/schema.prisma",
-      "line": 3153,
+      "line": 3157,
       "fields": [],
       "values": [
         {
           "name": "interview_prep",
           "mappedValue": null,
-          "line": 3154
+          "line": 3158
         },
         {
           "name": "eligibility_questionnaire",
           "mappedValue": null,
-          "line": 3155
+          "line": 3159
         },
         {
           "name": "guardian_consent",
           "mappedValue": null,
-          "line": 3156
+          "line": 3160
         }
       ],
       "table": null
@@ -16534,12 +16552,12 @@
       "name": "TokenizedLink",
       "kind": "model",
       "file": "prisma/schema.prisma",
-      "line": 3159,
+      "line": 3163,
       "fields": [
         {
           "name": "id",
           "type": "String",
-          "line": 3160,
+          "line": 3164,
           "id": true,
           "unique": false,
           "relation": false,
@@ -16548,7 +16566,7 @@
         {
           "name": "token",
           "type": "String",
-          "line": 3161,
+          "line": 3165,
           "id": false,
           "unique": true,
           "relation": false,
@@ -16557,7 +16575,7 @@
         {
           "name": "type",
           "type": "TokenLinkType",
-          "line": 3162,
+          "line": 3166,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16566,7 +16584,7 @@
         {
           "name": "email",
           "type": "String?",
-          "line": 3163,
+          "line": 3167,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16575,7 +16593,7 @@
         {
           "name": "subjectUserId",
           "type": "String?",
-          "line": 3164,
+          "line": 3168,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16584,7 +16602,7 @@
         {
           "name": "expiresAt",
           "type": "DateTime",
-          "line": 3165,
+          "line": 3169,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16593,7 +16611,7 @@
         {
           "name": "consumedAt",
           "type": "DateTime?",
-          "line": 3166,
+          "line": 3170,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16602,7 +16620,7 @@
         {
           "name": "createdAt",
           "type": "DateTime",
-          "line": 3167,
+          "line": 3171,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16611,7 +16629,7 @@
         {
           "name": "createdById",
           "type": "String",
-          "line": 3168,
+          "line": 3172,
           "id": false,
           "unique": false,
           "relation": false,
@@ -16620,7 +16638,7 @@
         {
           "name": "orgId",
           "type": "String?",
-          "line": 3169,
+          "line": 3173,
           "id": false,
           "unique": false,
           "relation": false,
@@ -19318,7 +19336,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2154,
+      "line": 2158,
       "relationFields": [
         "userId"
       ]
@@ -19330,7 +19348,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2155,
+      "line": 2159,
       "relationFields": [
         "organizationId"
       ]
@@ -19342,7 +19360,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2171,
+      "line": 2175,
       "relationFields": [
         "organizationId"
       ]
@@ -19354,7 +19372,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2206,
+      "line": 2210,
       "relationFields": [
         "jobId"
       ]
@@ -19366,7 +19384,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2207,
+      "line": 2211,
       "relationFields": [
         "studentId"
       ]
@@ -19378,7 +19396,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2208,
+      "line": 2212,
       "relationFields": []
     },
     {
@@ -19388,7 +19406,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2225,
+      "line": 2229,
       "relationFields": [
         "applicationId"
       ]
@@ -19400,7 +19418,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2226,
+      "line": 2230,
       "relationFields": [
         "authorId"
       ]
@@ -19412,7 +19430,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2242,
+      "line": 2246,
       "relationFields": [
         "partnerId"
       ]
@@ -19424,7 +19442,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2243,
+      "line": 2247,
       "relationFields": [
         "memberId"
       ]
@@ -19436,7 +19454,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2244,
+      "line": 2248,
       "relationFields": [
         "createdByUserId"
       ]
@@ -19448,7 +19466,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2265,
+      "line": 2269,
       "relationFields": [
         "employerId"
       ]
@@ -19460,7 +19478,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2266,
+      "line": 2270,
       "relationFields": [
         "partnerId"
       ]
@@ -19472,7 +19490,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2267,
+      "line": 2271,
       "relationFields": [
         "actorUserId"
       ]
@@ -19484,7 +19502,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2297,
+      "line": 2301,
       "relationFields": [
         "jobId"
       ]
@@ -19496,7 +19514,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2298,
+      "line": 2302,
       "relationFields": [
         "studentId"
       ]
@@ -19508,7 +19526,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2313,
+      "line": 2317,
       "relationFields": [
         "mentorId"
       ]
@@ -19520,7 +19538,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2335,
+      "line": 2339,
       "relationFields": [
         "userId"
       ]
@@ -19532,7 +19550,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2336,
+      "line": 2340,
       "relationFields": []
     },
     {
@@ -19542,7 +19560,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2337,
+      "line": 2341,
       "relationFields": []
     },
     {
@@ -19552,7 +19570,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2355,
+      "line": 2359,
       "relationFields": [
         "mentorId"
       ]
@@ -19564,7 +19582,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2356,
+      "line": 2360,
       "relationFields": [
         "memberId"
       ]
@@ -19576,7 +19594,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2405,
+      "line": 2409,
       "relationFields": []
     },
     {
@@ -19586,7 +19604,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2406,
+      "line": 2410,
       "relationFields": []
     },
     {
@@ -19596,7 +19614,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2407,
+      "line": 2411,
       "relationFields": []
     },
     {
@@ -19606,7 +19624,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2408,
+      "line": 2412,
       "relationFields": []
     },
     {
@@ -19616,7 +19634,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2409,
+      "line": 2413,
       "relationFields": []
     },
     {
@@ -19626,7 +19644,7 @@
       "list": true,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2410,
+      "line": 2414,
       "relationFields": []
     },
     {
@@ -19636,7 +19654,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2422,
+      "line": 2426,
       "relationFields": [
         "onetCode"
       ]
@@ -19648,7 +19666,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2434,
+      "line": 2438,
       "relationFields": [
         "onetCode"
       ]
@@ -19660,7 +19678,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2446,
+      "line": 2450,
       "relationFields": [
         "onetCode"
       ]
@@ -19672,7 +19690,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2458,
+      "line": 2462,
       "relationFields": [
         "onetCode"
       ]
@@ -19684,7 +19702,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2459,
+      "line": 2463,
       "relationFields": [
         "relatedOnetCode"
       ]
@@ -19696,7 +19714,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2478,
+      "line": 2482,
       "relationFields": [
         "onetCode"
       ]
@@ -19708,7 +19726,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2513,
+      "line": 2517,
       "relationFields": [
         "memberId"
       ]
@@ -19720,7 +19738,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2533,
+      "line": 2537,
       "relationFields": [
         "userId"
       ]
@@ -19732,7 +19750,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2548,
+      "line": 2552,
       "relationFields": [
         "userId"
       ]
@@ -19744,7 +19762,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2549,
+      "line": 2553,
       "relationFields": [
         "awardedBy"
       ]
@@ -19756,7 +19774,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2568,
+      "line": 2572,
       "relationFields": [
         "userId"
       ]
@@ -19768,7 +19786,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2585,
+      "line": 2589,
       "relationFields": [
         "referrerUserId"
       ]
@@ -19780,7 +19798,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2586,
+      "line": 2590,
       "relationFields": [
         "refereeUserId"
       ]
@@ -19792,7 +19810,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2633,
+      "line": 2637,
       "relationFields": [
         "userId"
       ]
@@ -19804,7 +19822,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2665,
+      "line": 2669,
       "relationFields": [
         "createdById"
       ]
@@ -19816,7 +19834,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2755,
+      "line": 2759,
       "relationFields": [
         "userId"
       ]
@@ -19828,7 +19846,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2780,
+      "line": 2784,
       "relationFields": [
         "userId"
       ]
@@ -19840,7 +19858,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2800,
+      "line": 2804,
       "relationFields": [
         "userId"
       ]
@@ -19852,7 +19870,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2857,
+      "line": 2861,
       "relationFields": [
         "userId"
       ]
@@ -19864,7 +19882,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2858,
+      "line": 2862,
       "relationFields": [
         "placementId"
       ]
@@ -19876,7 +19894,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2904,
+      "line": 2908,
       "relationFields": [
         "memberId"
       ]
@@ -19888,7 +19906,7 @@
       "list": false,
       "optional": true,
       "file": "prisma/schema.prisma",
-      "line": 2905,
+      "line": 2909,
       "relationFields": [
         "reviewedBy"
       ]
@@ -19900,7 +19918,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2930,
+      "line": 2934,
       "relationFields": [
         "userId"
       ]
@@ -19912,7 +19930,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 2983,
+      "line": 2987,
       "relationFields": [
         "userId"
       ]
@@ -19924,7 +19942,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 3002,
+      "line": 3006,
       "relationFields": [
         "userId"
       ]
@@ -19936,7 +19954,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 3090,
+      "line": 3094,
       "relationFields": [
         "userId"
       ]
@@ -19948,7 +19966,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 3111,
+      "line": 3115,
       "relationFields": [
         "userId"
       ]
@@ -19960,7 +19978,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 3123,
+      "line": 3127,
       "relationFields": [
         "userId"
       ]
@@ -19972,7 +19990,7 @@
       "list": false,
       "optional": false,
       "file": "prisma/schema.prisma",
-      "line": 3124,
+      "line": 3128,
       "relationFields": [
         "jobId"
       ]

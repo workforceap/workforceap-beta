@@ -13,10 +13,11 @@ import { FormField } from '@/components/portal/kit/FormField';
 import { PageOpener } from '@/components/portal/kit/PageOpener';
 import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import { formatWioaReasons, parseWioaQualificationSnapshot, type WioaBarrier, type WioaQualificationAnswers, type WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { PUBLIC_ASSISTANCE_PROGRAM_VALUES, normalizePublicAssistancePrograms, type PublicAssistanceProgram } from '@/lib/apply/publicAssistance';
 import styles from './WioaQualificationClient.module.css';
 
 const BARRIERS: WioaBarrier[] = ['none', 'basic_skills', 'english_language', 'criminal_record', 'transportation', 'childcare', 'housing', 'other'];
-const ERROR_CODES = ['contact', 'invalid_answers', 'invalid_json', 'unauthorized', 'rate_limited', 'save_failed', 'conflict'] as const;
+const ERROR_CODES = ['contact', 'invalid_answers', 'invalid_json', 'unauthorized', 'rate_limited', 'save_failed', 'conflict', 'assistance_programs'] as const;
 
 export default function WioaQualificationClient({
   initialSnapshot,
@@ -47,6 +48,22 @@ export default function WioaQualificationClient({
   });
   const updateAnswer = <K extends keyof WioaQualificationAnswers>(key: K, value: WioaQualificationAnswers[K]) =>
     setAnswers((current) => ({ ...current, [key]: value }));
+  // WAP-53 follow-ups: only asked after a Yes; cleared when the answer flips to No.
+  const receivesAssistance = answers.publicAssistanceSelfReport === true;
+  const selectedPrograms = normalizePublicAssistancePrograms(answers.publicAssistancePrograms);
+  const programLabelKey: Record<PublicAssistanceProgram, string> = { tanf: 'programTanf', wic: 'programWic', snap: 'programSnap', other_unsure: 'programOtherUnsure' };
+  const setAssistance = (value: string) => setAnswers((current) => (
+    value === 'yes'
+      ? { ...current, publicAssistanceSelfReport: true }
+      : { ...current, publicAssistanceSelfReport: false, publicAssistancePrograms: [], publicAssistanceHelpRequested: null }
+  ));
+  const toggleProgram = (program: PublicAssistanceProgram, checked: boolean) => setAnswers((current) => ({
+    ...current,
+    publicAssistancePrograms: normalizePublicAssistancePrograms(
+      checked ? [...(current.publicAssistancePrograms ?? []), program] : (current.publicAssistancePrograms ?? []).filter((item) => item !== program),
+    ),
+  }));
+  const followUpIncomplete = receivesAssistance && selectedPrograms.length === 0;
   const voicePayload = useMemo(() => ({
     fullName: fullName.trim(), email: email.trim(), phone: phone.trim(), countyOrZip: answers.countyOrZip.trim(),
     screeningSource: isPublic ? 'public_page' : 'member_portal', wioaPronunciation: 'W. I. O. A.',
@@ -56,6 +73,10 @@ export default function WioaQualificationClient({
     e.preventDefault();
     if (submitting) return;
     setErrorKey('');
+    if (followUpIncomplete) {
+      setErrorKey('assistance_programs');
+      return;
+    }
     if (isPublic && (fullName.trim().length < 2 || !email.trim())) {
       setErrorKey('contact');
       return;
@@ -143,9 +164,20 @@ export default function WioaQualificationClient({
             <CheckboxInput label={t('unemployed')} description={t('unemployedHelp')} value={answers.dislocatedWorker} onChange={(value) => updateAnswer('dislocatedWorker', value)} />
             <CheckboxInput label={t('lowIncome')} description={t('lowIncomeHelp')} value={answers.lowIncomeSelfReport} onChange={(value) => updateAnswer('lowIncomeSelfReport', value)} />
           </fieldset>
-          <RadioList label={t('assistance')} value={answers.publicAssistanceSelfReport === true ? 'yes' : answers.publicAssistanceSelfReport === false ? 'no' : ''} onChange={(value) => updateAnswer('publicAssistanceSelfReport', value === 'yes')} orientation="horizontal">
+          <RadioList label={t('assistance')} value={answers.publicAssistanceSelfReport === true ? 'yes' : answers.publicAssistanceSelfReport === false ? 'no' : ''} onChange={setAssistance} orientation="horizontal">
             <RadioListItem value="yes" label={t('yes')} /><RadioListItem value="no" label={t('no')} />
           </RadioList>
+          {receivesAssistance ? <>
+            <fieldset className={styles.group} aria-invalid={followUpIncomplete || undefined}><legend>{t('assistancePrograms')}</legend>
+              {PUBLIC_ASSISTANCE_PROGRAM_VALUES.map((program) => (
+                <CheckboxInput key={program} label={t(programLabelKey[program])} value={selectedPrograms.includes(program)} onChange={(checked) => toggleProgram(program, checked)} />
+              ))}
+              <p className={styles.meta}>{t('assistanceProgramsHelp')}</p>
+            </fieldset>
+            <RadioList label={t('assistanceHelp')} value={answers.publicAssistanceHelpRequested === true ? 'yes' : answers.publicAssistanceHelpRequested === false ? 'no' : ''} onChange={(value) => updateAnswer('publicAssistanceHelpRequested', value === 'yes')} orientation="horizontal">
+              <RadioListItem value="yes" label={t('yes')} /><RadioListItem value="no" label={t('no')} />
+            </RadioList>
+          </> : null}
           <fieldset className={styles.group}><legend>{t('trainingHeading')}</legend>
             <CheckboxInput label={t('training')} value={answers.trainingInterest} onChange={(value) => updateAnswer('trainingInterest', value)} />
             <CheckboxInput label={t('intake')} value={answers.completedIntakeSelfReport} onChange={(value) => updateAnswer('completedIntakeSelfReport', value)} />
