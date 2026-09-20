@@ -42,6 +42,23 @@ describe('member activity event set (audit S1)', () => {
     // Both spellings: historic rows used the upper-case constant name.
     expect(excluded.has('application_reminder_sent')).toBe(true);
     expect(excluded.has('APPLICATION_REMINDER_SENT')).toBe(true);
+    // Staff actions stored under the member's userId are the staff member
+    // acting, not the member (lib/admin/applicationReview.ts,
+    // app/api/counselor/nudge/route.ts, bulk-followup, inbox-zero, milestone
+    // cascades, courseKickoff, program-change-requests, introduceAction).
+    for (const name of [
+      'application_approved',
+      'application_denied',
+      'counselor_nudge_sent',
+      'counselor_bulk_followup_sent',
+      'counselor_inbox_zero_follow_up_sent',
+      'milestone_cascade_sent',
+      'course_kickoff_email_sent',
+      'program_change_approved',
+      'employer_intro_created',
+    ]) {
+      expect(excluded.has(name)).toBe(true);
+    }
     // Learner-produced events must survive.
     for (const name of [
       'member_logged_in',

@@ -11,6 +11,7 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { formatPhone } from '@/lib/formatPhone';
+import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 const MAX_MEMBERS = 500;
@@ -117,18 +118,33 @@ async function _POST(request: NextRequest) {
       progressMap.set(key, { averagePercent: p.averagePercent, coursesCompleted: p.coursesCompleted });
     }
 
-    // Get last activity events
+    // "Last Activity" = the newest of a member-driven event, a login and a
+    // Coursera/course action — the same three signals Health reads. System-sent
+    // mail is excluded, so the column no longer prints the last nudge email
+    // as activity beside a row the screen marks Inactive.
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const lastEvents = await prisma.memberEvent.groupBy({
-      by: ['userId'],
-      where: { userId: { in: memberIdsList }, createdAt: { gte: thirtyDaysAgo } },
-      _max: { createdAt: true },
-    });
-    const lastEventMap = new Map<string, Date>();
-    for (const e of lastEvents) {
-      if (e._max.createdAt) lastEventMap.set(e.userId, e._max.createdAt);
-    }
+    const [lastEvents, courseActivity] = await Promise.all([
+      prisma.memberEvent.groupBy({
+        by: ['userId'],
+        where: { userId: { in: memberIdsList }, createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
+        _max: { createdAt: true },
+      }),
+      prisma.courseProgress.groupBy({
+        by: ['userId'],
+        where: { userId: { in: memberIdsList } },
+        _max: { lastActivityAt: true },
+      }),
+    ]);
+    const lastActivityMap = new Map<string, Date>();
+    const noteActivity = (userId: string, at: Date | null | undefined) => {
+      if (!at) return;
+      const current = lastActivityMap.get(userId);
+      if (!current || at > current) lastActivityMap.set(userId, at);
+    };
+    for (const e of lastEvents) noteActivity(e.userId, e._max.createdAt);
+    for (const row of courseActivity) noteActivity(row.userId, row._max.lastActivityAt);
+    for (const m of members) noteActivity(m.id, m.lastLoginAt);
 
     const headers = [
       'ID',
@@ -168,7 +184,7 @@ async function _POST(request: NextRequest) {
       const phone = formatPhone(m.profile?.profilePhone ?? m.phone) ?? '';
       const partner = m.partnerReferrals[0]?.partner.name ?? '';
       const counselor = m.counselorAssignments[0]?.counselor.user.fullName ?? '';
-      const lastActivity = lastEventMap.get(m.id)?.toISOString() ?? '';
+      const lastActivity = lastActivityMap.get(m.id)?.toISOString() ?? '';
       const enrolledAt = m.enrolledAt?.toISOString() ?? '';
       const lastLogin = m.lastLoginAt?.toISOString() ?? '';
       const createdAt = m.createdAt.toISOString();
