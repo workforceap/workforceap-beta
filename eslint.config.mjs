@@ -39,6 +39,86 @@ const DIRECT_WRITER_BANS = [
 ];
 const [MEMBER_EVENT_WRITER_BAN, COURSE_ENROLLMENT_WRITER_BAN] = DIRECT_WRITER_BANS;
 
+const TABLE_BAN = {
+  selector: "JSXOpeningElement[name.name='table']",
+  message: NO_BARE_TABLE_MESSAGE,
+};
+
+const NO_ABANDONED_NOTIFY_MESSAGE =
+  "Do not abandon notifyDiscord/createNotification/createBulkNotifications with `void`, a bare statement or a dangling .catch/.then. Vercel freezes the function once the response is sent, so the work may never run: `await` it, or schedule it with after(() => ...) from next/server so Next retains it (lib/notify/discord.ts, lib/notifications/create.ts).";
+
+// `void notifyDiscord(...)` / `void createNotification(...)` anywhere, plus a
+// bare or promise-chained `notifyDiscord(...)` statement outside `after()`.
+// (createNotification registers its own after() internally, so only its
+// `void` form is banned; notifyDiscord has no such retention.)
+const ABANDONED_NOTIFY_BANS = [
+  {
+    selector:
+      "UnaryExpression[operator='void'] > CallExpression[callee.name=/^(notifyDiscord|createNotification|createBulkNotifications)$/]",
+    message: NO_ABANDONED_NOTIFY_MESSAGE,
+  },
+  {
+    selector:
+      "ExpressionStatement > CallExpression[callee.name='notifyDiscord']:not(CallExpression[callee.name='after'] CallExpression)",
+    message: NO_ABANDONED_NOTIFY_MESSAGE,
+  },
+  {
+    selector:
+      "ExpressionStatement > CallExpression[callee.type='MemberExpression'][callee.property.name=/^(catch|then|finally)$/][callee.object.type='CallExpression'][callee.object.callee.name='notifyDiscord']:not(CallExpression[callee.name='after'] CallExpression)",
+    message: NO_ABANDONED_NOTIFY_MESSAGE,
+  },
+];
+
+const NO_UNBOUNDED_TAKE_MESSAGE =
+  "A Prisma `take` literal at or above 5000 hydrates an unbounded scan (the old silent 5k/10k/20k pattern). Use a cap from lib/db/scanCaps.ts or lib/db/queryCaps.ts, page with a cursor, or aggregate in SQL (count/groupBy/$queryRaw) for official totals.";
+
+// `take: 5000`, `take: 10_000`, `take: 20000`, ... in any Prisma call.
+const UNBOUNDED_TAKE_BAN = {
+  selector: "Property[key.name='take'] > Literal[value>=5000]",
+  message: NO_UNBOUNDED_TAKE_MESSAGE,
+};
+
+// Pre-existing unbounded takes that predate the ban. Shrink only; every new
+// scan must use a cap from lib/db/*Caps.ts.
+const LEGACY_UNBOUNDED_TAKE_FILES = [
+  "app/admin/counselors/page.tsx",
+  "app/api/admin/crons/export/route.ts",
+  "app/api/admin/webhook-events/export/route.ts",
+  "lib/admin/diagnoseMemberCoursera.ts",
+  "lib/platform/programCatalog.ts",
+  "lib/readiness/memberReadinessSections.ts",
+  "lib/workflows/completeCareerOsActions.ts",
+];
+
+const NO_ABANDONED_ROUTE_EMAIL_MESSAGE =
+  "Route handlers must not fire-and-forget send*Email(...) (bare call, `void`, or a dangling .catch/.then). Vercel freezes the function once the response is sent, so the send may never run: `await` it before responding, or schedule it with after(() => send...(...)) from next/server.";
+
+// `sendX...Email(...)` in an API route must be awaited/returned or run inside
+// `after()`. Matches the helper naming convention (sendWelcomeEmail,
+// sendBrandedEmail, sendPreparedPlacementSurveyEmail, ...).
+const ABANDONED_ROUTE_EMAIL_BANS = [
+  {
+    selector: "UnaryExpression[operator='void'] > CallExpression[callee.name=/^send\\w*Email$/]",
+    message: NO_ABANDONED_ROUTE_EMAIL_MESSAGE,
+  },
+  {
+    selector:
+      "ExpressionStatement > CallExpression[callee.name=/^send\\w*Email$/]:not(CallExpression[callee.name='after'] CallExpression)",
+    message: NO_ABANDONED_ROUTE_EMAIL_MESSAGE,
+  },
+  {
+    selector:
+      "ExpressionStatement > CallExpression[callee.type='MemberExpression'][callee.property.name=/^(catch|then|finally)$/][callee.object.type='CallExpression'][callee.object.callee.name=/^send\\w*Email$/]:not(CallExpression[callee.name='after'] CallExpression)",
+    message: NO_ABANDONED_ROUTE_EMAIL_MESSAGE,
+  },
+];
+
+// Production-wide architecture bans (everything except the bare-<table> rule,
+// which has its own exception list below). Flat config replaces rather than
+// merges `no-restricted-syntax` entries, so every narrower block restates the
+// families it keeps.
+const PRODUCTION_BANS = [...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS, UNBOUNDED_TAKE_BAN];
+
 const config = [
   {
     // Astro's compiled assets are also staged into public before the Next build.
@@ -59,6 +139,16 @@ const config = [
       // v6+ plugin. Do not pre-configure rules the installed plugin lacks.
       // Catches genuine correctness bugs (conditional/looped hook calls).
       "react-hooks/rules-of-hooks": "error",
+    },
+  },
+  {
+    // Direct-writer, abandoned-notify and unbounded-take bans apply to every
+    // file, tests included (specs mock or observe the delegates without
+    // calling them). The bare-<table> exceptions below do NOT exempt a file
+    // from these bans: that block restates them.
+    files: ["**/*.{ts,tsx,js,jsx}"],
+    rules: {
+      "no-restricted-syntax": ["error", ...PRODUCTION_BANS],
     },
   },
   {
@@ -88,14 +178,31 @@ const config = [
       "**/*.stories.{ts,tsx}",
     ],
     rules: {
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "JSXOpeningElement[name.name='table']",
-          message: NO_BARE_TABLE_MESSAGE,
-        },
-        ...DIRECT_WRITER_BANS,
-      ],
+      "no-restricted-syntax": ["error", TABLE_BAN, ...PRODUCTION_BANS],
+    },
+  },
+  {
+    // Specs deliberately discard a notify promise to prove the helper retains
+    // its own work (tests/lib/notifications/create.spec.ts), so the
+    // abandoned-notify family is the one production ban tests do not carry.
+    files: ["**/*.{test,spec}.{ts,tsx,js,jsx}", "**/*.stories.{ts,tsx}"],
+    rules: {
+      "no-restricted-syntax": ["error", ...DIRECT_WRITER_BANS, UNBOUNDED_TAKE_BAN],
+    },
+  },
+  {
+    // API route handlers additionally may not fire-and-forget email sends.
+    files: ["app/api/**/route.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", TABLE_BAN, ...PRODUCTION_BANS, ...ABANDONED_ROUTE_EMAIL_BANS],
+    },
+  },
+  {
+    // Legacy unbounded takes (see LEGACY_UNBOUNDED_TAKE_FILES): keep every
+    // other ban, drop only the take literal ban.
+    files: LEGACY_UNBOUNDED_TAKE_FILES,
+    rules: {
+      "no-restricted-syntax": ["error", TABLE_BAN, ...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS],
     },
   },
   {
@@ -103,17 +210,15 @@ const config = [
     // call their own banned Prisma delegate; each keeps the other's ban.
     // Vitest specs mock or observe these delegates
     // (`vi.mocked(prisma.memberEvent.create)`) without calling them, so
-    // they are not exempted here; the `*.test.*` ignore above covers
-    // node:test suites that build fake clients.
+    // they are not exempted anywhere.
     files: ["lib/events/track.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
-        {
-          selector: "JSXOpeningElement[name.name='table']",
-          message: NO_BARE_TABLE_MESSAGE,
-        },
+        TABLE_BAN,
         COURSE_ENROLLMENT_WRITER_BAN,
+        ...ABANDONED_NOTIFY_BANS,
+        UNBOUNDED_TAKE_BAN,
       ],
     },
   },
@@ -122,11 +227,10 @@ const config = [
     rules: {
       "no-restricted-syntax": [
         "error",
-        {
-          selector: "JSXOpeningElement[name.name='table']",
-          message: NO_BARE_TABLE_MESSAGE,
-        },
+        TABLE_BAN,
         MEMBER_EVENT_WRITER_BAN,
+        ...ABANDONED_NOTIFY_BANS,
+        UNBOUNDED_TAKE_BAN,
       ],
     },
   },
@@ -149,12 +253,10 @@ const config = [
     rules: {
       "no-restricted-syntax": [
         process.env.CI || process.env.WAP_STRICT_LINT ? "error" : "warn",
-        {
-          // Flat config replaces (not merges) rule entries, so the repo-wide
-          // bare-<table> ban must be restated for these files.
-          selector: "JSXOpeningElement[name.name='table']",
-          message: NO_BARE_TABLE_MESSAGE,
-        },
+        // Flat config replaces (not merges) rule entries, so the repo-wide
+        // bare-<table> ban and the production bans must be restated here.
+        TABLE_BAN,
+        ...PRODUCTION_BANS,
         {
           selector: "Literal[value=/#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\\b/]",
           message: NO_RAW_HEX_MESSAGE,
@@ -168,7 +270,7 @@ const config = [
   },
   {
     // kit/DataTable.tsx and KitTableShell legitimately render <table>, but
-    // the hex ban still applies to both.
+    // the hex ban and the production bans still apply to both.
     files: [
       "components/portal/kit/DataTable.tsx",
       "components/portal/kit/KitTableShell.tsx",
@@ -176,6 +278,7 @@ const config = [
     rules: {
       "no-restricted-syntax": [
         process.env.CI || process.env.WAP_STRICT_LINT ? "error" : "warn",
+        ...PRODUCTION_BANS,
         {
           selector: "Literal[value=/#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\\b/]",
           message: NO_RAW_HEX_MESSAGE,

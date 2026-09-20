@@ -39,7 +39,7 @@
 | [brand-guide.html](../../../brand-guide.html) | 921 | root |  |
 | [css-vars-material-symbols.d.ts](../../../css-vars-material-symbols.d.ts) | 14 | root |  |
 | [deploy-to-homelab.sh](../../../deploy-to-homelab.sh) | 74 | root |  |
-| [eslint.config.mjs](../../../eslint.config.mjs) | 218 | root | default:218 |
+| [eslint.config.mjs](../../../eslint.config.mjs) | 321 | root | default:321 |
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 270 | root | onRouterTransitionStart:239, setSentryUser:258 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [knip.json](../../../knip.json) | 61 | root |  |
