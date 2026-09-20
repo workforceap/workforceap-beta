@@ -22,6 +22,7 @@
 | [tests/api/admin-member-erase.spec.ts](../../../tests/api/admin-member-erase.spec.ts) | 181 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
 | [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
+| [tests/api/admin-member-summary-facts.spec.ts](../../../tests/api/admin-member-summary-facts.spec.ts) | 161 | tests |  |
 | [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 597 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
@@ -185,6 +186,7 @@
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
+| [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
 | [tests/app/admin-placement-surveys-page.spec.tsx](../../../tests/app/admin-placement-surveys-page.spec.tsx) | 87 | tests |  |
@@ -201,6 +203,7 @@
 | [tests/app/counselor-roster-failure.spec.tsx](../../../tests/app/counselor-roster-failure.spec.tsx) | 26 | tests |  |
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
 | [tests/app/counselor-student-detail-messages-rail.spec.tsx](../../../tests/app/counselor-student-detail-messages-rail.spec.tsx) | 160 | tests |  |
+| [tests/app/counselor-student-detail-progress-numbers.spec.tsx](../../../tests/app/counselor-student-detail-progress-numbers.spec.tsx) | 196 | tests |  |
 | [tests/app/counselor-student-detail-tabs.spec.tsx](../../../tests/app/counselor-student-detail-tabs.spec.tsx) | 329 | tests |  |
 | [tests/app/counselor-students-hot-queue.spec.tsx](../../../tests/app/counselor-students-hot-queue.spec.tsx) | 166 | tests |  |
 | [tests/app/dashboard-training-redirect.spec.ts](../../../tests/app/dashboard-training-redirect.spec.ts) | 69 | tests |  |
@@ -296,7 +299,7 @@
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
 | [tests/components/member-nba-persistence.spec.tsx](../../../tests/components/member-nba-persistence.spec.tsx) | 37 | tests |  |
 | [tests/components/member-program-module-links.test.tsx](../../../tests/components/member-program-module-links.test.tsx) | 134 | tests |  |
-| [tests/components/member-progress-timeline.spec.tsx](../../../tests/components/member-progress-timeline.spec.tsx) | 35 | tests |  |
+| [tests/components/member-progress-timeline.spec.tsx](../../../tests/components/member-progress-timeline.spec.tsx) | 45 | tests |  |
 | [tests/components/member-resume-upload-failure.spec.tsx](../../../tests/components/member-resume-upload-failure.spec.tsx) | 98 | tests |  |
 | [tests/components/member-signup-form.spec.tsx](../../../tests/components/member-signup-form.spec.tsx) | 147 | tests |  |
 | [tests/components/member-training-workspace.test.tsx](../../../tests/components/member-training-workspace.test.tsx) | 338 | tests |  |
@@ -334,6 +337,7 @@
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
 | [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
+| [tests/coursera/learner-detail-learning-paths.spec.ts](../../../tests/coursera/learner-detail-learning-paths.spec.ts) | 39 | learning-coursera |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |

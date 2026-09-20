@@ -8,6 +8,9 @@ import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { programDisplayTitle } from '@/lib/content/programTitle';
 
 /**
  * POST /api/admin/members/[id]/summary
@@ -64,13 +67,9 @@ export const POST = withApiGuc(
               employmentStatus: true,
             },
           },
-          memberProgramProgress: {
-            select: {
-              programSlug: true,
-              averagePercent: true,
-              coursesCompleted: true,
-              lastUpdatedAt: true,
-            },
+          courseEnrollments: {
+            orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+            select: { programSlug: true, curriculumVersion: true, isPrimary: true },
           },
           courseProgress: {
             orderBy: { lastUpdatedAt: 'desc' },
@@ -97,30 +96,58 @@ export const POST = withApiGuc(
         return NextResponse.json({ error: 'Member not found' }, { status: 404 });
       }
 
-      const lastActivity = member.courseProgress[0]?.lastUpdatedAt ?? null;
-      const completedCourses = member.courseProgress.filter((c) => c.status === 'COMPLETED').length;
-      const programProgress =
-        member.memberProgramProgress.find((p) => p.programSlug === member.enrolledProgram) ??
-        member.memberProgramProgress[0] ??
-        null;
+      // The facts below must match the member-detail page the admin is looking
+      // at. Previously this route picked `memberProgramProgress[0]` with no
+      // orderBy (one member has four rollups: 24%, 77%, 6%, 0%) and counted
+      // every COMPLETED CourseProgress row across all programs, so the model
+      // was told "8 completed" beside a page reading "3 of 17". Reconcile the
+      // assigned program exactly as the page does. No B4B map is passed:
+      // admin surfaces reconcile local rows only (see audit S28).
+      const trainingAssignment = resolveTrainingProgressAssignment(
+        member.enrolledProgram,
+        member.courseEnrollments ?? [],
+      );
+      // A failed load must not read as "no course data": the model would then
+      // describe a member with real progress as having none.
+      let trainingViewLoadFailed = false;
+      const trainingView = trainingAssignment.programSlug
+        ? await loadMemberProgramTrainingView({
+            userId: id,
+            programSlug: trainingAssignment.programSlug,
+          }).catch((err) => {
+            console.error('[admin/member-summary] training view load failed', err);
+            trainingViewLoadFailed = true;
+            return null;
+          })
+        : null;
+
+      const assignedProgramSlug = trainingAssignment.programSlug ?? member.enrolledProgram ?? null;
+      const lastActivity =
+        trainingView?.lastTrainingActivityAt ?? member.courseProgress[0]?.lastUpdatedAt ?? null;
 
       const facts = [
         `Name: ${member.fullName ?? 'Unknown'}`,
-        `Enrolled program: ${member.enrolledProgram ?? 'None'}`,
+        `Enrolled program: ${assignedProgramSlug ? programDisplayTitle(assignedProgramSlug) : 'None'}`,
         member.enrolledAt ? `Enrolled at: ${member.enrolledAt.toISOString().slice(0, 10)}` : null,
         `Intake assessment completed: ${member.assessmentCompleted ? 'Yes' : 'No'}`,
         member.assessmentScorePct != null
           ? `Assessment score: ${member.assessmentScorePct}%`
           : null,
-        programProgress
-          ? `Program progress: ${Math.round(programProgress.averagePercent)}% average, ${programProgress.coursesCompleted} courses completed`
+        trainingView
+          ? `Program progress: ${trainingView.completedCount} of ${trainingView.totalCourses} courses complete (${trainingView.progressPercentDisplay}% overall)`
+          : trainingViewLoadFailed
+            ? 'Program progress: unavailable (progress could not be loaded; do not infer a lack of progress)'
+            : assignedProgramSlug
+              ? 'Program progress: no course data for the assigned program'
+              : null,
+        trainingView?.nextIncompleteCourseName
+          ? `Next incomplete course: ${trainingView.nextIncompleteCourseName}`
           : null,
-        `Courses with progress tracked: ${member.courseProgress.length} (${completedCourses} completed)`,
         lastActivity
           ? `Last course activity: ${lastActivity.toISOString().slice(0, 10)}`
           : 'Last course activity: none recorded',
         member.courseProgress.length > 0
-          ? `Recent courses: ${member.courseProgress
+          ? `Recent course activity (all programs, not a completion total): ${member.courseProgress
               .slice(0, 5)
               .map((c) => `${c.courseSlug} (${c.status}, ${Math.round(c.percentComplete)}%)`)
               .join('; ')}`

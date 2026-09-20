@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "1f3bad1f4a0820432c93fc87a32fa214939e64eab0aaf291f0a684b86d692633",
+  "inputTreeSha256": "486e295be9dd8a6dfa94aaced7dc882e887aef545338573113048410d0c4c981",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4936,
-    "sourceModules": 3585,
-    "importReferences": 17845,
-    "resolvedLocalReferences": 11980,
+    "files": 4941,
+    "sourceModules": 3590,
+    "importReferences": 17867,
+    "resolvedLocalReferences": 11996,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 951,
-    "testCandidates": 941,
+    "testFiles": 955,
+    "testCandidates": 945,
     "testHelpers": 10,
-    "staticallySelectedTests": 939,
+    "staticallySelectedTests": 943,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 644
+      "files": 645
     },
     {
       "area": "root",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 558
+      "files": 562
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 749
+      "references": 750
     },
     {
       "file": "lib/auth/roles.ts",
@@ -180,7 +180,7 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 81
+      "references": 82
     },
     {
       "file": "lib/events/track.ts",
@@ -227,12 +227,12 @@
       "references": 45
     },
     {
-      "file": "messages/en.json",
+      "file": "lib/ai/groq.ts",
       "references": 44
     },
     {
-      "file": "lib/ai/groq.ts",
-      "references": 43
+      "file": "messages/en.json",
+      "references": 44
     },
     {
       "file": "lib/admin/logCronRun.ts",
@@ -297,12 +297,12 @@
       "lines": 1552
     },
     {
-      "file": "app/admin/coursera/page.tsx",
-      "lines": 1478
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1519
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1467
+      "file": "app/admin/coursera/page.tsx",
+      "lines": 1478
     },
     {
       "file": "tests/api/placement-survey.spec.ts",

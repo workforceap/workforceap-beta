@@ -732,7 +732,7 @@
 | [lib/member/memberIdentity.ts](../../../lib/member/memberIdentity.ts) | 58 | member-counselor | MemberShellIdentity:11, MEMBER_IDENTITY_HREF:24, memberInitials:30, buildMemberShellIdentity:43 |
 | [lib/member/memberProgramHref.test.ts](../../../lib/member/memberProgramHref.test.ts) | 40 | member-counselor |  |
 | [lib/member/memberProgramHref.ts](../../../lib/member/memberProgramHref.ts) | 22 | member-counselor | MEMBER_PROGRAM_HREF:8, LEGACY_TRAINING_STUB_HREF:9, resolveMemberProgramHref:15 |
-| [lib/member/memberProgramTrainingView.ts](../../../lib/member/memberProgramTrainingView.ts) | 226 | member-counselor | STALE_TRAINING_ACTIVITY_DAYS:15, MemberProgramTrainingView:17, loadMemberProgramTrainingView:52, isTrainingStaleForCounselorEscalation:210 |
+| [lib/member/memberProgramTrainingView.ts](../../../lib/member/memberProgramTrainingView.ts) | 236 | member-counselor | STALE_TRAINING_ACTIVITY_DAYS:16, MemberProgramTrainingView:18, loadMemberProgramTrainingView:61, isTrainingStaleForCounselorEscalation:220 |
 | [lib/member/mentorsEmptyState.test.ts](../../../lib/member/mentorsEmptyState.test.ts) | 48 | member-counselor |  |
 | [lib/member/mentorsEmptyState.ts](../../../lib/member/mentorsEmptyState.ts) | 24 | member-counselor | MENTORS_MEMBER_EMPTY:6, MENTORS_ADMIN_EMPTY:19 |
 | [lib/member/missionCourseUnlock.test.ts](../../../lib/member/missionCourseUnlock.test.ts) | 33 | member-counselor |  |
