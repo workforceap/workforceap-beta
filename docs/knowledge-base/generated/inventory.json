@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "6007dc23f11e52723fe75e0c587f04cfa0e688e34492c9586893577ce458c05c",
+  "inputTreeSha256": "ce0c0318eee5c4130af3f826bc353b095f8fe4ab4935970848f38ca82a730026",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -40686,9 +40686,9 @@
       "path": "app/apply/apply-funnel-depth.css",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 10506,
+      "bytes": 10513,
       "lines": 502,
-      "sha256": "145eeb1357a1caadb99981cdfc7236867cd19fc280448173262dc4fcfbd40118",
+      "sha256": "8fb2596205746a8aae8e3d696f8b3d3243ab815d93a11a34489962f121946737",
       "binary": false
     },
     {
