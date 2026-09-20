@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "1506146d597287dfbdd2bd392ef3f0645ee39460eb1f5d37a56bb987a20c1bb3",
+  "inputTreeSha256": "2aca84fb76065fdcac872cd68e7804da694cb793a9c37a512082274750e58772",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -76581,9 +76581,9 @@
       "path": "docs/knowledge-base/integrations.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 38484,
+      "bytes": 38587,
       "lines": 143,
-      "sha256": "31f903286d7a9a9b31b4fc7a9424a09b488595c57d58c46af583c2ec8ce96d74",
+      "sha256": "e2bc92ad69dff4f172f02fd65e47e4c68ad6dd86fc9f48f80ffe225c882dc76e",
       "binary": false
     },
     {
@@ -115602,9 +115602,9 @@
       "path": "lib/email/send.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 20675,
-      "lines": 581,
-      "sha256": "72bcbf96a684338c4b5f69c79ae7cfcc5d1d61a17697cbeed97bb214de785439",
+      "bytes": 23543,
+      "lines": 632,
+      "sha256": "a110873bb214968e6688b951fa3a86715e6ac28f755c70bf64aa7c654854a025",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -115614,9 +115614,9 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 21147,
-      "lines": 512,
-      "sha256": "89d551e166d3d593ff2e71060acfb60aa305f650033b0110e033a32be5b2127d",
+      "bytes": 21995,
+      "lines": 529,
+      "sha256": "6665b55bf4acb7080d8d15f116b36c490e74860a0fe5d3be102221825517bbe2",
       "binary": false,
       "exports": [
         {
@@ -115691,17 +115691,17 @@
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 379,
+          "line": 395,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 390,
+          "line": 406,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 501,
+          "line": 518,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -115857,23 +115857,33 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "RecipientField",
+          "line": 348,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "withoutRecipients",
+          "line": 351,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "resendRetryDelayMs",
-          "line": 344,
+          "line": 360,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 379,
+          "line": 395,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 390,
+          "line": 406,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 501,
+          "line": 518,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165952,9 +165962,9 @@
       "path": "tests/email/send-hardening.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 8032,
+      "bytes": 8036,
       "lines": 183,
-      "sha256": "c3e668b685a2a7c83699fa4a76dede12510300d3960cf253aaad0f503f115ca9",
+      "sha256": "c46cb8a945a0acbf535e6ddd3385d0db76b0ed30d412210f24ee171937744f0d",
       "binary": false,
       "exports": [],
       "declarations": [

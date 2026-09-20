@@ -103746,7 +103746,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 27,
+    "line": 29,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103754,7 +103754,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 83,
+    "line": 89,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103762,7 +103762,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 132,
+    "line": 136,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103770,7 +103770,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 169,
+    "line": 180,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103778,7 +103778,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 212,
+    "line": 217,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103786,7 +103786,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 231,
+    "line": 263,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103794,7 +103794,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 262,
+    "line": 282,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103802,7 +103802,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 299,
+    "line": 313,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103810,7 +103810,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 341,
+    "line": 350,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103818,7 +103818,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 372,
+    "line": 392,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103826,7 +103826,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 400,
+    "line": 423,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103834,7 +103834,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 439,
+    "line": 451,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103842,7 +103842,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 477,
+    "line": 490,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103850,7 +103850,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 524,
+    "line": 528,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -103858,7 +103858,15 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 553,
+    "line": 575,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 604,
     "kind": "type",
     "external": true,
     "package": "resend"

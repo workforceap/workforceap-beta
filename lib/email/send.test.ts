@@ -17,10 +17,12 @@ describe('sendBrandedEmail', () => {
     const originalFixtureDomains = process.env.EMAIL_FIXTURE_DOMAINS;
     process.env.EMAIL_FIXTURE_DOMAINS = 'fixtures.workforceap.internal, qa.example.org';
     let providerCalls = 0;
+    let captured: { to?: unknown; cc?: unknown; bcc?: unknown } | undefined;
     const resend = {
       emails: {
-        send: async () => {
+        send: async (payload: { to?: unknown; cc?: unknown; bcc?: unknown }) => {
           providerCalls++;
+          captured = payload;
           return { data: { id: 'must-not-send' }, error: null };
         },
       },
@@ -49,17 +51,21 @@ describe('sendBrandedEmail', () => {
           error: null,
         });
       }
-      for (const field of ['to', 'cc', 'bcc'] as const) {
+      assert.equal(providerCalls, 0);
+      // A fixture in cc/bcc is dropped from the envelope; the real `to` still gets the message.
+      for (const field of ['cc', 'bcc'] as const) {
         const result = await sendBrandedEmail(resend, {
           from: 'WorkforceAP <hello@workforceap.org>',
           to: 'member@workforceap.org',
           subject: `Fixture ${field} safety test`,
-          html: '<p>Never send</p>',
+          html: '<p>Send to the real recipient only</p>',
           [field]: `fixture@${field}.test`,
         });
-        assert.equal('skipped' in result && result.skipped, true, `${field} fixture must skip`);
+        assert.equal('skipped' in result, false, `${field} fixture must not skip the real recipient`);
+        assert.equal(captured?.to, 'member@workforceap.org');
+        assert.equal(captured?.[field], undefined, `${field} fixture must be dropped`);
       }
-      assert.equal(providerCalls, 0);
+      assert.equal(providerCalls, 2);
     } finally {
       if (originalFixtureDomains === undefined) delete process.env.EMAIL_FIXTURE_DOMAINS;
       else process.env.EMAIL_FIXTURE_DOMAINS = originalFixtureDomains;
@@ -101,7 +107,10 @@ describe('sendBrandedEmail', () => {
         assert.deepEqual(result, { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null });
       }
       // Real staff and members on the sending domain are not fixtures.
-      for (const to of ['michael.brown@workforceap.org', 'test@workforceap.org', 'contest-winner@workforceap.org', 'admin-test@partner.example.org']) {
+      for (const to of [
+        'michael.brown@workforceap.org', 'test@workforceap.org', 'contest-winner@workforceap.org',
+        'admin-test@partner.example.org', 'my-referral-member-list@workforceap.org', 'no-match-candidate@workforceap.org',
+      ]) {
         assert.equal(isFixtureEmailRecipient(to), false, `${to} must not be a fixture`);
       }
       assert.equal(providerCalls, 0);
@@ -109,6 +118,45 @@ describe('sendBrandedEmail', () => {
       if (originalFrom === undefined) delete process.env.EMAIL_FROM; else process.env.EMAIL_FROM = originalFrom;
       if (originalAddresses === undefined) delete process.env.EMAIL_FIXTURE_ADDRESSES;
       else process.env.EMAIL_FIXTURE_ADDRESSES = originalAddresses;
+    }
+  });
+
+  it('drops a fixture from a multi-recipient staff list and still sends to the real staff', async () => {
+    process.env.CRON_SECRET = 'test-unsubscribe-secret';
+    const originalFrom = process.env.EMAIL_FROM;
+    process.env.EMAIL_FROM = 'WorkforceAP <hello@workforceap.org>';
+    const sent: Array<{ to: unknown; cc: unknown; bcc: unknown }> = [];
+    const resend = {
+      emails: {
+        send: async (payload: { to: unknown; cc: unknown; bcc: unknown }) => {
+          sent.push({ to: payload.to, cc: payload.cc, bcc: payload.bcc });
+          return { data: { id: 'staff-sheet' }, error: null };
+        },
+      },
+    } as unknown as import('resend').Resend;
+    try {
+      // The production admin distribution list: real inboxes plus the admin-test alias.
+      const result = await sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: ['info@workforceap.org', 'admin-test@workforceap.org', 'michael.brown@workforceap.org'],
+        cc: ['counselor-test@workforceap.org'],
+        subject: 'Training preassessment submitted',
+        html: '<p>Answer sheet</p>',
+      });
+      assert.equal('skipped' in result, false);
+      assert.deepEqual(sent, [{ to: ['info@workforceap.org', 'michael.brown@workforceap.org'], cc: undefined, bcc: undefined }]);
+
+      // Only when every `to` recipient is a fixture is the send skipped.
+      const skipped = await sendBrandedEmail(resend, {
+        from: 'WorkforceAP <hello@workforceap.org>',
+        to: ['admin-test@workforceap.org', 'member-test@workforceap.org'],
+        subject: 'Training preassessment submitted',
+        html: '<p>Answer sheet</p>',
+      });
+      assert.deepEqual(skipped, { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null });
+      assert.equal(sent.length, 1);
+    } finally {
+      if (originalFrom === undefined) delete process.env.EMAIL_FROM; else process.env.EMAIL_FROM = originalFrom;
     }
   });
 
@@ -188,9 +236,12 @@ describe('sendBrandedEmail', () => {
     assert.equal(keys[0], keys[1]);
     assert.equal(keys[0], defaultIdempotencyKey(args, nowMs));
     assert.match(keys[0] ?? '', /^course_kickoff\/[0-9a-f]{64}$/);
-    // Same message next day → different key; different body same day → different key.
+    // Same message next day → different key; different body, cc, bcc or reply-to same day → different key.
     assert.notEqual(defaultIdempotencyKey(args, nowMs + 24 * 60 * 60 * 1000), keys[0]);
     assert.notEqual(defaultIdempotencyKey({ ...args, html: '<p>Hello</p>' }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, cc: 'counselor@workforceap.org' }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, bcc: ['audit@workforceap.org'] }, nowMs), keys[0]);
+    assert.notEqual(defaultIdempotencyKey({ ...args, replyTo: 'mike@workforceap.org' }, nowMs), keys[0]);
   });
 
   it('does not retry a permanent provider rejection or the CRLF header defect', async () => {

@@ -135,7 +135,7 @@ describe('provider suppression guard', () => {
     expect('skipped' in result).toBe(false);
     expect(calls).toHaveLength(1);
     expect(calls[0].payload.to).toEqual(['admin@workforceap.org']);
-    expect(calls[0].payload.cc).toEqual([]);
+    expect(calls[0].payload.cc).toBeUndefined();
     expect(recordWorkflowDiagnostic).not.toHaveBeenCalled();
   });
 

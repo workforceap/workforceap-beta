@@ -269,8 +269,8 @@ export function sendingDomain(): string {
  */
 const FIXTURE_LOCAL_PART_PATTERNS: readonly RegExp[] = [
   /^test-smoke-/,
-  /referral-member-/,
-  /match-candidate/,
+  /^referral-member-/,
+  /^match-candidate/,
 ];
 
 function fixtureAddresses(): Set<string> {
@@ -326,19 +326,35 @@ export function isTransientProviderError(error: unknown, depth = 0): boolean {
  * (a second contact-form message, a fresh test send) is a different key.
  */
 export function defaultIdempotencyKey(
-  args: Pick<SendBrandedEmailArgs, 'to' | 'subject' | 'html' | 'template'>,
+  args: Pick<SendBrandedEmailArgs, 'to' | 'cc' | 'bcc' | 'replyTo' | 'subject' | 'html' | 'template'>,
   nowMs: number,
 ): string {
   const templateKey = (args.template?.name?.trim() || 'email').replace(/[^a-z0-9_-]/gi, '_').slice(0, 64);
-  const recipients = (Array.isArray(args.to) ? args.to : [args.to])
-    .map((recipient) => normalizedRecipientAddress(recipient))
-    .sort()
-    .join(',');
+  const addressList = (value: string | string[] | undefined): string =>
+    (value === undefined ? [] : Array.isArray(value) ? value : [value])
+      .map((recipient) => normalizedRecipientAddress(recipient))
+      .sort()
+      .join(',');
   const dayBucket = new Date(nowMs).toISOString().slice(0, 10);
   const digest = createHash('sha256')
-    .update(`${recipients}\n${args.subject}\n${args.html}\n${dayBucket}`)
+    .update([
+      addressList(args.to), addressList(args.cc), addressList(args.bcc), addressList(args.replyTo),
+      args.subject, args.html, dayBucket,
+    ].join('\n'))
     .digest('hex');
   return `${templateKey}/${digest}`;
+}
+
+type RecipientField = string | string[] | undefined;
+
+/** Remove `drop` addresses from a recipient field; an emptied list becomes undefined. */
+function withoutRecipients(value: RecipientField, drop: (address: string) => boolean): RecipientField {
+  if (value === undefined) return undefined;
+  if (Array.isArray(value)) {
+    const kept = value.filter((entry) => !drop(entry));
+    return kept.length > 0 ? kept : undefined;
+  }
+  return drop(value) ? undefined : value;
 }
 
 function resendRetryDelayMs(
@@ -392,39 +408,40 @@ export async function sendBrandedEmail(
   args: SendBrandedEmailArgs,
   retryOptions: SendBrandedEmailRetryOptions = {},
 ): Promise<Awaited<ReturnType<Resend['emails']['send']>> | FixtureSkippedEmailResult> {
-  const recipients = [args.to, args.cc, args.bcc]
-    .flatMap((value) => value === undefined ? [] : Array.isArray(value) ? value : [value]);
-  if (recipients.some(isFixtureEmailRecipient)) {
+  const now = retryOptions.now ?? Date.now;
+
+  // Fixture recipients (reserved domains, seeded aliases) never reach the
+  // provider. They are dropped from the envelope; the send is skipped only
+  // when no deliverable `to` remains, so one fixture alias in a staff
+  // distribution list cannot silently cost the real staff the message.
+  let to = withoutRecipients(args.to, isFixtureEmailRecipient);
+  let cc = withoutRecipients(args.cc, isFixtureEmailRecipient);
+  let bcc = withoutRecipients(args.bcc, isFixtureEmailRecipient);
+  if (to === undefined) {
     return { ok: false, skipped: true, reason: 'fixture_recipient', data: null, error: null };
   }
-  const now = retryOptions.now ?? Date.now;
 
   // Bulk/cron sends drop recipients the provider has already suppressed
   // (it would report the send as "suppressed" while we booked a success).
-  // A multi-recipient message keeps going to the deliverable addresses; a
-  // message with no deliverable `to` left is skipped and recorded.
-  let to = args.to;
-  let cc = args.cc;
-  let bcc = args.bcc;
+  // Same rule: deliverable addresses still get the message; a message with
+  // no deliverable `to` left is skipped and recorded.
   const consultSuppressions = retryOptions.consultSuppressions
     ?? (retryOptions.deadlineAtMs !== undefined || currentBulkEmailDeadlineAtMs() !== undefined);
   if (consultSuppressions) {
+    const recipients = [to, cc, bcc]
+      .flatMap((value) => value === undefined ? [] : Array.isArray(value) ? value : [value]);
     const partition = await partitionSuppressedRecipients(recipients, { now });
     if (partition.suppressed.length > 0) {
       const suppressed = new Set(partition.suppressed);
-      const keep = (value: string | string[] | undefined): string | string[] | undefined => {
-        if (value === undefined) return undefined;
-        if (Array.isArray(value)) return value.filter((entry) => !suppressed.has(entry));
-        return suppressed.has(value) ? undefined : value;
-      };
-      const deliverableTo = keep(args.to);
-      if (deliverableTo === undefined || (Array.isArray(deliverableTo) && deliverableTo.length === 0)) {
+      const isSuppressed = (address: string) => suppressed.has(address);
+      const deliverableTo = withoutRecipients(to, isSuppressed);
+      if (deliverableTo === undefined) {
         recordSuppressedRecipientSkip(args, partition.suppressed);
         return { ok: false, skipped: true, reason: 'suppressed_recipient', data: null, error: null };
       }
       to = deliverableTo;
-      cc = keep(args.cc);
-      bcc = keep(args.bcc);
+      cc = withoutRecipients(cc, isSuppressed);
+      bcc = withoutRecipients(bcc, isSuppressed);
     }
   }
 
@@ -451,7 +468,7 @@ export async function sendBrandedEmail(
   const sleep = retryOptions.sleep ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)));
   const random = retryOptions.random ?? Math.random;
   // Fixed before the first attempt so every retry replays the same request.
-  const idempotencyKey = args.idempotencyKey ?? defaultIdempotencyKey({ ...args, to }, now());
+  const idempotencyKey = args.idempotencyKey ?? defaultIdempotencyKey({ ...args, to, cc, bcc }, now());
   let totalRetryWaitMs = 0;
 
   for (let attempt = 1; attempt <= RESEND_MAX_ATTEMPTS; attempt++) {
