@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "05d92359e5a1302c1ae0bf1025d97140b77f524162d7711cea2239e01ffbd521",
+  "inputTreeSha256": "050d12dd9a8ddacfab672a76f378321c96c7aa92e9bd011c9caea472baeabd54",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -14337,19 +14337,19 @@
       "path": "app/admin/analytics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 10722,
-      "lines": 266,
-      "sha256": "caf6f06326ca679899f5eca16dc1e9fa1e131743bd78589b97455371bb5fd1f3",
+      "bytes": 10990,
+      "lines": 269,
+      "sha256": "6862b9249c1cf0dfcb277826cdf7c4c8ab24a34bd630b459927c4675a52e39d0",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 214,
+          "line": 217,
           "kind": "FunctionDeclaration",
           "localName": "AnalyticsPage"
         }
@@ -14357,37 +14357,37 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TOOL_LABELS",
-          "line": 33,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "VOICE_EVENT_NAMES",
-          "line": 52,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "EngagementData",
-          "line": 59,
+          "line": 60,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "memberScope",
-          "line": 70,
+          "line": 72,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEngagementData",
-          "line": 80,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AnalyticsPage",
-          "line": 214,
+          "line": 217,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -14942,9 +14942,9 @@
       "path": "app/admin/board/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 7481,
-      "lines": 195,
-      "sha256": "292bd9b1c55ca0b0f597d89a07d4b1722dbdb1d89322ec9947294199e24701b9",
+      "bytes": 7568,
+      "lines": 196,
+      "sha256": "725c3bbb220575f4c7dbf236a5bcc28db419ab1cfda2c24551ccfbba754d2228",
       "binary": false,
       "exports": [
         {
@@ -14977,12 +14977,12 @@
         },
         {
           "name": "PeriodLink",
-          "line": 169,
+          "line": 170,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "prettifyOrgSlug",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -15267,24 +15267,24 @@
       "path": "app/admin/command-center/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 11298,
-      "lines": 265,
-      "sha256": "ab67d90edff065f6fe372f45334b80d5e1150730d56aa8df8f96c0978aafb203",
+      "bytes": 11710,
+      "lines": 272,
+      "sha256": "567baf3fba3d11bc21d977f6e4827c7160d46daf1032a59464b0d0a23ce6d41c",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration",
           "localName": "AdminCommandCenterPage"
         }
@@ -15292,17 +15292,17 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCommandCenterPage",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -16127,9 +16127,9 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 16658,
+      "bytes": 16730,
       "lines": 509,
-      "sha256": "5bef6a524b654e344ca61663f8a0e00fd555ca92573dbb4e66e1f4bde25b2488",
+      "sha256": "8d62ddbcc84e61a256d80101f6140ed2450dbb2489ec59a71c450aa0352d5c44",
       "binary": false,
       "exports": [
         {
@@ -19033,9 +19033,9 @@
       "path": "app/admin/metrics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9033,
-      "lines": 192,
-      "sha256": "4ad3517626184efba65805e684ba5484b99fc9aa2bd1842b39f6ea5b5ea54901",
+      "bytes": 9284,
+      "lines": 194,
+      "sha256": "5f01c54835de5c588f7ad7cc7582bd5cb3537fae3c94d515c70dd5ed61895a12",
       "binary": false,
       "exports": [
         {
@@ -19342,19 +19342,19 @@
       "path": "app/admin/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 19514,
-      "lines": 480,
-      "sha256": "bd1fc6907db731e8021cf29c5d52c724be5f5f0709f211ad881c80f909142ebd",
+      "bytes": 19876,
+      "lines": 485,
+      "sha256": "24b537484c7462a89d95a83960f3190b28c105b0618d7494661df920dceeef30",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 31,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration",
           "localName": "AdminTodayPage"
         }
@@ -19362,12 +19362,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 31,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminTodayPage",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19812,24 +19812,24 @@
       "path": "app/admin/pipeline/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 5568,
-      "lines": 135,
-      "sha256": "6f34ecc9a5ecc28741f07c6d678e97057dd1b25fd5998dc94f5ae9a4def6c4e7",
+      "bytes": 5870,
+      "lines": 140,
+      "sha256": "5decc069b7d5c96e0bd6d63dc3f6e6958a59dbb2f7b2a6631e75e11f93b6405d",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration",
           "localName": "PipelinePage"
         }
@@ -19837,22 +19837,22 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FUNNEL_WINDOW_DAYS",
-          "line": 25,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "PipelinePage",
-          "line": 27,
+          "line": 28,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -21652,26 +21652,26 @@
       "path": "app/api/admin/analytics/dashboard/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 2677,
-      "lines": 76,
-      "sha256": "17364f7227b41f339d10da347d3e963be74344080f16031a75f7780b105f64df",
+      "bytes": 3094,
+      "lines": 80,
+      "sha256": "f5243f48c80c00450c960b2d2c94353d76b1a974b353a3a21bd4ddee9c611046",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 13,
+          "line": 14,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "invalidateAdminStats",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 13,
+          "line": 14,
           "kind": "Variable"
         }
       ],
@@ -27081,26 +27081,26 @@
       "path": "app/api/admin/metrics/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 9938,
-      "lines": 263,
-      "sha256": "2833d17b5209707a3c3eb924e5fcef1eb846a163f394cc29396509327b8dbdb9",
+      "bytes": 11244,
+      "lines": 290,
+      "sha256": "ee8f497804051c6f3a27e597011067d8c7da54935225e8fcbf16b63a063e04e2",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 237,
+          "line": 264,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "computeAdminRouteMetricsPayload",
-          "line": 12,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 237,
+          "line": 264,
           "kind": "Variable"
         }
       ],
@@ -27427,9 +27427,9 @@
       "path": "app/api/admin/outcomes/pdf/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 7137,
+      "bytes": 7413,
       "lines": 189,
-      "sha256": "0c7e22ca09167f999bd0ba5df9d2d3ff871e160ea0d42a9f9ec7aad75890f74b",
+      "sha256": "194fe88ce8b596af23fc131832b6f0303a565549e2116afe217626fca7f8b4ab",
       "binary": false,
       "exports": [
         {
@@ -27441,7 +27441,7 @@
       "declarations": [
         {
           "name": "_GET",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
@@ -27481,61 +27481,61 @@
       "path": "app/api/admin/outcomes/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 10068,
-      "lines": 280,
-      "sha256": "1ea2a7de1183f8469a65f60ad633b7ae4d02e4a2f7a451da3d84096ce46f40e6",
+      "bytes": 12566,
+      "lines": 316,
+      "sha256": "824030bb6743652f7df8057ab08892de0c1bd78889c8236455729a232950372d",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 280,
+          "line": 316,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
-          "name": "calculateRetention",
-          "line": 14,
+          "name": "buildCohorts",
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "buildCohorts",
-          "line": 31,
+          "name": "loadCompletedTrainingByProgram",
+          "line": 58,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DemographicField",
-          "line": 59,
+          "line": 91,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "GroupByRow",
-          "line": 62,
+          "line": 94,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "toBreakdown",
-          "line": 64,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getDemographics",
-          "line": 68,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "computeOutcomesPayload",
-          "line": 97,
+          "line": 129,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_GET",
-          "line": 238,
+          "line": 274,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 280,
+          "line": 316,
           "kind": "Variable"
         }
       ],
@@ -28011,26 +28011,26 @@
       "path": "app/api/admin/pipeline/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 2953,
-      "lines": 86,
-      "sha256": "87fadec209752d3ae7131e0c21fb06dcae81596cbde5f8ae0e43965a5505c410",
+      "bytes": 3183,
+      "lines": 90,
+      "sha256": "99a5eb47bb7f23e316083c35fbe3396807b90325bdd7dff878830190b004c988",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 86,
+          "line": 90,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "_GET",
-          "line": 9,
+          "line": 10,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 86,
+          "line": 90,
           "kind": "Variable"
         }
       ],
@@ -50204,9 +50204,9 @@
       "path": "components/admin/AnalyticsDashboard.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13626,
+      "bytes": 13647,
       "lines": 352,
-      "sha256": "8d507a7dab198c5f776f09d075a27f92cb2176aa71c98db01a51b1412cf2a5dc",
+      "sha256": "86eea22323faf82c3277d70435c0946c7fcf925e6e24357f1ba613cd21afe4f8",
       "binary": false,
       "exports": [
         {
@@ -52600,9 +52600,9 @@
       "path": "components/admin/OutcomesSnapshot.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 28634,
+      "bytes": 28744,
       "lines": 628,
-      "sha256": "6090b8e37da8d7f14a243f0f2885409781ac9284082db4b72b65aca653edc99f",
+      "sha256": "b8466549a6b50c2e1bd2b5a2376438f77b123fdee446a79073814b3c1dbe481c",
       "binary": false,
       "exports": [
         {
@@ -67251,9 +67251,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10817,
-      "lines": 368,
-      "sha256": "af305048322d7821c4684e576b474209ca964df11ef60c68e48015b9d7805c57",
+      "bytes": 10982,
+      "lines": 369,
+      "sha256": "ccef0ac5351024b6a18227aa3b135212d71cc0a79e1ba30bd28ccbf25ad7e07a",
       "binary": false,
       "exports": [
         {
@@ -67273,17 +67273,17 @@
         },
         {
           "name": "AdminDashboardWorkItem",
-          "line": 97,
+          "line": 98,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKitProps",
-          "line": 106,
+          "line": 107,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKit",
-          "line": 125,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -67310,27 +67310,27 @@
         },
         {
           "name": "AdminDashboardWorkItem",
-          "line": 97,
+          "line": 98,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AdminDashboardKitProps",
-          "line": 106,
+          "line": 107,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "funnelColor",
-          "line": 117,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "numStyle",
-          "line": 123,
+          "line": 124,
           "kind": "Variable"
         },
         {
           "name": "AdminDashboardKit",
-          "line": 125,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -67910,46 +67910,46 @@
       "path": "components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10116,
-      "lines": 305,
-      "sha256": "28483d029a4384682dd9a1b57c9f1044579a632b01fa0dafac7d0070e6e7a8ef",
+      "bytes": 10444,
+      "lines": 314,
+      "sha256": "15c41fc3e293cf28f2e2a2b2546cdd9bec85cf8762a422343f790035b3171aa7",
       "binary": false,
       "exports": [
         {
           "name": "CounselorRow",
-          "line": 36,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorsRosterKitProps",
-          "line": 54,
+          "line": 55,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorsRosterKit",
-          "line": 76,
+          "line": 77,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CounselorRow",
-          "line": 36,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorsRosterKitProps",
-          "line": 54,
+          "line": 55,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "LOAD_TOKEN_COLOR",
-          "line": 70,
+          "line": 71,
           "kind": "Variable"
         },
         {
           "name": "CounselorsRosterKit",
-          "line": 76,
+          "line": 77,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -82333,91 +82333,101 @@
       "path": "lib/admin/analytics.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 8594,
-      "lines": 258,
-      "sha256": "f605a52433850bbb312a92615cd08808df504e8fbbe3d7d95eadb1606c6fbbe5",
+      "bytes": 10786,
+      "lines": 284,
+      "sha256": "e815c1093f5b4199b134e1f2082bc52a65508d9ab550c58806d6a011ba1538e8",
       "binary": false,
       "exports": [
         {
           "name": "MemberStatusCounts",
-          "line": 14,
+          "line": 19,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EnrollmentTrend",
-          "line": 21,
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ProgramProgress",
-          "line": 27,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementRate",
-          "line": 33,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CounselorLoad",
-          "line": 39,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "AnalyticsOverview",
           "line": 44,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "AnalyticsOverview",
+          "line": 49,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "summarizeProgramProgress",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "getAnalyticsOverview",
-          "line": 61,
+          "line": 93,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MemberStatusCounts",
-          "line": 14,
+          "line": 19,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EnrollmentTrend",
-          "line": 21,
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ProgramProgress",
-          "line": 27,
+          "line": 32,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementRate",
-          "line": 33,
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CounselorLoad",
-          "line": 39,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "AnalyticsOverview",
           "line": 44,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "AnalyticsOverview",
+          "line": 49,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "summarizeProgramProgress",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "monthFmt",
-          "line": 54,
+          "line": 86,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "monthLabel",
-          "line": 57,
+          "line": 89,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAnalyticsOverview",
-          "line": 61,
+          "line": 93,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -82535,6 +82545,18 @@
           "kind": "FunctionDeclaration"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/analyticsProgramProgress.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 1451,
+      "lines": 28,
+      "sha256": "d2477b3bcf3da78b18fab0aa13410eee94f85732c45e1c79f63dc7163d809c87",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -83139,304 +83161,326 @@
       "path": "lib/admin/boardOutcomes.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 49157,
-      "lines": 1284,
-      "sha256": "9f6678656ada2867afc3e2bcb5b8229881959f73d564b80693e93cdcb84a98cf",
+      "bytes": 51613,
+      "lines": 1357,
+      "sha256": "3e163a0b383ad2186cb58d99c7b68d2baabce8e6c7e81fc3ecbb187270e022e4",
       "binary": false,
       "exports": [
         {
           "name": "BoardOutcomesPeriod",
-          "line": 25,
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardOutcomes",
-          "line": 27,
+          "line": 28,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getBoardOutcomes",
-          "line": 153,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SMALL_SAMPLE_THRESHOLD",
-          "line": 522,
+          "line": 543,
           "kind": "Variable"
         },
         {
           "name": "BoardSnapshotApplicationFunnel",
-          "line": 524,
+          "line": 545,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotActivity",
-          "line": 532,
+          "line": 553,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotCertifications",
-          "line": 540,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "BoardSnapshotDataQuality",
-          "line": 546,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "FunnelWaterfallStage",
-          "line": 554,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "ApplicationQueueHealth",
           "line": 561,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "CohortMonth",
+          "name": "BoardSnapshotDataQuality",
           "line": 567,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "FunnelWaterfallStage",
+          "line": 575,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApplicationQueueHealth",
+          "line": 582,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CohortMonth",
+          "line": 588,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "PlacementActivityMonth",
-          "line": 578,
+          "line": 599,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotKpis",
-          "line": 584,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "BoardSnapshot",
           "line": 605,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "BoardSnapshot",
+          "line": 626,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "buildPlacementActivitySeries",
-          "line": 633,
+          "line": 654,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildFunnelWaterfall",
+          "line": 683,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getBoardSnapshot",
-          "line": 675,
+          "line": 734,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatBoardSnapshotMarkdown",
-          "line": 1041,
+          "line": 1114,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatBoardSnapshotPdf",
-          "line": 1182,
+          "line": 1255,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "BoardOutcomesPeriod",
-          "line": 25,
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardOutcomes",
-          "line": 27,
+          "line": 28,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "startOfPeriod",
-          "line": 68,
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "endOfPeriod",
-          "line": 80,
+          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketFromGroupBy",
-          "line": 89,
+          "line": 90,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attributeProgramAtPlacement",
-          "line": 124,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "VETERAN_BUCKETS",
-          "line": 141,
-          "kind": "Variable"
-        },
-        {
-          "name": "EMPLOYMENT_BUCKETS",
           "line": 142,
           "kind": "Variable"
         },
         {
-          "name": "INCOME_BUCKETS",
+          "name": "EMPLOYMENT_BUCKETS",
           "line": 143,
           "kind": "Variable"
         },
         {
-          "name": "EDUCATION_BUCKETS",
+          "name": "INCOME_BUCKETS",
           "line": 144,
           "kind": "Variable"
         },
         {
+          "name": "EDUCATION_BUCKETS",
+          "line": 145,
+          "kind": "Variable"
+        },
+        {
           "name": "getBoardOutcomes",
-          "line": 153,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "currentQuarterLabel",
-          "line": 491,
+          "line": 512,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "prevQuarterLabel",
-          "line": 496,
+          "line": 517,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SMALL_SAMPLE_THRESHOLD",
-          "line": 522,
+          "line": 543,
           "kind": "Variable"
         },
         {
           "name": "BoardSnapshotApplicationFunnel",
-          "line": 524,
+          "line": 545,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotActivity",
-          "line": 532,
+          "line": 553,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotCertifications",
-          "line": 540,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "BoardSnapshotDataQuality",
-          "line": 546,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "FunnelWaterfallStage",
-          "line": 554,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "ApplicationQueueHealth",
           "line": 561,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "CohortMonth",
+          "name": "BoardSnapshotDataQuality",
           "line": 567,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "FunnelWaterfallStage",
+          "line": 575,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApplicationQueueHealth",
+          "line": 582,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CohortMonth",
+          "line": 588,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "PlacementActivityMonth",
-          "line": 578,
+          "line": 599,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BoardSnapshotKpis",
-          "line": 584,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "BoardSnapshot",
           "line": 605,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "BoardSnapshot",
+          "line": 626,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "monthKey",
-          "line": 625,
+          "line": 646,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "monthLabel",
-          "line": 629,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "buildPlacementActivitySeries",
-          "line": 633,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "countDistinctEventUsers",
           "line": 650,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "buildPlacementActivitySeries",
+          "line": 654,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildFunnelWaterfall",
+          "line": 683,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "countDistinctEventUsers",
+          "line": 708,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "getBoardSnapshot",
-          "line": 675,
+          "line": 734,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatBoardSnapshotMarkdown",
-          "line": 1041,
+          "line": 1114,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PDF_ACCENT",
-          "line": 1172,
+          "line": 1245,
           "kind": "Variable"
         },
         {
           "name": "PDF_DARK",
-          "line": 1173,
+          "line": 1246,
           "kind": "Variable"
         },
         {
           "name": "PDF_MUTED",
-          "line": 1174,
+          "line": 1247,
           "kind": "Variable"
         },
         {
           "name": "PDF_RULE",
-          "line": 1175,
+          "line": 1248,
           "kind": "Variable"
         },
         {
           "name": "PDF_PAGE_W",
-          "line": 1176,
+          "line": 1249,
           "kind": "Variable"
         },
         {
           "name": "PDF_PAGE_H",
-          "line": 1177,
+          "line": 1250,
           "kind": "Variable"
         },
         {
           "name": "PDF_MARGIN",
-          "line": 1178,
+          "line": 1251,
           "kind": "Variable"
         },
         {
           "name": "PDF_HEADER_H",
-          "line": 1179,
+          "line": 1252,
           "kind": "Variable"
         },
         {
           "name": "PDF_FOOTER_H",
-          "line": 1180,
+          "line": 1253,
           "kind": "Variable"
         },
         {
           "name": "formatBoardSnapshotPdf",
-          "line": 1182,
+          "line": 1255,
           "kind": "FunctionDeclaration"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/boardOutcomesFunnel.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 1457,
+      "lines": 25,
+      "sha256": "8a044456a03cd8caa14289873ff39279da59249718aee1c9b715ecc4242e82d9",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -84314,9 +84358,9 @@
       "path": "lib/admin/counselorRoster.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2333,
+      "bytes": 2292,
       "lines": 51,
-      "sha256": "6d7dc296e83c9307167ceaf602ea985ae2209f59035fa5bb1bd7206ed9eff001",
+      "sha256": "d27acbe431669ede0e3ec5ebd3c470a4e1d11a6e072b514e6fe67f59eb10eb89",
       "binary": false,
       "exports": [
         {
@@ -84358,44 +84402,99 @@
       "path": "lib/admin/counselorRosterAggregates.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1360,
-      "lines": 33,
-      "sha256": "984da16fef29d654bb04c0c2c15e1765c14f6d7fdb24bf5e838be861a3ca1bae",
+      "bytes": 4832,
+      "lines": 102,
+      "sha256": "3d30eff398e3f3361431bce9f1ff8dcbf57b09c951a6cc949b4b88d8cbf029ab",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "scope",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "makeDb",
+          "line": 9,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
       "path": "lib/admin/counselorRosterAggregates.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2026,
-      "lines": 66,
-      "sha256": "2560613743c400670528f59b5d50e3582730fdd1a30aff5f3e3ddbf844f5fea1",
+      "bytes": 2701,
+      "lines": 73,
+      "sha256": "e909ebb818c11ff6414959479b906b1d5981e5bc90f63710510580b6e3d4f822",
       "binary": false,
       "exports": [
         {
+          "name": "COUNSELOR_AT_RISK_DEFINITION",
+          "line": 5,
+          "kind": "ReExport"
+        },
+        {
+          "name": "COUNSELOR_PLACEMENTS_DEFINITION",
+          "line": 5,
+          "kind": "ReExport"
+        },
+        {
           "name": "CounselorAssignmentAgg",
-          "line": 4,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadCounselorAssignmentAggregates",
-          "line": 13,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CounselorAssignmentAgg",
-          "line": 4,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadCounselorAssignmentAggregates",
-          "line": 13,
+          "line": 25,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/counselorRosterLabels.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 455,
+      "lines": 7,
+      "sha256": "b435c534adc7cb26b8b913b3369e4680a2d70a1ad34c633280391e8f6fdec9b5",
+      "binary": false,
+      "exports": [
+        {
+          "name": "COUNSELOR_AT_RISK_DEFINITION",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "COUNSELOR_PLACEMENTS_DEFINITION",
+          "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "COUNSELOR_AT_RISK_DEFINITION",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "COUNSELOR_PLACEMENTS_DEFINITION",
+          "line": 7,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -86292,45 +86391,45 @@
       "path": "lib/admin/memberOnlyWhere.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3267,
-      "lines": 71,
-      "sha256": "11eeef03b7f9cce8709c287845dc9242ff53c9e5cd7f2f395dcee78e1509dcac",
+      "bytes": 4713,
+      "lines": 105,
+      "sha256": "83c29e6fd7db6219cc094440433c08a92487c957d28bdfe80840b344aae78dbb",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "SeededUser",
-          "line": 10,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "member",
-          "line": 12,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "staff",
-          "line": 13,
+          "line": 19,
           "kind": "Variable"
         },
         {
           "name": "RoleFilter",
-          "line": 21,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "UserWhere",
-          "line": 22,
+          "line": 28,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "matches",
-          "line": 29,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "count",
-          "line": 45,
+          "line": 51,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86340,9 +86439,9 @@
       "path": "lib/admin/memberOnlyWhere.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1828,
-      "lines": 42,
-      "sha256": "9e7b6ab94513e4dd474b414527e31e5339edcefda1364e504758394a05432f02",
+      "bytes": 3669,
+      "lines": 87,
+      "sha256": "3fd4bba50709bd02468c6142ded43e87e1506c3d68fc92423c954a91106bd44f",
       "binary": false,
       "exports": [
         {
@@ -86357,13 +86456,23 @@
         },
         {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 24,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 39,
+          "line": 45,
           "kind": "Variable"
+        },
+        {
+          "name": "memberOnlyProfileWhere",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlySqlJoin",
+          "line": 83,
+          "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
@@ -86379,13 +86488,33 @@
         },
         {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 24,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 39,
+          "line": 45,
           "kind": "Variable"
+        },
+        {
+          "name": "memberOnlyProfileWhere",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "SQL_IDENTIFIER",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "sqlIdentifier",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlySqlJoin",
+          "line": 83,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -86394,21 +86523,21 @@
       "path": "lib/admin/memberOutcomesSummary.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1603,
-      "lines": 35,
-      "sha256": "d7b1bd8309c7dc6e6a8765bf3a36fe03033ccfd3635e1e9dc9afd585a297e146",
+      "bytes": 1907,
+      "lines": 40,
+      "sha256": "b976fbbd14097500923a3dbeabe776a2ff548ac29b476268f11ac911e658cbe6",
       "binary": false,
       "exports": [
         {
           "name": "getMemberOutcomesSummary",
-          "line": 8,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "getMemberOutcomesSummary",
-          "line": 8,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86452,9 +86581,9 @@
       "path": "lib/admin/metrics.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3369,
-      "lines": 99,
-      "sha256": "64b052579bc4a616d19afd4ea854d67839c4790289205392e53e77ea97b308e0",
+      "bytes": 3644,
+      "lines": 96,
+      "sha256": "a1fe1eb451d2a1aa7214cc9ae9f191c102c3ce15f212e8adc771c29ccaf087a7",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -86470,111 +86599,166 @@
       "path": "lib/admin/metrics.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 19095,
-      "lines": 478,
-      "sha256": "4e8c3330613a47e2b9100c21ebfe799fda2a6d43d1eaef1aa65c688a041b3953",
+      "bytes": 22053,
+      "lines": 558,
+      "sha256": "59df88cdd967505a1a414aba0b31ad5f77d3971956f55de7bbf985161c2a10ca",
       "binary": false,
       "exports": [
         {
+          "name": "countMemberAiToolRuns",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "DailyActivityPoint",
+          "line": 167,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "getPlacementStats",
+          "line": 371,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AdminMetrics",
+          "line": 414,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ADMIN_METRICS_CACHE_TTL_SECONDS",
+          "line": 416,
+          "kind": "Variable"
+        },
+        {
           "name": "getAdminMetrics",
-          "line": 357,
+          "line": 425,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "logMetricsReason",
-          "line": 8,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EVENT_ONLY_AI_TOOLS",
-          "line": 14,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "memberInOrg",
-          "line": 22,
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberUserFilter",
+          "line": 36,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "orgJoinSql",
+          "line": 40,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countEventOnlyAiRunsBetween",
-          "line": 26,
+          "line": 44,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "countMemberAiToolRuns",
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countAiToolRunsBetween",
-          "line": 42,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AiToolBreakdownItem",
-          "line": 54,
+          "line": 88,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "countSingleEventOnlyTool",
-          "line": 59,
+          "line": 93,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAiToolUsageBreakdown",
-          "line": 79,
+          "line": 114,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "localCalendarDayKey",
-          "line": 112,
+          "line": 147,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DailyCountRow",
-          "line": 116,
+          "line": 151,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "mergeDayCounts",
-          "line": 118,
+          "line": 153,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "DailyActivityPoint",
+          "line": 167,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "getDailyActivity",
-          "line": 133,
+          "line": 174,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countDistinctActiveUsers",
-          "line": 217,
+          "line": 265,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEnrollmentByProgram",
-          "line": 228,
+          "line": 277,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCareerOsMetrics",
-          "line": 242,
+          "line": 291,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getPlacementStats",
-          "line": 314,
+          "line": 371,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getAiToolStats",
-          "line": 329,
+          "line": 386,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "AdminMetrics",
+          "line": 414,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ADMIN_METRICS_CACHE_TTL_SECONDS",
+          "line": 416,
+          "kind": "Variable"
+        },
+        {
           "name": "getAdminMetrics",
-          "line": 357,
+          "line": 425,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_getAdminMetricsUncached",
-          "line": 365,
+          "line": 438,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86714,9 +86898,9 @@
       "path": "lib/admin/pipelineFunnel.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2609,
+      "bytes": 2633,
       "lines": 61,
-      "sha256": "f73f00fb649976983fca85ea20315faaec27a71a1fe288541a23cbf138230100",
+      "sha256": "4ab9e2339d78bec9e7b420accb84d9e06b0639c05cb260cb53af90a5cfbf5878",
       "binary": false,
       "exports": [
         {
@@ -87008,9 +87192,9 @@
       "path": "lib/admin/studentStatus.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3527,
-      "lines": 122,
-      "sha256": "b51addf2fadc90a3e63a041d8c2d07fe7cc0212b53ecd0b1360660bfb05be95d",
+      "bytes": 3721,
+      "lines": 124,
+      "sha256": "5b0e1d919a6dc29483303f6c2ac3f81c9c26631d06956ee42b8ce3e173c6aca4",
       "binary": false,
       "exports": [
         {
@@ -96414,9 +96598,9 @@
       "path": "lib/attention/counselorAgreement.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 7283,
+      "bytes": 7321,
       "lines": 151,
-      "sha256": "f71e8c2c0b0e24195c9b04cde2fd411511df08372503b6e6d588d8f31e564d20",
+      "sha256": "876cd9b7670d7236d3967e9c4379a6daa5f658f45293c8b89a834b50488ccd6d",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -96811,9 +96995,9 @@
       "path": "lib/attention/evaluate.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 4461,
-      "lines": 94,
-      "sha256": "1c5c41b637c62a039934f332195ead478fb863b391ee3be07e134a072f179253",
+      "bytes": 5228,
+      "lines": 105,
+      "sha256": "3e594bf9336de83d7b29866d505e2ed35bc88f0a8ad4b8ec14c296adfc206d08",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -96823,9 +97007,9 @@
       "path": "lib/attention/evaluate.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 12803,
-      "lines": 369,
-      "sha256": "5f6d0aec2b9644e54471570dc3883e26dc0a8660d79271956b3b4795ec06109d",
+      "bytes": 13054,
+      "lines": 372,
+      "sha256": "b10a556341ad7e6b17313d5e1fbf3b0a95aa9a83bb22b992a2c235fe5ddecb21",
       "binary": false,
       "exports": [
         {
@@ -96885,32 +97069,32 @@
         },
         {
           "name": "urgencyOf",
-          "line": 255,
+          "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "compareAttention",
-          "line": 284,
+          "line": 287,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyAttentionQueue",
-          "line": 293,
+          "line": 296,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildAttentionQueue",
-          "line": 312,
+          "line": 315,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "selectByReason",
-          "line": 361,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "flaggedMemberIds",
-          "line": 367,
+          "line": 370,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96977,32 +97161,32 @@
         },
         {
           "name": "urgencyOf",
-          "line": 255,
+          "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "compareAttention",
-          "line": 284,
+          "line": 287,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyAttentionQueue",
-          "line": 293,
+          "line": 296,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildAttentionQueue",
-          "line": 312,
+          "line": 315,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "selectByReason",
-          "line": 361,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "flaggedMemberIds",
-          "line": 367,
+          "line": 370,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -97101,9 +97285,9 @@
       "path": "lib/attention/reasons.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 6890,
+      "bytes": 6916,
       "lines": 181,
-      "sha256": "45be9fedef07b8400a728c698f60b6abcba77268fbfcc0e72fe280ed53ad266e",
+      "sha256": "d7fa537ed3fc216c108e9584be993f2550d6c9edc84720f1bee9eaa1b8b820d3",
       "binary": false,
       "exports": [
         {
@@ -123064,9 +123248,9 @@
       "path": "lib/member/atRiskScoring.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 5488,
-      "lines": 137,
-      "sha256": "1cdc4b694064c872cbb264133afe173e674a1f227a533369c7a0ee9f262fd2b5",
+      "bytes": 6506,
+      "lines": 158,
+      "sha256": "3fe701e01a66c7ac656465bf35d04ec6f11cd7b1f2f964b7215f679560f959dc",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -123077,12 +123261,12 @@
         },
         {
           "name": "baseUser",
-          "line": 36,
+          "line": 57,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "daysAgo",
-          "line": 50,
+          "line": 71,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -123092,177 +123276,211 @@
       "path": "lib/member/atRiskScoring.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 19097,
-      "lines": 546,
-      "sha256": "8ca3ad7d509a65131cee9e2baf863631a90ad71a95f3b0064c6979b313f84722",
+      "bytes": 19704,
+      "lines": 558,
+      "sha256": "6d71cd5b759a83366448b7c2c22d1dc0fe98f471ccaf57fbf407d41d10fb7189",
       "binary": false,
       "exports": [
         {
           "name": "AtRiskFactor",
-          "line": 11,
+          "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskScore",
-          "line": 17,
+          "line": 18,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "THRESHOLDS",
-          "line": 47,
+          "line": 48,
           "kind": "Variable"
         },
         {
           "name": "getRiskLevel",
-          "line": 54,
+          "line": 55,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "calculateAtRiskScore",
-          "line": 63,
+          "line": 64,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildRecommendedAction",
-          "line": 221,
+          "line": 222,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskTier",
-          "line": 247,
+          "line": 248,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ClassifyMemberInput",
-          "line": 249,
+          "line": 250,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ClassifyMemberResult",
-          "line": 265,
+          "line": 266,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "classifyMember",
-          "line": 284,
+          "line": 285,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMemberClassificationInput",
-          "line": 370,
+          "line": 371,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "AT_RISK_SCORING_POPULATION_WHERE",
+          "line": 457,
+          "kind": "Variable"
+        },
+        {
           "name": "calculateAllAtRiskScores",
-          "line": 449,
+          "line": 465,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistAtRiskAlert",
-          "line": 483,
+          "line": 495,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadPersistedAtRiskScores",
-          "line": 524,
+          "line": 536,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "AtRiskFactor",
-          "line": 11,
+          "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskScore",
-          "line": 17,
+          "line": 18,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "FACTORS",
-          "line": 25,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "COURSE_ACTIVITY_GAP_TIERS",
-          "line": 41,
+          "line": 42,
           "kind": "Variable"
         },
         {
           "name": "THRESHOLDS",
-          "line": 47,
+          "line": 48,
           "kind": "Variable"
         },
         {
           "name": "getRiskLevel",
-          "line": 54,
+          "line": 55,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "calculateAtRiskScore",
-          "line": 63,
+          "line": 64,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildRecommendedAction",
-          "line": 221,
+          "line": 222,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskTier",
-          "line": 247,
+          "line": 248,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ClassifyMemberInput",
-          "line": 249,
+          "line": 250,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ClassifyMemberResult",
-          "line": 265,
+          "line": 266,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DAY_MS",
-          "line": 271,
+          "line": 272,
           "kind": "Variable"
         },
         {
           "name": "daysBetween",
-          "line": 273,
+          "line": 274,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyMember",
-          "line": 284,
+          "line": 285,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMemberClassificationInput",
-          "line": 370,
+          "line": 371,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SCORING_BATCH_SIZE",
-          "line": 447,
+          "line": 448,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_SCORING_POPULATION_WHERE",
+          "line": 457,
           "kind": "Variable"
         },
         {
           "name": "calculateAllAtRiskScores",
-          "line": 449,
+          "line": 465,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistAtRiskAlert",
-          "line": 483,
+          "line": 495,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadPersistedAtRiskScores",
-          "line": 524,
+          "line": 536,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/atRiskStatuses.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 395,
+      "lines": 7,
+      "sha256": "4eb9a1c3c9b48aea3061d6b87280f813d16564f36cfffc66a24d1d4404971454",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ACTIVE_AT_RISK_STATUSES",
+          "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ACTIVE_AT_RISK_STATUSES",
+          "line": 7,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -126506,61 +126724,56 @@
       "path": "lib/member/persistedAtRisk.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4805,
-      "lines": 82,
-      "sha256": "ed3a5f68792a6754c3f5c490c58ad7d61f62af15b761853acc0439d95b97d4cf",
+      "bytes": 5475,
+      "lines": 93,
+      "sha256": "7643e989f253dde161f6a371fbab5bf5900caa694be3ba7681cc48d5c18657df",
       "binary": false,
       "exports": [
         {
           "name": "ACTIVE_AT_RISK_STATUSES",
-          "line": 7,
-          "kind": "Variable"
+          "line": 9,
+          "kind": "ReExport"
         },
         {
           "name": "PersistedRiskScope",
-          "line": 9,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PersistedAtRiskMember",
-          "line": 13,
+          "line": 15,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadPersistedAtRiskMembers",
-          "line": 26,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistedRiskCommandRow",
-          "line": 74,
+          "line": 85,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
-          "name": "ACTIVE_AT_RISK_STATUSES",
-          "line": 7,
-          "kind": "Variable"
-        },
-        {
           "name": "PersistedRiskScope",
-          "line": 9,
+          "line": 11,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PersistedAtRiskMember",
-          "line": 13,
+          "line": 15,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadPersistedAtRiskMembers",
-          "line": 26,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistedRiskCommandRow",
-          "line": 74,
+          "line": 85,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -132859,146 +133072,146 @@
       "path": "lib/outcomes/socialProof.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 5363,
-      "lines": 141,
-      "sha256": "4dd157828d32aba99f4e32be332db4d9bd63da51b61c94bee9bf84c96d11660a",
+      "bytes": 5739,
+      "lines": 145,
+      "sha256": "3d81c6f813543faa82c2ff03cd77b1dd3714d5a41a38f5b98fccae2f441b4195",
       "binary": false,
       "exports": [
         {
           "name": "OutcomesSocialProofRate",
-          "line": 5,
+          "line": 6,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementStoryCard",
-          "line": 7,
+          "line": 8,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerOutcomeSnapshot",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerReferralBadge",
-          "line": 24,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "OutcomesSocialProofBundle",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isOutcomesSocialProofEnabled",
-          "line": 55,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatSuppressedRate",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPartnerReferralBadge",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getOutcomesSocialProof",
-          "line": 91,
+          "line": 92,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "OutcomesSocialProofRate",
-          "line": 5,
+          "line": 6,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementStoryCard",
-          "line": 7,
+          "line": 8,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerOutcomeSnapshot",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PartnerReferralBadge",
-          "line": 24,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "OutcomesSocialProofBundle",
-          "line": 26,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SocialProofDb",
-          "line": 34,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "Env",
           "line": 35,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "Options",
+          "name": "Env",
           "line": 36,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "StoryRecord",
+          "name": "Options",
           "line": 37,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "TRUE_VALUES",
-          "line": 39,
-          "kind": "Variable"
+          "name": "StoryRecord",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "DEFAULT_SITE_URL",
+          "name": "TRUE_VALUES",
           "line": 40,
           "kind": "Variable"
         },
         {
+          "name": "DEFAULT_SITE_URL",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
           "name": "normalizeBaseUrl",
-          "line": 42,
+          "line": 43,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "escapeHtml",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isOutcomesSocialProofEnabled",
-          "line": 55,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatSuppressedRate",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPartnerReferralBadge",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildOptionalBadge",
-          "line": 84,
+          "line": 85,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getOutcomesSocialProof",
-          "line": 91,
+          "line": 92,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -158659,9 +158872,9 @@
       "path": "tests/api/admin-analytics.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7617,
-      "lines": 199,
-      "sha256": "96d743a68a25a7d93b13c810c3754ef9d56db30d16ee39ed5a9873fab9ddb8ef",
+      "bytes": 7723,
+      "lines": 200,
+      "sha256": "efae3a5cf95f37c45e6fed2b0dc8d89ada8f9731730aeae2e3563be417a5ef68",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -159202,9 +159415,9 @@
       "path": "tests/api/admin-outcomes.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7591,
-      "lines": 209,
-      "sha256": "9979c14e5eeebac27c3cb103f35b16df3c03bde005204aead60883f015b5a291",
+      "bytes": 7667,
+      "lines": 211,
+      "sha256": "1992e97eb1e80c03ee679f6ec7b02fc56e069910f7460447b0ad9083da36dc68",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -163255,9 +163468,9 @@
       "path": "tests/api/staff-route-error-handling.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 32870,
-      "lines": 623,
-      "sha256": "fb3fa08a0de5c0c1aa7fd5983fd04932e17892b70f02b2063cd16bafe1c9699d",
+      "bytes": 33339,
+      "lines": 635,
+      "sha256": "6763243abdae01b23a7b34f2f63c9da7c44625c179bc2380659533c26dc1a8d1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163268,32 +163481,32 @@
         },
         {
           "name": "ADMIN",
-          "line": 326,
+          "line": 338,
           "kind": "Variable"
         },
         {
           "name": "UNKNOWN_ID",
-          "line": 327,
-          "kind": "Variable"
-        },
-        {
-          "name": "params",
-          "line": 328,
-          "kind": "Variable"
-        },
-        {
-          "name": "req",
-          "line": 330,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "MALFORMED",
           "line": 339,
           "kind": "Variable"
         },
         {
+          "name": "params",
+          "line": 340,
+          "kind": "Variable"
+        },
+        {
+          "name": "req",
+          "line": 342,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MALFORMED",
+          "line": 351,
+          "kind": "Variable"
+        },
+        {
           "name": "expectJsonError",
-          "line": 345,
+          "line": 357,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165338,9 +165551,9 @@
       "path": "tests/components/admin-pipeline-funnel-order.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3270,
+      "bytes": 3269,
       "lines": 68,
-      "sha256": "bf58623716bac825ac267dc81397366d5434d91d827b4c6c3e54cac48941ee81",
+      "sha256": "e806ec9d89af8220583660b32db09bf8b234f5db82bf4d03180cd33e01cd74ce",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -166149,9 +166362,9 @@
       "path": "tests/components/counselor-today.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5962,
-      "lines": 118,
-      "sha256": "015e7a38d38cc5523f8cf5bb8276dfe4c7af6cccb84ae74cab0c902d8d9702c0",
+      "bytes": 6051,
+      "lines": 119,
+      "sha256": "91e3a1864af5af780dee174905064cc2c97cf8a20bb9d25a0f0b2f01632b217f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -169039,9 +169252,9 @@
       "path": "tests/fixtures/attentionRoster.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3330,
-      "lines": 101,
-      "sha256": "ae6ec3720206bc4ae7f00b0969adbc761a60f50218ea05a6369f6dbbd806ce18",
+      "bytes": 3644,
+      "lines": 109,
+      "sha256": "e77466502a69f55b902247750b9422d628987fc9268358ace46dd7e9e5e8f50f",
       "binary": false,
       "exports": [
         {
@@ -169061,17 +169274,17 @@
         },
         {
           "name": "FIXTURE_FLAGGED_IDS",
-          "line": 50,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "FIXTURE_AWAITING_REPLY_IDS",
-          "line": 51,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "fixtureRoster",
-          "line": 53,
+          "line": 55,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169108,17 +169321,17 @@
         },
         {
           "name": "FIXTURE_FLAGGED_IDS",
-          "line": 50,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "FIXTURE_AWAITING_REPLY_IDS",
-          "line": 51,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "fixtureRoster",
-          "line": 53,
+          "line": 55,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169764,20 +169977,25 @@
       "path": "tests/lib/board-outcomes-official-totals.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5689,
-      "lines": 124,
-      "sha256": "d2e223787ed5b814821eee5cc52fcec3ce2232a3b60e8941a9fe11699e9eb763",
+      "bytes": 7839,
+      "lines": 161,
+      "sha256": "4f224775077b65bd545209655fb26eeefdb23b9a4a10d5421519346c21e9f8d8",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "MEMBER_JOIN",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
           "name": "flatten",
-          "line": 30,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "rawQueries",
-          "line": 36,
+          "line": 39,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169945,9 +170163,9 @@
       "path": "tests/lib/counselor-roster-stats.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5958,
+      "bytes": 5984,
       "lines": 127,
-      "sha256": "34fcce6edf49c32abb0475b4775a61f23e12dcfab1c0eb50eaa35a57cac12ecf",
+      "sha256": "9fd450416bae09000092529a9b5eea97098d7f0271c28258ea17bd366ae27035",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171100,6 +171318,74 @@
       "directive": null
     },
     {
+      "path": "tests/lib/member-only-outcomes-population.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 10538,
+      "lines": 238,
+      "sha256": "e34e602b690dd53d85e346ae48ae7bd4997c3a36fe8371cbb33ff9a7c23e89b4",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "SeededUser",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ORG",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "enrolledAt",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "placedAt",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "roster",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "UserWhere",
+          "line": 77,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "matchScalar",
+          "line": 79,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "matchesUser",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "matchesPlacement",
+          "line": 118,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "matchesProfile",
+          "line": 132,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "rawIsMemberOnly",
+          "line": 140,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/member-program-training-view.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -171934,9 +172220,9 @@
       "path": "tests/lib/persisted-risk-command-center.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7787,
-      "lines": 124,
-      "sha256": "0bd22148cedc324a49e97d754fb99735fe649ecb5e97ba6e816788a8926ae303",
+      "bytes": 8356,
+      "lines": 130,
+      "sha256": "32f3bbc669dce0b8c8f21794521f777c0098968ac13acd62b18b6160c5d65e70",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171947,17 +172233,17 @@
         },
         {
           "name": "now",
-          "line": 24,
-          "kind": "Variable"
-        },
-        {
-          "name": "row",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "row",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
           "name": "riskQueries",
-          "line": 32,
+          "line": 33,
           "kind": "Variable"
         }
       ],
@@ -172339,9 +172625,9 @@
       "path": "tests/lib/staff-reporting-efficiency.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6885,
-      "lines": 91,
-      "sha256": "2434d0b7b28e12b291f69577a519624ee803a2d62fe1adae756c5813bbca8848",
+      "bytes": 7455,
+      "lines": 97,
+      "sha256": "7c294d496656f8dca61f25feaf6bff7bcae756138905358ae58797885d7d282f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172352,12 +172638,12 @@
         },
         {
           "name": "now",
-          "line": 9,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "cutoff",
-          "line": 10,
+          "line": 11,
           "kind": "Variable"
         }
       ],

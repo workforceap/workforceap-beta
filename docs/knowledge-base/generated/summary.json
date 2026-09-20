@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "05d92359e5a1302c1ae0bf1025d97140b77f524162d7711cea2239e01ffbd521",
+  "inputTreeSha256": "050d12dd9a8ddacfab672a76f378321c96c7aa92e9bd011c9caea472baeabd54",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4945,
-    "sourceModules": 3594,
-    "importReferences": 17911,
-    "resolvedLocalReferences": 12035,
+    "files": 4950,
+    "sourceModules": 3599,
+    "importReferences": 17954,
+    "resolvedLocalReferences": 12071,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 957,
-    "testCandidates": 947,
+    "testFiles": 960,
+    "testCandidates": 950,
     "testHelpers": 10,
-    "staticallySelectedTests": 945,
+    "staticallySelectedTests": 948,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1067
+      "files": 1071
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 563
+      "files": 564
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 930
+      "references": 931
     },
     {
       "file": "lib/auth/server.ts",
@@ -192,7 +192,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 69
+      "references": 71
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -209,6 +209,10 @@
     {
       "file": "lib/supabase-admin.ts",
       "references": 54
+    },
+    {
+      "file": "lib/admin/memberOnlyWhere.ts",
+      "references": 53
     },
     {
       "file": "components/portal/ui/DataTable.tsx",
@@ -245,10 +249,6 @@
     {
       "file": "lib/notifications/create.ts",
       "references": 38
-    },
-    {
-      "file": "components/LocalizedLink.tsx",
-      "references": 37
     }
   ],
   "largestSourceFiles": [
@@ -317,6 +317,10 @@
       "lines": 1382
     },
     {
+      "file": "lib/admin/boardOutcomes.ts",
+      "lines": 1357
+    },
+    {
       "file": "app/api/apply/signup/route.test.ts",
       "lines": 1353
     },
@@ -339,10 +343,6 @@
     {
       "file": "components/portal/tools/SkillMapperClient.tsx",
       "lines": 1296
-    },
-    {
-      "file": "lib/admin/boardOutcomes.ts",
-      "lines": 1284
     },
     {
       "file": "tests/portal-audit-five-role.test.ts",
