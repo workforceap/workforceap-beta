@@ -15,6 +15,7 @@ import {
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { persistEvent } from '@/lib/events/track';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -82,39 +83,13 @@ export const POST = withApiGuc(async (request: Request) => {
     return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
   }
 
-  // Anonymize user record
-  await prisma.$executeRaw`
-    UPDATE users
-    SET email = 'deleted_' || id || '@workforceap.org',
-        full_name = 'Deleted User',
-        updated_at = NOW()
-    WHERE id = ${userId}
-  `;
-
-  // Anonymize profile
-  await prisma.$executeRaw`
-    UPDATE profiles
-    SET address = NULL,
-        city = NULL,
-        state = NULL,
-        zip = NULL,
-        dob = NULL,
-        profile_phone = NULL,
-        profile_address = NULL,
-        profile_linkedin = NULL,
-        profile_bio = NULL,
-        counselor_notes = NULL,
-        resume_original_path = NULL,
-        resume_enhanced_path = NULL,
-        parent_guardian_name = NULL,
-        parent_guardian_email = NULL,
-        parent_guardian_phone = NULL,
-        school_name = NULL,
-        school_district = NULL,
-        student_id = NULL,
-        updated_at = NOW()
-    WHERE user_id = ${userId}
-  `;
+  // WAP-169: same anonymiser as /api/member/delete-account and the retention
+  // purge. The two raw UPDATEs this replaced left the phone number and every
+  // special-category column (disability, income, veteran status, ethnicity,
+  // barriers, work authorisation) in place and never set `deleted_at`, so
+  // these rows were kept indefinitely. The helper also sets `deleted_at`, so
+  // the 30-day purge now removes the row like any other deletion.
+  await anonymizeMember(userId, { reason: 'gdpr_account_delete' }, prisma);
 
   // Mark as deleted. (This used to be a raw INSERT that bound the metadata
   // as text into the jsonb column, which PostgreSQL rejects with 42804 — so
@@ -145,7 +120,18 @@ export const POST = withApiGuc(async (request: Request) => {
     );
   }
 
-  auditLog({ actorUserId: userId, action: 'gdpr_account_delete', targetType: 'User', targetId: userId }).catch(() => {});
+  // The actor snapshot is pinned: `users.email` is now the recoverable
+  // deleted marker (which embeds the original address for the 30-day restore
+  // window), and letting auditLog look the actor up would copy it into the
+  // 3-year `actor_email_snapshot` — the leak WAP-169 exists to close.
+  auditLog({
+    actorUserId: userId,
+    action: 'gdpr_account_delete',
+    targetType: 'User',
+    targetId: userId,
+    actorEmailSnapshot: null,
+    actorRoleSnapshot: 'member',
+  }).catch(() => {});
   logAuditEvent({ user: { id: userId, role: 'member' }, verb: 'deleted', object: { type: 'User', id: userId }, result: { success: true } }).catch(() => {});
   return NextResponse.json({
     ok: true,

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -6,14 +6,19 @@ import { withTenantScope, memberInOrg } from '@/lib/tenant/withTenantScope';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { runCertificationApprovedEffects } from '@/lib/certifications/certificationApproved';
 
 /**
  * Admin credential-review endpoint.
  *
  * POST { certId: string, action: 'approve' | 'reject' }
  *
- * Approves or rejects a member-submitted certification proof. Only certs in
- * `pending` status (i.e. with submitted proof) are reviewable. Tenant-scoped
+ * Approves or rejects a member-submitted certification. Only certs in
+ * `pending` status are reviewable: every self-report starts there (WAP-20) and
+ * a proof upload moves an existing row back there. The first approval of a
+ * row fires the credential's downstream effects (lifecycle event, points,
+ * notification, partner milestone); a re-approval after a proof upload does
+ * not repeat them. Tenant-scoped
  * via the owning user's organization so an admin from Org A cannot review an
  * Org B submission by guessing its UUID — same hardening as the jobs/approve
  * route. Auth mirrors the other admin POST routes (getUser + isAdmin, DB inside
@@ -51,7 +56,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const cert = await withTenantScope(orgId, (db) =>
       db.userCertification.findFirst({
         where: { id: certId, ...memberInOrg(orgId) },
-        select: { id: true, status: true },
+        select: { id: true, status: true, userId: true, certName: true, reviewedAt: true },
       }),
     );
 
@@ -80,6 +85,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         },
       }),
     );
+
+    if (action === 'approve' && cert.reviewedAt === null) {
+      after(() => runCertificationApprovedEffects({ userId: cert.userId, certName: cert.certName }));
+    }
 
     // Dual audit (WAP-18): a certification review is a funder-facing decision.
     void auditLog({

@@ -305,6 +305,7 @@
 | [lib/career/careerQuizAreas.ts](../../../lib/career/careerQuizAreas.ts) | 26 | libraries | MINI_IP_AREA_ORDER:19, getMiniIpAreaOrder:24 |
 | [lib/career/careerQuizRules.test.ts](../../../lib/career/careerQuizRules.test.ts) | 170 | libraries |  |
 | [lib/career/careerQuizRules.ts](../../../lib/career/careerQuizRules.ts) | 177 | libraries | RIASEC_AREAS:13, RiasecArea:21, QuizQuestion:23, QUIZ_QUESTIONS:26, SCALE_LABELS:36, isValidQuizAnswers:42, areasToTypeSlug:51, typeSlugToLabel:61, areaScoresToOnetAnswers:79, CareerPlanTopCareer:93, CareerPlanStep:98, buildCareerPlanApplyHref:120, buildCommitmentShareText:143, buildCareerPlanSteps:161 |
+| [lib/certifications/certificationApproved.ts](../../../lib/certifications/certificationApproved.ts) | 42 | libraries | runCertificationApprovedEffects:18 |
 | [lib/coach/memory.test.ts](../../../lib/coach/memory.test.ts) | 64 | libraries |  |
 | [lib/coach/memory.ts](../../../lib/coach/memory.ts) | 165 | libraries | CoachTurn:12, takeLastCoachExchanges:29, formatCoachTranscript:34, deriveCoachMemoryFallback:44, appendCoachMemoryToSystemPrompt:62, loadCoachMemory:71, getCoachMemoryDynamicVariables:79, updateCoachMemory:111 |
 | [lib/coach/memorySafety.test.ts](../../../lib/coach/memorySafety.test.ts) | 78 | libraries |  |
@@ -658,6 +659,7 @@
 | [lib/marketing/utmCapture.ts](../../../lib/marketing/utmCapture.ts) | 66 | public-experience | UTM_SESSION_KEYS:17, MarketingAttribution:26, readMarketingAttribution:36, clearMarketingAttribution:57 |
 | [lib/member/aiToolFollowThrough.test.ts](../../../lib/member/aiToolFollowThrough.test.ts) | 26 | member-counselor |  |
 | [lib/member/aiToolFollowThrough.ts](../../../lib/member/aiToolFollowThrough.ts) | 148 | member-counselor | AIToolFollowThrough:1, getAIToolFollowThrough:14 |
+| [lib/member/anonymizeMember.ts](../../../lib/member/anonymizeMember.ts) | 179 | member-counselor | AnonymizeMemberReason:35, AnonymizeMemberOptions:40, AnonymizeMemberResult:51, ANONYMIZED_FULL_NAME:59, MEMBER_ANONYMIZED_AUDIT_ACTION:60, ANONYMIZED_PROFILE_DATA:63, ANONYMIZED_PROFILE_FIELDS:98, anonymizeMember:117 |
 | [lib/member/applicationAiFeedback.ts](../../../lib/member/applicationAiFeedback.ts) | 51 | member-counselor | APPLICATION_FEEDBACK_TOOL_TYPES:4, RecentAiToolForFeedback:11, findRecentAiToolsForApplicationFeedback:25, formatFeedbackPromptDate:49 |
 | [lib/member/assessmentConfirmMessage.test.ts](../../../lib/member/assessmentConfirmMessage.test.ts) | 18 | member-counselor |  |
 | [lib/member/assessmentConfirmMessage.ts](../../../lib/member/assessmentConfirmMessage.ts) | 6 | member-counselor | assessmentConfirmMessage:2 |
@@ -681,6 +683,7 @@
 | [lib/member/dailyStudyPoints.ts](../../../lib/member/dailyStudyPoints.ts) | 26 | member-counselor | utcDateKey:21 |
 | [lib/member/dashboardTabs.test.ts](../../../lib/member/dashboardTabs.test.ts) | 52 | member-counselor |  |
 | [lib/member/dashboardTabs.ts](../../../lib/member/dashboardTabs.ts) | 60 | member-counselor | MemberDashboardTab:1, MemberDashboardTabLink:3, resolveMemberDashboardTabs:35 |
+| [lib/member/deletedEmail.ts](../../../lib/member/deletedEmail.ts) | 30 | member-counselor | buildDeletedEmail:15, parseDeletedEmail:20, isDeletedEmail:24, isDeletedEmailMarker:28 |
 | [lib/member/ensureAppUser.test.ts](../../../lib/member/ensureAppUser.test.ts) | 118 | member-counselor |  |
 | [lib/member/ensureAppUser.ts](../../../lib/member/ensureAppUser.ts) | 113 | member-counselor | EnsureAppUserOptions:13, ensureAppUserProvisioned:53 |
 | [lib/member/exportData.test.ts](../../../lib/member/exportData.test.ts) | 15 | member-counselor |  |
@@ -927,8 +930,8 @@
 | [lib/resume/resumeUiConcurrencyAndWarnings.test.ts](../../../lib/resume/resumeUiConcurrencyAndWarnings.test.ts) | 131 | member-counselor |  |
 | [lib/resume/resumeUploadBodyFidelity.test.ts](../../../lib/resume/resumeUploadBodyFidelity.test.ts) | 237 | member-counselor |  |
 | [lib/resume/resumeUploadUiContract.test.ts](../../../lib/resume/resumeUploadUiContract.test.ts) | 49 | member-counselor |  |
-| [lib/retention/cleanup.test.ts](../../../lib/retention/cleanup.test.ts) | 349 | member-counselor |  |
-| [lib/retention/cleanup.ts](../../../lib/retention/cleanup.ts) | 284 | member-counselor | CleanupResult:12, DataCleanupReport:19, cleanupTable:38, BlockedAccount:118, DeletedAccountsResult:123, foreignKeyConstraintName:141, cleanupDeletedAccounts:171, runDataCleanup:226 |
+| [lib/retention/cleanup.test.ts](../../../lib/retention/cleanup.test.ts) | 381 | member-counselor |  |
+| [lib/retention/cleanup.ts](../../../lib/retention/cleanup.ts) | 298 | member-counselor | CleanupResult:13, DataCleanupReport:20, cleanupTable:39, BlockedAccount:119, DeletedAccountsResult:124, foreignKeyConstraintName:142, cleanupDeletedAccounts:180, runDataCleanup:240 |
 | [lib/retention/config.ts](../../../lib/retention/config.ts) | 143 | member-counselor | RetentionTableConfig:22, RETENTION_BATCH_SIZE:33, CRITICAL_AUDIT_ACTION_PREFIXES:46, RETENTION_AUDIT_DAYS:66, PUBLIC_LEAD_RETENTION_DAYS:81, RETENTION_TABLES:83, DELETED_ACCOUNT_RETENTION_DAYS:135, getCutoffDate:138 |
 | [lib/security/auditAiToolsHistory.test.ts](../../../lib/security/auditAiToolsHistory.test.ts) | 23 | libraries |  |
 | [lib/security/placementSurveyToken.ts](../../../lib/security/placementSurveyToken.ts) | 118 | libraries | issuePlacementSurveyToken:66, VerifyResult:90, verifyPlacementSurveyToken:94 |
@@ -1007,6 +1010,7 @@
 | [lib/validation/resumeStrength.ts](../../../lib/validation/resumeStrength.ts) | 9 | libraries | resumeStrengthSchema:3, ResumeStrengthInput:9 |
 | [lib/validation/salaryNegotiation.ts](../../../lib/validation/salaryNegotiation.ts) | 14 | libraries | salaryNegotiationSchema:3, SalaryNegotiationInput:14 |
 | [lib/validation/skillAssessment.ts](../../../lib/validation/skillAssessment.ts) | 21 | libraries | saveSkillAssessmentSchema:16 |
+| [lib/webhooks/deadLetter.ts](../../../lib/webhooks/deadLetter.ts) | 61 | libraries | WebhookDeadLetterInput:7, WebhookDeadLetterResult:18, recordWebhookDeadLetter:34 |
 | [lib/webhooks/logEvent.ts](../../../lib/webhooks/logEvent.ts) | 69 | libraries | WebhookEventStatus:5, WebhookStatusPersistenceError:8, LogWebhookEventInput:15, logWebhookEvent:28, updateWebhookEventStatus:50 |
 | [lib/webhooks/retry.test.ts](../../../lib/webhooks/retry.test.ts) | 125 | libraries |  |
 | [lib/webhooks/retry.ts](../../../lib/webhooks/retry.ts) | 87 | libraries | updateWebhookEventStatus:5, getNextRetryDelayMs:11, getNextRetryAt:16, markWebhookForRetry:22, getPendingRetryEvents:47, getWebhookStats:63 |

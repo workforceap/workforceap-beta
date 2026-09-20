@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import { isAdmin } from '@/lib/auth/roles';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -25,29 +25,14 @@ export const POST = withApiGuc(async () => {
         return NextResponse.json({ error: ACCOUNT_STORAGE_DELETE_FAILED }, { status: 502 });
       }
 
-      // Soft-delete in app DB AND release the email from the unique
-      // constraint so the user (or anyone) can sign up again with the
-      // same address. See app/api/admin/members/[id]/delete/route.ts.
-      const existing = await prisma.$transaction((tx) => tx.user.findUnique({
-        where: { id: user.id },
-        select: { email: true, deletedAt: true },
-      }));
-      if (existing) {
-        const now = new Date();
-        const newEmail = existing.deletedAt
-          ? existing.email
-          : `deleted_${user.id}_${now.getTime()}_${existing.email}@deleted.invalid`.slice(0, 255);
-        await prisma.$transaction((tx) => tx.user.update({
-          where: { id: user.id },
-          data: { deletedAt: now, email: newEmail },
-        }));
-        auditLog({
-          actorUserId: user.id,
-          action: 'member_self_delete',
-          targetType: 'User',
-          targetId: user.id,
-          metadata: { originalEmail: existing.email },
-        }).catch(() => {});
+      // WAP-169: soft-delete, release the email from the unique constraint
+      // and scrub the profile through the shared anonymiser. The row is kept
+      // (anonymised) for DELETED_ACCOUNT_RETENTION_DAYS so an admin can
+      // restore the sign-in, then hard-purged by the retention cron. The
+      // audit row is written by the helper without the original address —
+      // this route used to log `metadata.originalEmail` into the 3-year log.
+      const anonymized = await anonymizeMember(user.id, { reason: 'member_self_delete' }, prisma);
+      if (anonymized) {
         logAuditEvent({
           user: { id: user.id, role: 'member' },
           verb: 'deleted',

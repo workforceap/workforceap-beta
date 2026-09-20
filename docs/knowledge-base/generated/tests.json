@@ -9432,7 +9432,7 @@
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 28
+        "line": 33
       }
     ],
     "kind": "test-candidate",
@@ -14557,23 +14557,31 @@
       },
       {
         "file": "app/api/gdpr/delete/route.ts",
-        "line": 69
+        "line": 78
       },
       {
         "file": "lib/auth/server.ts",
-        "line": 70
+        "line": 79
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 71
+        "line": 80
       },
       {
         "file": "lib/gdpr/deleteAuthUser.ts",
-        "line": 72
+        "line": 81
       },
       {
         "file": "lib/gdpr/deleteUserStorage.ts",
-        "line": 73
+        "line": 82
+      },
+      {
+        "file": "lib/member/anonymizeMember.ts",
+        "line": 83
+      },
+      {
+        "file": "lib/audit/log.ts",
+        "line": 84
       }
     ],
     "kind": "test-candidate",
@@ -14942,6 +14950,18 @@
       {
         "file": "lib/db/prisma.ts",
         "line": 44
+      },
+      {
+        "file": "lib/events/track.ts",
+        "line": 45
+      },
+      {
+        "file": "lib/member/points.ts",
+        "line": 46
+      },
+      {
+        "file": "lib/notifications/partner-notify.ts",
+        "line": 47
       }
     ],
     "kind": "test-candidate",
@@ -15045,27 +15065,39 @@
       },
       {
         "file": "app/api/member/delete-account/route.ts",
-        "line": 53
+        "line": 58
       },
       {
         "file": "lib/auth/server.ts",
-        "line": 54
+        "line": 59
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 55
+        "line": 60
       },
       {
         "file": "lib/supabase-admin.ts",
-        "line": 56
+        "line": 61
       },
       {
         "file": "lib/gdpr/deleteUserStorage.ts",
-        "line": 57
+        "line": 62
       },
       {
         "file": "lib/auth/roles.ts",
-        "line": 58
+        "line": 63
+      },
+      {
+        "file": "lib/member/anonymizeMember.ts",
+        "line": 64
+      },
+      {
+        "file": "lib/audit.ts",
+        "line": 65
+      },
+      {
+        "file": "lib/audit/log.ts",
+        "line": 66
       }
     ],
     "kind": "test-candidate",
@@ -20011,6 +20043,118 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+    "area": "tests",
+    "domain": "partners-funding",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/webhooks/logEvent.ts",
+        "line": 16
+      },
+      {
+        "file": "app/api/stripe/webhook/route.ts",
+        "line": 37
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 38
+      },
+      {
+        "file": "lib/stripe/client.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/observability/captureApiError.ts",
+        "line": 40
+      },
+      {
+        "file": "lib/stripe/subscriptionPersistence.ts",
+        "line": 41
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/certifications/self-report-pending.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 21
+      },
+      {
+        "file": "app/api/admin/certifications/review/route.ts",
+        "line": 44
+      },
+      {
+        "file": "app/(portal)/dashboard/logCertAction.ts",
+        "line": 45
+      },
+      {
+        "file": "lib/certifications/certificationApproved.ts",
+        "line": 46
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 47
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 48
+      },
+      {
+        "file": "lib/audit.ts",
+        "line": 49
+      },
+      {
+        "file": "lib/certifications/certificationApproved.ts",
+        "line": 150
+      },
+      {
+        "file": "lib/events/track.ts",
+        "line": 153
+      },
+      {
+        "file": "lib/member/points.ts",
+        "line": 154
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 155
+      },
+      {
+        "file": "lib/notifications/partner-notify.ts",
+        "line": 156
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/admin-command-center-presentation.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -24331,6 +24475,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/gdpr/anonymize-member.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/anonymizeMember.ts",
+        "line": 10
+      },
+      {
+        "file": "lib/member/deletedEmail.ts",
+        "line": 17
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/instrumentation-client-hydration-filter.test.ts",
     "area": "tests",
     "domain": "tests",
@@ -28346,6 +28518,17 @@
       }
     ],
     "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/migrations/audit-events-actor-set-null.mjs",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [],
+    "localReferences": [],
+    "kind": "test-helper",
+    "declaredRunners": [],
+    "collectionStatus": "helper-not-a-suite",
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {

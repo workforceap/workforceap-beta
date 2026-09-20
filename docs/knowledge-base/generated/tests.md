@@ -101,7 +101,7 @@
 | [tests/api/employer-subscribe-pricing.spec.ts](../../../tests/api/employer-subscribe-pricing.spec.ts) | 196 | tests |  |
 | [tests/api/employers-page.spec.tsx](../../../tests/api/employers-page.spec.tsx) | 124 | tests |  |
 | [tests/api/extract-resume-text.spec.ts](../../../tests/api/extract-resume-text.spec.ts) | 62 | tests |  |
-| [tests/api/gdpr-delete-route.spec.ts](../../../tests/api/gdpr-delete-route.spec.ts) | 149 | tests |  |
+| [tests/api/gdpr-delete-route.spec.ts](../../../tests/api/gdpr-delete-route.spec.ts) | 213 | tests |  |
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 233 | tests |  |
@@ -110,11 +110,11 @@
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
 | [tests/api/job-match.spec.ts](../../../tests/api/job-match.spec.ts) | 477 | tests |  |
 | [tests/api/lab-evidence.spec.ts](../../../tests/api/lab-evidence.spec.ts) | 173 | tests |  |
-| [tests/api/member-certifications.spec.ts](../../../tests/api/member-certifications.spec.ts) | 130 | tests |  |
+| [tests/api/member-certifications.spec.ts](../../../tests/api/member-certifications.spec.ts) | 157 | tests |  |
 | [tests/api/member-course-complete.spec.ts](../../../tests/api/member-course-complete.spec.ts) | 198 | tests |  |
 | [tests/api/member-coursera-enroll-in-course.spec.ts](../../../tests/api/member-coursera-enroll-in-course.spec.ts) | 231 | learning-coursera |  |
 | [tests/api/member-coursera-identity.spec.ts](../../../tests/api/member-coursera-identity.spec.ts) | 83 | learning-coursera |  |
-| [tests/api/member-delete-account.spec.ts](../../../tests/api/member-delete-account.spec.ts) | 218 | tests |  |
+| [tests/api/member-delete-account.spec.ts](../../../tests/api/member-delete-account.spec.ts) | 236 | tests |  |
 | [tests/api/member-enrollments.spec.ts](../../../tests/api/member-enrollments.spec.ts) | 118 | tests |  |
 | [tests/api/member-event-ingestion.spec.ts](../../../tests/api/member-event-ingestion.spec.ts) | 46 | tests |  |
 | [tests/api/member-export-data.spec.ts](../../../tests/api/member-export-data.spec.ts) | 288 | tests |  |
@@ -234,6 +234,8 @@
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
 | [tests/app/skill-missions-page.spec.tsx](../../../tests/app/skill-missions-page.spec.tsx) | 97 | tests |  |
+| [tests/billing/stripe-checkout-dead-letter.spec.ts](../../../tests/billing/stripe-checkout-dead-letter.spec.ts) | 171 | partners-funding |  |
+| [tests/certifications/self-report-pending.spec.ts](../../../tests/certifications/self-report-pending.spec.ts) | 166 | tests |  |
 | [tests/components/admin-command-center-presentation.spec.tsx](../../../tests/components/admin-command-center-presentation.spec.tsx) | 55 | tests |  |
 | [tests/components/admin-command-center-workflows.spec.tsx](../../../tests/components/admin-command-center-workflows.spec.tsx) | 258 | tests |  |
 | [tests/components/admin-directory-navigation.spec.tsx](../../../tests/components/admin-directory-navigation.spec.tsx) | 182 | tests |  |
@@ -374,6 +376,7 @@
 | [tests/fixtures/boardSnapshot.ts](../../../tests/fixtures/boardSnapshot.ts) | 28 | tests | boardSnapshotFixture:4 |
 | [tests/fixtures/member-message-rls-baseline.json](../../../tests/fixtures/member-message-rls-baseline.json) | 204 | tests |  |
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
+| [tests/gdpr/anonymize-member.spec.ts](../../../tests/gdpr/anonymize-member.spec.ts) | 142 | tests |  |
 | [tests/hello.txt](../../../tests/hello.txt) | 1 | tests |  |
 | [tests/instrumentation-client-hydration-filter.test.ts](../../../tests/instrumentation-client-hydration-filter.test.ts) | 13 | tests |  |
 | [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 86 | tests |  |
@@ -522,6 +525,7 @@
 | [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 86 | tests |  |
+| [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
 | [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |
 | [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |

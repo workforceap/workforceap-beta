@@ -202,7 +202,7 @@
 | [app/(portal)/dashboard/learning/wioa-qualification/loading.tsx](../../../app/%28portal%29/dashboard/learning/wioa-qualification/loading.tsx) | 6 | learning-coursera | default:3 |
 | [app/(portal)/dashboard/learning/wioa-qualification/page.tsx](../../../app/%28portal%29/dashboard/learning/wioa-qualification/page.tsx) | 60 | learning-coursera | generateMetadata:18, default:27 |
 | [app/(portal)/dashboard/loading.tsx](../../../app/%28portal%29/dashboard/loading.tsx) | 9 | member-counselor | default:7 |
-| [app/(portal)/dashboard/logCertAction.ts](../../../app/%28portal%29/dashboard/logCertAction.ts) | 39 | member-counselor | logExternalCertification:8 |
+| [app/(portal)/dashboard/logCertAction.ts](../../../app/%28portal%29/dashboard/logCertAction.ts) | 42 | member-counselor | logExternalCertification:8 |
 | [app/(portal)/dashboard/mentor/page.tsx](../../../app/%28portal%29/dashboard/mentor/page.tsx) | 131 | member-counselor | generateMetadata:13, default:22 |
 | [app/(portal)/dashboard/mentors/\[mentorId\]/page.tsx](../../../app/%28portal%29/dashboard/mentors/%5BmentorId%5D/page.tsx) | 25 | member-counselor | default:7 |
 | [app/(portal)/dashboard/mentors/loading.tsx](../../../app/%28portal%29/dashboard/mentors/loading.tsx) | 5 | member-counselor | default:3 |

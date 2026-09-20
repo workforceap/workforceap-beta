@@ -1017,10 +1017,12 @@ model UserCertification {
   earnedAt  DateTime @map("earned_at")
   createdAt DateTime @default(now()) @map("created_at")
 
-  // Verification / review workflow (additive). Default `approved` so existing
-  // rows and self-attested adds keep counting toward outcomes; proof
-  // submissions flip to `pending` and surface in the admin review queue.
-  status       CertStatus @default(approved)
+  // Verification / review workflow. WAP-20: every new row starts `pending`
+  // (self-reports and proof submissions alike) and surfaces in the admin
+  // review queue; only an approved row is a verified credential. The two
+  // pre-existing `approved` rows were deliberately left as they are
+  // (migration 20260920141900).
+  status       CertStatus @default(pending)
   proofUrl     String?    @map("proof_url")
   submittedAt  DateTime?  @map("submitted_at")
   reviewedAt   DateTime?  @map("reviewed_at")
@@ -1509,7 +1511,9 @@ model AuditLog {
 /// xAPI 1.0.3-shaped admin action audit trail (org-scoped via RLS).
 model AuditEvent {
   id            String   @id @default(uuid())
-  actorUserId   String   @map("actor_user_id")
+  /// Nullable since 20260920141800: SET NULL on user purge (WAP-169) so a
+  /// deleted member's rows stay in the trail without holding the account.
+  actorUserId   String?  @map("actor_user_id")
   actorRole     String   @map("actor_role")
   verb          String
   objectType    String   @map("object_type")
@@ -1520,7 +1524,7 @@ model AuditEvent {
   ip            String?
   ua            String?  @db.Text
 
-  actor        User         @relation("ActorAuditEvents", fields: [actorUserId], references: [id], onDelete: Restrict)
+  actor        User?        @relation("ActorAuditEvents", fields: [actorUserId], references: [id], onDelete: SetNull)
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
 
   @@index([actorUserId])

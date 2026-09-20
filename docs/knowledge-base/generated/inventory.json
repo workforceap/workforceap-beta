@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "40dc8425dd20b7b533c8f08d7836ab9c397fbec1cc9d5996f8f8b3af7eb68f63",
+  "inputTreeSha256": "3268cbcb9e9d887a7e9532996311db95be7f78d5ff785fc316512f9cafc5d4d1",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -9888,9 +9888,9 @@
       "path": "app/(portal)/dashboard/logCertAction.ts",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 970,
-      "lines": 39,
-      "sha256": "a186108b94f7b89392faf6a280d828725d9cb280aff3fbf9c80060168061ab81",
+      "bytes": 1096,
+      "lines": 42,
+      "sha256": "5f2fd244a0128202a4a43b13c40557625d3cd2d34f50ea8be0d3527ed65652d0",
       "binary": false,
       "exports": [
         {
@@ -22110,21 +22110,21 @@
       "path": "app/api/admin/certifications/review/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 4105,
-      "lines": 106,
-      "sha256": "d97f4cf5699a46667d21813dddf2a00d4c226767428c442fde6e4e418e5a447f",
+      "bytes": 4681,
+      "lines": 115,
+      "sha256": "6f5c6971cfd659e24f85a727acb6b26ebc612b39a6c9ad06c41ef4b84b70843a",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         }
       ],
@@ -28973,74 +28973,33 @@
       "path": "app/api/admin/users/_deletedEmail.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 832,
-      "lines": 21,
-      "sha256": "9e740cb420a44b15559e6e1c83e12365a64dc0e6e9f0fc8b4c736b43617d2c18",
+      "bytes": 276,
+      "lines": 8,
+      "sha256": "175da7cd37724ed8916f6c900d7e76b3d6bf6ed4e9860e1c9abf8860f8b79cf8",
       "binary": false,
       "exports": [
         {
           "name": "buildDeletedEmail",
-          "line": 6,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "parseDeletedEmail",
-          "line": 11,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "isDeletedEmail",
-          "line": 15,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "isDeletedEmailMarker",
-          "line": 19,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "MAX_EMAIL_LENGTH",
-          "line": 1,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_SUFFIX",
-          "line": 2,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_RE",
-          "line": 3,
-          "kind": "Variable"
-        },
-        {
-          "name": "DELETED_EMAIL_MARKER_RE",
           "line": 4,
-          "kind": "Variable"
-        },
-        {
-          "name": "buildDeletedEmail",
-          "line": 6,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "parseDeletedEmail",
-          "line": 11,
-          "kind": "FunctionDeclaration"
+          "kind": "ReExport"
         },
         {
           "name": "isDeletedEmail",
-          "line": 15,
-          "kind": "FunctionDeclaration"
+          "line": 5,
+          "kind": "ReExport"
         },
         {
           "name": "isDeletedEmailMarker",
-          "line": 19,
-          "kind": "FunctionDeclaration"
+          "line": 6,
+          "kind": "ReExport"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 7,
+          "kind": "ReExport"
         }
       ],
+      "declarations": [],
       "directive": null
     },
     {
@@ -34620,21 +34579,21 @@
       "path": "app/api/gdpr/delete/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 5490,
-      "lines": 159,
-      "sha256": "5a2f39a89c29edae594abfa9a8603f4e30c47de73a2982ab77e4e9182bcfc83b",
+      "bytes": 5573,
+      "lines": 145,
+      "sha256": "c4e18ee332e6e56251b10e2352b5d2b6218072a1406e537b0f91625128aeb2e2",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         }
       ],
@@ -35770,46 +35729,46 @@
       "path": "app/api/member/certifications/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 4067,
-      "lines": 122,
-      "sha256": "342d07397f7dd5af04fb4fcb7dc7271b330b1cde13f8ca3fc99948a7b8c74db2",
+      "bytes": 3352,
+      "lines": 96,
+      "sha256": "536b89c09d35b6de2b47bb29eef63339322ae57396d008166dca2894997687a1",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 37,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 121,
+          "line": 95,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "toggleSchema",
-          "line": 13,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "_GET",
-          "line": 17,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 37,
+          "line": 33,
           "kind": "Variable"
         },
         {
           "name": "_POST",
-          "line": 37,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 121,
+          "line": 95,
           "kind": "Variable"
         }
       ],
@@ -36110,9 +36069,9 @@
       "path": "app/api/member/delete-account/route.ts",
       "area": "api",
       "domain": "member-counselor",
-      "bytes": 3110,
-      "lines": 76,
-      "sha256": "5563d02706c2a30692424d286e7191cbfcfb5d11d69c769251a3cc19bfe04ec9",
+      "bytes": 2715,
+      "lines": 61,
+      "sha256": "b15a9d7076efad7f7fdf79c0deb044dd7a0f64a370cb93c6e6dc2643d5a528bf",
       "binary": false,
       "exports": [
         {
@@ -40634,31 +40593,31 @@
       "path": "app/api/stripe/webhook/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 10238,
-      "lines": 249,
-      "sha256": "77e14eaf5daad22fb6361848e59faa504c1c727e09e1c15d6c1422c75fb989e2",
+      "bytes": 12733,
+      "lines": 295,
+      "sha256": "1e31765f546eca9f7d6073d162cc7be89412570c4dd2765dd9a04cce668e9e18",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "normalizeStripeId",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "invoiceSubscriptionId",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -100871,6 +100830,30 @@
       "directive": null
     },
     {
+      "path": "lib/certifications/certificationApproved.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1695,
+      "lines": 42,
+      "sha256": "d64fe11de1d96099269a12357db110914454ea3c8b70ebb215e3ba0401317c34",
+      "binary": false,
+      "exports": [
+        {
+          "name": "runCertificationApprovedEffects",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "runCertificationApprovedEffects",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/coach/memory.test.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -121443,6 +121426,110 @@
       "directive": null
     },
     {
+      "path": "lib/member/anonymizeMember.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 6283,
+      "lines": 179,
+      "sha256": "1a16f354b636b4a6cffbbadfd3e8567b0272ad7ff01120473993522a35e310a1",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AnonymizeMemberReason",
+          "line": 35,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberOptions",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberResult",
+          "line": 51,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANONYMIZED_FULL_NAME",
+          "line": 59,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ANONYMIZED_AUDIT_ACTION",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_DATA",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_FIELDS",
+          "line": 98,
+          "kind": "Variable"
+        },
+        {
+          "name": "anonymizeMember",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AnonymizeMemberReason",
+          "line": 35,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberOptions",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AnonymizeMemberResult",
+          "line": 51,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ANONYMIZED_FULL_NAME",
+          "line": 59,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ANONYMIZED_AUDIT_ACTION",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_DATA",
+          "line": 63,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANONYMIZED_PROFILE_FIELDS",
+          "line": 98,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnonymizeDb",
+          "line": 102,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "scrambledEmail",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "anonymizeMember",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/applicationAiFeedback.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -122509,6 +122596,80 @@
         {
           "name": "resolveMemberDashboardTabs",
           "line": 35,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/deletedEmail.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 1345,
+      "lines": 30,
+      "sha256": "ee9aacc5df9bb9a29966733e0cbe7d5eb857cd06d58f7dccdcaa2a17e8b99cdc",
+      "binary": false,
+      "exports": [
+        {
+          "name": "buildDeletedEmail",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmail",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmailMarker",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MAX_EMAIL_LENGTH",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_SUFFIX",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_RE",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_EMAIL_MARKER_RE",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "buildDeletedEmail",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseDeletedEmail",
+          "line": 20,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmail",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDeletedEmailMarker",
+          "line": 28,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -137015,9 +137176,9 @@
       "path": "lib/retention/cleanup.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 13122,
-      "lines": 349,
-      "sha256": "64d3ab359e717a89a99fe01cd25f961f04a7d8bcfca0d99df4d5fd68ec9c24a8",
+      "bytes": 14789,
+      "lines": 381,
+      "sha256": "095dc77f250786ed191007ea67355f7fa6de3ec6f19492726e0b639c9d1d4d5c",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -137042,8 +137203,13 @@
           "kind": "Variable"
         },
         {
+          "name": "mockAnonymizeMember",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
           "name": "foreignKeyError",
-          "line": 17,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -137053,96 +137219,96 @@
       "path": "lib/retention/cleanup.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 9608,
-      "lines": 284,
-      "sha256": "955f36aa572ced461b8317bb9cf9e72c7eef82dc554a05198a9e459dcebda908",
+      "bytes": 10449,
+      "lines": 298,
+      "sha256": "df49d6f3c261a556a3a01660aa1cc3f62a113d3bbad1eae66398b6de06534b16",
       "binary": false,
       "exports": [
         {
           "name": "CleanupResult",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "cleanupTable",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 118,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 123,
+          "line": 124,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 141,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 171,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 226,
+          "line": 240,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CleanupResult",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DataCleanupReport",
-          "line": 19,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "cleanupTable",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 118,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 123,
+          "line": 124,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SELF_SERVICE_AUDIT_ACTOR_ROLE",
-          "line": 134,
+          "line": 135,
           "kind": "Variable"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 141,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 171,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 226,
+          "line": 240,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141164,6 +141330,55 @@
           "name": "saveSkillAssessmentSchema",
           "line": 16,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/webhooks/deadLetter.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 2174,
+      "lines": 61,
+      "sha256": "52949d5ecd3ff46d56bad5f9e35c94d3f88611cb0181eed79c5263b9dc15f565",
+      "binary": false,
+      "exports": [
+        {
+          "name": "WebhookDeadLetterInput",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "WebhookDeadLetterResult",
+          "line": 18,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "recordWebhookDeadLetter",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "WebhookDeadLetterInput",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "WebhookDeadLetterResult",
+          "line": 18,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "DeadLetterDb",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "recordWebhookDeadLetter",
+          "line": 34,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -147086,6 +147301,24 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260920141800_audit_events_actor_set_null/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 796,
+      "lines": 11,
+      "sha256": "1a10d0b6d14533f77bfccfa7a83080ef0b006592d0f78faf0ed4d877fdeb264c",
+      "binary": false
+    },
+    {
+      "path": "prisma/migrations/20260920141900_user_certifications_default_pending/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 361,
+      "lines": 5,
+      "sha256": "e32daaae3a85acafd07e5e4e558b7bc094a7d20bb54ea4bc4aa6876dd6c88be6",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/20260920141917_user_tour_state/migration.sql",
       "area": "database",
       "domain": "database",
@@ -147107,9 +147340,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 135499,
-      "lines": 3202,
-      "sha256": "cd45f109bca439118d457da742d04ad6b21c3ab86df60053742c0f22b12f4f80",
+      "bytes": 135750,
+      "lines": 3206,
+      "sha256": "2f71814d96c9f7f142e7c46676cb691cfd9ba882026229daed149e19ef790729",
       "binary": false
     },
     {
@@ -159424,9 +159657,9 @@
       "path": "tests/api/gdpr-delete-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5355,
-      "lines": 149,
-      "sha256": "92c4a6d24e4fdd58032223b556a1fee1ecd93b5cde973457e49e9b33bcbfed63",
+      "bytes": 8455,
+      "lines": 213,
+      "sha256": "a67d36137ebcc9c27e2bcaf4616aa0133015936c69c81870e69874c8f6a7ccd5",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159438,6 +159671,16 @@
         {
           "name": "signOut",
           "line": 4,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORIGINAL_EMAIL",
+          "line": 86,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_MARKER",
+          "line": 87,
           "kind": "Variable"
         }
       ],
@@ -159685,15 +159928,15 @@
       "path": "tests/api/member-certifications.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5116,
-      "lines": 130,
-      "sha256": "661af415938a2889b1622e38b8ab88c59817b56f12ebb3084bd7800edeb29ec1",
+      "bytes": 6836,
+      "lines": 157,
+      "sha256": "8e4b06774e6a0073304510c078790a48a91349c7107180b50b8c54270b58da4d",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "postReq",
-          "line": 46,
+          "line": 49,
           "kind": "Variable"
         }
       ],
@@ -159782,15 +160025,20 @@
       "path": "tests/api/member-delete-account.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7587,
-      "lines": 218,
-      "sha256": "049699f6a66a2cbdd2adc9a6fad97a4b771b5ad31c79af3b051ff230112acdc3",
+      "bytes": 8942,
+      "lines": 236,
+      "sha256": "6229f208b3e8430a45222f666895b853e47663717b00b32a2d5d8dec64002a96",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "anonymized",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
           "name": "UUIDS",
-          "line": 60,
+          "line": 76,
           "kind": "Variable"
         }
       ],
@@ -162837,6 +163085,67 @@
           "name": "view",
           "line": 29,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/billing/stripe-checkout-dead-letter.spec.ts",
+      "area": "tests",
+      "domain": "partners-funding",
+      "bytes": 7374,
+      "lines": 171,
+      "sha256": "5cdd47e986b3bf3af2a88240ad77165f5b332f4492f4c0f1501314ec7fae83a6",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "payload",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "request",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "deliverCheckout",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "paidOrphan",
+          "line": 57,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/certifications/self-report-pending.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 8312,
+      "lines": 166,
+      "sha256": "79388f8718facb7cf4f3672f1e7ba6e4abd7b2b93a5b35f8f761a9d1b0be7834",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "afterCallbacks",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "reviewRequest",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "flushAfter",
+          "line": 55,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -166814,6 +167123,49 @@
       "binary": false
     },
     {
+      "path": "tests/gdpr/anonymize-member.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6822,
+      "lines": 142,
+      "sha256": "ab7edf871bab7675da9910b463d5e0057055e609e1b5060d4d3e88ddc465945c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "USER_ID",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORIGINAL_EMAIL",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "NOW",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "AnonymizeDb",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Call",
+          "line": 24,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fakeDb",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/hello.txt",
       "area": "tests",
       "domain": "tests",
@@ -170576,6 +170928,89 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/migrations/audit-events-actor-set-null.mjs",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7466,
+      "lines": 148,
+      "sha256": "7aa6a5c38357e4eb9f5c154cea343002ff21384b6d270dc28fe0b1424e18cd77",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "migrationPath",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "migration",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceUrl",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "target",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceDatabase",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabase",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "createsDatabase",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "env",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "runSql",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sql",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "ident",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabaseCreated",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "resetTables",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "constraintState",
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
