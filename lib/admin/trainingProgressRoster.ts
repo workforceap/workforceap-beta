@@ -30,10 +30,10 @@ export type RosterRow = {
   lastActiveAt?: number | null;
 };
 
-export const PACE_FILTERS = ['all', 'Ahead', 'On track', 'Behind', 'Stalled'] as const;
+const PACE_FILTERS = ['all', 'Ahead', 'On track', 'Behind', 'Stalled'] as const;
 export type PaceFilter = (typeof PACE_FILTERS)[number];
 
-export const LINK_FILTERS = ['all', 'linked', 'unmatched', 'no-program'] as const;
+const LINK_FILTERS = ['all', 'linked', 'unmatched', 'no-program'] as const;
 export type LinkFilter = (typeof LINK_FILTERS)[number];
 
 export const SORT_KEYS = [

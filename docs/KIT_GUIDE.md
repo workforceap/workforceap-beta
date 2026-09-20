@@ -391,13 +391,19 @@ against that page in the client.
 both table rows and mobile cards. Keep that identifier visible and wrapping so
 staff can distinguish same-name accounts before opening an account action.
 
-`TrainingProgressKit` (`/admin/training-progress`, proof `/dev/staff/training-progress`)
-is a dense staff roster. Sortable headers are Student, Program, Modules, % Complete,
-Coursera grade, Pace, and Last active. Last active is a relative caption (`2h ago`)
-from existing login / LMS / progress timestamps (`User.lastLoginAt`,
+`StudentsRosterKit` is the one admin roster (admin audit 2026-09-20, §7 item 2). It
+takes a `view` preset: `roster` (`/admin/students`) shows Program, Progress, Coursera
+grade, Readiness, Counselor, Status and Last active; `training`
+(`/admin/students?view=training` and `/admin/training-progress`, proof
+`/dev/staff/training-progress`) shows Program, Modules, % Complete, Coursera grade,
+Pace and Last active with a KPI strip. Presets, chips and search live in
+`lib/admin/studentsRosterView.ts`; the training preset sorts through the tested
+helpers in `lib/admin/trainingProgressRoster.ts`. Last active is a relative caption
+(`2h ago`) from existing login / LMS / progress timestamps (`User.lastLoginAt`,
 `CourseProgress.lastActivityAt` / `lastUpdatedAt`) — never a new table. Missing
 timestamps sort last in both directions. Do not mix Astryx primitives inside the
-kit table cells beyond `Token` for Pace.
+kit table cells beyond `Token` for Status / Pace. Legacy tables stay behind
+`?ui=legacy` only (`/admin/training-progress?ui=legacy`, `/admin/members/training?ui=legacy`).
 
 ---
 
