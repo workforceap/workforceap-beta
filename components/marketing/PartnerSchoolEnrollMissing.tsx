@@ -89,7 +89,7 @@ export default async function PartnerSchoolEnrollMissing({ school, partners }: P
               </h2>
               <p className="enroll-empty__body">{t('missingEmptyBody')}</p>
               <div className="enroll-empty__action">
-                <Link className="btn btn--primary" href="/apply">
+                <Link className="btn btn-primary" href="/apply">
                   {t('missingPrimaryApply')}
                 </Link>
               </div>
@@ -97,10 +97,10 @@ export default async function PartnerSchoolEnrollMissing({ school, partners }: P
           )}
 
           <div className="acts acts--center missing-foot">
-            <Link className="btn btn--ghost" href="/contact">
+            <Link className="btn btn-secondary" href="/contact">
               {t('missingContact')}
             </Link>
-            <Link className="btn btn--ghost" href="/">
+            <Link className="btn btn-secondary" href="/">
               {t('missingHome')}
             </Link>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Eye, EyeOff, Landmark, MailCheck } from 'lucide-react';
+import { Landmark, MailCheck } from 'lucide-react';
+import PasswordToggle from '@/components/forms/PasswordToggle';
 
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState } from 'react';
@@ -155,21 +156,6 @@ const s = {
     alignItems: 'center',
   } as React.CSSProperties,
 
-  passwordToggle: {
-    position: 'absolute',
-    right: 'var(--space-3)',
-    background: 'none',
-    border: 'none',
-    color: 'var(--color-on-surface-variant)',
-    cursor: 'pointer',
-    padding: 'var(--space-1)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 44,
-    minHeight: 44,
-  } as React.CSSProperties,
-
   select: {
     width: '100%',
     padding: 'var(--space-3) var(--space-4)',
@@ -183,24 +169,6 @@ const s = {
 
   fieldGroup: {
     marginBottom: 'var(--space-4)',
-  } as React.CSSProperties,
-
-  primaryBtn: {
-    width: '100%',
-    padding: 'var(--space-4)',
-    fontSize: 'var(--font-size-base)',
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const,
-    color: 'var(--color-white)',
-    /* Crimson primary CTA — the kit's primary-action treatment (.btn-primary / .mdx-btn--primary).
-       --ad-grad is the auth-depth crimson gradient; white on its lightest stop is 6.5:1. */
-    background: 'var(--ad-grad, var(--color-accent))',
-    border: 'none',
-    borderRadius: 'var(--radius-md)',
-    cursor: 'pointer',
-    transition: 'opacity 0.2s, box-shadow 0.2s',
-    boxShadow: '0 12px 30px -12px rgba(173, 44, 77, 0.5)',
   } as React.CSSProperties,
 
   errorBanner: {
@@ -345,7 +313,8 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
           </p>
           <LocalizedLink
             href={loginHref}
-            style={{ ...s.primaryBtn, display: 'inline-block', textDecoration: 'none', textAlign: 'center', maxWidth: 280 }}
+            className="btn btn-primary"
+            style={{ maxWidth: 280 }}
           >
             {tAuth('signup.goToLogin')}
           </LocalizedLink>
@@ -458,15 +427,14 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
                     onChange: (e) => setPasswordVal(e.target.value),
                   })}
                 />
-                <button
-                  type="button"
-                  style={s.passwordToggle}
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? tAuth('signup.hidePassword') : tAuth('signup.showPassword')}
-                  aria-pressed={showPassword}
-                >
-                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
-                </button>
+                <PasswordToggle
+                  visible={showPassword}
+                  onToggle={() => setShowPassword((v) => !v)}
+                  showLabel={tAuth('signup.showPassword')}
+                  hideLabel={tAuth('signup.hidePassword')}
+                  controls="password"
+                  style={{ right: 'var(--space-3)' }}
+                />
               </div>
               {/* Strength bars */}
               <div style={s.strengthRow}>
@@ -605,7 +573,7 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
               type="submit"
               disabled={submitStatus === 'loading' || (CAPTCHA_ENABLED && !!TURNSTILE_SITE_KEY && !turnstileToken)}
               aria-busy={submitStatus === 'loading'}
-              style={{ ...s.primaryBtn, opacity: submitStatus === 'loading' ? 0.7 : 1 }}
+              className="btn btn-primary btn-full-width"
             >
               <span aria-live="polite">{submitStatus === 'loading' ? tAuth('signup.creatingAccount') : tAuth('signup.createAccount')}</span>
             </button>

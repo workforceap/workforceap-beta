@@ -12,12 +12,11 @@
 .page .hero p { color: inherit; }
 .page .hero :global(.mdx-pill) { white-space: normal; }
 
-.page .startAction,
 .page .helpAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
+  min-height: 44px;
   max-width: 100%;
   box-sizing: border-box;
   padding: 0.75rem 1.25rem;
@@ -30,9 +29,13 @@
   text-align: center;
   text-decoration: none;
 }
+/* WAP-114: geometry comes from the shared `.btn.btn-primary`; this is the
+   on-crimson color skin + hero placement only. */
 .page .startAction {
   margin: var(--space-5) auto 0;
   min-width: min(100%, 320px);
+  max-width: 100%;
+  white-space: normal;
   background: var(--mdx-surface);
   border-color: var(--mdx-surface);
   color: var(--mdx-accent-dark);

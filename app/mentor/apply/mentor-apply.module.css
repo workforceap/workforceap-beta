@@ -72,15 +72,7 @@
 }
 
 .submit {
-  width: 100%;
-  justify-content: center;
   margin-top: 0.25rem;
-}
-
-.submit:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .successWrap {

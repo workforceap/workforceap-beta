@@ -630,10 +630,9 @@ html.dark .marketing-bottom-nav {
   color: var(--mbn-inactive-fg);
 }
 
-/* Icons inherit `.material-symbols-outlined` from main.css (full variation tuple required on WebKit). */
-
-.marketing-bottom-nav__link--active .material-symbols-outlined {
-  --ms-fill: 1;
+/* Icons are lucide-react SVGs (WAP-110); the active tab thickens its stroke via the component. */
+.marketing-bottom-nav__link svg {
+  flex-shrink: 0;
 }
 
 .marketing-bottom-nav__link--active {
@@ -1382,7 +1381,9 @@ a.home-program-card:active {
   }
 
   .apply-mobile-step-nav__icon {
-    font-size: 1rem;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
     color: var(--color-on-surface-variant);
   }
 
