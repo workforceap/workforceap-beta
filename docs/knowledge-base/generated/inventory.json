@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "715a348e73c6e72ecd9a72ca9452ec3f83d15ad8aff7452d4dc571f4064fb4dd",
+  "inputTreeSha256": "f33dd55864076c7f9ab6216d7b4bf7539f3646740dd0663a71752ec01315f381",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3418,9 +3418,9 @@
       "path": "TODOS.md",
       "area": "root",
       "domain": "root",
-      "bytes": 58626,
+      "bytes": 58674,
       "lines": 1003,
-      "sha256": "c4ed2912696012ef6a295e9e0c1b8bd96132614dc532808821f63633a387f576",
+      "sha256": "8910e4c6ad13d4a69dd077af046522cc8f7e13e9efdbb0a64899ec157feadaad",
       "binary": false
     },
     {
@@ -25438,26 +25438,26 @@
       "path": "app/api/admin/members/[id]/program/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 6699,
-      "lines": 173,
-      "sha256": "560d755d9ff50961ef55c1e9dd4f8507d3a493cf4adba6fdfa05a2e2a4ccfcfd",
+      "bytes": 6914,
+      "lines": 176,
+      "sha256": "71d3f424135ec42a24c410979b2dd99f8a5ce7eb3e5f5674e85dc211c863cdc3",
       "binary": false,
       "exports": [
         {
           "name": "PATCH",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MemberProgramScopeChangedError",
-          "line": 22,
+          "line": 23,
           "kind": "ClassDeclaration"
         },
         {
           "name": "PATCH",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         }
       ],
@@ -31431,56 +31431,56 @@
       "path": "app/api/cron/at-risk-alerts/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 2233,
-      "lines": 48,
-      "sha256": "807e526cfeaec4738f65bc27fe4e36d26c1e0437b01e8312c7eaee43146e37a1",
+      "bytes": 2972,
+      "lines": 59,
+      "sha256": "c4ce1fdf6d3a391d4eb15fd1e3b0a1648e53f4dea2a7d700425c84f23a0a3ea1",
       "binary": false,
       "exports": [
         {
           "name": "runtime",
-          "line": 7,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "maxDuration",
-          "line": 8,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 47,
+          "line": 58,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 48,
+          "line": 59,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "runtime",
-          "line": 7,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "maxDuration",
-          "line": 8,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "handle",
-          "line": 33,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 47,
+          "line": 58,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 48,
+          "line": 59,
           "kind": "Variable"
         }
       ],
@@ -31490,56 +31490,56 @@
       "path": "app/api/cron/at-risk-check/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 4128,
-      "lines": 104,
-      "sha256": "8406f6764936e9d79a20db1f255153d9fd481f847090f0151f808f5768c745c1",
+      "bytes": 2917,
+      "lines": 86,
+      "sha256": "06169eee1f5aca4c75fab4450dc00f7b91bb69ab3e233288210f380e8bbe0c5e",
       "binary": false,
       "exports": [
         {
           "name": "runtime",
-          "line": 15,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "maxDuration",
-          "line": 16,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 103,
+          "line": 85,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 104,
+          "line": 86,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "runtime",
-          "line": 15,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "maxDuration",
-          "line": 16,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "handle",
-          "line": 33,
+          "line": 27,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 103,
+          "line": 85,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 104,
+          "line": 86,
           "kind": "Variable"
         }
       ],
@@ -76203,9 +76203,9 @@
       "path": "docs/ENVIRONMENT-VARIABLES.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 31768,
+      "bytes": 31770,
       "lines": 481,
-      "sha256": "914106739dc6a585f9c7a87af73ad29d273d26d977c9861ac0639759e557a267",
+      "sha256": "7be1eee5f38978ce24f98f8825067986d7d68ba9af20b086632ff2110ee49658",
       "binary": false
     },
     {
@@ -85932,9 +85932,9 @@
       "path": "lib/admin/cronRegistry.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 14883,
+      "bytes": 14935,
       "lines": 392,
-      "sha256": "b61428786f10a03771c2fe5d23b4a58a34e48f6f37e12f78a0de15ff5c8b230c",
+      "sha256": "b83f49c0e7a3d0303a62529f344e23c5d28a0e703723d4b6d026399c22c94d11",
       "binary": false,
       "exports": [
         {
@@ -111486,111 +111486,111 @@
       "path": "lib/cron/at-risk-alerts.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 17747,
-      "lines": 574,
-      "sha256": "615faa9c8bcf0ea5dd808edb08ed9857889fd55478c451f16811686bcb4d920f",
+      "bytes": 17932,
+      "lines": 576,
+      "sha256": "e034eeb8889ff80595721265d7fac4358f9c05eecd571a51623a6598a63dc4a0",
       "binary": false,
       "exports": [
         {
           "name": "RetentionNudgeResult",
-          "line": 81,
+          "line": 83,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMemberRetentionNudges",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorAlertResult",
-          "line": 295,
+          "line": 297,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DailyAtRiskAlertRunResult",
-          "line": 304,
+          "line": 306,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAFF_FALLBACK_COUNSELOR_ID",
-          "line": 319,
+          "line": 321,
           "kind": "Variable"
         },
         {
-          "name": "runDailyAtRiskCounselorAlerts",
-          "line": 326,
+          "name": "runAtRiskCounselorAlerts",
+          "line": 328,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "BulkEmailCronPacer",
-          "line": 39,
+          "line": 41,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SITE_URL",
-          "line": 41,
-          "kind": "Variable"
-        },
-        {
-          "name": "NUDGE_COOLDOWN_DAYS",
-          "line": 42,
-          "kind": "Variable"
-        },
-        {
-          "name": "NUDGE_COOLDOWN_MS",
           "line": 43,
           "kind": "Variable"
         },
         {
+          "name": "NUDGE_COOLDOWN_DAYS",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "NUDGE_COOLDOWN_MS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
           "name": "NUDGE_BATCH_SIZE",
-          "line": 50,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "NudgeKind",
-          "line": 52,
+          "line": 54,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "firstNameOf",
-          "line": 54,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "chooseNudge",
-          "line": 60,
+          "line": 62,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RetentionNudgeResult",
-          "line": 81,
+          "line": 83,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "runMemberRetentionNudges",
-          "line": 101,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorAlertResult",
-          "line": 295,
+          "line": 297,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DailyAtRiskAlertRunResult",
-          "line": 304,
+          "line": 306,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STAFF_FALLBACK_COUNSELOR_ID",
-          "line": 319,
+          "line": 321,
           "kind": "Variable"
         },
         {
-          "name": "runDailyAtRiskCounselorAlerts",
-          "line": 326,
+          "name": "runAtRiskCounselorAlerts",
+          "line": 328,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -114672,9 +114672,9 @@
       "path": "lib/email/bulkCronGuard.test.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 7607,
-      "lines": 138,
-      "sha256": "f0df6072a6a1cbdcbc298b72977b2d68992abc3ad8ae87b0ccda2a478652d36d",
+      "bytes": 7519,
+      "lines": 137,
+      "sha256": "49b7a8eb99068f40c9a29ecd65b68ecdb95dd3ecce405ea5ca04a71403f205d2",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -114685,32 +114685,32 @@
         },
         {
           "name": "CronConfig",
-          "line": 34,
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "config",
-          "line": 35,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "emailCallPattern",
-          "line": 36,
+          "line": 35,
           "kind": "Variable"
         },
         {
           "name": "routePath",
-          "line": 38,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sourceFor",
-          "line": 42,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recursivelyFindScheduledEmailCalls",
-          "line": 49,
+          "line": 48,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -120269,9 +120269,9 @@
       "path": "lib/member/atRiskScoring.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 17706,
-      "lines": 514,
-      "sha256": "849f58ff2e6688f78a77281b07cde6096690aa6f3234ef0f3ed267e7b1215e30",
+      "bytes": 19097,
+      "lines": 546,
+      "sha256": "8ca3ad7d509a65131cee9e2baf863631a90ad71a95f3b0064c6979b313f84722",
       "binary": false,
       "exports": [
         {
@@ -120297,6 +120297,11 @@
         {
           "name": "calculateAtRiskScore",
           "line": 63,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildRecommendedAction",
+          "line": 221,
           "kind": "FunctionDeclaration"
         },
         {
@@ -120332,6 +120337,11 @@
         {
           "name": "persistAtRiskAlert",
           "line": 483,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadPersistedAtRiskScores",
+          "line": 524,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -120425,6 +120435,11 @@
           "name": "persistAtRiskAlert",
           "line": 483,
           "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadPersistedAtRiskScores",
+          "line": 524,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -120433,9 +120448,9 @@
       "path": "lib/member/counselorEscalation.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 2607,
+      "bytes": 2626,
       "lines": 74,
-      "sha256": "306cbeb30a055cdaf064b047c59a5dc9d8c0321155d5e0588296a38a92974a19",
+      "sha256": "d81621cfd582cb824211b9ebea7da0cba4bb5e5a85d80db955f37704e8d40631",
       "binary": false,
       "exports": [
         {
@@ -154901,30 +154916,30 @@
       "path": "tests/api/admin-member-program-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5572,
-      "lines": 149,
-      "sha256": "ae5b1c5c786ec807296c84b63f2ca71857990e6dfd9cdd0759303f4eaa0e784c",
+      "bytes": 6775,
+      "lines": 177,
+      "sha256": "7f6cec90f613d6d4f9231461027d8463c5874a4790263e2e35edf524ca275669",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "ADMIN_ID",
-          "line": 82,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_ID",
-          "line": 83,
+          "line": 88,
           "kind": "Variable"
         },
         {
           "name": "ORG_ID",
-          "line": 84,
+          "line": 89,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 86,
+          "line": 91,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -155898,9 +155913,9 @@
       "path": "tests/api/at-risk-alert.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 31476,
-      "lines": 717,
-      "sha256": "a3f9ae4de0db38d62c585be5bf29d4209323908e38ef4a7c1b4faad40409270d",
+      "bytes": 30496,
+      "lines": 695,
+      "sha256": "1f1c4386328719ef6128f2e263bd6ff4f531cc6b1b2494de3e5a153ed99c7bf9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -155911,22 +155926,22 @@
         },
         {
           "name": "makeRequest",
-          "line": 86,
+          "line": 87,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mockScores",
-          "line": 92,
+          "line": 93,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mockMembers",
-          "line": 101,
+          "line": 102,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mockAlerts",
-          "line": 125,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156717,20 +156732,20 @@
       "path": "tests/api/cron-at-risk-alerts-auth.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6224,
-      "lines": 164,
-      "sha256": "2a40809f0195fd7bc5740c21ffcc23e145371c1a191241cecbe24839b498d0f8",
+      "bytes": 7160,
+      "lines": 188,
+      "sha256": "cead07fc7bcf78e5ed983572e44ecaaa0e0b67c7f52c6e5e363c9977d15f2e68",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "CRON_SECRET",
-          "line": 78,
+          "line": 76,
           "kind": "Variable"
         },
         {
           "name": "request",
-          "line": 80,
+          "line": 78,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -156740,26 +156755,21 @@
       "path": "tests/api/cron-at-risk-check.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8523,
-      "lines": 218,
-      "sha256": "f1e59e91b7475ac83fa7c5ad5f5084d6c4b1e2d12848a37b153b7d10ef6a5700",
+      "bytes": 5762,
+      "lines": 157,
+      "sha256": "1710eaaa0a571a6991b12a78cf57fce81d1c9c0e38b858a5f20450be73f5185b",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "makeCronRequest",
-          "line": 72,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "makeAuthorizedCronRequest",
-          "line": 79,
+          "line": 68,
           "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "alertsOk",
-          "line": 83,
-          "kind": "Variable"
         }
       ],
       "directive": null

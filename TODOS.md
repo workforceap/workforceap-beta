@@ -99,13 +99,13 @@ lower-risk fixes (verification integrity, xAPI signal) shipped and reviewed firs
 **Closed:** 2026-09-20 (WAP-30). #3 (`lib/admin/commandCenter.ts` `loadAtRisk`) and #4
 (`lib/counselor/commandCenter.ts` `AtRiskRow`) read the persisted `AtRiskAlert` table since
 PR #2383, so the admin command center, counselor command center and at-risk dashboard show
-the same risk state for the same member. The two at-risk emails are one sender on one
-schedule: the nightly `/api/cron/at-risk-check` scores, persists, resolves stale alerts and
-then runs `runDailyAtRiskCounselorAlerts` on those same scores (batched per counselor; members
-with no counselor go to `AT_RISK_DIGEST_EMAILS`). The separate digest template and the
-weekly counselor re-scoring in `/api/cron/at-risk-alerts` are gone — that route now runs only
-the G5 member retention nudges (#2), which stay as designed. #5 (partner pipeline
-staleness) is untouched, as recommended.
+the same risk state for the same member. One scorer, one sender, one schedule: the nightly
+`/api/cron/at-risk-check` scores, persists and resolves stale alerts and sends nothing; the
+weekly `/api/cron/at-risk-alerts` (Monday 13:07 UTC — cadence confirmed by Mike 2026-09-20)
+runs `runAtRiskCounselorAlerts` on those persisted rows via `loadPersistedAtRiskScores` (no
+re-scoring; batched per counselor; members with no counselor go to `AT_RISK_DIGEST_EMAILS`)
+plus the G5 member retention nudges (#2), which stay as designed. The separate digest
+template is gone. #5 (partner pipeline staleness) is untouched, as recommended.
 
 ---
 

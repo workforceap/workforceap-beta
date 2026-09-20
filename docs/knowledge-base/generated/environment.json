@@ -907,35 +907,35 @@
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 145
+          "line": 146
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 149
+          "line": 150
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 534
+          "line": 512
         },
         {
           "file": "tests/api/at-risk-alert.spec.ts",
-          "line": 538
+          "line": 516
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 87
+          "line": 85
         },
         {
           "file": "tests/api/cron-at-risk-alerts-auth.spec.ts",
-          "line": 91
+          "line": 89
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
-          "line": 98
+          "line": 75
         },
         {
           "file": "tests/api/cron-at-risk-check.spec.ts",
-          "line": 103
+          "line": 79
         },
         {
           "file": "tests/api/weekly-recap.spec.ts",
@@ -2253,7 +2253,7 @@
         },
         {
           "file": "lib/cron/at-risk-alerts.ts",
-          "line": 41
+          "line": 43
         },
         {
           "file": "lib/cron/placement-surveys.ts",

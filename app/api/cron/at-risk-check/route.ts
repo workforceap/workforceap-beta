@@ -5,8 +5,6 @@ import {
   persistAtRiskAlert,
   THRESHOLDS,
 } from '@/lib/member/atRiskScoring';
-import { runDailyAtRiskCounselorAlerts } from '@/lib/cron/at-risk-alerts';
-import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
@@ -16,17 +14,13 @@ export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 /**
- * Nightly at-risk check — THE at-risk schedule (WAP-30 / TODO-006).
+ * Nightly at-risk check — THE at-risk scorer (WAP-30 / TODO-006).
  *
- * 1. Scores every active member (`calculateAllAtRiskScores`).
- * 2. Persists MEDIUM+ scores to `AtRiskAlert` — the single risk source the
- *    admin command center, counselor command center and at-risk dashboard
- *    all read — and resolves alerts for members no longer at risk.
- * 3. Sends the one at-risk email on those same scores: a batched alert per
- *    counselor for their CRITICAL members (24h dedup via
- *    `notifiedCounselorAt`), with members who have no counselor routed to
- *    `AT_RISK_DIGEST_EMAILS` (fallback: admin inbox). No second scoring pass,
- *    no separate digest.
+ * Scores every active member, persists MEDIUM+ scores to `AtRiskAlert` — the
+ * single risk source the admin command center, counselor command center,
+ * at-risk dashboard and the weekly counselor alert all read — and resolves
+ * alerts for members no longer at risk. Sends no email: the one at-risk email
+ * is the weekly `/api/cron/at-risk-alerts`, which reads these rows.
  *
  * Vercel Cron uses GET — both GET and POST are supported.
  */
@@ -72,16 +66,6 @@ async function handle(request: Request) {
     });
   }
 
-  // One sender, one schedule: counselor alerts run on the scores persisted above.
-  const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
-  const counselorAlerts = await runDailyAtRiskCounselorAlerts(pacer, scores);
-  // Pacing/fixture skips are healthy outcomes (the pacer is bounding provider
-  // load; fixtures never receive mail) — only a real provider failure is an error run.
-  const SKIP_REASONS = new Set(['fixture_recipient', 'pacing_budget_exhausted', 'request_deadline_exhausted']);
-  const alertDeliveryFailed =
-    counselorAlerts.success === false ||
-    counselorAlerts.results.some((result) => Boolean(result.error) && !result.sent && !SKIP_REASONS.has(result.error ?? ''));
-
   const durationMs = Date.now() - startTime;
   const runResult = {
     success: true,
@@ -92,12 +76,10 @@ async function handle(request: Request) {
     alertsCreated: atRiskScores.length,
     alertsResolved: staleAlerts.length,
     durationMs,
-    counselorAlerts,
-    emailPacing: pacer.summary(),
   };
   await setCronRecordsProcessed(runResult.alertsCreated);
-  await logCronRun('cron_at_risk_check', runResult, alertDeliveryFailed ? 'error' : 'ok');
-  return NextResponse.json(runResult, { status: alertDeliveryFailed ? 500 : 200 });
+  await logCronRun('cron_at_risk_check', runResult, 'ok');
+  return NextResponse.json(runResult);
 }
 
 export const GET = withCronLogging('cron_at_risk_check', handle);

@@ -34673,8 +34673,16 @@
   },
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
+    "specifier": "@/lib/member/referrals",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
+  },
+  {
+    "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -34682,7 +34690,7 @@
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/audit",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -34690,7 +34698,7 @@
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -34698,7 +34706,7 @@
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -34706,7 +34714,7 @@
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/member/courseEnrollmentAssignment",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/member/courseEnrollmentAssignment.ts"
@@ -34714,7 +34722,7 @@
   {
     "from": "app/api/admin/members/[id]/program/route.ts",
     "specifier": "@/lib/content/programSlug",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -47026,7 +47034,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 3,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -47034,7 +47042,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 4,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -47042,7 +47050,7 @@
   {
     "from": "app/api/cron/at-risk-alerts/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 5,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -47073,24 +47081,8 @@
   },
   {
     "from": "app/api/cron/at-risk-check/route.ts",
-    "specifier": "@/lib/cron/at-risk-alerts",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/cron/at-risk-alerts.ts"
-  },
-  {
-    "from": "app/api/cron/at-risk-check/route.ts",
-    "specifier": "@/lib/email/pacing",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/email/pacing.ts"
-  },
-  {
-    "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 10,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -47098,7 +47090,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/authorizeCronRequest",
-    "line": 11,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
@@ -47106,7 +47098,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 12,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -47114,7 +47106,7 @@
   {
     "from": "app/api/cron/at-risk-check/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 13,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -100962,7 +100954,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 18,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -100970,7 +100962,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/db/scanCaps",
-    "line": 19,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/db/scanCaps.ts"
@@ -100978,7 +100970,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 20,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -100986,7 +100978,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/email",
-    "line": 30,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -100994,7 +100986,7 @@
   {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 37,
+    "line": 39,
     "kind": "type",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -116434,7 +116426,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/app/api/admin/members/[id]/program/route",
-    "line": 73,
+    "line": 77,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/[id]/program/route.ts"
@@ -116442,7 +116434,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 74,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -116450,7 +116442,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 75,
+    "line": 79,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -116458,7 +116450,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 76,
+    "line": 80,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -116466,7 +116458,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 77,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -116474,7 +116466,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/content/programs",
-    "line": 78,
+    "line": 82,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -116482,7 +116474,7 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/notifications/partner-notify",
-    "line": 79,
+    "line": 83,
     "kind": "import",
     "external": false,
     "target": "lib/notifications/partner-notify.ts"
@@ -116490,10 +116482,18 @@
   {
     "from": "tests/api/admin-member-program-route.spec.ts",
     "specifier": "@/lib/member/getMemberState",
-    "line": 80,
+    "line": 84,
     "kind": "import",
     "external": false,
     "target": "lib/member/getMemberState.ts"
+  },
+  {
+    "from": "tests/api/admin-member-program-route.spec.ts",
+    "specifier": "@/lib/member/referrals",
+    "line": 85,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/referrals.ts"
   },
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
@@ -118178,18 +118178,10 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/cron/authorizeCronRequest",
-    "line": 64,
+    "line": 65,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
-  },
-  {
-    "from": "tests/api/at-risk-alert.spec.ts",
-    "specifier": "@/app/api/cron/at-risk-check/route",
-    "line": 77,
-    "kind": "import",
-    "external": false,
-    "target": "app/api/cron/at-risk-check/route.ts"
   },
   {
     "from": "tests/api/at-risk-alert.spec.ts",
@@ -118201,8 +118193,16 @@
   },
   {
     "from": "tests/api/at-risk-alert.spec.ts",
-    "specifier": "@/lib/cron/authorizeCronRequest",
+    "specifier": "@/app/api/cron/at-risk-check/route",
     "line": 79,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/at-risk-check/route.ts"
+  },
+  {
+    "from": "tests/api/at-risk-alert.spec.ts",
+    "specifier": "@/lib/cron/authorizeCronRequest",
+    "line": 80,
     "kind": "import",
     "external": false,
     "target": "lib/cron/authorizeCronRequest.ts"
@@ -118210,7 +118210,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 80,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -118218,7 +118218,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/email",
-    "line": 81,
+    "line": 82,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -118226,7 +118226,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 82,
+    "line": 83,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118234,7 +118234,7 @@
   {
     "from": "tests/api/at-risk-alert.spec.ts",
     "specifier": "@/emails/counselor-at-risk-alert",
-    "line": 83,
+    "line": 84,
     "kind": "import",
     "external": false,
     "target": "emails/counselor-at-risk-alert.ts"
@@ -119714,7 +119714,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/app/api/cron/at-risk-alerts/route",
-    "line": 70,
+    "line": 68,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/at-risk-alerts/route.ts"
@@ -119722,7 +119722,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/cron/at-risk-alerts",
-    "line": 71,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "lib/cron/at-risk-alerts.ts"
@@ -119730,7 +119730,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 75,
+    "line": 73,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -119738,7 +119738,7 @@
   {
     "from": "tests/api/cron-at-risk-alerts-auth.spec.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 76,
+    "line": 74,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -119762,7 +119762,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/app/api/cron/at-risk-check/route",
-    "line": 65,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "app/api/cron/at-risk-check/route.ts"
@@ -119770,7 +119770,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 66,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -119778,23 +119778,15 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 67,
+    "line": 57,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
   },
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
-    "specifier": "@/lib/cron/at-risk-alerts",
-    "line": 68,
-    "kind": "import",
-    "external": false,
-    "target": "lib/cron/at-risk-alerts.ts"
-  },
-  {
-    "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 69,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -119802,7 +119794,7 @@
   {
     "from": "tests/api/cron-at-risk-check.spec.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 70,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"

@@ -120,7 +120,7 @@ Still fail-open when Redis is missing (dev, or prod with `RATE_LIMIT_ALLOW_MISSI
 | `WORKSPACE_EMAIL_PROVIDER` | 🟢 🔒 | Workspace email provider (`noop`, `google`, `microsoft`) | `noop` | `lib/workspace-email/provider.ts` |
 | `VOICE_COACH_TRANSCRIPT_EMAILS` | 🟢 🔒 | Comma-separated recipients for coach transcripts | `admin@workforceap.org` | `lib/email.ts` |
 | `VOICE_INTERVIEW_TRANSCRIPT_EMAILS` | 🟢 🔒 | Comma-separated recipients for interview transcripts | `admin@workforceap.org` | `app/api/interview/history/route.ts` |
-| `AT_RISK_DIGEST_EMAILS` | 🟢 🔒 | Comma-separated staff fallback recipients for nightly at-risk alerts about critical members with no assigned counselor | `admin@workforceap.org` | `lib/email.ts` |
+| `AT_RISK_DIGEST_EMAILS` | 🟢 🔒 | Comma-separated staff fallback recipients for the weekly at-risk alert about critical members with no assigned counselor | `admin@workforceap.org` | `lib/email.ts` |
 | `COURSERA_UNMATCHED_ACTOR_ALERT_EMAILS` | 🟢 🔒 | Comma-separated alerts for unmatched Coursera actors | `admin@workforceap.org` | `lib/email.ts` |
 | `WIOA_SCREENING_NOTIFY_EMAIL` | 🟢 🔒 | WIOA screening notification recipient | `info@workforceap.org` | `lib/wioa/wioaNotification.ts` |
 

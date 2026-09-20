@@ -1,26 +1,28 @@
 /**
  * At-risk notification + member retention nudge helpers.
  *
- * `runDailyAtRiskCounselorAlerts` is THE at-risk email (WAP-30 / TODO-006):
- * it runs inside the nightly `/api/cron/at-risk-check` on the scores that
- * cron just persisted to `AtRiskAlert`, groups CRITICAL members by assigned
- * counselor and sends one batched email per counselor. Critical members
- * with no active counselor are routed to the staff fallback inbox
- * (`AT_RISK_DIGEST_EMAILS`, else the admin alert list) instead of being
- * dropped. Dedup: a member whose alert was notified within the last 24h is
- * skipped. The former separate "digest" email is gone — one sender, one
- * schedule, one source of truth.
+ * `runAtRiskCounselorAlerts` is THE at-risk email (WAP-30 / TODO-006). It runs
+ * weekly from `/api/cron/at-risk-alerts` (Monday 13:07 UTC — cadence chosen
+ * by Mike 2026-09-20) and never scores anyone itself: it reads the
+ * `AtRiskAlert` rows the nightly `/api/cron/at-risk-check` persisted, so the
+ * email, both command centers and the at-risk dashboard describe the same
+ * risk picture. CRITICAL members are grouped by assigned counselor, one
+ * batched email per counselor; members with no active counselor go to the
+ * staff fallback inbox (`AT_RISK_DIGEST_EMAILS`, else the admin alert list)
+ * instead of being dropped. Dedup: a member whose alert was notified within
+ * the last 24h is skipped. The former separate "digest" email is gone — one
+ * scorer, one sender, one schedule.
  *
- * `runMemberRetentionNudges` (G5 green/yellow/red nudges to MEMBERS) stays a
- * separate question and keeps its own weekly cron.
+ * `runMemberRetentionNudges` (G5 green/yellow/red nudges to MEMBERS) is a
+ * different question and shares the weekly route.
  */
 
 import { prisma } from '@/lib/db/prisma';
 import { CRON_SCOPED_LOOKUP_CAP } from '@/lib/db/scanCaps';
 import {
   buildMemberClassificationInput,
-  calculateAllAtRiskScores,
   classifyMember,
+  loadPersistedAtRiskScores,
   getRiskLevel,
   THRESHOLDS,
   type AtRiskScore,
@@ -319,15 +321,15 @@ export type DailyAtRiskAlertRunResult = {
 export const STAFF_FALLBACK_COUNSELOR_ID = 'staff-fallback';
 
 /**
- * @param precomputedScores Scores the calling cron already computed and
- *   persisted this run. Pass them so at-risk-check never scores twice; when
- *   omitted (manual invocation) the scorer runs here.
+ * @param precomputedScores Optional scores already in hand (tests, a manual
+ *   run right after scoring). When omitted the persisted `AtRiskAlert` rows
+ *   are the source — this helper never re-scores.
  */
-export async function runDailyAtRiskCounselorAlerts(
+export async function runAtRiskCounselorAlerts(
   pacer: BulkEmailCronPacer,
   precomputedScores?: AtRiskScore[],
 ): Promise<DailyAtRiskAlertRunResult> {
-  const scores = precomputedScores ?? (await calculateAllAtRiskScores());
+  const scores = precomputedScores ?? (await loadPersistedAtRiskScores(THRESHOLDS.CRITICAL));
   const criticalScores = scores.filter((s) => s.score >= THRESHOLDS.CRITICAL);
 
   if (criticalScores.length === 0) {

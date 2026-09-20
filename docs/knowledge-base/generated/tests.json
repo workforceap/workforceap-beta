@@ -10462,35 +10462,39 @@
     "localReferences": [
       {
         "file": "app/api/admin/members/[id]/program/route.ts",
-        "line": 73
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 74
-      },
-      {
-        "file": "lib/auth/roles.ts",
-        "line": 75
-      },
-      {
-        "file": "lib/db/prisma.ts",
-        "line": 76
-      },
-      {
-        "file": "lib/tenant/organization.ts",
         "line": 77
       },
       {
-        "file": "lib/content/programs.ts",
+        "file": "lib/auth/server.ts",
         "line": 78
       },
       {
-        "file": "lib/notifications/partner-notify.ts",
+        "file": "lib/auth/roles.ts",
         "line": 79
       },
       {
-        "file": "lib/member/getMemberState.ts",
+        "file": "lib/db/prisma.ts",
         "line": 80
+      },
+      {
+        "file": "lib/tenant/organization.ts",
+        "line": 81
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 82
+      },
+      {
+        "file": "lib/notifications/partner-notify.ts",
+        "line": 83
+      },
+      {
+        "file": "lib/member/getMemberState.ts",
+        "line": 84
+      },
+      {
+        "file": "lib/member/referrals.ts",
+        "line": 85
       }
     ],
     "kind": "test-candidate",
@@ -11735,35 +11739,35 @@
       },
       {
         "file": "lib/cron/authorizeCronRequest.ts",
-        "line": 64
-      },
-      {
-        "file": "app/api/cron/at-risk-check/route.ts",
-        "line": 77
+        "line": 65
       },
       {
         "file": "app/api/cron/at-risk-alerts/route.ts",
         "line": 78
       },
       {
-        "file": "lib/cron/authorizeCronRequest.ts",
+        "file": "app/api/cron/at-risk-check/route.ts",
         "line": 79
       },
       {
-        "file": "lib/member/atRiskScoring.ts",
+        "file": "lib/cron/authorizeCronRequest.ts",
         "line": 80
       },
       {
-        "file": "lib/email.ts",
+        "file": "lib/member/atRiskScoring.ts",
         "line": 81
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/email.ts",
         "line": 82
       },
       {
-        "file": "emails/counselor-at-risk-alert.ts",
+        "file": "lib/db/prisma.ts",
         "line": 83
+      },
+      {
+        "file": "emails/counselor-at-risk-alert.ts",
+        "line": 84
       }
     ],
     "kind": "test-candidate",
@@ -12859,19 +12863,19 @@
     "localReferences": [
       {
         "file": "app/api/cron/at-risk-alerts/route.ts",
-        "line": 70
+        "line": 68
       },
       {
         "file": "lib/cron/at-risk-alerts.ts",
-        "line": 71
+        "line": 69
       },
       {
         "file": "lib/cron/cronExecution.ts",
-        "line": 75
+        "line": 73
       },
       {
         "file": "lib/observability/captureApiError.ts",
-        "line": 76
+        "line": 74
       }
     ],
     "kind": "test-candidate",
@@ -12899,27 +12903,23 @@
       },
       {
         "file": "app/api/cron/at-risk-check/route.ts",
-        "line": 65
+        "line": 55
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 66
+        "line": 56
       },
       {
         "file": "lib/member/atRiskScoring.ts",
-        "line": 67
-      },
-      {
-        "file": "lib/cron/at-risk-alerts.ts",
-        "line": 68
+        "line": 57
       },
       {
         "file": "lib/admin/logCronRun.ts",
-        "line": 69
+        "line": 58
       },
       {
         "file": "lib/cron/cronExecution.ts",
-        "line": 70
+        "line": 59
       }
     ],
     "kind": "test-candidate",

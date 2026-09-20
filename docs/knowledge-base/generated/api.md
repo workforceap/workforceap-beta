@@ -122,7 +122,7 @@
 | [app/api/admin/members/\[id\]/partner/route.ts](../../../app/api/admin/members/%5Bid%5D/partner/route.ts) | 88 | partners-funding | PATCH:18 |
 | [app/api/admin/members/\[id\]/pipeline-stage/route.ts](../../../app/api/admin/members/%5Bid%5D/pipeline-stage/route.ts) | 88 | administration | PATCH:88 |
 | [app/api/admin/members/\[id\]/placed-outcome/route.ts](../../../app/api/admin/members/%5Bid%5D/placed-outcome/route.ts) | 203 | administration | POST:33 |
-| [app/api/admin/members/\[id\]/program/route.ts](../../../app/api/admin/members/%5Bid%5D/program/route.ts) | 173 | administration | PATCH:24 |
+| [app/api/admin/members/\[id\]/program/route.ts](../../../app/api/admin/members/%5Bid%5D/program/route.ts) | 176 | administration | PATCH:25 |
 | [app/api/admin/members/\[id\]/readiness/route.ts](../../../app/api/admin/members/%5Bid%5D/readiness/route.ts) | 214 | administration | GET:110, PATCH:213 |
 | [app/api/admin/members/\[id\]/reset-assessment/route.ts](../../../app/api/admin/members/%5Bid%5D/reset-assessment/route.ts) | 62 | administration | POST:13 |
 | [app/api/admin/members/\[id\]/reset-password/route.ts](../../../app/api/admin/members/%5Bid%5D/reset-password/route.ts) | 79 | administration | POST:79 |
@@ -283,8 +283,8 @@
 | [app/api/counselor/sessions/voice-walkthrough/route.ts](../../../app/api/counselor/sessions/voice-walkthrough/route.ts) | 192 | member-counselor | POST:192 |
 | [app/api/counselor/sessions/walk-in/route.ts](../../../app/api/counselor/sessions/walk-in/route.ts) | 324 | member-counselor | POST:60 |
 | [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) | 89 | communications | maxDuration:11, GET:88, POST:89 |
-| [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 48 | communications | runtime:7, maxDuration:8, GET:47, POST:48 |
-| [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 104 | communications | runtime:15, maxDuration:16, GET:103, POST:104 |
+| [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 59 | communications | runtime:10, maxDuration:11, GET:58, POST:59 |
+| [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 86 | communications | runtime:13, maxDuration:14, GET:85, POST:86 |
 | [app/api/cron/course-accountability/route.ts](../../../app/api/cron/course-accountability/route.ts) | 159 | communications | maxDuration:14, GET:158, POST:159 |
 | [app/api/cron/coursera-auto-heal/route.ts](../../../app/api/cron/coursera-auto-heal/route.ts) | 136 | learning-coursera | maxDuration:16, GET:135, POST:136 |
 | [app/api/cron/coursera-b4b-sync/route.ts](../../../app/api/cron/coursera-b4b-sync/route.ts) | 88 | learning-coursera | GET:87, POST:88 |

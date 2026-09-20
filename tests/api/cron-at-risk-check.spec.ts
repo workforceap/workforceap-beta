@@ -38,16 +38,6 @@ vi.mock('@/lib/member/atRiskScoring', () => ({
   THRESHOLDS: { CRITICAL: 80, HIGH: 60, MEDIUM: 40 },
 }));
 
-vi.mock('@/lib/cron/at-risk-alerts', () => ({
-  runDailyAtRiskCounselorAlerts: vi.fn(),
-}));
-
-vi.mock('@/lib/email/pacing', () => ({
-  createBulkEmailCronPacer: vi.fn(() => ({
-    run: vi.fn(async (fn: () => Promise<unknown>) => fn()),
-    summary: vi.fn(() => ({ sent: 0, skippedPacing: 0 })),
-  })),
-}));
 
 vi.mock('@/lib/admin/logCronRun', () => ({
   logCronRun: vi.fn(),
@@ -65,7 +55,6 @@ vi.mock('@/lib/cron/cronExecution', () => ({
 import { GET as atRiskGET, POST as atRiskPOST } from '@/app/api/cron/at-risk-check/route';
 import { prisma } from '@/lib/db/prisma';
 import { calculateAllAtRiskScores, persistAtRiskAlert } from '@/lib/member/atRiskScoring';
-import { runDailyAtRiskCounselorAlerts } from '@/lib/cron/at-risk-alerts';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 
@@ -80,23 +69,10 @@ function makeAuthorizedCronRequest(method = 'GET') {
   return makeCronRequest(method, { authorization: 'Bearer test-cron-secret' });
 }
 
-const alertsOk = {
-  success: true,
-  counselorsNotified: 1,
-  membersFlagged: 1,
-  skippedNoCounselor: 0,
-  unassignedRoutedToStaff: 0,
-  skippedAlreadyNotified: 0,
-  skippedPacing: 0,
-  skippedFixture: 0,
-  results: [{ counselorId: 'c-1', counselorEmail: 'c@example.com', counselorName: 'Casey', sent: true, memberCount: 1 }],
-};
-
 describe('GET /api/cron/at-risk-check', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.CRON_SECRET = 'test-cron-secret';
-    vi.mocked(runDailyAtRiskCounselorAlerts).mockResolvedValue(alertsOk as any);
   });
 
   afterEach(() => {
@@ -109,7 +85,6 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(await res.json()).toEqual({ error: 'Unauthorized' });
     expect(calculateAllAtRiskScores).not.toHaveBeenCalled();
     expect(persistAtRiskAlert).not.toHaveBeenCalled();
-    expect(runDailyAtRiskCounselorAlerts).not.toHaveBeenCalled();
     expect(setCronRecordsProcessed).not.toHaveBeenCalled();
     expect(logCronRun).not.toHaveBeenCalled();
   });
@@ -119,7 +94,6 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(res.status).toBe(401);
     expect(calculateAllAtRiskScores).not.toHaveBeenCalled();
     expect(persistAtRiskAlert).not.toHaveBeenCalled();
-    expect(runDailyAtRiskCounselorAlerts).not.toHaveBeenCalled();
   });
 
   it('scores members and persists alerts for medium+ risk', async () => {
@@ -165,54 +139,19 @@ describe('GET /api/cron/at-risk-check', () => {
     );
   });
 
-  it('runs the single counselor alert pass on the scores it just persisted (no second scoring)', async () => {
-    const scores = [
+  it('sends no email: the weekly at-risk-alerts cron reads the persisted rows instead', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
       { userId: 'user-1', score: 85, factors: [{ description: 'No login' }], recommendedAction: 'Call' },
-      { userId: 'user-2', score: 20, factors: [], recommendedAction: '' },
-    ];
-    vi.mocked(calculateAllAtRiskScores).mockResolvedValue(scores as any);
+    ] as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
 
     const res = await atRiskGET(makeAuthorizedCronRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(calculateAllAtRiskScores).toHaveBeenCalledTimes(1);
-    expect(runDailyAtRiskCounselorAlerts).toHaveBeenCalledTimes(1);
-    expect(runDailyAtRiskCounselorAlerts).toHaveBeenCalledWith(expect.objectContaining({ run: expect.any(Function) }), scores);
-    expect(json.counselorAlerts.counselorsNotified).toBe(1);
-    expect(logCronRun).toHaveBeenCalledWith('cron_at_risk_check', expect.any(Object), 'ok');
-  });
-
-  it('records the run as an error and returns 500 when a counselor delivery fails', async () => {
-    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
-      { userId: 'user-1', score: 85, factors: [], recommendedAction: 'Call' },
-    ] as any);
-    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
-    vi.mocked(runDailyAtRiskCounselorAlerts).mockResolvedValue({
-      ...alertsOk,
-      counselorsNotified: 0,
-      results: [{ counselorId: 'c-1', counselorEmail: 'c@example.com', counselorName: 'Casey', sent: false, memberCount: 1, error: 'SMTP down' }],
-    } as any);
-
-    const res = await atRiskGET(makeAuthorizedCronRequest());
-    expect(res.status).toBe(500);
-    expect(logCronRun).toHaveBeenCalledWith('cron_at_risk_check', expect.any(Object), 'error');
-  });
-
-  it('treats pacing/fixture skips as a healthy run', async () => {
-    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
-      { userId: 'user-1', score: 85, factors: [], recommendedAction: 'Call' },
-    ] as any);
-    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
-    vi.mocked(runDailyAtRiskCounselorAlerts).mockResolvedValue({
-      ...alertsOk,
-      counselorsNotified: 0,
-      skippedFixture: 1,
-      results: [{ counselorId: 'c-1', counselorEmail: 'c@example.com', counselorName: 'Casey', sent: false, memberCount: 1, error: 'fixture_recipient' }],
-    } as any);
-
-    const res = await atRiskGET(makeAuthorizedCronRequest());
-    expect(res.status).toBe(200);
+    expect(json.alertsCreated).toBe(1);
+    expect(json.counselorAlerts).toBeUndefined();
+    expect(json.digestEmailSent).toBeUndefined();
+    expect(prisma.user.findMany).not.toHaveBeenCalled();
     expect(logCronRun).toHaveBeenCalledWith('cron_at_risk_check', expect.any(Object), 'ok');
   });
 });
