@@ -7505,8 +7505,24 @@
   },
   {
     "from": "app/(portal)/dashboard/layout.tsx",
-    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": null
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/portal/memberProfilePhotoUrl",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberProfilePhotoUrl.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/auth/portalRoleSwitcher",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
@@ -7514,7 +7530,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "next-intl/server",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -7522,7 +7538,7 @@
   {
     "from": "app/(portal)/dashboard/layout.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -68169,8 +68185,16 @@
   },
   {
     "from": "components/MainNav.tsx",
-    "specifier": "react",
+    "specifier": "@/lib/auth/currentUserClient",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": null
+  },
+  {
+    "from": "components/MainNav.tsx",
+    "specifier": "react",
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -75912,6 +75936,14 @@
     "package": "next"
   },
   {
+    "from": "components/portal/DevViewToggle.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": null
+  },
+  {
     "from": "components/portal/DownloadMyDataButton.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -76897,8 +76929,16 @@
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "@/lib/i18n/date",
+    "specifier": "@/components/portal/kit/StatusTag",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/StatusTag.tsx"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "@/lib/i18n/date",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/date.ts"
@@ -76906,7 +76946,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
@@ -76914,7 +76954,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/member/memberApprovalStatus",
-    "line": 9,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
@@ -77664,6 +77704,14 @@
     "target": "lib/auth/portalRoleSwitcher.ts"
   },
   {
+    "from": "components/portal/MemberWorkspaceShell.tsx",
+    "specifier": "@/lib/member/memberIdentity",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": null
+  },
+  {
     "from": "components/portal/MentorSessionForm.tsx",
     "specifier": "react",
     "line": 3,
@@ -78326,6 +78374,14 @@
     "kind": "type",
     "external": false,
     "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "components/portal/PortalShell.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": null
   },
   {
     "from": "components/portal/PortalTeamChatClient.test.tsx",
@@ -79238,6 +79294,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/resume/pendingResumeDraft.ts"
+  },
+  {
+    "from": "components/portal/SignOutButton.tsx",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": null
   },
   {
     "from": "components/portal/SkillCheckpointsClient.test.tsx",
@@ -80377,8 +80441,24 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/components/portal/LanguageToggle",
+    "specifier": "@/lib/member/memberIdentity",
     "line": 33,
+    "kind": "type",
+    "external": false,
+    "target": null
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/kit/Avatar",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/Avatar.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/portal/LanguageToggle",
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
@@ -80386,7 +80466,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 34,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -80394,7 +80474,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -80402,7 +80482,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 36,
+    "line": 38,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -80410,7 +80490,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 37,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
@@ -88254,6 +88334,14 @@
     "kind": "import",
     "external": true,
     "package": "lucide-react"
+  },
+  {
+    "from": "components/super-admin-view-switcher.tsx",
+    "specifier": "@/hooks/useCurrentUser",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": null
   },
   {
     "from": "components/theme/ThemeSelector.tsx",
@@ -134337,8 +134425,16 @@
   },
   {
     "from": "tests/next-config-redirect-destinations.spec.ts",
-    "specifier": "../next.config",
+    "specifier": "../lib/content/programs",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "tests/next-config-redirect-destinations.spec.ts",
+    "specifier": "../next.config",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "next.config.ts"

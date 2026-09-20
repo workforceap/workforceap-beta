@@ -30,6 +30,8 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import MemberPortalTopNav from './MemberPortalTopNav';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
+import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
+import { Avatar } from '@/components/portal/kit/Avatar';
 import LanguageToggle from '@/components/portal/LanguageToggle';
 import ThemeSelector from '@/components/theme/ThemeSelector';
 import UnreviewedLocaleBanner from '@/components/portal/UnreviewedLocaleBanner';
@@ -46,9 +48,50 @@ const ROLE_TO_NAV_VARIANT: Partial<Record<PortalRole, 'employer' | 'partner' | '
   admin: 'admin',
 };
 
+/**
+ * Who is signed in (WAP-101). One link — avatar + name (+ email) — to
+ * Profile & settings, rendered in the header and repeated in the mobile
+ * drawer. Sign out stays its own control; identity is never the sign-out.
+ */
+function ShellIdentity({
+  identity,
+  variant,
+  onNavigate,
+  title,
+}: {
+  identity: MemberShellIdentity;
+  variant: 'header' | 'sidebar';
+  onNavigate?: () => void;
+  title: string;
+}) {
+  const base = variant === 'header' ? 'workspace-shell-identity' : 'workspace-sidebar-identity';
+  return (
+    <Link
+      href={identity.href}
+      prefetch={false}
+      className={`${base} wa-kit-focus`}
+      onClick={onNavigate}
+      title={title}
+      data-testid={`${base}-link`}
+    >
+      <Avatar
+        initials={identity.initials}
+        size={variant === 'header' ? 30 : 36}
+        src={identity.avatarUrl ?? undefined}
+        className={`${base}__avatar`}
+      />
+      <span className={`${base}__text`}>
+        <span className={`${base}__name`}>{identity.name}</span>
+        {identity.email ? <span className={`${base}__email`}>{identity.email}</span> : null}
+      </span>
+    </Link>
+  );
+}
+
 export default function WorkspaceShell({
   portalRole,
   navItems,
+  identity,
   workspaceLabel,
   contextLabel,
   minimalMobileHeader = false,
@@ -74,6 +117,8 @@ export default function WorkspaceShell({
 }: {
   portalRole: PortalRole;
   navItems: PortalNavItem[];
+  /** Signed-in member identity for the shell (name, initials/avatar, profile link). */
+  identity?: MemberShellIdentity | null;
   workspaceLabel: string;
   contextLabel: string;
   /** Reduce header chrome on mobile when bottom nav is primary (member portal). */
@@ -128,10 +173,10 @@ export default function WorkspaceShell({
       : rawPathname.startsWith(`/${locale}/`)
         ? rawPathname.slice(locale.length + 1)
         : rawPathname;
-  // Career Studio has ~22 tool routes and no rail row of its own, which used to
+  // AI Career Tools has ~22 tool routes and no rail row of its own, which used to
   // leave the rail highlighting the hub (or nothing) on every one of them.
   // Rather than 22 permanent rows, the rail grows exactly ONE contextual row —
-  // the tool you are actually in — nested under Career Studio, and drops it
+  // the tool you are actually in — nested under AI Career Tools, and drops it
   // again the moment you leave. `withContextualToolRow` is a no-op on the hub
   // itself and on every non-toolkit route.
   const { items: railNavItems, toolItem: contextualToolItem } =
@@ -157,8 +202,7 @@ export default function WorkspaceShell({
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
-  const fetchedIsSuperAdmin = useIsSuperAdmin();
-  const isSuperAdmin = Boolean(superAdmin) || fetchedIsSuperAdmin;
+  const isSuperAdmin = useIsSuperAdmin(Boolean(superAdmin));
   const tNav = useTranslations('nav');
   const tWorkspace = useTranslations('workspace');
   const tGroup = useTranslations('group');
@@ -197,7 +241,7 @@ export default function WorkspaceShell({
       'Resume': tNav('resume'),
       'My progress': tNav('myProgress'),
       'Career Toolkit': tNav('careerToolkit'),
-      'Career Studio': tNav('careerToolkit'),
+      'AI Career Tools': tNav('careerToolkit'),
       'AI Counselor': tNav('aiCounselor'),
       'Learning Hub': tNav('learningHub'),
       'Find your career': tNav('findYourCareer'),
@@ -219,7 +263,7 @@ export default function WorkspaceShell({
   /**
    * Name of the page the member is on. Fills the otherwise-empty mobile header
    * band (the tagline is hidden below 769px), so a phone finally says where you
-   * are — including inside a Career Studio tool.
+   * are — including inside an AI Career Tools tool.
    */
   const currentPageItem = railNavItems.find((item) => item.href === activeHref);
   const currentPageLabel = currentPageItem ? translateLabel(currentPageItem.label) : null;
@@ -465,9 +509,13 @@ export default function WorkspaceShell({
               />
             </span>
           ) : null}
-          <span className="workspace-shell-context workspace-shell-context--chip" title={contextLabel}>
-            {contextLabel}
-          </span>
+          {identity ? (
+            <ShellIdentity identity={identity} variant="header" title={tNav('profile')} />
+          ) : (
+            <span className="workspace-shell-context workspace-shell-context--chip" title={contextLabel}>
+              {contextLabel}
+            </span>
+          )}
           {headerBadge ? (
             <span className="workspace-shell-tier-badge" title={headerBadge}>
               {headerBadge}
@@ -696,9 +744,13 @@ export default function WorkspaceShell({
             {!isCollapsedDesktop ? <div className="workspace-sidebar-footer">
               {!wide ? (
                 <div className="workspace-sidebar-meta">
-                  <span className="workspace-sidebar-context workspace-sidebar-context--chip" title={contextLabel}>
-                    {contextLabel}
-                  </span>
+                  {identity ? (
+                    <ShellIdentity identity={identity} variant="sidebar" title={tNav('profile')} onNavigate={closeDrawer} />
+                  ) : (
+                    <span className="workspace-sidebar-context workspace-sidebar-context--chip" title={contextLabel}>
+                      {contextLabel}
+                    </span>
+                  )}
                   <SuperAdminViewSwitcher initialIsSuperAdmin={isSuperAdmin} />
                 </div>
               ) : null}

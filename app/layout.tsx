@@ -212,7 +212,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="WorkforceAP" />
         <meta name="theme-color" content="#ad2c4d" />
-        <link rel="apple-touch-icon" href="/images/icon-192x192.png" />
+        {/* Apple requires 180x180 for the home-screen icon (WAP-40); the PWA manifest keeps 192/512. */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         {!readOnlyAudit ? (
           <>
             <link rel="preconnect" href="https://www.googletagmanager.com" />

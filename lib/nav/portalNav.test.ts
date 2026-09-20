@@ -9,7 +9,7 @@ import { MEMBER_PORTAL_NAV_ITEMS_I18N } from './portalNav.i18n';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
-test('Job board, Training progress, and Career Studio stay in the member primary rail', () => {
+test('Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/jobs');
   const progress = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS.find((entry) => entry.href === '/dashboard/ai-tools');
@@ -18,10 +18,10 @@ test('Job board, Training progress, and Career Studio stay in the member primary
   assert.equal(progress?.group, 'primary');
   assert.equal(progress?.label, 'My progress');
   assert.equal(tools?.group, 'primary');
-  assert.equal(tools?.label, 'Career Studio');
+  assert.equal(tools?.label, 'AI Career Tools');
 });
 
-test('i18n Job board, Training progress, and Career Studio stay in the member primary rail', () => {
+test('i18n Job board, Training progress, and AI Career Tools stay in the member primary rail', () => {
   const jobs = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/jobs');
   const progress = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/readiness');
   const tools = MEMBER_PORTAL_NAV_ITEMS_I18N.find((entry) => entry.href === '/dashboard/ai-tools');

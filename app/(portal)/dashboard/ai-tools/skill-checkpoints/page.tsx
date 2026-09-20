@@ -25,12 +25,12 @@ export default async function SkillCheckpointsPage() {
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '1.25rem 1rem 3rem' }} className="wa-space-y-5">
         <PortalBreadcrumb
           items={[
-            { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: 'Skill Checkpoints' },
           ]}
         />
         <SectionHeader
-          kicker="AI Career Toolkit"
+          kicker="AI Career Tools"
           title="Skill Checkpoints"
           goal="Short workplace scenarios that prove you can use a skill — not just study it"
         />

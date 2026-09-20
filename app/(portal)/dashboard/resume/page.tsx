@@ -112,7 +112,7 @@ export default async function DashboardResumePage() {
               fontWeight: 600,
             }}
           >
-            ← Career Toolkit
+            ← AI Career Tools
           </Link>
           <div
             style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}

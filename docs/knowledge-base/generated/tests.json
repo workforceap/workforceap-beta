@@ -25118,8 +25118,12 @@
         "line": 5
       },
       {
-        "file": "next.config.ts",
+        "file": "lib/content/programs.ts",
         "line": 6
+      },
+      {
+        "file": "next.config.ts",
+        "line": 7
       }
     ],
     "kind": "test-candidate",

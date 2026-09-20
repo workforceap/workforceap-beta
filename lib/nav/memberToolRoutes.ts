@@ -3,17 +3,17 @@ import type { PortalNavItem } from './portalNav';
 
 /**
  * Canonical member toolkit hub. Product copy calls this surface **Career
- * Studio** (`ToolkitToolChrome` kicker + "Back to Career Studio" on every tool
+ * Studio** (`ToolkitToolChrome` kicker + "Back to AI Career Tools" on every tool
  * page, `MemberHomeKit` CTA), so the rail uses the same noun.
  */
 export const MEMBER_TOOLKIT_HUB_HREF = '/dashboard/ai-tools';
-export const MEMBER_TOOLKIT_HUB_LABEL = 'Career Studio';
+export const MEMBER_TOOLKIT_HUB_LABEL = 'AI Career Tools';
 
-/** Route prefix every Career Studio tool lives under. */
+/** Route prefix every AI Career Tools tool lives under. */
 const TOOL_ROUTE_PREFIX = `${MEMBER_TOOLKIT_HUB_HREF}/`;
 
 /**
- * Rail labels for the Career Studio tools, keyed by the first path segment
+ * Rail labels for the AI Career Tools tools, keyed by the first path segment
  * under `/dashboard/ai-tools/`. These mirror each tool's on-page
  * `ToolkitToolChrome` title so the rail row and the page heading agree.
  *
@@ -54,7 +54,7 @@ export function humanizeToolSlug(slug: string): string {
 }
 
 /**
- * The Career Studio tool slug the pathname sits inside, or `null` for the hub
+ * The AI Career Tools tool slug the pathname sits inside, or `null` for the hub
  * itself and every non-toolkit route. Locale prefixes must already be stripped
  * (WorkspaceShell does this before calling).
  */
@@ -70,7 +70,7 @@ export function memberToolSlugForPath(pathname: string): string | null {
  * The single contextual rail row for the tool the member is currently inside.
  *
  * Returns at most one item, always — the rail shows the tool you are in and
- * nothing else from the ~22 Career Studio tools. `claimedHrefs` carries the
+ * nothing else from the ~22 AI Career Tools tools. `claimedHrefs` carries the
  * hrefs and aliases already owned by permanent rail entries (Job applications
  * owns `/dashboard/ai-tools/application-tracker`, the hub owns
  * `/dashboard/ai-tools/studio`), so those routes keep highlighting their own
@@ -108,7 +108,7 @@ export function claimedNavHrefs(items: readonly PortalNavItem[]): Set<string> {
 
 /**
  * The permanent rail items plus, when the member is inside a tool, exactly one
- * extra row for that tool, inserted directly under the Career Studio entry.
+ * extra row for that tool, inserted directly under the AI Career Tools entry.
  * On the hub itself — and on every non-toolkit route — the list is unchanged.
  */
 export function withContextualToolRow(

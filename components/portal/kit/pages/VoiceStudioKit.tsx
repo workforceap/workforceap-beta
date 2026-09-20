@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * VoiceStudioKit — Voice AI + Career Studio (HIGHEST-PRIORITY page).
+ * VoiceStudioKit — Voice AI + AI Career Tools hub (HIGHEST-PRIORITY page).
  *
  * Faithful port of docs/mockups/workforceap-voice-studio.html onto the portal
  * design kit (warm surface + tokens + wa-kit-* + wa- utilities + lucide icons),
@@ -256,7 +256,7 @@ export function VoiceStudioKit({
         className="wa-space-y-6"
       >
         <PageOpener
-          kicker="Career studio"
+          kicker="Tools & careers"
           title="AI Career Tools"
           lede="Voice coaches and the AI toolkit."
           icon={<AudioLines size={13} aria-hidden="true" />}

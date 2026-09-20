@@ -57,6 +57,23 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
   `[data-surface]` inside `.workspace-shell-root`. Member navigation and
   `PageOpener` labels use sentence case; keep intentional names such as
   “AI Career Tools” intact.
+  **One name per member destination (WAP-102):** `/dashboard/ai-tools` is
+  “AI Career Tools” and `/dashboard/jobs` is “Job board” everywhere a member
+  can read it — rail (`lib/nav/portalNav.ts`, `MEMBER_TOOLKIT_HUB_LABEL`),
+  `nav.careerToolkit` / `nav.jobBoard` and `dashboard.careerToolkit` /
+  `dashboard.jobBoard` catalogs, page `<title>`, `PageOpener` title,
+  `ToolkitToolChrome` kicker and back link, breadcrumbs, home quick links,
+  help/guide CTAs. Do not reintroduce “Career Studio”, “Career Toolkit”,
+  “AI Tools” or “Pipeline” as names for those two routes; a kicker above the
+  hub uses the rail group noun (“Tools & careers”), never a second name.
+  **Member identity (WAP-101):** the member shell shows who is signed in as
+  one link — kit `Avatar` (saved profile photo or initials) + full name (+
+  email) — to Profile & settings, in the header (avatar only below 769px) and
+  again in the drawer footer. It replaces the generic “My account” chip and is
+  never the sign-out control; Sign out stays its own button. Data comes from
+  `buildMemberShellIdentity` (`lib/member/memberIdentity.ts`) fed by the
+  dashboard layout's existing user query; nothing is inferred beyond the
+  email fallback.
   Member rails use a 232px budget (208px on smaller laptops, 72px collapsed),
   with Home, My program, Job board, My progress, AI Career Tools, Messages,
   and Skill missions visible and remaining Tools / Training / Account groups
@@ -290,13 +307,31 @@ any future kit Dialog/Menu/Combobox must be built on them):
 
 Reference compositions ("templates"): `components/portal/kit/pages/{member,admin,admin-subviews}/`
 plus `PartnerOverviewKit.tsx`, `VoiceStudioKit.tsx`. **Start new pages by copying the nearest one.**
-`VoiceStudioKit` is the canonical Career Studio hub (`/dashboard/ai-tools` and
+`VoiceStudioKit` is the canonical AI Career Tools hub (`/dashboard/ai-tools` and
 `/dev/member/toolkit`): voice coaches, live practice, Resume Studio, and the AI
 toolkit. The All Tools tab is a three-stage path (Resume → Interview → Profile)
 with scannable directory rows — not a stacked dump of feature cards. Do not
 replace it with `MemberToolkitKit`. Page chrome is `PageOpener` on the shared
 `--wa-bg-wave` wash. Live-session panels stay dark (`--wa-sidebar-*`, not raw
 hex) — that is session chrome, not a second app header.
+
+`MemberApprovalStatusCard` (home, WAP-91) is the three-stage approval chain
+(application → intake review → training approval) built only from saved
+facts via `buildMemberApprovalStatus`: each stage shows its saved state, the
+stored date for that state (`submittedAt`; `wioaReviewedAt`, which staff
+write on every intake status change; `courseraEnrollmentApprovedAt`), who
+owns the next move (you / WorkforceAP staff / the assigned counselor by saved
+name) and what happens next. The current stage carries `aria-current="step"`
+and an info `StatusTag`. A pending stage with no stored start date says so
+(“No start date is saved for this step.”) — never derive one from
+`updatedAt` or from the previous stage's completion. Provider (Coursera)
+acceptance is still never asserted.
+
+Browser reads of `/api/auth/me` go through `lib/auth/currentUserClient.ts`
+(`fetchCurrentUser` / `useCurrentUser`, WAP-27): one in-flight request shared
+by every consumer, a 60s freshness window, and `resetCurrentUserCache()` on
+sign-out. Do not call `fetch('/api/auth/me')` from a component; pass a
+server-known `superAdmin` into `useIsSuperAdmin(known)` to skip the read.
 
 `MemberProgressKit` (`/dashboard/readiness`, proof `/dev/member/progress`) shows the weighted readiness score, four area percents, milestones, and a kit-token progress summary. Numbers come from `getScoreBreakdown` via `buildReadinessProgressView` — never invented weekly counters. The summary starts as a factual recap of those same points and may be replaced by an AI rewrite that is rejected if it cites unknown percents. Score-load failure is an explicit empty/error, not a 0% ring. Do not mix Astryx primitives inside this kit page.
 
