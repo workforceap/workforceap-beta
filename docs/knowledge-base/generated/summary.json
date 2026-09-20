@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "904cd0ea3ea722e2c36b43445c5396c9aef5d0068a2ddc251c327a84fe5c07af",
+  "inputTreeSha256": "e55efe26038dc0db2d8b73613b13537dcc637561382ac1e57bdd2ce1c39763d6",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -10,8 +10,8 @@
   "counts": {
     "files": 4926,
     "sourceModules": 3576,
-    "importReferences": 17800,
-    "resolvedLocalReferences": 11957,
+    "importReferences": 17802,
+    "resolvedLocalReferences": 11959,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1062,
     "nextRouteFiles": 1029,
@@ -207,16 +207,16 @@
       "references": 54
     },
     {
+      "file": "lib/admin/memberOnlyWhere.ts",
+      "references": 53
+    },
+    {
       "file": "components/portal/ui/DataTable.tsx",
       "references": 52
     },
     {
       "file": "lib/content/programCurriculumManifest.ts",
       "references": 52
-    },
-    {
-      "file": "lib/admin/memberOnlyWhere.ts",
-      "references": 51
     },
     {
       "file": "lib/member/curriculumAssignment.ts",

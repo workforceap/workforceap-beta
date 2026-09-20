@@ -106721,8 +106721,16 @@
   },
   {
     "from": "lib/member/atRiskScoring.test.ts",
-    "specifier": "./atRiskScoring",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/member/atRiskScoring.test.ts",
+    "specifier": "./atRiskScoring",
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -106737,8 +106745,16 @@
   },
   {
     "from": "lib/member/atRiskScoring.ts",
-    "specifier": "@/lib/content/courseraDiscoveredCatalog",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/member/atRiskScoring.ts",
+    "specifier": "@/lib/content/courseraDiscoveredCatalog",
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/content/courseraDiscoveredCatalog.ts"
@@ -106746,7 +106762,7 @@
   {
     "from": "lib/member/atRiskScoring.ts",
     "specifier": "@/lib/coursera/learnerProgress",
-    "line": 3,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/learnerProgress.ts"
@@ -106754,7 +106770,7 @@
   {
     "from": "lib/member/atRiskScoring.ts",
     "specifier": "@/lib/member/memberEngagementSignals",
-    "line": 4,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberEngagementSignals.ts"
@@ -106762,7 +106778,7 @@
   {
     "from": "lib/member/atRiskScoring.ts",
     "specifier": "@/lib/member/memberEngagementSignals",
-    "line": 5,
+    "line": 6,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberEngagementSignals.ts"
@@ -106770,7 +106786,7 @@
   {
     "from": "lib/member/atRiskScoring.ts",
     "specifier": "@/lib/member/memberProgramTrainingView",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramTrainingView.ts"
@@ -106778,7 +106794,7 @@
   {
     "from": "lib/member/atRiskScoring.ts",
     "specifier": "@/lib/member/trainingProgress",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/member/trainingProgress.ts"

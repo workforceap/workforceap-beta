@@ -269,7 +269,7 @@
 | [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 38 | tests |  |
 | [tests/components/counselor-roster-stats.spec.tsx](../../../tests/components/counselor-roster-stats.spec.tsx) | 48 | tests |  |
 | [tests/components/counselor-student-panels-kit.spec.tsx](../../../tests/components/counselor-student-panels-kit.spec.tsx) | 133 | tests |  |
-| [tests/components/counselor-today.spec.tsx](../../../tests/components/counselor-today.spec.tsx) | 118 | tests |  |
+| [tests/components/counselor-today.spec.tsx](../../../tests/components/counselor-today.spec.tsx) | 119 | tests |  |
 | [tests/components/coursera-catalog-health-table.spec.tsx](../../../tests/components/coursera-catalog-health-table.spec.tsx) | 131 | learning-coursera |  |
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
@@ -373,7 +373,7 @@
 | [tests/email/send-hardening.spec.ts](../../../tests/email/send-hardening.spec.ts) | 183 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
-| [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |
+| [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 109 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:52, FIXTURE_AWAITING_REPLY_IDS:53, fixtureRoster:55 |
 | [tests/fixtures/boardSnapshot.ts](../../../tests/fixtures/boardSnapshot.ts) | 28 | tests | boardSnapshotFixture:4 |
 | [tests/fixtures/member-message-rls-baseline.json](../../../tests/fixtures/member-message-rls-baseline.json) | 204 | tests |  |
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |

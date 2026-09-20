@@ -26,14 +26,12 @@ export type PersistedAtRiskMember = {
  * No age cutoff is applied to an unresolved saved case.
  *
  * Population: member-role accounts only (`memberOnlySqlJoin`) who are
- * enrolled in a program. Alerts saved against staff, admin, counselor,
- * partner or fixture accounts are never "members at risk", so the Command
- * Center KPI agrees with the /admin attention tile that already reads the
- * member-only roster (number audit 2026-09-20, S2: 131 here vs 125 there).
- * "At risk" means not active lately AND in a program (Mike, 2026-09-20,
- * Needs Mike 8): the saved alert is the inactivity signal, and a member with
- * no program has nothing to fall behind in, so the 96 of 131 alert holders
- * without a program are not counted here.
+ * enrolled in a program. "At risk" means not active lately AND in a program
+ * (Mike, 2026-09-20, Needs Mike 8): the saved alert is the inactivity signal,
+ * and a member with no program has nothing to fall behind in. The /admin
+ * attention model (`lib/attention/evaluate.ts`, `risk_alert`) applies the
+ * same two conditions, so the Command Center KPI and the /admin "Risk
+ * alerts" tile count one population (number audit 2026-09-20, S2).
  */
 export async function loadPersistedAtRiskMembers(
   scope: PersistedRiskScope,

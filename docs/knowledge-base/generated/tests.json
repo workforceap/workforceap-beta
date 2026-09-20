@@ -7408,8 +7408,12 @@
         "line": 33
       },
       {
-        "file": "lib/member/atRiskScoring.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 34
+      },
+      {
+        "file": "lib/member/atRiskScoring.ts",
+        "line": 35
       }
     ],
     "kind": "test-candidate",
