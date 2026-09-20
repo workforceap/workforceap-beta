@@ -1261,6 +1261,8 @@
     "workQueueLoadErrorDesc": "Algo salió mal al obtener la cola. Intenta refrescar la página.",
     "retry": "Reintentar",
     "workQueueEmptyDesc": "Ningún miembro está esperando más de 24 horas por una respuesta. Buen trabajo.",
+    "workQueueNoRepliesTitle": "Ninguna respuesta atrasada",
+    "workQueueOtherFlagged": "{count, plural, one {# miembro está marcado por otro motivo} other {# miembros están marcados por otros motivos}} — la misma lista que muestra Inbox zero.",
     "emptyMessagePreview": "(sin contenido de mensaje)",
     "backToDashboard": "Volver al panel",
     "workQueueMembersAwaiting": "{count} miembro{count, plural, =1 {} other {s}} esperando respuesta",

@@ -76,13 +76,13 @@ const PORTAL_AND_ADMIN_SSR = [
   'app/api/admin/reports/wioa/route.ts',
 ];
 
+// workQueue / triageFlags / priorityQueue / inboxZero no longer query on
+// their own: they project the shared attention queue, whose roster lookup
+// lives in lib/attention/counselor.ts.
 const COUNSELOR_HELPERS = [
-  'lib/counselor/workQueue.ts',
+  'lib/attention/counselor.ts',
   'lib/counselor/counselorStudentsRoster.ts',
-  'lib/counselor/triageFlags.ts',
   'lib/counselor/commandCenter.ts',
-  'lib/counselor/priorityQueue.ts',
-  'lib/counselor/inboxZero.ts',
 ];
 
 test('leftover SSR pages no longer use silent 5k/10k/20k takes', () => {

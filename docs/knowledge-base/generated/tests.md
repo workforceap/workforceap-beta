@@ -64,7 +64,7 @@
 | [tests/api/counselor-feedback.spec.ts](../../../tests/api/counselor-feedback.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-handoff-atomicity.spec.ts](../../../tests/api/counselor-handoff-atomicity.spec.ts) | 56 | tests |  |
 | [tests/api/counselor-inbox-zero-bulk.spec.ts](../../../tests/api/counselor-inbox-zero-bulk.spec.ts) | 187 | tests |  |
-| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 148 | tests |  |
+| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 149 | tests |  |
 | [tests/api/counselor-notes-author-gate.spec.ts](../../../tests/api/counselor-notes-author-gate.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-routes.spec.ts](../../../tests/api/counselor-routes.spec.ts) | 1751 | tests |  |
 | [tests/api/counselor-thread-access-gate.spec.ts](../../../tests/api/counselor-thread-access-gate.spec.ts) | 139 | tests |  |
@@ -184,7 +184,7 @@
 | [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 177 | tests |  |
 | [tests/app/apply-school-recovery.spec.tsx](../../../tests/app/apply-school-recovery.spec.tsx) | 65 | tests |  |
 | [tests/app/counselor-contextual-messages.spec.tsx](../../../tests/app/counselor-contextual-messages.spec.tsx) | 97 | tests |  |
-| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 74 | tests |  |
+| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 75 | tests |  |
 | [tests/app/counselor-member-pageheader.spec.ts](../../../tests/app/counselor-member-pageheader.spec.ts) | 30 | tests |  |
 | [tests/app/counselor-roster-failure.spec.tsx](../../../tests/app/counselor-roster-failure.spec.tsx) | 26 | tests |  |
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
@@ -241,11 +241,11 @@
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
-| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 68 | tests |  |
+| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
-| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 33 | tests |  |
+| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 98 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
 | [tests/components/member-nba-persistence.spec.tsx](../../../tests/components/member-nba-persistence.spec.tsx) | 37 | tests |  |
@@ -276,7 +276,7 @@
 | [tests/components/wioa-review-revision.spec.tsx](../../../tests/components/wioa-review-revision.spec.tsx) | 64 | partners-funding |  |
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
-| [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 497 | tests |  |
+| [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 72 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -311,6 +311,7 @@
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
+| [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |
 | [tests/fixtures/boardSnapshot.ts](../../../tests/fixtures/boardSnapshot.ts) | 28 | tests | boardSnapshotFixture:4 |
 | [tests/fixtures/member-message-rls-baseline.json](../../../tests/fixtures/member-message-rls-baseline.json) | 204 | tests |  |
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
@@ -382,7 +383,7 @@
 | [tests/lib/marketing-hero-image.spec.ts](../../../tests/lib/marketing-hero-image.spec.ts) | 90 | tests |  |
 | [tests/lib/marketing-mobile-touch-targets.spec.ts](../../../tests/lib/marketing-mobile-touch-targets.spec.ts) | 25 | tests |  |
 | [tests/lib/match-students-tenant-scope.spec.ts](../../../tests/lib/match-students-tenant-scope.spec.ts) | 25 | tests |  |
-| [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 27 | tests |  |
+| [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 33 | tests |  |
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |
 | [tests/lib/member-resume-plain-text-missing-admin-env.spec.ts](../../../tests/lib/member-resume-plain-text-missing-admin-env.spec.ts) | 87 | tests |  |
@@ -449,7 +450,7 @@
 | [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
-| [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 64 | tests |  |
+| [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |
 | [tests/pdf-deployment.test.ts](../../../tests/pdf-deployment.test.ts) | 53 | tests |  |
 | [tests/portal-audit-auth.test.ts](../../../tests/portal-audit-auth.test.ts) | 44 | tests |  |
 | [tests/portal-audit-classify.test.ts](../../../tests/portal-audit-classify.test.ts) | 119 | tests |  |
@@ -465,3 +466,4 @@
 | [tests/server-only-stub.cjs](../../../tests/server-only-stub.cjs) | 8 | tests |  |
 | [tests/setup.ts](../../../tests/setup.ts) | 1 | tests |  |
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
+| [tests/well-known-icon-paths.spec.ts](../../../tests/well-known-icon-paths.spec.ts) | 77 | tests |  |

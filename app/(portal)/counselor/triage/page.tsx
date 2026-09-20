@@ -10,10 +10,13 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import {
   getTriageQueue,
+  emptyTriageQueue,
   FLAG_LABELS,
   type TriageRow,
   type TriageQueue,
 } from '@/lib/counselor/triageFlags';
+import { orderedReasonCounts } from '@/lib/attention/counselorViews';
+import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { listTemplates, NUDGE_TEMPLATES, renderNudge } from '@/lib/counselor/nudgeTemplates';
 import TriageNudgePanel from '@/components/portal/counselor/TriageNudgePanel';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -84,25 +87,7 @@ export default async function CounselorTriagePage() {
   } catch (err) {
     console.error('[counselor/triage] getTriageQueue failed:', err);
     loadError = true;
-    queue = {
-      red: [],
-      yellow: [],
-      blue: [],
-      totals: {
-        red: 0,
-        yellow: 0,
-        blue: 0,
-        total: 0,
-        byFlag: {
-          no_activity_10d: 0,
-          sla_breach_48h: 0,
-          sla_warning_24h: 0,
-          stale_training: 0,
-          computer_support_followup: 0,
-          milestone_reached: 0,
-        },
-      },
-    };
+    queue = emptyTriageQueue();
   }
 
   return (
@@ -173,14 +158,16 @@ function TriageSummary({ queue }: { queue: TriageQueue }) {
     { key: 'blue', label: PRIORITY_TAG_LABEL.blue, value: queue.totals.blue },
   ];
 
-  const flagItems: KpiItem[] = [
-    { label: 'No activity 10+ days', value: queue.totals.byFlag.no_activity_10d },
-    { label: 'SLA breach (48h+)', value: queue.totals.byFlag.sla_breach_48h },
-    { label: 'SLA warning (24h+)', value: queue.totals.byFlag.sla_warning_24h },
-    { label: 'Stale training', value: queue.totals.byFlag.stale_training },
-    { label: 'Computer support follow-up', value: queue.totals.byFlag.computer_support_followup },
-    { label: 'Milestone celebrate', value: queue.totals.byFlag.milestone_reached },
-  ];
+  // One tile per attention reason that applies to someone in the queue, in
+  // rank order, each captioned with its rule (lib/attention/reasons.ts).
+  const flagItems: KpiItem[] = orderedReasonCounts(queue.totals.byFlag)
+    .filter(({ count }) => count > 0)
+    .map(({ reason, count }) => ({
+      label: FLAG_LABELS[reason],
+      value: count,
+      delta: ATTENTION_REASON_META[reason].definition,
+      deltaColor: 'muted',
+    }));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -198,7 +185,7 @@ function TriageSummary({ queue }: { queue: TriageQueue }) {
           );
         })}
       </div>
-      <KpiStrip items={flagItems} cols={6} />
+      {flagItems.length > 0 ? <KpiStrip items={flagItems} cols={4} /> : null}
     </div>
   );
 }

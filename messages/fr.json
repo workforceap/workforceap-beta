@@ -1204,6 +1204,8 @@
     "workQueueLoadErrorDesc": "Une erreur s'est produite lors de la récupération de la file d'attente. Essayez d'actualiser la page.",
     "retry": "Réessayer",
     "workQueueEmptyDesc": "Aucun membre n'attend une réponse depuis plus de 24 heures. Bon travail.",
+    "workQueueNoRepliesTitle": "Aucune réponse en retard",
+    "workQueueOtherFlagged": "{count, plural, one {# membre est signalé pour une autre raison} other {# membres sont signalés pour d'autres raisons}} — la même liste que celle d'Inbox zero.",
     "emptyMessagePreview": "(aucun contenu de message)",
     "backToDashboard": "Retour au tableau de bord",
     "workQueueMembersAwaiting": "{count} membre{count, plural, =1 {} other {s}} en attente de réponse",

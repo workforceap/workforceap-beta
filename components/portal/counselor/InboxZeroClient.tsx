@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import type { InboxZeroFlagType, InboxZeroQueue, InboxZeroRow } from '@/lib/counselor/inboxZero';
+import { ATTENTION_REASON_META, ATTENTION_REASONS } from '@/lib/attention/reasons';
 import {
   listFollowUpTemplates,
   templateMatchesFlags,
@@ -26,22 +27,31 @@ type Props = { initialQueue: InboxZeroQueue };
 type CounselorOption = { userId: string; fullName: string };
 type BulkAction = 'follow_up' | 'mark_contacted' | 'reassign' | 'dismiss';
 
-const INBOX_FLAG_LABELS: Record<InboxZeroFlagType, string> = {
-  doc_missing: 'Resume missing 3+ days',
-  application_stalled: 'Application stalled 5+ days',
-  at_risk: 'At-risk alert open',
-  last_contact: 'No counselor contact 7+ days',
-};
+// Labels come from the shared attention model so a chip here reads the same
+// as the Overview, Triage and the admin pages (lib/attention/reasons.ts).
+const INBOX_FLAG_LABELS: Record<InboxZeroFlagType, string> = Object.fromEntries(
+  ATTENTION_REASONS.map((reason) => [reason, ATTENTION_REASON_META[reason].label]),
+) as Record<InboxZeroFlagType, string>;
 
 /** priorityRank (0 = highest) -> triage tone, same red/yellow/blue vocabulary as CounselorHomeKit's queue. */
 const RANK_TONE: QueueTone[] = ['red', 'yellow', 'blue'];
 const RANK_FLAG: Array<string | undefined> = ['Urgent', 'Watch', undefined];
 
 const FLAG_ICON: Record<InboxZeroFlagType, LucideIcon> = {
-  at_risk: TriangleAlert,
-  doc_missing: FileWarning,
-  application_stalled: Clock,
-  last_contact: MailWarning,
+  risk_alert: TriangleAlert,
+  no_activity_30d: TriangleAlert,
+  sla_breach_48h: MailWarning,
+  sla_warning_24h: MailWarning,
+  no_activity_10d: Clock,
+  stale_training: Clock,
+  no_counselor_contact_7d: MailWarning,
+  resume_missing_3d: FileWarning,
+  application_stalled_5d: Clock,
+  missing_info: FileWarning,
+  pending_application: FileWarning,
+  new_no_counselor: Clock,
+  computer_support_followup: Clock,
+  milestone_reached: Clock,
 };
 
 const inputStyle: React.CSSProperties = {
@@ -531,9 +541,16 @@ function InboxZeroRowCard({
 
 function formatRowMetadata(row: InboxZeroRow): string | null {
   const parts: string[] = [];
+  if (row.context.daysInactive !== undefined) {
+    parts.push(row.context.daysInactive == null ? 'no activity recorded' : `${row.context.daysInactive}d inactive`);
+  }
+  if (row.context.hoursWaiting !== undefined) parts.push(`${row.context.hoursWaiting}h awaiting reply`);
+  if (row.context.daysSinceJoined !== undefined) parts.push(`joined ${row.context.daysSinceJoined}d ago`);
   if (row.context.atRiskScore !== undefined) parts.push(`risk ${row.context.atRiskScore}`);
   if (row.context.daysSinceAssignment !== undefined) parts.push(`${row.context.daysSinceAssignment}d since assigned`);
   if (row.context.daysSinceApplication !== undefined) parts.push(`${row.context.daysSinceApplication}d on application`);
-  if (row.context.daysSinceLastContact !== undefined) parts.push(`${row.context.daysSinceLastContact}d since contact`);
+  if (row.context.daysSinceLastContact !== undefined) {
+    parts.push(row.context.daysSinceLastContact == null ? 'never contacted' : `${row.context.daysSinceLastContact}d since contact`);
+  }
   return parts.length > 0 ? parts.join(' · ') : null;
 }

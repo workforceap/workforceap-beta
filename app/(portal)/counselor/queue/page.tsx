@@ -9,7 +9,9 @@ import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import {
   formatTimeWaiting,
   getCounselorWorkQueue,
+  getCounselorWorkQueueContext,
   previewMessageBody,
+  type WorkQueueContext,
   type WorkQueueRow,
 } from '@/lib/counselor/workQueue';
 import { DesignSurface, SectionHeader, Avatar, StatusTag, colorVar, type KitColor, type KitTone } from '@/components/portal/kit';
@@ -100,6 +102,19 @@ export default async function CounselorWorkQueuePage() {
     error = true;
   }
 
+  // This page is the "waiting on a reply" slice of the shared attention queue
+  // (lib/attention). When the slice is empty but other members are flagged,
+  // say so instead of "all caught up" — the same set Inbox zero shows.
+  let context: WorkQueueContext | null = null;
+  if (!error) {
+    try {
+      context = await getCounselorWorkQueueContext(user.id, { isAdmin: admin });
+    } catch (err) {
+      console.error('[counselor/queue] getCounselorWorkQueueContext failed:', err);
+    }
+  }
+  const flaggedElsewhere = context ? Math.max(0, context.flaggedTotal - context.awaitingReply) : 0;
+
   const t = await getTranslations('counselor');
 
   return (
@@ -133,10 +148,18 @@ export default async function CounselorWorkQueuePage() {
             </div>
           ) : rows.length === 0 ? (
             <PortalEmptyState
-              title={t('allCaughtUp')}
-              description={t('workQueueEmptyDesc')}
+              title={flaggedElsewhere > 0 ? t('workQueueNoRepliesTitle') : t('allCaughtUp')}
+              description={
+                flaggedElsewhere > 0
+                  ? t('workQueueOtherFlagged', { count: flaggedElsewhere })
+                  : t('workQueueEmptyDesc')
+              }
               icon={<Clock size={28} style={{ color: 'var(--wa-success)' }} />}
-              primaryAction={{ label: t('openMessages'), href: '/counselor/messages' }}
+              primaryAction={
+                flaggedElsewhere > 0
+                  ? { label: t('inboxZero'), href: '/counselor/inbox' }
+                  : { label: t('openMessages'), href: '/counselor/messages' }
+              }
               secondaryAction={{ label: t('backToDashboard'), href: '/counselor' }}
             />
           ) : (

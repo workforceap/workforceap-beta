@@ -4,11 +4,14 @@ import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser, withAuthGuc } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
-import { Bell, TriangleAlert, UserPlus, Briefcase, Award } from 'lucide-react';
+import { Activity, Bell, TriangleAlert, UserPlus, Briefcase, Award } from 'lucide-react';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
+import { getAdminAttention } from '@/lib/attention/admin';
+import { buildAdminAttentionTiles, buildCommandCenterAttentionRows } from '@/lib/attention/adminViews';
+import { emptyAttentionQueue, type AttentionQueue } from '@/lib/attention/evaluate';
 import { countThreadsWithSlaBreach } from '@/lib/messages/superAdminMessageQueries';
 import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
 import TriageDigestSection from '@/components/admin/TriageDigestSection';
@@ -65,7 +68,7 @@ export default async function AdminTodayPage({
 
     const { data, headline } = await withAuthGuc(async () => {
       const orgId = await getActorOrganizationId(user.id);
-      const [center, activeStudents, placementRows, recentCronErrors, slaBreaches48h] = await Promise.all([
+      const [center, attention, placementRows, recentCronErrors, slaBreaches48h] = await Promise.all([
         getAdminCommandCenter(user.id, { perSectionLimit: 8 }).catch((error): AdminCommandCenter => {
           adminHomeLoadFailed = true;
           console.error('[admin/page] command center load failed', error);
@@ -85,13 +88,14 @@ export default async function AdminTodayPage({
             },
           };
         }),
-        prisma.user
-          .count({ where: { organizationId: orgId, deletedAt: null, enrolledProgram: { not: null } } })
-          .catch((error) => {
-            adminHomeLoadFailed = true;
-            console.error('[admin/page] active student count failed', error);
-            return 0;
-          }),
+        // "Who needs attention" + the active-student count come from the shared
+        // attention model — the same numbers /admin/overview prints, over the
+        // member-only roster (staff accounts never count as members here).
+        getAdminAttention(scope).catch((error): AttentionQueue => {
+          adminHomeLoadFailed = true;
+          console.error('[admin/page] attention model load failed', error);
+          return emptyAttentionQueue();
+        }),
         prisma.placementRecord
           .findMany({
             where: { user: { organizationId: orgId, deletedAt: null }, placedAt: { gte: yearStart } },
@@ -123,7 +127,7 @@ export default async function AdminTodayPage({
           return 0;
         }),
       ]);
-      return { data: center, headline: { activeStudents, placementRows, recentCronErrors, slaBreaches48h } };
+      return { data: center, headline: { attention, placementRows, recentCronErrors, slaBreaches48h } };
     }).catch((error) => {
       adminHomeLoadFailed = true;
       console.error('[admin/page] scoped command center load failed', error);
@@ -144,7 +148,7 @@ export default async function AdminTodayPage({
           },
         } as AdminCommandCenter,
         headline: {
-          activeStudents: 0,
+          attention: emptyAttentionQueue(),
           placementRows: [] as Array<{ placedAt: Date }>,
           recentCronErrors: 0,
           slaBreaches48h: 0,
@@ -155,6 +159,9 @@ export default async function AdminTodayPage({
     if (adminHomeLoadFailed) return <AdminDataLoadError title="Command center unavailable" message="Current queues and dashboard figures could not be loaded. Please reload this page." />;
 
     const { totals } = data;
+    const attentionTiles = buildAdminAttentionTiles(headline.attention);
+    const attentionRows = buildCommandCenterAttentionRows(headline.attention);
+    const attentionIcon = { risk_alert: TriangleAlert, no_activity_30d: Activity, new_no_counselor: UserPlus } as const;
 
     // Placements by month (Jan→current month, YTD).
     const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -174,11 +181,16 @@ export default async function AdminTodayPage({
     // (no extra query).
     const placementsSpark = monthBuckets.length > 1 ? monthBuckets : undefined;
 
+    // Attention tiles carry their definition in the caption so this page and
+    // /admin/overview can never disagree silently ("risk alert" is a saved
+    // alert; "quiet 30+ days" is an activity heuristic).
     const kpis: CommandCenterKpiItem[] = [
       {
         label: 'Active Students',
-        value: headline.activeStudents,
+        value: headline.attention.totals.enrolled,
         color: 'text',
+        delta: 'Members with an enrolled program',
+        deltaColor: 'muted',
       },
       {
         label: 'Placements YTD',
@@ -187,21 +199,33 @@ export default async function AdminTodayPage({
         spark: placementsSpark ? { series: placementsSpark } : undefined,
       },
       { label: 'Interview prep', value: totals.interviewingCount, color: 'info' },
-      { label: 'At Risk', value: totals.atRiskCount, color: 'accent' },
+      ...attentionTiles
+        .filter((tile) => tile.key !== 'new_no_counselor')
+        .map((tile): CommandCenterKpiItem => ({
+          label: tile.label,
+          value: tile.value,
+          color: 'accent',
+          tone: tile.value > 0 ? 'accent' : 'muted',
+          delta: tile.definition,
+          deltaColor: 'muted',
+        })),
     ];
 
     const queueItems: CommandCenterQueueItem[] = [
-      {
-        id: 'at-risk',
-        icon: <TriangleAlert size={14} aria-hidden />,
-        iconColor: 'var(--wa-accent)',
-        title: `${totals.atRiskCount} ${totals.atRiskCount === 1 ? 'student' : 'students'} need a check-in`,
-        detail: 'Approved training has gone quiet or course activity is flagged',
-        actionLabel: `${totals.atRiskCount} items`,
-        urgent: totals.atRiskCount > 0,
-        href: '/admin/command-center?queue=at-risk',
-        count: totals.atRiskCount,
-      },
+      ...attentionRows.map((row): CommandCenterQueueItem => {
+        const Icon = attentionIcon[row.id];
+        return {
+          id: row.id,
+          icon: <Icon size={14} aria-hidden />,
+          iconColor: 'var(--wa-accent)',
+          title: row.title,
+          detail: row.detail,
+          actionLabel: row.actionLabel,
+          urgent: row.urgent,
+          href: row.href,
+          count: row.count,
+        };
+      }),
       {
         id: 'needs-reply',
         icon: <Bell size={14} aria-hidden />,
