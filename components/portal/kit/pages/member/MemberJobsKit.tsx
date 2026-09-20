@@ -108,7 +108,7 @@ export function MemberJobsKit({
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
           kicker="Job search"
-          title="Pipeline"
+          title="Job board"
           lede="Applications, matches, next interviews."
           icon={<Compass size={13} aria-hidden="true" />}
         />
@@ -127,13 +127,13 @@ export function MemberJobsKit({
               <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
               {syncedLabel ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
             </div>
-            {applications.length > 0 ? <JobsCta href={browseHref}>Open board</JobsCta> : null}
+            {applications.length > 0 ? <JobsCta href={browseHref}>Browse openings</JobsCta> : null}
           </div>
           {applications.length === 0 ? (
             <KitEmptyState
               title="No applications yet"
               description="Track jobs you apply to. They appear here."
-              action={<JobsCta href={browseHref}>Open board</JobsCta>}
+              action={<JobsCta href={browseHref}>Browse openings</JobsCta>}
             />
           ) : (
             <DataTable<ApplicationRow>

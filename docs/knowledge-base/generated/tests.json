@@ -3391,6 +3391,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/auth/currentUserClient.test.ts",
+    "area": "libraries",
+    "domain": "identity-tenancy",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/auth/currentUserClient.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/auth/ensureUser.test.ts",
     "area": "libraries",
     "domain": "identity-tenancy",
@@ -7269,6 +7293,54 @@
       {
         "file": "lib/member/memberApplicationStatus.ts",
         "line": 7
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/member/memberApprovalStatus.test.ts",
+    "area": "libraries",
+    "domain": "member-counselor",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/memberApprovalStatus.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/member/memberIdentity.test.ts",
+    "area": "libraries",
+    "domain": "member-counselor",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/memberIdentity.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -25277,8 +25349,12 @@
         "line": 5
       },
       {
-        "file": "next.config.ts",
+        "file": "lib/content/programs.ts",
         "line": 6
+      },
+      {
+        "file": "next.config.ts",
+        "line": 7
       }
     ],
     "kind": "test-candidate",
@@ -25648,6 +25724,30 @@
       },
       {
         "file": "scripts/vitest-library-specs.mjs",
+        "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/well-known-icon-paths.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "next.config.ts",
         "line": 5
       }
     ],

@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 
 /**
- * Shared opener for Career Studio destinations (interview, LinkedIn, match).
+ * Shared opener for AI Career Tools destinations (interview, LinkedIn, match).
  * Same kicker / quiet 44px back action / `--wa-pad-sm` as InterviewPrepKit so those
  * routes read as the same product as /dev/member/toolkit.
  */
@@ -27,7 +27,7 @@ export function ToolkitToolChrome({
     <DesignSurface surface="warm">
       <div style={{ maxWidth, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
         <PageOpener
-          kicker="Career Studio"
+          kicker="AI Career Tools"
           title={title}
           lede={lede}
           icon={icon}
@@ -37,7 +37,7 @@ export function ToolkitToolChrome({
               className="wa-page-action wa-kit-focus"
             >
               <ArrowLeft size={14} aria-hidden="true" />
-              Back to Career Studio
+              Back to AI Career Tools
             </Link>
           }
         />

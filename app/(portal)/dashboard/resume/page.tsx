@@ -88,12 +88,12 @@ export default async function DashboardResumePage() {
       <div style={{ padding: "1.25rem 1rem 0", borderBottom: "1px solid var(--wa-border)", background: "var(--wa-surface)" }}>
         <PageOpener
           className="wa-mb-5"
-          kicker="Career toolkit"
+          kicker="AI Career Tools"
           title={t('resume')}
           lede="Upload your resume, review it inline, or build one from your profile."
           action={
             <Link href="/dashboard/ai-tools" className="wa-kit-cta wa-kit-cta--ghost">
-              Career Toolkit
+              AI Career Tools
             </Link>
           }
         />
