@@ -2,25 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const STORAGE_KEY = 'dev_view_mode';
 
 export default function DevViewToggle() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
+  // Shared current-user snapshot (WAP-27): no dedicated /api/auth/me call here.
+  const { user } = useCurrentUser();
+  const isAdmin = user?.role === 'admin';
   const [mode, setMode] = useState<'student' | 'admin'>('student');
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((r) => r.json())
-      .then((d) => {
-        setIsAdmin(d.role === 'admin');
-        const stored = localStorage.getItem(STORAGE_KEY) as 'student' | 'admin' | null;
-        if (stored) setMode(stored);
-      })
-      .catch(() => {});
-  }, []);
+    if (!isAdmin) return;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY) as 'student' | 'admin' | null;
+      if (stored) setMode(stored);
+    } catch {
+      /* storage unavailable — keep the default */
+    }
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!isAdmin) return;

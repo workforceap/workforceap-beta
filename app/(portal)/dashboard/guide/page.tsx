@@ -50,7 +50,7 @@ const JOURNEY_STEPS = [
     title: 'Build job-ready materials',
     desc: 'Use AI help for your resume, elevator pitch, interview prep, and readiness planning while training is underway.',
     href: '/dashboard/ai-tools',
-    cta: 'Open AI tools',
+    cta: 'Open AI Career Tools',
     icon: 'auto_awesome',
   },
   {

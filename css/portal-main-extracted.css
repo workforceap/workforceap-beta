@@ -1836,6 +1836,57 @@ html.dark .workspace-sidebar-group-label {
     border: 1px solid var(--color-border);
     max-width: min(240px, 40vw);
 }
+/* ── Member identity (WAP-101): avatar + name link to Profile & settings.
+   Separate from Sign out; the header shows the text from 769px up and the
+   avatar alone on phones, where the drawer repeats the full block. ── */
+.workspace-shell-identity {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    max-width: min(280px, 40vw);
+    padding: 0.2rem 0.65rem 0.2rem 0.3rem;
+    border-radius: 999px;
+    color: var(--wa-text);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.workspace-shell-identity:hover {
+    background: color-mix(in srgb, var(--wa-accent) 10%, transparent);
+    color: var(--wa-text);
+}
+.workspace-shell-identity__avatar {
+    flex-shrink: 0;
+}
+.workspace-shell-identity__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+    text-align: left;
+}
+.workspace-shell-identity__name,
+.workspace-shell-identity__email {
+    font-size: var(--wa-type-meta);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.workspace-shell-identity__name {
+    font-weight: 700;
+}
+.workspace-shell-identity__email {
+    color: var(--wa-muted);
+}
+@media (max-width: 768px) {
+    .workspace-shell-identity {
+        max-width: none;
+        padding: 0.2rem;
+    }
+    .workspace-shell-identity__text {
+        display: none;
+    }
+}
 .workspace-shell-context-logo-wrap {
     flex-shrink: 0;
     display: flex;
@@ -2054,6 +2105,43 @@ html.dark .workspace-sidebar-group-label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+.workspace-sidebar-identity {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 44px;
+    padding: 0.35rem 0.5rem;
+    border-radius: var(--radius-sm);
+    color: var(--wa-sidebar-text, #ffffff);
+    text-decoration: none;
+}
+.workspace-sidebar-identity:hover {
+    background: var(--wa-sidebar-bg-hover, rgba(255, 255, 255, 0.06));
+    color: var(--wa-sidebar-text, #ffffff);
+}
+.workspace-sidebar-identity__avatar {
+    flex-shrink: 0;
+}
+.workspace-sidebar-identity__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+.workspace-sidebar-identity__name,
+.workspace-sidebar-identity__email {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.workspace-sidebar-identity__name {
+    font-size: var(--wa-type-body);
+    font-weight: 700;
+}
+.workspace-sidebar-identity__email {
+    font-size: var(--wa-type-meta);
+    color: var(--wa-sidebar-muted, #cfcfcf);
 }
 .workspace-sidebar-home-link {
     font-size: 0.85rem;

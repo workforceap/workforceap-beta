@@ -17639,52 +17639,52 @@
       {
         "level": 2,
         "title": "2. Surface modes: `warm` vs `dense`",
-        "line": 118
+        "line": 135
       },
       {
         "level": 2,
         "title": "3. Dark mode",
-        "line": 145
+        "line": 162
       },
       {
         "level": 2,
         "title": "4. Status colors — two systems, one mapping (read this twice)",
-        "line": 181
+        "line": 198
       },
       {
         "level": 2,
         "title": "5. The `KitBaseProps` contract",
-        "line": 233
+        "line": 250
       },
       {
         "level": 2,
         "title": "6. Component index (`components/portal/kit/index.ts`)",
-        "line": 249
+        "line": 266
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 348
+        "line": 383
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 378
+        "line": 413
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 403
+        "line": 438
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 440
+        "line": 475
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 450
+        "line": 485
       }
     ],
     "datedFilename": false,

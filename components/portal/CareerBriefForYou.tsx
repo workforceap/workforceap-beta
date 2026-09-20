@@ -29,7 +29,7 @@ export default function CareerBriefForYou({ context }: CareerBriefForYouProps) {
             Personalized tips will appear here as you add your location, program interests, and applications. Until then, use the
             weekly briefs below and explore the{' '}
             <a href="/dashboard/ai-tools" className="career-brief-for-you-link">
-              AI Career Toolkit
+              AI Career Tools
             </a>
             .
           </p>

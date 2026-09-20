@@ -89,7 +89,7 @@ export default async function AIHistoryPage({ searchParams }: Props) {
             title="My AI results"
             subtitle="Revisit your past resume rewrites, cover letters, interview questions, voice coach sessions, and headlines."
             breadcrumbs={[
-              { label: 'AI Career Toolkit', href: '/dashboard/ai-tools' },
+              { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
               { label: 'History' },
             ]}
           />

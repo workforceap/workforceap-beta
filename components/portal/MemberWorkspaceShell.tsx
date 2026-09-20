@@ -9,14 +9,18 @@ import { MEMBER_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
+import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 
 export default function MemberWorkspaceShell({
+  identity,
   hasResume = true,
   superAdmin,
   portalRoles,
   readOnlyAudit = false,
   children,
 }: {
+  /** Signed-in member's name / email / avatar for the shell header and drawer. */
+  identity?: MemberShellIdentity | null;
   /** Member has an original or enhanced resume on file */
   hasResume?: boolean;
   superAdmin?: boolean;
@@ -45,6 +49,7 @@ export default function MemberWorkspaceShell({
     <WorkspaceShell
       portalRole="member"
       navItems={MEMBER_PORTAL_NAV_ITEMS}
+      identity={identity}
       workspaceLabel={PRODUCT_COPY.memberWorkspace}
       contextLabel="My account"
       minimalMobileHeader
