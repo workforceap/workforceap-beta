@@ -3,6 +3,7 @@ import {
   createHydrationErrorListener,
   extractReactErrorCode,
   isHydrationError,
+  isUntaggedGlobalHandlerHydrationEvent,
   redactRouteIds,
   tagHydrationError,
 } from '@/lib/observability/hydrationTelemetry';
@@ -84,5 +85,23 @@ describe('hydration telemetry (WAP-16)', () => {
     expect(report).toMatchObject({ route: '/dashboard/program/start', locale: null, reactErrorCode: null });
     expect(error).toBeInstanceOf(Error);
     expect((error as Error).message).toBe(DEV_HYDRATION);
+  });
+
+  it('beforeSend drops only the untagged onerror copy of a hydration recovery', () => {
+    const onerror = (value: string, tags?: Record<string, string>) => ({
+      tags,
+      exception: { values: [{ type: 'Error', value, mechanism: { type: 'onerror' } }] },
+    });
+    // Sentry's global handler copy: same window event the listener already forwarded.
+    expect(isUntaggedGlobalHandlerHydrationEvent(onerror(MINIFIED_418))).toBe(true);
+    expect(isUntaggedGlobalHandlerHydrationEvent(onerror(DEV_HYDRATION))).toBe(true);
+    // The route-tagged copy is kept.
+    expect(isUntaggedGlobalHandlerHydrationEvent(onerror(MINIFIED_418, { hydration: 'true', route: '/dashboard' }))).toBe(false);
+    // Non-hydration global errors and error-boundary captures are kept.
+    expect(isUntaggedGlobalHandlerHydrationEvent(onerror('Network request failed'))).toBe(false);
+    expect(isUntaggedGlobalHandlerHydrationEvent({
+      exception: { values: [{ type: 'Error', value: MINIFIED_418, mechanism: { type: 'generic' } }] },
+    })).toBe(false);
+    expect(isUntaggedGlobalHandlerHydrationEvent({})).toBe(false);
   });
 });

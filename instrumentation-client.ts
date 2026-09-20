@@ -1,4 +1,8 @@
-import { createHydrationErrorListener, type HydrationErrorReport } from '@/lib/observability/hydrationTelemetry';
+import {
+  createHydrationErrorListener,
+  isUntaggedGlobalHandlerHydrationEvent,
+  type HydrationErrorReport,
+} from '@/lib/observability/hydrationTelemetry';
 
 const APP_LOCALES = ['en', 'es', 'fr', 'pt'];
 
@@ -112,15 +116,13 @@ function isExtensionStyleHydrationNoise(event: {
  * WAP-16 per-route hydration telemetry. Next hands React's recoverable errors
  * to `reportError`, so they surface as window `error` events before Sentry's
  * lazy chunk has loaded. The listener below is installed synchronously at
- * module evaluation (before hydration), remembers the error object, and
- * forwards it tagged with the route once the Sentry client exists. Sentry's
- * own global handler may also see the same error; `beforeSend` drops that
- * untagged duplicate so each recovery is counted once, per route.
+ * module evaluation (before hydration) and forwards each error tagged with
+ * the route once the Sentry client exists. Sentry's own `onerror` global
+ * handler sees the same window event; `beforeSend` drops that untagged copy
+ * (isUntaggedGlobalHandlerHydrationEvent) so each recovery is counted once,
+ * per route.
  */
-const forwardedHydrationErrors = new WeakSet<object>();
-
 function forwardHydrationReport(report: HydrationErrorReport, error: unknown): void {
-  if (error && typeof error === 'object') forwardedHydrationErrors.add(error);
   // Same gate as setSentryUser: never pull the Sentry chunk where it is not initialized.
   if (!dsn || !isProduction || isReadOnlyPortalAuditDocument() || !initPromise) return;
   void initPromise
@@ -138,15 +140,6 @@ function forwardHydrationReport(report: HydrationErrorReport, error: unknown): v
     .catch(() => {
       // telemetry must never surface as a page error
     });
-}
-
-function isUntaggedForwardedHydrationDuplicate(
-  event: { tags?: Record<string, unknown> },
-  hint: { originalException?: unknown } | undefined,
-): boolean {
-  const original = hint?.originalException;
-  if (!original || typeof original !== 'object' || !forwardedHydrationErrors.has(original)) return false;
-  return event.tags?.hydration !== 'true';
 }
 
 if (typeof window !== 'undefined') {
@@ -193,14 +186,14 @@ async function initSentry() {
         blockAllMedia: true,
       }),
     ],
-    beforeSend(event, hint) {
+    beforeSend(event) {
       if (isReadOnlyPortalAuditDocument()) return null;
       // Password managers / form fillers inject caret-color and empty border
       // styles before hydrate. Sentry Replay records these as "Hydration Error"
       // on /admin and other portals (JAVASCRIPT-NEXTJS-1) — not actionable app bugs.
       if (isExtensionStyleHydrationNoise(event)) return null;
       // The route-tagged copy from forwardHydrationReport is the one we keep.
-      if (isUntaggedForwardedHydrationDuplicate(event, hint)) return null;
+      if (isUntaggedGlobalHandlerHydrationEvent(event)) return null;
       return event;
     },
     beforeSendTransaction(event) {

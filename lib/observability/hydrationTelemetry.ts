@@ -95,3 +95,23 @@ export function createHydrationErrorListener(options: HydrationErrorListenerOpti
     options.forward(report, event.error ?? new Error(report.message));
   };
 }
+
+/** Minimal shape of a Sentry event as seen by `beforeSend`; kept local so this module stays Sentry-free. */
+export type SentryEventLike = {
+  tags?: Record<string, unknown>;
+  exception?: { values?: Array<{ type?: string; value?: string; mechanism?: { type?: string } }> };
+};
+
+/**
+ * True for the copy of a hydration recovery that Sentry's own window `error`
+ * global handler captured. The listener from `createHydrationErrorListener`
+ * sees the same `error` event and forwards it route-tagged, so this copy is
+ * a duplicate; error-boundary captures (`mechanism.type` generic) and the
+ * tagged copy itself are kept.
+ */
+export function isUntaggedGlobalHandlerHydrationEvent(event: SentryEventLike): boolean {
+  if (event.tags?.hydration === 'true') return false;
+  const first = event.exception?.values?.[0];
+  if (!first || first.mechanism?.type !== 'onerror') return false;
+  return isHydrationError(undefined, first.value);
+}
