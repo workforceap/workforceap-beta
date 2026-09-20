@@ -2298,6 +2298,7 @@
     "analyticsPageDescription": "Enrollment, progress, and outcomes at a glance.",
     "platformEngagement": "Engajamento da plataforma, inscrições e resultados de colocação.",
     "exportFunderCsv": "Exportar CSV do financiador",
+    "exportFunderCsvDownload": "Baixar CSV do resumo para financiadores",
     "exportFunderCsvTitle": "Resumo de programas para financiadores",
     "exportFunderCsvDescription": "Matrículas por programa, atividade em 30 dias, conclusão, colocações, membros em risco e taxas de conclusão/colocação para relatórios de subsídios.",
     "totalMembers": "Total de membros",
