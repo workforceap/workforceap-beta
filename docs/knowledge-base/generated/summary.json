@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "29d606fc107bce23c903b7f96dfd2b6941cfd0f6eba5b715022172c2be50420b",
+  "inputTreeSha256": "5d3fa088c27c3f2842d20a18cd001775dbb226a42315f0cfd53856f4179d649e",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4861,
-    "sourceModules": 3523,
-    "importReferences": 17188,
-    "resolvedLocalReferences": 11443,
+    "files": 4848,
+    "sourceModules": 3510,
+    "importReferences": 17128,
+    "resolvedLocalReferences": 11390,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 848,
-    "testCandidates": 840,
-    "testHelpers": 8,
-    "staticallySelectedTests": 837,
+    "testFiles": 845,
+    "testCandidates": 838,
+    "testHelpers": 7,
+    "staticallySelectedTests": 835,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1032
+      "files": 1020
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 472
+      "files": 471
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 889
+      "references": 890
     },
     {
       "file": "lib/auth/server.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 97
+      "references": 96
     },
     {
       "file": "lib/email.ts",
@@ -239,15 +239,15 @@
       "references": 38
     },
     {
+      "file": "lib/db/queryCaps.ts",
+      "references": 38
+    },
+    {
       "file": "lib/cron/cronExecution.ts",
       "references": 37
     },
     {
       "file": "lib/auth/ensureUser.ts",
-      "references": 35
-    },
-    {
-      "file": "lib/db/queryCaps.ts",
       "references": 35
     }
   ],

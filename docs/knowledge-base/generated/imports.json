@@ -2153,32 +2153,8 @@
   },
   {
     "from": "app/(portal)/counselor/page.tsx",
-    "specifier": "@/lib/attention/counselor",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/counselor.ts"
-  },
-  {
-    "from": "app/(portal)/counselor/page.tsx",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 15,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "app/(portal)/counselor/page.tsx",
-    "specifier": "@/lib/attention/evaluate",
-    "line": 16,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/CounselorPortalVoiceBlock",
-    "line": 17,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/CounselorPortalVoiceBlock.tsx"
@@ -2186,7 +2162,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/counselor/memberStatus",
-    "line": 18,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/memberStatus.ts"
@@ -2194,7 +2170,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 19,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -2202,7 +2178,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 20,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -2210,7 +2186,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/PortalEmptyState",
-    "line": 21,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalEmptyState.tsx"
@@ -2218,7 +2194,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 22,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -2226,7 +2202,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/time/greeting",
-    "line": 23,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/time/greeting.ts"
@@ -2234,7 +2210,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 24,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -2242,7 +2218,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 25,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -2250,7 +2226,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/member/trainingProgress",
-    "line": 26,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/member/trainingProgress.ts"
@@ -2258,7 +2234,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 30,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -2266,7 +2242,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
-    "line": 31,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
@@ -2274,7 +2250,7 @@
   {
     "from": "app/(portal)/counselor/page.tsx",
     "specifier": "@/lib/counselor/needsAttentionRows",
-    "line": 36,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/needsAttentionRows.ts"
@@ -2554,7 +2530,7 @@
   {
     "from": "app/(portal)/counselor/queue/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 17,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -2562,7 +2538,7 @@
   {
     "from": "app/(portal)/counselor/queue/page.tsx",
     "specifier": "next-intl/server",
-    "line": 18,
+    "line": 16,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -3649,24 +3625,8 @@
   },
   {
     "from": "app/(portal)/counselor/triage/page.tsx",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 18,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "app/(portal)/counselor/triage/page.tsx",
-    "specifier": "@/lib/attention/reasons",
-    "line": 19,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "app/(portal)/counselor/triage/page.tsx",
     "specifier": "@/lib/counselor/nudgeTemplates",
-    "line": 20,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/nudgeTemplates.ts"
@@ -3674,7 +3634,7 @@
   {
     "from": "app/(portal)/counselor/triage/page.tsx",
     "specifier": "@/components/portal/counselor/TriageNudgePanel",
-    "line": 21,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "components/portal/counselor/TriageNudgePanel.tsx"
@@ -3682,7 +3642,7 @@
   {
     "from": "app/(portal)/counselor/triage/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 22,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -3690,7 +3650,7 @@
   {
     "from": "app/(portal)/counselor/triage/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 23,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -23657,32 +23617,8 @@
   },
   {
     "from": "app/admin/page.tsx",
-    "specifier": "@/lib/attention/admin",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/admin.ts"
-  },
-  {
-    "from": "app/admin/page.tsx",
-    "specifier": "@/lib/attention/adminViews",
-    "line": 13,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/adminViews.ts"
-  },
-  {
-    "from": "app/admin/page.tsx",
-    "specifier": "@/lib/attention/evaluate",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "app/admin/page.tsx",
     "specifier": "@/lib/messages/superAdminMessageQueries",
-    "line": 15,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/messages/superAdminMessageQueries.ts"
@@ -23690,7 +23626,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/admin/AdminDataLoadError",
-    "line": 16,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminDataLoadError.tsx"
@@ -23698,7 +23634,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/admin/TriageDigestSection",
-    "line": 17,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/admin/TriageDigestSection.tsx"
@@ -23706,7 +23642,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 18,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -23714,7 +23650,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 19,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -23722,7 +23658,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
-    "line": 20,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
@@ -23730,7 +23666,7 @@
   {
     "from": "app/admin/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 27,
+    "line": 24,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -72313,11 +72249,11 @@
   },
   {
     "from": "components/admin/TriageDigestSection.tsx",
-    "specifier": "@/lib/admin/triageDigestTypes",
+    "specifier": "@/lib/admin/triageDigest",
     "line": 3,
     "kind": "type",
     "external": false,
-    "target": "lib/admin/triageDigestTypes.ts"
+    "target": "lib/admin/triageDigest.ts"
   },
   {
     "from": "components/admin/WioaReviewFilterBar.tsx",
@@ -82161,16 +82097,8 @@
   },
   {
     "from": "components/portal/counselor/InboxZeroClient.tsx",
-    "specifier": "@/lib/attention/reasons",
-    "line": 16,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "components/portal/counselor/InboxZeroClient.tsx",
     "specifier": "@/lib/counselor/templates",
-    "line": 17,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/templates.ts"
@@ -82178,7 +82106,7 @@
   {
     "from": "components/portal/counselor/InboxZeroClient.tsx",
     "specifier": "@/lib/counselor/inboxEmptyState",
-    "line": 22,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/inboxEmptyState.ts"
@@ -82186,7 +82114,7 @@
   {
     "from": "components/portal/counselor/InboxZeroClient.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 23,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -82194,7 +82122,7 @@
   {
     "from": "components/portal/counselor/InboxZeroClient.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 24,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -92169,16 +92097,8 @@
   },
   {
     "from": "lib/admin/commandCenter.ts",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
-  },
-  {
-    "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/applicantTriageLoad",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriageLoad.ts"
@@ -92186,7 +92106,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -92194,7 +92114,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 24,
+    "line": 23,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -92202,7 +92122,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 25,
+    "line": 24,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -93713,43 +93633,43 @@
   },
   {
     "from": "lib/admin/triageDigest.ts",
-    "specifier": "@/lib/attention/admin",
+    "specifier": "@/lib/content/programTitle",
     "line": 3,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/admin.ts"
+    "target": "lib/content/programTitle.ts"
   },
   {
     "from": "lib/admin/triageDigest.ts",
-    "specifier": "@/lib/attention/adminViews",
+    "specifier": "@/lib/admin/healthScore",
     "line": 4,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/adminViews.ts"
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "lib/admin/triageDigest.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/triageDigest.ts",
+    "specifier": "@/lib/admin/triageDigestCopy",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/triageDigestCopy.ts"
   },
   {
     "from": "lib/admin/triageDigest.ts",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 5,
-    "kind": "type",
+    "line": 7,
+    "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
-  },
-  {
-    "from": "lib/admin/triageDigest.ts",
-    "specifier": "@/lib/admin/triageDigestTypes",
-    "line": 6,
-    "kind": "type",
-    "external": false,
-    "target": "lib/admin/triageDigestTypes.ts"
-  },
-  {
-    "from": "lib/admin/triageDigest.ts",
-    "specifier": "@/lib/admin/triageDigestTypes",
-    "line": 8,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/admin/triageDigestTypes.ts"
   },
   {
     "from": "lib/admin/triageDigestCopy.test.ts",
@@ -93774,14 +93694,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/triageDigestCopy.ts"
-  },
-  {
-    "from": "lib/admin/triageDigestTypes.ts",
-    "specifier": "@/lib/admin/healthScore",
-    "line": 6,
-    "kind": "type",
-    "external": false,
-    "target": "lib/admin/healthScore.ts"
   },
   {
     "from": "lib/admin/userDeleteResponse.test.ts",
@@ -96030,398 +95942,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/assessment/answer-key.ts"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "server-only",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "server-only"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "react",
-    "line": 20,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 21,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "@/lib/tenant/adminPageScope",
-    "line": 22,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/adminPageScope.ts"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "./evaluate",
-    "line": 23,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/admin.ts",
-    "specifier": "./loadFacts",
-    "line": 24,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/loadFacts.ts"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "./evaluate",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "./reasons",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "./adminViews",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/adminViews.ts"
-  },
-  {
-    "from": "lib/attention/adminAgreement.test.ts",
-    "specifier": "@/tests/fixtures/attentionRoster",
-    "line": 11,
-    "kind": "import",
-    "external": false,
-    "target": "tests/fixtures/attentionRoster.ts"
-  },
-  {
-    "from": "lib/attention/adminViews.ts",
-    "specifier": "@/lib/content/programTitle",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programTitle.ts"
-  },
-  {
-    "from": "lib/attention/adminViews.ts",
-    "specifier": "@/lib/admin/triageDigestCopy",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/triageDigestCopy.ts"
-  },
-  {
-    "from": "lib/attention/adminViews.ts",
-    "specifier": "@/lib/admin/triageDigestTypes",
-    "line": 11,
-    "kind": "type",
-    "external": false,
-    "target": "lib/admin/triageDigestTypes.ts"
-  },
-  {
-    "from": "lib/attention/adminViews.ts",
-    "specifier": "./reasons",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/adminViews.ts",
-    "specifier": "./evaluate",
-    "line": 17,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "react",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "@/lib/db/queryCaps",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/queryCaps.ts"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "@/lib/counselor/adminMemberScope",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "lib/counselor/adminMemberScope.ts"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "./evaluate",
-    "line": 11,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/counselor.ts",
-    "specifier": "./loadFacts",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/loadFacts.ts"
-  },
-  {
-    "from": "lib/attention/counselorAgreement.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/attention/counselorAgreement.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/attention/counselorAgreement.test.ts",
-    "specifier": "./evaluate",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/counselorAgreement.test.ts",
-    "specifier": "./counselorViews",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "lib/attention/counselorAgreement.test.ts",
-    "specifier": "@/tests/fixtures/attentionRoster",
-    "line": 11,
-    "kind": "import",
-    "external": false,
-    "target": "tests/fixtures/attentionRoster.ts"
-  },
-  {
-    "from": "lib/attention/counselorViews.ts",
-    "specifier": "./reasons",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/counselorViews.ts",
-    "specifier": "./evaluate",
-    "line": 18,
-    "kind": "type",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/evaluate.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/attention/evaluate.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/attention/evaluate.test.ts",
-    "specifier": "./evaluate",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/evaluate.test.ts",
-    "specifier": "@/tests/fixtures/attentionRoster",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "tests/fixtures/attentionRoster.ts"
-  },
-  {
-    "from": "lib/attention/evaluate.ts",
-    "specifier": "./reasons",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/evaluate.ts",
-    "specifier": "./rules",
-    "line": 17,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/rules.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./reasons",
-    "line": 9,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./rules",
-    "line": 10,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/rules.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./evaluate",
-    "line": 11,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./counselorViews",
-    "line": 12,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./adminViews",
-    "line": 13,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/adminViews.ts"
-  },
-  {
-    "from": "lib/attention/loadFacts.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/attention/loadFacts.ts",
-    "specifier": "./reasons",
-    "line": 15,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/loadFacts.ts",
-    "specifier": "./evaluate",
-    "line": 16,
-    "kind": "type",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/rules.test.ts",
-    "specifier": "node:test",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "node:test"
-  },
-  {
-    "from": "lib/attention/rules.test.ts",
-    "specifier": "node:assert/strict",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "node:assert"
-  },
-  {
-    "from": "lib/attention/rules.test.ts",
-    "specifier": "./reasons",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/rules.test.ts",
-    "specifier": "./rules",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/rules.ts"
-  },
-  {
-    "from": "lib/attention/rules.ts",
-    "specifier": "./reasons",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
   },
   {
     "from": "lib/audit.test.ts",
@@ -99562,7 +99082,31 @@
   {
     "from": "lib/counselor/inboxZero.query.test.ts",
     "specifier": "./inboxZero",
-    "line": 36,
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/counselor/inboxZero.ts"
+  },
+  {
+    "from": "lib/counselor/inboxZero.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/counselor/inboxZero.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/counselor/inboxZero.test.ts",
+    "specifier": "./inboxZero",
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/inboxZero.ts"
@@ -99570,42 +99114,26 @@
   {
     "from": "lib/counselor/inboxZero.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 10,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
   },
   {
     "from": "lib/counselor/inboxZero.ts",
-    "specifier": "@/lib/attention/counselor",
-    "line": 11,
+    "specifier": "@/lib/db/queryCaps",
+    "line": 15,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselor.ts"
+    "target": "lib/db/queryCaps.ts"
   },
   {
     "from": "lib/counselor/inboxZero.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 12,
+    "specifier": "@/lib/counselor/adminMemberScope",
+    "line": 17,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "lib/counselor/inboxZero.ts",
-    "specifier": "@/lib/attention/reasons",
-    "line": 13,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/counselor/inboxZero.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 20,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/counselor/adminMemberScope.ts"
   },
   {
     "from": "lib/counselor/inboxZeroAudit.ts",
@@ -99769,27 +99297,35 @@
   },
   {
     "from": "lib/counselor/priorityQueue.ts",
-    "specifier": "@/lib/attention/counselor",
-    "line": 13,
+    "specifier": "@/lib/db/prisma",
+    "line": 21,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselor.ts"
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "lib/counselor/priorityQueue.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 14,
+    "specifier": "@/lib/db/queryCaps",
+    "line": 22,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/db/queryCaps.ts"
   },
   {
     "from": "lib/counselor/priorityQueue.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 16,
-    "kind": "re-export",
+    "specifier": "@/lib/counselor/triageFlags",
+    "line": 24,
+    "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/counselor/triageFlags.ts"
+  },
+  {
+    "from": "lib/counselor/priorityQueue.ts",
+    "specifier": "@/lib/counselor/adminMemberScope",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "lib/counselor/adminMemberScope.ts"
   },
   {
     "from": "lib/counselor/staffMemberAccess.ts",
@@ -99832,68 +99368,76 @@
     "target": "lib/counselor/inboxZero.ts"
   },
   {
-    "from": "lib/counselor/triageFlags.ts",
-    "specifier": "@/lib/attention/counselor",
-    "line": 12,
+    "from": "lib/counselor/triageFlags.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/counselor/triageFlags.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/counselor/triageFlags.test.ts",
+    "specifier": "./triageFlags",
+    "line": 3,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselor.ts"
+    "target": "lib/counselor/triageFlags.ts"
   },
   {
     "from": "lib/counselor/triageFlags.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 13,
+    "specifier": "@/lib/db/prisma",
+    "line": 27,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "lib/counselor/triageFlags.ts",
-    "specifier": "@/lib/attention/reasons",
-    "line": 14,
+    "specifier": "@/lib/db/queryCaps",
+    "line": 28,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/reasons.ts"
+    "target": "lib/db/queryCaps.ts"
   },
   {
     "from": "lib/counselor/triageFlags.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 21,
-    "kind": "re-export",
+    "specifier": "@/lib/counselor/lastActivity",
+    "line": 29,
+    "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/counselor/lastActivity.ts"
+  },
+  {
+    "from": "lib/counselor/triageFlags.ts",
+    "specifier": "@/lib/counselor/adminMemberScope",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/counselor/adminMemberScope.ts"
   },
   {
     "from": "lib/counselor/workQueue.ts",
-    "specifier": "@/lib/attention/counselor",
-    "line": 11,
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselor.ts"
+    "target": "lib/db/prisma.ts"
   },
   {
     "from": "lib/counselor/workQueue.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 12,
+    "specifier": "@/lib/db/queryCaps",
+    "line": 2,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "lib/counselor/workQueue.ts",
-    "specifier": "@/lib/attention/reasons",
-    "line": 13,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/counselor/workQueue.ts",
-    "specifier": "@/lib/attention/counselorViews",
-    "line": 15,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
+    "target": "lib/db/queryCaps.ts"
   },
   {
     "from": "lib/coursera/approvedCurriculumMigration.test.ts",
@@ -120489,16 +120033,8 @@
   },
   {
     "from": "tests/api/counselor-inbox-zero.spec.ts",
-    "specifier": "@/lib/attention/reasons",
-    "line": 51,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "tests/api/counselor-inbox-zero.spec.ts",
     "specifier": "@/lib/counselor/staffMemberAccess",
-    "line": 52,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/staffMemberAccess.ts"
@@ -120506,7 +120042,7 @@
   {
     "from": "tests/api/counselor-inbox-zero.spec.ts",
     "specifier": "@/lib/audit",
-    "line": 53,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -120514,7 +120050,7 @@
   {
     "from": "tests/api/counselor-inbox-zero.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 54,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -120522,7 +120058,7 @@
   {
     "from": "tests/api/counselor-inbox-zero.spec.ts",
     "specifier": "@/app/api/counselor/inbox-zero/route",
-    "line": 55,
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "app/api/counselor/inbox-zero/route.ts"
@@ -120530,7 +120066,7 @@
   {
     "from": "tests/api/counselor-inbox-zero.spec.ts",
     "specifier": "@/app/api/counselor/inbox-zero/dismiss/route",
-    "line": 56,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "app/api/counselor/inbox-zero/dismiss/route.ts"
@@ -127946,7 +127482,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/app/(portal)/counselor/queue/page",
-    "line": 40,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/counselor/queue/page.tsx"
@@ -127954,7 +127490,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/app/(portal)/counselor/students/[memberId]/page",
-    "line": 41,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/counselor/students/[memberId]/page.tsx"
@@ -127962,7 +127498,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/lib/auth/roles",
-    "line": 42,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -127970,7 +127506,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 43,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -127978,7 +127514,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/lib/counselor/staffMemberAccess",
-    "line": 44,
+    "line": 43,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/staffMemberAccess.ts"
@@ -127986,7 +127522,7 @@
   {
     "from": "tests/app/counselor-handoff-access.spec.tsx",
     "specifier": "@/lib/counselor/workQueue",
-    "line": 45,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/workQueue.ts"
@@ -130673,16 +130209,8 @@
   },
   {
     "from": "tests/components/inbox-zero-reassignment-receipt.spec.tsx",
-    "specifier": "@/lib/attention/reasons",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "tests/components/inbox-zero-reassignment-receipt.spec.tsx",
     "specifier": "@/components/portal/counselor/InboxZeroClient",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "components/portal/counselor/InboxZeroClient.tsx"
@@ -133086,14 +132614,6 @@
     "kind": "import",
     "external": false,
     "target": "marketing/src/components/FindYourPathQuiz.tsx"
-  },
-  {
-    "from": "tests/fixtures/attentionRoster.ts",
-    "specifier": "@/lib/attention/evaluate",
-    "line": 6,
-    "kind": "type",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
   },
   {
     "from": "tests/fixtures/boardSnapshot.ts",
