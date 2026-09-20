@@ -44,9 +44,25 @@
   padding: 1.5rem 1.25rem 2.5rem;
 }
 
-/* A surface card wrapper around the funnel form/client area */
-.afd-surface {
+/* A surface card wrapper around the funnel form/client area.
+   .mdx-card paints the light-only --mdx-surface (#fff) while the funnel copy
+   already reads the --wa-* neutrals, so in dark mode the recovery card stayed
+   white under light text (title 1.10:1, body 2.52:1). Paint the card with the
+   same light-dark() neutrals the text uses (KIT_GUIDE §1/§3): --wa-text and
+   --wa-muted on --wa-surface clear 4.5:1 in both modes. */
+.mdx-card.afd-surface {
   margin: 0 auto;
+  background: var(--wa-surface);
+  border-color: var(--wa-border);
+  color: var(--wa-text);
+}
+
+.afd-surface .apply-step-title {
+  color: var(--wa-text);
+}
+
+.afd-surface .apply-step-desc {
+  color: var(--wa-muted);
 }
 
 /* Kicker note above the form — restyled to depth tone */

@@ -20,6 +20,18 @@ describe('application state validation and compatibility', () => {
   it.each([{ firstName: {} }, { phone: 5125550100 }, { primaryBarriers: [{}] }, { q1: 'maybe' }, { ageGroup: 'unknown' }, { panel: 'account' }])('rejects values that cannot safely hydrate form controls: %j', (patch) => {
     expect(parseApplyDraft({ ...draft(), ...patch }, now)).toBeNull();
   });
+  it('requires the two eligibility answers, so a draft seeded with only the four contact fields shows the no-draft recovery copy', () => {
+    // A 2-day-old apply_flow_draft_v1 with firstName/lastName/email/phone but no q1/q2 is
+    // rejected on purpose: the resume gate only resumes drafts that can hydrate the form.
+    const { q1: _q1, q2: _q2, ...contactOnly } = { ...draft(), updatedAt: new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString() };
+    expect(parseApplyDraft(contactOnly, now)).toBeNull();
+    expect(parseApplyDraft({ ...contactOnly, q1: null, q2: null }, now)).not.toBeNull();
+    expect(parseApplyDraft({ ...contactOnly, q1: 'yes', q2: 'no' }, now)).not.toBeNull();
+    localStorage.setItem(APPLY_FLOW_DRAFT_KEY, JSON.stringify(contactOnly));
+    expect(readApplyDraft()).toBeNull();
+    sessionStorage.setItem(APPLY_FLOW_DRAFT_KEY, JSON.stringify({ ...contactOnly, q1: 'yes', q2: 'no' }));
+    expect(readApplyDraft()).toBeNull(); // the draft lives in localStorage only
+  });
   it('rejects empty or incomplete completed eligibility while retaining legacy untimestamped records', () => {
     expect(parseSavedEligibility({})).toBeNull();
     expect(parseSavedEligibility({ qualifies: true })).toBeNull();

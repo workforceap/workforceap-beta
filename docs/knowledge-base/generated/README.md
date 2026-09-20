@@ -22,8 +22,8 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | libraries | 1004 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
 | operations | 126 | [Open](operations.md) |
-| pages | 635 | [Open](pages.md) |
+| pages | 636 | [Open](pages.md) |
 | root | 55 | [Open](root.md) |
 | styles | 16 | [Open](styles.md) |
 | supporting-files | 74 | [Open](supporting-files.md) |
-| tests | 457 | [Open](tests.md) |
+| tests | 458 | [Open](tests.md) |

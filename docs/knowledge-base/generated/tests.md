@@ -270,7 +270,7 @@
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
 | [tests/components/training-feedback-handoff.test.tsx](../../../tests/components/training-feedback-handoff.test.tsx) | 100 | tests |  |
-| [tests/components/wioa-qualification.spec.tsx](../../../tests/components/wioa-qualification.spec.tsx) | 110 | partners-funding |  |
+| [tests/components/wioa-qualification.spec.tsx](../../../tests/components/wioa-qualification.spec.tsx) | 131 | partners-funding |  |
 | [tests/components/wioa-review-revision.spec.tsx](../../../tests/components/wioa-review-revision.spec.tsx) | 64 | partners-funding |  |
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
@@ -324,8 +324,9 @@
 | [tests/lib/applicant-followup-email.spec.ts](../../../tests/lib/applicant-followup-email.spec.ts) | 84 | tests |  |
 | [tests/lib/applicant-triage.spec.ts](../../../tests/lib/applicant-triage.spec.ts) | 295 | tests |  |
 | [tests/lib/application-review-atomic.spec.ts](../../../tests/lib/application-review-atomic.spec.ts) | 150 | tests |  |
-| [tests/lib/apply-browser-state.spec.ts](../../../tests/lib/apply-browser-state.spec.ts) | 135 | tests |  |
+| [tests/lib/apply-browser-state.spec.ts](../../../tests/lib/apply-browser-state.spec.ts) | 147 | tests |  |
 | [tests/lib/apply-metadata-image.spec.ts](../../../tests/lib/apply-metadata-image.spec.ts) | 24 | tests |  |
+| [tests/lib/apply-resume-gate-contrast.spec.ts](../../../tests/lib/apply-resume-gate-contrast.spec.ts) | 82 | tests |  |
 | [tests/lib/at-risk-curriculum-assignment.spec.ts](../../../tests/lib/at-risk-curriculum-assignment.spec.ts) | 89 | tests |  |
 | [tests/lib/auth-server.test.ts](../../../tests/lib/auth-server.test.ts) | 292 | tests |  |
 | [tests/lib/auth-user-lifecycle.spec.ts](../../../tests/lib/auth-user-lifecycle.spec.ts) | 99 | tests |  |

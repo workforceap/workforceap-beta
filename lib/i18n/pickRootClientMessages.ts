@@ -29,7 +29,18 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'goals',
   'coach',
   'first90',
+  // components/portal/WioaQualificationClient — /dashboard/learning/wioa-qualification
+  // and /dev/member/wioa-qualification render it under the portal provider.
+  'wioa',
 ] as const;
+
+/**
+ * Public WIOA screening (`/wioa-qualification`) renders the same client
+ * component under the root marketing layout. The catalog is ~6.5KB, so it
+ * attaches in `app/wioa-qualification/layout.tsx` (like `app/invite/layout.tsx`
+ * does for `auth`) instead of riding on every marketing HTML response.
+ */
+export const WIOA_CLIENT_NAMESPACES = ['wioa'] as const;
 
 /**
  * `dashboard.*` keys read by `components/portal/MemberProgressStrip`, which the
@@ -49,7 +60,7 @@ export const ADMIN_DASHBOARD_CLIENT_KEYS = [
   'stepUpcoming',
 ] as const;
 
-export type ClientMessageSlice = 'root' | 'portal' | 'admin' | 'apply' | 'auth';
+export type ClientMessageSlice = 'root' | 'portal' | 'admin' | 'apply' | 'auth' | 'wioa';
 
 function pickNamespaces(messages: MsgRecord, keys: readonly string[]): MsgRecord {
   const out: MsgRecord = {};
@@ -105,6 +116,10 @@ export function pickAuthClientMessages(messages: AbstractIntlMessages): Abstract
   return pickClientMessageSlice(messages, 'auth');
 }
 
+export function pickWioaClientMessages(messages: AbstractIntlMessages): AbstractIntlMessages {
+  return pickClientMessageSlice(messages, 'wioa');
+}
+
 export function pickClientMessageSlice(
   messages: AbstractIntlMessages,
   slice: ClientMessageSlice,
@@ -136,6 +151,9 @@ export function pickClientMessageSlice(
       break;
     case 'auth':
       Object.assign(out, pickNamespaces(m, ['auth']));
+      break;
+    case 'wioa':
+      Object.assign(out, pickNamespaces(m, WIOA_CLIENT_NAMESPACES));
       break;
     default: {
       const _exhaustive: never = slice;

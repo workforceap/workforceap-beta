@@ -13,6 +13,7 @@ import {
   pickLegacyFatRootClientMessages,
   pickPortalClientMessages,
   pickRootClientMessages,
+  pickWioaClientMessages,
 } from './pickRootClientMessages';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -101,6 +102,37 @@ test('admin slice dashboard keys resolve in every shipped locale', () => {
     for (const key of ADMIN_DASHBOARD_CLIENT_KEYS) {
       assert.equal(typeof dashboard[key], 'string', `${locale}: dashboard.${key}`);
     }
+  }
+});
+
+test('wioa slice carries the screening catalog plus chrome, and root/apply/auth omit it', () => {
+  // /wioa-qualification: WioaQualificationClient reads useTranslations('wioa') on the
+  // client; the page also renders <Footer />, so chrome must ride along.
+  const wioa = pickWioaClientMessages(catalog);
+  assert.equal(ns(wioa, 'wioa').title, ns(catalog, 'wioa').title);
+  assert.equal(typeof ns(wioa, 'wioa').publicIntro, 'string');
+  assert.equal(typeof ns(wioa, 'footer'), 'object');
+  assert.equal((wioa as Record<string, unknown>).admin, undefined);
+  assert.equal((wioa as Record<string, unknown>).apply, undefined);
+  assert.ok(clientMessagesBytes(wioa) < 25_000, `wioa slice ${clientMessagesBytes(wioa)}B`);
+  // The catalog attaches in app/wioa-qualification/layout.tsx, not the root payload.
+  assert.equal((pickRootClientMessages(catalog) as Record<string, unknown>).wioa, undefined);
+  assert.equal((pickApplyClientMessages(catalog) as Record<string, unknown>).wioa, undefined);
+  assert.equal((pickAuthClientMessages(catalog) as Record<string, unknown>).wioa, undefined);
+  // The member portal renders the same client at /dashboard/learning/wioa-qualification.
+  assert.equal(ns(pickPortalClientMessages(catalog), 'wioa').title, ns(catalog, 'wioa').title);
+});
+
+test('wioa slice resolves in every shipped locale', () => {
+  for (const locale of ['en', 'es', 'fr', 'pt']) {
+    const localeCatalog = JSON.parse(
+      readFileSync(join(root, `messages/${locale}.json`), 'utf8'),
+    ) as AbstractIntlMessages;
+    const wioa = ns(pickWioaClientMessages(localeCatalog), 'wioa');
+    for (const key of ['title', 'kicker', 'publicIntro', 'fullName', 'send']) {
+      assert.equal(typeof wioa[key], 'string', `${locale}: wioa.${key}`);
+    }
+    assert.equal(typeof wioa.reasons, 'object', `${locale}: wioa.reasons`);
   }
 });
 
