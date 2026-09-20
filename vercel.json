@@ -7,6 +7,10 @@
       "schedule": "7 11 */3 * *"
     },
     {
+      "path": "/api/cron/applicant-aging-digest",
+      "schedule": "37 14 * * 1"
+    },
+    {
       "path": "/api/cron/at-risk-alerts",
       "schedule": "7 13 * * 1"
     },

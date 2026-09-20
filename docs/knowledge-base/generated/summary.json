@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "a4c918bb9cf77aa9968a9bd86413805e8114315807b1ad33230b9412f90b48b6",
+  "inputTreeSha256": "f5b315e6f8aeefe3772dd4c9bd2c22b73d6d2c081faea426e53c4e8865198b29",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4855,
-    "sourceModules": 3510,
-    "importReferences": 17423,
-    "resolvedLocalReferences": 11662,
+    "files": 4884,
+    "sourceModules": 3538,
+    "importReferences": 17569,
+    "resolvedLocalReferences": 11774,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1057,
-    "nextRouteFiles": 1024,
-    "apiHandlers": 489,
+    "routeFiles": 1061,
+    "nextRouteFiles": 1028,
+    "apiHandlers": 493,
     "pageFiles": 316,
     "astroPageFiles": 33,
-    "configuredCrons": 30,
-    "prismaModels": 111,
+    "configuredCrons": 31,
+    "prismaModels": 112,
     "prismaEnums": 33,
-    "relationFields": 304,
-    "testFiles": 918,
-    "testCandidates": 910,
+    "relationFields": 306,
+    "testFiles": 929,
+    "testCandidates": 921,
     "testHelpers": 8,
-    "staticallySelectedTests": 908,
+    "staticallySelectedTests": 919,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -38,7 +38,7 @@
     },
     {
       "area": "api",
-      "files": 519
+      "files": 523
     },
     {
       "area": "assets",
@@ -54,11 +54,11 @@
     },
     {
       "area": "communications",
-      "files": 70
+      "files": 72
     },
     {
       "area": "components",
-      "files": 604
+      "files": 607
     },
     {
       "area": "content",
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 202
+      "files": 203
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1031
+      "files": 1040
     },
     {
       "area": "localization",
@@ -106,25 +106,25 @@
     },
     {
       "area": "tests",
-      "files": 532
+      "files": 542
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 901
+      "references": 915
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 741
-    },
-    {
-      "file": "lib/db/withRequestGuc.ts",
-      "references": 434
+      "references": 747
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 432
+      "references": 437
+    },
+    {
+      "file": "lib/db/withRequestGuc.ts",
+      "references": 437
     },
     {
       "file": "lib/content/programs.ts",
@@ -136,11 +136,11 @@
     },
     {
       "file": "lib/audit.ts",
-      "references": 226
+      "references": 228
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 211
+      "references": 212
     },
     {
       "file": "app/seo.ts",
@@ -160,7 +160,7 @@
     },
     {
       "file": "lib/observability/captureApiError.ts",
-      "references": 112
+      "references": 117
     },
     {
       "file": "lib/rate-limit.ts",
@@ -176,7 +176,7 @@
     },
     {
       "file": "lib/email.ts",
-      "references": 91
+      "references": 96
     },
     {
       "file": "lib/content/programTitle.ts",
@@ -184,7 +184,7 @@
     },
     {
       "file": "lib/events/track.ts",
-      "references": 75
+      "references": 79
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
@@ -196,7 +196,7 @@
     },
     {
       "file": "lib/email/escapeHtml.ts",
-      "references": 62
+      "references": 64
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
@@ -224,26 +224,26 @@
     },
     {
       "file": "lib/analytics/events.ts",
-      "references": 44
+      "references": 45
     },
     {
       "file": "lib/ai/groq.ts",
       "references": 43
     },
     {
-      "file": "lib/admin/logCronRun.ts",
-      "references": 40
-    },
-    {
       "file": "messages/en.json",
-      "references": 40
+      "references": 42
     },
     {
-      "file": "components/LocalizedLink.tsx",
-      "references": 37
+      "file": "lib/admin/logCronRun.ts",
+      "references": 41
     },
     {
       "file": "lib/cron/cronExecution.ts",
+      "references": 39
+    },
+    {
+      "file": "components/LocalizedLink.tsx",
       "references": 37
     },
     {
@@ -258,7 +258,7 @@
     },
     {
       "file": "lib/email.ts",
-      "lines": 2832
+      "lines": 2927
     },
     {
       "file": "lib/content/courseSkillMap.ts",

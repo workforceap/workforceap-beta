@@ -24,8 +24,17 @@
 import type { Resend } from 'resend';
 
 import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
+import {
+  EMAIL_SEND_WORKFLOW,
+  EMAIL_TEMPLATE_ENTITY_TYPE,
+  buildEmailFailureMetadata,
+  type EmailTemplateRef,
+} from '@/lib/email/failureRecord';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import { currentBulkEmailDeadlineAtMs } from '@/lib/email/pacing';
+import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
+
+export { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
 
 const RESEND_MAX_ATTEMPTS = 3;
 const RESEND_RETRY_BASE_DELAY_MS = 500;
@@ -135,24 +144,35 @@ export interface SendBrandedEmailArgs {
   attachments?: Array<{ filename: string; content: string | Buffer }>;
   /** Stable per-message request key; retries must preserve the original payload. */
   idempotencyKey?: string;
+  /**
+   * Template id + the wrapper's own params (WAP-163). Recorded on a failed
+   * send so /admin/diagnostics can list the failure by template and the admin
+   * resend route can re-invoke the same wrapper with the same payload. Leave
+   * unset for mail that must never be replayed from a stored row (password
+   * resets, login codes, one-time links).
+   */
+  template?: EmailTemplateRef;
 }
 
 /**
  * Persist a send failure to workflow diagnostics so /admin/diagnostics shows
  * email problems instead of them dying in server logs. Fire-and-forget: the
  * diagnostic write must never change send behavior or throw.
+ *
+ * WAP-163: the row carries the typed failure record (template, params, error
+ * class, retryable, recipient hash) so it can be listed and re-sent later.
  */
-function recordEmailFailure(args: SendBrandedEmailArgs, failureReason: string) {
+function recordEmailFailure(args: SendBrandedEmailArgs, error: unknown) {
+  const metadata = buildEmailFailureMetadata(args, error);
   void recordWorkflowDiagnostic({
-    workflow: 'email_send',
+    workflow: EMAIL_SEND_WORKFLOW,
     status: 'error',
+    entityType: EMAIL_TEMPLATE_ENTITY_TYPE,
+    entityId: metadata.template,
     summary: `Email send failed: "${args.subject}"`,
     provider: 'resend',
-    failureReason,
-    metadata: {
-      to: Array.isArray(args.to) ? args.to : [args.to],
-      subject: args.subject,
-    },
+    failureReason: error instanceof Error ? error.message : typeof error === 'string' ? error : 'Send threw',
+    metadata: { ...metadata },
   });
 }
 
@@ -204,19 +224,6 @@ export function isFixtureEmailRecipient(address: string): boolean {
   const domain = normalizedRecipientDomain(address);
   if (!domain) return false;
   return fixtureDomains().some((fixture) => domain === fixture || domain.endsWith(`.${fixture}`));
-}
-
-/** True when a Resend/provider failure is an HTTP 429 / rate_limit_exceeded. */
-export function isEmailProviderRateLimitError(error: unknown): boolean {
-  if (error == null) return false;
-  const record = asRecord(error);
-  if (record) {
-    const status = Number(record.status ?? record.statusCode ?? record.status_code);
-    const name = String(record.name ?? record.code ?? '').toLowerCase();
-    if (status === 429 || name === 'rate_limit_exceeded' || name === 'rate_limited') return true;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  return /too many requests|rate[_ ]?limit/i.test(message);
 }
 
 function resendRetryDelayMs(
@@ -316,9 +323,7 @@ export async function sendBrandedEmail(
         await sleep(delayMs);
         continue;
       }
-      if (!retryOptions.suppressFailureDiagnostic) {
-        recordEmailFailure(args, err instanceof Error ? err.message : 'Send threw');
-      }
+      if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, err);
       throw err;
     }
 
@@ -337,7 +342,7 @@ export async function sendBrandedEmail(
       continue;
     }
     const message = result.error.message ?? result.error.name ?? 'Resend API error';
-    if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, message);
+    if (!retryOptions.suppressFailureDiagnostic) recordEmailFailure(args, result.error);
     throw new Error(message);
   }
   throw new Error('Resend retry budget exhausted');

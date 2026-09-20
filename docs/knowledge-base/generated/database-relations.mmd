@@ -104,6 +104,7 @@ flowchart LR
   User["User"]
   UserCertification["UserCertification"]
   UserRole["UserRole"]
+  UserTourState["UserTourState"]
   WapJob["WapJob"]
   WebhookEvent["WebhookEvent"]
   WeeklyRecap["WeeklyRecap"]
@@ -230,6 +231,7 @@ flowchart LR
   User -->|"savedJobs many"| SavedJob
   User -->|"chaptersLed many"| Chapter
   User -->|"chapterMemberships many"| ChapterMember
+  User -->|"tourStates many"| UserTourState
   Profile -->|"user one"| User
   ReadinessChecklist -->|"user one"| User
   Application -->|"user one"| User
@@ -414,3 +416,4 @@ flowchart LR
   PushSubscription -->|"user one"| User
   SavedJob -->|"user one"| User
   SavedJob -->|"job one"| Job
+  UserTourState -->|"user one"| User

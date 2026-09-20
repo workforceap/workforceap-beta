@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
+import { EMAIL_FAILURE_ALERT_THRESHOLD, alertOnRecentEmailFailures } from '@/lib/email/failureAlert';
 
 // WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
 // by data-cleanup instead of pinning a RUNNING row forever.
@@ -12,6 +13,10 @@ export const maxDuration = 300;
  *
  * Checks cron run logs against schedule-aware freshness windows.
  * Daily crons get a 30h window; weekly crons get an 8-day window.
+ *
+ * WAP-163: also counts failed email sends in the last 24h and raises the
+ * Sentry/Discord alert when the count is above the threshold, so a repeat of
+ * the ten silent weeks is noticed the next morning.
  */
 
 type CriticalCron = {
@@ -64,9 +69,13 @@ async function handle(_request: Request) {
     (run: { status: string }) => run.status === 'error',
   );
 
+  const emailFailures = await alertOnRecentEmailFailures({ now });
+
   const runResult = {
-    ok: staleOrMissing.length === 0 && failures.length === 0,
+    ok: staleOrMissing.length === 0 && failures.length === 0 && emailFailures.count <= EMAIL_FAILURE_ALERT_THRESHOLD,
     checked: criticalCrons.length,
+    emailFailures24h: emailFailures.count,
+    emailFailureAlerted: emailFailures.alerted,
     ran: lastRunByWorkflow.size,
     staleOrMissing: staleOrMissing.map((cron) => cron.workflow),
     failures: failures.map((f: { workflow: string }) => f.workflow),

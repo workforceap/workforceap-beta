@@ -14,6 +14,16 @@ import {
   DiagnosticsKit,
   type DiagnosticTile,
 } from '@/components/portal/kit/pages/admin-subviews/DiagnosticsKit';
+import {
+  EmailFailuresPanel,
+  type EmailFailureRow,
+} from '@/components/portal/kit/pages/admin-subviews/EmailFailuresPanel';
+import { EMAIL_SEND_WORKFLOW, parseEmailFailureMetadata } from '@/lib/email/failureRecord';
+import {
+  EMAIL_FAILURE_ALERT_THRESHOLD,
+  countRecentEmailFailures,
+} from '@/lib/email/failureAlert';
+import { getResendableTemplate } from '@/lib/email/resendRegistry';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -143,6 +153,28 @@ const INTEGRATION_WORKFLOWS = [
 ];
 
 const ERROR_STATUSES = ['error', 'errored', 'failed'];
+
+/** Failed-send list window (days) on the default view; the alert window is 24h. */
+const EMAIL_FAILURE_LIST_DAYS = 7;
+const EMAIL_FAILURE_LIST_TAKE = 50;
+
+function toEmailFailureRow(row: DiagnosticRow): EmailFailureRow {
+  const failure = parseEmailFailureMetadata(row.metadata);
+  return {
+    id: row.id,
+    createdAt: row.createdAt.toISOString(),
+    template: failure.template,
+    templateLabel: getResendableTemplate(failure.template)?.label ?? null,
+    subject: failure.subject || row.summary,
+    to: failure.to,
+    errorClass: failure.errorClass,
+    retryable: failure.retryable,
+    resendable: failure.resendable && getResendableTemplate(failure.template) !== null,
+    failureReason: row.failureReason,
+    resentAt: failure.resentAt ?? null,
+    resentOk: typeof failure.resentOk === 'boolean' ? failure.resentOk : null,
+  };
+}
 const WARN_STATUSES = ['warn', 'fallback', 'fallback_used'];
 
 /**
@@ -446,6 +478,9 @@ export default async function AdminDiagnosticsPage({
   let integrationRows: { status: string }[] = [];
   let emailReadFailed = false;
   let integrationReadFailed = false;
+  let failedSends: EmailFailureRow[] = [];
+  let failedSends24h: number | null = null;
+  const failedSendsSince = new Date(Date.now() - EMAIL_FAILURE_LIST_DAYS * 24 * 60 * 60 * 1000);
 
   try {
     // Cheap liveness ping — proves the pooler answers.
@@ -455,7 +490,7 @@ export default async function AdminDiagnosticsPage({
   }
 
   if (dbOk) {
-    const [emailResult, integrationResult] = await Promise.allSettled([
+    const [emailResult, integrationResult, failedSendsResult, failedSends24hResult] = await Promise.allSettled([
       prisma.workflowDiagnostic.findMany({
         where: { workflow: { in: EMAIL_WORKFLOWS }, createdAt: { gte: since } },
         select: { status: true },
@@ -466,11 +501,20 @@ export default async function AdminDiagnosticsPage({
         select: { status: true },
         take: 500,
       }),
+      // WAP-163: individual failed sends, newest first, with their typed record.
+      prisma.workflowDiagnostic.findMany({
+        where: { workflow: EMAIL_SEND_WORKFLOW, status: 'error', createdAt: { gte: failedSendsSince } },
+        orderBy: { createdAt: 'desc' },
+        take: EMAIL_FAILURE_LIST_TAKE,
+      }),
+      countRecentEmailFailures(prisma, new Date()),
     ]);
     if (emailResult.status === 'fulfilled') emailRows = emailResult.value;
     else emailReadFailed = true;
     if (integrationResult.status === 'fulfilled') integrationRows = integrationResult.value;
     else integrationReadFailed = true;
+    if (failedSendsResult.status === 'fulfilled') failedSends = failedSendsResult.value.map(toEmailFailureRow);
+    if (failedSends24hResult.status === 'fulfilled') failedSends24h = failedSends24hResult.value;
   } else {
     emailReadFailed = true;
     integrationReadFailed = true;
@@ -489,6 +533,12 @@ export default async function AdminDiagnosticsPage({
     integrationReadFailed
       ? { name: 'Integrations', iconKey: 'integrations', status: 'Unavailable', tone: 'alert' }
       : deriveSubsystemTile('Integrations', 'integrations', integrationRows),
+    // WAP-163: the same 24h count the verification cron alerts on.
+    failedSends24h === null
+      ? { name: 'Failed Sends (24h)', iconKey: 'email', status: 'Unavailable', tone: 'alert' }
+      : failedSends24h > EMAIL_FAILURE_ALERT_THRESHOLD
+      ? { name: 'Failed Sends (24h)', iconKey: 'email', status: `${failedSends24h} failed`, tone: 'alert' }
+      : { name: 'Failed Sends (24h)', iconKey: 'email', status: 'None', tone: 'ok' },
   ];
 
   const allHealthy = tiles.every((t) => t.tone === 'ok');
@@ -503,6 +553,13 @@ export default async function AdminDiagnosticsPage({
       tiles={tiles}
       note={note}
       noteCaption="App + database measured live this request · email/integrations over the last 24h"
-    />
+    >
+      <EmailFailuresPanel
+        rows={failedSends}
+        failures24h={failedSends24h ?? 0}
+        windowDays={EMAIL_FAILURE_LIST_DAYS}
+        threshold={EMAIL_FAILURE_ALERT_THRESHOLD}
+      />
+    </DiagnosticsKit>
   );
 }
