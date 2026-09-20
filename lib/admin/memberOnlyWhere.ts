@@ -7,8 +7,19 @@ export const MEMBER_ONLY_EXCLUDED_EMAILS = [
 ] as const;
 
 /**
+ * Profile roles that are staff or partner-side accounts. They never count as
+ * applicants, students or roster members on admin and counselor surfaces
+ * (admin audit 2026-09-20, 4.1/4.2). `Profile.role` is a free string column,
+ * so this list is the repo's role vocabulary for that exclusion.
+ */
+export const STAFF_PROFILE_ROLES = ['admin', 'super_admin', 'counselor', 'employer', 'partner'] as const;
+
+/**
  * Strict member filter used by funder / grant exports (WIOA cohort CSV, etc.)
- * Only profile.role === 'member' rows count toward outcome reporting.
+ * and by the member rosters and counts that must agree with each other
+ * (/admin/overview tiles, /admin/students, Command Center program health,
+ * counselor caseload fallback). Only profile.role === 'member' rows count, so
+ * every `STAFF_PROFILE_ROLES` account is excluded.
  */
 export const MEMBER_ONLY_WHERE = {
   profile: { role: 'member' },

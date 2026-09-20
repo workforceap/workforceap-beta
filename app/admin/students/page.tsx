@@ -11,7 +11,7 @@ import {
 } from '@/lib/tenant/adminPageScope';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { calculateHealthStatus } from '@/lib/admin/healthScore';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   StudentsRosterKit,
   type StudentRow,
@@ -23,6 +23,7 @@ import {
 } from '@/lib/coursera/progressQueries';
 import { parseCourseGradeString } from '@/lib/coursera/courseGradeDisplay';
 import { loadStudentRosterEnrichment } from '@/lib/admin/studentsRosterEnrichment';
+import { loadUnmatchedCourseraRoster } from '@/lib/admin/studentsUnmatchedCoursera';
 import { withSoftTimeout } from '@/lib/admin/withSoftTimeout';
 
 const ROSTER_ENRICHMENT_TIMEOUT_MS = 20_000;
@@ -117,8 +118,11 @@ export default async function AdminStudentsPage({
 
   // --- DEFAULT: real (lean) student roster wired into StudentsRosterKit ---
 
+  // Members only: staff accounts (admin, super_admin, counselor, employer,
+  // partner profiles) are never students (admin audit 2026-09-20, 4.2). Same
+  // roster filter as the /admin/overview tiles and the Command Center.
   const whereClause = {
-    ...MEMBER_OR_DOGFOOD_WHERE,
+    ...MEMBER_ONLY_WHERE,
     deletedAt: null,
   };
 
@@ -229,20 +233,19 @@ export default async function AdminStudentsPage({
     if (name) counselorNameMap.set(row.memberId, name);
   }
 
-  const [unmatchedLearners, unmatchedCount] = await Promise.all([
-    loadUnmatchedLearners(scope.orgId, ROSTER_LIMIT, { includeTestAccounts: false }).catch(
-      (reason: unknown) => {
-        studentSecondaryLoadFailed = true;
-        console.error('[admin/students] unmatched Coursera learners failed', reason);
-        return [];
-      },
-    ),
-    countUnmatchedLearners(scope.orgId, { includeTestAccounts: false }).catch((reason: unknown) => {
-      studentSecondaryLoadFailed = true;
-      console.error('[admin/students] unmatched Coursera count failed', reason);
-      return 0;
-    }),
-  ]);
+  // Unmatched Coursera learners come from raw SQL over coursera_xapi_events.
+  // A missing, empty or slow table must not hold the roster: both reads are
+  // bounded and fail soft into the "details unavailable" notice.
+  const { learners: unmatchedLearners, count: unmatchedCount, failed: unmatchedFailed } =
+    await loadUnmatchedCourseraRoster(scope.orgId, ROSTER_LIMIT, {
+      load: (organizationId, limit) =>
+        loadUnmatchedLearners(organizationId, limit, { includeTestAccounts: false }),
+      count: (organizationId) => countUnmatchedLearners(organizationId, { includeTestAccounts: false }),
+    }, {
+      onError: (label, reason) =>
+        console.error(`[admin/students] unmatched Coursera ${label} failed`, reason),
+    });
+  if (unmatchedFailed) studentSecondaryLoadFailed = true;
 
   const students: StudentRow[] = members.map((m) => {
     const enrichment = enrichmentByUserId.get(m.id);

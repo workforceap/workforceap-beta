@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "dbfcba0115340c23e15c4b794147ed0f57416ca67af6266318937953eae1aea9",
+  "inputTreeSha256": "a9acaa79c9ab9c590781e7c5728d7ccc32ff25afb34dcf479c180f3a77e6952b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -18972,19 +18972,19 @@
       "path": "app/admin/overview/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 30687,
-      "lines": 730,
-      "sha256": "6b177bb900b8693cc5ecd263217f0074409a22baf355b6496a49b6effa032635",
+      "bytes": 30714,
+      "lines": 731,
+      "sha256": "34b931111b3086eeb34753b1077cb162ec49ba6d69a7bd9628d92db457271dda",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 48,
+          "line": 49,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 113,
+          "line": 114,
           "kind": "FunctionDeclaration",
           "localName": "AdminOverviewPage"
         }
@@ -18992,32 +18992,32 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 48,
+          "line": 49,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecentSignupRow",
-          "line": 56,
+          "line": 57,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PlacementWithUser",
-          "line": 69,
+          "line": 70,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PendingPlacementWithUser",
-          "line": 83,
+          "line": 84,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "placementRecordBaseSelect",
-          "line": 95,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "AdminOverviewPage",
-          "line": 113,
+          "line": 114,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -19027,19 +19027,19 @@
       "path": "app/admin/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 18900,
-      "lines": 472,
-      "sha256": "468ea6f989784037ef9aa3638ff608472230e3c78af06337a4d0ccb6ad8eebea",
+      "bytes": 18994,
+      "lines": 473,
+      "sha256": "4688ce70830bec323bae56084629ed663e771937e67d337022ae8c95a979f650",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 44,
+          "line": 45,
           "kind": "FunctionDeclaration",
           "localName": "AdminTodayPage"
         }
@@ -19047,12 +19047,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminTodayPage",
-          "line": 44,
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -20316,19 +20316,19 @@
       "path": "app/admin/students/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 13540,
-      "lines": 350,
-      "sha256": "0ba305c378d9f4317f06858086786c17b3f9be4ecb8269ece26b014b0a3f191b",
+      "bytes": 14038,
+      "lines": 353,
+      "sha256": "75ef7698a27b8754b71c979e128b0d812e8500e1812d32813e2943ed31cafe50",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 94,
+          "line": 95,
           "kind": "FunctionDeclaration",
           "localName": "AdminStudentsPage"
         }
@@ -20336,42 +20336,42 @@
       "declarations": [
         {
           "name": "ROSTER_ENRICHMENT_TIMEOUT_MS",
-          "line": 28,
-          "kind": "Variable"
-        },
-        {
-          "name": "STUDENTS_SECONDARY_LOAD_NOTICE",
           "line": 29,
           "kind": "Variable"
         },
         {
+          "name": "STUDENTS_SECONDARY_LOAD_NOTICE",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
           "name": "generateMetadata",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ROSTER_LIMIT",
-          "line": 43,
+          "line": 44,
           "kind": "Variable"
         },
         {
           "name": "initialsFrom",
-          "line": 46,
+          "line": 47,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "relativeTime",
-          "line": 54,
+          "line": 55,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "deriveStatus",
-          "line": 79,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminStudentsPage",
-          "line": 94,
+          "line": 95,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -48364,14 +48364,14 @@
       "path": "components/admin/AdminCommandCenterClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 26458,
-      "lines": 549,
-      "sha256": "b592281123a6fad29739fec7d586a50796c8629fc59c88a74624cd0fbed40d6f",
+      "bytes": 26482,
+      "lines": 550,
+      "sha256": "3ffbfcf1a218a3700758b27b12275b0956f7e2588ae46b342af7c6d8a9cf8afd",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 37,
+          "line": 38,
           "kind": "FunctionDeclaration",
           "localName": "AdminCommandCenterClient"
         }
@@ -48379,77 +48379,77 @@
       "declarations": [
         {
           "name": "ReviewStatus",
-          "line": 21,
+          "line": 22,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "REVIEW_ACTIONS",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "BULK_LABEL",
-          "line": 29,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "UNCERTAIN_REVIEW",
-          "line": 35,
+          "line": 36,
           "kind": "Variable"
         },
         {
           "name": "AdminCommandCenterClient",
-          "line": 37,
+          "line": 38,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "Metric",
-          "line": 321,
+          "line": 322,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "Bucket",
-          "line": 332,
+          "line": 333,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NeedsReplyCard",
-          "line": 357,
+          "line": 358,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskCard",
-          "line": 370,
+          "line": 371,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "InterviewingCard",
-          "line": 385,
+          "line": 386,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ApplicationCard",
-          "line": 397,
+          "line": 398,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ReviewButtons",
-          "line": 448,
+          "line": 449,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ActionCard",
-          "line": 526,
+          "line": 527,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatHours",
-          "line": 541,
+          "line": 542,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatDate",
-          "line": 547,
+          "line": 548,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -49718,9 +49718,9 @@
       "path": "components/admin/AdminUsersManager.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 24499,
+      "bytes": 24486,
       "lines": 562,
-      "sha256": "e0d688f5fe2eddd05702c2387d4ddc04dda03795a2683eb3d14c8feb6491d36b",
+      "sha256": "933f5b0de1f5402fb92e88a5446e5d1526d5cf66c07bb8775e2b08082aef1214",
       "binary": false,
       "exports": [
         {
@@ -87326,12 +87326,60 @@
       "directive": null
     },
     {
+      "path": "lib/admin/memberOnlyWhere.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 3267,
+      "lines": 71,
+      "sha256": "11eeef03b7f9cce8709c287845dc9242ff53c9e5cd7f2f395dcee78e1509dcac",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "SeededUser",
+          "line": 10,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "staff",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "RoleFilter",
+          "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UserWhere",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "matches",
+          "line": 29,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "count",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/admin/memberOnlyWhere.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1210,
-      "lines": 31,
-      "sha256": "b84959760d9f83d9639289e7148c2bbe73a6a7d1971fd9812c07dd99fa93d6de",
+      "bytes": 1828,
+      "lines": 42,
+      "sha256": "9e7b6ab94513e4dd474b414527e31e5339edcefda1364e504758394a05432f02",
       "binary": false,
       "exports": [
         {
@@ -87340,13 +87388,18 @@
           "kind": "Variable"
         },
         {
+          "name": "STAFF_PROFILE_ROLES",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 13,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 28,
+          "line": 39,
           "kind": "Variable"
         }
       ],
@@ -87357,13 +87410,18 @@
           "kind": "Variable"
         },
         {
+          "name": "STAFF_PROFILE_ROLES",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 13,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 28,
+          "line": 39,
           "kind": "Variable"
         }
       ],
@@ -88181,6 +88239,68 @@
         {
           "name": "isStudentSortKey",
           "line": 103,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/studentsUnmatchedCoursera.test.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 1743,
+      "lines": 35,
+      "sha256": "f12f44ef88c171dd5cb164c1bae479b841d87db53245b8c10104852054b9b65b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "never",
+          "line": 6,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/studentsUnmatchedCoursera.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 1835,
+      "lines": 53,
+      "sha256": "154bfa01fefac0fdc9f1e216555e54115718950fd57ed8710d36155cb59162dd",
+      "binary": false,
+      "exports": [
+        {
+          "name": "loadUnmatchedCourseraRoster",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "UNMATCHED_COURSERA_TIMEOUT_MS",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "UnmatchedCourseraLoaders",
+          "line": 10,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UnmatchedCourseraRoster",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "LoadUnmatchedCourseraOptions",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "loadUnmatchedCourseraRoster",
+          "line": 32,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -106099,9 +106219,9 @@
       "path": "lib/counselor/adminMemberScope.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 402,
-      "lines": 11,
-      "sha256": "e0f63e70904a8495eb7e508d02152e1ce3ee47029b45fde701319da612211d56",
+      "bytes": 683,
+      "lines": 18,
+      "sha256": "ed9388527eb9a4c903b59c660953375ffb8a0b97c94417e5bc76af2c7616cae5",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -106111,31 +106231,31 @@
       "path": "lib/counselor/adminMemberScope.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 654,
-      "lines": 23,
-      "sha256": "b4b72c9482fc974de170da3d310d86c445f7096c4d002b587a68d0edddc7e1b4",
+      "bytes": 953,
+      "lines": 30,
+      "sha256": "a1c3e71884db4dd29a497a1d38f988ca5f0cb740b26fd65f45adac23d70bcfff",
       "binary": false,
       "exports": [
         {
           "name": "enrolledMembersInOrganizationWhere",
-          "line": 4,
+          "line": 10,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveAdminEnrolledMemberIds",
-          "line": 12,
+          "line": 19,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "enrolledMembersInOrganizationWhere",
-          "line": 4,
+          "line": 10,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolveAdminEnrolledMemberIds",
-          "line": 12,
+          "line": 19,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -120195,6 +120315,30 @@
         {
           "name": "pickLegacyFatRootClientMessages",
           "line": 175,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/i18n/pluralCount.ts",
+      "area": "libraries",
+      "domain": "public-experience",
+      "bytes": 402,
+      "lines": 8,
+      "sha256": "c71c06e29aa5416dbdc7f02fa2650e6188eac7ce964f70c47740b532e07266a6",
+      "binary": false,
+      "exports": [
+        {
+          "name": "pluralCount",
+          "line": 6,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "pluralCount",
+          "line": 6,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165467,6 +165611,29 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/admin-data-hygiene.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3420,
+      "lines": 76,
+      "sha256": "fe4355b320ca71e4c660227951cec256e712e198d0913a05c261c6d0bf2c9a82",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "read",
+          "line": 8,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {

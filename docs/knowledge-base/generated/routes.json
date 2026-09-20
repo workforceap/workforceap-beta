@@ -10158,12 +10158,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 48,
+        "line": 49,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 113,
+        "line": 114,
         "kind": "FunctionDeclaration",
         "localName": "AdminOverviewPage"
       }
@@ -10197,12 +10197,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 29,
+        "line": 30,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 44,
+        "line": 45,
         "kind": "FunctionDeclaration",
         "localName": "AdminTodayPage"
       }
@@ -10959,12 +10959,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 33,
+        "line": 34,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 94,
+        "line": 95,
         "kind": "FunctionDeclaration",
         "localName": "AdminStudentsPage"
       }
