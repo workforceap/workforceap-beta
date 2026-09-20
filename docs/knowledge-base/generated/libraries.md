@@ -6,7 +6,7 @@
 | --- | ---: | --- | --- |
 | [lib/a11y/scrollBehavior.ts](../../../lib/a11y/scrollBehavior.ts) | 17 | libraries | prefersReducedMotion:9, scrollBehavior:15 |
 | [lib/admin-ai-tools-page-structure.test.ts](../../../lib/admin-ai-tools-page-structure.test.ts) | 33 | libraries |  |
-| [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 21 | learning-coursera |  |
+| [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 24 | learning-coursera |  |
 | [lib/admin-coursera-subject-scope-structure.test.ts](../../../lib/admin-coursera-subject-scope-structure.test.ts) | 89 | learning-coursera |  |
 | [lib/admin-job-ready-query-structure.test.ts](../../../lib/admin-job-ready-query-structure.test.ts) | 29 | libraries |  |
 | [lib/admin/adminJobMatchesPrismaDeps.ts](../../../lib/admin/adminJobMatchesPrismaDeps.ts) | 128 | administration | createAdminJobMatchesPrismaDeps:49 |
@@ -110,6 +110,7 @@
 | [lib/admin/triageDigestTypes.ts](../../../lib/admin/triageDigestTypes.ts) | 50 | administration | TriageMember:8, TriageBucketKey:23, TriageBucket:25, TriageDigest:45 |
 | [lib/admin/userDeleteResponse.test.ts](../../../lib/admin/userDeleteResponse.test.ts) | 16 | administration |  |
 | [lib/admin/userDeleteResponse.ts](../../../lib/admin/userDeleteResponse.ts) | 13 | administration | userAuthDeleteFailedResponse:3 |
+| [lib/admin/usersSelfGuard.ts](../../../lib/admin/usersSelfGuard.ts) | 14 | administration | SELF_DELETE_BLOCKED_TITLE:9, SELF_ROLE_CHANGE_BLOCKED_TITLE:10, isSelfRow:12 |
 | [lib/admin/withSoftTimeout.test.ts](../../../lib/admin/withSoftTimeout.test.ts) | 16 | administration |  |
 | [lib/admin/withSoftTimeout.ts](../../../lib/admin/withSoftTimeout.ts) | 22 | administration | SoftTimeoutError:6, withSoftTimeout:13 |
 | [lib/agents/gateway/core.test.ts](../../../lib/agents/gateway/core.test.ts) | 252 | libraries |  |

@@ -8385,17 +8385,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 493,
+        "line": 335,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 501,
+        "line": 343,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 516,
+        "line": 358,
         "kind": "FunctionDeclaration",
         "localName": "AdminCourseraPage"
       }
