@@ -163,6 +163,10 @@ export default async function AdminMemberStakeholderPage({
   const preScreeningCount = preScreening ? 1 : 0;
 
   const primaryEnrollment = member.courseEnrollments[0] ?? null;
+  // The enrollment row is the record behind the program name shown here;
+  // User.enrolledAt is the older single-program pointer and is null for
+  // members enrolled through CourseEnrollment only.
+  const enrolledAtDisplay: Date | null = primaryEnrollment?.enrolledAt ?? member.enrolledAt ?? null;
   const activeProgramSlug = primaryEnrollment?.programSlug ?? member.enrolledProgram ?? null;
   const program = activeProgramSlug ? getProgramBySlug(activeProgramSlug) : null;
   const curriculumCourses = program
@@ -308,8 +312,8 @@ export default async function AdminMemberStakeholderPage({
                 Enrolled
               </p>
               <p style={{ margin: 0, fontWeight: 600 }}>
-                {(primaryEnrollment?.enrolledAt ?? member.enrolledAt)
-                  ? (primaryEnrollment?.enrolledAt ?? member.enrolledAt)!.toLocaleDateString('en-US', {
+                {enrolledAtDisplay
+                  ? enrolledAtDisplay.toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',

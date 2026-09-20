@@ -143,6 +143,15 @@ describe('POST /api/admin/members/[id]/summary facts', () => {
     expect(promptText()).toContain('Enrolled program: None');
   });
 
+  it('says "unavailable" when the training view fails to load, not "no course data"', async () => {
+    vi.mocked(loadMemberProgramTrainingView).mockRejectedValue(new Error('db down'));
+    const res = await call();
+    expect(res.status).toBe(200);
+    const prompt = promptText();
+    expect(prompt).toContain('Program progress: unavailable');
+    expect(prompt).not.toContain('no course data');
+  });
+
   it('says so plainly when the assigned program has no course data', async () => {
     vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(null);
     await call();

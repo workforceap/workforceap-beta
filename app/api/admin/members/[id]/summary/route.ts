@@ -107,12 +107,16 @@ export const POST = withApiGuc(
         member.enrolledProgram,
         member.courseEnrollments ?? [],
       );
+      // A failed load must not read as "no course data": the model would then
+      // describe a member with real progress as having none.
+      let trainingViewLoadFailed = false;
       const trainingView = trainingAssignment.programSlug
         ? await loadMemberProgramTrainingView({
             userId: id,
             programSlug: trainingAssignment.programSlug,
           }).catch((err) => {
             console.error('[admin/member-summary] training view load failed', err);
+            trainingViewLoadFailed = true;
             return null;
           })
         : null;
@@ -131,9 +135,11 @@ export const POST = withApiGuc(
           : null,
         trainingView
           ? `Program progress: ${trainingView.completedCount} of ${trainingView.totalCourses} courses complete (${trainingView.progressPercentDisplay}% overall)`
-          : assignedProgramSlug
-            ? 'Program progress: no course data for the assigned program'
-            : null,
+          : trainingViewLoadFailed
+            ? 'Program progress: unavailable (progress could not be loaded; do not infer a lack of progress)'
+            : assignedProgramSlug
+              ? 'Program progress: no course data for the assigned program'
+              : null,
         trainingView?.nextIncompleteCourseName
           ? `Next incomplete course: ${trainingView.nextIncompleteCourseName}`
           : null,

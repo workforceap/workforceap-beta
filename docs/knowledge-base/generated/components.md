@@ -423,7 +423,7 @@
 | [components/portal/counselor/InboxZeroClient.tsx](../../../components/portal/counselor/InboxZeroClient.tsx) | 556 | member-counselor | default:66 |
 | [components/portal/counselor/LabEvidenceReview.tsx](../../../components/portal/counselor/LabEvidenceReview.tsx) | 161 | member-counselor | default:49 |
 | [components/portal/counselor/LabReviewQueue.tsx](../../../components/portal/counselor/LabReviewQueue.tsx) | 71 | member-counselor | LAB_REVIEW_LABELS:14, labReviewDate:17, default:21 |
-| [components/portal/counselor/MemberProgressTimeline.tsx](../../../components/portal/counselor/MemberProgressTimeline.tsx) | 221 | member-counselor | TimelineStage:5, TimelineEvent:12, default:56 |
+| [components/portal/counselor/MemberProgressTimeline.tsx](../../../components/portal/counselor/MemberProgressTimeline.tsx) | 211 | member-counselor | TimelineStage:5, TimelineEvent:12, default:65 |
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
 | [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |
