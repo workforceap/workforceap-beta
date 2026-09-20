@@ -81,7 +81,7 @@
 | [lib/admin/overviewOrgFilter.test.ts](../../../lib/admin/overviewOrgFilter.test.ts) | 47 | administration |  |
 | [lib/admin/overviewOrgFilter.ts](../../../lib/admin/overviewOrgFilter.ts) | 75 | administration | trainingDashboardMemberWhere:5, triageDigestMemberWhere:17, triageDigestNewApplicantWhere:27, triageDigestStaleTrainingWhere:38, triageDigestEventWhere:48, triageDigestAssignmentWhere:58, analyticsOverviewUserWhere:67 |
 | [lib/admin/placementsRosterSort.ts](../../../lib/admin/placementsRosterSort.ts) | 72 | administration | PLACEMENT_SORT_KEYS:7, PlacementSortKey:16, PlacementSortDirection:17, DEFAULT_PLACEMENT_SORT_KEY:19, DEFAULT_PLACEMENT_SORT_DIRECTION:20, sortPlacementRows:52 |
-| [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 18 | administration | directoryRoleLabel:14 |
+| [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 51 | administration | directoryRoleLabel:15, resolveDirectoryRole:40 |
 | [lib/admin/runAdminJobMatchesGet.test.ts](../../../lib/admin/runAdminJobMatchesGet.test.ts) | 135 | administration |  |
 | [lib/admin/runAdminJobMatchesGet.ts](../../../lib/admin/runAdminJobMatchesGet.ts) | 105 | administration | AdminJobMatchRow:5, RunAdminJobMatchesDeps:21, serializeAdminJobMatchRow:39, runAdminJobMatchesGet:52 |
 | [lib/admin/studentStatus.ts](../../../lib/admin/studentStatus.ts) | 122 | administration | StudentStatus:4, STUDENT_STATUS_LABELS:6, StudentStatusContext:14, getStudentStatus:35, buildStatusWhere:55 |
@@ -783,7 +783,7 @@
 | [lib/nav/mobileBottomNavLayout.ts](../../../lib/nav/mobileBottomNavLayout.ts) | 21 | public-experience | WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER:5, shouldReserveMobileBottomNavClearance:11 |
 | [lib/nav/portalNav.i18n.ts](../../../lib/nav/portalNav.i18n.ts) | 136 | public-experience | MEMBER_PORTAL_NAV_ITEMS_I18N:42 |
 | [lib/nav/portalNav.test.ts](../../../lib/nav/portalNav.test.ts) | 81 | public-experience |  |
-| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 515 | public-experience | PortalRole:49, NavGroup:51, NavTab:67, NavBadgeKey:69, PortalNavItem:87, NAV_TAB_META:110, NAV_TAB_ORDER:117, NAV_GROUP_LABELS:119, GROUP_ORDER:136, MEMBER_PORTAL_NAV_ITEMS:157, EMPLOYER_PORTAL_NAV_ITEMS:269, PARTNER_PORTAL_NAV_ITEMS:311, GROUP_PORTAL_NAV_ITEMS:352, ADMIN_PORTAL_NAV_ITEMS:360, COUNSELOR_PORTAL_NAV_ITEMS:454, PORTAL_NAV:475, navItemsForActiveRoute:484, getActiveTab:489, badgeTotalForItem:506 |
+| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 517 | public-experience | PortalRole:49, NavGroup:51, NavTab:67, NavBadgeKey:69, PortalNavItem:89, NAV_TAB_META:112, NAV_TAB_ORDER:119, NAV_GROUP_LABELS:121, GROUP_ORDER:138, MEMBER_PORTAL_NAV_ITEMS:159, EMPLOYER_PORTAL_NAV_ITEMS:271, PARTNER_PORTAL_NAV_ITEMS:313, GROUP_PORTAL_NAV_ITEMS:354, ADMIN_PORTAL_NAV_ITEMS:362, COUNSELOR_PORTAL_NAV_ITEMS:456, PORTAL_NAV:477, navItemsForActiveRoute:486, getActiveTab:491, badgeTotalForItem:508 |
 | [lib/nav/resumeUploadHint.test.ts](../../../lib/nav/resumeUploadHint.test.ts) | 33 | public-experience |  |
 | [lib/nav/resumeUploadHint.ts](../../../lib/nav/resumeUploadHint.ts) | 31 | public-experience | shouldShowResumeUploadHint:26 |
 | [lib/nav/workspaceCopy.ts](../../../lib/nav/workspaceCopy.ts) | 42 | public-experience | PRODUCT_COPY:1, EMPLOYER_PORTAL_NAV:11, PARTNER_PORTAL_NAV:18, GROUP_PORTAL_NAV:24, ADMIN_NAV:26 |
@@ -866,7 +866,7 @@
 | [lib/portal/memberResumeUpload.ts](../../../lib/portal/memberResumeUpload.ts) | 70 | libraries | RESUME_UPLOAD_ACCEPT:12, RESUME_UPLOAD_FORMAT_LABEL:13, getResumeUploadFileError:15, uploadMemberResumeFile:31 |
 | [lib/portal/messagingSurfaces.ts](../../../lib/portal/messagingSurfaces.ts) | 50 | libraries | memberMessagingSurface:12, partnerMessagingSurface:20, employerMessagingSurface:28, counselorStaffMessagingSurface:36, adminMessagingSurface:44 |
 | [lib/portal/mockInterviewVideoUpload.ts](../../../lib/portal/mockInterviewVideoUpload.ts) | 86 | libraries | MockInterviewVideoMeta:7, uploadMockInterviewVideo:14 |
-| [lib/portal/navBadges.ts](../../../lib/portal/navBadges.ts) | 271 | libraries | NavBadgeCounts:13, getNavBadgeCountsForUser:17, isValidPortalBadgeRole:269 |
+| [lib/portal/navBadges.ts](../../../lib/portal/navBadges.ts) | 277 | libraries | NavBadgeCounts:13, getNavBadgeCountsForUser:17, isValidPortalBadgeRole:275 |
 | [lib/portal/voice/index.ts](../../../lib/portal/voice/index.ts) | 10 | libraries | readinessVoiceSurface:2, resumeCoachVoiceSurface:3, counselorStaffVoiceSurface:4, studentCounselorVoiceSurface:5, employerVoiceSurface:6, partnerVoiceSurface:7, mockInterviewVoiceSurface:8, careerBusinessVoiceSurface:9 |
 | [lib/portal/voiceAgentSurfaces.ts](../../../lib/portal/voiceAgentSurfaces.ts) | 104 | libraries | readinessVoiceSurface:23, resumeCoachVoiceSurface:35, counselorStaffVoiceSurface:46, studentCounselorVoiceSurface:56, employerVoiceSurface:66, partnerVoiceSurface:76, mockInterviewVoiceSurface:86, careerBusinessVoiceSurface:96 |
 | [lib/portal/workflowEvents.ts](../../../lib/portal/workflowEvents.ts) | 65 | libraries | recordEmployerWorkflowEvent:3, recordPartnerWorkflowEvent:26, listEmployerWorkflowEvents:49, listPartnerWorkflowEvents:58 |

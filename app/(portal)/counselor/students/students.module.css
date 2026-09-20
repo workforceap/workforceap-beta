@@ -1,44 +1,75 @@
-/* Hover/press feedback for the "hot member queue" link-cards on the
-   counselor students roster page. Colocated with students/page.tsx.
-   Background lives here (not inline) so :hover can actually override it. */
+/* "Hot member queue" — kit card on the `.wa-kit-tone--warn` hook (counselor
+   audit §4.4). Layout only lives here; every colour comes from the tone hook
+   (`.wa-kit-tone-icon`, `.wa-kit-tone-edge`, `.wa-kit-tone-text`) or a neutral
+   `--wa-*` token, so dark mode resolves light-dark() brand tokens and never a
+   legacy pre-kit variable. Hover / press / reduced-motion feedback is the
+   shared `.wa-kit-card--hover` recipe in css/portal-kit.css. */
 
-.hotQueueCardMobile {
-  background: var(--surface-container-lowest);
-  transition:
-    background-color 0.15s ease,
-    transform 0.15s ease;
+.hotQueue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wa-pad-sm);
 }
 
-.hotQueueCardMobile:hover {
-  background: color-mix(in srgb, var(--color-amber) 10%, var(--surface-container-lowest));
+.hotQueueHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--wa-pad-sm);
 }
 
-.hotQueueCardDesktop {
-  background: var(--surface-container-lowest);
-  transition:
-    background-color 0.15s ease,
-    transform 0.15s ease;
+.hotQueueHeading {
+  min-width: 0;
 }
 
-.hotQueueCardDesktop:hover {
-  background: color-mix(in srgb, var(--color-amber) 10%, var(--surface-container-lowest));
+.hotQueueKicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.hotQueueCardMobile:active,
-.hotQueueCardDesktop:active {
-  transform: scale(0.98);
+.hotQueueTitle {
+  margin: 2px 0 0;
+  font-size: var(--wa-type-body);
+  font-weight: 800;
+  color: var(--wa-text);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hotQueueCardMobile,
-  .hotQueueCardDesktop {
-    transition: none;
-  }
+.hotQueueList {
+  display: grid;
+  gap: var(--wa-pad-sm);
+}
 
-  .hotQueueCardMobile:active,
-  .hotQueueCardDesktop:active {
-    transform: none;
-  }
+.hotQueueCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--wa-pad-sm);
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hotQueueCardBody {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hotQueueCardBody p {
+  margin: 0;
+}
+
+.hotQueueName {
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  color: var(--wa-text);
+}
+
+.hotQueueCardAside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
 }
 
 /* Four stat tiles above the roster — one treatment for both widths. The

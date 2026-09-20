@@ -1751,7 +1751,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 30,
+        "line": 103,
         "kind": "FunctionDeclaration",
         "localName": "CounselorStudentsPage"
       }
@@ -1761,12 +1761,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 3,
+        "line": 4,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/roles",
-        "line": 4,
+        "line": 5,
         "kind": "import"
       }
     ]
@@ -8887,12 +8887,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 21,
+        "line": 23,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 29,
+        "line": 31,
         "kind": "FunctionDeclaration",
         "localName": "AdminExportsPage"
       }
@@ -8902,12 +8902,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 5,
+        "line": 7,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/adminPageScope",
-        "line": 6,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -11368,12 +11368,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 18,
+        "line": 19,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 66,
+        "line": 67,
         "kind": "FunctionDeclaration",
         "localName": "AdminUsersPage"
       }

@@ -57,7 +57,7 @@ export async function getNavBadgeCountsForUser(
   if (role === 'counselor') {
     const [sa, ctx] = await Promise.all([isSuperAdmin(userId), getCounselorForUser(userId)]);
     if (ctx) {
-      return getCounselorBadgeCounts(ctx.counselorId);
+      return getCounselorBadgeCounts(ctx.counselorId, userId);
     }
     if (sa) {
       const counselor_sla_breach_48h = await countThreadsWithSlaBreach(48);
@@ -150,19 +150,24 @@ async function getEmployerBadgeCounts(employerId: string): Promise<NavBadgeCount
   };
 }
 
-async function getCounselorBadgeCounts(counselorId: string): Promise<NavBadgeCounts> {
-  const assignments = await prisma.counselorAssignment.findMany({
-    take: 500,
-    where: {
-      counselorId,
-      active: true,
-      member: { deletedAt: null },
-    },
-    select: { memberId: true },
-  });
+async function getCounselorBadgeCounts(counselorId: string, userId: string): Promise<NavBadgeCounts> {
+  const [assignments, counselor_notifications_unread] = await Promise.all([
+    prisma.counselorAssignment.findMany({
+      take: 500,
+      where: {
+        counselorId,
+        active: true,
+        member: { deletedAt: null },
+      },
+      select: { memberId: true },
+    }),
+    // Same scope as GET /api/counselor/notifications `unreadCount`: the
+    // counselor's own rows, unread. The rail badge and the page header agree.
+    prisma.notification.count({ where: { userId, readAt: null } }),
+  ]);
 
   const memberIds = assignments.map((assignment) => assignment.memberId);
-  if (memberIds.length === 0) return {};
+  if (memberIds.length === 0) return { counselor_notifications_unread };
 
   const threads = await prisma.messageThread.findMany({
     take: 500,
@@ -177,7 +182,7 @@ async function getCounselorBadgeCounts(counselorId: string): Promise<NavBadgeCou
     },
   });
 
-  if (threads.length === 0) return {};
+  if (threads.length === 0) return { counselor_notifications_unread };
 
   // Batch unread counts into a single SQL query (eliminates N message.count calls).
   const threadIds = threads.map((t) => t.id);
@@ -208,6 +213,7 @@ async function getCounselorBadgeCounts(counselorId: string): Promise<NavBadgeCou
 
   return {
     counselor_messages_unread: unreadCounts.reduce((sum, count) => sum + count, 0),
+    counselor_notifications_unread,
     counselor_sla_breach_48h,
   };
 }

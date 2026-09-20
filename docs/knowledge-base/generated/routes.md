@@ -76,7 +76,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /counselor/students/\[memberId\] | page |  | [app/(portal)/counselor/students/\[memberId\]/page.tsx](../../../app/%28portal%29/counselor/students/%5BmemberId%5D/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5 |
 | /counselor/students | error |  | [app/(portal)/counselor/students/error.tsx](../../../app/%28portal%29/counselor/students/error.tsx) |  |
 | /counselor/students | loading |  | [app/(portal)/counselor/students/loading.tsx](../../../app/%28portal%29/counselor/students/loading.tsx) |  |
-| /counselor/students | page |  | [app/(portal)/counselor/students/page.tsx](../../../app/%28portal%29/counselor/students/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
+| /counselor/students | page |  | [app/(portal)/counselor/students/page.tsx](../../../app/%28portal%29/counselor/students/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5 |
 | /counselor/today | page |  | [app/(portal)/counselor/today/page.tsx](../../../app/%28portal%29/counselor/today/page.tsx) | @/lib/auth/server:2, @/lib/auth/roles:3 |
 | /counselor/triage | error |  | [app/(portal)/counselor/triage/error.tsx](../../../app/%28portal%29/counselor/triage/error.tsx) |  |
 | /counselor/triage | loading |  | [app/(portal)/counselor/triage/loading.tsx](../../../app/%28portal%29/counselor/triage/loading.tsx) |  |
@@ -335,7 +335,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/employers | page |  | [app/admin/employers/page.tsx](../../../app/admin/employers/page.tsx) | @/lib/auth/server:6, @/lib/auth/roles:7, @/lib/tenant/adminPageScope:8 |
 | /admin | error |  | [app/admin/error.tsx](../../../app/admin/error.tsx) |  |
 | /admin/exports | loading |  | [app/admin/exports/loading.tsx](../../../app/admin/exports/loading.tsx) |  |
-| /admin/exports | page |  | [app/admin/exports/page.tsx](../../../app/admin/exports/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
+| /admin/exports | page |  | [app/admin/exports/page.tsx](../../../app/admin/exports/page.tsx) | @/lib/auth/server:7, @/lib/tenant/adminPageScope:8 |
 | /admin/feature-flags | loading |  | [app/admin/feature-flags/loading.tsx](../../../app/admin/feature-flags/loading.tsx) |  |
 | /admin/feature-flags | page |  | [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/feedback | loading |  | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) |  |

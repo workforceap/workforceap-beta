@@ -183,10 +183,12 @@
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
+| [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 117 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
 | [tests/app/admin-placement-surveys-page.spec.tsx](../../../tests/app/admin-placement-surveys-page.spec.tsx) | 87 | tests |  |
 | [tests/app/admin-programs-page.spec.tsx](../../../tests/app/admin-programs-page.spec.tsx) | 139 | tests |  |
+| [tests/app/admin-users-directory-roles.spec.tsx](../../../tests/app/admin-users-directory-roles.spec.tsx) | 134 | tests |  |
 | [tests/app/admin-weekly-recap-page.spec.tsx](../../../tests/app/admin-weekly-recap-page.spec.tsx) | 109 | tests |  |
 | [tests/app/api-docs-page-access.spec.tsx](../../../tests/app/api-docs-page-access.spec.tsx) | 35 | tests |  |
 | [tests/app/apply-funnel-token-scope.spec.ts](../../../tests/app/apply-funnel-token-scope.spec.ts) | 125 | tests |  |
@@ -199,6 +201,7 @@
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
 | [tests/app/counselor-student-detail-messages-rail.spec.tsx](../../../tests/app/counselor-student-detail-messages-rail.spec.tsx) | 160 | tests |  |
 | [tests/app/counselor-student-detail-tabs.spec.tsx](../../../tests/app/counselor-student-detail-tabs.spec.tsx) | 329 | tests |  |
+| [tests/app/counselor-students-hot-queue.spec.tsx](../../../tests/app/counselor-students-hot-queue.spec.tsx) | 166 | tests |  |
 | [tests/app/dashboard-training-redirect.spec.ts](../../../tests/app/dashboard-training-redirect.spec.ts) | 69 | tests |  |
 | [tests/app/diagnostics-read-reliability.spec.tsx](../../../tests/app/diagnostics-read-reliability.spec.tsx) | 57 | tests |  |
 | [tests/app/eligibility-layoff-company.spec.tsx](../../../tests/app/eligibility-layoff-company.spec.tsx) | 62 | tests |  |
@@ -239,6 +242,7 @@
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
 | [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 172 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
+| [tests/components/admin-users-self-guard.spec.tsx](../../../tests/components/admin-users-self-guard.spec.tsx) | 165 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
@@ -308,6 +312,7 @@
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
+| [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |

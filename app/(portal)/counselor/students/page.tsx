@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Flame } from 'lucide-react';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
@@ -25,6 +26,78 @@ function formatHotQueueTime(date: Date, translate: (key: string, values?: { coun
   if (diffHours < 24) return translate('hotQueueHoursAgo', { count: diffHours });
   const diffDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
   return translate('hotQueueDaysAgo', { count: diffDays });
+}
+
+type HotQueueTranslate = (key: string, values?: { count: number }) => string;
+
+type HotQueueAction = {
+  id: string;
+  memberId: string;
+  title: string;
+  description: string;
+  createdAt: Date;
+  member: { fullName: string | null };
+};
+
+/**
+ * "Hot member queue" — fresh completions that need a follow-up call. One kit
+ * card per width (the page swaps them with `md:wa-hidden` / `md:wa-block`),
+ * declared once as `.wa-kit-tone--warn` so the icon chip, the kicker and each
+ * row's edge paint from the tone hook (counselor audit §4.4, deferred by
+ * #2403). Names and times stay neutral `--wa-text` / `--wa-muted`; the legacy
+ * amber palette (legacy tokens unmapped in dark mode) never enters the tree.
+ */
+function HotMemberQueue({
+  variant,
+  heading,
+  actions,
+  openLabel,
+  translate,
+}: {
+  variant: 'mobile' | 'desktop';
+  heading: string;
+  actions: HotQueueAction[];
+  openLabel?: string;
+  translate: HotQueueTranslate;
+}) {
+  const headingId = `counselor-hot-queue-${variant}-heading`;
+  return (
+    <section
+      className={`wa-kit-card wa-kit-tone--warn ${styles.hotQueue}`}
+      data-hot-queue={variant}
+      aria-labelledby={headingId}
+    >
+      <div className={styles.hotQueueHeader}>
+        <span className="wa-kit-tone-icon" aria-hidden>
+          <Flame size={18} />
+        </span>
+        <div className={styles.hotQueueHeading}>
+          <p className={`wa-kit-tone-text ${styles.hotQueueKicker}`}>{translate('hotMemberQueue')}</p>
+          <h2 id={headingId} className={styles.hotQueueTitle}>{heading}</h2>
+        </div>
+      </div>
+      <div className={styles.hotQueueList}>
+        {actions.map((action) => (
+          <Link
+            key={action.id}
+            href={`/counselor/students/${action.memberId}`}
+            className={`wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-tone-edge wa-kit-focus ${styles.hotQueueCard}`}
+            data-hot-queue-card
+          >
+            <div className={styles.hotQueueCardBody}>
+              <p className={styles.hotQueueName}>{action.member.fullName ?? translate('member')}</p>
+              <p className="wa-kit-tone-text">{action.title}</p>
+              <p className="wa-kit-meta">{action.description}</p>
+            </div>
+            <div className={styles.hotQueueCardAside}>
+              <span className="wa-kit-meta">{formatHotQueueTime(action.createdAt, translate)}</span>
+              {openLabel ? <span className="btn btn-primary btn-sm">{openLabel}</span> : null}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default async function CounselorStudentsPage({
@@ -238,55 +311,12 @@ export default async function CounselorStudentsPage({
 
         {hotQueue.length > 0 ? (
           <div style={{ padding: '1rem 1rem 0' }}>
-            <div
-              style={{
-                background: 'var(--color-amber-light)',
-                border: '1px solid color-mix(in srgb, var(--color-amber) 40%, transparent)',
-                borderRadius: '1rem',
-                padding: '1rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
-                    {t('hotMemberQueue')}
-                  </p>
-                  <h2 style={{ margin: '0.2rem 0 0', fontSize: '1rem', fontWeight: 800, color: 'var(--color-amber)' }}>
-                    {t('freshCompletionsNeedFollowup')}
-                  </h2>
-                </div>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-amber)', fontSize: 24 }} aria-hidden="true">local_fire_department</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                {hotQueue.map((action) => (
-                  <Link
-                    key={action.id}
-                    href={`/counselor/students/${action.memberId}`}
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <div
-                      className={styles.hotQueueCardMobile}
-                      style={{
-                        borderRadius: '0.875rem',
-                        border: '1px solid color-mix(in srgb, var(--color-amber) 15%, transparent)',
-                        padding: '0.875rem',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>
-                          {action.member.fullName ?? t('member')}
-                        </p>
-                        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-amber)', whiteSpace: 'nowrap' }}>
-                          {formatHotQueueTime(action.createdAt, t)}
-                        </span>
-                      </div>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-amber)' }}>{action.title}</p>
-                      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{action.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <HotMemberQueue
+              variant="mobile"
+              heading={t('freshCompletionsNeedFollowup')}
+              actions={hotQueue}
+              translate={t}
+            />
           </div>
         ) : null}
 
@@ -308,62 +338,15 @@ export default async function CounselorStudentsPage({
       {/* ── Desktop ─────────────────────────────────────────── */}
       <div className="wa-hidden md:wa-block">
         {hotQueue.length > 0 ? (
-          <section style={{ marginBottom: '1.5rem' }}>
-            <div
-              className="portal-card portal-card--flat"
-              style={{
-                padding: '1.25rem',
-                border: '1px solid color-mix(in srgb, var(--color-amber) 40%, transparent)',
-                background: 'linear-gradient(180deg, var(--color-amber-light) 0%, var(--surface-container-lowest) 100%)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.875rem' }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-amber)' }}>
-                    {t('hotMemberQueue')}
-                  </p>
-                  <h2 style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-amber)' }}>
-                    {t('membersWhoJustBecameActionable')}
-                  </h2>
-                </div>
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-amber)', fontSize: 28 }} aria-hidden="true">local_fire_department</span>
-              </div>
-
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {hotQueue.map((action) => (
-                  <Link
-                    key={action.id}
-                    href={`/counselor/students/${action.memberId}`}
-                    className={styles.hotQueueCardDesktop}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'minmax(0, 1fr) auto',
-                      gap: '1rem',
-                      alignItems: 'center',
-                      textDecoration: 'none',
-                      border: '1px solid color-mix(in srgb, var(--color-amber) 15%, transparent)',
-                      borderRadius: '0.9rem',
-                      padding: '0.9rem 1rem',
-                    }}
-                  >
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: '0 0 0.2rem', fontSize: '0.95rem', fontWeight: 800, color: 'var(--color-on-surface)' }}>
-                        {action.member.fullName ?? t('member')}
-                      </p>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--color-warning-on-surface)' }}>{action.title}</p>
-                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-on-surface-variant)' }}>{action.description}</p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-warning-on-surface)' }}>
-                        {formatHotQueueTime(action.createdAt, t)}
-                      </p>
-                      <span className="btn btn-primary btn-sm">{t('openMember')}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <HotMemberQueue
+              variant="desktop"
+              heading={t('membersWhoJustBecameActionable')}
+              actions={hotQueue}
+              openLabel={t('openMember')}
+              translate={t}
+            />
+          </div>
         ) : null}
 
         {assignments.length === 0 ? (
