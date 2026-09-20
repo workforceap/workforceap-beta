@@ -113,11 +113,22 @@ const ABANDONED_ROUTE_EMAIL_BANS = [
   },
 ];
 
+const NO_DIRECT_PROVIDER_SEND_MESSAGE =
+  "Do not call resend.emails.send(...) directly. Every outbound email goes through sendBrandedEmail / sendBrandedEmailOrThrowOnSkip in lib/email/send.ts so it gets a plaintext part, List-Unsubscribe headers, the fixture and provider-suppression guards, transient-error retry, an idempotency key and a failure diagnostic (WAP-163).";
+
+// `<anything>.emails.send(...)` — the Resend SDK call — outside the shared
+// wrapper. lib/email/send.ts is the one production module exempted below.
+const DIRECT_PROVIDER_SEND_BAN = {
+  selector:
+    "CallExpression[callee.type='MemberExpression'][callee.property.name='send'][callee.object.type='MemberExpression'][callee.object.property.name='emails']",
+  message: NO_DIRECT_PROVIDER_SEND_MESSAGE,
+};
+
 // Production-wide architecture bans (everything except the bare-<table> rule,
 // which has its own exception list below). Flat config replaces rather than
 // merges `no-restricted-syntax` entries, so every narrower block restates the
 // families it keeps.
-const PRODUCTION_BANS = [...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS, UNBOUNDED_TAKE_BAN];
+const PRODUCTION_BANS = [...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS, UNBOUNDED_TAKE_BAN, DIRECT_PROVIDER_SEND_BAN];
 
 const config = [
   {
@@ -202,7 +213,7 @@ const config = [
     // other ban, drop only the take literal ban.
     files: LEGACY_UNBOUNDED_TAKE_FILES.filter((file) => !/^app\/api\/.*\/route\.ts$/.test(file)),
     rules: {
-      "no-restricted-syntax": ["error", TABLE_BAN, ...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS],
+      "no-restricted-syntax": ["error", TABLE_BAN, ...DIRECT_WRITER_BANS, ...ABANDONED_NOTIFY_BANS, DIRECT_PROVIDER_SEND_BAN],
     },
   },
   {
@@ -215,6 +226,7 @@ const config = [
         ...DIRECT_WRITER_BANS,
         ...ABANDONED_NOTIFY_BANS,
         ...ABANDONED_ROUTE_EMAIL_BANS,
+        DIRECT_PROVIDER_SEND_BAN,
       ],
     },
   },
@@ -232,6 +244,7 @@ const config = [
         COURSE_ENROLLMENT_WRITER_BAN,
         ...ABANDONED_NOTIFY_BANS,
         UNBOUNDED_TAKE_BAN,
+        DIRECT_PROVIDER_SEND_BAN,
       ],
     },
   },
@@ -242,6 +255,21 @@ const config = [
         "error",
         TABLE_BAN,
         MEMBER_EVENT_WRITER_BAN,
+        ...ABANDONED_NOTIFY_BANS,
+        UNBOUNDED_TAKE_BAN,
+        DIRECT_PROVIDER_SEND_BAN,
+      ],
+    },
+  },
+  {
+    // The provider boundary is the only production module that may call the
+    // Resend SDK's emails.send; it keeps every other production ban.
+    files: ["lib/email/send.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        TABLE_BAN,
+        ...DIRECT_WRITER_BANS,
         ...ABANDONED_NOTIFY_BANS,
         UNBOUNDED_TAKE_BAN,
       ],

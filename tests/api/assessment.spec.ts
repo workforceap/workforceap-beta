@@ -105,6 +105,12 @@ vi.mock('resend', () => ({
   }),
 }));
 
+// Sends go through lib/email/send.ts (unsubscribe token signing + failure
+// diagnostics); the member fixture uses a non-reserved domain so the wrapper
+// hands it to the provider mock instead of skipping it as a fixture.
+process.env.UNSUBSCRIBE_TOKEN_SECRET ??= 'test-unsubscribe-secret';
+vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+
 // ─── Imports after mocks ───
 import { POST as submitAssessment } from '@/app/api/member/assessment/submit/route';
 import { POST as resetAssessment } from '@/app/api/member/assessment/reset/route';
@@ -211,7 +217,7 @@ describe('POST /api/member/assessment/submit', () => {
 
   const mockUser = {
     id: UUIDS.user,
-    email: 'jane@example.com',
+    email: 'jane@example.org',
     assessmentCompleted: false,
     phone: '512-555-1234',
     courseEnrollments: [{ enrolledByAdminId: null }],
@@ -474,7 +480,7 @@ describe('POST /api/member/skill-assessment', () => {
   });
 
   it('saves skill assessment for authenticated member', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'jane@example.com' } as any);
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'jane@example.org' } as any);
     vi.mocked(prisma.aIToolResult.create).mockResolvedValue({
       id: UUIDS.resultId,
       createdAt: new Date('2025-01-01T00:00:00Z'),
@@ -535,7 +541,7 @@ describe('POST /api/member/assessment/reset', () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({
       fullName: 'Jane Doe',
-      email: 'jane@example.com',
+      email: 'jane@example.org',
       assessmentCompleted: true,
       assessmentScore: 80,
       assessmentScorePct: 85,

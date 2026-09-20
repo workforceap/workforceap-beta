@@ -77,16 +77,30 @@ describe('one active header notification source', () => {
     view.rerender(<NotificationBell />);
     await flush();
     expect(signal?.aborted).toBe(true);
+    // Every role reads its own Notification rows; staff additionally fetch nav badges when none were supplied.
+    expect(fetch).toHaveBeenCalledWith('/api/member/notifications?limit=5', expect.anything());
     expect(fetch).toHaveBeenLastCalledWith('/api/portal/nav-badges?role=admin', expect.anything());
+    expect(fetch).toHaveBeenCalledTimes(3);
   });
 
-  it('does not refetch supplied staff badges', async () => {
+  it('does not refetch supplied staff badges but still reads the staff member\'s notification rows', async () => {
     vi.mocked(usePathname).mockReturnValue('/counselor');
+    vi.mocked(fetch).mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({ notifications: [{ id: 'n1', type: 'task_assigned', title: 'Review Jane', body: 'Assigned to you', data: null, readAt: null, createdAt: '2026-09-19T11:00:00Z' }], unreadCount: 1 }),
+    }) as unknown as Response);
     render(<NotificationBell badges={{ counselor_messages_unread: 2 }} />);
     await flush();
     await act(() => vi.advanceTimersByTimeAsync(600_000));
-    expect(fetch).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: '2 notifications' })).toBeInTheDocument();
+    expect(fetch).toHaveBeenCalled();
+    for (const [url] of vi.mocked(fetch).mock.calls) {
+      expect(String(url)).toBe('/api/member/notifications?limit=5');
+    }
+    // 2 supplied badge items + 1 unread Notification row.
+    expect(screen.getByRole('button', { name: '3 notifications' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '3 notifications' }));
+    expect(screen.getByText('Unread member messages')).toBeInTheDocument();
+    expect(screen.getByText('Review Jane')).toBeInTheDocument();
   });
 });
 

@@ -195,6 +195,7 @@ export async function buildMergePreview(
     { model: 'pathwayStepProgress', field: 'userId', promise: tx.pathwayStepProgress.count({ where: { userId: secondaryId } }) },
     { model: 'trainingAccessRequest', field: 'userId', promise: tx.trainingAccessRequest.count({ where: { userId: secondaryId } }) },
     { model: 'workflowDiagnostic', field: 'actorUserId', promise: tx.workflowDiagnostic.count({ where: { actorUserId: secondaryId } }) },
+    { model: 'emailSendLog', field: 'userId', promise: tx.emailSendLog.count({ where: { userId: secondaryId } }) },
     { model: 'auditLog', field: 'actorUserId', promise: tx.auditLog.count({ where: { actorUserId: secondaryId } }) },
     { model: 'invitation', field: 'invitedById', promise: tx.invitation.count({ where: { invitedById: secondaryId } }) },
     { model: 'invitation', field: 'acceptedById', promise: tx.invitation.count({ where: { acceptedById: secondaryId } }) },
@@ -385,6 +386,7 @@ export async function executeMemberMerge(
   await repoint('pathwayStepProgress', 'userId');
   await repoint('trainingAccessRequest', 'userId');
   await repoint('workflowDiagnostic', 'actorUserId');
+  await repoint('emailSendLog', 'userId');
   await repoint('auditLog', 'actorUserId');
   await repoint('invitation', 'inviterId');
   await repoint('invitation', 'acceptedById');

@@ -37,6 +37,7 @@ import {
   sendMemberStuckEmail,
 } from '@/lib/email';
 import type { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { isRecipientSkipReason } from '@/lib/email/send';
 
 type BulkEmailCronPacer = ReturnType<typeof createBulkEmailCronPacer>;
 
@@ -95,10 +96,10 @@ export type RetentionNudgeResult = {
 
 /**
  * G5 retention loop: classify members, send tiered nudge emails, respect
- * the per-tier 7-day cooldown via `MemberNudgeLog`.
+ * the shared 7-day cooldown via `MemberNudgeLog` (any nudge from any cron).
  *
  * Idempotent — re-running within the cooldown window is a no-op for any
- * member who already received a nudge of that tier in the window.
+ * member who already received a nudge in the window.
  */
 export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promise<RetentionNudgeResult> {
   const candidates = await prisma.user.findMany({
@@ -179,11 +180,13 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
     const choice = chooseNudge(classification);
     if (!choice) return {};
 
-    // Cooldown: don't send same tier again within window
+    // Cooldown: one re-engagement email per member per window, whatever
+    // sent it. `MemberNudgeLog` is shared with inactive-nudge ("We Miss
+    // You"), so a member nudged there this week does not also get "Let's
+    // get unstuck" (213 re-engagement emails to 135 members on 2026-09-14).
     const recent = await prisma.memberNudgeLog.findFirst({
       where: {
         userId: member.id,
-        tier: choice.tier,
         sentAt: { gte: cooldownCutoff },
       },
       select: { id: true },
@@ -206,7 +209,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
           firstName,
           dashboardUrl: `${SITE_URL}/dashboard`,
         }));
-        if ('skipped' in result) return result.error === 'fixture_recipient'
+        if ('skipped' in result) return isRecipientSkipReason(result.error)
           ? { skippedFixture: true }
           : { skippedPacing: true };
         if (result.ok) {
@@ -220,7 +223,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
           counselorName,
           nextBestActionUrl: `${SITE_URL}/dashboard`,
         }));
-        if ('skipped' in result) return result.error === 'fixture_recipient'
+        if ('skipped' in result) return isRecipientSkipReason(result.error)
           ? { skippedFixture: true }
           : { skippedPacing: true };
         if (result.ok) {
@@ -233,7 +236,7 @@ export async function runMemberRetentionNudges(pacer: BulkEmailCronPacer): Promi
           firstName,
           counselorName,
         }));
-        if ('skipped' in result) return result.error === 'fixture_recipient'
+        if ('skipped' in result) return isRecipientSkipReason(result.error)
           ? { skippedFixture: true }
           : { skippedPacing: true };
         if (result.ok) {
@@ -529,7 +532,7 @@ export async function runAtRiskCounselorAlerts(
     const counselorEmail = Array.isArray(batch.counselorEmail) ? batch.counselorEmail.join(',') : batch.counselorEmail;
 
     if ('skipped' in result) {
-      if (result.error === 'fixture_recipient') skippedFixture++;
+      if (isRecipientSkipReason(result.error)) skippedFixture++;
       else skippedPacing++;
       results.push({
         counselorId: batch.counselorId,

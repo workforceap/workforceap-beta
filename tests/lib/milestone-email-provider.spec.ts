@@ -31,9 +31,18 @@ describe('milestone provider idempotency boundary', () => {
     mocks.send.mockResolvedValue({ data: null, error: { name: 'invalid_idempotent_request', message: 'Synthetic changed payload' } });
     expect(await sendMilestoneCascadeEmail(message)).toMatchObject({ ok: false, error: 'Synthetic changed payload' });
   });
-  it('preserves the existing one-argument SDK call for unkeyed mail', async () => {
+  it('derives a stable idempotency key for unkeyed mail instead of an unkeyed SDK call', async () => {
+    // Send-path hardening (2026-09-20): every provider request carries a key so
+    // a transient-error retry can never double-deliver. Unkeyed callers get
+    // `email/<sha256 of recipients + subject + body + UTC day>`; the caller's
+    // own key (asserted above) still wins when supplied.
     const resend = { emails: { send: mocks.send } } as unknown as import('resend').Resend;
-    await sendBrandedEmail(resend, { from: 'test@workforceap.org', to: 'member@workforceap.org', subject: message.subject, html: '<p>Synthetic</p>' });
-    expect(mocks.send.mock.calls[0]).toHaveLength(1);
+    const args = { from: 'test@workforceap.org', to: 'member@workforceap.org', subject: message.subject, html: '<p>Synthetic</p>' };
+    await sendBrandedEmail(resend, args);
+    await sendBrandedEmail(resend, args);
+    expect(mocks.send.mock.calls[0]).toHaveLength(2);
+    const [, options] = mocks.send.mock.calls[0];
+    expect(options).toEqual({ idempotencyKey: expect.stringMatching(/^email\/[0-9a-f]{64}$/) });
+    expect(mocks.send.mock.calls[1][1]).toEqual(options);
   });
 });

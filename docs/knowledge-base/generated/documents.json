@@ -6449,92 +6449,97 @@
       {
         "level": 2,
         "title": "Required Environment Variables",
-        "line": 17
+        "line": 20
       },
       {
         "level": 2,
         "title": "Vercel Setup Instructions",
-        "line": 27
+        "line": 31
       },
       {
         "level": 3,
         "title": "Step 1: Get Resend API Key",
-        "line": 29
+        "line": 33
       },
       {
         "level": 3,
         "title": "Step 2: Add to Vercel",
-        "line": 37
+        "line": 41
       },
       {
         "level": 3,
         "title": "Step 3: Redeploy",
-        "line": 49
+        "line": 53
       },
       {
         "level": 3,
         "title": "Step 4: Test",
-        "line": 55
+        "line": 59
+      },
+      {
+        "level": 2,
+        "title": "Delivery Webhook (bounces, complaints, delivered)",
+        "line": 66
       },
       {
         "level": 2,
         "title": "Domain Authentication (Recommended)",
-        "line": 62
+        "line": 81
       },
       {
         "level": 3,
         "title": "Resend Domain Setup",
-        "line": 66
+        "line": 85
       },
       {
         "level": 3,
         "title": "DNS Configuration",
-        "line": 71
+        "line": 90
       },
       {
         "level": 3,
         "title": "Verification",
-        "line": 92
+        "line": 111
       },
       {
         "level": 2,
         "title": "Testing Checklist",
-        "line": 99
+        "line": 118
       },
       {
         "level": 2,
         "title": "Troubleshooting",
-        "line": 110
+        "line": 129
       },
       {
         "level": 3,
         "title": "\"Email service is not configured\"",
-        "line": 112
+        "line": 131
       },
       {
         "level": 3,
         "title": "Emails going to spam",
-        "line": 116
+        "line": 135
       },
       {
         "level": 3,
         "title": "\"Invalid API key\"",
-        "line": 121
+        "line": 140
       },
       {
         "level": 3,
         "title": "No emails received",
-        "line": 126
+        "line": 145
       },
       {
         "level": 2,
         "title": "Nonprofit License Context",
-        "line": 133
+        "line": 152
       },
       {
         "level": 2,
         "title": "Related Files",
-        "line": 141
+        "line": 160
       }
     ],
     "datedFilename": false,
@@ -6715,77 +6720,77 @@
       {
         "level": 3,
         "title": "Database (Supabase)",
-        "line": 22
+        "line": 21
       },
       {
         "level": 3,
         "title": "Authentication (Supabase Auth)",
-        "line": 29
+        "line": 28
       },
       {
         "level": 3,
         "title": "Rate Limiting (Upstash Redis) — Optional but Recommended",
-        "line": 34
+        "line": 33
       },
       {
         "level": 3,
         "title": "AI Tools: ElevenLabs (Voice Interview + Conversational AI Coaches)",
-        "line": 42
+        "line": 41
       },
       {
         "level": 3,
         "title": "Billing: J5 invoice + J6 cover letter packets (optional overrides)",
-        "line": 54
+        "line": 53
       },
       {
         "level": 3,
         "title": "AI Tools: Groq (Chat/Completion Backend)",
-        "line": 66
+        "line": 65
       },
       {
         "level": 3,
         "title": "AI Tools: Anthropic (Interview Feedback Fallback)",
-        "line": 71
+        "line": 70
       },
       {
         "level": 3,
         "title": "AI Tools: O*NET (Skill Mapper)",
-        "line": 77
+        "line": 76
       },
       {
         "level": 3,
         "title": "Web Scraping / Research",
-        "line": 82
+        "line": 81
       },
       {
         "level": 3,
         "title": "Staff MFA Enforcement",
-        "line": 88
+        "line": 87
       },
       {
         "level": 3,
         "title": "Optional: Analytics/Monitoring",
-        "line": 95
+        "line": 94
       },
       {
         "level": 2,
         "title": "Historical Vercel Production Status Snapshot",
-        "line": 103
+        "line": 102
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 119
+        "line": 118
       },
       {
         "level": 2,
         "title": "Launch Checklist (May 1)",
-        "line": 132
+        "line": 131
       },
       {
         "level": 2,
         "title": "Related Files",
-        "line": 149
+        "line": 148
       }
     ],
     "datedFilename": false,
@@ -7042,57 +7047,62 @@
       {
         "level": 2,
         "title": "Architecture",
-        "line": 22
+        "line": 23
       },
       {
         "level": 2,
         "title": "Current Template Inventory (`emails/`)",
-        "line": 41
+        "line": 42
       },
       {
         "level": 3,
         "title": "Wired HTML builders (exported via `emails/index.ts`, used by `lib/email.ts`)",
-        "line": 43
+        "line": 44
       },
       {
         "level": 3,
         "title": "Wired directly (not via `index.ts`)",
-        "line": 84
+        "line": 85
       },
       {
         "level": 3,
         "title": "Unwired React Email components (`.tsx`) — not currently imported outside `emails/`",
-        "line": 90
+        "line": 91
       },
       {
         "level": 3,
         "title": "Tests",
-        "line": 113
+        "line": 114
       },
       {
         "level": 2,
         "title": "Send Functions & Code Locations",
-        "line": 121
+        "line": 122
       },
       {
         "level": 2,
         "title": "Cron-Driven Notifications",
-        "line": 129
+        "line": 130
       },
       {
         "level": 2,
-        "title": "Auth Emails (Supabase, not Resend)",
-        "line": 140
+        "title": "Auth Emails",
+        "line": 141
+      },
+      {
+        "level": 2,
+        "title": "Send Log and Delivery Events",
+        "line": 147
       },
       {
         "level": 2,
         "title": "Configuration Checklist",
-        "line": 146
+        "line": 153
       },
       {
         "level": 2,
         "title": "Dependencies",
-        "line": 154
+        "line": 162
       }
     ],
     "datedFilename": false,
@@ -16651,97 +16661,97 @@
       {
         "level": 2,
         "title": "AI & LLM Providers",
-        "line": 131
+        "line": 132
       },
       {
         "level": 2,
         "title": "ElevenLabs Voice & Conversational AI",
-        "line": 149
+        "line": 150
       },
       {
         "level": 2,
         "title": "Coursera / Learning Integration",
-        "line": 173
+        "line": 174
       },
       {
         "level": 2,
         "title": "Stripe / Payments",
-        "line": 207
+        "line": 208
       },
       {
         "level": 2,
         "title": "Analytics & Monitoring",
-        "line": 221
+        "line": 222
       },
       {
         "level": 2,
         "title": "WIOA",
-        "line": 239
+        "line": 240
       },
       {
         "level": 2,
         "title": "Partner & Org",
-        "line": 248
+        "line": 249
       },
       {
         "level": 2,
         "title": "Admin & Cron",
-        "line": 257
+        "line": 258
       },
       {
         "level": 2,
         "title": "Testing & QA",
-        "line": 267
+        "line": 268
       },
       {
         "level": 2,
         "title": "Build & Internal",
-        "line": 306
+        "line": 307
       },
       {
         "level": 2,
         "title": "Deprecated / Legacy",
-        "line": 320
+        "line": 321
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 336
+        "line": 337
       },
       {
         "level": 3,
         "title": "🔒 Server-Only Variables",
-        "line": 338
+        "line": 339
       },
       {
         "level": 3,
         "title": "👁️ Client-Safe Variables",
-        "line": 352
+        "line": 353
       },
       {
         "level": 3,
         "title": ".gitignore",
-        "line": 366
+        "line": 367
       },
       {
         "level": 2,
         "title": "Drift Report",
-        "line": 372
+        "line": 373
       },
       {
         "level": 3,
         "title": "Variables in CODE but NOT in `.env.example` (Missing from template)",
-        "line": 374
+        "line": 375
       },
       {
         "level": 3,
         "title": "Variables in `.env.example` but NOT in CODE (Potentially stale)",
-        "line": 457
+        "line": 458
       },
       {
         "level": 2,
         "title": "Changelog",
-        "line": 466
+        "line": 467
       }
     ],
     "datedFilename": false,

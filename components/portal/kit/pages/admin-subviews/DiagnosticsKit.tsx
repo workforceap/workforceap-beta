@@ -1,4 +1,4 @@
-import { Activity, Database, Mail, RefreshCw } from 'lucide-react';
+import { Activity, BellRing, Database, Mail, MessageSquare, RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Token } from '@astryxdesign/core/Token';
@@ -21,7 +21,7 @@ export interface DiagnosticTile {
   name: string;
   /** Which built-in icon to render (kept as a string so no component ref
    *  crosses a server→client boundary). */
-  iconKey: 'app' | 'database' | 'email' | 'integrations';
+  iconKey: 'app' | 'database' | 'email' | 'integrations' | 'discord' | 'push';
   /** Short human status, e.g. "Healthy", "Degraded", "—". */
   status: string;
   /** Semantic tone driving the tile color. */
@@ -43,6 +43,8 @@ const ICONS: Record<DiagnosticTile['iconKey'], ReactNode> = {
   database: <Database size={18} aria-hidden />,
   email: <Mail size={18} aria-hidden />,
   integrations: <RefreshCw size={18} aria-hidden />,
+  discord: <MessageSquare size={18} aria-hidden />,
+  push: <BellRing size={18} aria-hidden />,
 };
 
 /** Tone → icon swatch (soft bg + solid fg) using kit tokens only. */

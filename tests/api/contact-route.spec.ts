@@ -19,6 +19,10 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({
   verifyTurnstileResponse: vi.fn(async () => true),
 }));
 
+// The route now sends through lib/email/send.ts, which records failures and
+// signs List-Unsubscribe tokens; keep both inert here.
+vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+
 import { POST } from '@/app/api/contact/route';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 
@@ -43,6 +47,7 @@ describe('POST /api/contact', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.RESEND_API_KEY = 're_test';
+    process.env.UNSUBSCRIBE_TOKEN_SECRET = 'test-unsubscribe-secret';
     delete process.env.NEXT_PUBLIC_CAPTCHA_ENABLED;
     vi.mocked(checkContactRateLimit).mockResolvedValue({ success: true });
   });
@@ -68,6 +73,8 @@ describe('POST /api/contact', () => {
     expect(await res.json()).toEqual({ ok: true });
     expect(resend.send).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'info@workforceap.org', replyTo: 'ada@example.com', subject: expect.stringContaining('Programs') }),
+      // Shared wrapper: every send carries an idempotency key so a retry cannot double-deliver.
+      expect.objectContaining({ idempotencyKey: expect.stringMatching(/^email\/[0-9a-f]{64}$/) }),
     );
   });
 
