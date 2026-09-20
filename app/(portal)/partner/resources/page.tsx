@@ -111,6 +111,7 @@ export default async function PartnerResourcesPage() {
               <FeatureTile
                 key={item.href}
                 href={item.href}
+                headingAs="h2"
                 title={item.label}
                 body={item.desc}
                 icon={item.icon}

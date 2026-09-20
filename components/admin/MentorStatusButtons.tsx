@@ -86,7 +86,7 @@ export default function MentorStatusButtons({
         ) : null}
       </div>
       {error ? (
-        <span style={{ fontSize: '0.75rem', color: 'var(--color-error, #ba1a1a)' }} role="alert">
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-error, #ba1a1a)' }} role="alert">
           {error}
         </span>
       ) : null}

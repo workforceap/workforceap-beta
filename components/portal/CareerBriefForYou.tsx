@@ -60,7 +60,7 @@ export default function CareerBriefForYou({ context }: CareerBriefForYouProps) {
             </a>
             {bestBoardsForProgram.length > 0 ? (
               <div style={{ marginTop: '0.45rem' }}>
-                <p style={{ margin: '0 0 0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700 }}>
+                <p style={{ margin: '0 0 0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700 }}>
                   Best boards for your path
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
@@ -74,7 +74,7 @@ export default function CareerBriefForYou({ context }: CareerBriefForYouProps) {
                         borderRadius: '999px',
                         background: 'color-mix(in srgb, var(--color-accent) 8%, transparent)',
                         color: 'var(--color-on-surface)',
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 600,
                       }}
                     >
@@ -98,7 +98,7 @@ export default function CareerBriefForYou({ context }: CareerBriefForYouProps) {
             ) : null}
             {suburbPresets.length > 0 ? (
               <div style={{ marginTop: '0.45rem' }}>
-                <p style={{ margin: '0 0 0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700 }}>
+                <p style={{ margin: '0 0 0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700 }}>
                   Quick area searches
                 </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>

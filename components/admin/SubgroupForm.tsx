@@ -121,7 +121,7 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
             </option>
           ))}
         </select>
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
           The leader can view this subgroup&rsquo;s members in the portal.
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
               </option>
             ))}
           </select>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
             Link to a partner for auto-assignment when members are referred by that partner.
           </p>
         </div>

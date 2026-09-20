@@ -347,7 +347,7 @@ export default function ApplyResultsClient({
                       position: 'absolute',
                       top: '0.5rem',
                       left: '0.5rem',
-                      fontSize: '0.65rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
@@ -366,7 +366,7 @@ export default function ApplyResultsClient({
                       position: 'absolute',
                       top: '0.5rem',
                       right: '0.5rem',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.04em',
@@ -383,7 +383,7 @@ export default function ApplyResultsClient({
                       color: 'white',
                       padding: '0.2rem 0.6rem',
                       borderRadius: '50px',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                     }}
                   >

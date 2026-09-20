@@ -19,7 +19,7 @@ export function SectionHeader({ eyebrow, title, accent, subtitle, align = 'cente
   return (
     <div style={{ textAlign, marginBottom, maxWidth: align === 'center' ? maxWidth : undefined, marginLeft: align === 'center' ? 'auto' : undefined, marginRight: align === 'center' ? 'auto' : undefined }}>
       {eyebrow && (
-        <p style={{ margin: '0 0 0.75rem', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
+        <p style={{ margin: '0 0 0.75rem', fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)' }}>
           {eyebrow}
         </p>
       )}

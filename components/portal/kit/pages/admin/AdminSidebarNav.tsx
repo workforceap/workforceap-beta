@@ -182,7 +182,7 @@ function Brand() {
       </div>
       <div style={{ minWidth: 0 }}>
         <div style={{ fontWeight: 800, fontSize: 14, lineHeight: 1 }}>WorkforceAP</div>
-        <div style={{ fontSize: 10, color: 'color-mix(in srgb, var(--wa-sidebar-text) 64%, transparent)', marginTop: 2 }}>Admin · Austin</div>
+        <div style={{ fontSize: 13, color: 'color-mix(in srgb, var(--wa-sidebar-text) 64%, transparent)', marginTop: 2 }}>Admin · Austin</div>
       </div>
     </div>
   );
@@ -201,7 +201,7 @@ function SidebarFooter() {
           alignItems: 'center',
           justifyContent: 'center',
           fontWeight: 700,
-          fontSize: 12,
+          fontSize: 13,
           flexShrink: 0,
         }}
       >
@@ -210,7 +210,7 @@ function SidebarFooter() {
       <div style={{ minWidth: 0 }}>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -219,7 +219,7 @@ function SidebarFooter() {
         >
           Dad (Owner)
         </div>
-        <div style={{ fontSize: 10, color: 'color-mix(in srgb, var(--wa-sidebar-text) 64%, transparent)' }}>Super Admin</div>
+        <div style={{ fontSize: 13, color: 'color-mix(in srgb, var(--wa-sidebar-text) 64%, transparent)' }}>Super Admin</div>
       </div>
       <a
         href="/"

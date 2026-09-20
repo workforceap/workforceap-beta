@@ -13,7 +13,7 @@ export default function DecisionJourneyNotFound() {
       <p
         style={{
           margin: 0,
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',

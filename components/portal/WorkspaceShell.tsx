@@ -556,7 +556,7 @@ export default function WorkspaceShell({
             <span
               className="workspace-shell-attribution"
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.8125rem',
                 color: 'var(--color-on-surface-variant)',
                 whiteSpace: 'nowrap',
                 marginLeft: '0.25rem',

@@ -314,7 +314,7 @@
 | [app/(portal)/partner/referred-members/loading.tsx](../../../app/%28portal%29/partner/referred-members/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/referred-members/page.tsx](../../../app/%28portal%29/partner/referred-members/page.tsx) | 80 | partners-funding | generateMetadata:18, default:27 |
 | [app/(portal)/partner/resources/loading.tsx](../../../app/%28portal%29/partner/resources/loading.tsx) | 6 | partners-funding | default:3 |
-| [app/(portal)/partner/resources/page.tsx](../../../app/%28portal%29/partner/resources/page.tsx) | 133 | partners-funding | generateMetadata:16, default:62 |
+| [app/(portal)/partner/resources/page.tsx](../../../app/%28portal%29/partner/resources/page.tsx) | 134 | partners-funding | generateMetadata:16, default:62 |
 | [app/(portal)/partner/settings/loading.tsx](../../../app/%28portal%29/partner/settings/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/(portal)/partner/settings/page.tsx](../../../app/%28portal%29/partner/settings/page.tsx) | 145 | partners-funding | generateMetadata:17, default:64 |
 | [app/(portal)/partner/signup/page.tsx](../../../app/%28portal%29/partner/signup/page.tsx) | 13 | applications-enrollment | dynamic:9, default:11 |

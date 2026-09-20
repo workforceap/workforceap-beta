@@ -93,7 +93,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
       key: 'description',
       header: 'Description',
       render: (row) => (
-        <span style={{ color: 'var(--wa-muted)', fontSize: 12 }}>{row.description}</span>
+        <span style={{ color: 'var(--wa-muted)', fontSize: 13 }}>{row.description}</span>
       ),
     },
     {
@@ -164,7 +164,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
       key: 'started',
       header: 'Started',
       render: (row) => (
-        <span style={{ ...numStyle, color: 'var(--wa-muted)', fontSize: 12 }}>
+        <span style={{ ...numStyle, color: 'var(--wa-muted)', fontSize: 13 }}>
           {new Date(row.startedAt).toLocaleString()}
         </span>
       ),
@@ -184,7 +184,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
       header: 'Error',
       render: (row) =>
         row.errorMessage ? (
-          <span style={{ color: 'var(--wa-accent)', fontSize: 12 }}>{row.errorMessage}</span>
+          <span style={{ color: 'var(--wa-accent)', fontSize: 13 }}>{row.errorMessage}</span>
         ) : (
           <span style={{ color: 'var(--wa-muted)' }}>—</span>
         ),
@@ -226,7 +226,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
                 <span style={{ fontWeight: 700 }}>{row.model}</span>
                 <span style={numStyle}>{formatRetention(row.days)}</span>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: '6px 0 10px' }}>
+              <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '6px 0 10px' }}>
                 {row.description}
               </p>
               <div
@@ -235,7 +235,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
                   flexWrap: 'wrap',
                   justifyContent: 'space-between',
                   gap: 8,
-                  fontSize: 11,
+                  fontSize: 13,
                   color: 'var(--wa-muted)',
                 }}
               >
@@ -282,7 +282,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
                 <span style={{ fontWeight: 700, minWidth: 0 }}>{row.tableName}</span>
                 <span style={{ ...numStyle, color: 'var(--wa-muted)' }}>{row.sizeHuman}</span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 6 }}>
+              <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
                 <span style={numStyle}>
                   Rows <b style={{ color: 'var(--wa-text)' }}>{row.rowCount.toLocaleString()}</b>
                 </span>
@@ -315,11 +315,11 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
                 }}
               >
                 <StatusTag tone={STATUS_TONE[row.status] ?? 'muted'}>{row.status}</StatusTag>
-                <span style={{ ...numStyle, fontSize: 11, color: 'var(--wa-muted)' }}>
+                <span style={{ ...numStyle, fontSize: 13, color: 'var(--wa-muted)' }}>
                   {new Date(row.startedAt).toLocaleString()}
                 </span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 8 }}>
+              <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 8 }}>
                 <span style={numStyle}>
                   Deleted{' '}
                   <b style={{ color: 'var(--wa-text)' }}>
@@ -339,7 +339,7 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
 
       <p
         style={{
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
           lineHeight: 1.6,

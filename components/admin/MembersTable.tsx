@@ -86,7 +86,7 @@ function FitScoreBadge({ score }: { score: number }) {
   // text-on-success-tint pair: the previous #16a34a on #f0fdf4 measured 3.15:1.
   const color = score >= 8 ? 'var(--wa-success-dark)' : score >= 5 ? 'var(--wa-gold-dark)' : '#dc2626';
   const bg = score >= 8 ? 'var(--wa-success-soft)' : score >= 5 ? 'var(--wa-gold-soft)' : '#fef2f2';
-  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 600, color, background: bg, border: `1px solid color-mix(in srgb, ${color} 12%, transparent)`, fontVariantNumeric: 'tabular-nums' }}>{score}/10</span>;
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid color-mix(in srgb, ${color} 12%, transparent)`, fontVariantNumeric: 'tabular-nums' }}>{score}/10</span>;
 }
 
 function HealthDot({ status }: { status: HealthStatus }) {
@@ -164,7 +164,7 @@ function AttentionBadge({ reasons }: { reasons: string[] }) {
         gap: '0.25rem',
         padding: '0.15rem 0.5rem',
         borderRadius: '50px',
-        fontSize: '0.72rem',
+        fontSize: '0.8125rem',
         fontWeight: 700,
         color,
         background: bg,
@@ -572,30 +572,30 @@ export default function MembersTable({
             ) : null}
             {activeFilterCount > 0 ? <span className="admin-members-count-line__filters"> · {activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'} on</span> : null}
             {totalPages > 1 && (healthFilter || notInCourseFilter || needsAttentionFilter) ? (
-              <span className="admin-members-count-line__filters" style={{ display: 'block', fontSize: '0.78rem' }}>
+              <span className="admin-members-count-line__filters" style={{ display: 'block', fontSize: '0.8125rem' }}>
                 Health / attention filters apply to this page&apos;s {members.length} members only — page through to check the rest, or Export CSV (applies them to all matching members).
               </span>
             ) : null}
           </span>
           <div className={`admin-members-secondary-controls${filtersExpanded ? ' admin-members-secondary-controls--open' : ''}`}>
             <label className="admin-members-filter-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
-              <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>From</span>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>From</span>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => { setStartDate(e.target.value); updateUrl({ startDate: e.target.value }); }}
                 className="admin-members-filter-select"
-                style={{ fontSize: '0.78rem', padding: '0.25rem 0.5rem' }}
+                style={{ fontSize: '0.8125rem', padding: '0.25rem 0.5rem' }}
               />
             </label>
             <label className="admin-members-filter-field" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.35rem', margin: 0 }}>
-              <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>To</span>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>To</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => { setEndDate(e.target.value); updateUrl({ endDate: e.target.value }); }}
                 className="admin-members-filter-select"
-                style={{ fontSize: '0.78rem', padding: '0.25rem 0.5rem' }}
+                style={{ fontSize: '0.8125rem', padding: '0.25rem 0.5rem' }}
               />
             </label>
             <button
@@ -747,7 +747,7 @@ export default function MembersTable({
                     className="btn btn-ghost btn-sm"
                     onClick={() => setShowAdvancedSorts((v) => !v)}
                     aria-expanded={expanded}
-                    style={{ marginTop: '0.25rem', alignSelf: 'flex-start', fontSize: '0.78rem', padding: '0.15rem 0.4rem' }}
+                    style={{ marginTop: '0.25rem', alignSelf: 'flex-start', fontSize: '0.8125rem', padding: '0.15rem 0.4rem' }}
                   >
                     {expanded ? 'Fewer sort options ▴' : 'More sort options ▾'}
                   </button>
@@ -876,7 +876,7 @@ export default function MembersTable({
                 const color = status === 'active' ? '#166534' : status === 'placed' ? '#2563eb' : '#9ca3af';
                 const bg = status === 'active' ? '#f0fdf4' : status === 'placed' ? '#eff6ff' : '#f3f4f6';
                 return (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
                     {status}
                   </span>
                 );
@@ -918,7 +918,7 @@ export default function MembersTable({
               cell: (m) => (
                 <span title={m.profile?.smsOptIn ? 'SMS opted in' : 'SMS not opted in'}>
                   {formatPhone(m.profile?.profilePhone ?? m.phone)}
-                  {m.profile?.smsOptIn && <span style={{ marginLeft: 4, fontSize: '0.75rem', color: '#16a34a' }}>✓ SMS</span>}
+                  {m.profile?.smsOptIn && <span style={{ marginLeft: 4, fontSize: '0.8125rem', color: '#16a34a' }}>✓ SMS</span>}
                 </span>
               ),
             },
@@ -939,7 +939,7 @@ export default function MembersTable({
                 m.healthStatus ? (
                   <span
                     style={{
-                      fontSize: '0.8rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                       color:
                         m.healthStatus === 'green' ? '#16a34a' : m.healthStatus === 'yellow' ? '#d97706' : '#dc2626',
@@ -998,7 +998,7 @@ export default function MembersTable({
                   href={`/counselor/sessions/${m.id}/run`}
                   onClick={(e) => e.stopPropagation()}
                   className="btn btn-sm btn-outline"
-                  style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}
+                  style={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}
                 >
                   Start session
                 </Link>
@@ -1067,7 +1067,7 @@ export default function MembersTable({
                   const color = status === 'active' ? '#166534' : status === 'placed' ? '#2563eb' : '#4b5563';
                   const bg = status === 'active' ? '#f0fdf4' : status === 'placed' ? '#eff6ff' : '#f3f4f6';
                   return (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
                       {status}
                     </span>
                   );

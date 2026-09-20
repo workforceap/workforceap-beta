@@ -62,7 +62,7 @@ export default function MemberSessionCard({ actorName, startedAt, toolCount }: M
             id="member-session-card-title"
             style={{
               margin: 0,
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               fontWeight: 800,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',

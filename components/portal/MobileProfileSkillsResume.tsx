@@ -195,7 +195,7 @@ export default function MobileProfileSkillsResume({
   return (
     <div aria-busy={uploading} style={{ margin: '0 1.5rem 1rem', padding: '1.25rem', borderRadius: '0.75rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container-low)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-        <h3 className="wa-text-[11px] wa-font-bold wa-uppercase wa-tracking-[0.1em]" style={{ color: 'var(--color-on-surface-variant)' }}>Resume</h3>
+        <h3 className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-[0.1em]" style={{ color: 'var(--color-on-surface-variant)' }}>Resume</h3>
       </div>
 
       {hasResume ? (
@@ -206,7 +206,7 @@ export default function MobileProfileSkillsResume({
               <p className="wa-text-sm wa-font-semibold wa-truncate" style={{ color: 'var(--color-on-surface)' }}>
                 {fileName}
               </p>
-              <p className="wa-text-[10px]" style={{ color: 'var(--color-on-surface-variant)' }}>Uploaded</p>
+              <p className="wa-text-[13px]" style={{ color: 'var(--color-on-surface-variant)' }}>Uploaded</p>
             </div>
             <button type="button"
               className="wa-text-xs wa-font-bold"
@@ -330,16 +330,16 @@ export default function MobileProfileSkillsResume({
           <p role="status" aria-live="polite" className="wa-text-sm wa-font-semibold" style={{ color: 'var(--color-on-surface)' }}>
             {uploading ? 'Uploading…' : 'Upload Resume'}
           </p>
-          <p className="wa-text-[10px]" style={{ color: 'var(--color-on-surface-variant)' }}>{RESUME_UPLOAD_FORMAT_LABEL} · Max 5MB</p>
+          <p className="wa-text-[13px]" style={{ color: 'var(--color-on-surface-variant)' }}>{RESUME_UPLOAD_FORMAT_LABEL} · Max 5MB</p>
           <input type="file" accept={RESUME_UPLOAD_ACCEPT} onChange={onFileChange} disabled={uploading} style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', borderWidth: 0 }} />
         </label>
       )}
 
       {error ? (
-        <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{error}</p>
+        <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', marginTop: '0.5rem' }}>{error}</p>
       ) : null}
       {warning ? (
-        <p role="status" style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', marginTop: '0.5rem' }}>{warning}</p>
+        <p role="status" style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', marginTop: '0.5rem' }}>{warning}</p>
       ) : null}
     </div>
   );

@@ -79,40 +79,40 @@ function DiagnosticsCards({ rows, emptyText }: { rows: DiagnosticRow[]; emptyTex
                   <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>
                     {row.workflow}
                   </span>
-                  <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: bg, color: textColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: bg, color: textColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     {row.status}
                   </span>
                   {row.provider && (
-                    <span style={{ fontSize: '0.625rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', background: 'var(--surface-container)', padding: '0.1rem 0.35rem', borderRadius: '0.25rem' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', background: 'var(--surface-container)', padding: '0.1rem 0.35rem', borderRadius: '0.25rem' }}>
                       {row.provider}
                     </span>
                   )}
                   {row.method && (
-                    <span style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)' }}>via {row.method}</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>via {row.method}</span>
                   )}
                 </div>
                 {row.summary && (
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem', lineHeight: 1.45 }}>{row.summary}</p>
                 )}
                 {(row.fallbackPath || row.failureReason) && (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--color-accent)', margin: '0 0 0.25rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0 0 0.25rem' }}>
                     {[row.fallbackPath, row.failureReason].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 {row.metadata && (
                   <details style={{ marginTop: '0.25rem' }}>
-                    <summary style={{ cursor: 'pointer', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Metadata</summary>
-                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', marginTop: '0.375rem', lineHeight: 1.4, maxHeight: '200px', overflowY: 'auto', background: 'var(--surface-container-lowest)', padding: '0.5rem', borderRadius: '0.375rem' }}>
+                    <summary style={{ cursor: 'pointer', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 600 }}>Metadata</summary>
+                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.375rem', lineHeight: 1.4, maxHeight: '200px', overflowY: 'auto', background: 'var(--surface-container-lowest)', padding: '0.5rem', borderRadius: '0.375rem' }}>
                       {JSON.stringify(row.metadata, null, 2)}
                     </pre>
                   </details>
                 )}
               </div>
               {/* Timestamp */}
-              <span style={{ fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0, whiteSpace: 'nowrap' }}>
                 {row.createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 <br />
-                <span style={{ fontSize: '0.625rem' }}>{row.createdAt.toLocaleDateString()}</span>
+                <span style={{ fontSize: '0.8125rem' }}>{row.createdAt.toLocaleDateString()}</span>
               </span>
             </div>
           </div>
@@ -275,7 +275,7 @@ export default async function AdminDiagnosticsPage({
           <section style={{ marginBottom: '1.5rem' }}>
             <div className="portal-dash-section-header">
               <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0, color: 'var(--color-accent)' }}>
-                Recent errors <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>({errorCount})</span>
+                Recent errors <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>({errorCount})</span>
               </h2>
             </div>
             <DiagnosticsCards
@@ -291,7 +291,7 @@ export default async function AdminDiagnosticsPage({
         <section style={{ marginBottom: '1.5rem' }}>
           <div className="portal-dash-section-header">
             <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>
-              Enrollment Drift {driftRecords.length > 0 ? <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>({driftRecords.length} issues)</span> : null}
+              Enrollment Drift {driftRecords.length > 0 ? <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>({driftRecords.length} issues)</span> : null}
             </h2>
           </div>
           {driftRecords.length === 0 ? (
@@ -326,14 +326,14 @@ export default async function AdminDiagnosticsPage({
                     key: 'enrolled',
                     header: 'User.enrolledProgram',
                     cell: (u) => (
-                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8rem' }}>{u.enrolledProgram}</span>
+                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8125rem' }}>{u.enrolledProgram}</span>
                     ),
                   },
                   {
                     key: 'ce',
                     header: 'CourseEnrollment',
                     cell: (u) => (
-                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8rem' }}>
+                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.8125rem' }}>
                         {u.courseEnrollments[0]?.programSlug ?? '—'}
                       </span>
                     ),
@@ -344,7 +344,7 @@ export default async function AdminDiagnosticsPage({
                     cell: (u) => (
                       <span
                         style={{
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 700,
                           padding: '0.15rem 0.5rem',
                           borderRadius: '9999px',
@@ -359,7 +359,7 @@ export default async function AdminDiagnosticsPage({
                 ]}
               />
               {driftRecords.length > 25 ? (
-                <p style={{ margin: '0.75rem 0 0', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   Showing 25 of {driftRecords.length} drift issues.{' '}
                   <a href="/api/admin/lifecycle/drift" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
                     View full results (JSON)
@@ -381,18 +381,18 @@ export default async function AdminDiagnosticsPage({
               {FUNNEL_DEFINITIONS.map((funnel) => (
                 <div key={funnel.funnel} className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                    <div style={{ padding: '0.2rem 0.5rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--color-accent)', flexShrink: 0 }}>
+                    <div style={{ padding: '0.2rem 0.5rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: 'var(--color-accent)', flexShrink: 0 }}>
                       {funnel.audience}
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.5rem' }}>{funnel.funnel}</p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                         <strong style={{ color: 'var(--color-on-surface)' }}>Steps:</strong> {funnel.steps.join(' → ')}
                       </p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                         <strong style={{ color: 'var(--color-on-surface)' }}>Outcomes:</strong> {funnel.outcomes.join(' · ')}
                       </p>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
                         <strong style={{ color: 'var(--color-accent)' }}>⚠ Signals:</strong> {funnel.confusionSignals.join(' · ')}
                       </p>
                     </div>
@@ -423,7 +423,7 @@ export default async function AdminDiagnosticsPage({
         <section>
           <div className="portal-dash-section-header">
             <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>Latest Workflow Log</h2>
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>Last 50 entries</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Last 50 entries</span>
           </div>
           <DiagnosticsCards rows={recentDiagnostics} />
         </section>

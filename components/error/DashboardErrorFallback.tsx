@@ -97,7 +97,7 @@ export default function DashboardErrorFallback({
         </p>
         <p
           style={{
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             color: 'var(--color-on-surface-variant)',
             margin: 0,
             lineHeight: 1.45,

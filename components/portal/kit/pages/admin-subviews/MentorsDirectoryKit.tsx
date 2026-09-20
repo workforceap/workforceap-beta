@@ -117,7 +117,7 @@ export function MentorsDirectoryKit({
                     <h4 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.01em', margin: 0 }}>
                       {m.name}
                     </h4>
-                    <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
                       {m.role} @ {m.company} · {m.mentees} {m.mentees === 1 ? 'mentee' : 'mentees'}
                     </p>
                   </div>

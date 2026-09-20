@@ -109,7 +109,7 @@ export default function MemberFirstCertProgressBar({ progress, compact }: Props)
       >
         <span
           style={{
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             fontWeight: 600,
             color: 'var(--color-on-surface-variant)',
             lineHeight: 1.3,
@@ -119,7 +119,7 @@ export default function MemberFirstCertProgressBar({ progress, compact }: Props)
         </span>
         <span
           style={{
-            fontSize: '0.75rem',
+            fontSize: '0.8125rem',
             fontWeight: 500,
             color: 'var(--color-on-surface-variant)',
             whiteSpace: 'nowrap',

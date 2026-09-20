@@ -129,7 +129,7 @@ export default function MemberNextStepsStrip({
         >
           {isSecondary ? t('alsoForYou') : isFeatured ? t('recommendedNextStep') : t('yourNextStepsTitle')}
         </h3>
-        <span style={{ fontSize: '0.75rem', color: 'var(--wa-muted)' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
           {isSecondary ? t('alsoForYouHint') : isFeatured ? t('startHereBasedOnProgress') : t('pickedForYou')}
         </span>
       </div>
@@ -208,7 +208,7 @@ export default function MemberNextStepsStrip({
                   borderRadius: '9999px',
                   background: 'var(--wa-accent)',
                   color: 'var(--wa-on-accent)',
-                  fontSize: '0.72rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.04em',
                   textTransform: 'uppercase',

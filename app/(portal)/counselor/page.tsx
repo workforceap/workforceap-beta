@@ -322,7 +322,7 @@ export default async function CounselorPortalPage({
       <div className="wa-block md:wa-hidden portal-mobile-content">
         {/* Hero */}
         <div className="portal-pad-x" style={{ paddingTop:"1.5rem", paddingBottom:"0.5rem" }}>
-          <p className="wa-text-[11px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold" style={{ color: 'var(--color-accent)', marginBottom:"0.5rem" }}>{t('counselorDashboard')}</p>
+          <p className="wa-text-[13px] wa-uppercase wa-tracking-[0.12em] wa-font-semibold" style={{ color: 'var(--color-accent)', marginBottom:"0.5rem" }}>{t('counselorDashboard')}</p>
           <h2 className="wa-text-3xl wa-font-extrabold wa-tracking-tight text-on-surface wa-leading-tight">
             {goodTimePhrase},{' '}
             <span style={{ color: 'var(--color-accent)' }}>{firstName}</span>
@@ -343,7 +343,7 @@ export default async function CounselorPortalPage({
         <div className="portal-pad-x" style={{ marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"1rem", marginBottom:"1.5rem" }}>
           <div className="wa-text-white" style={{gridColumn:"span 2", borderRadius:"0.75rem", padding:"1.25rem", position:"relative", overflow:"hidden", background: 'var(--color-accent)'}}>
             <div style={{ position:"relative", zIndex:10 }}>
-              <p className="wa-text-[11px] wa-uppercase wa-tracking-widest" style={{ opacity:0.85, marginBottom:"0.25rem" }}>{t('yourMembers')}</p>
+              <p className="wa-text-[13px] wa-uppercase wa-tracking-widest" style={{ opacity:0.85, marginBottom:"0.25rem" }}>{t('yourMembers')}</p>
               <p className="wa-text-4xl wa-font-bold wa-tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums' }}>{assignments.length}</p>
             </div>
             <span className="material-symbols-outlined" style={{ position: 'absolute', bottom: '-1rem', right: '-1rem', fontSize: '8rem', opacity: 0.07, color: '#fff', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">group</span>
@@ -425,9 +425,9 @@ export default async function CounselorPortalPage({
                     </div>
                     <div style={{ flex:1, minWidth:0 }}>
                       <h4 title={a.member.fullName ?? undefined} className="wa-font-bold text-on-surface wa-text-base wa-truncate">{a.member.fullName}</h4>
-                      <p className="wa-text-[11px] wa-font-bold wa-uppercase wa-tracking-wider wa-truncate" style={{marginBottom:"0.25rem", color: 'var(--color-accent)'}}>{prog}</p>
+                      <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-wider wa-truncate" style={{marginBottom:"0.25rem", color: 'var(--color-accent)'}}>{prog}</p>
                       {trainingProgressPct === null ? (
-                        <p className="wa-text-[11px] wa-font-semibold text-on-surface-variant" style={{ margin: 0 }}>
+                        <p className="wa-text-[13px] wa-font-semibold text-on-surface-variant" style={{ margin: 0 }}>
                           {enrolledSlug ? t('trainingProgressUnavailable') : t('notEnrolled')}
                         </p>
                       ) : (
@@ -435,7 +435,7 @@ export default async function CounselorPortalPage({
                           <div className="bg-surface-container" style={{ flex:1, height:"0.25rem", borderRadius:"9999px", overflow:"hidden" }}>
                             <div style={{height:"100%", borderRadius:"9999px", width: `${trainingProgressPct}%`, background: 'var(--color-accent)'}} />
                           </div>
-                          <span className="wa-text-[11px] wa-font-bold text-on-surface-variant" style={{ fontVariantNumeric: 'tabular-nums' }}>{trainingProgressPct}%</span>
+                          <span className="wa-text-[13px] wa-font-bold text-on-surface-variant" style={{ fontVariantNumeric: 'tabular-nums' }}>{trainingProgressPct}%</span>
                         </div>
                       )}
                     </div>
@@ -530,7 +530,7 @@ export default async function CounselorPortalPage({
                             <h4 style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', margin: '0 0 0.125rem' }}>
                               {assignment.member.fullName}
                             </h4>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {(() => {
                                 const rawProgram = assignment.member.enrolledProgram ?? assignment.member.programInterest;
                                 return rawProgram ? programDisplayTitle(rawProgram) : t('noProgram');
@@ -602,7 +602,7 @@ export default async function CounselorPortalPage({
                 <span style={{ fontSize: '0.875rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: messagesNeedingReply > 0 ? 'var(--color-accent)' : 'var(--color-on-surface)' }}>{messagesNeedingReply}</span>
               </div>
               <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem', marginTop: '0.25rem' }}>
-                <Link href="/counselor/messages" className="btn btn-primary btn-full-width" style={{ fontSize: '0.75rem' }}>
+                <Link href="/counselor/messages" className="btn btn-primary btn-full-width" style={{ fontSize: '0.8125rem' }}>
                   {t('openMessages')}
                 </Link>
               </div>
@@ -636,7 +636,7 @@ export default async function CounselorPortalPage({
                     </div>
                     <div>
                       <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{link.title}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{link.desc}</p>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{link.desc}</p>
                     </div>
                   </div>
                   <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', opacity: 0.3, flexShrink: 0 }} aria-hidden="true">chevron_right</span>
@@ -657,7 +657,7 @@ export default async function CounselorPortalPage({
                     <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-on-surface)' }}>
                       {t('needsProgramGuidance', { count: needsAttentionCount })}
                     </p>
-                    <p style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, marginTop: '0.25rem' }}>{t('actionRequired')}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, marginTop: '0.25rem' }}>{t('actionRequired')}</p>
                   </div>
                 </div>
               )}
@@ -668,7 +668,7 @@ export default async function CounselorPortalPage({
                     <p style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-on-surface)' }}>
                       {t('threadsWaitingForReply', { count: messagesNeedingReply })}
                     </p>
-                    <p style={{ fontSize: '0.625rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, marginTop: '0.25rem' }}>{t('respondSoon')}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, marginTop: '0.25rem' }}>{t('respondSoon')}</p>
                   </div>
                 </div>
               )}

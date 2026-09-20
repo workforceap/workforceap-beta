@@ -69,12 +69,12 @@ export default async function AdminCourseraEnrollmentPage() {
             style={{ padding: '1rem', borderRadius: '8px' }}
           >
             <div style={{ fontSize: '1.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{summary[tile.key]}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{tile.label}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{tile.label}</div>
           </div>
         ))}
         <div className="content-card" style={{ padding: '1rem', borderRadius: '8px' }}>
           <div style={{ fontSize: '1.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{summary.completed}</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>Completed</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Completed</div>
         </div>
       </div>
 

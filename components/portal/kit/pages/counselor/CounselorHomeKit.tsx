@@ -184,7 +184,7 @@ function EmptyQueueState({ rosterHref }: { rosterHref: string }) {
         <CheckCircle2 size={18} aria-hidden style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Nice work — no one&rsquo;s waiting on you right now.</p>
-          <Link href={rosterHref} style={{ fontSize: 12, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
+          <Link href={rosterHref} style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
             Browse your full roster
           </Link>
         </div>
@@ -223,13 +223,13 @@ function SessionListRow({ row, fallbackHref }: { row: CounselorSessionRow; fallb
           {row.memberName}
         </div>
         {row.role ? (
-          <div style={{ fontSize: 11, color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: 13, color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {row.role}
           </div>
         ) : null}
       </div>
       {relative ? (
-        <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 600, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
           {relative}
         </span>
       ) : null}
@@ -360,13 +360,13 @@ export function CounselorHomeKit({
                 <Link
                   href={sessionsHref}
                   className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                  style={{ fontSize: 11, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 14 }}
+                  style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 14 }}
                 >
                   Sessions <ArrowRight size={11} aria-hidden />
                 </Link>
               </div>
               {sessions.length === 0 ? (
-                <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}>
+                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
                   No interview-prep sessions run this week.
                 </p>
               ) : (
@@ -391,7 +391,7 @@ export function CounselorHomeKit({
                     ariaLabel={activityDeltaLabel}
                   />
                   {activityDeltaLabel ? (
-                    <p style={{ marginTop: 10, fontSize: 11, fontWeight: 700, color: 'var(--wa-success)', fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: 'var(--wa-success)', fontVariantNumeric: 'tabular-nums' }}>
                       {activityDeltaLabel}
                     </p>
                   ) : null}
@@ -404,7 +404,7 @@ export function CounselorHomeKit({
               ) : (
                 <>
                   <SideCardHead title="Caseload activity" />
-                  <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}>
+                  <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
                     Once members are assigned, their activity trend will appear here.
                   </p>
                 </>

@@ -196,7 +196,7 @@ export default function AdminPipelineKanban({ initialByStage }: { initialByStage
                       </div>
                       <div
                         style={{
-                          fontSize: '0.72rem',
+                          fontSize: '0.8125rem',
                           color: 'var(--color-on-surface-variant)',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -209,7 +209,7 @@ export default function AdminPipelineKanban({ initialByStage }: { initialByStage
                       {s.enrolledProgram && (
                         <div
                           style={{
-                            fontSize: '0.75rem',
+                            fontSize: '0.8125rem',
                             color: 'var(--color-on-surface-variant)',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -221,7 +221,7 @@ export default function AdminPipelineKanban({ initialByStage }: { initialByStage
                         </div>
                       )}
                       {stage === 'placed' && s.placementRecord && (
-                        <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.12rem' }}>
+                        <div style={{ fontSize: '0.8125rem', color: '#16a34a', marginTop: '0.12rem' }}>
                           {s.placementRecord.employerName}
                         </div>
                       )}
@@ -234,7 +234,7 @@ export default function AdminPipelineKanban({ initialByStage }: { initialByStage
                       style={{
                         marginTop: '0.35rem',
                         width: '100%',
-                        fontSize: '0.7rem',
+                        fontSize: '0.8125rem',
                         padding: '0.15rem 0.3rem',
                         border: '1px solid var(--outline-variant)',
                         borderRadius: 'var(--radius-sm, 0.35rem)',

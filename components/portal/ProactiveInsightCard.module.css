@@ -63,7 +63,7 @@
 }
 
 .eyebrow {
-  font-size: 0.625rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -88,7 +88,7 @@
   align-items: center;
   gap: 0.3rem;
   margin-top: 0.3rem;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: color-mix(in srgb, var(--tone, var(--color-accent, #8c0f37)) 78%, var(--color-on-surface, #1c1b1b));
 }

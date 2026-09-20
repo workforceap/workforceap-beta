@@ -183,18 +183,18 @@ export default async function AdminCertificationsAnalyticsPage({
                       <div className="portal-progress-bar portal-progress-bar--thin" style={{ marginBottom: '0.375rem' }}>
                         <div className="portal-progress-bar__fill" style={{ width: `${pct}%` }} />
                       </div>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
                         {r.membersWithCert} of {r.memberCount} members earned certs ({pct}%)
                       </p>
                     </div>
                     <div style={{ display: 'flex', gap: '1.5rem', flexShrink: 0, textAlign: 'center' }}>
                       <div>
                         <p style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>{r.totalCerts}</p>
-                        <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.2rem 0 0' }}>Certs</p>
+                        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.2rem 0 0' }}>Certs</p>
                       </div>
                       <div>
                         <p style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1 }}>{r.memberCount}</p>
-                        <p style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.2rem 0 0' }}>Members</p>
+                        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.2rem 0 0' }}>Members</p>
                       </div>
                     </div>
                   </div>
@@ -216,14 +216,14 @@ export default async function AdminCertificationsAnalyticsPage({
               const initials = (c.user.fullName ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
               return (
                 <div key={c.id} className="portal-activity-item">
-                  <div style={{ width: '2rem', height: '2rem', borderRadius: '9999px', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0 }}>
+                  <div style={{ width: '2rem', height: '2rem', borderRadius: '9999px', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0 }}>
                     {initials}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>{c.user.fullName}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--color-accent)', margin: '0.1rem 0 0', fontWeight: 600 }}>{c.certName}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0.1rem 0 0', fontWeight: 600 }}>{c.certName}</p>
                   </div>
-                  <span style={{ fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
                     {c.earnedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>

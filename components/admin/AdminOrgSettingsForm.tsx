@@ -110,7 +110,7 @@ export default function AdminOrgSettingsForm({
           className="wa-kit-focus"
           style={{ display: 'block', marginTop: 4, fontSize: 13, color: 'var(--wa-text)' }}
         />
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 6 }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
           {logoUploading ? 'Uploading…' : 'Stored in Supabase bucket organization-branding and resolved at render time.'}
         </p>
       </div>
@@ -157,7 +157,7 @@ export default function AdminOrgSettingsForm({
             }}
           />
         </div>
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 6 }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
           Drives accent buttons and links site-wide via CSS variables.
         </p>
       </div>
@@ -171,7 +171,7 @@ export default function AdminOrgSettingsForm({
           onChange={(e) => setOverviewVideoUrl(e.target.value)}
           placeholder="https://..."
         />
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 6 }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
           Shown on the public &ldquo;How it works&rdquo; page for the Overview step. Leave blank to use text only.
         </p>
       </div>

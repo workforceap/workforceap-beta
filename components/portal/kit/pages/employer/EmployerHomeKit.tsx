@@ -179,7 +179,7 @@ const candidateColumns: Column<EmployerCandidateRow>[] = [
           <Avatar initials={kitInitials(row.name)} size={32} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{row.name}</div>
-            <div style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 600, marginTop: 1 }}>{row.role}</div>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600, marginTop: 1 }}>{row.role}</div>
           </div>
         </div>
       );
@@ -230,7 +230,7 @@ function candidateCard(row: EmployerCandidateRow) {
           <Avatar initials={kitInitials(row.name)} size={32} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--wa-text)' }}>{row.name}</div>
-            <div style={{ marginTop: 2, fontSize: 12, color: 'var(--wa-muted)' }}>{row.role}</div>
+            <div style={{ marginTop: 2, fontSize: 13, color: 'var(--wa-muted)' }}>{row.role}</div>
           </div>
         </div>
         <StatusTag tone={statusTagTone(row.status)}>{row.statusLabel ?? titleCase(row.status)}</StatusTag>
@@ -238,11 +238,11 @@ function candidateCard(row: EmployerCandidateRow) {
       <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 10 }}>
         <StageTrack index={stage.index} total={stage.total} color={stage.color} />
         {typeof row.fitScore === 'number' ? (
-          <span style={{ fontSize: 11, fontWeight: 800, color: fitScoreColor(clampPct(row.fitScore)), fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: fitScoreColor(clampPct(row.fitScore)), fontVariantNumeric: 'tabular-nums' }}>
             {clampPct(row.fitScore)}% fit
           </span>
         ) : row.appliedLabel ? (
-          <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 600 }}>{row.appliedLabel}</span>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600 }}>{row.appliedLabel}</span>
         ) : null}
       </div>
     </Card>
@@ -322,7 +322,7 @@ export function EmployerHomeKit({
               <a
                 href={pipelineHref}
                 className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={{ fontSize: 11, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
+                style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
               >
                 View all{candidates.length > 0 ? ` ${candidates.length}` : ''} &rarr;
               </a>
@@ -343,7 +343,7 @@ export function EmployerHomeKit({
             <Card>
               <CardHead title="Open roles" linkLabel="Manage" linkHref={jobsHref} />
               {openRolesList.length === 0 ? (
-                <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: 0 }}>
+                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
                   Post a role to start building your pipeline.
                 </p>
               ) : (

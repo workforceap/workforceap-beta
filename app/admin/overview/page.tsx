@@ -470,14 +470,14 @@ export default async function AdminOverviewPage() {
                     <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--wa-text)', margin: 0 }}>
                       {u.fullName ?? 'Unknown'}
                     </p>
-                    <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '2px 0 0' }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>
                       {u.email}
                     </p>
-                    <p style={{ fontSize: 12, color: 'var(--wa-text)', margin: '7px 0 0' }}>
+                    <p style={{ fontSize: 13, color: 'var(--wa-text)', margin: '7px 0 0' }}>
                       {track}
                     </p>
                   </div>
-                  <span style={{ fontSize: 12, color: 'var(--wa-muted)', whiteSpace: 'nowrap', paddingTop: 2 }}>
+                  <span style={{ fontSize: 13, color: 'var(--wa-muted)', whiteSpace: 'nowrap', paddingTop: 2 }}>
                     {timeAgo(u.createdAt)}
                   </span>
                 </div>
@@ -578,7 +578,7 @@ export default async function AdminOverviewPage() {
                       <Link href={`/admin/members/${placement.user.id}`} style={{ fontWeight: 700, color: 'var(--wa-text)', textDecoration: 'none' }}>
                         {placement.user.fullName}
                       </Link>
-                      <div style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 3 }}>
+                      <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 3 }}>
                         {placement.employerName} · {placement.jobTitle}
                         {placement.user.enrolledProgram ? ` · ${programDisplayTitle(placement.user.enrolledProgram)}` : ''}
                       </div>
@@ -631,7 +631,7 @@ export default async function AdminOverviewPage() {
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)' }}>{item.label}</div>
-                    <div style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 2 }}>{item.desc}</div>
+                    <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{item.desc}</div>
                   </div>
                 </Link>
               ))}
@@ -699,7 +699,7 @@ export default async function AdminOverviewPage() {
             }}
           >
             <Download size={18} aria-hidden style={{ color: 'var(--wa-accent)' }} />
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--wa-text)', letterSpacing: '-0.01em' }}>Export funder CSV</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', letterSpacing: '-0.01em' }}>Export funder CSV</span>
           </a>
           {(
             [
@@ -716,7 +716,7 @@ export default async function AdminOverviewPage() {
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
             >
               <action.icon size={18} aria-hidden style={{ marginBottom: 8, color: 'var(--wa-accent)' }} />
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--wa-text)', letterSpacing: '-0.01em' }}>{action.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', letterSpacing: '-0.01em' }}>{action.label}</span>
             </Link>
           ))}
         </div>

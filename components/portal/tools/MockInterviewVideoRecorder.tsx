@@ -316,7 +316,7 @@ export default function MockInterviewVideoRecorder({
               color: '#fff',
               padding: '4px 10px',
               borderRadius: 999,
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
             }}
           >

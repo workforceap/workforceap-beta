@@ -182,7 +182,7 @@ export default function ProgramsDecisionJourneyNav({
 
         .pdj-nav__hint {
           margin: 0.5rem 0.5rem 0;
-          font-size: 0.8rem;
+          font-size: 0.8125rem;
           color: var(--color-on-surface-variant);
           line-height: 1.4;
           text-align: center;
@@ -213,7 +213,7 @@ export default function ProgramsDecisionJourneyNav({
           }
 
           .pdj-nav__label {
-            font-size: 0.65rem;
+            font-size: 0.8125rem;
             letter-spacing: 0;
           }
 
@@ -231,7 +231,7 @@ export default function ProgramsDecisionJourneyNav({
             min-width: auto;
             flex-direction: column;
             gap: 0.2rem;
-            font-size: 0.65rem;
+            font-size: 0.8125rem;
           }
 
           .pdj-nav__icon {

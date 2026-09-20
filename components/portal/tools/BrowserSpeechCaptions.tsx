@@ -118,7 +118,7 @@ export default function BrowserSpeechCaptions({ active }: Props) {
         minHeight: 72,
       }}
     >
-      <div style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
+      <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', marginBottom: '0.35rem' }}>
         Browser live captions (Web Speech API)
       </div>
       {err && (

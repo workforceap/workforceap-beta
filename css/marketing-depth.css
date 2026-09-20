@@ -20,9 +20,9 @@
 .mdx-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:var(--wap-hero-photo-url, url('/images/hero-people.webp')) center/cover;opacity:.12;mix-blend-mode:luminosity}
 .mdx-stage > *{position:relative;z-index:1}
-.mdx-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:800;font-size:12px;
+.mdx-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:800;font-size:13px;
   letter-spacing:.02em;padding:8px 16px;border-radius:999px;background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff}
-.mdx-pill::before{content:"★";font-size:11px;opacity:.95}
+.mdx-pill::before{content:"★";font-size:13px;opacity:.95}
 .mdx-stage h1,.mdx-stage h2{font-family:'Plus Jakarta Sans','Inter',system-ui,sans-serif;font-weight:800;
   letter-spacing:-.02em;line-height:1.08;font-size:clamp(30px,4.4vw,52px);margin:16px 0 12px}
 .mdx-stage p{color:rgba(255,255,255,.9);font-size:18px;max-width:40em}

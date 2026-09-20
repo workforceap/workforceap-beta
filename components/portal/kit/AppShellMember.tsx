@@ -103,7 +103,7 @@ export function AppShellMember({ brand, topRight, tabs, activeId, hrefs = {}, ch
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, minWidth: 44, minHeight: 44, cursor: 'pointer', color: on ? 'var(--wa-accent)' : 'var(--wa-muted)', transition: 'color 0.2s' }}
             >
               <span style={{ fontSize: 16, display: 'flex' }}>{t.icon}</span>
-              <span style={{ fontSize: 10, fontWeight: on ? 700 : 600 }}>{t.label}</span>
+              <span style={{ fontSize: 13, fontWeight: on ? 700 : 600 }}>{t.label}</span>
             </a>
           );
         })}

@@ -468,7 +468,7 @@
 | [components/portal/WorkforceApModuleLessons.tsx](../../../components/portal/WorkforceApModuleLessons.tsx) | 58 | components | WorkforceApLesson:3, lessonCtaLabel:11, default:15 |
 | [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 805 | components | default:92 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
-| [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1058 | member-counselor | AtRiskFactor:51, AtRiskMember:57, AtRiskDashboardViewProps:187, AtRiskDashboardView:202, default:730 |
+| [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1062 | member-counselor | AtRiskFactor:51, AtRiskMember:57, AtRiskDashboardViewProps:187, AtRiskDashboardView:202, default:734 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
 | [components/portal/counselor/AtRiskMemberList.test.tsx](../../../components/portal/counselor/AtRiskMemberList.test.tsx) | 24 | member-counselor |  |
 | [components/portal/counselor/AtRiskMemberList.tsx](../../../components/portal/counselor/AtRiskMemberList.tsx) | 113 | member-counselor | default:40 |
@@ -498,7 +498,7 @@
 | [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 186 | components | SparkStat:21, CardHead:35, DeltaChip:49, StatSparkTile:65, StageTrack:135, SegmentedProgress:158 |
 | [components/portal/kit/DataTable.tsx](../../../components/portal/kit/DataTable.tsx) | 132 | components | Column:6, DataTable:40 |
 | [components/portal/kit/DesignSurface.tsx](../../../components/portal/kit/DesignSurface.tsx) | 40 | components | SurfaceMode:17, useSurface:21, DesignSurface:32 |
-| [components/portal/kit/FeatureTile.tsx](../../../components/portal/kit/FeatureTile.tsx) | 55 | components | FeatureTile:22 |
+| [components/portal/kit/FeatureTile.tsx](../../../components/portal/kit/FeatureTile.tsx) | 70 | components | FeatureTile:28 |
 | [components/portal/kit/FormField.tsx](../../../components/portal/kit/FormField.tsx) | 79 | components | FormField:27, Toggle:62 |
 | [components/portal/kit/JobListingRow.tsx](../../../components/portal/kit/JobListingRow.tsx) | 170 | components | JobListingRow:25, JobListingRowSkeleton:125 |
 | [components/portal/kit/Kanban.tsx](../../../components/portal/kit/Kanban.tsx) | 57 | components | KanbanCardData:9, KanbanColumnData:15, KanbanBoard:26, KanbanColumnHeader:55 |
@@ -543,7 +543,7 @@
 | [components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx](../../../components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx) | 195 | components | FunderExport:23, BoardOutcomesKitProps:32, BoardOutcomesKit:91 |
 | [components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx](../../../components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx) | 193 | components | CareerPathCard:39, CareerMappingsKitProps:56, CareerMappingsKit:142 |
 | [components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx](../../../components/portal/kit/pages/admin-subviews/CertificationsQueueKit.tsx) | 344 | components | CertSubmission:26, CertificationsQueueKitProps:38, CertificationsQueueKit:78 |
-| [components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx) | 301 | components | CounselorRow:36, CounselorsRosterKitProps:54, CounselorsRosterKit:76 |
+| [components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx](../../../components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx) | 305 | components | CounselorRow:36, CounselorsRosterKitProps:54, CounselorsRosterKit:76 |
 | [components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx](../../../components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx) | 378 | learning-coursera | SyncHealth:38, UnmatchedLearnerRow:40, CourseraSyncKitProps:53, CourseraSyncKit:137 |
 | [components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx](../../../components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx) | 208 | components | CronDisplayStatus:32, CronJobRow:34, CronsMonitorKitProps:47, CronsMonitorKit:67 |
 | [components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx](../../../components/portal/kit/pages/admin-subviews/DataRetentionKit.tsx) | 361 | components | StorageRow:23, PolicyRow:30, RunRow:38, DataRetentionKitProps:48, DataRetentionKit:73 |

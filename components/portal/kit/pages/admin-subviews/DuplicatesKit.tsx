@@ -154,7 +154,7 @@ export function DuplicatesKit({ rows = DEFAULT_ROWS, groupCount }: DuplicatesKit
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',

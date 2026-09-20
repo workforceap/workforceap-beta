@@ -71,7 +71,7 @@ export default async function ToolHistoryPanel({
         <Link
           href={`/dashboard/ai-tools/history?tool=${historyHrefTool}`}
           style={{
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             color: 'var(--color-accent)',
             textDecoration: 'none',
             fontWeight: 600,

@@ -140,7 +140,7 @@ export default function EmployerScreeningPacksAdmin({
                   <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                     ({p.programSlug}) · {p.employerLabel}
                   </span>
-                  <div style={{ fontSize: '0.75rem', color: p.isActive ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: p.isActive ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)' }}>
                     {p.isActive ? 'Active' : 'Inactive'}
                   </div>
                 </div>

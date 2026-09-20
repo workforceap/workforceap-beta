@@ -97,7 +97,7 @@ export default function SeedCanonicalMappingsFromB4BButton() {
         {running ? 'Pulling from B4B…' : 'Seed mappings from live B4B'}
       </button>
       {summary ? (
-        <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
           Scanned {summary.contentsScanned} B4B contents (
           {summary.coursesScanned} courses) — matched{' '}
           <strong>{summary.coursesMatched}</strong> to catalog,{' '}
@@ -147,7 +147,7 @@ export default function SeedCanonicalMappingsFromB4BButton() {
         </div>
       ) : null}
       {error ? (
-        <div style={{ fontSize: '0.8rem', color: 'var(--color-error, #dc2626)' }}>Error: {error}</div>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--color-error, #dc2626)' }}>Error: {error}</div>
       ) : null}
       <ConfirmDialog
         open={confirmOpen}

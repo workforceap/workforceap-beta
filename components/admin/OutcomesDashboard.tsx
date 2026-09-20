@@ -115,7 +115,7 @@ function StatCard({
       </span>
       <span
         style={{
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -125,10 +125,10 @@ function StatCard({
         {label}
       </span>
       {hint ? (
-        <span style={{ fontSize: '0.78rem', color: MUTED, lineHeight: 1.35 }}>{hint}</span>
+        <span style={{ fontSize: '0.8125rem', color: MUTED, lineHeight: 1.35 }}>{hint}</span>
       ) : null}
       {suppress ? (
-        <span style={{ fontSize: '0.72rem', color: DANGER, fontWeight: 600 }}>
+        <span style={{ fontSize: '0.8125rem', color: DANGER, fontWeight: 600 }}>
           N&lt;10 — suppressed
         </span>
       ) : null}
@@ -330,12 +330,12 @@ export default function OutcomesDashboard() {
           <>
             {/* Period badge */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.8rem', color: MUTED }}>
+              <span style={{ fontSize: '0.8125rem', color: MUTED }}>
                 Period: <strong>{data.outcomes.period.label}</strong>
                 {' · '}
                 Generated: {new Date(data.generatedAt).toLocaleString('en-US')}
               </span>
-              <span style={{ fontSize: '0.75rem', color: MUTED, fontStyle: 'italic' }}>
+              <span style={{ fontSize: '0.8125rem', color: MUTED, fontStyle: 'italic' }}>
                 N&lt;{threshold} rates suppressed per methodology
               </span>
             </div>
@@ -430,7 +430,7 @@ export default function OutcomesDashboard() {
                           </span>
                         </div>
                         <Bar pct={(p.enrolled / programMax) * 100} color={rateSuppressed ? WARNING : ACCENT} />
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', fontSize: '0.78rem', color: MUTED }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.35rem', fontSize: '0.8125rem', color: MUTED }}>
                           <span>{fmtNumber(p.enrolled)} enrolled</span>
                           <span>{fmtNumber(p.certified)} completed training</span>
                           <span>{fmtNumber(p.placed)} placed</span>
@@ -510,7 +510,7 @@ export default function OutcomesDashboard() {
                     emptyState={<p style={{ margin: 0, fontSize: '0.875rem', color: MUTED }}>No placements in this period.</p>}
                   />
                   {placements.length > 50 && (
-                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.78rem', color: MUTED }}>
+                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', color: MUTED }}>
                       Showing first 50 of {placements.length} placements. Use CSV export for full list.
                     </p>
                   )}

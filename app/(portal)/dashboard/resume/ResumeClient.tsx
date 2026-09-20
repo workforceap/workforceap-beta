@@ -332,7 +332,7 @@ export default function ResumeClient({
           <p
             style={{
               margin: 0,
-              fontSize: "0.8rem",
+              fontSize: "0.8125rem",
               color: "var(--wa-muted)",
             }}
           >
@@ -455,7 +455,7 @@ export default function ResumeClient({
                 <span
                   style={{
                     color: "var(--wa-muted)",
-                    fontSize: "0.8rem",
+                    fontSize: "0.8125rem",
                   }}
                 >
                   Loading…
@@ -464,7 +464,7 @@ export default function ResumeClient({
                 <span
                   style={{
                     color: "var(--wa-muted)",
-                    fontSize: "0.8rem",
+                    fontSize: "0.8125rem",
                   }}
                 >
                   File unavailable —{" "}

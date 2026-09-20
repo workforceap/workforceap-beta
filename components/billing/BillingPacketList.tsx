@@ -75,7 +75,7 @@ export default function BillingPacketList({
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'baseline' }}>
               <div>
                 <strong style={{ fontSize: '1rem' }}>Invoice {p.packetNumber}</strong>
-                <span style={{ marginLeft: 8, fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.status === 'sent' ? 'var(--color-green, #15803d)' : 'var(--color-accent, #ad2c4d)' }}>
+                <span style={{ marginLeft: 8, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: p.status === 'sent' ? 'var(--color-green, #15803d)' : 'var(--color-accent, #ad2c4d)' }}>
                   {p.status === 'sent' ? 'Sent' : 'Signed'}
                 </span>
               </div>

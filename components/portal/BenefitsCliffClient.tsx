@@ -192,7 +192,7 @@ export default function BenefitsCliffClient() {
             className="wa-kit-focus"
             style={inputStyle}
           />
-          <p style={{ margin: '0.3rem 0 0', fontSize: '0.75rem', color: 'var(--wa-muted)' }}>
+          <p style={{ margin: '0.3rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
             {t('currentEarningsHint')}
           </p>
         </div>
@@ -289,7 +289,7 @@ export default function BenefitsCliffClient() {
           {t('computeCta')}
         </button>
         {receives.length === 0 && (
-          <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--wa-accent)', fontWeight: 600 }}>{t('pickOneProgram')}</p>
+          <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-accent)', fontWeight: 600 }}>{t('pickOneProgram')}</p>
         )}
       </form>
 
@@ -344,7 +344,7 @@ export default function BenefitsCliffClient() {
                   <div style={{ minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-text)' }}>{label}</p>
                     {p.losesEligibility && (
-                      <p style={{ margin: '0.15rem 0 0', fontSize: '0.75rem', fontWeight: 700, color: 'var(--wa-accent)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--wa-accent)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <AlertTriangle size={13} aria-hidden />
                         {p.kind === 'coverage' ? t('mayLoseCoverage') : t('mayLoseBenefit')}
                       </p>
@@ -402,7 +402,7 @@ export default function BenefitsCliffClient() {
               {t('counselorCta')}
             </Link>
           </div>
-          <p style={{ margin: '0.75rem 0 0', fontSize: '0.78rem', lineHeight: 1.5, color: 'var(--wa-muted)' }}>
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.8125rem', lineHeight: 1.5, color: 'var(--wa-muted)' }}>
             {t('counselorNote')}
           </p>
         </div>
@@ -415,7 +415,7 @@ export default function BenefitsCliffClient() {
         </summary>
         <ul style={{ margin: '0.6rem 0 0', paddingLeft: '1.1rem', display: 'grid', gap: '0.35rem' }}>
           {ALL_CLIFF_SOURCES.map((s) => (
-            <li key={s.url + s.program} style={{ fontSize: '0.78rem', lineHeight: 1.45, color: 'var(--wa-muted)' }}>
+            <li key={s.url + s.program} style={{ fontSize: '0.8125rem', lineHeight: 1.45, color: 'var(--wa-muted)' }}>
               <a href={s.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
                 {s.program}
               </a>{' '}

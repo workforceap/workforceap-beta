@@ -152,7 +152,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div>
-            <p style={{ margin: 0, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--color-accent)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, color: 'var(--color-accent)' }}>
               Today&apos;s walk-in plan
             </p>
             <h2 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.35rem, 4vw, 2rem)', lineHeight: 1.1 }}>
@@ -206,7 +206,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                 borderRadius: '0.6rem',
               }}
             >
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer' }}>
                 <input type="checkbox" checked={allSelected} onChange={toggleAll} />
                 {activeSelected.size > 0 ? `${activeSelected.size} selected` : 'Select this page'}
               </label>
@@ -227,7 +227,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
               ) : null}
             </div>
           ) : null}
-          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#166534' }}>{bulkResult}</p> : null}
+          {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: '#166534' }}>{bulkResult}</p> : null}
           {data.applicationsPending.map((row) => (
             <ApplicationCard
               key={row.applicationId}
@@ -286,7 +286,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
                 />
               </label>
             ) : null}
-            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8rem', color: '#b91c1c' }}>{bulkError}</p> : null}
+            {bulkError ? <p role="alert" style={{ margin: 0, fontSize: '0.8125rem', color: '#b91c1c' }}>{bulkError}</p> : null}
             {outcomeUncertain ? (
               <button type="button" className="btn btn-outline btn-sm" onClick={() => {
                 setBulkAction(null);
@@ -321,7 +321,7 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
 function Metric({ label, value, accent }: { label: string; value: number; accent?: boolean }) {
   return (
     <div style={{ borderRadius: '0.75rem', background: 'var(--wa-surface)', border: '1px solid var(--outline-variant)', padding: '0.75rem' }}>
-      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>{label}</p>
+      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>{label}</p>
       <p style={{ margin: '0.1rem 0 0', fontSize: '1.45rem', fontWeight: 800, color: accent ? 'var(--color-accent)' : 'var(--color-on-surface)' }}>
         {value}
       </p>
@@ -504,7 +504,7 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
         ))}
       </div>
       {denialOpen ? (
-        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', fontSize: '0.8rem' }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', fontSize: '0.8125rem' }}>
           <span style={{ fontWeight: 600 }}>Reason (required)</span>
           <textarea
             value={denialReason}
@@ -517,8 +517,8 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
           />
         </label>
       ) : null}
-      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: '#166534' }}>{done}</p> : null}
-      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: '#b91c1c' }}>{error}</p> : null}
+      {done ? <p role="status" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#166534' }}>{done}</p> : null}
+      {error ? <p role="alert" style={{ margin: '0.4rem 0 0', fontSize: '0.8125rem', color: '#b91c1c' }}>{error}</p> : null}
     </div>
   );
 }
@@ -532,7 +532,7 @@ function ActionCard({ name, meta, detail, href, action, urgent }: { name: string
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.82rem', color: urgent ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', fontWeight: urgent ? 700 : 500 }}>{meta}</p>
           {detail ? <p style={{ margin: '0.25rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail}</p> : null}
         </div>
-        <span style={{ flexShrink: 0, color: 'var(--color-accent)', fontSize: '0.8rem', fontWeight: 800 }}>{action} →</span>
+        <span style={{ flexShrink: 0, color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 800 }}>{action} →</span>
       </div>
     </Link>
   );

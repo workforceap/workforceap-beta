@@ -150,7 +150,7 @@ export function CertificationsQueueKit({
           <div>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 13,
                 fontWeight: 700,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
@@ -176,7 +176,7 @@ export function CertificationsQueueKit({
         {!actionsEnabled && (
           <p
             style={{
-              fontSize: 12,
+              fontSize: 13,
               opacity: 0.75,
               margin: 0,
               display: 'inline-flex',
@@ -223,7 +223,7 @@ export function CertificationsQueueKit({
 
                 <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{sub.credential}</div>
-                  <div style={{ fontSize: 11, color: 'var(--wa-muted)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
                     {sub.member} · {sub.meta}
                   </div>
                   {/* Mobile-only proof link: the desktop one is hidden below md, so
@@ -239,7 +239,7 @@ export function CertificationsQueueKit({
                         alignItems: 'center',
                         gap: 4,
                         marginTop: 6,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: 700,
                         color: 'var(--wa-info)',
                         textDecoration: 'none',
@@ -254,7 +254,7 @@ export function CertificationsQueueKit({
                         alignItems: 'center',
                         gap: 4,
                         marginTop: 6,
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: 700,
                         color: 'var(--wa-muted)',
                       }}
@@ -274,7 +274,7 @@ export function CertificationsQueueKit({
                     style={{
                       alignItems: 'center',
                       gap: 4,
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: 700,
                       color: 'var(--wa-info)',
                       textDecoration: 'none',
@@ -289,7 +289,7 @@ export function CertificationsQueueKit({
                     style={{
                       alignItems: 'center',
                       gap: 4,
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: 700,
                       color: 'var(--wa-muted)',
                       flexShrink: 0,
@@ -327,7 +327,7 @@ export function CertificationsQueueKit({
                   role="alert"
                   style={{
                     margin: 0,
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 600,
                     color: 'var(--wa-danger)',
                   }}

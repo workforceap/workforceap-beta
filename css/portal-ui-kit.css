@@ -67,7 +67,7 @@
   line-height: 1;
 }
 .metric-card .metric-label {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -93,7 +93,9 @@
 }
 .portal-input:focus {
   border-color: color-mix(in srgb, var(--color-accent) 55%, var(--outline-variant));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 textarea.portal-input,
 .portal-textarea.portal-input {
@@ -155,7 +157,7 @@ textarea.portal-input,
   color: var(--color-on-surface);
 }
 .portal-inbox-row__meta {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant);
 }
 .portal-inbox-row__preview {

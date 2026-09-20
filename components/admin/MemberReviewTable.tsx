@@ -135,7 +135,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                     display: 'inline-block',
                     padding: '0.25rem 0.5rem',
                     borderRadius: 'var(--radius-sm)',
-                    fontSize: '.8rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     background:
                       app.status === 'APPROVED'
@@ -186,7 +186,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                         className="btn"
                         style={{
                           padding: '0.35rem 0.6rem',
-                          fontSize: '.8rem',
+                          fontSize: '0.8125rem',
                           background:
                             opt.value === 'APPROVED'
                               ? 'var(--wa-success)'
@@ -254,7 +254,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                   className="btn"
                   style={{
                     padding: '0.35rem 0.6rem',
-                    fontSize: '.8rem',
+                    fontSize: '0.8125rem',
                     background:
                       opt.value === 'APPROVED'
                         ? 'var(--wa-success)'

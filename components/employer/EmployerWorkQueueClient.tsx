@@ -63,7 +63,7 @@ function pillButton({
     padding: '8px 14px',
     minHeight: 36,
     fontWeight: 700,
-    fontSize: 12,
+    fontSize: 13,
     borderRadius: 999,
     textDecoration: 'none',
     border: '1px solid transparent',
@@ -97,7 +97,7 @@ function pillLink({
     padding: '8px 14px',
     minHeight: 36,
     fontWeight: 700,
-    fontSize: 12,
+    fontSize: 13,
     borderRadius: 999,
     textDecoration: 'none',
     border: '1px solid transparent',
@@ -228,7 +228,7 @@ export default function EmployerWorkQueueClient({
               padding: '8px 14px',
               minHeight: 36,
               borderRadius: 999,
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
               border: '1px solid var(--wa-border)',
@@ -246,7 +246,7 @@ export default function EmployerWorkQueueClient({
         <section key={sec.id} id={`wq-${sec.id}`} className="wa-space-y-3">
           <header>
             <h2 style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.01em', margin: 0 }}>{sec.title}</h2>
-            <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{sec.subtitle}</p>
+            <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{sec.subtitle}</p>
           </header>
 
           <div className="wa-space-y-2">

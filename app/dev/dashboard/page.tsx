@@ -37,7 +37,7 @@ const JOB_COLS: Column<Job>[] = [
 function jobCard(j: Job) {
   return (
     <div className="wa-kit-card wa-kit-card--sm" style={{ marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-      <div><div style={{ fontWeight: 700, fontSize: 13 }}>{j.role}</div><div style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{j.company}</div></div>
+      <div><div style={{ fontWeight: 700, fontSize: 13 }}>{j.role}</div><div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{j.company}</div></div>
       <StatusTag tone={j.tone}>{j.stage}</StatusTag>
     </div>
   );
@@ -70,7 +70,7 @@ export default function DevDashboardPage() {
         <div className="wa-kit-card wa-kit-card--gradient-crimson" style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 20 }}>
           <ProgressRing pct={78} size={112} onDark />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.75 }}>12-day streak 🔥</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.75 }}>12-day streak 🔥</div>
             <h2 className="h-font" style={{ fontSize: 26, margin: '4px 0 2px' }}>Mike</h2>
             <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>You're 78% to your AWS cert — one module today hits your weekly goal.</p>
             <button style={{ marginTop: 12, padding: '9px 18px', background: 'var(--wa-hero-action-bg)', color: 'var(--wa-hero-action-text)', fontWeight: 700, fontSize: 13, borderRadius: 999, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -96,9 +96,9 @@ export default function DevDashboardPage() {
             <ArrowRight size={20} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--wa-accent)' }}>Do this next</div>
+            <div style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--wa-accent)' }}>Do this next</div>
             <div style={{ fontWeight: 700, fontSize: 15 }}>Shared Responsibility Model</div>
-            <div style={{ fontSize: 12, color: 'var(--wa-muted)' }}>~25 min · due Thursday</div>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>~25 min · due Thursday</div>
           </div>
         </div>
 
@@ -110,9 +110,9 @@ export default function DevDashboardPage() {
             <div>
               <div style={{ width: 44, height: 44, borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} /></div>
               <h3 style={{ fontWeight: 800, fontSize: 17, marginTop: 14, letterSpacing: '-.02em' }}>Learning Hub</h3>
-              <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 2 }}>Your connected Coursera courses.</p>
+              <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>Your connected Coursera courses.</p>
             </div>
-            <a href="/dashboard/learning" style={{ fontSize: 12, fontWeight: 700, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Go to courses <ArrowRight size={13} /></a>
+            <a href="/dashboard/learning" style={{ fontSize: 13, fontWeight: 700, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Go to courses <ArrowRight size={13} /></a>
           </div>
         </div>
 

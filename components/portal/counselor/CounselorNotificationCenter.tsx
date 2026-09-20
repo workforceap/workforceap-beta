@@ -237,7 +237,7 @@ export default function CounselorNotificationCenter({ members }: { members: Memb
           <button
             onClick={() => void markAllRead()}
             className="wa-kit-focus"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', borderRadius: 'var(--wa-radius-sm)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', borderRadius: 'var(--wa-radius-sm)' }}
           >
             <CheckCheck size={14} aria-hidden />
             Mark all read
@@ -295,19 +295,19 @@ export default function CounselorNotificationCenter({ members }: { members: Memb
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="wa-flex wa-items-start wa-justify-between" style={{ gap: 8 }}>
                     <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--wa-text)', margin: 0, lineHeight: 1.3 }}>{n.title}</p>
-                    <span style={{ fontSize: 11, color: 'var(--wa-muted)', flexShrink: 0, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ fontSize: 13, color: 'var(--wa-muted)', flexShrink: 0, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                       {formatTimeAgo(n.createdAt)}
                     </span>
                   </div>
                   <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0', lineHeight: 1.4 }}>{n.body}</p>
                   <div className="wa-flex wa-items-center wa-gap-3" style={{ marginTop: 8, flexWrap: 'wrap' }}>
                     <StatusTag tone={tone}>{TYPE_LABEL[n.type] ?? n.type}</StatusTag>
-                    <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>{formatDate(n.createdAt)}</span>
+                    <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>{formatDate(n.createdAt)}</span>
                     {!n.readAt && (
                       <button
                         onClick={() => void markRead(n.id)}
                         className="wa-kit-focus"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                       >
                         <Check size={12} aria-hidden />
                         Mark read
@@ -316,7 +316,7 @@ export default function CounselorNotificationCenter({ members }: { members: Memb
                     <button
                       onClick={() => void dismiss(n.id)}
                       className="wa-kit-focus"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--wa-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--wa-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                     >
                       <DismissIcon size={12} aria-hidden />
                       Dismiss
