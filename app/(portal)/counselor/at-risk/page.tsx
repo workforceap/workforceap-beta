@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { getUser } from '@/lib/auth/server';
+import { getUser, withAuthGuc } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { buildPageMetadataAsync } from '@/app/seo';
 import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
+import { loadCounselorAtRiskPage } from '@/lib/counselor/atRiskPageData';
 import { getTranslations } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,6 +29,11 @@ export default async function CounselorAtRiskPage() {
 
   const t = await getTranslations('counselor');
 
+  // Server-render the saved cases (same scope and guards as the at-risk API
+  // route, under the actor's GUC) so the page paints with data or with a
+  // plain-language failure, never a spinner that waits on a client fetch.
+  const initial = await withAuthGuc(() => loadCounselorAtRiskPage(user.id));
+
   return (
     <PortalPageFrame>
       <PageHeader
@@ -39,7 +45,10 @@ export default async function CounselorAtRiskPage() {
         ]}
       />
       <section style={{ padding: '0 clamp(1rem, 4vw, 1.5rem) 2rem' }}>
-        <AtRiskDashboard />
+        <AtRiskDashboard
+          initialMembers={initial.status === 'ok' ? initial.members : []}
+          initialError={initial.status === 'failed' ? initial.message : null}
+        />
       </section>
     </PortalPageFrame>
   );

@@ -403,7 +403,7 @@
 | [components/portal/WorkforceApModuleLessons.tsx](../../../components/portal/WorkforceApModuleLessons.tsx) | 58 | components | WorkforceApLesson:3, lessonCtaLabel:11, default:15 |
 | [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 809 | components | default:93 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
-| [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1062 | member-counselor | AtRiskFactor:51, AtRiskMember:57, AtRiskDashboardViewProps:187, AtRiskDashboardView:202, default:734 |
+| [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1119 | member-counselor | AtRiskFactor:57, AtRiskMember:57, AtRiskDashboardViewProps:177, AtRiskDashboardView:194, AtRiskDashboardProps:757, default:776 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
 | [components/portal/counselor/AtRiskMemberList.test.tsx](../../../components/portal/counselor/AtRiskMemberList.test.tsx) | 24 | member-counselor |  |
 | [components/portal/counselor/AtRiskMemberList.tsx](../../../components/portal/counselor/AtRiskMemberList.tsx) | 113 | member-counselor | default:40 |

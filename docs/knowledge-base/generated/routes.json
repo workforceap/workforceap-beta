@@ -736,17 +736,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 11,
+        "line": 12,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 20,
+        "line": 21,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 22,
+        "line": 23,
         "kind": "FunctionDeclaration",
         "localName": "CounselorAtRiskPage"
       }

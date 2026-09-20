@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "7a6f7b73f4570ca0d0af077f088b44175c670383a8f01fb9cd87a762730a9015",
+  "inputTreeSha256": "8b036f9ef1e4a77011a7cc027a3d57b4e7503c1bcd6e3d5400eb5b4a36894a1e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -4578,24 +4578,24 @@
       "path": "app/(portal)/counselor/at-risk/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 1544,
-      "lines": 46,
-      "sha256": "aa778e540ee1395c52e1f92288effa662fbf8e1896f29fc56e5365c0abe3d512",
+      "bytes": 2095,
+      "lines": 55,
+      "sha256": "840945cb40a1b2df501216bf9f22b116e77cf9434faf3c3afc2cbfc252525ca3",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 11,
+          "line": 12,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 20,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration",
           "localName": "CounselorAtRiskPage"
         }
@@ -4603,17 +4603,17 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 11,
+          "line": 12,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 20,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "CounselorAtRiskPage",
-          "line": 22,
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -62683,157 +62683,177 @@
       "path": "components/portal/counselor/AtRiskDashboard.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 39093,
-      "lines": 1062,
-      "sha256": "1900498e504cf34c10a3e0f35a4c45403d89e2781692990646605626b8f5253d",
+      "bytes": 42661,
+      "lines": 1119,
+      "sha256": "6920a9521be87677b41411628c566f412bcda6fdaf3cf76d4429341606b633d5",
       "binary": false,
       "exports": [
         {
           "name": "AtRiskFactor",
-          "line": 51,
-          "kind": "InterfaceDeclaration"
+          "line": 57,
+          "kind": "ReExport"
         },
         {
           "name": "AtRiskMember",
           "line": 57,
-          "kind": "InterfaceDeclaration"
+          "kind": "ReExport"
         },
         {
           "name": "AtRiskDashboardViewProps",
-          "line": 187,
+          "line": 177,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskDashboardView",
-          "line": 202,
+          "line": 194,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "AtRiskDashboardProps",
+          "line": 757,
+          "kind": "InterfaceDeclaration"
+        },
+        {
           "name": "default",
-          "line": 734,
+          "line": 776,
           "kind": "FunctionDeclaration",
           "localName": "AtRiskDashboard"
         }
       ],
       "declarations": [
         {
-          "name": "AtRiskFactor",
-          "line": 51,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "AtRiskMember",
-          "line": 57,
-          "kind": "InterfaceDeclaration"
-        },
-        {
           "name": "ApiResponse",
-          "line": 80,
+          "line": 59,
           "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "AT_RISK_REQUEST_TIMEOUT_MS",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
+          "name": "RISK_ALERT_REASON",
+          "line": 76,
+          "kind": "Variable"
         },
         {
           "name": "RISK_LEVEL_ORDER",
-          "line": 88,
+          "line": 78,
           "kind": "Variable"
         },
         {
           "name": "RISK_SORT_INDEX",
-          "line": 90,
+          "line": 80,
           "kind": "Variable"
         },
         {
           "name": "SortMode",
-          "line": 96,
+          "line": 86,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "activityTimestamp",
-          "line": 98,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "compareActivity",
-          "line": 103,
+          "line": 93,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RISK_CONFIG",
-          "line": 109,
+          "line": 99,
           "kind": "Variable"
         },
         {
           "name": "STATUS_LABEL",
-          "line": 120,
+          "line": 110,
           "kind": "Variable"
         },
         {
           "name": "STATUS_TONE",
-          "line": 126,
+          "line": 116,
           "kind": "Variable"
         },
         {
           "name": "SEVERITY_TOOLTIP",
-          "line": 133,
+          "line": 123,
           "kind": "Variable"
         },
         {
           "name": "STATUS_TOOLTIP",
-          "line": 139,
+          "line": 129,
           "kind": "Variable"
         },
         {
           "name": "formatDate",
-          "line": 147,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "scoreLevel",
-          "line": 152,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ScoreBadge",
-          "line": 159,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskDashboardViewProps",
-          "line": 187,
+          "line": 177,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskDashboardView",
-          "line": 202,
+          "line": 194,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AtRiskDashboardProps",
+          "line": 757,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "patchAlertStatus",
+          "line": 764,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskDashboard",
-          "line": 734,
+          "line": 776,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isTransportFailure",
+          "line": 845,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortModeButton",
-          "line": 810,
+          "line": 851,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterChip",
-          "line": 833,
+          "line": 874,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterTag",
-          "line": 888,
+          "line": 929,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FactorChips",
-          "line": 915,
+          "line": 956,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RiskRow",
-          "line": 938,
+          "line": 979,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -103432,6 +103452,105 @@
       "directive": null
     },
     {
+      "path": "lib/counselor/atRiskPageData.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 4044,
+      "lines": 92,
+      "sha256": "eb950c88c40f476f3da5aa485ec96bbf1f7c9481236e3669e36dacd55b5aa31e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AT_RISK_PAGE_LIMIT",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_THRESHOLD",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_TIMEOUT_MS",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_FAILURE",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "AtRiskPageLoad",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskPageDeps",
+          "line": 44,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "resolveAtRiskPageScope",
+          "line": 62,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadCounselorAtRiskPage",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AT_RISK_PAGE_LIMIT",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_THRESHOLD",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_TIMEOUT_MS",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "AT_RISK_PAGE_FAILURE",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "AtRiskPageLoad",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskPageDeps",
+          "line": 44,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "defaultDeps",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveAtRiskPageScope",
+          "line": 62,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadCounselorAtRiskPage",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/counselor/autoAssign.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -118663,6 +118782,100 @@
         {
           "name": "assessmentConfirmMessage",
           "line": 2,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/atRiskRow.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 3833,
+      "lines": 112,
+      "sha256": "0065b6ea03d4a4c517cd4e2c38618e5c9c83d2622ac5697318bd4d83b6789956",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AtRiskFactor",
+          "line": 12,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "AtRiskLevel",
+          "line": 19,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskAlertStatus",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskMember",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "SavedAtRiskCase",
+          "line": 46,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "normalizeAtRiskFactors",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toAtRiskMemberRow",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AtRiskFactor",
+          "line": 12,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "AtRiskLevel",
+          "line": 19,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskAlertStatus",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AtRiskMember",
+          "line": 22,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "SavedAtRiskCase",
+          "line": 46,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ALERT_STATUSES",
+          "line": 64,
+          "kind": "Variable"
+        },
+        {
+          "name": "normalizeAtRiskFactors",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isoOrNull",
+          "line": 83,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toAtRiskMemberRow",
+          "line": 90,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -159301,6 +159514,34 @@
       "directive": null
     },
     {
+      "path": "tests/components/at-risk-dashboard-states.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 8000,
+      "lines": 140,
+      "sha256": "2ffcce1388eb3b08261d40745a030cf386f12cd4cd2c6aa05df73629384cab21",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "member",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "apiRow",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "stubFetch",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/at-risk-search-label.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -162716,6 +162957,34 @@
         {
           "name": "counselorRows",
           "line": 9,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/counselor-at-risk-page-data.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6858,
+      "lines": 155,
+      "sha256": "43106bf43d0eebdcca86f0cd0668591e71e945701f4858845efa9175f5ab6b7f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "savedCase",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "deps",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "never",
+          "line": 55,
           "kind": "Variable"
         }
       ],

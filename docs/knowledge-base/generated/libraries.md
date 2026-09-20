@@ -378,6 +378,7 @@
 | [lib/counselor/ambassadorReferral.ts](../../../lib/counselor/ambassadorReferral.ts) | 88 | member-counselor | AmbassadorCandidate:18, AmbassadorMatch:25, pickAmbassadorReferralText:33, normalizePersonName:51, matchAmbassador:68 |
 | [lib/counselor/applicationReviewAccess.ts](../../../lib/counselor/applicationReviewAccess.ts) | 61 | member-counselor | resolveReviewActor:21, canReviewActorActOnMember:30, canReviewActorActOnApplication:40, COUNSELOR_WIOA_STATUS_FORBIDDEN_MESSAGE:54, canReviewActorSetWioaStatus:58 |
 | [lib/counselor/assignment.ts](../../../lib/counselor/assignment.ts) | 44 | member-counselor | assignMemberCounselor:8 |
+| [lib/counselor/atRiskPageData.ts](../../../lib/counselor/atRiskPageData.ts) | 92 | member-counselor | AT_RISK_PAGE_LIMIT:28, AT_RISK_PAGE_THRESHOLD:29, AT_RISK_PAGE_TIMEOUT_MS:31, AT_RISK_PAGE_FAILURE:33, AtRiskPageLoad:40, AtRiskPageDeps:44, resolveAtRiskPageScope:62, loadCounselorAtRiskPage:71 |
 | [lib/counselor/autoAssign.ts](../../../lib/counselor/autoAssign.ts) | 215 | member-counselor | WAP_STAFF_COUNSELOR_AFFILIATION:6, EnsureSelfServeCounselorResult:8, pickLeastLoadedWapCounselor:30, ensureSelfServeCounselorAssigned:140 |
 | [lib/counselor/autoAssign.wiring.test.ts](../../../lib/counselor/autoAssign.wiring.test.ts) | 42 | member-counselor |  |
 | [lib/counselor/bookingLink.ts](../../../lib/counselor/bookingLink.ts) | 29 | member-counselor | CounselorContactLink:1, getCounselorContactLink:18 |
@@ -647,6 +648,7 @@
 | [lib/member/applicationAiFeedback.ts](../../../lib/member/applicationAiFeedback.ts) | 51 | member-counselor | APPLICATION_FEEDBACK_TOOL_TYPES:4, RecentAiToolForFeedback:11, findRecentAiToolsForApplicationFeedback:25, formatFeedbackPromptDate:49 |
 | [lib/member/assessmentConfirmMessage.test.ts](../../../lib/member/assessmentConfirmMessage.test.ts) | 18 | member-counselor |  |
 | [lib/member/assessmentConfirmMessage.ts](../../../lib/member/assessmentConfirmMessage.ts) | 6 | member-counselor | assessmentConfirmMessage:2 |
+| [lib/member/atRiskRow.ts](../../../lib/member/atRiskRow.ts) | 112 | member-counselor | AtRiskFactor:12, AtRiskLevel:19, AtRiskAlertStatus:20, AtRiskMember:22, SavedAtRiskCase:46, normalizeAtRiskFactors:71, toAtRiskMemberRow:90 |
 | [lib/member/atRiskScoring.test.ts](../../../lib/member/atRiskScoring.test.ts) | 137 | member-counselor |  |
 | [lib/member/atRiskScoring.ts](../../../lib/member/atRiskScoring.ts) | 546 | member-counselor | AtRiskFactor:11, AtRiskScore:17, THRESHOLDS:47, getRiskLevel:54, calculateAtRiskScore:63, buildRecommendedAction:221, AtRiskTier:247, ClassifyMemberInput:249, ClassifyMemberResult:265, classifyMember:284, buildMemberClassificationInput:370, calculateAllAtRiskScores:449, persistAtRiskAlert:483, loadPersistedAtRiskScores:524 |
 | [lib/member/counselorEscalation.ts](../../../lib/member/counselorEscalation.ts) | 74 | member-counselor | CounselorEscalationInput:21, escalateToCounselor:35 |
