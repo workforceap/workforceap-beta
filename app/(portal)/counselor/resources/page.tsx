@@ -33,7 +33,7 @@ function ResourceCard({ href, icon, label, desc }: { href: string; icon: string;
         </span>
         <div>
           <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{label}</p>
-          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{desc}</p>
+          <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{desc}</p>
         </div>
       </div>
     </Link>

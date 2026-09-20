@@ -49,7 +49,7 @@ export default function RefreshCourseraProgressButton() {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
       {error && (
-        <span role="alert" style={{ fontSize: '0.75rem', color: 'var(--color-error, #c83232)' }}>
+        <span role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-error, #c83232)' }}>
           {error}
         </span>
       )}

@@ -53,7 +53,7 @@ function StatusBadge({ status }: { status: MissionStatus }) {
       style={{
         padding: '0.15rem 0.55rem',
         borderRadius: '9999px',
-        fontSize: '0.75rem',
+        fontSize: '0.8125rem',
         fontWeight: 700,
         background: cfg.bg,
         color: cfg.color,
@@ -72,7 +72,7 @@ function SkillChip({ label, variant = 'green' }: { label: string; variant?: 'gre
       style={{
         padding: '0.15rem 0.45rem',
         borderRadius: '9999px',
-        fontSize: '0.75rem',
+        fontSize: '0.8125rem',
         fontWeight: 600,
         background: isGreen ? 'rgba(74,155,79,0.1)' : 'rgba(37,99,235,0.08)',
         color: isGreen ? '#256b2a' : '#1d4ed8',
@@ -95,7 +95,7 @@ function StarStoryToggle({ starStory }: { starStory: string }) {
           border: 'none',
           padding: 0,
           cursor: 'pointer',
-          fontSize: '0.8rem',
+          fontSize: '0.8125rem',
           color: 'var(--color-accent)',
           fontWeight: 600,
         }}
@@ -177,7 +177,7 @@ function OverrideDropdown({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={dropdownId}
-        style={{ fontSize: '0.78rem', padding: '0.25rem 0.65rem' }}
+        style={{ fontSize: '0.8125rem', padding: '0.25rem 0.65rem' }}
         onClick={() => setOpen((v) => !v)}
       >
         Override
@@ -201,13 +201,13 @@ function OverrideDropdown({
             boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
           }}
         >
-          <p style={{ margin: '0 0 0.25rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
             Admin override
           </p>
           <button
             type="button"
             className="btn btn-primary"
-            style={{ fontSize: '0.78rem', padding: '0.3rem 0.65rem' }}
+            style={{ fontSize: '0.8125rem', padding: '0.3rem 0.65rem' }}
             disabled={pending}
             onClick={() => submit('passed')}
           >
@@ -216,14 +216,14 @@ function OverrideDropdown({
           <button
             type="button"
             className="btn btn-outline"
-            style={{ fontSize: '0.78rem', padding: '0.3rem 0.65rem' }}
+            style={{ fontSize: '0.8125rem', padding: '0.3rem 0.65rem' }}
             disabled={pending}
             onClick={() => submit('needs_retry')}
           >
             Force retry
           </button>
           {err && (
-            <p role="alert" style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--color-error, #c83232)' }}>
+            <p role="alert" style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-error, #c83232)' }}>
               {err}
             </p>
           )}
@@ -265,7 +265,7 @@ function MissionCard({
           <p
             style={{
               margin: '0 0 0.2rem',
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               fontWeight: 600,
               color: 'var(--color-on-surface-variant)',
               textTransform: 'uppercase',
@@ -309,7 +309,7 @@ function MissionCard({
             <StarStoryToggle starStory={mission.latestResult.starStory} />
           )}
           {mission.completedAt && (
-            <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Passed{' '}
               {new Date(mission.completedAt).toLocaleDateString('en-US', {
                 month: 'short',
@@ -334,7 +334,7 @@ function MissionCard({
                 marginBottom: '0.5rem',
               }}
             >
-              <p style={{ margin: '0 0 0.2rem', fontSize: '0.75rem', fontWeight: 700, color: '#9b1c1c', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <p style={{ margin: '0 0 0.2rem', fontSize: '0.8125rem', fontWeight: 700, color: '#9b1c1c', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 AI coaching note
               </p>
               <p style={{ margin: 0, fontSize: '0.87rem', lineHeight: 1.5, color: 'var(--color-on-surface)' }}>
@@ -344,7 +344,7 @@ function MissionCard({
           )}
           {mission.latestResult.skillsUnlocked.length > 0 && (
             <div>
-              <p style={{ margin: '0 0 0.3rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: '0 0 0.3rem', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
                 Skills to demonstrate
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
@@ -411,7 +411,7 @@ export default function AdminMemberSkillCheckpointPanel({
           >
             {summary.careerReadinessPct}% of missions passed
           </span>
-          <div style={{ display: 'flex', gap: '0.4rem', fontSize: '0.8rem' }}>
+          <div style={{ display: 'flex', gap: '0.4rem', fontSize: '0.8125rem' }}>
             <span style={{ padding: '0.15rem 0.45rem', borderRadius: '9999px', background: 'rgba(74,155,79,0.12)', color: '#256b2a', fontWeight: 600 }}>
               {summary.passedCount} passed
             </span>
@@ -432,7 +432,7 @@ export default function AdminMemberSkillCheckpointPanel({
       {/* Demonstrated skills chips */}
       {summary.demonstratedSkills.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
-          <p style={{ margin: '0 0 0.35rem', fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
             Demonstrated skills
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>

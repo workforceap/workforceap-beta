@@ -173,7 +173,7 @@ export default function SessionsHistoryClient({
                   <span
                     style={{
                       marginLeft: '0.5rem',
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 400,
                       color: 'var(--color-on-surface-variant)',
                     }}
@@ -181,7 +181,7 @@ export default function SessionsHistoryClient({
                     {s.memberEmail}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
                   {showActor && s.actorName ? (
                     <>
                       With <strong style={{ color: 'var(--color-on-surface)' }}>{s.actorName}</strong>

@@ -40,7 +40,7 @@ export default function PlacementConfirmationStrip({ offers }: { offers: any[] }
           <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <p style={{ fontSize: '0.6rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#fff', margin: '0 0 0.35rem' }}>Job Offer</p>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.14em', color: '#fff', margin: '0 0 0.35rem' }}>Job Offer</p>
                 <h2 style={{ fontSize: '1.0625rem', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.3 }}>
                   Did you accept the role at {offer.company}?
                 </h2>

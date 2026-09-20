@@ -117,7 +117,7 @@ export function BoardOutcomesKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em' }}>
             Placements by month
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
             {periodLabel} · {placementsTotal} total
           </p>
           {placementsByMonth.length > 0 ? (
@@ -151,7 +151,7 @@ export function BoardOutcomesKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 4 }}>
             Funder exports
           </h3>
-          <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginBottom: 16 }}>
             Download the files funders and the board ask for.
           </p>
           <div className="wa-space-y-2">
@@ -181,7 +181,7 @@ export function BoardOutcomesKit({
                   </div>
                   <div style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{exp.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{exp.description}</div>
+                    <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{exp.description}</div>
                   </div>
                   <ArrowRight size={16} aria-hidden style={{ color: 'var(--wa-muted)', flexShrink: 0 }} />
                 </div>

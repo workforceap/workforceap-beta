@@ -37,7 +37,7 @@ export function BarChartMini({ data, highlightLast = false, height = 160 }: BarC
                 title={`${d.label}: ${d.value}`}
               />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--wa-muted)' }}>{d.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-muted)' }}>{d.label}</span>
           </div>
         );
       })}
@@ -159,7 +159,7 @@ export function AreaChartMini({
       </svg>
       <div
         className="wa-flex wa-items-center wa-justify-between"
-        style={{ fontSize: 11, color: 'var(--wa-muted)', fontWeight: 600, padding: '2px 4px 0' }}
+        style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600, padding: '2px 4px 0' }}
       >
         {data.map((d) => (
           <span key={d.label}>{d.label}</span>
@@ -186,7 +186,7 @@ export function RankBars({ data }: { data: RankDatum[] }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {data.map((d) => (
         <div key={d.label}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
             <span style={{ fontWeight: 700 }}>{d.label}</span>
             <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--wa-muted)' }}>{d.value}</span>
           </div>

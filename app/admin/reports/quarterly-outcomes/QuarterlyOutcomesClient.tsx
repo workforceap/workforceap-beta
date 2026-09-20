@@ -339,7 +339,7 @@ export default function QuarterlyOutcomesClient() {
             <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -390,7 +390,7 @@ export default function QuarterlyOutcomesClient() {
             <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',

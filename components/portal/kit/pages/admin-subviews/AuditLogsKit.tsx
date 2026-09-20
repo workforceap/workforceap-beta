@@ -179,7 +179,7 @@ export function AuditLogsKit({
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -200,7 +200,7 @@ export function AuditLogsKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}

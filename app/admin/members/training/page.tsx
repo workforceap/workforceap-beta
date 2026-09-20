@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 function MetricCard({ label, value, accent }: { label: string; value: string | number; accent: string }) {
   return (
     <div className="portal-kpi-card" style={{ padding: '1rem' }}>
-      <p style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>{label}</p>
+      <p style={{ margin: '0 0 0.35rem', fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>{label}</p>
       <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: accent, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
     </div>
   );

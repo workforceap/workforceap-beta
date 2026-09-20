@@ -35,7 +35,7 @@ function InfoRow({ label, value, mono }: { label: string; value: ReactNode; mono
         borderBottom: '1px solid var(--wa-border)',
       }}
     >
-      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--wa-muted)', flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-muted)', flexShrink: 0 }}>{label}</span>
       <span
         style={{
           fontSize: 14,

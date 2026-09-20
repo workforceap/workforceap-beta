@@ -272,7 +272,7 @@ export function PlacementsKit({
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -293,7 +293,7 @@ export function PlacementsKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}
@@ -318,7 +318,7 @@ export function PlacementsKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

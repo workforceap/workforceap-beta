@@ -106,7 +106,7 @@ export default function ProgramChangeRequestForm({ programs }: Props) {
             minHeight: '6rem',
           }}
         />
-        <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {reason.trim().length} / 10 minimum
         </span>
       </label>

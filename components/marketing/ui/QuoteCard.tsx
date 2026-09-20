@@ -41,7 +41,7 @@ export function QuoteCard({ icon, label, quote, variant = 'default' }: QuoteCard
           {label && (
             <span
               className="text-label-upper"
-              style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}
+              style={{ fontSize: '0.8125rem', letterSpacing: '0.1em' }}
             >
               {label}
             </span>

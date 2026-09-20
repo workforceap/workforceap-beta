@@ -408,7 +408,7 @@ export default function SessionRunClient({
 
       {/* Tool picker grid */}
       <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.25rem' }}>
-        <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <p style={{ margin: '0 0 0.75rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           Session tools — pick what this member needs
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))', gap: '0.5rem' }}>
@@ -438,7 +438,7 @@ export default function SessionRunClient({
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
                   background: isDone ? '#4a9b4f' : isRunning ? t.accent : isError ? 'var(--color-error, #d32f2f)' : 'var(--surface-container-highest)'}} />
-                <span style={{ fontSize: '0.78rem', fontWeight: isDone ? 700 : 500, color: isDone ? t.accent : 'var(--color-on-surface)', lineHeight: 1.3 }}>
+                <span style={{ fontSize: '0.8125rem', fontWeight: isDone ? 700 : 500, color: isDone ? t.accent : 'var(--color-on-surface)', lineHeight: 1.3 }}>
                   {t.label}
                 </span>
                 {isDone && <CheckCircle2 size={12} style={{ color: '#4a9b4f', flexShrink: 0, marginLeft: 'auto' }} aria-hidden />}
@@ -515,7 +515,7 @@ export default function SessionRunClient({
               <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>
                 {walkthroughTranscript.length} transcript line{walkthroughTranscript.length === 1 ? '' : 's'} captured
               </p>
-              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 Use as the resume input below, then refine + click &ldquo;Build resume.&rdquo;
               </p>
             </div>
@@ -1144,14 +1144,14 @@ export default function SessionRunClient({
         {/* Live recap — shows what's in the email */}
         {completedTools.length > 0 && (
           <div style={{ borderTop: '1px solid var(--surface-container-highest)', paddingTop: '0.875rem' }}>
-            <p style={{ margin: '0 0 0.5rem', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
               {packetSent ? 'Included in recap' : `In this recap (${completedTools.length} item${completedTools.length === 1 ? '' : 's'})`}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {completedTools.map(t => (
                 <span key={t.key} style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                  padding: '0.25rem 0.625rem', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 600,
+                  padding: '0.25rem 0.625rem', borderRadius: '999px', fontSize: '0.8125rem', fontWeight: 600,
                   background: `color-mix(in srgb, ${t.accent} 10%, transparent)`,
                   color: t.accent,
                   border: `1px solid color-mix(in srgb, ${t.accent} 25%, transparent)`}}>
@@ -1234,7 +1234,7 @@ function SectionCard({
           {title}
         </h2>
         <span style={{
-          fontSize: '0.75rem', fontWeight: 600, padding: '0.25rem 0.5rem',
+          fontSize: '0.8125rem', fontWeight: 600, padding: '0.25rem 0.5rem',
           borderRadius: '999px',
           background: isDone ? 'color-mix(in srgb, #4a9b4f 12%, transparent)' : 'var(--surface-container)',
           color: isDone ? '#4a9b4f' : 'var(--color-on-surface-variant)',
@@ -1249,7 +1249,7 @@ function SectionCard({
         )}
       </header>
       {isOpen && contextNote ? (
-        <p style={{ margin: '0 0 1rem', padding: '0.4rem 0.65rem', background: 'color-mix(in srgb, var(--color-accent) 6%, transparent)', borderLeft: '3px solid var(--color-accent)', borderRadius: '0.35rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ margin: '0 0 1rem', padding: '0.4rem 0.65rem', background: 'color-mix(in srgb, var(--color-accent) 6%, transparent)', borderLeft: '3px solid var(--color-accent)', borderRadius: '0.35rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {contextNote}
         </p>
       ) : null}
@@ -1261,7 +1261,7 @@ function SectionCard({
 function ProfileField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: 0 }}>
+      <dt style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, color: 'var(--color-on-surface-variant)', margin: 0 }}>
         {label}
       </dt>
       <dd style={{ margin: '0.15rem 0 0', fontSize: '0.95rem', color: 'var(--color-on-surface)' }}>{value || '—'}</dd>
@@ -1276,7 +1276,7 @@ function OutputPanel({ label, body, savedTo }: { label: string; body: string; sa
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           {label}
         </strong>
-        <span style={{ fontSize: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>
@@ -1300,7 +1300,7 @@ function InterviewOutput({ body, savedTo }: { body: string; savedTo: string }) {
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           {questions.length} interview questions
         </strong>
-        <span style={{ fontSize: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>
@@ -1333,7 +1333,7 @@ function LinkedInHeadlinesOutput({ body, savedTo }: { body: string; savedTo: str
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           LinkedIn Headlines
         </strong>
-        <span style={{ fontSize: '0.75rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>

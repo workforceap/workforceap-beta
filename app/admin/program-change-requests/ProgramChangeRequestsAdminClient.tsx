@@ -66,7 +66,7 @@ export default function ProgramChangeRequestsAdminClient({ initialRows }: { init
               Current: {r.currentProgramSlug ?? '—'} → Requested: <strong>{r.requestedProgramSlug}</strong>
             </p>
             <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{r.reason}</p>
-            <label htmlFor="programchangerequestsadminclient-admin-note-optional-field" style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.35rem' }}>Admin note (optional)</label>
+            <label htmlFor="programchangerequestsadminclient-admin-note-optional-field" style={{ display: 'block', fontSize: '0.8125rem', marginBottom: '0.35rem' }}>Admin note (optional)</label>
             <textarea id="programchangerequestsadminclient-admin-note-optional-field"
               value={notes[r.id] ?? ''}
               onChange={(e) => setNotes((n) => ({ ...n, [r.id]: e.target.value }))}

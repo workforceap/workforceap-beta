@@ -289,10 +289,10 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
 
   /* gold PILL — fully visible, never clipped */
   .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:12.5px;
+    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
     letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
     box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
-  .pill__star{font-size:11px;opacity:.95}
+  .pill__star{font-size:13px;opacity:.95}
   .pill--solid{margin-bottom:22px}
   @media(max-width:430px){.pill{white-space:normal;text-align:left}}
 
@@ -335,7 +335,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
   .faq-layout{display:grid;grid-template-columns:260px 1fr;gap:40px;align-items:start}
   .faq-sidebar{position:sticky;top:96px;display:flex;flex-direction:column;gap:24px}
   .side-group{margin-bottom:8px}
-  .side-lab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .side-lab{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
   .cat-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--text);transition:background .15s,color .15s}
   .cat-link:hover{background:rgba(173,44,77,.08);color:var(--crimson)}
   .cat-ic{flex:0 0 24px;height:24px;display:grid;place-items:center}
@@ -395,7 +395,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
     border-radius:22px;padding:48px;width:100%;text-align:center;
     box-shadow:var(--shadow-glass)}
   .cg-ic{font-size:52px}
-  .cg-lab{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.9)}
+  .cg-lab{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.9)}
 
   /* a11y: white focus ring on the crimson depth bands so the global
      crimson :focus-visible outline (blend.css) is never crimson-on-crimson */

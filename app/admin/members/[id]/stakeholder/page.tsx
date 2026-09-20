@@ -256,7 +256,7 @@ export default async function AdminMemberStakeholderPage({
         <section className="content-card" style={heroStyle}>
           <p
             style={{
-              fontSize: '0.7rem',
+              fontSize: '0.8125rem',
               fontWeight: 800,
               letterSpacing: '0.1em',
               textTransform: 'uppercase',
@@ -280,7 +280,7 @@ export default async function AdminMemberStakeholderPage({
             <div>
               <p
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
@@ -297,7 +297,7 @@ export default async function AdminMemberStakeholderPage({
             <div>
               <p
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
@@ -341,7 +341,7 @@ export default async function AdminMemberStakeholderPage({
                 <div>
                   <p
                     style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.06em',
@@ -355,7 +355,7 @@ export default async function AdminMemberStakeholderPage({
                     {courseraCompletedCount}/{courseraCourseCount}{' '}
                     <span
                       style={{
-                        fontSize: '0.8rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 500,
                         color: 'var(--color-on-surface-variant)',
                       }}
@@ -367,7 +367,7 @@ export default async function AdminMemberStakeholderPage({
                 <div>
                   <p
                     style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.06em',
@@ -381,7 +381,7 @@ export default async function AdminMemberStakeholderPage({
                     {courseraCompletedBadgeCount}/{courseraBadgeCount}{' '}
                     <span
                       style={{
-                        fontSize: '0.8rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 500,
                         color: 'var(--color-on-surface-variant)',
                       }}
@@ -393,7 +393,7 @@ export default async function AdminMemberStakeholderPage({
                 <div>
                   <p
                     style={{
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.06em',
@@ -464,7 +464,7 @@ export default async function AdminMemberStakeholderPage({
                       </span>
                       <span
                         style={{
-                          fontSize: '0.8rem',
+                          fontSize: '0.8125rem',
                           color: 'var(--color-on-surface-variant)',
                           flexShrink: 0,
                         }}
@@ -541,7 +541,7 @@ export default async function AdminMemberStakeholderPage({
                         <span
                           style={{
                             marginLeft: '0.5rem',
-                            fontSize: '0.75rem',
+                            fontSize: '0.8125rem',
                             color: 'var(--color-on-surface-variant)',
                           }}
                         >
@@ -579,7 +579,7 @@ export default async function AdminMemberStakeholderPage({
               <div>
                 <p
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -596,7 +596,7 @@ export default async function AdminMemberStakeholderPage({
               <div>
                 <p
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -613,7 +613,7 @@ export default async function AdminMemberStakeholderPage({
               <div>
                 <p
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -634,7 +634,7 @@ export default async function AdminMemberStakeholderPage({
               <div>
                 <p
                   style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -674,7 +674,7 @@ export default async function AdminMemberStakeholderPage({
                     <p
                       style={{
                         margin: '0.15rem 0 0',
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         color: 'var(--color-on-surface-variant)',
                       }}
                     >

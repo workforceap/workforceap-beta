@@ -79,7 +79,7 @@ export default function SkillMapperRadar({
             y={p.y}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontSize={10}
+            fontSize={13}
             fill="var(--color-on-surface-variant)"
           >
             {a.axis}

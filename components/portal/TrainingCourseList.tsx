@@ -409,7 +409,7 @@ export default function TrainingCourseList({
                 <>
                   <p
                     style={{
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       margin: '0 0 0.25rem',
                       color: 'var(--color-on-surface-variant)',
                     }}
@@ -426,7 +426,7 @@ export default function TrainingCourseList({
                 <>
                   <p
                     style={{
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       margin: '0 0 0.25rem',
                       color: 'var(--color-on-surface-variant)',
                     }}
@@ -443,7 +443,7 @@ export default function TrainingCourseList({
                 <>
                   <p
                     style={{
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       margin: '0 0 0.25rem',
                       color: 'var(--color-on-surface-variant)',
                     }}
@@ -460,7 +460,7 @@ export default function TrainingCourseList({
               {!workforceApModule && gradePct != null && Number.isFinite(gradePct) ? (
                 <p
                   style={{
-                    fontSize: '0.78rem',
+                    fontSize: '0.8125rem',
                     marginTop: '0.35rem',
                     marginBottom: 0,
                     color: 'var(--color-on-surface-variant)',

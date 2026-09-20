@@ -121,7 +121,7 @@ export default async function PartnerMessagesPage({ searchParams }: Props) {
                 <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)' }}>WorkforceAP Team</div>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',

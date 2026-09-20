@@ -217,7 +217,7 @@ export default function MapToUserActions({
                 {s.fullName}{' '}
                 <span
                   style={{
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     padding: '0.1rem 0.4rem',
                     borderRadius: 999,
@@ -241,7 +241,7 @@ export default function MapToUserActions({
               <p style={{ margin: '0.15rem 0 0', fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
                 {s.email} {s.enrolledProgram ? `· enrolled in ${programDisplayTitle(s.enrolledProgram)}` : '· not enrolled'}
               </p>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
                 {s.notes}
               </p>
             </div>

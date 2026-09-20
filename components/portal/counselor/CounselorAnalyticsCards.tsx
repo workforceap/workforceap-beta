@@ -91,7 +91,7 @@ export default function CounselorAnalyticsCards({ data }: Props) {
               </span>
               <p
                 style={{
-                  fontSize: '10px',
+                  fontSize: '13px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
                   color: 'var(--color-on-surface-variant)',
@@ -194,7 +194,7 @@ export function CounselorAnalyticsCardsDesktop({ data }: Props) {
               </span>
               <p
                 style={{
-                  fontSize: '11px',
+                  fontSize: '13px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.08em',
                   color: 'var(--color-on-surface-variant)',

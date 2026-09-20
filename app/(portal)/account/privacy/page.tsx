@@ -187,7 +187,7 @@ export default function PrivacySettingsPage() {
           />
           <label htmlFor="consent-marketing" style={{ flex: 1, fontSize: '0.9rem', cursor: 'pointer' }}>
             <div style={{ fontWeight: 600 }}>{t('consentLabel')}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.15rem' }}>
               {t('consentDescription')}
             </div>
           </label>
@@ -297,7 +297,7 @@ export default function PrivacySettingsPage() {
       </section>
 
       <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--outline-variant)' }}>
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
           {t('questionsContact')} <a href="mailto:privacy@workforceap.org" style={{ color: 'var(--color-accent)' }}>privacy@workforceap.org</a>
         </p>
       </div>

@@ -373,7 +373,7 @@ export default function PartnerQuarterlyOutcomesClient({
             <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -402,7 +402,7 @@ export default function PartnerQuarterlyOutcomesClient({
             <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
               <h2
                 style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.1em',
@@ -433,7 +433,7 @@ export default function PartnerQuarterlyOutcomesClient({
                         style={{
                           padding: '0.2rem 0.5rem',
                           borderRadius: '4px',
-                          fontSize: '0.75rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 600,
                           background:
                             m.status === 'Placed'

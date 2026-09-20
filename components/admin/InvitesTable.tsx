@@ -260,12 +260,12 @@ export default function InvitesTable({ invites }: Props) {
                   <>
                     <div style={{ fontWeight: 500 }}>{inv.email}</div>
                     {inv.subgroup && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         Subgroup: {inv.subgroup.name}
                       </div>
                     )}
                     {inv.role === 'counselor' && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {inv.counselorAffiliation === 'community_ambassador'
                           ? 'Community Ambassador'
                           : inv.counselorAffiliation === 'independent'
@@ -276,7 +276,7 @@ export default function InvitesTable({ invites }: Props) {
                       </div>
                     )}
                     {inv.token && effectiveStatus(inv) === 'pending' && (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         Login code:{' '}
                         <code style={{ fontFamily: 'ui-monospace, monospace', letterSpacing: '0.08em' }}>
                           {loginCodeFromToken(inv.token)}
@@ -302,7 +302,7 @@ export default function InvitesTable({ invites }: Props) {
                       style={{
                         padding: '0.2rem 0.5rem',
                         borderRadius: '4px',
-                        fontSize: '0.8rem',
+                        fontSize: '0.8125rem',
                         textTransform: 'capitalize',
                         background: statusStyle.bg,
                         color: statusStyle.color,

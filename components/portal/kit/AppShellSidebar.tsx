@@ -60,7 +60,7 @@ export function AppShellSidebar({ brand, groups, activeId, onNavigate, footer, t
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', fontSize: 13 }}>
           {groups.map((g) => (
             <div key={g.label} style={{ marginBottom: 12 }}>
-              <div style={{ padding: '0 10px', fontSize: 10, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--wa-sidebar-label)', marginBottom: 4 }}>{g.label}</div>
+              <div style={{ padding: '0 10px', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--wa-sidebar-label)', marginBottom: 4 }}>{g.label}</div>
               {g.items.map((it) => {
                 const on = it.id === activeId;
                 return (
@@ -94,7 +94,7 @@ export function AppShellSidebar({ brand, groups, activeId, onNavigate, footer, t
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.label}</span>
                     </span>
                     {it.badge != null ? (
-                      <span style={{ padding: '1px 7px', fontSize: 10, fontWeight: 700, borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }}>{it.badge}</span>
+                      <span style={{ padding: '1px 7px', fontSize: 13, fontWeight: 700, borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }}>{it.badge}</span>
                     ) : null}
                   </button>
                 );

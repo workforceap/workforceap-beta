@@ -116,7 +116,7 @@ export default async function AdminMemberLifecyclePage({
               Enrollment drift detected
             </span>
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
             User.enrolledProgram={member.enrolledProgram ?? 'null'} vs CourseEnrollment.programSlug={enrollment?.programSlug ?? 'missing'}
           </div>
         </div>
@@ -130,7 +130,7 @@ export default async function AdminMemberLifecyclePage({
             {member.enrolledProgram ?? '—'}
           </p>
           {member.enrolledAt && (
-            <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
               Since {member.enrolledAt.toLocaleDateString()}
             </p>
           )}
@@ -142,7 +142,7 @@ export default async function AdminMemberLifecyclePage({
               <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>
                 {enrollment.programSlug}
               </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
                 {enrollment.enrolledByAdminId ? 'Admin-enrolled' : 'Self-enrolled'} · {enrollment.fundingSource ?? 'No funding source'}
               </p>
             </>
@@ -155,7 +155,7 @@ export default async function AdminMemberLifecyclePage({
           <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>
             {completedCourseCount} course{completedCourseCount !== 1 ? 's' : ''} completed
           </p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>
             Assessment: {member.assessmentCompleted ? 'Done' : 'Not done'}
             {member.placementRecord ? ` · Placed at ${member.placementRecord.employerName}` : ''}
           </p>
@@ -189,7 +189,7 @@ export default async function AdminMemberLifecyclePage({
                     borderBottom: i < events.length - 1 ? '1px solid var(--outline-variant)' : 'none',
                   }}
                 >
-                  <div style={{ width: '7.5rem', flexShrink: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ width: '7.5rem', flexShrink: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {ev.createdAt.toLocaleDateString()}<br />
                     {ev.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
@@ -198,12 +198,12 @@ export default async function AdminMemberLifecyclePage({
                       <StatusBadge label={ev.eventName.replace(/_/g, ' ')} variant={variant} />
                     </div>
                     {ev.entityType && (
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
                         {ev.entityType}{ev.entityId ? `: ${ev.entityId}` : ''}
                       </p>
                     )}
                     {ev.metadata && typeof ev.metadata === 'object' && Object.keys(ev.metadata as object).length > 0 && (
-                      <pre style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, monospace' }}>
+                      <pre style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', whiteSpace: 'pre-wrap', fontFamily: 'ui-monospace, monospace' }}>
                         {JSON.stringify(ev.metadata, null, 2)}
                       </pre>
                     )}

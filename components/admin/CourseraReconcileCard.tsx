@@ -44,7 +44,7 @@ const tileStyle: React.CSSProperties = {
 };
 
 const tileLabelStyle: React.CSSProperties = {
-  fontSize: '0.78rem',
+  fontSize: '0.8125rem',
   color: 'var(--color-on-surface-variant)',
   letterSpacing: '0.02em',
   textTransform: 'uppercase',
@@ -86,7 +86,7 @@ const filterPillStyle = (active: boolean): React.CSSProperties => ({
   border: '1px solid var(--outline-variant)',
   background: active ? 'var(--primary)' : 'transparent',
   color: active ? 'var(--on-primary)' : 'var(--color-on-surface)',
-  fontSize: '0.8rem',
+  fontSize: '0.8125rem',
   fontWeight: 600,
   cursor: 'pointer',
   fontFamily: 'inherit',
@@ -220,7 +220,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
           }}
         />
         {data && (
-          <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
             Last run {new Date(data.ranAt).toLocaleString()} · program <code>{data.programId}</code>
           </span>
         )}
@@ -344,7 +344,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
                     cell: (row) => (
                       <>
                         <div style={{ fontWeight: 600 }}>{row.fullName || row.email}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                           {row.email}
                         </div>
                       </>
@@ -358,7 +358,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
                       return (
                         <span
                           style={{
-                            fontSize: '0.72rem',
+                            fontSize: '0.8125rem',
                             padding: '0.15rem 0.5rem',
                             borderRadius: '0.5rem',
                             background: badge.bg,
@@ -377,7 +377,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
                     key: 'ids',
                     header: 'IDs',
                     cell: (row) => (
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', display: 'grid', gap: '0.15rem' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'grid', gap: '0.15rem' }}>
                         {row.courseraExternalId ? (
                           <span>Coursera: <code>{row.courseraExternalId}</code></span>
                         ) : null}
@@ -412,7 +412,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
                             style={
                               alreadyAdded || isAdding
                                 ? btnDisabledStyle
-                                : { ...btnSecondaryStyle, padding: '0.4rem 0.7rem', fontSize: '0.8rem' }
+                                : { ...btnSecondaryStyle, padding: '0.4rem 0.7rem', fontSize: '0.8125rem' }
                             }
                           >
                             {alreadyAdded ? 'Added' : isAdding ? 'Adding…' : 'Add to WorkforceAP'}
@@ -424,7 +424,7 @@ export default function CourseraReconcileCard({ defaultProgramId }: Props) {
                           <Link
                             href={`/admin/members/${row.wapUserId}`}
                             style={{
-                              fontSize: '0.8rem',
+                              fontSize: '0.8125rem',
                               fontWeight: 600,
                               color: 'var(--color-on-surface)',
                               textDecoration: 'underline',

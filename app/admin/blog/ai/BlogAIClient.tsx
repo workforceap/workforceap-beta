@@ -194,7 +194,7 @@ export default function BlogAIClient({ postCount }: { postCount: number }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
                   <div>
                     <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: 'var(--color-on-surface)' }}>{s.title}</h3>
-                    <span className="admin-topic-pill" style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', marginRight: '0.5rem' }}>
+                    <span className="admin-topic-pill" style={{ fontSize: '0.8125rem', padding: '0.2rem 0.5rem', borderRadius: '4px', marginRight: '0.5rem' }}>
                       {s.category}
                     </span>
                     <span className="admin-muted-text" style={{ fontSize: '0.85rem' }}>
@@ -203,7 +203,7 @@ export default function BlogAIClient({ postCount }: { postCount: number }) {
                     <p className="admin-body-text" style={{ margin: '0.75rem 0 0', fontSize: '0.9rem' }}>
                       {s.excerpt}
                     </p>
-                    <p className="admin-subtle-text" style={{ margin: '0.5rem 0 0', fontSize: '0.8rem' }}>
+                    <p className="admin-subtle-text" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem' }}>
                       {s.reasoning}
                     </p>
                   </div>

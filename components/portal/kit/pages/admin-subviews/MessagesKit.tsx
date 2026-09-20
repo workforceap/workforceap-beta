@@ -105,7 +105,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
           <div>
             <div style={{ fontWeight: 700 }}>{row.from}</div>
             {row.unread ? (
-              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--wa-accent)' }}>Unread</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>Unread</div>
             ) : null}
           </div>
         </div>
@@ -164,7 +164,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
                 </div>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -186,7 +186,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
               }}
             >
               <ChannelTag channel={row.channel} />
-              <span style={{ fontSize: 12, color: 'var(--wa-muted)', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 13, color: 'var(--wa-muted)', whiteSpace: 'nowrap' }}>
                 {row.lastActive ?? '—'}
               </span>
             </div>

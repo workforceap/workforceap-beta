@@ -99,7 +99,7 @@ export default async function EmployerApplicationPage({
         <PortalCard className="portal-card--flat">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div>
-              <p style={{ fontSize: '0.6875rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                 Current Status
               </p>
               <StatusBadge
@@ -140,24 +140,24 @@ export default async function EmployerApplicationPage({
           <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 0.75rem' }}>Applicant Details</h3>
           <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.875rem' }}>
             <div>
-              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</span>
+              <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</span>
               <p style={{ margin: '0.125rem 0 0' }}>{application.student.email}</p>
             </div>
             {application.student.phone && (
               <div>
-                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</span>
+                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</span>
                 <p style={{ margin: '0.125rem 0 0' }}>{application.student.phone}</p>
               </div>
             )}
             {application.student.enrolledProgram && (
               <div>
-                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Program</span>
+                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Program</span>
                 <p style={{ margin: '0.125rem 0 0' }}>{programDisplayTitle(application.student.enrolledProgram)}</p>
               </div>
             )}
             {application.student.profile?.profileLinkedin && (
               <div>
-                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LinkedIn</span>
+                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LinkedIn</span>
                 <p style={{ margin: '0.125rem 0 0' }}>
                   <a href={application.student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)' }}>
                     View Profile
@@ -167,13 +167,13 @@ export default async function EmployerApplicationPage({
             )}
             {application.student.profile?.profileBio && (
               <div>
-                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bio</span>
+                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bio</span>
                 <p style={{ margin: '0.125rem 0 0', lineHeight: 1.5 }}>{application.student.profile.profileBio}</p>
               </div>
             )}
             {application.resumePath && (
               <div>
-                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resume</span>
+                <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resume</span>
                 <p style={{ margin: '0.125rem 0 0' }}>
                   <a
                     href={`/api/employer/applications/${encodeURIComponent(application.id)}/resume`}
@@ -215,8 +215,8 @@ export default async function EmployerApplicationPage({
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700 }}>{msg.author?.fullName ?? 'User'}</span>
-                    <span style={{ fontSize: '0.6875rem', color: 'var(--color-on-surface-variant)' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 700 }}>{msg.author?.fullName ?? 'User'}</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {formatPortalDate(msg.createdAt)}
                     </span>
                   </div>

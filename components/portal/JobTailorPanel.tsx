@@ -88,7 +88,7 @@ function ScoreBadge({ label, score }: { label: string; score: number }) {
       </div>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
@@ -177,7 +177,7 @@ export default function JobTailorPanel({
         className="wa-flex wa-items-center wa-gap-2"
         style={{
           margin: '0 0 8px',
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: 700,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
@@ -243,7 +243,7 @@ export default function JobTailorPanel({
               <p
                 style={{
                   margin: '0 0 6px',
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.12em',
@@ -273,7 +273,7 @@ export default function JobTailorPanel({
               <p
                 style={{
                   margin: '0 0 6px',
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '0.12em',

@@ -131,7 +131,7 @@ export default function IgnoredXapiSummaryCard() {
         <div style={{ fontSize: '0.85rem' }}>Pipeline clear — no stuck events in the window.</div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', fontSize: '0.8rem', borderCollapse: 'collapse' }}>
+          <table style={{ width: '100%', fontSize: '0.8125rem', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ textAlign: 'left' }}>
                 <th scope="col" style={{ padding: '0.4rem 0.5rem' }}>Course slug</th>
@@ -146,7 +146,7 @@ export default function IgnoredXapiSummaryCard() {
                   <td style={{ padding: '0.35rem 0.5rem' }}>
                     <code>{row.courseSlug ?? '<null>'}</code>
                     {row.courseName ? (
-                      <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.75rem' }}>
+                      <div style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                         {row.courseName}
                       </div>
                     ) : null}
