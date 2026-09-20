@@ -8,6 +8,9 @@ import { logAuditEvent } from '@/lib/audit/log';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
+// WAP-177 fix 4: bounded like the /api/cron/* routes this shares a schedule with.
+export const maxDuration = 300;
+
 /**
  * Admin endpoint to process pending webhook retries.
  * Invoked on a schedule by Vercel cron (see vercel.json, guarded by

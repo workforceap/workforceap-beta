@@ -39,6 +39,12 @@ export interface MessageThread {
 
 export interface MessagesKitProps {
   threads?: MessageThread[];
+  /**
+   * Member threads whose latest message has no staff reply yet, across the
+   * whole inbox (not only the rows rendered). Shown in the opener so staff
+   * see the queue size before scanning the table (WAP-168).
+   */
+  unansweredCount?: number;
 }
 
 const DEFAULT_THREADS: MessageThread[] = [
@@ -90,7 +96,7 @@ function ChannelTag({ channel }: { channel: MessageChannel }) {
   return <Token label={channel} icon={meta.icon} size="sm" color={meta.color} />;
 }
 
-export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
+export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: MessagesKitProps) {
   const router = useRouter();
   const openThread = (row: MessageThread) =>
     router.push(`/admin/messages?ui=legacy&thread=${encodeURIComponent(row.id)}`);
@@ -138,7 +144,22 @@ export function MessagesKit({ threads = DEFAULT_THREADS }: MessagesKitProps) {
       <PageOpener className="wa-mb-5"
         title="Messages"
         kicker="Inbox"
-        lede="Member ↔ staff threads."
+        lede={
+          unansweredCount === undefined
+            ? 'Member ↔ staff threads.'
+            : unansweredCount === 0
+              ? 'Member ↔ staff threads. Every member message has a staff reply.'
+              : `Member ↔ staff threads. ${unansweredCount} member ${unansweredCount === 1 ? 'message is' : 'messages are'} waiting for a staff reply.`
+        }
+        action={
+          unansweredCount !== undefined ? (
+            <Token
+              label={`${unansweredCount} unanswered`}
+              size="sm"
+              color={unansweredCount > 0 ? 'red' : 'green'}
+            />
+          ) : undefined
+        }
       />
 
       <DataTable<MessageThread>

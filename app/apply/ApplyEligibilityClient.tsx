@@ -24,6 +24,12 @@ import {
 } from '@/lib/apply/eligibilityExtendedFields';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
 import {
+  PUBLIC_ASSISTANCE_PROGRAM_VALUES,
+  normalizePublicAssistancePrograms,
+  publicAssistanceFollowUpComplete,
+  type PublicAssistanceProgram,
+} from '@/lib/apply/publicAssistance';
+import {
   SCHOOL_AGE_GROUPS,
   SCHOOL_GRADE_LEVELS,
   schoolDetailsComplete,
@@ -86,6 +92,9 @@ export default function ApplyEligibilityClient({
   const [exhaustedUnemployment, setExhaustedUnemployment] = useState<YesNo | null>(null);
   const [layoffCompany, setLayoffCompany] = useState('');
   const [snapWic, setSnapWic] = useState<YesNo | null>(null);
+  // WAP-53 follow-ups, only meaningful when snapWic === 'yes'.
+  const [publicAssistancePrograms, setPublicAssistancePrograms] = useState<PublicAssistanceProgram[]>([]);
+  const [publicAssistanceHelpRequested, setPublicAssistanceHelpRequested] = useState<YesNo | null>(null);
   const [hearAbout, setHearAbout] = useState('');
   const [hearAboutOther, setHearAboutOther] = useState('');
   const [partnerAmbassadorReferral, setPartnerAmbassadorReferral] = useState('');
@@ -122,6 +131,8 @@ export default function ApplyEligibilityClient({
     setExhaustedUnemployment(draft.exhaustedUnemployment ?? null);
     setLayoffCompany(draft.layoffCompany ?? '');
     setSnapWic(draft.snapWic ?? null);
+    setPublicAssistancePrograms(normalizePublicAssistancePrograms(draft.publicAssistancePrograms));
+    setPublicAssistanceHelpRequested(draft.publicAssistanceHelpRequested ?? null);
     setHearAbout(draft.hearAbout ?? '');
     setHearAboutOther(draft.hearAboutOther ?? '');
     setPartnerAmbassadorReferral(draft.partnerAmbassadorReferral ?? '');
@@ -181,7 +192,12 @@ export default function ApplyEligibilityClient({
     snapWic,
     q3,
   ];
-  const fundingAnswersOk = isSchool || yesNoAnswers.every((answer) => answer !== null);
+  const publicAssistanceFollowUpOk = publicAssistanceFollowUpComplete({
+    snapWic,
+    publicAssistancePrograms,
+    publicAssistanceHelpRequested,
+  });
+  const fundingAnswersOk = isSchool || (yesNoAnswers.every((answer) => answer !== null) && publicAssistanceFollowUpOk);
   const canContinue =
     contactOk &&
     screeningDetailsOk &&
@@ -216,6 +232,8 @@ export default function ApplyEligibilityClient({
     exhaustedUnemployment: isSchool ? null : exhaustedUnemployment,
     layoffCompany: isSchool ? '' : layoffCompany,
     snapWic: isSchool ? null : snapWic,
+    publicAssistancePrograms: isSchool || snapWic !== 'yes' ? [] : publicAssistancePrograms,
+    publicAssistanceHelpRequested: isSchool || snapWic !== 'yes' ? null : publicAssistanceHelpRequested,
     hearAbout: isSchool ? '' : hearAbout,
     hearAboutOther: isSchool ? '' : hearAboutOther,
     partnerAmbassadorReferral: isSchool ? '' : partnerAmbassadorReferral,
@@ -296,6 +314,8 @@ export default function ApplyEligibilityClient({
     exhaustedUnemployment,
     layoffCompany,
     snapWic,
+    publicAssistancePrograms,
+    publicAssistanceHelpRequested,
     hearAbout,
     hearAboutOther,
     partnerAmbassadorReferral,
@@ -352,6 +372,8 @@ export default function ApplyEligibilityClient({
         exhaustedUnemployment: isSchool ? null : exhaustedUnemployment,
         layoffCompany: isSchool ? undefined : layoffCompany.trim() || undefined,
         snapWic: isSchool ? null : snapWic,
+        publicAssistancePrograms: isSchool || snapWic !== 'yes' ? [] : publicAssistancePrograms,
+        publicAssistanceHelpRequested: isSchool || snapWic !== 'yes' ? null : publicAssistanceHelpRequested,
         hearAbout: isSchool ? undefined : hearAbout.trim() || undefined,
         hearAboutOther: isSchool
           ? undefined
@@ -637,6 +659,87 @@ export default function ApplyEligibilityClient({
               )}
             </fieldset>
           ))}
+          {snapWic === 'yes' ? (
+            <>
+              <fieldset className="form-group apply-eligibility-fieldset">
+                <legend className="apply-eligibility-legend">{t('eligibilityPublicAssistanceProgramsLegend')}</legend>
+                <p className="apply-eligibility-prompt" id="apply-public-assistance-programs-prompt">
+                  {t('eligibilityPublicAssistanceProgramsPrompt')}
+                </p>
+                <div
+                  className="form-radio-cards"
+                  role="group"
+                  aria-labelledby="apply-public-assistance-programs-prompt"
+                  aria-describedby={attemptedContinue && publicAssistancePrograms.length === 0 ? 'apply-eligibility-programs-error' : undefined}
+                >
+                  {PUBLIC_ASSISTANCE_PROGRAM_VALUES.map((program) => {
+                    const checked = publicAssistancePrograms.includes(program);
+                    const labelKey = program === 'tanf'
+                      ? 'publicAssistanceTanf'
+                      : program === 'wic'
+                        ? 'publicAssistanceWic'
+                        : program === 'snap'
+                          ? 'publicAssistanceSnap'
+                          : 'publicAssistanceOtherUnsure';
+                    return (
+                      <label key={program} className={`form-radio-card form-check-card ${checked ? 'selected' : ''}`}>
+                        <input
+                          type="checkbox"
+                          name="publicAssistancePrograms"
+                          value={program}
+                          checked={checked}
+                          onChange={() =>
+                            setPublicAssistancePrograms((current) =>
+                              normalizePublicAssistancePrograms(
+                                current.includes(program) ? current.filter((item) => item !== program) : [...current, program],
+                              ),
+                            )
+                          }
+                        />
+                        <span className="radio-dot" />
+                        <span>{t(labelKey)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {attemptedContinue && publicAssistancePrograms.length === 0 && (
+                  <p id="apply-eligibility-programs-error" className="apply-eligibility-field-error" role="alert">
+                    {t('eligibilityPublicAssistanceProgramsError')}
+                  </p>
+                )}
+              </fieldset>
+              <fieldset className="form-group apply-eligibility-fieldset">
+                <legend className="apply-eligibility-legend">{t('eligibilityHelpApplyingLegend')}</legend>
+                <p className="apply-eligibility-prompt">{t('eligibilityHelpApplyingPrompt')}</p>
+                <div
+                  className="form-radio-cards"
+                  role="radiogroup"
+                  aria-invalid={attemptedContinue && publicAssistanceHelpRequested === null}
+                  aria-describedby={attemptedContinue && publicAssistanceHelpRequested === null ? 'apply-eligibility-help-error' : undefined}
+                >
+                  {(['yes', 'no'] as const).map((answer) => (
+                    <label key={answer} className={`form-radio-card ${publicAssistanceHelpRequested === answer ? 'selected' : ''}`}>
+                      <input
+                        type="radio"
+                        name="publicAssistanceHelpRequested"
+                        value={answer}
+                        checked={publicAssistanceHelpRequested === answer}
+                        onChange={() => setPublicAssistanceHelpRequested(answer)}
+                        required
+                      />
+                      <span className="radio-dot" />
+                      <span>{t(answer === 'yes' ? 'answerYes' : 'answerNo')}</span>
+                    </label>
+                  ))}
+                </div>
+                {attemptedContinue && publicAssistanceHelpRequested === null && (
+                  <p id="apply-eligibility-help-error" className="apply-eligibility-field-error" role="alert">
+                    {t('eligibilityRadioError')}
+                  </p>
+                )}
+              </fieldset>
+            </>
+          ) : null}
           {showLayoffCompany ? (
             <div className="form-group">
               <label htmlFor="apply-layoff-company">{t('eligibilityLayoffCompanyLabel')}</label>

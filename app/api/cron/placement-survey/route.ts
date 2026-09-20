@@ -4,6 +4,8 @@ import { runDailyPlacementSurveyCron } from '@/lib/cron/placement-surveys';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 
+export const maxDuration = 300;
+
 /**
  * POST /api/cron/placement-survey
  *
@@ -31,17 +33,16 @@ async function handle(_request: Request) {
     },
   };
 
-  const status =
-    totalEmailFailures === 0 && result.escalations.emailFailures.length === 0
-      ? 'ok'
-      : totalEmailFailures > 0 || result.escalations.emailFailures.length > 0
-        ? 'partial'
-        : 'error';
+  // WAP-177 fix 3: any failed delivery is an error run (and a 500 so the
+  // wrapper records FAILED); the former 'partial' string was never a valid
+  // WorkflowDiagnostic status and the route always answered 200.
+  const failures = totalEmailFailures + result.escalations.emailFailures.length;
+  const status = failures > 0 ? 'error' : 'ok';
 
   await setCronRecordsProcessed(totalSent);
-  await logCronRun('cron_placement_survey', runResult, status as 'ok' | 'error');
+  await logCronRun('cron_placement_survey', runResult, status);
 
-  return NextResponse.json(runResult);
+  return NextResponse.json(runResult, { status: failures > 0 ? 500 : 200 });
 }
 
 export const GET = withCronLogging('cron_placement_survey', handle);

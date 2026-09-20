@@ -36,6 +36,8 @@ export default async function EligibilityPage() {
           exhaustedUnemployment: true,
           layoffCompany: true,
           snapWic: true,
+          publicAssistancePrograms: true,
+          publicAssistanceHelpRequested: true,
           hearAbout: true,
           hearAboutOther: true,
           partnerAmbassadorReferral: true,
@@ -57,6 +59,8 @@ export default async function EligibilityPage() {
           exhaustedUnemployment?: string | null;
           layoffCompany?: string | null;
           snapWic?: string | null;
+          publicAssistancePrograms?: string[] | null;
+          publicAssistanceHelpRequested?: string | null;
           hearAbout?: string | null;
           hearAboutOther?: string | null;
           partnerAmbassadorReferral?: string | null;
@@ -86,6 +90,10 @@ export default async function EligibilityPage() {
     exhaustedUnemployment: asYesNo(meta?.exhaustedUnemployment ?? screening?.exhaustedUnemployment),
     layoffCompany: meta?.layoffCompany ?? screening?.layoffCompany ?? '',
     snapWic: asYesNo(meta?.snapWic ?? screening?.snapWic),
+    publicAssistancePrograms: meta?.publicAssistancePrograms ?? screening?.publicAssistancePrograms ?? [],
+    publicAssistanceHelpRequested: asYesNo(
+      meta?.publicAssistanceHelpRequested ?? screening?.publicAssistanceHelpRequested,
+    ),
     hearAbout: meta?.hearAbout ?? screening?.hearAbout ?? '',
     hearAboutOther: meta?.hearAboutOther ?? screening?.hearAboutOther ?? '',
     partnerAmbassadorReferral:

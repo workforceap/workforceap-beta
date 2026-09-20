@@ -183,7 +183,7 @@ export default function AdminSuperMessagesClient() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [stats, setStats] = useState<{ threadsWithMessages: number; slaBreaches48h: number; slaBreaches72h: number } | null>(
+  const [stats, setStats] = useState<{ threadsWithMessages: number; unansweredMemberThreads?: number; slaBreaches48h: number; slaBreaches72h: number } | null>(
     null
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -416,6 +416,9 @@ export default function AdminSuperMessagesClient() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   <span className="portal-inbox-unread" title="Threads with messages">
                     {stats.threadsWithMessages} threads
+                  </span>
+                  <span className="portal-inbox-unread" title="Member messages with no staff reply yet">
+                    {stats.unansweredMemberThreads ?? 0} unanswered
                   </span>
                   <span className="portal-inbox-unread" title="Member SLA >48h">
                     {stats.slaBreaches48h} &gt;48h

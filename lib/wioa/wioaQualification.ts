@@ -2,6 +2,13 @@
  * Self-service WIOA screening — informational only, not a legal eligibility determination.
  */
 
+import {
+  formatPublicAssistancePrograms,
+  normalizePublicAssistancePrograms,
+  wicOnlyPublicAssistance,
+  type PublicAssistanceProgram,
+} from '@/lib/apply/publicAssistance';
+
 export type WioaBarrier =
   | 'none'
   | 'basic_skills'
@@ -31,12 +38,20 @@ export type WioaQualificationAnswers = {
    * snapshots saved before the question existed still parse (null = not asked).
    */
   publicAssistanceSelfReport?: boolean | null;
+  /**
+   * WAP-53 follow-ups after a Yes above: which programs (tanf | wic | snap |
+   * other_unsure) and whether the person wants help applying. Optional so
+   * every earlier snapshot still parses; `wic` alone is not treated as a
+   * definitive low-income indicator (see computeWioaSignal).
+   */
+  publicAssistancePrograms?: PublicAssistanceProgram[] | null;
+  publicAssistanceHelpRequested?: boolean | null;
 };
 
 export type WioaEligibilitySignal = 'likely' | 'possible' | 'review' | 'unclear';
 
 export type WioaReason =
-  | { code: 'public_assistance' | 'low_income' | 'dislocated_worker' | 'training_interest' | 'intake_complete' | 'youth_review' | 'staff_review' }
+  | { code: 'public_assistance' | 'wic_only_review' | 'low_income' | 'dislocated_worker' | 'training_interest' | 'intake_complete' | 'youth_review' | 'staff_review' }
   | { code: 'barrier'; params: { barrier: WioaBarrier } };
 
 type SnapshotFields = {
@@ -98,8 +113,24 @@ export function publicAssistanceLabel(value: boolean | null | undefined): string
   return 'Not answered';
 }
 
+/** Staff-facing program detail: "TANF, SNAP / food stamps", or "Not specified" after a Yes without detail. */
+export function publicAssistanceProgramsLabel(answers: Pick<WioaQualificationAnswers, 'publicAssistanceSelfReport' | 'publicAssistancePrograms'>): string {
+  if (answers.publicAssistanceSelfReport !== true) return '—';
+  const label = formatPublicAssistancePrograms(answers.publicAssistancePrograms ?? []);
+  return label || 'Not specified';
+}
+
+/** Staff-facing help-applying label; always a signal for follow-up, never verified enrollment. */
+export function publicAssistanceHelpLabel(answers: Pick<WioaQualificationAnswers, 'publicAssistanceSelfReport' | 'publicAssistanceHelpRequested'>): string {
+  if (answers.publicAssistanceSelfReport !== true) return '—';
+  if (answers.publicAssistanceHelpRequested === true) return 'Yes — wants help applying';
+  if (answers.publicAssistanceHelpRequested === false) return 'No';
+  return 'Not answered';
+}
+
 const REASON_TEXT = {
   public_assistance: 'You shared that you receive TANF, WIC, or SNAP (food stamps), which usually meets WIOA low-income guidelines once staff verify it.',
+  wic_only_review: 'You shared that you receive WIC. WIC on its own does not confirm WIOA low-income eligibility, so staff will review your household income with you.',
   low_income: 'You shared that your household income may fit common WIOA income guidelines, which staff can verify.',
   dislocated_worker: 'You reported being unemployed or laid off, which often fits WIOA dislocated worker pathways.',
   training_interest: 'You said you want training for an in-demand occupation, which is a strong match for many WIOA-funded plans.',
@@ -170,16 +201,23 @@ export function computeWioaSignal(answers: WioaQualificationAnswers): {
   const hasBarrier = answers.primaryBarrier !== 'none';
   const isYouth = answers.ageBracket === 'under18';
   const receivesPublicAssistance = answers.publicAssistanceSelfReport === true;
+  // WAP-53: WIC alone is a nutrition benefit with its own income test, not a
+  // WIOA categorical low-income qualifier. Only count public assistance when
+  // the person named TANF/SNAP/other, or gave no detail (legacy snapshots).
+  const wicOnly = receivesPublicAssistance && wicOnlyPublicAssistance(answers.publicAssistancePrograms);
+  const receivesQualifyingAssistance = receivesPublicAssistance && !wicOnly;
   // Receiving TANF / SNAP is itself a WIOA low-income indicator, so it counts
   // the same way as the self-reported income question.
-  const lowIncome = answers.lowIncomeSelfReport || receivesPublicAssistance;
+  const lowIncome = answers.lowIncomeSelfReport || receivesQualifyingAssistance;
   const coreQualifierCount =
     (lowIncome ? 1 : 0) +
     (answers.dislocatedWorker ? 1 : 0) +
     (hasBarrier ? 1 : 0);
 
-  if (receivesPublicAssistance) {
+  if (receivesQualifyingAssistance) {
     reasons.push({ code: 'public_assistance' });
+  } else if (wicOnly) {
+    reasons.push({ code: 'wic_only_review' });
   }
   if (answers.lowIncomeSelfReport) {
     reasons.push({ code: 'low_income' });
@@ -258,6 +296,14 @@ export function parseWioaAnswers(raw: unknown): WioaQualificationAnswers | null 
   // invalidate the rest of the screening.
   const publicAssistanceSelfReport =
     typeof o.publicAssistanceSelfReport === 'boolean' ? o.publicAssistanceSelfReport : null;
+  // WAP-53 follow-ups only mean anything after a Yes; unknown program values
+  // are dropped rather than failing the whole snapshot.
+  const publicAssistancePrograms =
+    publicAssistanceSelfReport === true ? normalizePublicAssistancePrograms(o.publicAssistancePrograms) : [];
+  const publicAssistanceHelpRequested =
+    publicAssistanceSelfReport === true && typeof o.publicAssistanceHelpRequested === 'boolean'
+      ? o.publicAssistanceHelpRequested
+      : null;
 
   return {
     ageBracket,
@@ -268,5 +314,9 @@ export function parseWioaAnswers(raw: unknown): WioaQualificationAnswers | null 
     trainingInterest: o.trainingInterest,
     completedIntakeSelfReport: o.completedIntakeSelfReport,
     publicAssistanceSelfReport,
+    // Only materialize the follow-up keys when they carry information, so a
+    // snapshot saved before WAP-53 round-trips through parse unchanged.
+    ...(publicAssistancePrograms.length > 0 ? { publicAssistancePrograms } : {}),
+    ...(publicAssistanceHelpRequested !== null ? { publicAssistanceHelpRequested } : {}),
   };
 }

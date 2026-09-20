@@ -15,6 +15,7 @@
  */
 
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { wicOnlyPublicAssistance } from '@/lib/apply/publicAssistance';
 
 export type ApplicantTriageBucket =
   | 'ready_to_review'
@@ -45,6 +46,7 @@ export type ApplicantTriageReasonCode =
   | 'wioa_signal_unclear'
   | 'minor_applicant'
   | 'wioa_review_in_progress'
+  | 'help_applying_requested'
   | 'intake_complete';
 
 export type ApplicantTriageChecklistKey =
@@ -101,6 +103,10 @@ export type ApplicantTriageInput = {
     q3: YesNo;
     receivingUnemployment?: YesNo;
     snapWic?: YesNo;
+    /** WAP-53: programs named after snapWic = yes (tanf | wic | snap | other_unsure). */
+    publicAssistancePrograms?: string[] | null;
+    /** WAP-53: applicant wants help applying for benefits — a staff action signal. */
+    publicAssistanceHelpRequested?: YesNo;
     partnerAmbassadorReferral?: string | null;
   } | null;
   /** Parsed portal WIOA self-screening snapshot, if the member completed it. */
@@ -126,6 +132,7 @@ export const APPLICANT_TRIAGE_REASON_TEXT: Record<ApplicantTriageReasonCode, str
   wioa_signal_unclear: 'Portal WIOA self-screening signal is unclear',
   minor_applicant: 'Applicant is under 18 (parental consent path)',
   wioa_review_in_progress: 'Staff WIOA review is still in progress',
+  help_applying_requested: 'Applicant asked for help applying for TANF / WIC / SNAP benefits',
   intake_complete: 'Intake complete: contact, program, screening and work authorization on file',
 };
 
@@ -171,12 +178,16 @@ function workAuthorization(input: ApplicantTriageInput): { value: boolean | null
  */
 function fundingFitIndicated(input: ApplicantTriageInput): boolean {
   const s = input.applyScreening;
-  if (s && (s.q1 === 'yes' || s.q2 === 'yes' || s.receivingUnemployment === 'yes' || s.snapWic === 'yes')) return true;
+  // WAP-53: WIC on its own is not a WIOA low-income indicator, so a "yes"
+  // whose only named program is WIC does not count as a fit signal.
+  const publicAssistanceFit = s?.snapWic === 'yes' && !wicOnlyPublicAssistance(s.publicAssistancePrograms);
+  if (s && (s.q1 === 'yes' || s.q2 === 'yes' || s.receivingUnemployment === 'yes' || publicAssistanceFit)) return true;
   const w = input.wioaSnapshot;
   if (w) {
     if (w.signal === 'likely' || w.signal === 'possible') return true;
     const a = w.answers;
-    if (a.dislocatedWorker || a.lowIncomeSelfReport || a.publicAssistanceSelfReport === true) return true;
+    const wioaAssistanceFit = a.publicAssistanceSelfReport === true && !wicOnlyPublicAssistance(a.publicAssistancePrograms);
+    if (a.dislocatedWorker || a.lowIncomeSelfReport || wioaAssistanceFit) return true;
   }
   return false;
 }
@@ -283,6 +294,16 @@ export function triageApplicant(input: ApplicantTriageInput): ApplicantTriageRes
   else {
     bucket = 'ready_to_review';
     add('intake_complete');
+  }
+
+  // ---- staff action signals (never move the bucket) -------------------------
+  // WAP-53: a request for help applying for benefits is something a counselor
+  // should act on; it is not evidence of enrollment and not a triage concern.
+  if (
+    input.applyScreening?.publicAssistanceHelpRequested === 'yes' ||
+    input.wioaSnapshot?.answers.publicAssistanceHelpRequested === true
+  ) {
+    add('help_applying_requested');
   }
 
   const checklistItems: Array<{ key: ApplicantTriageChecklistKey; ok: boolean }> = [
