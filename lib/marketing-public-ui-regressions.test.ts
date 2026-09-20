@@ -95,14 +95,16 @@ test('admin mobile bottom tabs match Command Center / Students / Messages', () =
   assert.doesNotMatch(adminBlock, /\/admin\/members'/);
 });
 
-test('counselor mobile bottom tabs surface Inbox with members and messages', () => {
+test('counselor mobile bottom tabs lead with Today, then Inbox, members and messages', () => {
   const mobileNav = source('components/MobileBottomNav.tsx');
   const counselorBlock = mobileNav.slice(
     mobileNav.indexOf('const COUNSELOR_TABS'),
     mobileNav.indexOf('const PARTNER_TABS'),
   );
 
-  assert.match(counselorBlock, /href: '\/counselor'/);
+  // `/counselor` redirects to Today (counselor audit 2026-09-20 §6.1); the first tab is the landing page.
+  assert.match(counselorBlock, /href: '\/counselor\/today', labelKey: 'counselor.today'/);
+  assert.doesNotMatch(counselorBlock, /href: '\/counselor'[,}]/);
   assert.match(counselorBlock, /href: '\/counselor\/inbox'/);
   assert.match(counselorBlock, /href: '\/counselor\/students'/);
   assert.match(counselorBlock, /href: '\/counselor\/messages'/);

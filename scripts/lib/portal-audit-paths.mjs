@@ -179,8 +179,9 @@ export const STATIC_PATHS = {
 
   counselor: [
     '/counselor/lab-reviews',
-    '/counselor',
-    '/counselor?ui=legacy',
+    '/counselor/today',
+    '/counselor/overview',
+    '/counselor/overview?ui=legacy',
     '/counselor/at-risk',
     '/counselor/guide',
     '/counselor/inactive-members',
@@ -332,14 +333,14 @@ export const SAFE_ACTION_CONTRACTS = {
     {
       id: 'counselor-open-students',
       kind: 'read_only_navigation',
-      sourcePath: '/counselor',
+      sourcePath: '/counselor/today',
       targetPath: '/counselor/students',
       required: true,
     },
     {
       id: 'counselor-open-student-record',
       kind: 'read_only_discovered_navigation',
-      sourcePath: '/counselor?ui=legacy',
+      sourcePath: '/counselor/overview?ui=legacy',
       targetPattern: '/counselor/students/[memberId]',
       requiredWhenApplicable: true,
       emptyStateText: 'No members assigned yet',
@@ -480,7 +481,15 @@ export const REDIRECT_ONLY_PATHS = {
       reason: 'legacy_alias',
     },
   ],
-  counselor: [],
+  counselor: [
+    {
+      path: '/counselor',
+      // The counselor root lands on Today (one attention list, audit 2026-09-20 §6.1);
+      // the Caseload overview is audited at /counselor/overview.
+      target: '/counselor/today',
+      reason: 'landing_page',
+    },
+  ],
 };
 
 /**

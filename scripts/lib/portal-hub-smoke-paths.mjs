@@ -22,7 +22,8 @@ export const PORTAL_HUB_SMOKE_PATHS = Object.freeze({
   counselor: {
     hub: '/counselor',
     deepLink: '/counselor/inbox',
-    hubHeading: /counselor overview|caseload|hey,/i,
+    // `/counselor` lands on Today (one attention list); the overview headings remain for `/counselor/overview`.
+    hubHeading: /today|counselor overview|caseload|hey,/i,
     deepHeading: /inbox/i,
   },
   employer: {

@@ -1,5 +1,6 @@
 /**
- * Pure projections of one `AttentionQueue` onto the four counselor surfaces.
+ * Pure projections of one `AttentionQueue` onto the five counselor surfaces
+ * (Today, Overview, Inbox zero, Triage, Work queue).
  *
  * Each page keeps its own layout and actions; what changes is that the rows
  * come from the same evaluated queue, so a member flagged on Inbox zero is
@@ -291,4 +292,156 @@ export function orderedReasonCounts(byFlag: Record<AttentionReason, number>): Ar
   return (Object.keys(byFlag) as AttentionReason[])
     .sort((a, b) => ATTENTION_REASON_RANK[a] - ATTENTION_REASON_RANK[b])
     .map((reason) => ({ reason, count: byFlag[reason] }));
+}
+
+// ─── Today ───────────────────────────────────────────────────────────────────
+
+/**
+ * The counselor landing page: one list of who needs attention today, grouped
+ * by what kind of contact each member needs. A member appears once, in the
+ * group of their primary (highest-ranked) reason; the rest of their reasons
+ * ride along as `additionalReasons`. On-track members are never listed
+ * (counselor audit 2026-09-20, §4.1: the queue must not list everyone).
+ */
+export type TodayGroupKey = 'at_risk' | 'reply_owed' | 'quiet' | 'follow_ups' | 'new' | 'celebrate';
+
+export type TodayGroupMeta = {
+  label: string;
+  /** One line under the group title saying what lands here. */
+  description: string;
+  /** What the group prints when nobody is in it. */
+  emptyTitle: string;
+  reasons: readonly AttentionReason[];
+};
+
+/** Group order on the page — most pressing first (mirrors `ATTENTION_REASONS` rank). */
+export const TODAY_GROUP_ORDER: readonly TodayGroupKey[] = [
+  'at_risk',
+  'reply_owed',
+  'quiet',
+  'follow_ups',
+  'new',
+  'celebrate',
+];
+
+export const TODAY_GROUPS: Record<TodayGroupKey, TodayGroupMeta> = {
+  at_risk: {
+    label: 'At risk',
+    description: 'Saved risk alert, or no learning activity for 30+ days.',
+    emptyTitle: 'Nobody at risk',
+    reasons: ['risk_alert', 'no_activity_30d'],
+  },
+  reply_owed: {
+    label: 'Reply owed',
+    description: 'A member wrote and nobody on staff has answered in 24+ hours.',
+    emptyTitle: 'No replies owed',
+    reasons: ['sla_breach_48h', 'sla_warning_24h'],
+  },
+  quiet: {
+    label: 'Quiet',
+    description: 'Learning has gone quiet, training stalled, or you have not written in a week.',
+    emptyTitle: 'Nobody has gone quiet',
+    reasons: ['no_activity_10d', 'stale_training', 'no_counselor_contact_7d'],
+  },
+  follow_ups: {
+    label: 'Follow-ups',
+    description: 'Paperwork waiting on someone: resume, application, or a computer-access need.',
+    emptyTitle: 'No follow-ups waiting',
+    reasons: [
+      'resume_missing_3d',
+      'application_stalled_5d',
+      'missing_info',
+      'pending_application',
+      'computer_support_followup',
+    ],
+  },
+  new: {
+    label: 'New to you',
+    description: 'Joined this week and still has no counselor.',
+    emptyTitle: 'No new members waiting for a counselor',
+    reasons: ['new_no_counselor'],
+  },
+  celebrate: {
+    label: 'Celebrate',
+    description: 'A recent milestone you have not congratulated yet. Not counted as attention.',
+    emptyTitle: 'No new milestones',
+    reasons: ['milestone_reached'],
+  },
+};
+
+const REASON_TO_TODAY_GROUP: Record<AttentionReason, TodayGroupKey> = Object.fromEntries(
+  TODAY_GROUP_ORDER.flatMap((key) => TODAY_GROUPS[key].reasons.map((reason) => [reason, key])),
+) as Record<AttentionReason, TodayGroupKey>;
+
+export function todayGroupForReason(reason: AttentionReason): TodayGroupKey {
+  return REASON_TO_TODAY_GROUP[reason];
+}
+
+export type TodayRow = {
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  enrolledProgram: string | null;
+  group: TodayGroupKey;
+  primaryReason: AttentionReason;
+  additionalReasons: AttentionReason[];
+  severity: AttentionSeverity;
+  context: AttentionContext;
+  /** Counselor-member thread when a reply is owed; the row links straight to it. */
+  threadId: string | null;
+};
+
+export type TodayGroup = TodayGroupMeta & { key: TodayGroupKey; rows: TodayRow[] };
+
+export type TodayQueue = {
+  /** Every group, in `TODAY_GROUP_ORDER`, including empty ones (the page shows each empty state). */
+  groups: TodayGroup[];
+  totals: {
+    /** critical + warning — the number the Overview, Inbox zero and Triage print. */
+    flagged: number;
+    critical: number;
+    warning: number;
+    /** Members waiting on a reply — the Work queue's row count. */
+    awaitingReply: number;
+    celebrate: number;
+    onTrack: number;
+    roster: number;
+  };
+};
+
+function attentionToTodayRow(row: MemberAttention): TodayRow {
+  return {
+    memberId: row.memberId,
+    memberName: row.memberName,
+    memberEmail: row.memberEmail,
+    enrolledProgram: row.enrolledProgram,
+    group: todayGroupForReason(row.primaryReason),
+    primaryReason: row.primaryReason,
+    additionalReasons: row.reasons.slice(1),
+    severity: row.severity,
+    context: row.context,
+    threadId: row.context.threadId ?? null,
+  };
+}
+
+/** Group the shared queue for the Today page. Rows keep the queue's order inside each group. */
+export function toTodayQueue(queue: AttentionQueue): TodayQueue {
+  const groups: TodayGroup[] = TODAY_GROUP_ORDER.map((key) => ({ key, ...TODAY_GROUPS[key], rows: [] }));
+  const byKey = new Map(groups.map((group) => [group.key, group]));
+  for (const row of [...queue.rows, ...queue.celebrate]) {
+    const today = attentionToTodayRow(row);
+    byKey.get(today.group)?.rows.push(today);
+  }
+  return {
+    groups,
+    totals: {
+      flagged: queue.totals.flagged,
+      critical: queue.totals.critical,
+      warning: queue.totals.warning,
+      awaitingReply: toWorkQueueContext(queue).awaitingReply,
+      celebrate: queue.totals.celebrate,
+      onTrack: queue.totals.onTrack,
+      roster: queue.totals.roster,
+    },
+  };
 }

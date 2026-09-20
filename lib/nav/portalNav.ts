@@ -10,6 +10,7 @@ import {
   BookOpen,
   Briefcase,
   Building2,
+  CalendarCheck,
   CheckCircle,
   ClipboardCheck,
   ClipboardList,
@@ -451,7 +452,9 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
 ];
 
 export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  { href: '/counselor', label: 'Overview', group: 'primary', Icon: Home },
+  // Today is the landing page: one attention list from lib/attention. `/counselor` redirects here.
+  { href: '/counselor/today', label: 'Today', group: 'primary', Icon: CalendarCheck, aliases: ['/counselor'] },
+  { href: '/counselor/overview', label: 'Overview', group: 'primary', Icon: Home },
   { href: '/counselor/inbox', label: 'Inbox zero', group: 'workflows', Icon: ListChecks },
   { href: '/counselor/sessions', label: 'In-office sessions', group: 'workflows', Icon: Sparkles },
   { href: '/counselor/students', label: 'My members', group: 'workflows', Icon: Users },

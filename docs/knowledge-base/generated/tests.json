@@ -3548,8 +3548,12 @@
         "line": 4
       },
       {
+        "file": "lib/attention/reasons.ts",
+        "line": 15
+      },
+      {
         "file": "tests/fixtures/attentionRoster.ts",
-        "line": 11
+        "line": 16
       }
     ],
     "kind": "test-candidate",
@@ -20235,6 +20239,43 @@
       {
         "file": "lib/counselor/rosterStats.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/counselor-today.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+        "line": 3
+      },
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/attention/counselorViews.ts",
+        "line": 5
+      },
+      {
+        "file": "tests/fixtures/attentionRoster.ts",
+        "line": 6
       }
     ],
     "kind": "test-candidate",

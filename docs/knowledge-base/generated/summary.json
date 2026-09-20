@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "80d983aa8e6f57cdb908bcbe15a55b7a59f4b34862f91c95f092094aeabf6ff4",
+  "inputTreeSha256": "c2e8e788cdd95488bf29df7998699fa6021c90cd0f0695f1b1791307379a4268",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4798,
-    "sourceModules": 3457,
-    "importReferences": 17148,
-    "resolvedLocalReferences": 11466,
+    "files": 4802,
+    "sourceModules": 3461,
+    "importReferences": 17170,
+    "resolvedLocalReferences": 11481,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1055,
-    "nextRouteFiles": 1022,
+    "routeFiles": 1057,
+    "nextRouteFiles": 1024,
     "apiHandlers": 489,
-    "pageFiles": 314,
+    "pageFiles": 316,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 880,
-    "testCandidates": 872,
+    "testFiles": 881,
+    "testCandidates": 873,
     "testHelpers": 8,
-    "staticallySelectedTests": 870,
+    "staticallySelectedTests": 871,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 599
+      "files": 600
     },
     {
       "area": "content",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 637
+      "files": 639
     },
     {
       "area": "root",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 493
+      "files": 494
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 734
+      "references": 735
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -124,7 +124,7 @@
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 428
+      "references": 429
     },
     {
       "file": "lib/content/programs.ts",
@@ -144,7 +144,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 201
+      "references": 202
     },
     {
       "file": "lib/audit/log.ts",
@@ -180,7 +180,7 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 80
+      "references": 81
     },
     {
       "file": "lib/events/track.ts",
