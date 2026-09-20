@@ -81,7 +81,7 @@ import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PageHeader from '@/components/portal/PageHeader';
 
 /** Give up on a stalled metrics request after this long and offer Retry. */
-export const ADMIN_METRICS_TIMEOUT_MS = 20_000;
+const ADMIN_METRICS_TIMEOUT_MS = 20_000;
 
 function DashboardFrame({ children }: { children: React.ReactNode }) {
   return (

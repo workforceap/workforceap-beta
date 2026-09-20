@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "a4b1e9b4e5af1c63566dc7f073a29afcc566a73a7261f98bef45e44a4791eb7e",
+  "inputTreeSha256": "49a7a9c0f2d67292921479d53ccda472e1eafbe6e2149d9ad213598a482006a1",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -15944,16 +15944,11 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 16665,
+      "bytes": 16658,
       "lines": 509,
-      "sha256": "5f5582f28ffec12e64704d9f7bd388ddbc051f49146c428f7117876908837b85",
+      "sha256": "5bef6a524b654e344ca61663f8a0e00fd555ca92573dbb4e66e1f4bde25b2488",
       "binary": false,
       "exports": [
-        {
-          "name": "ADMIN_METRICS_TIMEOUT_MS",
-          "line": 84,
-          "kind": "Variable"
-        },
         {
           "name": "default",
           "line": 191,

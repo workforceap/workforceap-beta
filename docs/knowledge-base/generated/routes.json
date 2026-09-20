@@ -8453,11 +8453,6 @@
     "routing": "filesystem",
     "exports": [
       {
-        "name": "ADMIN_METRICS_TIMEOUT_MS",
-        "line": 84,
-        "kind": "Variable"
-      },
-      {
         "name": "default",
         "line": 191,
         "kind": "FunctionDeclaration",
