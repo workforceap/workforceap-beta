@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b1b76f89fa4d92eec719485a72208e04933444d76324b419eab096fdd586e3c7",
+  "inputTreeSha256": "996d9860218dec469c41ad47de297ad291067c3a3770d3c7db414bb50d660c9f",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -15882,24 +15882,24 @@
       "path": "app/admin/coursera/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 67937,
-      "lines": 1636,
-      "sha256": "01e929398b04cb05049eeeb036a6c9e1f342299a77a24cc3a3f3970166a95c4a",
+      "bytes": 62287,
+      "lines": 1478,
+      "sha256": "7c0a362a1a0b1eb394b6ef60a38d45cae1d73af0bcec79085f97c9144471207f",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 493,
+          "line": 335,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 501,
+          "line": 343,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 516,
+          "line": 358,
           "kind": "FunctionDeclaration",
           "localName": "AdminCourseraPage"
         }
@@ -15936,53 +15936,43 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "CatalogIssueList",
-          "line": 308,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "CourseraCatalogHealthSection",
-          "line": 328,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "collapsibleSectionStyle",
-          "line": 466,
+          "line": 308,
           "kind": "Variable"
         },
         {
           "name": "collapsibleSummaryStyle",
-          "line": 470,
+          "line": 312,
           "kind": "Variable"
         },
         {
           "name": "collapsibleBodyStyle",
-          "line": 481,
+          "line": 323,
           "kind": "Variable"
         },
         {
           "name": "collapsibleCountStyle",
-          "line": 487,
+          "line": 329,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 493,
+          "line": 335,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "dynamic",
-          "line": 501,
+          "line": 343,
           "kind": "Variable"
         },
         {
           "name": "fmtRelative",
-          "line": 503,
+          "line": 345,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminCourseraPage",
-          "line": 516,
+          "line": 358,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -20924,9 +20914,9 @@
       "path": "app/admin/users/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 7429,
-      "lines": 195,
-      "sha256": "4905cc1d0e45b4bf5089cafddddf460a757931e836aeaecc3a8d466877e3b136",
+      "bytes": 7668,
+      "lines": 210,
+      "sha256": "16b38b6ed61993299e56904e1522efe36cd4a9400e7362fdf60506075a89964a",
       "binary": false,
       "exports": [
         {
@@ -48622,14 +48612,14 @@
       "path": "components/admin/AdminDataLoadError.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 1021,
-      "lines": 30,
-      "sha256": "16d9de6c08777b9dcfca0ebbeeca41272e0f9ea06339d56f46a8704508525e25",
+      "bytes": 1076,
+      "lines": 33,
+      "sha256": "3ec851c41938b614da55d82a33b23b5db97743d5d445feaa9aaecab51a9c7bb1",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataLoadError"
         }
@@ -48637,7 +48627,7 @@
       "declarations": [
         {
           "name": "AdminDataLoadError",
-          "line": 6,
+          "line": 8,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -50343,6 +50333,75 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/admin/CourseraCatalogHealthTable.tsx",
+      "area": "components",
+      "domain": "learning-coursera",
+      "bytes": 6610,
+      "lines": 176,
+      "sha256": "827c7fa83b8a906056cc6bf1ffd7962dfc5b11d77aa60f38b33ddb4c80eec8d0",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CourseraCatalogHealthTable",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CourseraCatalogHealthSection",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "IssueGroup",
+          "line": 12,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "catalogIssueGroups",
+          "line": 14,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "issueCount",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ProviderCell",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "IssuesCell",
+          "line": 46,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "IssuesSubRow",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "COLUMNS",
+          "line": 82,
+          "kind": "Variable"
+        },
+        {
+          "name": "CourseraCatalogHealthTable",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CourseraCatalogHealthSection",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/admin/CourseraCsvImportClient.tsx",
@@ -64250,36 +64309,46 @@
       "path": "components/portal/kit/DataTable.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 3810,
-      "lines": 132,
-      "sha256": "e35fa3434e2196da71148e23b783259414cc1876ffe88869a10983fdcd27dbf9",
+      "bytes": 6255,
+      "lines": 199,
+      "sha256": "805c3d9e6626f70be285becdaa2fd35da12edf1abd094807ef0eed7e2922c81e",
       "binary": false,
       "exports": [
         {
+          "name": "KitTableBulkBarContext",
+          "line": 11,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 11,
+          "kind": "ReExport"
+        },
+        {
           "name": "Column",
-          "line": 6,
+          "line": 13,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTable",
-          "line": 40,
+          "line": 73,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "Column",
-          "line": 6,
+          "line": 13,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTableProps",
-          "line": 18,
+          "line": 26,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DataTable",
-          "line": 40,
+          "line": 73,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64535,6 +64604,45 @@
       "directive": null
     },
     {
+      "path": "components/portal/kit/KitRowMenu.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 4775,
+      "lines": 146,
+      "sha256": "5c3ce0617b90538bc5aba69ec0dcebc9f1a0d04895c39f01d8b07626fbd149c6",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KitRowMenuItem",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitRowMenu",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KitRowMenuItem",
+          "line": 7,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitRowMenuProps",
+          "line": 19,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "KitRowMenu",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "components/portal/kit/KitSortHeader.tsx",
       "area": "components",
       "domain": "components",
@@ -64577,46 +64685,120 @@
       "path": "components/portal/kit/KitTableShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4128,
-      "lines": 130,
-      "sha256": "fc593d52920b634719f81b930d02ef17641dc88173006b03f8a8e1262310149c",
+      "bytes": 14403,
+      "lines": 367,
+      "sha256": "0f095de2bea6e5b8bb90589fec55c9d92502e64205a9e6b17001e445a59b8427",
       "binary": false,
       "exports": [
         {
           "name": "KitTableShellColumn",
-          "line": 7,
+          "line": 9,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellRow",
-          "line": 18,
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShell",
-          "line": 43,
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTablePager",
+          "line": 352,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "KitTableShellColumn",
-          "line": 7,
+          "line": 9,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellRow",
-          "line": 18,
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 38,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KitTableShellProps",
-          "line": 23,
+          "line": 43,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "nextSelection",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "KitTableShell",
-          "line": 43,
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTablePager",
+          "line": 352,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/kit/KitTableToolbar.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 5143,
+      "lines": 150,
+      "sha256": "93159dbc2715f47a99f588290a8277502424ec2a0f34059930196e35acafb004",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KitTableViewChip",
+          "line": 8,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableToolbar",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KitTableViewChip",
+          "line": 8,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableToolbarProps",
+          "line": 20,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "KitTableToolbar",
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65503,9 +65685,9 @@
       "path": "components/portal/kit/index.ts",
       "area": "components",
       "domain": "components",
-      "bytes": 2647,
-      "lines": 50,
-      "sha256": "423555035fdd373a38fa718fe69f17c6d4dfc2c2394e940987927823a0fe8bf1",
+      "bytes": 3059,
+      "lines": 62,
+      "sha256": "fc2c01cdf2acc7821331bcf0cf807f7aced2781de8e77ff77fd1cec954800fc5",
       "binary": false,
       "exports": [
         {
@@ -65649,198 +65831,268 @@
           "kind": "ReExport"
         },
         {
-          "name": "FeatureTile",
+          "name": "KitTablePagination",
+          "line": 29,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTableBulkBarContext",
+          "line": 29,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTableToolbar",
           "line": 30,
           "kind": "ReExport"
         },
         {
-          "name": "QueueRow",
+          "name": "KitTableViewChip",
+          "line": 30,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitRowMenu",
           "line": 31,
           "kind": "ReExport"
         },
         {
-          "name": "QueueTone",
+          "name": "KitRowMenuItem",
           "line": 31,
           "kind": "ReExport"
         },
         {
-          "name": "WorkQueueItem",
-          "line": 32,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanBoard",
+          "name": "KIT_TABLE_PAGE_SIZE",
           "line": 33,
           "kind": "ReExport"
         },
         {
-          "name": "KanbanColumnHeader",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanColumnData",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "KanbanCardData",
-          "line": 33,
-          "kind": "ReExport"
-        },
-        {
-          "name": "BarChartMini",
+          "name": "readKitTableUrlState",
           "line": 34,
           "kind": "ReExport"
         },
         {
-          "name": "RankBars",
-          "line": 34,
+          "name": "writeKitTableUrlState",
+          "line": 35,
           "kind": "ReExport"
         },
         {
-          "name": "Sparkline",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "AreaChartMini",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "ChartDatum",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "RankDatum",
-          "line": 34,
-          "kind": "ReExport"
-        },
-        {
-          "name": "CardHead",
+          "name": "kitTableHref",
           "line": 36,
           "kind": "ReExport"
         },
         {
-          "name": "DeltaChip",
+          "name": "parseKitTableSort",
           "line": 37,
           "kind": "ReExport"
         },
         {
-          "name": "StatSparkTile",
+          "name": "serializeKitTableSort",
           "line": 38,
           "kind": "ReExport"
         },
         {
-          "name": "StageTrack",
+          "name": "KitTableSort",
           "line": 39,
           "kind": "ReExport"
         },
         {
-          "name": "SegmentedProgress",
+          "name": "KitTableUrlState",
           "line": 40,
           "kind": "ReExport"
         },
         {
-          "name": "SparkStat",
-          "line": 41,
+          "name": "FeatureTile",
+          "line": 42,
           "kind": "ReExport"
         },
         {
-          "name": "FormField",
+          "name": "QueueRow",
           "line": 43,
           "kind": "ReExport"
         },
         {
-          "name": "Toggle",
+          "name": "QueueTone",
           "line": 43,
           "kind": "ReExport"
         },
         {
-          "name": "ChatThread",
+          "name": "WorkQueueItem",
           "line": 44,
           "kind": "ReExport"
         },
         {
-          "name": "ChatMessage",
-          "line": 44,
-          "kind": "ReExport"
-        },
-        {
-          "name": "Tabs",
+          "name": "KanbanBoard",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "TabPanel",
+          "name": "KanbanColumnHeader",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "KitTabItem",
+          "name": "KanbanColumnData",
           "line": 45,
           "kind": "ReExport"
         },
         {
-          "name": "AppShellSidebar",
+          "name": "KanbanCardData",
+          "line": 45,
+          "kind": "ReExport"
+        },
+        {
+          "name": "BarChartMini",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "NavItem",
+          "name": "RankBars",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "NavGroup",
+          "name": "Sparkline",
           "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "AppShellMember",
-          "line": 47,
+          "name": "AreaChartMini",
+          "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "MemberTab",
-          "line": 47,
+          "name": "ChartDatum",
+          "line": 46,
           "kind": "ReExport"
         },
         {
-          "name": "UniversalSearch",
+          "name": "RankDatum",
+          "line": 46,
+          "kind": "ReExport"
+        },
+        {
+          "name": "CardHead",
           "line": 48,
           "kind": "ReExport"
         },
         {
-          "name": "MemberDashboardKit",
+          "name": "DeltaChip",
           "line": 49,
+          "kind": "ReExport"
+        },
+        {
+          "name": "StatSparkTile",
+          "line": 50,
+          "kind": "ReExport"
+        },
+        {
+          "name": "StageTrack",
+          "line": 51,
+          "kind": "ReExport"
+        },
+        {
+          "name": "SegmentedProgress",
+          "line": 52,
+          "kind": "ReExport"
+        },
+        {
+          "name": "SparkStat",
+          "line": 53,
+          "kind": "ReExport"
+        },
+        {
+          "name": "FormField",
+          "line": 55,
+          "kind": "ReExport"
+        },
+        {
+          "name": "Toggle",
+          "line": 55,
+          "kind": "ReExport"
+        },
+        {
+          "name": "ChatThread",
+          "line": 56,
+          "kind": "ReExport"
+        },
+        {
+          "name": "ChatMessage",
+          "line": 56,
+          "kind": "ReExport"
+        },
+        {
+          "name": "Tabs",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "TabPanel",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "KitTabItem",
+          "line": 57,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AppShellSidebar",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "NavItem",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "NavGroup",
+          "line": 58,
+          "kind": "ReExport"
+        },
+        {
+          "name": "AppShellMember",
+          "line": 59,
+          "kind": "ReExport"
+        },
+        {
+          "name": "MemberTab",
+          "line": 59,
+          "kind": "ReExport"
+        },
+        {
+          "name": "UniversalSearch",
+          "line": 60,
+          "kind": "ReExport"
+        },
+        {
+          "name": "MemberDashboardKit",
+          "line": 61,
           "kind": "ReExport"
         },
         {
           "name": "MemberDashboardKitProps",
-          "line": 49,
+          "line": 61,
           "kind": "ReExport"
         },
         {
           "name": "colorVar",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "toneClass",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "KitColor",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         },
         {
           "name": "KitTone",
-          "line": 50,
+          "line": 62,
           "kind": "ReExport"
         }
       ],
@@ -65885,6 +66137,135 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/portal/kit/kitTableUrlState.ts",
+      "area": "components",
+      "domain": "components",
+      "bytes": 4102,
+      "lines": 109,
+      "sha256": "26a695ab1df02b3f374c256df23015e6784e42affea94044d2313bdedba57230",
+      "binary": false,
+      "exports": [
+        {
+          "name": "KIT_TABLE_PAGE_SIZE",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "KitTableSortDirection",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableSort",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableUrlState",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "parseKitTableSort",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "serializeKitTableSort",
+          "line": 44,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readKitTableUrlState",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTableUrlChanges",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "writeKitTableUrlState",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "kitTableHref",
+          "line": 106,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "KIT_TABLE_PAGE_SIZE",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "KitTableSortDirection",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableSort",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "KitTableUrlState",
+          "line": 17,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ParamSource",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "readParam",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseKitTableSort",
+          "line": 32,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "serializeKitTableSort",
+          "line": 44,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseKitTablePage",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readKitTableUrlState",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "KitTableUrlChanges",
+          "line": 66,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "writeKitTableUrlState",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "kitTableHref",
+          "line": 106,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/portal/kit/pages/PartnerOverviewKit.module.css",
@@ -68860,51 +69241,61 @@
       "path": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5211,
-      "lines": 94,
-      "sha256": "67e481f4c517add76bbc902c78ac8a3b333e79322b65ee693d7e8ee4b2700801",
+      "bytes": 12802,
+      "lines": 298,
+      "sha256": "513fa364396d1c773af4443f948e02e7bde6fd07c420300b4959e46474c2bce0",
       "binary": false,
       "exports": [
         {
           "name": "UserRow",
-          "line": 19,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKitProps",
-          "line": 29,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKit",
-          "line": 49,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "UserRow",
-          "line": 19,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UsersKitProps",
-          "line": 29,
+          "line": 37,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "manageHref",
-          "line": 38,
+          "line": 50,
           "kind": "Variable"
         },
         {
+          "name": "roleCodeOf",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "Feedback",
+          "line": 54,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "UserCell",
-          "line": 40,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UsersKit",
-          "line": 49,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -73562,9 +73953,9 @@
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 49050,
-      "lines": 1480,
-      "sha256": "c413d22a90e0266c3abf0a5528fe837569d1761c2454efdc99bb0ba093f58c17",
+      "bytes": 59479,
+      "lines": 1929,
+      "sha256": "004c9e18dc89ccfcd0cf49eea53a8af0455be19e1f1b7cdfe3dce2d1d4e19267",
       "binary": false
     },
     {
@@ -74030,9 +74421,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 40737,
-      "lines": 545,
-      "sha256": "46a3e7d065e5a15fbcf6c17ff847bc441671ef452b8e9c1d08b91ef08bc4ec0d",
+      "bytes": 44752,
+      "lines": 589,
+      "sha256": "8bfbdfc941165842d755749b217b159f1aa967b4d52bcd39b3cab942c945bafe",
       "binary": false
     },
     {
@@ -80774,9 +81165,9 @@
       "path": "lib/admin-coursera-catalog-health-structure.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 942,
-      "lines": 21,
-      "sha256": "a0f1b07120698492e0400c250e02763262fe465c1b09e5791f88d23ad89981e1",
+      "bytes": 1200,
+      "lines": 24,
+      "sha256": "aa57cd230e88d57dc4e30a9f40c3da1adeb6a8a04436de416122b1ff46d2aa96",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -86553,6 +86944,50 @@
         {
           "name": "userAuthDeleteFailedResponse",
           "line": 3,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/usersSelfGuard.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 746,
+      "lines": 14,
+      "sha256": "94d9ceea693a6271df664287b59d05322a8ff23dcd2b0e27de51f8e9b9b841db",
+      "binary": false,
+      "exports": [
+        {
+          "name": "SELF_DELETE_BLOCKED_TITLE",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "SELF_ROLE_CHANGE_BLOCKED_TITLE",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "isSelfRow",
+          "line": 12,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "SELF_DELETE_BLOCKED_TITLE",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "SELF_ROLE_CHANGE_BLOCKED_TITLE",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "isSelfRow",
+          "line": 12,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -160987,6 +161422,34 @@
       "directive": null
     },
     {
+      "path": "tests/components/coursera-catalog-health-table.spec.tsx",
+      "area": "tests",
+      "domain": "learning-coursera",
+      "bytes": 6405,
+      "lines": 131,
+      "sha256": "b8bf0a2cad539b4ec4c72ac10d24e5bf5e39dedda7272e650b49d1b0212db0af",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "entry",
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "healthy",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "troubled",
+          "line": 48,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/coursera-diagnostics-evidence.spec.tsx",
       "area": "tests",
       "domain": "learning-coursera",
@@ -161318,6 +161781,51 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/kit-data-table-primitive.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 12858,
+      "lines": 245,
+      "sha256": "f469c0f333cc2a619a3d5673b61a6c5937d9cb355a5b5b489be2b2604450b0a9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "Row",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "rows",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "columns",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "base",
+          "line": 27,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/kit-table-toolbar.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7584,
+      "lines": 138,
+      "sha256": "0eb03f9f8b01cd6e070af3dd00d9c67d154811365273f45d857c961ce780d3a4",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -162445,6 +162953,54 @@
         {
           "name": "workspace",
           "line": 9,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/users-kit-row-menu.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 10389,
+      "lines": 194,
+      "sha256": "da79db454d62e67d73fa1f835d7d651302a3effdecf22b452e6e0c8b2946821f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "navigation",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "me",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "other",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "props",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "tableRowFor",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openMenu",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 53,
           "kind": "Variable"
         }
       ],

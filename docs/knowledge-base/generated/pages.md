@@ -369,7 +369,7 @@
 | [app/admin/coursera/learners/\[userId\]/page.tsx](../../../app/admin/coursera/learners/%5BuserId%5D/page.tsx) | 379 | learning-coursera | metadata:27, dynamic:33, default:79 |
 | [app/admin/coursera/learners/unmatched/\[externalEmail\]/events/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/events/page.tsx) | 250 | learning-coursera | metadata:18, dynamic:24, default:46 |
 | [app/admin/coursera/learners/unmatched/\[externalEmail\]/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/page.tsx) | 463 | learning-coursera | metadata:26, dynamic:32, default:45 |
-| [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | 1636 | learning-coursera | generateMetadata:493, dynamic:501, default:516 |
+| [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | 1478 | learning-coursera | generateMetadata:335, dynamic:343, default:358 |
 | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | 102 | learning-coursera | generateMetadata:17, dynamic:26, default:37 |
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
@@ -492,7 +492,7 @@
 | [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | 425 | administration | generateMetadata:28, dynamic:37, default:45 |
 | [app/admin/users/deleted/page.tsx](../../../app/admin/users/deleted/page.tsx) | 117 | administration | generateMetadata:12, default:36 |
 | [app/admin/users/loading.tsx](../../../app/admin/users/loading.tsx) | 5 | administration | default:3 |
-| [app/admin/users/page.tsx](../../../app/admin/users/page.tsx) | 195 | administration | generateMetadata:19, default:67 |
+| [app/admin/users/page.tsx](../../../app/admin/users/page.tsx) | 210 | administration | generateMetadata:19, default:67 |
 | [app/admin/webhook-events/WebhookEventsClient.tsx](../../../app/admin/webhook-events/WebhookEventsClient.tsx) | 466 | administration | default:56 |
 | [app/admin/webhook-events/loading.tsx](../../../app/admin/webhook-events/loading.tsx) | 10 | administration | default:3 |
 | [app/admin/webhook-events/page.tsx](../../../app/admin/webhook-events/page.tsx) | 206 | administration | generateMetadata:12, default:69 |

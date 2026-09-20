@@ -303,7 +303,9 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
-| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). |
+| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
+| `KitTableToolbar` (+ `KitTableViewChip`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`). |
+| `KitRowMenu` (+ `KitRowMenuItem`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
 | `QueueRow`, `WorkQueueItem` | staff work queues |
 | `KanbanBoard`, `KanbanColumnHeader` | pipeline boards |
@@ -421,6 +423,48 @@ helpers in `lib/admin/trainingProgressRoster.ts`. Last active is a relative capt
 timestamps sort last in both directions. Do not mix Astryx primitives inside the
 kit table cells beyond `Token` for Status / Pace. Legacy tables stay behind
 `?ui=legacy` only (`/admin/training-progress?ui=legacy`, `/admin/members/training?ui=legacy`).
+
+---
+
+## 6a. Table standard (admin tables, 2026-09-20)
+
+One primitive: kit `DataTable` + `KitTableShell` (`components/portal/kit/DataTable.tsx`,
+`KitTableShell.tsx`). Legacy `components/portal/ui/DataTable` stays only behind `?ui=legacy`
+twins and in diagnostics tables that have not been ported yet; do not add new callers.
+Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCatalogHealthTable.tsx`.
+
+- **Columns**: at most 8 on desktop, the identity column first and `stickyLeft`. A row menu
+  (`KitRowMenu`) replaces per-row button rows and `?ui=legacy` hand-offs; it carries the actions the
+  page already has server routes for (Users: change role, send password reset, delete — the same
+  `/api/admin/users/[id]` routes the legacy manager calls, with the self-row guard from
+  `lib/admin/usersSelfGuard.ts`: the signed-in admin's row keeps Delete and Change role visible but
+  inert, with the reason as the tooltip).
+- **State is `StatusTag`**, never Astryx `Token` colours and never coloured numbers. Counts of problems
+  collapse into one `StatusTag` ("5 issues") with the detail in a `renderSubRow` (Coursera catalog
+  health: Unmapped / Stale IDs / Wrong type / Additional in one sub-row).
+- **Density**: `DesignSurface surface="dense"` (8/12px cells) or `density="compact"`. Rows are at most
+  two text lines: `.wa-kit-table-cell--truncate` (with `title`) for names, emails and programs,
+  `.wa-kit-table-cell--nowrap` for phones and dates, `.wa-kit-table-cell--num` for numbers. Type never
+  goes below `--wa-type-meta` (13px).
+- **Toolbar**: `KitTableToolbar` above the table — search (`?search`), saved-view chips with counts
+  (`All · 8`, `At risk · 6`), other filters behind "Filters · n on", actions on the right. URL state is
+  `?search&sort&page` (`sort` = `key` / `-key`; changing search, sort or a filter drops `page`); page
+  size is `KIT_TABLE_PAGE_SIZE` (50). Tables under `ADMIN_SSR_LIST_CAP` sort on the client with
+  `useKitTableSort` + `KitSortHeader`; larger ones sort and page on the server from the URL.
+- **Wide tables**: `scrollCue` paints a right-edge fade and announces "Scroll for more" while columns
+  overflow; `stickyHeader` pins `th` inside a `stickyMaxHeight` (default `70vh`) body.
+- **Bulk**: `selectable` + `bulkBar={({ selectedKeys, clear }) => …}`. The bar renders above the table
+  with the count and a Clear button; dialogs mount inside the slot. Selection is keyed by `rowKey`,
+  optionally controlled through `selectedKeys`.
+- **Mobile**: `mobile="cards"` with one card template — identity, one `StatusTag`, two facts, the same
+  row menu — and the pager under the cards. Horizontal scroll only for diagnostic tables.
+- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`emptyTitle` /
+  `emptyDescription`); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
+  (`aria-busy` + skeleton rows while there are no rows yet); hard failure =
+  `components/admin/AdminDataLoadError.tsx` (kit card, single h1, Admin home / Jobs); soft failure =
+  `errorNotice` (an alert row above the data, the rows stay).
+- **Specs** are render-based: `tests/components/kit-data-table-primitive.spec.tsx`,
+  `kit-table-toolbar.spec.tsx`, `users-kit-row-menu.spec.tsx`, `coursera-catalog-health-table.spec.tsx`.
 
 ---
 

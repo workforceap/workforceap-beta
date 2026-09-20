@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "b1b76f89fa4d92eec719485a72208e04933444d76324b419eab096fdd586e3c7",
+  "inputTreeSha256": "996d9860218dec469c41ad47de297ad291067c3a3770d3c7db414bb50d660c9f",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4820,
-    "sourceModules": 3477,
-    "importReferences": 17265,
-    "resolvedLocalReferences": 11542,
+    "files": 4829,
+    "sourceModules": 3486,
+    "importReferences": 17303,
+    "resolvedLocalReferences": 11564,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 893,
-    "testCandidates": 885,
+    "testFiles": 897,
+    "testCandidates": 889,
     "testHelpers": 8,
-    "staticallySelectedTests": 883,
+    "staticallySelectedTests": 887,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 603
+      "files": 607
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1027
+      "files": 1028
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 506
+      "files": 510
     }
   ],
   "mostReferenced": [
@@ -140,7 +140,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 207
+      "references": 206
     },
     {
       "file": "app/seo.ts",
@@ -293,12 +293,12 @@
       "lines": 1637
     },
     {
-      "file": "app/admin/coursera/page.tsx",
-      "lines": 1636
-    },
-    {
       "file": "scripts/audit-portal-routes.mjs",
       "lines": 1552
+    },
+    {
+      "file": "app/admin/coursera/page.tsx",
+      "lines": 1478
     },
     {
       "file": "tests/api/placement-survey.spec.ts",

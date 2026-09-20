@@ -18665,11 +18665,11 @@
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/components/admin/CourseraCatalogHealthTable",
     "line": 21,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/index.ts"
+    "target": "components/admin/CourseraCatalogHealthTable.tsx"
   },
   {
     "from": "app/admin/coursera/page.tsx",
@@ -70696,6 +70696,38 @@
     "package": "@astryxdesign/core"
   },
   {
+    "from": "components/admin/CourseraCatalogHealthTable.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/admin/CourseraCatalogHealthTable.tsx",
+    "specifier": "@/components/portal/kit/DataTable",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/DataTable.tsx"
+  },
+  {
+    "from": "components/admin/CourseraCatalogHealthTable.tsx",
+    "specifier": "@/components/portal/kit/StatusTag",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/StatusTag.tsx"
+  },
+  {
+    "from": "components/admin/CourseraCatalogHealthTable.tsx",
+    "specifier": "@/lib/coursera/programCourseList",
+    "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/coursera/programCourseList.ts"
+  },
+  {
     "from": "components/admin/CourseraCsvImportClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -81928,17 +81960,57 @@
     "package": "react"
   },
   {
+    "from": "components/portal/kit/KitRowMenu.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/KitRowMenu.tsx",
+    "specifier": "lucide-react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/KitRowMenu.tsx",
+    "specifier": "./base",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/base.ts"
+  },
+  {
     "from": "components/portal/kit/KitTableShell.tsx",
     "specifier": "react",
     "line": 3,
-    "kind": "type",
+    "kind": "import",
     "external": true,
     "package": "react"
   },
   {
     "from": "components/portal/kit/KitTableShell.tsx",
-    "specifier": "./base",
+    "specifier": "lucide-react",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/KitTableShell.tsx",
+    "specifier": "@astryxdesign/core/Pagination",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/KitTableShell.tsx",
+    "specifier": "./base",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/base.ts"
@@ -81946,10 +82018,42 @@
   {
     "from": "components/portal/kit/KitTableShell.tsx",
     "specifier": "./KitEmptyState",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
+    "from": "components/portal/kit/KitTableToolbar.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/KitTableToolbar.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/KitTableToolbar.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/KitTableToolbar.tsx",
+    "specifier": "./base",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/base.ts"
   },
   {
     "from": "components/portal/kit/KpiStrip.tsx",
@@ -82649,8 +82753,32 @@
   },
   {
     "from": "components/portal/kit/index.ts",
-    "specifier": "./FeatureTile",
+    "specifier": "./KitTableToolbar",
     "line": 30,
+    "kind": "re-export",
+    "external": false,
+    "target": "components/portal/kit/KitTableToolbar.tsx"
+  },
+  {
+    "from": "components/portal/kit/index.ts",
+    "specifier": "./KitRowMenu",
+    "line": 31,
+    "kind": "re-export",
+    "external": false,
+    "target": "components/portal/kit/KitRowMenu.tsx"
+  },
+  {
+    "from": "components/portal/kit/index.ts",
+    "specifier": "./kitTableUrlState",
+    "line": 32,
+    "kind": "re-export",
+    "external": false,
+    "target": "components/portal/kit/kitTableUrlState.ts"
+  },
+  {
+    "from": "components/portal/kit/index.ts",
+    "specifier": "./FeatureTile",
+    "line": 42,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/FeatureTile.tsx"
@@ -82658,7 +82786,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./QueueRow",
-    "line": 31,
+    "line": 43,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/QueueRow.tsx"
@@ -82666,7 +82794,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./WorkQueueItem",
-    "line": 32,
+    "line": 44,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/WorkQueueItem.tsx"
@@ -82674,7 +82802,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./Kanban",
-    "line": 33,
+    "line": 45,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/Kanban.tsx"
@@ -82682,7 +82810,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./Charts",
-    "line": 34,
+    "line": 46,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/Charts.tsx"
@@ -82690,7 +82818,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./CommandCenter",
-    "line": 35,
+    "line": 47,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/CommandCenter.tsx"
@@ -82698,7 +82826,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./FormField",
-    "line": 43,
+    "line": 55,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/FormField.tsx"
@@ -82706,7 +82834,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./ChatThread",
-    "line": 44,
+    "line": 56,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/ChatThread.tsx"
@@ -82714,7 +82842,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./Tabs",
-    "line": 45,
+    "line": 57,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/Tabs.tsx"
@@ -82722,7 +82850,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./AppShellSidebar",
-    "line": 46,
+    "line": 58,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/AppShellSidebar.tsx"
@@ -82730,7 +82858,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./AppShellMember",
-    "line": 47,
+    "line": 59,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/AppShellMember.tsx"
@@ -82738,7 +82866,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./UniversalSearch",
-    "line": 48,
+    "line": 60,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/UniversalSearch.tsx"
@@ -82746,7 +82874,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./MemberDashboardKit",
-    "line": 49,
+    "line": 61,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/MemberDashboardKit.tsx"
@@ -82754,7 +82882,7 @@
   {
     "from": "components/portal/kit/index.ts",
     "specifier": "./tokens",
-    "line": 50,
+    "line": 62,
     "kind": "re-export",
     "external": false,
     "target": "components/portal/kit/tokens.ts"
@@ -84809,8 +84937,24 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "lucide-react",
+    "specifier": "react",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "next/navigation",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "lucide-react",
+    "line": 6,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -84818,22 +84962,6 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@astryxdesign/core/Button",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "@astryxdesign/core/Token",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "@astryxdesign/core/TextInput",
     "line": 7,
     "kind": "import",
     "external": true,
@@ -84849,7 +84977,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "@astryxdesign/core/Pagination",
+    "specifier": "@astryxdesign/core/Link",
     "line": 9,
     "kind": "import",
     "external": true,
@@ -84857,16 +84985,8 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "@astryxdesign/core/Link",
-    "line": 10,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@/components/portal/kit/DesignSurface",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/DesignSurface.tsx"
@@ -84874,7 +84994,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@/components/portal/kit/PageOpener",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/PageOpener.tsx"
@@ -84882,23 +85002,55 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@/components/portal/kit/DataTable",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/DataTable.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
-    "specifier": "@/components/portal/kit/Avatar",
+    "specifier": "@/components/portal/kit/KitTableToolbar",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitTableToolbar.tsx"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/components/portal/kit/KitRowMenu",
     "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitRowMenu.tsx"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/components/portal/kit/StatusTag",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/StatusTag.tsx"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/components/portal/kit/Avatar",
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/Avatar.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@/components/admin/useDirectoryNavigation",
-    "line": 15,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "components/admin/useDirectoryNavigation.ts"
@@ -84906,10 +85058,26 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
     "specifier": "@/lib/admin/roleLabels",
-    "line": 16,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/admin/roleLabels.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/lib/admin/adminUserProvisioning",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/adminUserProvisioning.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
+    "specifier": "@/lib/admin/usersSelfGuard",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/usersSelfGuard.ts"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/WeeklyRecapKit.tsx",
@@ -130352,6 +130520,38 @@
     "target": "tests/fixtures/attentionRoster.ts"
   },
   {
+    "from": "tests/components/coursera-catalog-health-table.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/coursera-catalog-health-table.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/coursera-catalog-health-table.spec.tsx",
+    "specifier": "@/components/admin/CourseraCatalogHealthTable",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/CourseraCatalogHealthTable.tsx"
+  },
+  {
+    "from": "tests/components/coursera-catalog-health-table.spec.tsx",
+    "specifier": "@/lib/coursera/programCourseList",
+    "line": 11,
+    "kind": "type",
+    "external": false,
+    "target": "lib/coursera/programCourseList.ts"
+  },
+  {
     "from": "tests/components/coursera-diagnostics-evidence.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -130910,6 +131110,70 @@
     "kind": "import",
     "external": false,
     "target": "components/employer/JobForm.tsx"
+  },
+  {
+    "from": "tests/components/kit-data-table-primitive.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/kit-data-table-primitive.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/kit-data-table-primitive.spec.tsx",
+    "specifier": "@/components/portal/kit/DataTable",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/DataTable.tsx"
+  },
+  {
+    "from": "tests/components/kit-data-table-primitive.spec.tsx",
+    "specifier": "@/components/admin/AdminDataLoadError",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/AdminDataLoadError.tsx"
+  },
+  {
+    "from": "tests/components/kit-table-toolbar.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/kit-table-toolbar.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/kit-table-toolbar.spec.tsx",
+    "specifier": "@/components/portal/kit/KitTableToolbar",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitTableToolbar.tsx"
+  },
+  {
+    "from": "tests/components/kit-table-toolbar.spec.tsx",
+    "specifier": "@/components/portal/kit/kitTableUrlState",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/kitTableUrlState.ts"
   },
   {
     "from": "tests/components/lab-evidence-review.test.tsx",
@@ -132670,6 +132934,46 @@
     "kind": "type",
     "external": false,
     "target": "lib/member/trainingWorkspace.ts"
+  },
+  {
+    "from": "tests/components/users-kit-row-menu.spec.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/users-kit-row-menu.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/users-kit-row-menu.spec.tsx",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/users-kit-row-menu.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/UsersKit",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/UsersKit.tsx"
+  },
+  {
+    "from": "tests/components/users-kit-row-menu.spec.tsx",
+    "specifier": "@/lib/admin/usersSelfGuard",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/usersSelfGuard.ts"
   },
   {
     "from": "tests/components/wioa-qualification.spec.tsx",
