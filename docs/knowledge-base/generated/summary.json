@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "df1e55fb2346d3fa64bf2c5d6d97867d7559d7c796270b674d5e92cf8f56a577",
+  "inputTreeSha256": "aa5909e6258586d0de432dff2a04fb35c6091f6aa8121610f4b28ab289c0be75",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4915,
-    "sourceModules": 3566,
-    "importReferences": 17736,
-    "resolvedLocalReferences": 11905,
+    "files": 4924,
+    "sourceModules": 3575,
+    "importReferences": 17796,
+    "resolvedLocalReferences": 11949,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1062,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 113,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 940,
-    "testCandidates": 931,
+    "testFiles": 945,
+    "testCandidates": 936,
     "testHelpers": 9,
-    "staticallySelectedTests": 929,
+    "staticallySelectedTests": 934,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 611
+      "files": 613
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1054
+      "files": 1057
     },
     {
       "area": "localization",
@@ -106,25 +106,25 @@
     },
     {
       "area": "tests",
-      "files": 551
+      "files": 555
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 922
+      "references": 927
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 748
+      "references": 749
+    },
+    {
+      "file": "lib/auth/roles.ts",
+      "references": 438
     },
     {
       "file": "lib/db/withRequestGuc.ts",
       "references": 438
-    },
-    {
-      "file": "lib/auth/roles.ts",
-      "references": 437
     },
     {
       "file": "lib/content/programs.ts",
@@ -227,12 +227,12 @@
       "references": 45
     },
     {
-      "file": "lib/ai/groq.ts",
-      "references": 43
+      "file": "messages/en.json",
+      "references": 44
     },
     {
-      "file": "messages/en.json",
-      "references": 42
+      "file": "lib/ai/groq.ts",
+      "references": 43
     },
     {
       "file": "lib/admin/logCronRun.ts",

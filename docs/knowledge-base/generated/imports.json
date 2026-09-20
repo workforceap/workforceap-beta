@@ -1864,6 +1864,22 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/(portal)/counselor/layout.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/counselor/layout.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/(portal)/counselor/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -59648,6 +59664,14 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/onboarding/reset/route.ts",
+    "specifier": "@/lib/tours/registry",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/api/onboarding/step/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -75632,6 +75656,46 @@
     "target": "lib/tours/registry.ts"
   },
   {
+    "from": "components/onboarding/TourOfferStrip.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/onboarding/TourOfferStrip.tsx",
+    "specifier": "next-intl",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/onboarding/TourOfferStrip.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/onboarding/TourOfferStrip.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/onboarding/TourOfferStrip.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "components/onboarding/TourProviderWrapper.tsx",
     "specifier": "react",
     "line": 3,
@@ -76678,6 +76742,22 @@
     "kind": "type",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
+  },
+  {
+    "from": "components/portal/CounselorPortalShell.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 8,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "components/portal/CounselorPortalShell.tsx",
+    "specifier": "@/components/onboarding/TourOfferStrip",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
   },
   {
     "from": "components/portal/CounselorPortalVoiceBlock.tsx",
@@ -79305,8 +79385,16 @@
   },
   {
     "from": "components/portal/PortalHeaderActions.tsx",
-    "specifier": "@/lib/nav/workspaceCopy",
+    "specifier": "./PortalHelpMenu",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalHelpMenu.tsx"
+  },
+  {
+    "from": "components/portal/PortalHeaderActions.tsx",
+    "specifier": "@/lib/nav/workspaceCopy",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/nav/workspaceCopy.ts"
@@ -79314,10 +79402,66 @@
   {
     "from": "components/portal/PortalHeaderActions.tsx",
     "specifier": "@/lib/nav/portalNav",
-    "line": 8,
+    "line": 9,
     "kind": "type",
     "external": false,
     "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "components/portal/PortalHeaderActions.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 10,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "next-intl",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 8,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "components/portal/PortalInlineSpinner.tsx",
@@ -81409,8 +81553,16 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/lib/member/memberIdentity",
+    "specifier": "@/lib/tours/registry",
     "line": 34,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/lib/member/memberIdentity",
+    "line": 35,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberIdentity.ts"
@@ -81418,7 +81570,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/kit/Avatar",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/Avatar.tsx"
@@ -81426,7 +81578,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/LanguageToggle",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
@@ -81434,7 +81586,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/nav/resumeUploadHint",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/nav/resumeUploadHint.ts"
@@ -81442,7 +81594,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 38,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -81450,7 +81602,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 39,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -81458,7 +81610,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 40,
+    "line": 41,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -81466,7 +81618,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 41,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
@@ -113392,6 +113544,78 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/tours/getTourOffer.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/tours/getTourOffer.ts",
+    "specifier": "@/lib/feature-flags/isFlagEnabledForUser",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/isFlagEnabledForUser.ts"
+  },
+  {
+    "from": "lib/tours/getTourOffer.ts",
+    "specifier": "./registry",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "lib/tours/getTourOffer.ts",
+    "specifier": "./offer",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/offer.ts"
+  },
+  {
+    "from": "lib/tours/offer.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/tours/offer.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/tours/offer.test.ts",
+    "specifier": "./offer",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/offer.ts"
+  },
+  {
+    "from": "lib/tours/offer.test.ts",
+    "specifier": "./registry",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "lib/tours/offer.ts",
+    "specifier": "./registry",
+    "line": 1,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "lib/tours/registry.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -141504,6 +141728,150 @@
     "target": "scripts/vitest-library-specs.mjs"
   },
   {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/components/portal/WorkspaceShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/WorkspaceShell.tsx"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/components/portal/CounselorPortalShell",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/CounselorPortalShell.tsx"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorTodayKit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/lib/attention/evaluate",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/evaluate.ts"
+  },
+  {
+    "from": "tests/tours/counselor-tour.spec.tsx",
+    "specifier": "@/lib/attention/counselorViews",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/counselorViews.ts"
+  },
+  {
+    "from": "tests/tours/get-tour-offer.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/get-tour-offer.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 6,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/get-tour-offer.spec.ts",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "tests/tours/get-tour-offer.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/get-tour-offer.spec.ts",
+    "specifier": "@/lib/feature-flags/isFlagEnabledForUser",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/isFlagEnabledForUser.ts"
+  },
+  {
     "from": "tests/tours/guided-tour.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -141576,6 +141944,54 @@
     "target": "lib/onboarding/portalTourSteps.ts"
   },
   {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 21,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "@/app/api/onboarding/reset/route",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/onboarding/reset/route.ts"
+  },
+  {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/tours/onboarding-reset-tour-state.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
     "from": "tests/tours/tour-auto-start.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -141622,6 +142038,70 @@
     "kind": "import",
     "external": false,
     "target": "components/onboarding/TourAutoStart.tsx"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@/messages/es.json",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "messages/es.json"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/tour-offer-strip.spec.tsx",
+    "specifier": "@/components/onboarding/TourOfferStrip",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
   },
   {
     "from": "tests/tours/tours-key-route.spec.ts",

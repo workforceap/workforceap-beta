@@ -8,6 +8,7 @@ import {
   TOUR_KEYS,
   TOUR_REGISTRY,
   TOUR_STATUSES,
+  getHomeTourForRole,
   getTour,
   isTourKey,
   isTourStatus,
@@ -131,4 +132,45 @@ test('toTourSteps preserves order, targets, keys and placement', () => {
     assert.equal(step.placement, tour.steps[i].placement);
   });
   assert.equal(steps[steps.length - 1].placement, 'bottom');
+});
+
+test('counselor.home (wave 2) is written for Today and walks the path a new counselor uses', () => {
+  const tour = TOUR_REGISTRY['counselor.home'];
+  assert.equal(tour.role, 'counselor');
+  assert.equal(tour.route, '/counselor/today');
+  assert.deepEqual(
+    tour.steps.map((s) => s.target),
+    [
+      'tour-today-attention',
+      'tour-today-queue',
+      'tour-today-roster',
+      'tour-nav-members',
+      'tour-nav-at-risk',
+      'tour-nav-messages',
+      'tour-help',
+    ],
+  );
+  assert.equal(getHomeTourForRole('counselor')?.key, 'counselor.home');
+  assert.equal(getHomeTourForRole('member')?.key, 'member.home');
+  assert.equal(getHomeTourForRole('admin'), null, 'admin wave has not landed');
+  assert.equal(getHomeTourForRole('__proto__'), null);
+});
+
+for (const locale of REVIEWED_LOCALES) {
+  test(`${locale}.json: Help menu, offer strip and counselor offer copy resolve`, () => {
+    const tours = loadTours(locale);
+    for (const key of ['help.label', 'help.takeTour', 'help.guide', 'offer.take', 'offer.dismiss', 'counselor.home.offer.title', 'counselor.home.offer.body']) {
+      const value = resolve(tours, key);
+      assert.equal(typeof value, 'string', `tours.${key} missing in ${locale}.json`);
+      assert.ok((value as string).trim().length > 0, `tours.${key} empty in ${locale}.json`);
+    }
+  });
+}
+
+test('counselor step copy names the record tabs and where notes live', () => {
+  const en = loadTours('en');
+  const record = resolve(en, 'counselor.home.memberRecord.body') as string;
+  for (const tab of ['Profile', 'Training', 'Notes', 'Messages']) assert.match(record, new RegExp(tab));
+  assert.match(record, /Notes tab/);
+  assert.match(resolve(en, 'counselor.home.help.body') as string, /reopens this tour/);
 });

@@ -985,8 +985,11 @@
 | [lib/text/stripMarkdown.ts](../../../lib/text/stripMarkdown.ts) | 19 | libraries | stripMarkdownForPreview:5 |
 | [lib/time/greeting.ts](../../../lib/time/greeting.ts) | 37 | libraries | getTimeOfDayGreeting:5, getGoodTimeOfDayPhrase:29 |
 | [lib/tokenizedLink.ts](../../../lib/tokenizedLink.ts) | 90 | libraries | newTokenString:12, createTokenizedLink:16, ValidatedTokenLink:40, TokenValidation:48, validateTokenizedLink:52, consumeTokenizedLink:69 |
-| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 134 | libraries |  |
-| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 147 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:112, LEGACY_PORTAL_TOUR_KEY:114, LEGACY_TOUR_VERSION:121, isTourKey:123, isTourStatus:127, getTour:131, listTours:135, toTourSteps:140 |
+| [lib/tours/getTourOffer.ts](../../../lib/tours/getTourOffer.ts) | 38 | libraries | TourOffer:6, getTourOffer:21 |
+| [lib/tours/offer.test.ts](../../../lib/tours/offer.test.ts) | 26 | libraries |  |
+| [lib/tours/offer.ts](../../../lib/tours/offer.ts) | 27 | libraries | TourStateSnapshot:4, shouldOfferTour:23 |
+| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 176 | libraries |  |
+| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 180 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:136, LEGACY_PORTAL_TOUR_KEY:138, LEGACY_TOUR_VERSION:145, isTourKey:147, isTourStatus:151, getTour:155, listTours:159, getHomeTourForRole:168, toTourSteps:173 |
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
 | [lib/ui/adminSemanticTokens.test.ts](../../../lib/ui/adminSemanticTokens.test.ts) | 92 | libraries |  |
 | [lib/ui/brandTokens.test.ts](../../../lib/ui/brandTokens.test.ts) | 143 | libraries |  |

@@ -220,6 +220,7 @@
 | [components/onboarding/StartTourButton.tsx](../../../components/onboarding/StartTourButton.tsx) | 60 | applications-enrollment | default:11 |
 | [components/onboarding/TourAutoStart.tsx](../../../components/onboarding/TourAutoStart.tsx) | 34 | applications-enrollment | TOUR_QUERY_PARAM:9, TOUR_DEEP_LINK_DELAY_MS:11, default:18 |
 | [components/onboarding/TourContext.tsx](../../../components/onboarding/TourContext.tsx) | 229 | applications-enrollment | TourStep:16, useTour:59, TourProvider:95 |
+| [components/onboarding/TourOfferStrip.tsx](../../../components/onboarding/TourOfferStrip.tsx) | 86 | applications-enrollment | default:24 |
 | [components/onboarding/TourProviderWrapper.tsx](../../../components/onboarding/TourProviderWrapper.tsx) | 18 | applications-enrollment | default:8 |
 | [components/partner/CopyReferralLink.tsx](../../../components/partner/CopyReferralLink.tsx) | 51 | partners-funding | default:11 |
 | [components/partner/PartnerAttentionClient.tsx](../../../components/partner/PartnerAttentionClient.tsx) | 494 | partners-funding | default:87 |
@@ -257,7 +258,7 @@
 | [components/portal/CounselorMessagesInboxClient.module.css](../../../components/portal/CounselorMessagesInboxClient.module.css) | 112 | components |  |
 | [components/portal/CounselorMessagesInboxClient.test.tsx](../../../components/portal/CounselorMessagesInboxClient.test.tsx) | 220 | components |  |
 | [components/portal/CounselorMessagesInboxClient.tsx](../../../components/portal/CounselorMessagesInboxClient.tsx) | 429 | components | default:151 |
-| [components/portal/CounselorPortalShell.tsx](../../../components/portal/CounselorPortalShell.tsx) | 36 | components | default:9 |
+| [components/portal/CounselorPortalShell.tsx](../../../components/portal/CounselorPortalShell.tsx) | 52 | components | COUNSELOR_GUIDE_HREF:12, default:14 |
 | [components/portal/CounselorPortalVoiceBlock.tsx](../../../components/portal/CounselorPortalVoiceBlock.tsx) | 27 | components | default:11 |
 | [components/portal/CourseraAccountLinkCard.tsx](../../../components/portal/CourseraAccountLinkCard.tsx) | 119 | learning-coursera | default:16 |
 | [components/portal/CourseraProgressCard.test.tsx](../../../components/portal/CourseraProgressCard.test.tsx) | 54 | learning-coursera |  |
@@ -336,7 +337,8 @@
 | [components/portal/PortalBreadcrumb.tsx](../../../components/portal/PortalBreadcrumb.tsx) | 84 | components | PortalBreadcrumbItem:4, default:26 |
 | [components/portal/PortalEmptyState.tsx](../../../components/portal/PortalEmptyState.tsx) | 74 | components | default:27 |
 | [components/portal/PortalEntryErrorBoundary.tsx](../../../components/portal/PortalEntryErrorBoundary.tsx) | 41 | components | default:13 |
-| [components/portal/PortalHeaderActions.tsx](../../../components/portal/PortalHeaderActions.tsx) | 35 | components | default:11 |
+| [components/portal/PortalHeaderActions.tsx](../../../components/portal/PortalHeaderActions.tsx) | 45 | components | default:13 |
+| [components/portal/PortalHelpMenu.tsx](../../../components/portal/PortalHelpMenu.tsx) | 116 | components | default:18 |
 | [components/portal/PortalInlineSpinner.tsx](../../../components/portal/PortalInlineSpinner.tsx) | 42 | components | pixelToSpinnerSize:8, PortalInlineSpinner:28 |
 | [components/portal/PortalKpiCard.tsx](../../../components/portal/PortalKpiCard.tsx) | 51 | components | default:26 |
 | [components/portal/PortalLayoutClient.tsx](../../../components/portal/PortalLayoutClient.tsx) | 12 | components | default:6 |
@@ -406,7 +408,7 @@
 | [components/portal/WorkforceApModuleCompleteButton.test.tsx](../../../components/portal/WorkforceApModuleCompleteButton.test.tsx) | 57 | components |  |
 | [components/portal/WorkforceApModuleCompleteButton.tsx](../../../components/portal/WorkforceApModuleCompleteButton.tsx) | 63 | components | default:6 |
 | [components/portal/WorkforceApModuleLessons.tsx](../../../components/portal/WorkforceApModuleLessons.tsx) | 58 | components | WorkforceApLesson:3, lessonCtaLabel:11, default:15 |
-| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 809 | components | default:93 |
+| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 818 | components | default:94 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
 | [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1120 | member-counselor | AtRiskFactor:57, AtRiskMember:57, AtRiskDashboardViewProps:178, AtRiskDashboardView:195, AtRiskDashboardProps:758, default:777 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
@@ -523,7 +525,7 @@
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 432 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:98, CommandCenterKitProps:111, CommandCenterKit:314 |
 | [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 420 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
-| [components/portal/kit/pages/counselor/CounselorTodayKit.tsx](../../../components/portal/kit/pages/counselor/CounselorTodayKit.tsx) | 259 | member-counselor | CounselorTodayKitProps:46, CounselorTodayKit:187 |
+| [components/portal/kit/pages/counselor/CounselorTodayKit.tsx](../../../components/portal/kit/pages/counselor/CounselorTodayKit.tsx) | 263 | member-counselor | CounselorTodayKitProps:50, CounselorTodayKit:191 |
 | [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 387 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |
 | [components/portal/kit/pages/member/CareerBusinessCoachKit.tsx](../../../components/portal/kit/pages/member/CareerBusinessCoachKit.tsx) | 51 | member-counselor | CareerBusinessCoachKit:16 |

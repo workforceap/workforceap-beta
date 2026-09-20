@@ -31,6 +31,7 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import MemberPortalTopNav from './MemberPortalTopNav';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
+import type { TourKey } from '@/lib/tours/registry';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import { Avatar } from '@/components/portal/kit/Avatar';
 import LanguageToggle from '@/components/portal/LanguageToggle';
@@ -115,10 +116,16 @@ export default function WorkspaceShell({
   partnerAccentColor,
   orgPrimaryColor,
   orgAccentColor,
+  helpTourKey = null,
+  helpGuideHref,
   children,
 }: {
   portalRole: PortalRole;
   navItems: PortalNavItem[];
+  /** Guided tour the header Help menu reopens (lib/tours/registry.ts); null hides the menu. */
+  helpTourKey?: TourKey | null;
+  /** Guide page linked from the Help menu, e.g. `/counselor/guide`. */
+  helpGuideHref?: string;
   /** Signed-in member identity for the shell (name, initials/avatar, profile link). */
   identity?: MemberShellIdentity | null;
   workspaceLabel: string;
@@ -552,6 +559,8 @@ export default function WorkspaceShell({
             badges={badges}
             hidePublicSite={Boolean(marketingSiteHref)}
             readOnlyAudit={readOnlyAudit}
+            helpTourKey={helpTourKey}
+            helpGuideHref={helpGuideHref}
           />
           {attributionLabel ? (
             <span
