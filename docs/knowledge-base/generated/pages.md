@@ -374,9 +374,9 @@
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
 | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 509 | member-counselor | default:191 |
-| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 145 | administration | generateMetadata:12, default:83 |
+| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 147 | administration | generateMetadata:12, default:85 |
 | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 630 | administration | generateMetadata:28, default:207 |
+| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 636 | administration | generateMetadata:28, default:213 |
 | [app/admin/email-crons/page.tsx](../../../app/admin/email-crons/page.tsx) | 195 | communications | generateMetadata:18, default:40 |
 | [app/admin/email-templates/loading.tsx](../../../app/admin/email-templates/loading.tsx) | 5 | communications | default:3 |
 | [app/admin/email-templates/page.tsx](../../../app/admin/email-templates/page.tsx) | 115 | communications | generateMetadata:16, default:32 |
@@ -421,7 +421,7 @@
 | [app/admin/members/\[id\]/memberDetail.module.css](../../../app/admin/members/%5Bid%5D/memberDetail.module.css) | 421 | administration |  |
 | [app/admin/members/\[id\]/memberDetailTabs.ts](../../../app/admin/members/%5Bid%5D/memberDetailTabs.ts) | 40 | administration | AdminMemberDetailTabId:11, ADMIN_MEMBER_DETAIL_TABS_ID_BASE:16, ADMIN_MEMBER_DETAIL_TAB_PARAM:19, ADMIN_MEMBER_DETAIL_TABS:21, parseAdminMemberDetailTab:32 |
 | [app/admin/members/\[id\]/notesPanel.module.css](../../../app/admin/members/%5Bid%5D/notesPanel.module.css) | 86 | administration |  |
-| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1427 | administration | generateMetadata:96, default:104 |
+| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1467 | administration | generateMetadata:103, default:111 |
 | [app/admin/members/\[id\]/readiness/ReadinessCounselorClient.tsx](../../../app/admin/members/%5Bid%5D/readiness/ReadinessCounselorClient.tsx) | 216 | administration | default:25 |
 | [app/admin/members/\[id\]/readiness/page.tsx](../../../app/admin/members/%5Bid%5D/readiness/page.tsx) | 64 | administration | generateMetadata:13, default:21 |
 | [app/admin/members/\[id\]/stakeholder/page.tsx](../../../app/admin/members/%5Bid%5D/stakeholder/page.tsx) | 697 | administration | dynamic:21, generateMetadata:23, default:57 |

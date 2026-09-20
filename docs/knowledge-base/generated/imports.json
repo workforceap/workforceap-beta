@@ -21977,16 +21977,32 @@
   },
   {
     "from": "app/admin/members/[id]/page.tsx",
-    "specifier": "@/lib/coursera/progressQueries",
+    "specifier": "@/lib/content/coursera/learningPaths",
     "line": 53,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/learningPaths.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/lib/coursera/progressQueries",
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressQueries.ts"
   },
   {
     "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/lib/coursera/progressTileSummary",
+    "line": 55,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressTileSummary.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/boardOutcomes",
-    "line": 54,
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "lib/admin/boardOutcomes.ts"
@@ -21994,7 +22010,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/memberOutcomesSummary",
-    "line": 55,
+    "line": 62,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOutcomesSummary.ts"
@@ -22002,7 +22018,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/MemberCourseraDiagnoseButton",
-    "line": 56,
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "components/admin/MemberCourseraDiagnoseButton.tsx"
@@ -22010,7 +22026,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/AdminMemberSkillCheckpointPanel",
-    "line": 57,
+    "line": 64,
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminMemberSkillCheckpointPanel.tsx"
@@ -22018,7 +22034,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/member/skillMissions",
-    "line": 58,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissions.ts"
@@ -22026,7 +22042,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/careerPlanSignal",
-    "line": 59,
+    "line": 66,
     "kind": "import",
     "external": false,
     "target": "lib/admin/careerPlanSignal.ts"
@@ -22034,7 +22050,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 60,
+    "line": 67,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -22042,7 +22058,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/coursera/progressReconciliation",
-    "line": 61,
+    "line": 68,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressReconciliation.ts"
@@ -22050,7 +22066,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/events/names",
-    "line": 62,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "lib/events/names.ts"
@@ -22058,7 +22074,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 63,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -22066,7 +22082,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/memberActivity",
-    "line": 64,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberActivity.ts"
@@ -22074,7 +22090,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "./memberDetailTabs",
-    "line": 65,
+    "line": 72,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/[id]/memberDetailTabs.ts"
@@ -22082,7 +22098,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "./memberDetail.module.css",
-    "line": 71,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/[id]/memberDetail.module.css"
@@ -101329,8 +101345,16 @@
   },
   {
     "from": "lib/coursera/curriculumMapping.ts",
-    "specifier": "@/lib/content/courseraDiscoveredCatalog",
+    "specifier": "@/lib/content/coursera/learningPaths",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/learningPaths.ts"
+  },
+  {
+    "from": "lib/coursera/curriculumMapping.ts",
+    "specifier": "@/lib/content/courseraDiscoveredCatalog",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/content/courseraDiscoveredCatalog.ts"
@@ -101338,7 +101362,7 @@
   {
     "from": "lib/coursera/curriculumMapping.ts",
     "specifier": "@/lib/content/programSlug",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -101346,7 +101370,7 @@
   {
     "from": "lib/coursera/curriculumMapping.ts",
     "specifier": "@/lib/coursera/canonicalMapping",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/canonicalMapping.ts"
@@ -101354,7 +101378,7 @@
   {
     "from": "lib/coursera/curriculumMapping.ts",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -101936,6 +101960,78 @@
     "target": "lib/coursera/b4bClient.ts"
   },
   {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/content/coursera/learningPaths",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/learningPaths.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/coursera/canonicalMapping",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/canonicalMapping.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/coursera/curriculumMapping",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/curriculumMapping.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/coursera/progressPromotion",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressPromotion.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/coursera/progressReconciliation",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressReconciliation.ts"
+  },
+  {
+    "from": "lib/coursera/progressMiscount.test.ts",
+    "specifier": "@/lib/coursera/progressTileSummary",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressTileSummary.ts"
+  },
+  {
     "from": "lib/coursera/progressPromotion.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -101985,8 +102081,16 @@
   },
   {
     "from": "lib/coursera/progressPromotion.ts",
-    "specifier": "@/lib/content/programSlug",
+    "specifier": "@/lib/content/coursera/learningPaths",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/learningPaths.ts"
+  },
+  {
+    "from": "lib/coursera/progressPromotion.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -102086,6 +102190,22 @@
     "kind": "type",
     "external": false,
     "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "lib/coursera/progressTileSummary.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 1,
+    "kind": "type",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "lib/coursera/progressTileSummary.ts",
+    "specifier": "@/lib/coursera/progressReconciliation",
+    "line": 2,
+    "kind": "type",
+    "external": false,
+    "target": "lib/coursera/progressReconciliation.ts"
   },
   {
     "from": "lib/coursera/provisioningState.ts",
@@ -104158,6 +104278,46 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "./failureSnapshot",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "./failureRecord",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/failureSnapshot.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "lib/email/pacing.test.ts",
@@ -117318,6 +117478,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/eligibilityDatasheet.ts"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "@prisma/client",
+    "line": 18,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "../lib/email/failureSnapshot",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "../lib/email/failureRecord",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "scripts/stamp-chs-funding.ts",

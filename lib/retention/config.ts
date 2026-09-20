@@ -80,6 +80,13 @@ export const RETENTION_AUDIT_DAYS = 365 * 3 + 1;
  */
 export const PUBLIC_LEAD_RETENTION_DAYS = 180;
 
+/**
+ * `email_failure_snapshots` outlives the 90-day diagnostics window it was
+ * copied from. The source table's own window is unchanged here; shortening
+ * or lengthening it is a separate decision.
+ */
+export const EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS = 365;
+
 export const RETENTION_TABLES: RetentionTableConfig[] = [
   {
     model: 'auditLog',
@@ -135,7 +142,14 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     days: PUBLIC_LEAD_RETENTION_DAYS,
     description: 'No-account eligibility leads (public WIOA screening + tokenized questionnaire answers) — WAP-172 TTL',
   },
+  {
+    model: 'emailFailureSnapshot',
+    dateColumn: 'snapshotAt',
+    days: EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS,
+    description: 'Preserved copy of email_send failure diagnostics (evidence for the 2026 delivery failures; scripts/snapshot-email-failures.ts)',
+  },
 ];
+
 
 /** Soft-deleted users are hard-deleted after this many days. */
 export const DELETED_ACCOUNT_RETENTION_DAYS = 30;

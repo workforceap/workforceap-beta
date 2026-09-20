@@ -50,7 +50,14 @@ import { loadWioaReviewSnapshots } from '@/lib/wioa/reviewSnapshot';
 import PageHeader from '@/components/portal/PageHeader';
 import AdminMemberAiMatches from './AdminMemberAiMatches';
 import MemberProgressStrip from '@/components/portal/MemberProgressStrip';
+import { findLearningPathById } from '@/lib/content/coursera/learningPaths';
 import { loadLearnerProgressByUserId } from '@/lib/coursera/progressQueries';
+import {
+  formatLearningPathLine,
+  formatProgramCoursesNote,
+  learningPathPercent,
+  summarizeProgramCourseProgress,
+} from '@/lib/coursera/progressTileSummary';
 import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
 import { getMemberOutcomesSummary } from '@/lib/admin/memberOutcomesSummary';
 import MemberCourseraDiagnoseButton from '@/components/admin/MemberCourseraDiagnoseButton';
@@ -442,7 +449,12 @@ export default async function AdminMemberDetailPage({
   const liveCourseProgress = ((member.courseProgress ?? []) as AdminCourseProgressRow[])
     .filter((row) =>
       activeProgramSlug ? programSlugsEquivalent(row.programSlug, activeProgramSlug) : false,
-    );
+    )
+    // A row whose Coursera id is a Learning Path is Coursera's program-level
+    // percentage that a stale mapping once promoted onto a synthetic course
+    // slot. It is not course progress; the sync no longer writes it and the
+    // rows already written are excluded here until they are removed.
+    .filter((row) => !findLearningPathById(row.courseId));
   const liveProgressBySlug = new Map<string, AdminCourseProgressRow>(liveCourseProgress.map((row) => [row.courseSlug, row]));
   const liveProgramProgress = ((member.memberProgramProgress ?? []) as AdminMemberProgramProgressRow[])
     .find((row) =>
@@ -528,6 +540,13 @@ export default async function AdminMemberDetailPage({
   const courseraDetail = await loadLearnerProgressByUserId(member.id);
   const courseraCourseCount = courseraDetail?.courses.length ?? 0;
   const courseraCompletedCount = courseraDetail?.courses.filter((c) => c.isCompleted).length ?? 0;
+  // Coursera's Learning Path row is program-level progress, never a course:
+  // it is shown on its own line, labelled as Coursera's figure, on both tiles.
+  const courseraPathPercent = learningPathPercent(courseraDetail?.learningPaths);
+  const programCourseSummary = summarizeProgramCourseProgress({
+    courses: curriculumCourses,
+    reconciliation: programReconciliation,
+  });
   const courseraBadgeCount = courseraDetail?.badges.length ?? 0;
   const courseraCompletedBadgeCount =
     courseraDetail?.badges.filter((b) => b.badgeCompleted).length ?? 0;
@@ -724,15 +743,31 @@ export default async function AdminMemberDetailPage({
                 </StatusTag>
               </div>
               <div className={`${styles.statGrid} ${styles.spaced}`}>
-                <div className={styles.stat}>
-                  <p className={styles.statLabel}>Course progress</p>
-                  <p className={styles.statValue}>{programReconciliation ? `${programReconciliation.programPercent}%` : '—'}</p>
-                  <p className={styles.statNote}>{program ? `${completedCount} of ${curriculumCourses.length} complete` : 'No program enrolled'}</p>
+                <div className={styles.stat} data-progress-tile="program">
+                  <p className={styles.statLabel}>Program courses</p>
+                  <p className={styles.statValue}>
+                    {program ? `${programCourseSummary.completed} of ${programCourseSummary.total}` : '—'}
+                  </p>
+                  <p className={styles.statNote}>
+                    {program
+                      ? `complete · ${formatProgramCoursesNote(programCourseSummary)}`
+                      : 'No program enrolled'}
+                  </p>
+                  {program ? (
+                    <p className={styles.statNote} data-progress-source="coursera-learning-path">
+                      {formatLearningPathLine(courseraPathPercent)}
+                    </p>
+                  ) : null}
                 </div>
-                <div className={styles.stat}>
+                <div className={styles.stat} data-progress-tile="coursera">
                   <p className={styles.statLabel}>Coursera courses</p>
-                  <p className={styles.statValue}>{courseraCompletedCount}/{courseraCourseCount}</p>
-                  <p className={styles.statNote}>complete</p>
+                  <p className={styles.statValue}>{courseraCompletedCount} of {courseraCourseCount}</p>
+                  <p className={styles.statNote}>enrolled courses complete</p>
+                  <p className={styles.statNote} data-progress-source="coursera-learning-path">
+                    {courseraPathPercent == null
+                      ? 'Learning path: not reported'
+                      : `Learning path: ${courseraPathPercent}% (Coursera's figure)`}
+                  </p>
                 </div>
                 <div className={styles.stat}>
                   <p className={styles.statLabel}>Assessment</p>
@@ -1000,7 +1035,12 @@ export default async function AdminMemberDetailPage({
                     <div className={styles.stat}>
                       <p className={styles.statLabel}>Courses</p>
                       <p className={`${styles.statValue} ${styles.statValueSm}`}>
-                        {courseraCompletedCount}/{courseraCourseCount} <span className={styles.statNote} style={{ display: 'inline' }}>complete</span>
+                        {courseraCompletedCount} of {courseraCourseCount} <span className={styles.statNote} style={{ display: 'inline' }}>enrolled complete</span>
+                      </p>
+                      <p className={styles.statNote} data-progress-source="coursera-learning-path">
+                        {courseraPathPercent == null
+                          ? 'Learning path: not reported'
+                          : `Learning path: ${courseraPathPercent}% (Coursera's figure)`}
                       </p>
                     </div>
                     <div className={styles.stat}>
