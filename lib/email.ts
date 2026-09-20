@@ -1850,6 +1850,8 @@ export async function sendEligibilityScreeningAdminEmail(params: {
   memberId?: string | null;
   source: 'dashboard' | 'token' | 'apply';
   eligibility?: EligibilityScreeningFields | null;
+  /** WAP-172: public_wioa_screenings row id when the submitter has no account. */
+  leadRecordId?: string | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {

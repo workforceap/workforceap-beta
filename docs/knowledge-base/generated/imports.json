@@ -61488,6 +61488,22 @@
     "target": "lib/apply/eligibilityScreeningFields.ts"
   },
   {
+    "from": "app/api/q/[token]/submit/route.ts",
+    "specifier": "@/lib/apply/publicEligibilityLead",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/publicEligibilityLead.ts"
+  },
+  {
+    "from": "app/api/q/[token]/submit/route.ts",
+    "specifier": "@/lib/tenant/organization",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/organization.ts"
+  },
+  {
     "from": "app/api/recommend/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -89530,7 +89546,7 @@
   {
     "from": "emails/eligibility-screening-admin-alert.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 6,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
@@ -89538,71 +89554,63 @@
   {
     "from": "emails/eligibility-screening-admin-alert.ts",
     "specifier": "./eligibility-screening-summary",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "emails/eligibility-screening-summary.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-admin-alert.ts",
-    "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 8,
-    "kind": "type",
-    "external": false,
-    "target": "lib/apply/eligibilityScreeningFields.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-confirmation.ts",
-    "specifier": "@/lib/email/escapeHtml",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/email/escapeHtml.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-confirmation.ts",
-    "specifier": "./eligibility-screening-summary",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "emails/eligibility-screening-summary.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-confirmation.ts",
-    "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 8,
-    "kind": "type",
-    "external": false,
-    "target": "lib/apply/eligibilityScreeningFields.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-summary.ts",
-    "specifier": "@/lib/email/escapeHtml",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/email/escapeHtml.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-summary.ts",
-    "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/apply/eligibilityScreeningFields.ts"
-  },
-  {
-    "from": "emails/eligibility-screening-summary.ts",
-    "specifier": "@/lib/apply/publicAssistance",
     "line": 11,
     "kind": "import",
     "external": false,
-    "target": "lib/apply/publicAssistance.ts"
+    "target": "emails/eligibility-screening-summary.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-admin-alert.ts",
+    "specifier": "@/lib/apply/eligibilityScreeningFields",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "lib/apply/eligibilityScreeningFields.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-admin-alert.ts",
+    "specifier": "@/lib/retention/config",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/retention/config.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-confirmation.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-confirmation.ts",
+    "specifier": "@/lib/apply/eligibilityScreeningFields",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/eligibilityScreeningFields.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-summary.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "emails/eligibility-screening-summary.ts",
+    "specifier": "@/lib/apply/eligibilityScreeningFields",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/eligibilityScreeningFields.ts"
   },
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "node:test",
-    "line": 4,
+    "line": 7,
     "kind": "import",
     "external": true,
     "package": "node:test"
@@ -89610,7 +89618,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "node:assert/strict",
-    "line": 5,
+    "line": 8,
     "kind": "import",
     "external": true,
     "package": "node:assert"
@@ -89618,7 +89626,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "./application-confirmation",
-    "line": 6,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "emails/application-confirmation.ts"
@@ -89626,7 +89634,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "./new-application-alert",
-    "line": 7,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "emails/new-application-alert.ts"
@@ -89634,7 +89642,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "./eligibility-screening-summary",
-    "line": 8,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "emails/eligibility-screening-summary.ts"
@@ -89642,7 +89650,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "./eligibility-screening-confirmation",
-    "line": 9,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "emails/eligibility-screening-confirmation.ts"
@@ -89650,7 +89658,7 @@
   {
     "from": "emails/eligibility-screening-ws5.test.ts",
     "specifier": "./eligibility-screening-admin-alert",
-    "line": 10,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "emails/eligibility-screening-admin-alert.ts"
@@ -94034,7 +94042,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 14,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -94042,7 +94050,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/coach/memory",
-    "line": 15,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/coach/memory.ts"
@@ -94050,7 +94058,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/content/programs",
-    "line": 16,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -94058,18 +94066,10 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 17,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
-  },
-  {
-    "from": "lib/ai/elevenlabsPortalContext.ts",
-    "specifier": "@/lib/wioa/wioaQualification",
-    "line": 18,
-    "kind": "import",
-    "external": false,
-    "target": "lib/wioa/wioaQualification.ts"
   },
   {
     "from": "lib/ai/elevenlabsSession.test.ts",
@@ -95574,6 +95574,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityExtendedFields.ts"
+  },
+  {
+    "from": "lib/apply/publicEligibilityLead.ts",
+    "specifier": "@prisma/client",
+    "line": 12,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/apply/publicEligibilityLead.ts",
+    "specifier": "./eligibilityScreeningFields",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/eligibilityScreeningFields.ts"
+  },
+  {
+    "from": "lib/apply/publicEligibilityLead.ts",
+    "specifier": "@/lib/retention/config",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/retention/config.ts"
   },
   {
     "from": "lib/apply/resolveSchoolApply.ts",
@@ -111162,7 +111186,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 27,
+    "line": 28,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -138742,6 +138766,94 @@
     "kind": "import",
     "external": false,
     "target": "scripts/lib/portal-audit-paths.mjs"
+  },
+  {
+    "from": "tests/privacy/partner-export-columns.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/privacy/partner-export-columns.spec.ts",
+    "specifier": "next/server",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/privacy/partner-export-columns.spec.ts",
+    "specifier": "@/app/api/partner/export/referrals/route",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/partner/export/referrals/route.ts"
+  },
+  {
+    "from": "tests/privacy/partner-referral-bundle-select.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/privacy/partner-referral-bundle-select.spec.ts",
+    "specifier": "@/lib/partner/referralBundle",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/partner/referralBundle.ts"
+  },
+  {
+    "from": "tests/privacy/public-eligibility-lead.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/privacy/public-eligibility-lead.spec.ts",
+    "specifier": "next/server",
+    "line": 6,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/privacy/public-eligibility-lead.spec.ts",
+    "specifier": "next/server",
+    "line": 22,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/privacy/public-eligibility-lead.spec.ts",
+    "specifier": "@/app/api/q/[token]/submit/route",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/q/[token]/submit/route.ts"
+  },
+  {
+    "from": "tests/privacy/voice-context-minimisation.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/privacy/voice-context-minimisation.spec.ts",
+    "specifier": "@/lib/ai/elevenlabsPortalContext",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/elevenlabsPortalContext.ts"
   },
   {
     "from": "tests/rls/member-message-assignment.mjs",

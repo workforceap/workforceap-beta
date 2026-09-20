@@ -13599,12 +13599,12 @@
       },
       {
         "name": "GET",
-        "line": 95,
+        "line": 96,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 131,
+        "line": 132,
         "kind": "Variable"
       }
     ],
@@ -29600,7 +29600,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 82,
+        "line": 89,
         "kind": "Variable"
       }
     ],
@@ -29617,6 +29617,11 @@
       {
         "specifier": "@/lib/rate-limit",
         "line": 13,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/tenant/organization",
+        "line": 35,
         "kind": "import"
       }
     ]
