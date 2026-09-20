@@ -1801,23 +1801,23 @@
     "localReferences": [
       {
         "file": "emails/application-confirmation.ts",
-        "line": 6
-      },
-      {
-        "file": "emails/new-application-alert.ts",
-        "line": 7
-      },
-      {
-        "file": "emails/eligibility-screening-summary.ts",
-        "line": 8
-      },
-      {
-        "file": "emails/eligibility-screening-confirmation.ts",
         "line": 9
       },
       {
-        "file": "emails/eligibility-screening-admin-alert.ts",
+        "file": "emails/new-application-alert.ts",
         "line": 10
+      },
+      {
+        "file": "emails/eligibility-screening-summary.ts",
+        "line": 11
+      },
+      {
+        "file": "emails/eligibility-screening-confirmation.ts",
+        "line": 12
+      },
+      {
+        "file": "emails/eligibility-screening-admin-alert.ts",
+        "line": 13
       }
     ],
     "kind": "test-candidate",
@@ -9376,7 +9376,7 @@
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 27
+        "line": 28
       }
     ],
     "kind": "test-candidate",
@@ -27992,6 +27992,102 @@
       {
         "file": "scripts/lib/portal-audit-paths.mjs",
         "line": 7
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/privacy/partner-export-columns.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/partner/export/referrals/route.ts",
+        "line": 33
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/privacy/partner-referral-bundle-select.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/partner/referralBundle.ts",
+        "line": 16
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/privacy/public-eligibility-lead.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/q/[token]/submit/route.ts",
+        "line": 50
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/privacy/voice-context-minimisation.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/ai/elevenlabsPortalContext.ts",
+        "line": 42
       }
     ],
     "kind": "test-candidate",

@@ -40,13 +40,14 @@ const referralMemberSelect = {
       retentionDecision: true,
     },
   },
+  // WAP-171: privacy policy §3.3 lets a referring partner see enrollment
+  // status, progress and outcomes. Ethnicity and veteran status (§1.2
+  // eligibility & demographic data) are never loaded for partner surfaces.
   profile: {
     select: {
       city: true,
       state: true,
       zip: true,
-      ethnicity: true,
-      veteranStatus: true,
       employmentStatus: true,
       educationLevel: true,
     },
@@ -86,8 +87,6 @@ export type ReferralMember = {
     city: string | null;
     state: string | null;
     zip: string | null;
-    ethnicity: string | null;
-    veteranStatus: string | null;
     employmentStatus: string | null;
     educationLevel: string | null;
   } | null;
