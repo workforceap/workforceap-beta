@@ -22,20 +22,24 @@
  *     (port, connection_limit, pool_timeout, pgbouncer — never the URL, user,
  *     password or options). That is the evidence the enforcement below was
  *     waiting on, and it is safe: reporting cannot fail a deploy.
- *   - Preview and development builds FAIL on an off-runbook contract.
- *
- * Production is deliberately still report-only. Flipping it is one word —
- * add 'production' to POOL_CONTRACT_ENFORCED_VERCEL_ENVS — and should be done
- * in the same change that sets the parameters on the production
- * POSTGRES_PRISMA_URL, because otherwise the next production deploy is
- * blocked by an env var only an operator can fix.
+ *   - Enforcement per Vercel env is a one-word flip in
+ *     POOL_CONTRACT_ENFORCED_VERCEL_ENVS. It is empty today (report-only
+ *     everywhere) — see the note on that constant for the order to flip it in.
+ *     Production must never be added before the parameters are set on the
+ *     production POSTGRES_PRISMA_URL, or the next deploy is blocked by an env
+ *     var only an operator can fix.
  */
 
 import guard from './lib/supabase-project-guard.cjs';
 import poolContract from './lib/runtime-pool-contract.cjs';
 
-// Never rewrites URLs. See the WAP-17 note above before adding 'production'.
-const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set(['preview', 'development']);
+// Never rewrites URLs. Report-only on EVERY Vercel env for now: the contract
+// requires four params (port, connection_limit, pool_timeout, pgbouncer) and
+// the runbook shape in docs/HANDOFF.md:40 names three, so nothing yet shows
+// preview's URL carries all four. Add 'preview' after one preview build has
+// logged the parameters line below and they match; add 'production' only in
+// the same change that sets the production POSTGRES_PRISMA_URL (WAP-17).
+const POOL_CONTRACT_ENFORCED_VERCEL_ENVS = new Set([]);
 const checkPoolContract = process.argv.includes('--check-pool-contract');
 
 const {
@@ -107,7 +111,7 @@ if (enforcePoolContract || onVercel) {
       `\n[supabase-env-guard] WARNING — runtime pool contract is off-runbook for VERCEL_ENV="${env}":\n` +
         pool.errors.map((message) => `  - ${message}`).join('\n') +
         '\nSee docs/GO-LIVE-AND-SCALE-LIST.md:101,146. Fix POSTGRES_PRISMA_URL, then add' +
-        " 'production' to POOL_CONTRACT_ENFORCED_VERCEL_ENVS in this file to make it blocking.\n",
+        ` '${env}' to POOL_CONTRACT_ENFORCED_VERCEL_ENVS in this file to make it blocking.\n`,
     );
   }
 }

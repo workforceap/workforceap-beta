@@ -87,13 +87,29 @@ export const PUBLIC_LEAD_RETENTION_DAYS = 180;
  * is trimmed at 30 days. The cron-enable lookup used to scan the whole
  * workflow's rows on every tick (17,844 calls at 152 ms mean), so the table's
  * size was directly competing with request traffic for the pool. The issue
- * asks for a 30-60 day pass; 60 is the conservative end of that band and
- * still leaves two full months of diagnostics for incident review.
+ * asks for a 30-60 day pass.
  *
- * Preserved copies of anything needed for longer are taken explicitly —
- * see `email_failure_snapshots` below and scripts/snapshot-email-failures.ts.
+ * The window is env-driven with a default of 90 (the pre-WAP-17 value) rather
+ * than a hard 60, on purpose: the first cleanup run after a hard cut would
+ * delete every row in the 60-90 day band in one pass, and those rows are the
+ * only record of the 818 lost emails until scripts/snapshot-email-failures.ts
+ * has demonstrably run in production. Operator sequence: run the snapshot,
+ * confirm the rows landed in `email_failure_snapshots`, then set
+ * WORKFLOW_DIAGNOSTIC_RETENTION_DAYS=60 in Vercel. Anything that is not a
+ * positive integer falls back to 90 so a typo can never widen the purge.
  */
-export const WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = 60;
+export const DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = 90;
+
+export function resolveWorkflowDiagnosticRetentionDays(
+  raw: string | undefined = process.env.WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
+): number {
+  if (raw === undefined || !/^[1-9][0-9]*$/.test(raw.trim())) {
+    return DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS;
+  }
+  return Number(raw.trim());
+}
+
+export const WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = resolveWorkflowDiagnosticRetentionDays();
 
 /**
  * `email_failure_snapshots` outlives the diagnostics window it was copied
@@ -138,7 +154,7 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     dateColumn: 'createdAt',
     days: WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
     description:
-      'Workflow/email/cron diagnostic logs (60d — WAP-17; largest table in production and the one cron-time queries scan)',
+      'Workflow/email/cron diagnostic logs (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS, default 90 — WAP-17 targets 60 once the email-failure snapshot has run)',
   },
   {
     model: 'emailSendLog',

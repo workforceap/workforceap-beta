@@ -59,4 +59,25 @@ BEGIN
   END IF;
 END $$;
 
+-- RLS, mirroring counselor_notes (20260513040000_add_rls_policies:177,541-557):
+-- sensitive — counselors + admins only; members cannot read. ENABLE only; FORCE
+-- is deferred repo-wide by 20260514000000_defer_rls_force_authorize_system.
+ALTER TABLE "advisor_session_notes" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "advisor_session_notes_select_counselor" ON "advisor_session_notes";
+CREATE POLICY "advisor_session_notes_select_counselor" ON "advisor_session_notes" FOR SELECT USING (
+  member_id IS NOT NULL AND is_counselor_for_member(member_id)
+);
+DROP POLICY IF EXISTS "advisor_session_notes_select_admin" ON "advisor_session_notes";
+CREATE POLICY "advisor_session_notes_select_admin" ON "advisor_session_notes" FOR SELECT USING (
+  member_id IS NOT NULL AND is_admin_for_member_data(member_id)
+);
+DROP POLICY IF EXISTS "advisor_session_notes_modify_author" ON "advisor_session_notes";
+CREATE POLICY "advisor_session_notes_modify_author" ON "advisor_session_notes" FOR ALL USING (author_id = get_current_user_id()) WITH CHECK (author_id = get_current_user_id());
+DROP POLICY IF EXISTS "advisor_session_notes_insert_counselor" ON "advisor_session_notes";
+CREATE POLICY "advisor_session_notes_insert_counselor" ON "advisor_session_notes" FOR INSERT WITH CHECK (
+  author_id = get_current_user_id()
+  AND (is_counselor_for_member(member_id) OR is_admin_for_member_data(member_id))
+);
+
 COMMIT;

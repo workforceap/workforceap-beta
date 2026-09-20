@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "a9c3a7d3d3dee7e3a58c800f77c1ce2ffe3ffb44",
+  "sourceCommit": "b14679b3cb7eaa22e5ac88802cf25c8fa17b61b9",
   "purpose": "Exact historical timestamp collisions only. This does not certify database-applied checksums or clean migration replay. Do not regenerate to admit a new collision. WAP-178 re-baseline: the ten second-alphabetical members below were restored to their pre-fa8f9ebe3 bytes. fa8f9ebe3 ('ESLint burndown', 2026-05-21) reverted a directory rename but dropped the leading lines of all ten files, truncating two mid-statement and emptying a third, after production had already applied the originals. These sha256 values are therefore the ORIGINAL applied SQL, not a refresh of drifted bytes.",
   "groups": [
     {

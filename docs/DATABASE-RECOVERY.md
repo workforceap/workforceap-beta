@@ -127,13 +127,15 @@ production recovery commands remain unchanged.
 
 `build:with-migrate` used to run two named historical rollback-resolution
 commands before `scripts/safe-migrate.cjs`. WAP-178 removed both: they mutated
-`_prisma_migrations` unconditionally on every production deploy, and one of
-them named `20260616050000_s2_compliance_fix_xapi_org_null`, a directory that
-does not exist in this repo (the committed one is `...050001`). That mismatch
-was swallowed by `isBenignMigrateResolveError`, so the step was inert — but an
-unconditional auto-resolve in the build path is exactly what
-`scripts/safe-migrate.cjs`'s own header says was removed on purpose. Recovery
-is now an operator command only:
+`_prisma_migrations` unconditionally on every production deploy. The second
+named `20260616050000_s2_compliance_fix_xapi_org_null`, which exists in
+production as a completed migration (see the 2026-09-09 preflight below) but
+has no directory in this repo (the committed one is `...050001`). The step was
+inert because `prisma migrate resolve` returns P3012 for a row that is not in
+a failed state and `isBenignMigrateResolveError` treats P3012 as success — not
+because the name was wrong. An unconditional auto-resolve in the build path is
+still exactly what `scripts/safe-migrate.cjs`'s own header says was removed on
+purpose. Recovery is now an operator command only:
 
 ```
 npm run db:migrate:resolve-failed

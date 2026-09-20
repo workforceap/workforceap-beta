@@ -26,10 +26,14 @@
 | [scripts/canonicalize-course-progress-slugs.ts](../../../scripts/canonicalize-course-progress-slugs.ts) | 339 | operations | mergeCourseProgressCollision:72 |
 | [scripts/capture-roster-after-screenshots.mjs](../../../scripts/capture-roster-after-screenshots.mjs) | 85 | operations |  |
 | [scripts/check-b4b-programs.ts](../../../scripts/check-b4b-programs.ts) | 32 | operations |  |
-| [scripts/check-duplicate-migrations.mjs](../../../scripts/check-duplicate-migrations.mjs) | 144 | operations |  |
+| [scripts/check-duplicate-migrations.mjs](../../../scripts/check-duplicate-migrations.mjs) | 148 | operations |  |
 | [scripts/check-duplicate-migrations.test.cjs](../../../scripts/check-duplicate-migrations.test.cjs) | 261 | operations |  |
 | [scripts/check-mabrown040.js](../../../scripts/check-mabrown040.js) | 31 | operations |  |
-| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 125 | operations |  |
+| [scripts/check-migration-history.mjs](../../../scripts/check-migration-history.mjs) | 152 | operations | ROOT:32, findEmptyMigrations:49, findTruncatedMigrations:56, mappedModelTables:69, findModelsWithoutTable:78, findBuildScriptsThatAutoResolve:90, readMigrations:97, check:107 |
+| [scripts/check-migration-history.test.cjs](../../../scripts/check-migration-history.test.cjs) | 101 | operations |  |
+| [scripts/check-public-surface-icons.mjs](../../../scripts/check-public-surface-icons.mjs) | 157 | operations | ROOT:29, ENTRY_POINTS:32, ALLOWED:55, isCommentLine:65, findLigatureRenders:74, collectModules:92, check:123 |
+| [scripts/check-public-surface-icons.test.cjs](../../../scripts/check-public-surface-icons.test.cjs) | 101 | operations |  |
+| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 129 | operations |  |
 | [scripts/clawpatch-pre-push.sh](../../../scripts/clawpatch-pre-push.sh) | 50 | operations |  |
 | [scripts/cleanup-fixtures.ts](../../../scripts/cleanup-fixtures.ts) | 46 | operations |  |
 | [scripts/coursera-integration-test.ts](../../../scripts/coursera-integration-test.ts) | 605 | learning-coursera |  |
@@ -87,7 +91,7 @@
 | [scripts/lib/portal-qa-guard.test.cjs](../../../scripts/lib/portal-qa-guard.test.cjs) | 59 | operations |  |
 | [scripts/lib/prisma-resolve-benign.cjs](../../../scripts/lib/prisma-resolve-benign.cjs) | 36 | operations | isBenignMigrateResolveError:36 |
 | [scripts/lib/runtime-pool-contract.cjs](../../../scripts/lib/runtime-pool-contract.cjs) | 35 | operations | inspectRuntimePoolContract:35 |
-| [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 73 | operations |  |
+| [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 86 | operations |  |
 | [scripts/lib/supabase-project-guard.cjs](../../../scripts/lib/supabase-project-guard.cjs) | 261 | operations | DEMO_REF:253, PROD_REF:254, assertSupabaseEnvironment:255, expectedProjectForVercelEnv:256, formatSupabaseEnvGuardFailure:257, inspectSupabaseEnvironment:258, projectForAnonKey:259, projectForUrl:260 |
 | [scripts/lint/check-coursera-catalog-placeholders.mjs](../../../scripts/lint/check-coursera-catalog-placeholders.mjs) | 204 | learning-coursera |  |
 | [scripts/lint/check-type-floor.mjs](../../../scripts/lint/check-type-floor.mjs) | 302 | operations | FLOOR_PX:39, FLOOR_REM:41, ALLOW_MARKER:42, SCAN_ROOTS:45, SCAN_EXTENSIONS:46, toPx:67, scanSource:172, listSourceFiles:217, runCheck:251 |
@@ -114,7 +118,7 @@
 | [scripts/seed-partner-school.ts](../../../scripts/seed-partner-school.ts) | 188 | operations |  |
 | [scripts/seed-test-user.sql](../../../scripts/seed-test-user.sql) | 39 | operations |  |
 | [scripts/send-eligibility-campaign.ts](../../../scripts/send-eligibility-campaign.ts) | 96 | operations |  |
-| [scripts/snapshot-email-failures.ts](../../../scripts/snapshot-email-failures.ts) | 118 | operations |  |
+| [scripts/snapshot-email-failures.ts](../../../scripts/snapshot-email-failures.ts) | 119 | operations |  |
 | [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 96 | operations |  |
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |

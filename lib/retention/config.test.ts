@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
   EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS,
   RETENTION_TABLES,
   WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
   getCutoffDate,
+  resolveWorkflowDiagnosticRetentionDays,
 } from './config';
 
 const byModel = (model: string) => {
@@ -14,20 +16,28 @@ const byModel = (model: string) => {
   return entry;
 };
 
-test('WAP-17: workflow_diagnostics is trimmed inside the requested 30-60 day band', () => {
-  assert.ok(
-    WORKFLOW_DIAGNOSTIC_RETENTION_DAYS >= 30 && WORKFLOW_DIAGNOSTIC_RETENTION_DAYS <= 60,
-    'the issue asks for a 30-60 day retention pass on the largest production table',
-  );
+test('WAP-17: workflow_diagnostics defaults to the pre-existing 90-day window when unset', () => {
+  // A hard cut to 60 would purge the 60-90 day band in one pass before the
+  // email-failure snapshot has run; the default must stay at 90.
+  assert.equal(DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS, 90);
+  assert.equal(resolveWorkflowDiagnosticRetentionDays(undefined), 90);
   assert.equal(byModel('workflowDiagnostic').days, WORKFLOW_DIAGNOSTIC_RETENTION_DAYS);
   assert.equal(byModel('workflowDiagnostic').dateColumn, 'createdAt');
 });
 
-test('the diagnostics window is not longer than the webhook/portal log windows it sat above', () => {
-  // Before WAP-17 this table was kept for 90 days — the same as the smaller
-  // webhook/portal event logs — while `cron_executions` beside it was 30.
-  assert.ok(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS < byModel('webhookEvent').days);
-  assert.ok(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS < byModel('portalWorkflowEvent').days);
+test('WORKFLOW_DIAGNOSTIC_RETENTION_DAYS overrides the window to the requested 30-60 day band', () => {
+  assert.equal(resolveWorkflowDiagnosticRetentionDays('60'), 60);
+  assert.equal(resolveWorkflowDiagnosticRetentionDays(' 45 '), 45);
+  assert.equal(resolveWorkflowDiagnosticRetentionDays('30'), 30);
+});
+
+test('an invalid override falls back to 90 so a typo can never widen or zero the purge', () => {
+  for (const bad of ['', '0', '-5', '60.5', 'sixty', '1e2', '0x3c', ' ']) {
+    assert.equal(resolveWorkflowDiagnosticRetentionDays(bad), 90, JSON.stringify(bad));
+  }
+});
+
+test('the window never drops below the cron_executions trim beside it', () => {
   assert.ok(WORKFLOW_DIAGNOSTIC_RETENTION_DAYS >= byModel('cronExecution').days);
 });
 

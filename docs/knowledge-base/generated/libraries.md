@@ -947,7 +947,8 @@
 | [lib/resume/resumeUploadUiContract.test.ts](../../../lib/resume/resumeUploadUiContract.test.ts) | 49 | member-counselor |  |
 | [lib/retention/cleanup.test.ts](../../../lib/retention/cleanup.test.ts) | 386 | member-counselor |  |
 | [lib/retention/cleanup.ts](../../../lib/retention/cleanup.ts) | 298 | member-counselor | CleanupResult:13, DataCleanupReport:20, cleanupTable:39, BlockedAccount:119, DeletedAccountsResult:124, foreignKeyConstraintName:142, cleanupDeletedAccounts:180, runDataCleanup:240 |
-| [lib/retention/config.ts](../../../lib/retention/config.ts) | 179 | member-counselor | RetentionTableConfig:22, RETENTION_BATCH_SIZE:33, CRITICAL_AUDIT_ACTION_PREFIXES:46, RETENTION_AUDIT_DAYS:66, PUBLIC_LEAD_RETENTION_DAYS:81, WORKFLOW_DIAGNOSTIC_RETENTION_DAYS:96, EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS:103, RETENTION_TABLES:105, DELETED_ACCOUNT_RETENTION_DAYS:171, getCutoffDate:174 |
+| [lib/retention/config.test.ts](../../../lib/retention/config.test.ts) | 64 | member-counselor |  |
+| [lib/retention/config.ts](../../../lib/retention/config.ts) | 195 | member-counselor | RetentionTableConfig:22, RETENTION_BATCH_SIZE:33, CRITICAL_AUDIT_ACTION_PREFIXES:46, RETENTION_AUDIT_DAYS:66, PUBLIC_LEAD_RETENTION_DAYS:81, DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS:101, resolveWorkflowDiagnosticRetentionDays:103, WORKFLOW_DIAGNOSTIC_RETENTION_DAYS:112, EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS:119, RETENTION_TABLES:121, DELETED_ACCOUNT_RETENTION_DAYS:187, getCutoffDate:190 |
 | [lib/security/auditAiToolsHistory.test.ts](../../../lib/security/auditAiToolsHistory.test.ts) | 23 | libraries |  |
 | [lib/security/placementSurveyToken.ts](../../../lib/security/placementSurveyToken.ts) | 118 | libraries | issuePlacementSurveyToken:66, VerifyResult:90, verifyPlacementSurveyToken:94 |
 | [lib/seo/activeProgramSlugs.ts](../../../lib/seo/activeProgramSlugs.ts) | 42 | libraries | ActiveProgramSlug:6, getActiveProgramSlugsForSitemap:11 |

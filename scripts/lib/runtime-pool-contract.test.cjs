@@ -24,9 +24,9 @@ test('pool enforcement is opt-in and its CLI output never includes credentials',
   assert.equal((strict.stdout + strict.stderr).includes('DO_NOT_LOG'), false);
   assert.match(strict.stderr, /connection_limit=1/);
 });
-// WAP-17: the contract is no longer opt-in-only. A real Vercel preview or
-// development build fails on it; a production build reports the parameters and
-// warns loudly but does not block, because the fix is an operator-only env var.
+// WAP-17: every real Vercel build reports the pool parameters and warns loudly
+// on an off-runbook contract, but none blocks yet (POOL_CONTRACT_ENFORCED_VERCEL_ENVS
+// is empty until one preview build has logged parameters that match).
 const runGuard = (extraEnv) => {
   const script = resolve(__dirname, '../check-supabase-env.mjs');
   const result = spawnSync(process.execPath, [script], {
@@ -36,13 +36,26 @@ const runGuard = (extraEnv) => {
   return { status: result.status, stdout: result.stdout, stderr: result.stderr, all: result.stdout + result.stderr };
 };
 
-test('a Vercel preview build fails on an off-runbook pool contract', () => {
+test('a Vercel preview build reports and warns on an off-runbook pool contract without adding a pool error', () => {
   const run = runGuard({ VERCEL: '1', VERCEL_ENV: 'preview' });
-  assert.equal(run.status, 1);
   assert.match(run.stdout, /runtime pool parameters/);
+  assert.match(run.stderr, /WARNING — runtime pool contract is off-runbook for VERCEL_ENV="preview"/);
+  // Enforced pool failures land in the BLOCKED error block; report-only keeps
+  // them in the WARNING block only, so nothing after BLOCKED mentions the pool.
+  const blocked = run.stderr.split('BLOCKED')[1] ?? '';
+  assert.doesNotMatch(blocked, /Runtime URL/);
+  assert.equal(run.all.includes('DO_NOT_LOG'), false);
+});
+
+test('--check-pool-contract still enforces regardless of env', () => {
+  const script = resolve(__dirname, '../check-supabase-env.mjs');
+  const run = spawnSync(process.execPath, [script, '--check-pool-contract'], {
+    env: { POSTGRES_PRISMA_URL: base, VERCEL: '1', VERCEL_ENV: 'preview' },
+    encoding: 'utf8',
+  });
+  assert.equal(run.status, 1);
   assert.match(run.stderr, /connection_limit=1/);
   assert.doesNotMatch(run.stderr, /WARNING — runtime pool contract/);
-  assert.equal(run.all.includes('DO_NOT_LOG'), false);
 });
 
 test('a Vercel production build reports the pool parameters and warns instead of blocking', () => {
