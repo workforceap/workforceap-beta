@@ -1,47 +1,55 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { Prisma } from '@prisma/client';
 
-function read(path: string): string {
-  return readFileSync(path, 'utf8');
+/**
+ * Placement-survey "sent" state policy: `sentAt` is null until the first
+ * provider acceptance, and each delivery attempt is identified on the row.
+ *
+ * The schema shape is read from the generated Prisma DMMF (what the client
+ * actually enforces), not from schema.prisma text. The reader/counter and
+ * export halves of this policy are behavioural specs:
+ * tests/api/placement-survey.spec.ts (admin list + pipeline routes),
+ * tests/app/admin-placement-surveys-page.spec.tsx (admin page),
+ * tests/lib/member-export-placement-survey.spec.ts (GDPR export).
+ */
+
+function field(model: string, name: string) {
+  const m = Prisma.dmmf.datamodel.models.find((candidate) => candidate.name === model);
+  assert.ok(m, `${model} model missing from the Prisma client`);
+  const f = m.fields.find((candidate) => candidate.name === name);
+  assert.ok(f, `${model}.${name} missing from the Prisma client`);
+  return f;
 }
 
-test('placement-survey admin readers and counters exclude pre-acceptance rows', () => {
-  const page = read('app/admin/placement-surveys/page.tsx');
-  assert.match(page, /findMany\(\{[\s\S]*?where: \{ sentAt: \{ not: null \}/);
-  assert.match(page, /count\(\{ where: \{ sentAt: \{ not: null \}/);
-
-  const api = read('app/api/admin/placement-surveys/route.ts');
-  assert.match(api, /const where = \{[\s\S]*?sentAt: \{ not: null \}/);
-  assert.match(api, /globalCompleted[\s\S]*?sentAt: \{ not: null \}/);
-
-  const pipeline = read('app/api/admin/pipeline/surveys/route.ts');
-  assert.match(pipeline, /totalSent[\s\S]*?sentAt: \{ not: null \}/);
-  assert.match(pipeline, /totalCompleted[\s\S]*?sentAt: \{ not: null \}/);
+test('PlacementSurvey.sentAt is a nullable timestamp so pre-acceptance rows carry no epoch "sent" truth', () => {
+  const sentAt = field('PlacementSurvey', 'sentAt');
+  assert.equal(sentAt.type, 'DateTime');
+  assert.equal(sentAt.isRequired, false, 'sentAt must be optional (DateTime?)');
+  assert.equal(sentAt.hasDefaultValue, false, 'sentAt must not default to now()/epoch');
+  assert.equal(sentAt.dbName, 'sent_at');
 });
 
-test('member export represents pre-acceptance survey state as null instead of epoch sent truth', () => {
-  const source = read('lib/member/exportData.ts');
-  assert.match(source, /sentAt: ps\.sentAt\?\.toISOString\(\) \?\? null/);
-  assert.doesNotMatch(source, /new Date\(0\)|1970-01-01/);
-});
+test('PlacementSurvey persists delivery-attempt identity alongside the frozen token expiry', () => {
+  const tokenExpiresAt = field('PlacementSurvey', 'tokenExpiresAt');
+  assert.equal(tokenExpiresAt.type, 'DateTime');
+  assert.equal(tokenExpiresAt.isRequired, true, 'tokenExpiresAt is required (frozen per attempt)');
+  assert.equal(tokenExpiresAt.dbName, 'token_expires_at');
 
-test('schema and migration use nullable sentAt with persisted delivery-attempt identity', () => {
-  const schema = read('prisma/schema.prisma');
-  assert.match(schema, /sentAt\s+DateTime\? @map\("sent_at"\)/);
-  assert.match(schema, /tokenExpiresAt\s+DateTime @map\("token_expires_at"\)/);
-  assert.match(schema, /deliveryAttempt\s+Int @default\(1\)/);
-  assert.match(schema, /acceptedAttempt\s+Int @default\(0\)/);
-  assert.match(schema, /deliveryPayload\s+Json\? @map\("delivery_payload"\)/);
+  const deliveryAttempt = field('PlacementSurvey', 'deliveryAttempt');
+  assert.equal(deliveryAttempt.type, 'Int');
+  assert.equal(deliveryAttempt.isRequired, true);
+  assert.equal(deliveryAttempt.default, 1);
+  assert.equal(deliveryAttempt.dbName, 'delivery_attempt');
 
-  const migration = read('prisma/migrations/20260912130000_placement_survey_nullable_sent_at/migration.sql');
-  assert.match(migration, /SET "sent_at" = NULL/);
-  assert.ok(
-    migration.indexOf('ALTER COLUMN "sent_at" DROP NOT NULL')
-      < migration.indexOf('SET "sent_at" = NULL'),
-    'sent_at must be nullable before epoch rows are backfilled to NULL',
-  );
-  assert.match(migration, /ADD COLUMN "delivery_attempt" INTEGER NOT NULL DEFAULT 1/);
-  assert.match(migration, /ADD COLUMN "accepted_attempt" INTEGER NOT NULL DEFAULT 0/);
-  assert.match(migration, /ADD COLUMN "delivery_payload" JSONB/);
+  const acceptedAttempt = field('PlacementSurvey', 'acceptedAttempt');
+  assert.equal(acceptedAttempt.type, 'Int');
+  assert.equal(acceptedAttempt.isRequired, true);
+  assert.equal(acceptedAttempt.default, 0, 'no attempt is accepted until Resend stamps one');
+  assert.equal(acceptedAttempt.dbName, 'accepted_attempt');
+
+  const deliveryPayload = field('PlacementSurvey', 'deliveryPayload');
+  assert.equal(deliveryPayload.type, 'Json');
+  assert.equal(deliveryPayload.isRequired, false, 'deliveryPayload is Json?');
+  assert.equal(deliveryPayload.dbName, 'delivery_payload');
 });

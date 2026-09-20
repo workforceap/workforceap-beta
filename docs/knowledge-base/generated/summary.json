@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "fc5d008c63b0d5032971648ea90b35da5f2e08fcf0e045cafc36206f876f3b1c",
+  "inputTreeSha256": "d207bcf97e8b6becabdf1d50fff37cf5358e1fc6053603ba596a8493c2f8374d",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4832,
-    "sourceModules": 3487,
-    "importReferences": 17300,
-    "resolvedLocalReferences": 11564,
+    "files": 4840,
+    "sourceModules": 3495,
+    "importReferences": 17351,
+    "resolvedLocalReferences": 11618,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 898,
-    "testCandidates": 890,
+    "testFiles": 906,
+    "testCandidates": 898,
     "testHelpers": 8,
-    "staticallySelectedTests": 888,
+    "staticallySelectedTests": 896,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1029
+      "files": 1026
     },
     {
       "area": "localization",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 511
+      "files": 522
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 890
+      "references": 901
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 735
+      "references": 740
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -124,11 +124,11 @@
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 430
+      "references": 431
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 241
+      "references": 244
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -164,15 +164,15 @@
     },
     {
       "file": "lib/rate-limit.ts",
-      "references": 108
-    },
-    {
-      "file": "lib/tenant/withTenantScope.ts",
-      "references": 100
+      "references": 109
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 99
+      "references": 103
+    },
+    {
+      "file": "lib/tenant/withTenantScope.ts",
+      "references": 102
     },
     {
       "file": "lib/email.ts",
@@ -236,7 +236,7 @@
     },
     {
       "file": "messages/en.json",
-      "references": 39
+      "references": 40
     },
     {
       "file": "components/LocalizedLink.tsx",
@@ -248,7 +248,7 @@
     },
     {
       "file": "lib/db/queryCaps.ts",
-      "references": 36
+      "references": 37
     }
   ],
   "largestSourceFiles": [
@@ -301,12 +301,12 @@
       "lines": 1552
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1427
+      "file": "tests/api/placement-survey.spec.ts",
+      "lines": 1454
     },
     {
-      "file": "tests/api/placement-survey.spec.ts",
-      "lines": 1403
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1427
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -315,6 +315,10 @@
     {
       "file": "app/(portal)/partner/page.tsx",
       "lines": 1382
+    },
+    {
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1353
     },
     {
       "file": "components/portal/sessions/SessionRunClient.tsx",
@@ -327,10 +331,6 @@
     {
       "file": "lib/content/checkpoints/businessAndDesign.ts",
       "lines": 1334
-    },
-    {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1327
     },
     {
       "file": "components/portal/PortalVoiceSession.tsx",

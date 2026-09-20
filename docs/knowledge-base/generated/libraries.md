@@ -5,11 +5,10 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [lib/a11y/scrollBehavior.ts](../../../lib/a11y/scrollBehavior.ts) | 17 | libraries | prefersReducedMotion:9, scrollBehavior:15 |
-| [lib/admin-ai-tools-page-structure.test.ts](../../../lib/admin-ai-tools-page-structure.test.ts) | 95 | libraries |  |
+| [lib/admin-ai-tools-page-structure.test.ts](../../../lib/admin-ai-tools-page-structure.test.ts) | 33 | libraries |  |
 | [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 21 | learning-coursera |  |
 | [lib/admin-coursera-subject-scope-structure.test.ts](../../../lib/admin-coursera-subject-scope-structure.test.ts) | 89 | learning-coursera |  |
-| [lib/admin-job-ready-query-structure.test.ts](../../../lib/admin-job-ready-query-structure.test.ts) | 34 | libraries |  |
-| [lib/admin-programs-structure.test.ts](../../../lib/admin-programs-structure.test.ts) | 18 | libraries |  |
+| [lib/admin-job-ready-query-structure.test.ts](../../../lib/admin-job-ready-query-structure.test.ts) | 29 | libraries |  |
 | [lib/admin/adminJobMatchesPrismaDeps.ts](../../../lib/admin/adminJobMatchesPrismaDeps.ts) | 128 | administration | createAdminJobMatchesPrismaDeps:49 |
 | [lib/admin/adminUserProvisioning.ts](../../../lib/admin/adminUserProvisioning.ts) | 125 | administration | ADMIN_USER_ROLES:5, AdminUserRole:6, ensureAppUser:8, ensureProfileRole:69, syncManagedUserRoles:100 |
 | [lib/admin/aiJobMatchCompute.ts](../../../lib/admin/aiJobMatchCompute.ts) | 54 | administration | JobMatchInput:3, AI_JOB_MATCH_EMPTY_COOLDOWN_MS:11, getOrComputeAiJobMatches:16, markAiJobMatchEmptyCooldown:48, clearAiJobMatchEmptyCooldown:52 |
@@ -188,7 +187,7 @@
 | [lib/analytics/conversionValue.ts](../../../lib/analytics/conversionValue.ts) | 59 | administration | CONVERSION_VALUE_USD:19, ConversionEventName:25, CONVERSION_VALUE_BASIS:32, getConversionValuePayload:34, trackConversionWithValue:51 |
 | [lib/analytics/events.ts](../../../lib/analytics/events.ts) | 256 | administration | trackFunnelEvent:26, trackLeadFormEvent:39, trackMemberReferralShare:52, trackApplyFunnel:59, trackLearningHubNavigate:72, trackEmployerJobAction:81, trackEmployerBulkDelete:94, trackResourceOpen:102, trackToolLaunch:110, trackAIToolRun:118, trackEmployerImport:131, trackLicenseRequest:142, trackBriefOpen:149, trackApplicationTrackerOpen:157, trackConversionRouteView:163, LearningMilestone:170, trackLearningMilestone:172, trackPortalRouteView:186, trackWebVitalMetric:193, trackCtaExperimentExposure:210, trackCtaExperimentClick:219, trackPaidApplyVariantRendered:234, trackMemberLoggedIn:241, ThankYouFunnel:248, trackThankYouViewed:251 |
 | [lib/analytics/partnerQuarterlyOutcomes.ts](../../../lib/analytics/partnerQuarterlyOutcomes.ts) | 491 | administration | QuarterSpec:25, PartnerQuarterlyOutcomesReport:30, getDefaultQuarter:100, generatePartnerQuarterlyOutcomes:164 |
-| [lib/analytics/quarterlyOutcomes.test.ts](../../../lib/analytics/quarterlyOutcomes.test.ts) | 556 | administration |  |
+| [lib/analytics/quarterlyOutcomes.test.ts](../../../lib/analytics/quarterlyOutcomes.test.ts) | 559 | administration |  |
 | [lib/analytics/quarterlyOutcomes.ts](../../../lib/analytics/quarterlyOutcomes.ts) | 636 | administration | QuarterSpec:16, QuarterlyOutcomesReport:21, getDefaultQuarter:84, generateQuarterlyOutcomes:305, formatQuarterlyReportMarkdown:496, quarterlyOutcomesToCsvSummary:568, quarterlyOutcomesToCsvPrograms:596, quarterlyOutcomesToCsvPlacements:605, rowsToCsv:617 |
 | [lib/analytics/retentionOutcome.ts](../../../lib/analytics/retentionOutcome.ts) | 77 | administration | RetentionOutcome:15, RetentionOutcomeRow:17, classifyRetentionOutcome:22, RetentionSummary:38, summarizeRetentionOutcomes:46, summarizeRetentionGroups:60 |
 | [lib/analytics/track.ts](../../../lib/analytics/track.ts) | 66 | administration | LearningMilestone:11, getMilestonesCrossed:15, trackTrainingTabViewed:31, trackCourseraLaunchClicked:36, trackLearningMilestoneServer:41, trackXapiBatchProcessed:51, trackEmailVerified:59 |
@@ -495,7 +494,7 @@
 | [lib/cron/isCronEnabled.ts](../../../lib/cron/isCronEnabled.ts) | 76 | communications | cronSettingKey:6, setCronEnabled:9, loadCronEnabledStates:26, isCronEnabled:74 |
 | [lib/cron/nudgeThrottle.ts](../../../lib/cron/nudgeThrottle.ts) | 69 | communications | NUDGE_LOG_COOLDOWN_DAYS:23, filterNudgeEligibleUserIds:30, recordNudgeSent:51 |
 | [lib/cron/placement-surveys.ts](../../../lib/cron/placement-surveys.ts) | 436 | communications | SurveySendResult:47, EscalationResult:54, DailySurveyRunResult:60, sendDuePlacementSurveys:85, escalateStalePlacementSurveys:311, runDailyPlacementSurveyCron:431 |
-| [lib/cron/placementSurveySentStatePolicy.test.ts](../../../lib/cron/placementSurveySentStatePolicy.test.ts) | 47 | communications |  |
+| [lib/cron/placementSurveySentStatePolicy.test.ts](../../../lib/cron/placementSurveySentStatePolicy.test.ts) | 55 | communications |  |
 | [lib/cron/staleExecutions.test.ts](../../../lib/cron/staleExecutions.test.ts) | 28 | communications |  |
 | [lib/cron/staleExecutions.ts](../../../lib/cron/staleExecutions.ts) | 31 | communications | STALE_CRON_EXECUTION_MS:10, StaleCronSweepResult:12, failStaleCronExecutions:14 |
 | [lib/cron/wioa-report.test.ts](../../../lib/cron/wioa-report.test.ts) | 43 | communications |  |
@@ -518,7 +517,7 @@
 | [lib/db/prismaEnumFallback.ts](../../../lib/db/prismaEnumFallback.ts) | 31 | libraries | isMissingPrismaEnumValue:12 |
 | [lib/db/queryCaps.test.ts](../../../lib/db/queryCaps.test.ts) | 108 | libraries |  |
 | [lib/db/queryCaps.ts](../../../lib/db/queryCaps.ts) | 47 | libraries | ADMIN_SSR_LIST_CAP:9, EMPLOYER_LIST_CAP:12, COUNSELOR_ROSTER_CAP:15, MEMBER_HISTORY_CAP:18, LOOKUP_LIST_CAP:21, WIOA_DEMOGRAPHICS_CAP:24, ANALYTICS_SAMPLE_CAP:27, UNBOUNDED_LIST_TAKE_FLOOR:30, clampTake:32, isListTruncated:37, showingFirstLabel:42 |
-| [lib/db/scanCaps.test.ts](../../../lib/db/scanCaps.test.ts) | 105 | libraries |  |
+| [lib/db/scanCaps.test.ts](../../../lib/db/scanCaps.test.ts) | 61 | libraries |  |
 | [lib/db/scanCaps.ts](../../../lib/db/scanCaps.ts) | 62 | libraries | ANALYTICS_SAMPLE_CAP:14, ANALYTICS_COHORT_DETAIL_CAP:17, REPORT_SAMPLE_CAP:20, WORK_QUEUE_CAP:23, LOOKUP_CATALOG_CAP:26, MEMBER_PROGRESS_CAP:29, COURSERA_B4B_REPORT_CAP:36, COURSERA_B4B_USER_LOOKUP_CAP:39, ONET_SYNC_OCCUPATION_CAP:46, CRON_SCOPED_LOOKUP_CAP:49, UNBOUNDED_SCAN_TAKE_FLOOR:52, clampScanTake:54, sqlCount:59 |
 | [lib/db/transactionPolicy.test.ts](../../../lib/db/transactionPolicy.test.ts) | 52 | libraries |  |
 | [lib/db/transactionPolicy.ts](../../../lib/db/transactionPolicy.ts) | 42 | libraries | PrismaTransactionPolicy:1, resolvePrismaTransactionPolicy:9, interactiveTransactionsGuaranteed:24, assertPrismaTransactionPolicySafe:30 |
@@ -543,7 +542,6 @@
 | [lib/email/pacing.ts](../../../lib/email/pacing.ts) | 160 | communications | BoundedPacerOptions:5, PaceResult:14, boundedPacingCapacity:22, createBoundedPacer:39, BULK_EMAIL_CRON_INTERVAL_MS:86, BULK_EMAIL_CRON_ACCOUNTING_RESERVE_MS:87, BulkEmailCronPacerOptions:89, BulkEmailPacingSkipped:98, createBulkEmailCronPacer:105, withBulkEmailCronPacer:144, runBulkEmailOperation:152, currentBulkEmailDeadlineAtMs:158 |
 | [lib/email/send.test.ts](../../../lib/email/send.test.ts) | 418 | communications |  |
 | [lib/email/send.ts](../../../lib/email/send.ts) | 359 | communications | SendBrandedEmailRetryOptions:37, UNSUBSCRIBE_ADDRESS:50, htmlToPlainText:60, sanitizeHeaders:90, buildDeliverabilityHeaders:99, FixtureSkippedEmailResult:115, SendBrandedEmailArgs:123, isFixtureEmailRecipient:203, isEmailProviderRateLimitError:210, FixtureRecipientSkippedError:254, sendBrandedEmail:264, sendBrandedEmailOrThrowOnSkip:348 |
-| [lib/email/serverlessAfterGuard.test.ts](../../../lib/email/serverlessAfterGuard.test.ts) | 111 | communications |  |
 | [lib/email/template.ts](../../../lib/email/template.ts) | 135 | communications | safeEmailCtaHref:35, brandedEmailLayout:58 |
 | [lib/email/unsubscribeToken.ts](../../../lib/email/unsubscribeToken.ts) | 91 | communications | usesUnsubscribeSecretFallback:24, buildUnsubscribeToken:52, verifyUnsubscribeToken:57, stripHeaderUnsafe:72, buildUnsubscribeUrl:87 |
 | [lib/employer/aiMatchPipelineLabels.ts](../../../lib/employer/aiMatchPipelineLabels.ts) | 35 | jobs-employers | employerMatchPipelineLabel:14, employerAiMatchStatusBadgeVariant:19 |
@@ -657,7 +655,7 @@
 | [lib/member/courseCompletion.ts](../../../lib/member/courseCompletion.ts) | 318 | member-counselor | completeMemberCourse:25 |
 | [lib/member/courseEnrollmentAssignment.test.ts](../../../lib/member/courseEnrollmentAssignment.test.ts) | 156 | member-counselor |  |
 | [lib/member/courseEnrollmentAssignment.ts](../../../lib/member/courseEnrollmentAssignment.ts) | 130 | member-counselor | CourseEnrollmentWriterClient:23, AssignedCourseEnrollment:28, upsertEquivalentCourseEnrollment:49 |
-| [lib/member/courseEnrollmentMigration.test.ts](../../../lib/member/courseEnrollmentMigration.test.ts) | 142 | member-counselor |  |
+| [lib/member/courseEnrollmentMigration.test.ts](../../../lib/member/courseEnrollmentMigration.test.ts) | 53 | member-counselor |  |
 | [lib/member/courseProgress.ts](../../../lib/member/courseProgress.ts) | 535 | member-counselor | CanonicalProgramCourse:51, resolveCanonicalProgramCourseFromCourseraId:61, refreshMemberProgramProgressRollup:96, markCourseProgressCompleted:192, claimLiveCourseCompletionEvent:315, upsertCourseProgressFromXapiStatement:372 |
 | [lib/member/courseraCourseProgress.test.ts](../../../lib/member/courseraCourseProgress.test.ts) | 32 | learning-coursera |  |
 | [lib/member/courseraCourseProgress.ts](../../../lib/member/courseraCourseProgress.ts) | 17 | learning-coursera | countCompletedInProgram:4, getFirstIncompleteCourseIndex:13 |
@@ -793,7 +791,6 @@
 | [lib/nav/workspaceCopy.ts](../../../lib/nav/workspaceCopy.ts) | 42 | public-experience | PRODUCT_COPY:1, EMPLOYER_PORTAL_NAV:11, PARTNER_PORTAL_NAV:18, GROUP_PORTAL_NAV:24, ADMIN_NAV:26 |
 | [lib/notifications/create.ts](../../../lib/notifications/create.ts) | 166 | communications | NotificationType:11, CreateNotificationInput:27, createNotification:54, createBulkNotifications:111 |
 | [lib/notifications/partner-notify.ts](../../../lib/notifications/partner-notify.ts) | 197 | communications | PartnerMilestone:30, sendPartnerMilestoneEmail:61, sendPartnerNewMemberAssignedEmail:138 |
-| [lib/notify/discord.test.ts](../../../lib/notify/discord.test.ts) | 49 | communications |  |
 | [lib/notify/discord.ts](../../../lib/notify/discord.ts) | 130 | communications | DiscordNotificationLevel:26, DiscordNotificationInput:28, notifyDiscord:70 |
 | [lib/observability/apiErrorScope.ts](../../../lib/observability/apiErrorScope.ts) | 48 | libraries | runWithApiErrorScope:7, markApiErrorReported:11, hasReportedApiError:20, apiRouteLabel:25 |
 | [lib/observability/captureApiError.ts](../../../lib/observability/captureApiError.ts) | 44 | libraries | captureApiError:9, captureApiResponseError:39 |
