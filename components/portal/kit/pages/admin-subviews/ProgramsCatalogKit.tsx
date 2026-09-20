@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import {
   DesignSurface,
-  SectionHeader,
+  PageOpener,
   KpiStrip,
   colorVar,
   type KpiItem,
@@ -213,10 +213,10 @@ export function ProgramsCatalogKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener
         title="Programs"
         kicker="Catalog"
-        goal={subtitle}
+        lede={subtitle}
         action={
           <AstryxLink href="/admin/programs?ui=legacy" as={NextLink as never} isStandalone>
             <Button

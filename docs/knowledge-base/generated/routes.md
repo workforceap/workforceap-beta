@@ -193,7 +193,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/resources | loading |  | [app/(portal)/dashboard/resources/loading.tsx](../../../app/%28portal%29/dashboard/resources/loading.tsx) |  |
 | /dashboard/resources | page |  | [app/(portal)/dashboard/resources/page.tsx](../../../app/%28portal%29/dashboard/resources/page.tsx) | @/lib/auth/server:7 |
 | /dashboard/resume | loading |  | [app/(portal)/dashboard/resume/loading.tsx](../../../app/%28portal%29/dashboard/resume/loading.tsx) |  |
-| /dashboard/resume | page |  | [app/(portal)/dashboard/resume/page.tsx](../../../app/%28portal%29/dashboard/resume/page.tsx) | @/lib/auth/server:9 |
+| /dashboard/resume | page |  | [app/(portal)/dashboard/resume/page.tsx](../../../app/%28portal%29/dashboard/resume/page.tsx) | @/lib/auth/server:8 |
 | /dashboard/settings | loading |  | [app/(portal)/dashboard/settings/loading.tsx](../../../app/%28portal%29/dashboard/settings/loading.tsx) |  |
 | /dashboard/settings | page |  | [app/(portal)/dashboard/settings/page.tsx](../../../app/%28portal%29/dashboard/settings/page.tsx) |  |
 | /dashboard/skills-assessment | loading |  | [app/(portal)/dashboard/skills-assessment/loading.tsx](../../../app/%28portal%29/dashboard/skills-assessment/loading.tsx) |  |

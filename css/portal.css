@@ -504,7 +504,7 @@ html.dark [data-surface] .astryx-card,
 
 /* Dashboard section card */
 .dashboard-section {
-  background: var(--surface-container, #1e2022);
+  background: var(--surface-container);
   border-radius: var(--radius-xl, 16px);
   padding: var(--space-6, 24px);
   margin-bottom: 1.5rem;

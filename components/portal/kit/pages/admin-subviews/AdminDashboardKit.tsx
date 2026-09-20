@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import {
   DesignSurface,
   SectionHeader,
+  PageOpener,
   KpiStrip,
   DataTable,
   RankBars,
@@ -247,10 +248,10 @@ export function AdminDashboardKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Executive Dashboard"
         kicker="Admin"
-        goal="Real-time metrics across all 7 CEO funnels and placement KPIs"
+        lede="Real-time metrics across all 7 CEO funnels and placement KPIs"
         action={ExportAction}
       />
 

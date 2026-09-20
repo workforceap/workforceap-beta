@@ -18252,7 +18252,7 @@
     "localReferences": [
       {
         "file": "app/(portal)/partner/page.tsx",
-        "line": 45
+        "line": 46
       }
     ],
     "kind": "test-candidate",
@@ -18332,11 +18332,11 @@
     "localReferences": [
       {
         "file": "app/(portal)/partner/page.tsx",
-        "line": 35
+        "line": 36
       },
       {
         "file": "app/(portal)/partner/guide/page.tsx",
-        "line": 36
+        "line": 37
       }
     ],
     "kind": "test-candidate",
@@ -18411,6 +18411,25 @@
         "line": 25
       }
     ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/portal-h1-ownership.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [],
     "kind": "test-candidate",
     "declaredRunners": [
       {
@@ -18724,7 +18743,7 @@
     "localReferences": [
       {
         "file": "components/admin/SubgroupMembersTable.tsx",
-        "line": 7
+        "line": 26
       }
     ],
     "kind": "test-candidate",
@@ -20144,16 +20163,28 @@
         "line": 14
       },
       {
-        "file": "lib/ui/statusToneAdapters.ts",
+        "file": "components/admin/PlacementsTableClient.tsx",
         "line": 15
       },
       {
-        "file": "components/portal/kit/astryxMap.ts",
+        "file": "components/admin/InvitesTable.tsx",
         "line": 16
       },
       {
-        "file": "lib/ui/statusColors.ts",
+        "file": "components/admin/EmployersTableClient.tsx",
         "line": 17
+      },
+      {
+        "file": "lib/ui/statusToneAdapters.ts",
+        "line": 18
+      },
+      {
+        "file": "components/portal/kit/astryxMap.ts",
+        "line": 19
+      },
+      {
+        "file": "lib/ui/statusColors.ts",
+        "line": 20
       }
     ],
     "kind": "test-candidate",

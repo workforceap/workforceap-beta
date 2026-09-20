@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, isValidElement } from 'react';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 /**
@@ -124,12 +124,33 @@ const FONT_BY_DENSITY: Record<NonNullable<DataTableProps<unknown>['density']>, s
   compact: '0.875rem',
 };
 
-/** Mobile stacked `.admin-table` / `.dashboard-table` rows use `data-label`; derive from plain-text headers when unset. */
+/**
+ * Visible text of a header node, for the stacked-row `data-label` caption.
+ * Plain strings/numbers are returned as-is. Rich headers (sort buttons,
+ * select-all controls) contribute their string `label` prop or their nested
+ * text children — so the 28 `variant="admin"` tables keep their column labels
+ * below 767px even when the header cell is a control (WAP-131).
+ */
+export function headerTextForDataLabel(header: ReactNode): string | undefined {
+  if (typeof header === 'string') return header.trim() || undefined;
+  if (typeof header === 'number') return String(header);
+  if (header == null || typeof header === 'boolean') return undefined;
+  if (Array.isArray(header)) {
+    const text = header.map((part) => headerTextForDataLabel(part) ?? '').join(' ').replace(/\s+/g, ' ').trim();
+    return text || undefined;
+  }
+  if (isValidElement(header)) {
+    const props = header.props as { label?: unknown; children?: ReactNode };
+    if (typeof props.label === 'string' && props.label.trim()) return props.label.trim();
+    return headerTextForDataLabel(props.children);
+  }
+  return undefined;
+}
+
+/** Mobile stacked `.admin-table` / `.dashboard-table` rows use `data-label`; derive from the header when unset. */
 function dataLabelForColumn(header: ReactNode, explicit?: string): string | undefined {
   if (explicit != null && explicit !== '') return explicit;
-  if (typeof header === 'string') return header;
-  if (typeof header === 'number') return String(header);
-  return undefined;
+  return headerTextForDataLabel(header);
 }
 
 export default function DataTable<TRow>({
@@ -193,7 +214,7 @@ export default function DataTable<TRow>({
                         position: 'sticky' as const,
                         left: 0,
                         zIndex: 2,
-                        background: 'var(--surface-container, #1e2022)',
+                        background: 'var(--surface-container)',
                       }
                     : {}),
                   ...(stickyHeader
@@ -249,7 +270,7 @@ export default function DataTable<TRow>({
                           position: 'sticky' as const,
                           left: 0,
                           zIndex: 1,
-                          background: 'var(--surface-container-low, #1a1c1e)',
+                          background: 'var(--surface-container-low)',
                         }
                       : {}),
                   };
