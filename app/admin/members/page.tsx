@@ -15,7 +15,7 @@ import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress
 import { getActivePrograms } from '@/lib/platform/programCatalog';
 import { buildAssignableProgramOptions } from '@/lib/admin/assignableProgramOptions';
 import { calculateFitScore } from '@/lib/admin/fitScore';
-import { calculateHealthStatus } from '@/lib/admin/healthScore';
+import { calculateHealthStatus, MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { buildStatusWhere, type StudentStatus } from '@/lib/admin/studentStatus';
 import { APPLICANT_TRIAGE_BUCKETS, type ApplicantTriageBucket } from '@/lib/admin/applicantTriage';
 import { loadApplicantTriageByUserIds, localizeApplicantTriageMap } from '@/lib/admin/applicantTriageLoad';
@@ -25,7 +25,7 @@ import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { buildDirectorySearchWhere, normalizeDirectorySearch } from '@/lib/admin/directorySearch';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -57,6 +57,12 @@ export default async function AdminMembersPage({
   const partnerFilter = typeof params.partner === 'string' ? params.partner.trim() : '';
   const startDateFilter = typeof params.startDate === 'string' ? params.startDate.trim() : '';
   const endDateFilter = typeof params.endDate === 'string' ? params.endDate.trim() : '';
+  // Staff and dogfood admin accounts are not members and must not sit in the
+  // roster or its count line: /admin/members printed 131 while /admin/students
+  // printed 126 for the same question (audit 2026-09-20, S3; Mike, "remove
+  // staff in count"). `?staff=1` restores the dogfood view so admins can still
+  // find their own account while testing member surfaces.
+  const includeStaff = params.staff === '1';
   const pageParam = typeof params.page === 'string' ? parseInt(params.page, 10) : 1;
   const currentPage = Number.isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
   const pageSize = 50;
@@ -66,7 +72,7 @@ export default async function AdminMembersPage({
 
   // Build the where clause based on filters
   const whereClause: Prisma.UserWhereInput = {
-    ...MEMBER_OR_DOGFOOD_WHERE,
+    ...(includeStaff ? MEMBER_OR_DOGFOOD_WHERE : MEMBER_ONLY_WHERE),
     AND: [buildDirectorySearchWhere(searchQuery)],
   };
 
@@ -133,6 +139,7 @@ export default async function AdminMembersPage({
         phone: true,
         enrolledProgram: true,
         enrolledAt: true,
+        lastLoginAt: true,
         staleTrainingDetectedAt: true,
         assessmentScorePct: true,
         assessmentCompleted: true,
@@ -208,18 +215,22 @@ export default async function AdminMembersPage({
     canonicalCompletionsResult,
     programProgressResult,
     activeCourseProgressResult,
+    courseActivityResult,
     applicantTriageResult,
   ] = await Promise.allSettled([
     // PERF: Bound last-event scan to 30 days. Users absent from this map
     // are treated as inactive by calculateHealthStatus (correct behavior).
+    // MEMBER_ACTIVITY_EVENT_WHERE drops the rows the platform writes *to* the
+    // member (nudge emails, recap digests): counting them marked 114 members
+    // with no sign-in in 30+ days "Active" (audit 2026-09-20, S1).
     withAdminPageScope(scope, (db) => db.memberEvent.groupBy({
       by: ['userId'],
-      where: { userId: { in: pageMemberIds }, createdAt: { gte: thirtyDaysAgo } },
+      where: { userId: { in: pageMemberIds }, createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
       _max: { createdAt: true },
     })),
     withAdminPageScope(scope, (db) => db.memberEvent.groupBy({
       by: ['userId'],
-      where: { userId: { in: pageMemberIds }, createdAt: { gte: thirtyDaysAgo } },
+      where: { userId: { in: pageMemberIds }, createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
       _count: { _all: true },
     })),
     // Canonical completed-course count from `course_progress` (includes CSV-promoted Coursera rows).
@@ -238,10 +249,27 @@ export default async function AdminMembersPage({
         lastUpdatedAt: true,
       },
     }),
+    // "N active" on the Training cell: courses the member is working on *in
+    // the program the row shows*. Grouping by userId alone and counting
+    // COMPLETED rows too printed "11 active" for a learner with 3 in progress
+    // (audit 2026-09-20, S15). Same rule as the legacy training dashboard
+    // (lib/admin/trainingDashboard.ts: not complete, some progress).
+    prisma.courseProgress.groupBy({
+      by: ['userId', 'programSlug'],
+      where: {
+        userId: { in: pageMemberIds },
+        status: 'IN_PROGRESS',
+        percentComplete: { gt: 0 },
+      },
+      _count: { _all: true },
+    }),
+    // Coursera / course work writes no member_events row, so Health has to
+    // read it here or a learner who only studies scores red (Mike, 2026-09-20:
+    // activity is "login, any Coursera action, any tools skills etc.").
     prisma.courseProgress.groupBy({
       by: ['userId'],
-      where: { userId: { in: pageMemberIds }, status: { in: ['IN_PROGRESS', 'COMPLETED'] } },
-      _count: { _all: true },
+      where: { userId: { in: pageMemberIds } },
+      _max: { lastActivityAt: true },
     }),
     // Applicant intake triage for members on this page with an open application.
     // Read-only pre-sort; the approve/deny buttons and who may press them are untouched.
@@ -266,9 +294,20 @@ export default async function AdminMembersPage({
     console.error('[admin/members] recent-event aggregate failed', recentEventsResult.reason);
   }
 
-  /** Health needs both aggregates; one failure + zeros mislabels members as inactive/at-risk. */
+  const courseActivityMap: Map<string, Date> = new Map();
+  if (courseActivityResult.status === 'fulfilled') {
+    for (const row of courseActivityResult.value) {
+      if (row._max.lastActivityAt) courseActivityMap.set(row.userId, row._max.lastActivityAt);
+    }
+  } else {
+    console.error('[admin/members] course activity aggregate failed', courseActivityResult.reason);
+  }
+
+  /** Health needs every aggregate; one failure + zeros mislabels members as inactive. */
   const eventAggregatesOk =
-    lastEventsResult.status === 'fulfilled' && recentEventsResult.status === 'fulfilled';
+    lastEventsResult.status === 'fulfilled' &&
+    recentEventsResult.status === 'fulfilled' &&
+    courseActivityResult.status === 'fulfilled';
 
   const canonicalCompletionMap: Map<string, number> = new Map();
   if (canonicalCompletionsResult.status === 'fulfilled') {
@@ -314,10 +353,12 @@ export default async function AdminMembersPage({
     ) as Record<ApplicantTriageBucket, string>,
   };
 
+  /** Keyed `userId:canonicalProgramSlug` — an active count belongs to one program. */
   const activeCourseCountMap: Map<string, number> = new Map();
   if (activeCourseProgressResult.status === 'fulfilled') {
     for (const row of activeCourseProgressResult.value) {
-      activeCourseCountMap.set(row.userId, row._count._all);
+      const key = `${row.userId}:${canonicalizeProgramSlug(row.programSlug)}`;
+      activeCourseCountMap.set(key, (activeCourseCountMap.get(key) ?? 0) + row._count._all);
     }
   } else {
     console.error('[admin/members] active course_progress count failed', activeCourseProgressResult.reason);
@@ -339,6 +380,8 @@ export default async function AdminMembersPage({
           lastEventAt: lastEventMap.get(m.id) ?? null,
           recentEventCount: recentEventMap.get(m.id) ?? 0,
           enrolledAt: m.enrolledAt,
+          lastLoginAt: m.lastLoginAt,
+          lastCourseActivityAt: courseActivityMap.get(m.id) ?? null,
         })
       : undefined;
 
@@ -366,7 +409,9 @@ export default async function AdminMembersPage({
           `${m.id}:${canonicalizeProgramSlug(activeProgramSlug)}`,
         ) ?? null
       : null;
-    const activeCourses = activeCourseCountMap.get(m.id) ?? 0;
+    const activeCourses = activeProgramSlug
+      ? activeCourseCountMap.get(`${m.id}:${canonicalizeProgramSlug(activeProgramSlug)}`) ?? 0
+      : 0;
 
     // Multi-program-aware: surface every program slug the learner has an
     // enrollment row for. Falls back to legacy `enrolledProgram` when the
@@ -443,6 +488,7 @@ export default async function AdminMembersPage({
         endDateFilter={endDateFilter}
         allPartnerOptions={partnerOptionsResult.status === 'fulfilled' ? partnerOptionsResult.value : []}
         allAssignablePrograms={assignableProgramOptions}
+        includeStaff={includeStaff}
         applicantTriageCopy={applicantTriageCopy}
       />
     </PortalPageFrame>

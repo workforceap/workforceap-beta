@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "486e295be9dd8a6dfa94aaced7dc882e887aef545338573113048410d0c4c981",
+  "inputTreeSha256": "00121856a631c21e7d3b74f9bd025d6ed98d52f1d138a3be05ae77603b1a079c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -18797,9 +18797,9 @@
       "path": "app/admin/members/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 18552,
-      "lines": 450,
-      "sha256": "643c6b7904ee127bfcbc64a58d01bde972140d69b288e53c184282be7bee18bb",
+      "bytes": 21060,
+      "lines": 496,
+      "sha256": "47231cd601761afc68034a1ad19fe81d5d984eba2a42fe1207eabd214edd0b3c",
       "binary": false,
       "exports": [
         {
@@ -26520,41 +26520,41 @@
       "path": "app/api/admin/members/bulk-export/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 6987,
-      "lines": 214,
-      "sha256": "b8773a057329059c988e6955cc13772dde9a166ecb7893e437b026285f3549e7",
+      "bytes": 7970,
+      "lines": 228,
+      "sha256": "817c7d05ec784e1b2ff4a6ac6edce120079c50ab124f26f5b7d9d728aa1250d4",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 214,
+          "line": 228,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_MEMBERS",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "bodySchema",
           "line": 16,
           "kind": "Variable"
         },
         {
+          "name": "bodySchema",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
           "name": "csvEscape",
-          "line": 20,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_POST",
-          "line": 26,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 214,
+          "line": 228,
           "kind": "Variable"
         }
       ],
@@ -26720,41 +26720,41 @@
       "path": "app/api/admin/members/export/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 10005,
-      "lines": 272,
-      "sha256": "ff05f7a77db70bb358e166fce576984257f60c0ac3c3f29894f986c1abaf7ea6",
+      "bytes": 12024,
+      "lines": 313,
+      "sha256": "5c2c82bb2b9e500e3e664b45638013dc38bc2e876273d1a61a74245e21a34807",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 272,
+          "line": 313,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_EXPORT",
-          "line": 17,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "csvEscape",
-          "line": 19,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatDate",
-          "line": 25,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_GET",
-          "line": 32,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 272,
+          "line": 313,
           "kind": "Variable"
         }
       ],
@@ -52474,14 +52474,14 @@
       "path": "components/admin/MembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 52098,
-      "lines": 1208,
-      "sha256": "4ee8e05c65118dc0bab4b0d5d153b6e0274080dc23c5be93c16f7586d87ee39d",
+      "bytes": 53747,
+      "lines": 1238,
+      "sha256": "dfe54cc2e8adad0a79c2c718142202cb83012d9538c38d52b09fa1b94ff0652c",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 278,
+          "line": 294,
           "kind": "FunctionDeclaration",
           "localName": "MembersTable"
         }
@@ -52504,87 +52504,87 @@
         },
         {
           "name": "FitScoreBadge",
-          "line": 82,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HealthDot",
-          "line": 92,
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatTraining",
-          "line": 102,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NEW_MEMBER_WINDOW_MS",
-          "line": 116,
+          "line": 125,
           "kind": "Variable"
         },
         {
           "name": "toTime",
-          "line": 118,
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isNotInCourse",
-          "line": 126,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isNewMember",
-          "line": 130,
+          "line": 146,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attentionReasons",
-          "line": 140,
+          "line": 156,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "needsAttention",
-          "line": 149,
+          "line": 165,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AttentionBadge",
-          "line": 153,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortKey",
-          "line": 181,
+          "line": 197,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SortDir",
-          "line": 182,
+          "line": 198,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "HEALTH_RANK",
-          "line": 184,
+          "line": 200,
           "kind": "Variable"
         },
         {
           "name": "compareMembers",
-          "line": 186,
+          "line": 202,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortHeader",
-          "line": 207,
+          "line": 223,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HeaderSelectAll",
-          "line": 247,
+          "line": 263,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MembersTable",
-          "line": 278,
+          "line": 294,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -82461,9 +82461,9 @@
       "path": "lib/admin/analyticsOverview.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 9616,
-      "lines": 298,
-      "sha256": "023e1aaa6a0f74093583106a366f9c5760fffc0cf16e1fd9d04fcf4b5c4f83a6",
+      "bytes": 10379,
+      "lines": 313,
+      "sha256": "0ff1ebebbfa0d3041b9250b938ff4404ae0152dedb79fd7306b1d835940977c9",
       "binary": false,
       "exports": [
         {
@@ -85870,9 +85870,9 @@
       "path": "lib/admin/healthScore.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1391,
-      "lines": 46,
-      "sha256": "c0f9afeee1858e6cbf9d0d39c495f060088bc6fd13bc7e72eb18ee949fba38b2",
+      "bytes": 4764,
+      "lines": 123,
+      "sha256": "c976448ca3fc3eb92221934f9a2423110b2077b24810c0374bde46b737a20daa",
       "binary": false,
       "exports": [
         {
@@ -85881,23 +85881,33 @@
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "SYSTEM_GENERATED_MEMBER_EVENTS",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_EVENT_WHERE",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
           "name": "HealthScoreInput",
-          "line": 8,
+          "line": 60,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "calculateHealthStatus",
-          "line": 14,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 32,
+          "line": 106,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 40,
+          "line": 114,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85908,23 +85918,53 @@
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "SYSTEM_GENERATED_MEMBER_EVENTS",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_EVENT_WHERE",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "RECENT_WINDOW_DAYS",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
           "name": "HealthScoreInput",
-          "line": 8,
+          "line": 60,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "mostRecent",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isWithinRecentWindow",
+          "line": 77,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "calculateHealthStatus",
-          "line": 14,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 32,
+          "line": 106,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 40,
+          "line": 114,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87042,9 +87082,9 @@
       "path": "lib/admin/studentStatus.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3527,
-      "lines": 122,
-      "sha256": "b51addf2fadc90a3e63a041d8c2d07fe7cc0212b53ecd0b1360660bfb05be95d",
+      "bytes": 4509,
+      "lines": 136,
+      "sha256": "4e668dbc59303a8b0fa1b0ec525cb6b7c2d81014e4a512833a113ed89ce01b24",
       "binary": false,
       "exports": [
         {
@@ -87069,7 +87109,7 @@
         },
         {
           "name": "buildStatusWhere",
-          "line": 55,
+          "line": 62,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87096,7 +87136,7 @@
         },
         {
           "name": "buildStatusWhere",
-          "line": 55,
+          "line": 62,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87253,9 +87293,9 @@
       "path": "lib/admin/studentsRosterLoad.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 12020,
-      "lines": 302,
-      "sha256": "cef05cedac5095bfdcf7f6d7b106cc21431fb92c5944a7965784cace5fb7cdd5",
+      "bytes": 12864,
+      "lines": 315,
+      "sha256": "8520e87ea409ab7bdb4290e9d863ad32c409fbf001419c2730d54858c32dc5f7",
       "binary": false,
       "exports": [
         {
@@ -87742,9 +87782,9 @@
       "path": "lib/admin/trainingDashboard.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 11330,
-      "lines": 315,
-      "sha256": "bee36afca0fdcd909b42952230e29642ef4240921b19c5b36f5a844831a5cb57",
+      "bytes": 11663,
+      "lines": 319,
+      "sha256": "63a2b61c5848a1e248bcb912ec594291a30ea354f1ad512714c3767b4a857966",
       "binary": false,
       "exports": [
         {
@@ -158856,9 +158896,9 @@
       "path": "tests/api/admin-members-bulk.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 26467,
-      "lines": 597,
-      "sha256": "dd7210c78d0b5f2773372da17b6e95be1dc749e6c74777fbe3a99793e5fe8ef2",
+      "bytes": 28478,
+      "lines": 641,
+      "sha256": "cc759f1196e0b868672e3e76bd539edc51b982080133ea7ec76cab82437c1ad1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -158899,6 +158939,54 @@
           "name": "makeRequest",
           "line": 99,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/api/admin-members-export-columns.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 9011,
+      "lines": 222,
+      "sha256": "d6aab1a664537c2c188bd1c642777d60624713bbc681a2ac5cebb37ff4d4dcb3",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "RecordValue",
+          "line": 43,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "runExport",
+          "line": 69,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -163482,9 +163570,9 @@
       "path": "tests/app/admin-directory-search.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 13047,
-      "lines": 212,
-      "sha256": "023ce9ae49cb29bdb94c2d0c732fb2cbe7d82a384cafb0e76138d4c93c773bd5",
+      "bytes": 13143,
+      "lines": 215,
+      "sha256": "c9e217dd407fef0291a4c733b534979a882cb6c88f258a958d699e301fcc5dc0",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163495,22 +163583,22 @@
         },
         {
           "name": "RecordValue",
-          "line": 39,
+          "line": 42,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "matches",
-          "line": 41,
+          "line": 44,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "user",
-          "line": 61,
+          "line": 64,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "propsFor",
-          "line": 69,
+          "line": 72,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163647,6 +163735,49 @@
         {
           "name": "Island",
           "line": 356,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-members-roster-numbers.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 11637,
+      "lines": 254,
+      "sha256": "51c520981f9969d1034669c68b5f027ac92d22d83c138e46e02d10e0522365ca",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "RecordValue",
+          "line": 57,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "propsFor",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 71,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 72,
+          "kind": "Variable"
+        },
+        {
+          "name": "member",
+          "line": 74,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167517,9 +167648,9 @@
       "path": "tests/components/students-roster-needs-link.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7519,
-      "lines": 140,
-      "sha256": "6b73390cd9b370c175c2a4f132c9ece8f0079f09142b0c0fa6ab81de98ca67cf",
+      "bytes": 7615,
+      "lines": 143,
+      "sha256": "624b85378a51384d95ef95b2710f73ffb8a167d9fbf235b56b7a6a762eb9409e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167530,12 +167661,12 @@
         },
         {
           "name": "ROWS",
-          "line": 64,
+          "line": 67,
           "kind": "Variable"
         },
         {
           "name": "checkedChip",
-          "line": 79,
+          "line": 82,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167545,9 +167676,9 @@
       "path": "tests/components/students-roster-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4723,
-      "lines": 84,
-      "sha256": "4c619b5320f7634c62e2d3a59f48e2f8d7ce9dd1d854939025a77a88d0880ec7",
+      "bytes": 4819,
+      "lines": 87,
+      "sha256": "97068664dbb8dd73362afae088c8c5532907a7f707b1b1d060455ebc524c8ec8",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167558,17 +167689,17 @@
         },
         {
           "name": "member",
-          "line": 31,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "enrichment",
-          "line": 37,
+          "line": 40,
           "kind": "Variable"
         },
         {
           "name": "displayedStudent",
-          "line": 42,
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169132,6 +169263,34 @@
       "directive": null
     },
     {
+      "path": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6781,
+      "lines": 152,
+      "sha256": "a8718c9a87cb81fd4de0a5de6d7709f1c8ec8e99ca9e8cecb3e40aa0ef5b28f7",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "DAY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "keysIn",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/admin-user-provisioning-tenant-race.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -169303,6 +169462,49 @@
         {
           "name": "ambassadors",
           "line": 58,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/analytics-overview-health-inputs.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4305,
+      "lines": 105,
+      "sha256": "e78b071c8a209261ca611e29c1e73135a3ef20337dfe93edea820d9a8043c6d8",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "LOGIN_AT",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "COURSE_AT",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "EVENT_AT",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "scope",
+          "line": 47,
           "kind": "Variable"
         }
       ],
@@ -172410,6 +172612,64 @@
           "name": "member",
           "line": 27,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/training-dashboard-stale-activity.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4902,
+      "lines": 146,
+      "sha256": "dd3ab0da4e071d36b1d7ba301623e1bca7f32561bb3fd110bb18b149e0af00ac",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "TONIGHT",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "CourseRow",
+          "line": 37,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "course",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "scope",
+          "line": 95,
+          "kind": "Variable"
         }
       ],
       "directive": null

@@ -218,11 +218,14 @@ export async function loadTrainingDashboardData(
       }
       validatedCourseLists.set(catalogCacheKey, validatedCourses);
     }
-    const matchingRollup =
-      m.memberProgramProgress.find((row) =>
-        programSlugsEquivalent(row.programSlug, enrolledProgram),
-      ) ?? null;
-    let lastTrainingActivityAt = matchingRollup?.lastUpdatedAt ?? null;
+    // Learner activity, and nothing else. Both `lastUpdatedAt` columns in
+    // play here (member_program_progress and course_progress) are Prisma
+    // `@updatedAt`, so the nightly refresh rewrites them for every row it
+    // touches — seeding from them re-dated 18 rollups and 25 course rows to
+    // "today" and hid 8 idle learners from the Stale tile (audit 2026-09-20,
+    // S20). `course_progress.last_activity_at` is the only column that means
+    // "the learner did something".
+    let lastTrainingActivityAt: Date | null = null;
     const matchingCourseProgress = m.courseProgress.filter((row) =>
       programSlugsEquivalent(row.programSlug, enrolledProgram),
     );
@@ -239,7 +242,8 @@ export async function loadTrainingDashboardData(
       (row) => !row.displayCompleted && row.displayPercent > 0,
     ).length;
     for (const row of matchingCourseProgress) {
-      const activityAt = row.lastActivityAt ?? row.lastUpdatedAt;
+      const activityAt = row.lastActivityAt;
+      if (!activityAt) continue;
       if (!lastTrainingActivityAt || activityAt > lastTrainingActivityAt) {
         lastTrainingActivityAt = activityAt;
       }

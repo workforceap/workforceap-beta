@@ -53,7 +53,10 @@ vi.mock('@/lib/tenant/adminPageScope', () => ({
   }),
 }));
 vi.mock('@/lib/content/programTitle', () => ({ programDisplayTitle: (slug: string) => slug }));
-vi.mock('@/lib/admin/healthScore', () => ({ calculateHealthStatus: () => 'green' }));
+vi.mock('@/lib/admin/healthScore', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/admin/healthScore')>()),
+  calculateHealthStatus: () => 'green',
+}));
 vi.mock('@/lib/admin/studentsRosterEnrichment', () => ({ loadStudentRosterEnrichment: mocks.enrichment }));
 vi.mock('@/lib/coursera/progressQueries', () => ({ loadUnmatchedLearners: async () => [], countUnmatchedLearners: async () => 0 }));
 vi.mock('@/lib/admin/trainingRosterLoad', () => ({ loadTrainingRoster: async () => ({ ok: false }) }));

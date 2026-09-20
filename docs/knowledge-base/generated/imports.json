@@ -36873,8 +36873,24 @@
   },
   {
     "from": "app/api/admin/members/bulk-export/route.ts",
-    "specifier": "@/lib/formatPhone",
+    "specifier": "@/lib/content/programSlug",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-export/route.ts",
+    "specifier": "@/lib/member/trainingProgress",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingProgress.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-export/route.ts",
+    "specifier": "@/lib/formatPhone",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/formatPhone.ts"
@@ -36882,7 +36898,7 @@
   {
     "from": "app/api/admin/members/bulk-export/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -37393,8 +37409,32 @@
   },
   {
     "from": "app/api/admin/members/export/route.ts",
-    "specifier": "@/lib/formatPhone",
+    "specifier": "@/lib/content/programSlug",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
+    "from": "app/api/admin/members/export/route.ts",
+    "specifier": "@/lib/member/trainingProgress",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingProgress.ts"
+  },
+  {
+    "from": "app/api/admin/members/export/route.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "app/api/admin/members/export/route.ts",
+    "specifier": "@/lib/formatPhone",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/formatPhone.ts"
@@ -37402,7 +37442,7 @@
   {
     "from": "app/api/admin/members/export/route.ts",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 12,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -37410,7 +37450,7 @@
   {
     "from": "app/api/admin/members/export/route.ts",
     "specifier": "@/lib/admin/directorySearch",
-    "line": 13,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/admin/directorySearch.ts"
@@ -37418,7 +37458,7 @@
   {
     "from": "app/api/admin/members/export/route.ts",
     "specifier": "@/lib/admin/studentStatus",
-    "line": 14,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentStatus.ts"
@@ -37426,7 +37466,7 @@
   {
     "from": "app/api/admin/members/export/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 15,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -93961,19 +94001,19 @@
   },
   {
     "from": "lib/admin/studentStatus.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/admin/studentStatus.ts",
     "specifier": "@prisma/client",
-    "line": 2,
+    "line": 1,
     "kind": "type",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/admin/studentStatus.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
   },
   {
     "from": "lib/admin/studentsRosterEnrichment.ts",
@@ -119664,6 +119704,30 @@
     "target": "lib/email.ts"
   },
   {
+    "from": "tests/api/admin-members-export-columns.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/admin-members-export-columns.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 27,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/admin-members-export-columns.spec.ts",
+    "specifier": "@/app/api/admin/members/export/route",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/members/export/route.ts"
+  },
+  {
     "from": "tests/api/admin-members.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -129409,8 +129473,16 @@
   },
   {
     "from": "tests/app/admin-directory-search.spec.tsx",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 26,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "tests/app/admin-directory-search.spec.tsx",
     "specifier": "@/app/admin/members/page",
-    "line": 33,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/page.tsx"
@@ -129418,7 +129490,7 @@
   {
     "from": "tests/app/admin-directory-search.spec.tsx",
     "specifier": "@/app/admin/users/page",
-    "line": 34,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "app/admin/users/page.tsx"
@@ -129426,7 +129498,7 @@
   {
     "from": "tests/app/admin-directory-search.spec.tsx",
     "specifier": "@/app/api/admin/members/export/route",
-    "line": 35,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/export/route.ts"
@@ -129434,7 +129506,7 @@
   {
     "from": "tests/app/admin-directory-search.spec.tsx",
     "specifier": "@/components/admin/AdminUsersManager",
-    "line": 36,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminUsersManager.tsx"
@@ -129442,7 +129514,7 @@
   {
     "from": "tests/app/admin-directory-search.spec.tsx",
     "specifier": "@/lib/admin/directorySearch",
-    "line": 37,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/admin/directorySearch.ts"
@@ -129630,6 +129702,46 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 25,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "@/app/admin/members/page",
+    "line": 54,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-members-roster-numbers.spec.tsx",
+    "specifier": "@/components/admin/MembersTable",
+    "line": 55,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/MembersTable.tsx"
   },
   {
     "from": "tests/app/admin-partners-page.spec.tsx",
@@ -136041,8 +136153,16 @@
   },
   {
     "from": "tests/components/students-roster-needs-link.spec.tsx",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 57,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "tests/components/students-roster-needs-link.spec.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
-    "line": 61,
+    "line": 64,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
@@ -136050,7 +136170,7 @@
   {
     "from": "tests/components/students-roster-needs-link.spec.tsx",
     "specifier": "@/lib/attention/adminViews",
-    "line": 62,
+    "line": 65,
     "kind": "import",
     "external": false,
     "target": "lib/attention/adminViews.ts"
@@ -136058,7 +136178,7 @@
   {
     "from": "tests/components/students-roster-needs-link.spec.tsx",
     "specifier": "@/app/admin/students/page",
-    "line": 126,
+    "line": 129,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/admin/students/page.tsx"
@@ -136089,8 +136209,16 @@
   },
   {
     "from": "tests/components/students-roster-page.spec.tsx",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 23,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "tests/components/students-roster-page.spec.tsx",
     "specifier": "@/app/admin/students/page",
-    "line": 29,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "app/admin/students/page.tsx"
@@ -137592,6 +137720,30 @@
     "package": "node:path"
   },
   {
+    "from": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+    "specifier": "@/lib/admin/studentStatus",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentStatus.ts"
+  },
+  {
     "from": "tests/lib/admin-user-provisioning-tenant-race.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -137782,6 +137934,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/lib/analytics-overview-health-inputs.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/analytics-overview-health-inputs.spec.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 36,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "tests/lib/analytics-overview-health-inputs.spec.ts",
+    "specifier": "@/lib/admin/analyticsOverview",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsOverview.ts"
+  },
+  {
+    "from": "tests/lib/analytics-overview-health-inputs.spec.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
   },
   {
     "from": "tests/lib/applicant-followup-email.spec.ts",
@@ -141171,6 +141355,22 @@
     "from": "tests/lib/training-dashboard-curriculum-cache.spec.ts",
     "specifier": "@/lib/admin/trainingDashboard",
     "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingDashboard.ts"
+  },
+  {
+    "from": "tests/lib/training-dashboard-stale-activity.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/training-dashboard-stale-activity.spec.ts",
+    "specifier": "@/lib/admin/trainingDashboard",
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/admin/trainingDashboard.ts"
