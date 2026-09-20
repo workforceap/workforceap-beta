@@ -2,6 +2,24 @@
 
 import { useState } from 'react';
 
+const INVITE_NOT_SENT = 'Invite not sent: ';
+
+/**
+ * Every failure reads "Invite not sent: <reason>" so the admin knows the
+ * invite did not go out even when the API only had a generic status
+ * (audit 2026-09-20: a 500 left the box blank).
+ */
+export function inviteFailureText(apiMessage: string | null, status: number): string {
+  const reason = apiMessage?.trim()
+    ? apiMessage.trim()
+    : status >= 500
+      ? 'the server hit an unexpected error. Try again in a few minutes.'
+      : 'the request was rejected. Check the email address and try again.';
+  if (reason.toLowerCase().startsWith(INVITE_NOT_SENT.toLowerCase())) return reason;
+  const lowered = reason.charAt(0).toLowerCase() + reason.slice(1);
+  return `${INVITE_NOT_SENT}${lowered}`;
+}
+
 export default function InvitePartnerUserButton({ partnerId }: { partnerId: string }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,13 +37,13 @@ export default function InvitePartnerUserButton({ partnerId }: { partnerId: stri
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage({ type: 'err', text: typeof data.error === 'string' ? data.error : 'Invite failed' });
+        setMessage({ type: 'err', text: inviteFailureText(typeof data.error === 'string' ? data.error : null, res.status) });
         return;
       }
       setMessage({ type: 'ok', text: 'Invite sent. They will receive an email to access the partner portal.' });
       setEmail('');
     } catch {
-      setMessage({ type: 'err', text: 'Request failed' });
+      setMessage({ type: 'err', text: inviteFailureText('the request did not reach the server. Check your connection and try again.', 0) });
     } finally {
       setLoading(false);
     }
@@ -36,6 +54,9 @@ export default function InvitePartnerUserButton({ partnerId }: { partnerId: stri
       <input
         type="email"
         required
+        aria-label="Partner user email"
+        aria-describedby={message ? 'partner-invite-message' : undefined}
+        aria-invalid={message?.type === 'err' ? true : undefined}
         placeholder="partner@organization.org"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -54,7 +75,11 @@ export default function InvitePartnerUserButton({ partnerId }: { partnerId: stri
         </span>
       </button>
       {message && (
-        <span style={{ fontSize: '0.85rem', color: message.type === 'ok' ? '#2d7a32' : 'var(--color-accent)', width: '100%' }}>
+        <span
+          id="partner-invite-message"
+          role={message.type === 'ok' ? 'status' : 'alert'}
+          style={{ fontSize: '0.875rem', fontWeight: 600, color: message.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', width: '100%' }}
+        >
           {message.text}
         </span>
       )}

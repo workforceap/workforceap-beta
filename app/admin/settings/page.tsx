@@ -8,6 +8,7 @@ import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import PageHeader from '@/components/portal/PageHeader';
 import AdminOrgSettingsForm from '@/components/admin/AdminOrgSettingsForm';
+import OrgWideChangeNotice from '@/components/admin/OrgWideChangeNotice';
 import { DesignSurface } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,7 @@ export default async function AdminSettingsPage() {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageHeader title="Organization settings" subtitle="Platform-wide options for the default tenant." />
+      {scope.superAdmin ? null : <OrgWideChangeNotice surface="settings" />}
       <AdminOrgSettingsForm
         defaultName={org?.name ?? 'WorkforceAP'}
         defaultOverviewVideoUrl={org?.overviewVideoUrl ?? ''}

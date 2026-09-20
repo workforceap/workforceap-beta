@@ -268,3 +268,15 @@ html.dark .admin-ai-panel {
 html.dark .admin-preview-placeholder {
   color: var(--color-on-surface-variant) !important;
 }
+
+/* Required-field summary under a disabled submit (components/portal/forms/RequiredFieldsHint). */
+.wa-required-hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--wa-muted);
+}
+.wa-required-hint--block {
+  flex-basis: 100%;
+  width: 100%;
+}

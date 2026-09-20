@@ -11,6 +11,7 @@ import {
   type FeatureFlagRow,
 } from '@/components/portal/kit/pages/admin-subviews/FeatureFlagsKit';
 import AdminFeatureFlagsClient from '@/components/admin/AdminFeatureFlagsClient';
+import OrgWideChangeNotice from '@/components/admin/OrgWideChangeNotice';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -43,10 +44,12 @@ export default async function AdminFeatureFlagsPage({
   if (!scope.ok) redirect('/dashboard');
 
   const { ui } = await searchParams;
+  // Non-super admins can edit flags today; make the org-wide blast radius visible.
+  const notice = scope.superAdmin ? null : <OrgWideChangeNotice surface="feature-flags" />;
 
   // --- LEGACY (?ui=legacy): the proven interactive create/toggle/edit workspace ---
   if (ui === 'legacy') {
-    return <AdminFeatureFlagsClient />;
+    return <AdminFeatureFlagsClient notice={notice} />;
   }
 
   // --- DEFAULT: design-kit registry wired into real flag data ---
@@ -85,6 +88,7 @@ export default async function AdminFeatureFlagsPage({
         on={on}
         off={off}
         recentlyChanged={recentlyChanged}
+        notice={notice}
       />
     </DesignSurface>
   );
