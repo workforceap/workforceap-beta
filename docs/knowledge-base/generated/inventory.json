@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "a655ccac1ab095ae6bd4b22b4fdc48302376529dc57aeba654719725f5f85fe8",
+  "inputTreeSha256": "0e53558424c9a44584e91721ff805389111f1fe9ad0777bad71b8e28d2256edf",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -14334,9 +14334,9 @@
       "path": "app/admin/audit-logs/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 10179,
+      "bytes": 10185,
       "lines": 295,
-      "sha256": "208bec663019005db990de1b819577250eb3680e4528e22c97136cf4bd9a7b13",
+      "sha256": "fa9a4e5104979c277ac932fe04ebcbc515dc7127e3aff316e7c2a292354f11d7",
       "binary": false,
       "exports": [
         {
@@ -14634,9 +14634,9 @@
       "path": "app/admin/blog/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 9056,
+      "bytes": 9051,
       "lines": 224,
-      "sha256": "58f2ecf536370356282f64ad3e9f2efe18383718f91e1d1f09aa59cd314c810a",
+      "sha256": "87b67d3d188d13d497eb0de479dc8dfd98e6a81a41eb6a5f74ccdc3ac890547e",
       "binary": false,
       "exports": [
         {
@@ -14844,9 +14844,9 @@
       "path": "app/admin/career-mappings/CareerMappingsClient.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 39060,
+      "bytes": 39139,
       "lines": 711,
-      "sha256": "ab4676cc817b0164b5c6382b578c3ac038f2356a43e28ccb5953a6376154dd6c",
+      "sha256": "c6ffce4247378745bba124c735ab26548ddf1ea000e77c25a6004a727677a4ee",
       "binary": false,
       "exports": [
         {
@@ -15874,9 +15874,9 @@
       "path": "app/admin/crons/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 10363,
+      "bytes": 10365,
       "lines": 269,
-      "sha256": "67ea7c98997ae6b43f1a77392d76519926c26f85eb22a62873c29666b92307a5",
+      "sha256": "1522c4ab8d916ac525afb35b2298bb9a9060ce876122f1c65aa42023531c304b",
       "binary": false,
       "exports": [
         {
@@ -15944,9 +15944,9 @@
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 13133,
+      "bytes": 13149,
       "lines": 399,
-      "sha256": "24bcd42eaa4660559b327020ed41bae5504a78b00a272cec5a8133ed5ea2a72e",
+      "sha256": "66ee74ca812550bf3a0bfbf467ea07c6fa645d8410f9ca3309a532951e7672b9",
       "binary": false,
       "exports": [
         {
@@ -16074,9 +16074,9 @@
       "path": "app/admin/diagnostics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 24951,
+      "bytes": 24944,
       "lines": 508,
-      "sha256": "3ac894b4d15a8aa5afd167308851f2647343a06f5693b8186368b540156d399c",
+      "sha256": "0a67dac1d155a213b5db80dd28c330c5b70dc79f34fa4e2088cdcf50869e94b9",
       "binary": false,
       "exports": [
         {
@@ -16159,9 +16159,9 @@
       "path": "app/admin/email-crons/page.tsx",
       "area": "pages",
       "domain": "communications",
-      "bytes": 8301,
+      "bytes": 8294,
       "lines": 195,
-      "sha256": "1edfcd3d232e5fc41407f8eb040b06c30c6a5bdb9637c3e84d9fbab1c03c5943",
+      "sha256": "dbeb910e46ace482ae7ed8b739341e4ede6ec3bffafd11a48bcb4857fd5e2372",
       "binary": false,
       "exports": [
         {
@@ -16279,9 +16279,9 @@
       "path": "app/admin/employer-screening-packs/EmployerScreeningPacksAdmin.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6960,
+      "bytes": 6964,
       "lines": 173,
-      "sha256": "3fbcd2f4a0484eb3bcc61f3ab33aa230556c0b9eb872e371a1b1b50a081144ba",
+      "sha256": "46e2f2a715c66c15d5b3bc209fc4c8c212ab50327c3d0dfac5c8a03a035d493d",
       "binary": false,
       "exports": [
         {
@@ -17079,9 +17079,9 @@
       "path": "app/admin/health/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 21300,
+      "bytes": 21294,
       "lines": 677,
-      "sha256": "c36acca26a645628ca20c1c03d7a168ad9e70c36a49c630220db9f105513a101",
+      "sha256": "bbf9eb1dba074b379d9fd6c3d93429ddcbb885de33fc9f4aa51e5ac469c61daa",
       "binary": false,
       "exports": [
         {
@@ -17674,9 +17674,9 @@
       "path": "app/admin/members/[id]/billing/BillingPacketClient.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 19125,
+      "bytes": 19115,
       "lines": 405,
-      "sha256": "7467631be39005297c4a21da8d58fcc299af56b66e8418b56ebaaa067249e581",
+      "sha256": "e9228e606a08d24809435cdad4c1abbbb8c760fbdd71096315e242cc7c0b5b83",
       "binary": false,
       "exports": [
         {
@@ -17828,9 +17828,9 @@
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 59259,
+      "bytes": 59266,
       "lines": 1206,
-      "sha256": "fbe40338bb29fadbca02ac2f3e6e4d3632fce8d2b6fa706a6793ba1793ea0d7b",
+      "sha256": "f7894335d1b48a3f82d1370590cccfcc46da772cdf67e325d377b6c25dd30713",
       "binary": false,
       "exports": [
         {
@@ -17948,9 +17948,9 @@
       "path": "app/admin/members/[id]/stakeholder/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 24720,
+      "bytes": 24728,
       "lines": 697,
-      "sha256": "1e20ea448a13e55ebe7911341a6e5a267f10468af7bdd27331b42810fe069701",
+      "sha256": "05a5bfebfa0c163d22f75546cb0eb2ec478f274205665194c400d559b60f9624",
       "binary": false,
       "exports": [
         {
@@ -19911,9 +19911,9 @@
       "path": "app/admin/programs/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 13089,
+      "bytes": 13084,
       "lines": 293,
-      "sha256": "5e628c3a6f4f9d3d75300e3adc28f3b037907809d1fa25a5f45240477d3377f9",
+      "sha256": "2204615fd6421f2f8eb797ec0b429a51622bfa73af1b0abb837442921184c3c3",
       "binary": false,
       "exports": [
         {
@@ -20841,9 +20841,9 @@
       "path": "app/admin/webhook-events/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 6492,
+      "bytes": 6498,
       "lines": 206,
-      "sha256": "4484c7646feae78a4245f63a8f2c3bd5655505e4f2b123e63c1e73a4f64552ed",
+      "sha256": "34c5d5faa80f25d08c4eba46dfd8ad2a22dfbf7155cd153303bacc9ba7bd5978",
       "binary": false,
       "exports": [
         {
@@ -42494,9 +42494,9 @@
       "path": "app/dev/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 6963,
+      "bytes": 7010,
       "lines": 131,
-      "sha256": "6adad51e34028a06cd7b7253a348ac36eb9ef3370ec3e1235e73a2541d0109c6",
+      "sha256": "679dc47adc308732b7afeef691d9edca0cc99bc6ec55bdcd59f5e30027750e16",
       "binary": false,
       "exports": [
         {
@@ -45442,24 +45442,24 @@
       "path": "app/layout.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 16926,
-      "lines": 317,
-      "sha256": "44a96c7a29f4608a0d82e0c283948b2e6743291b9a842d7e63f7e35b933d8ba5",
+      "bytes": 17055,
+      "lines": 319,
+      "sha256": "df64363db7b27c2bb8a14a77c77cc31465419b8c7a7b3500bfd41a63be70af8a",
       "binary": false,
       "exports": [
         {
           "name": "viewport",
-          "line": 58,
+          "line": 60,
           "kind": "Variable"
         },
         {
           "name": "metadata",
-          "line": 64,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 89,
+          "line": 91,
           "kind": "FunctionDeclaration",
           "localName": "RootLayout"
         }
@@ -45467,27 +45467,27 @@
       "declarations": [
         {
           "name": "inter",
-          "line": 50,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "GTM_ID",
-          "line": 56,
-          "kind": "Variable"
-        },
-        {
-          "name": "viewport",
           "line": 58,
           "kind": "Variable"
         },
         {
+          "name": "viewport",
+          "line": 60,
+          "kind": "Variable"
+        },
+        {
           "name": "metadata",
-          "line": 64,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "RootLayout",
-          "line": 89,
+          "line": 91,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -48413,9 +48413,9 @@
       "path": "components/admin/AdminCounselorsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11402,
+      "bytes": 11392,
       "lines": 186,
-      "sha256": "25886b0b4ab14b07c2fdbac373a06c6c32b79f39294fbf0cef98997db79237a0",
+      "sha256": "fbe1edf8075618bd951548d1655ffce0c6dc1dbb988ee861f24f71acb8b2ba97",
       "binary": false,
       "exports": [
         {
@@ -48481,9 +48481,9 @@
       "path": "components/admin/AdminCronsClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9248,
+      "bytes": 9238,
       "lines": 269,
-      "sha256": "c7fdca1e0ccd82c46a50c4833bd5ade7f29ed31e642c5ddf28899d3aa58d318f",
+      "sha256": "b4c82205d6a07743219b2c624d34c8c28c035e32eeca154b96e75c927fe64c76",
       "binary": false,
       "exports": [
         {
@@ -48596,9 +48596,9 @@
       "path": "components/admin/AdminFeedbackClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 13263,
+      "bytes": 13258,
       "lines": 272,
-      "sha256": "e653365e03fec3b1583aace5011cb0df16585bf4869c4d3031ce74b65c843c6d",
+      "sha256": "9aa68040a5cdfe58f939d4ee092d04f561a0a18148a2d9c6a62bac750bb19fdd",
       "binary": false,
       "exports": [
         {
@@ -48646,9 +48646,9 @@
       "path": "components/admin/AdminFooter.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 718,
+      "bytes": 720,
       "lines": 22,
-      "sha256": "738120272b48e4a1d61fc15bcff1934199a1befa2eae035f7c07efe130c97774",
+      "sha256": "89e24208b1d7cfe178e06a3f571c6e7698a1a4019c866de166a5d9e7ad58758d",
       "binary": false,
       "exports": [
         {
@@ -48989,9 +48989,9 @@
       "path": "components/admin/AdminMemberDbActions.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 9232,
+      "bytes": 9222,
       "lines": 174,
-      "sha256": "ec336b70f7317b49d978543b5dd50182f7fcc0a9450a0bcbf167e0a294b55574",
+      "sha256": "f832e8eed117bdf87e5b000dec8433e1c2daee46845e7e69a22ff26ffb3840c8",
       "binary": false,
       "exports": [
         {
@@ -49187,9 +49187,9 @@
       "path": "components/admin/AdminMemberSendLinks.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 5473,
+      "bytes": 5468,
       "lines": 160,
-      "sha256": "1659b19f13dc11662102feceeebdec94bc1f91dabcbde9abb8c2958688f8fe11",
+      "sha256": "8d1d8d175388dbc5f55a239ec243db963443b978d49cc54003d6d81fa70ddf56",
       "binary": false,
       "exports": [
         {
@@ -49672,9 +49672,9 @@
       "path": "components/admin/AdminUsersManager.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 23194,
+      "bytes": 23189,
       "lines": 528,
-      "sha256": "cfc42554fb2f65bbcf3eec68eef8b299ee194fc66b22e7a473017a3ac896965e",
+      "sha256": "b32108a5def722d8d07a084416a8806bfa791a2708eb19610aa7727dda8a19dc",
       "binary": false,
       "exports": [
         {
@@ -49902,9 +49902,9 @@
       "path": "components/admin/AssessmentsTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 18919,
+      "bytes": 18906,
       "lines": 419,
-      "sha256": "370cb8480c7cb6f43c20e59af01bd5d169d5e429035e0426ac2b545390ee0b09",
+      "sha256": "7891d32bad928e5cdb7865e2edc8858433642b818525dacc731e05f53fe9f9cc",
       "binary": false,
       "exports": [
         {
@@ -50052,9 +50052,9 @@
       "path": "components/admin/BoardOutcomesView.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 21435,
+      "bytes": 21361,
       "lines": 538,
-      "sha256": "2d93af6506b17b647719915adb52c102cba6821ad7d9839eecf28c0f43e1caf3",
+      "sha256": "497e498b86cc3a6bce67611d2aa8d217b5619310f0a906514829adb634c85794",
       "binary": false,
       "exports": [
         {
@@ -50327,9 +50327,9 @@
       "path": "components/admin/CourseraEnrollmentPipelineTable.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 20652,
+      "bytes": 20647,
       "lines": 516,
-      "sha256": "f5f2d5bf127a1d1b0e03808895b7e891510326facec361d4de03ba29ec26fbe6",
+      "sha256": "b7fb9865c880e1703d0e764efc95b36086d146d897c394406335549b2bafa2a3",
       "binary": false,
       "exports": [
         {
@@ -50437,9 +50437,9 @@
       "path": "components/admin/CourseraMappingsAdmin.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 44856,
+      "bytes": 44851,
       "lines": 1091,
-      "sha256": "7259ce713c168a5c4b53c8204c66ad6e641f7235242065d578f9494f5fbe1b5c",
+      "sha256": "8e95facd39bdd84913a189b758bb4062b74f4e38d46f17b8b8cf6d432b72e983",
       "binary": false,
       "exports": [
         {
@@ -50875,9 +50875,9 @@
       "path": "components/admin/DataRetentionClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 8864,
+      "bytes": 8858,
       "lines": 273,
-      "sha256": "a8faca098fa2276783feffea445faaf540cce954acf0f0c740f4d651e832a737",
+      "sha256": "ca62f6178452af0b6b36f9f647781666c182f2639b6663e7585ebea71ace73f6",
       "binary": false,
       "exports": [
         {
@@ -50940,9 +50940,9 @@
       "path": "components/admin/DeletedUsersClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 11761,
+      "bytes": 11719,
       "lines": 316,
-      "sha256": "d7dd47ee6109d7b1bd0e49a773c9877298e82536716806860eeb32109a15819b",
+      "sha256": "a0b8a0bf21bbac7bb7ed86677a632e14fd0bc63b238c2f9d1216f147cd5688e6",
       "binary": false,
       "exports": [
         {
@@ -50980,9 +50980,9 @@
       "path": "components/admin/EligibilityDatasheetPanel.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 6864,
+      "bytes": 6859,
       "lines": 213,
-      "sha256": "bdc533340b4827dcb5573029ad1bce1b89eb668809c3d49c1c4a1ec97b75e4ad",
+      "sha256": "f24d21172e232decf954262f8cb853cb6d8d9a8c03696126e4571230057e8565",
       "binary": false,
       "exports": [
         {
@@ -51020,9 +51020,9 @@
       "path": "components/admin/EmailCronsClient.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 43502,
+      "bytes": 43451,
       "lines": 807,
-      "sha256": "6ebcae64f9596433ddc7dface8b8d006ca3074c09de5ffe8a6578c2303428bfc",
+      "sha256": "6bb71a76445aeece9313af6602c2d87a1d7099bcfc7610357ed92d1baed23206",
       "binary": false,
       "exports": [
         {
@@ -51093,9 +51093,9 @@
       "path": "components/admin/EmailTemplatesClient.tsx",
       "area": "components",
       "domain": "communications",
-      "bytes": 27305,
+      "bytes": 27300,
       "lines": 821,
-      "sha256": "8f0e96ffdc1627b5cbdae25fac4543c3d9d4c68c9b60a69cedc42cca238421f7",
+      "sha256": "ed677b9e685486747e8e5ba890c006596d9ef092d75a0f7eb4fae76d43edb10a",
       "binary": false,
       "exports": [
         {
@@ -51228,9 +51228,9 @@
       "path": "components/admin/ExecutiveTrendCharts.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 3085,
+      "bytes": 3081,
       "lines": 82,
-      "sha256": "54294f6e6d0c9e7535fef844b933151e9c66aa981d3a5cd1755cfd9073009904",
+      "sha256": "88e3fefd98ce7259c01507c1f3965c8f5a8732e512ef6f3c88dedf458fa4d20d",
       "binary": false,
       "exports": [
         {
@@ -51403,9 +51403,9 @@
       "path": "components/admin/InvitesTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 16692,
+      "bytes": 16696,
       "lines": 442,
-      "sha256": "5aa527e5ff34eb6fd2d03731ab9cf071ce7faef4c16e5d267f6a1392d028ed54",
+      "sha256": "c966a0a35a71a96af8acc0c8bbcb0d7560709f38dafd11f847b02e1645b50294",
       "binary": false,
       "exports": [
         {
@@ -51696,9 +51696,9 @@
       "path": "components/admin/MemberDuplicatesClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 12603,
+      "bytes": 12593,
       "lines": 256,
-      "sha256": "0e63ee9291e6e19838b6a76fa512df6db88e61a9266c74d6975c01f3e6bbc08f",
+      "sha256": "be23c76cd1b0f6f5e07bb3636d51f792da9d210484ad5f97b651129d9851fc46",
       "binary": false,
       "exports": [
         {
@@ -51754,9 +51754,9 @@
       "path": "components/admin/MemberMergeClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 17821,
+      "bytes": 17811,
       "lines": 346,
-      "sha256": "eca6e990bc61bbf3df67a80a6e25c3fc4c95e51cd1d87c6b6219333969dcf8fc",
+      "sha256": "143fb7215a01e926539329ef79aba6a6f3ddfbca4218fcccac4f0f2622f19f2c",
       "binary": false,
       "exports": [
         {
@@ -51819,9 +51819,9 @@
       "path": "components/admin/MemberReviewTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 10219,
+      "bytes": 10223,
       "lines": 271,
-      "sha256": "44a342ca73e2024d063f3a4b633e051a096e9c014ead35945351a69ae15ff3a4",
+      "sha256": "4b3281df47819a7b6de63d223f7efbfc6ff1e38d9a240ad206b321ca4ef10705",
       "binary": false,
       "exports": [
         {
@@ -53011,9 +53011,9 @@
       "path": "components/admin/TestimonialsAdminClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 16479,
+      "bytes": 16474,
       "lines": 399,
-      "sha256": "15836a3f2e0631fb7eca0e52f35dc422f62df90b403ad935306553a1dde09354",
+      "sha256": "dc110dbe2663be955b830eab82e08ad558d84cce1fff48dc10ceddabf2e9981c",
       "binary": false,
       "exports": [
         {
@@ -59857,9 +59857,9 @@
       "path": "components/portal/JobTailorPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 11065,
-      "lines": 345,
-      "sha256": "a6ef3c0d7449d459b57941fc0904ae58a9478c152707890c5d93a3f1a45fe6c5",
+      "bytes": 11226,
+      "lines": 347,
+      "sha256": "90f0e3d42d2c40caae05593a0de42d1beaa42d064fad93aa13cc3e0291dc2f78",
       "binary": false,
       "exports": [
         {
@@ -59869,7 +59869,7 @@
         },
         {
           "name": "default",
-          "line": 103,
+          "line": 105,
           "kind": "FunctionDeclaration",
           "localName": "JobTailorPanel"
         }
@@ -59907,17 +59907,17 @@
         },
         {
           "name": "scoreColor",
-          "line": 66,
+          "line": 68,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ScoreBadge",
-          "line": 72,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "JobTailorPanel",
-          "line": 103,
+          "line": 105,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63701,9 +63701,9 @@
       "path": "components/portal/StatusBadge.test.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9459,
-      "lines": 212,
-      "sha256": "30a9b290ceb23fce796c3999da80ed4e21842fd049439db9dd040cdab3683e77",
+      "bytes": 9617,
+      "lines": 216,
+      "sha256": "8af83be20a60e40f7d750c7a3a4bf6acbff821cd1f24cc8d14f14f6f7d84775d",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -63719,52 +63719,52 @@
         },
         {
           "name": "TOKENS_CSS",
-          "line": 24,
-          "kind": "Variable"
-        },
-        {
-          "name": "BRIDGE_CSS",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "BRIDGE_CSS",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
           "name": "loadTokens",
-          "line": 28,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "splitTopLevel",
-          "line": 37,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolve",
-          "line": 54,
+          "line": 58,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseColor",
-          "line": 76,
+          "line": 80,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "over",
-          "line": 90,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "luminance",
-          "line": 99,
+          "line": 103,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "contrast",
-          "line": 107,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "renderedStyle",
-          "line": 139,
+          "line": 143,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64645,9 +64645,9 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 31353,
-      "lines": 742,
-      "sha256": "3dfec744d9d846e7e33e23e712cb9a17c52be653c7cd93c97f93e8b1a9ec50ec",
+      "bytes": 31772,
+      "lines": 750,
+      "sha256": "3289f61f6b2486da24ce6e1ae3b0befd76b69fab2dfc02999ea6b0028dfcd184",
       "binary": false,
       "exports": [
         {
@@ -67811,9 +67811,9 @@
       "path": "components/portal/kit/pages/VoiceStudioKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 66311,
-      "lines": 1627,
-      "sha256": "b879c585c4a6295f699f5ff4d51be7122d9a1af2aa47a65025c5d1f0039baf0b",
+      "bytes": 67211,
+      "lines": 1637,
+      "sha256": "5a3a3403772d6cb7d9c4d004bf1b8431785ef72ffbce38944d17cf33f58df90f",
       "binary": false,
       "exports": [
         {
@@ -67950,122 +67950,127 @@
         },
         {
           "name": "SESSION_FAINT",
-          "line": 541,
-          "kind": "Variable"
-        },
-        {
-          "name": "SESSION_SOFT",
-          "line": 542,
-          "kind": "Variable"
-        },
-        {
-          "name": "SESSION_MUTED",
-          "line": 543,
-          "kind": "Variable"
-        },
-        {
-          "name": "SESSION_INK",
-          "line": 544,
-          "kind": "Variable"
-        },
-        {
-          "name": "SESSION_CHIP",
           "line": 545,
           "kind": "Variable"
         },
         {
-          "name": "SESSION_CHIP_STRONG",
+          "name": "SESSION_SOFT",
           "line": 546,
           "kind": "Variable"
         },
         {
-          "name": "formatClock",
+          "name": "SESSION_MUTED",
+          "line": 547,
+          "kind": "Variable"
+        },
+        {
+          "name": "SESSION_INK",
           "line": 548,
+          "kind": "Variable"
+        },
+        {
+          "name": "SESSION_CHIP",
+          "line": 549,
+          "kind": "Variable"
+        },
+        {
+          "name": "SESSION_CHIP_STRONG",
+          "line": 550,
+          "kind": "Variable"
+        },
+        {
+          "name": "sessionAccentText",
+          "line": 555,
+          "kind": "Variable"
+        },
+        {
+          "name": "formatClock",
+          "line": 557,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SessionPanel",
-          "line": 561,
+          "line": 570,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SessionStat",
-          "line": 1140,
+          "line": 1149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "circleBtn",
-          "line": 1149,
+          "line": 1158,
           "kind": "Variable"
         },
         {
           "name": "bubble",
-          "line": 1162,
+          "line": 1171,
           "kind": "Variable"
         },
         {
           "name": "transcriptLabelCoach",
-          "line": 1167,
-          "kind": "Variable"
-        },
-        {
-          "name": "transcriptLabelYou",
           "line": 1176,
           "kind": "Variable"
         },
         {
+          "name": "transcriptLabelYou",
+          "line": 1185,
+          "kind": "Variable"
+        },
+        {
           "name": "scoreBand",
-          "line": 1190,
+          "line": 1199,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudioPanel",
-          "line": 1196,
+          "line": 1206,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "IssueRow",
-          "line": 1408,
+          "line": 1418,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ToolTag",
-          "line": 1444,
+          "line": 1454,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ToolCard",
-          "line": 1446,
+          "line": 1456,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "ToolStep",
-          "line": 1455,
+          "line": 1465,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "TOOLKIT_STEPS",
-          "line": 1463,
+          "line": 1473,
           "kind": "Variable"
         },
         {
           "name": "ToolkitToolTag",
-          "line": 1500,
+          "line": 1510,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ToolkitPanel",
-          "line": 1513,
+          "line": 1523,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ToolCardView",
-          "line": 1573,
+          "line": 1583,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ORB_CSS",
-          "line": 1595,
+          "line": 1605,
           "kind": "Variable"
         }
       ],
@@ -75789,9 +75794,9 @@
       "path": "css/astryx-brand-bridge.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 2986,
-      "lines": 57,
-      "sha256": "bcb4096603927dc6bf3b3c7fbb4abafab5fa8881aa633ed553919db802ef7ab7",
+      "bytes": 3186,
+      "lines": 60,
+      "sha256": "1527ca11235c4ade2f35b59cbbdf6438be62eeaa5ebd6cd14af7e8e004a9080e",
       "binary": false
     },
     {
@@ -75888,9 +75893,9 @@
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 38657,
-      "lines": 1200,
-      "sha256": "13ccebba87e51d0361ade6dc66bb9999774c19e7d7a35c5283deacf88eca4da2",
+      "bytes": 39837,
+      "lines": 1224,
+      "sha256": "69785442a7c0aef4472eba615fde414bd3fad591ce38d8aa50fc5e0cf3081c2a",
       "binary": false
     },
     {
@@ -75906,9 +75911,9 @@
       "path": "css/portal-tokens.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 12657,
-      "lines": 276,
-      "sha256": "5d342ea57931d71124c5ce67ef979efcb75445fa61caf9fecb8943208a6d6aaa",
+      "bytes": 10572,
+      "lines": 239,
+      "sha256": "e5002e9ddb8fc5e7c0de356139c9b928d7033e6b5f5168b77150ac9830d93779",
       "binary": false
     },
     {
@@ -75927,6 +75932,15 @@
       "bytes": 80459,
       "lines": 3401,
       "sha256": "97aacfb68e576bed1876e304e9932ef31d7a2c417b14e8562a99641c8b931999",
+      "binary": false
+    },
+    {
+      "path": "css/wa-brand-tokens.css",
+      "area": "styles",
+      "domain": "styles",
+      "bytes": 3819,
+      "lines": 70,
+      "sha256": "9c2d628666c66cbf7874408789aade72ffafe162c2418ea49a1dddb4a657b5b6",
       "binary": false
     },
     {
@@ -76347,9 +76361,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 31215,
-      "lines": 444,
-      "sha256": "95f66b9c65960669b6dd3b1932af541f70a5a9df3f9e44789479f9f043e25bf9",
+      "bytes": 32782,
+      "lines": 458,
+      "sha256": "5cb342d5bf445d51a3c4f059c2c6d28b0c1246f790ce134198b7a912d9c0e092",
       "binary": false
     },
     {
@@ -78309,9 +78323,9 @@
       "path": "docs/knowledge-base/architecture.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 20592,
+      "bytes": 20964,
       "lines": 205,
-      "sha256": "e3e8fb3984a3b17d3bc31ea0e2c133ea868dbbbb4e69bf84fb66e7ddc1d316f2",
+      "sha256": "2002c683b44bd3016891b56bf7981860db4f24349ec75f0d62944dabc4ff92b0",
       "binary": false
     },
     {
@@ -137848,6 +137862,112 @@
       "directive": null
     },
     {
+      "path": "lib/ui/adminSemanticTokens.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4383,
+      "lines": 92,
+      "sha256": "e3d4f64ffbd517deb34006b7d599a5e27aaca34679cd209d2ac8f97c5ed55d5e",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "LEGACY",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tokens",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "legacyDark",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "legacyLight",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
+          "name": "adminSurfaces",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ui/brandTokens.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 7337,
+      "lines": 143,
+      "sha256": "06cf4bc3435ca0136b6fa1ff98a089f412a0bf5cf61ee9d8ca7224047816de36",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "BRAND_CSS",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "BRIDGE_CSS",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "PORTAL_CSS",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "LAYOUT_TSX",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "brand",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "bridgeReferences",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "norm",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicRoutePages",
+          "line": 86,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/ui/buttonClasses.test.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -137994,12 +138114,214 @@
       "directive": null
     },
     {
+      "path": "lib/ui/cssTokenContrast.test-helpers.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 5301,
+      "lines": 144,
+      "sha256": "17f6ba309e0be5fb72d55c2f381128b51f21fdf6c334cad638b79bfb83a15562",
+      "binary": false,
+      "exports": [
+        {
+          "name": "Rgba",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Scheme",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ROOT",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "readCss",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadRootTokens",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadBlockTokens",
+          "line": 40,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "splitTopLevel",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolve",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseColor",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "over",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "luminance",
+          "line": 126,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contrast",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "colorOf",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "Rgba",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Scheme",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ROOT",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "readCss",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "stripComments",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadRootTokens",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadBlockTokens",
+          "line": 40,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "splitTopLevel",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resolve",
+          "line": 67,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "parseColor",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toCss",
+          "line": 112,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "over",
+          "line": 117,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "luminance",
+          "line": 126,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contrast",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "colorOf",
+          "line": 142,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/ui/portalCanvas.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4835,
+      "lines": 73,
+      "sha256": "578d6eeb43846018ac909692fe5df2efb4b51877534e1f2ed166ba160719b61b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "KIT_CSS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "MAIN_CSS",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "BRIDGE_CSS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "tokens",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "SHELL_TSX",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEV_DASHBOARD",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "ruleBody",
+          "line": 21,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/ui/statusColors.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3762,
-      "lines": 94,
-      "sha256": "39482edc72a25f181d7ab7c8e133e4d0fa8e2f22c19f93a8d9fc7794b5f3f7e6",
+      "bytes": 3840,
+      "lines": 95,
+      "sha256": "962c4bd03c3cccfc580f55b078aad3ead507b987fa02538b3308000a59d18702",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -138020,27 +138342,27 @@
         },
         {
           "name": "hexToRgb",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mixOver",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolve",
-          "line": 35,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "luminance",
-          "line": 51,
+          "line": 52,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "contrast",
-          "line": 59,
+          "line": 60,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -164660,9 +164982,9 @@
       "path": "tests/lib/partner-saved-chip-contrast.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2602,
-      "lines": 61,
-      "sha256": "30d85a9e49c41b6f219fd7b26c757c11e8b095261531fc07b0c2cb020cae65ae",
+      "bytes": 2841,
+      "lines": 65,
+      "sha256": "37bbfce62240d0f09c895ee9964b61d193315e1524154d2baa6338dab54c9f16",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -164673,37 +164995,37 @@
         },
         {
           "name": "tokensCss",
-          "line": 14,
-          "kind": "Variable"
-        },
-        {
-          "name": "form",
           "line": 15,
           "kind": "Variable"
         },
         {
+          "name": "form",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
           "name": "lightDark",
-          "line": 17,
+          "line": 21,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hexToRgb",
-          "line": 22,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mix",
-          "line": 25,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "luminance",
-          "line": 28,
+          "line": 32,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "contrast",
-          "line": 35,
+          "line": 39,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -165307,9 +165629,9 @@
       "path": "tests/lib/success-chip-text-token-sweep.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4093,
-      "lines": 88,
-      "sha256": "7d674d83d64a7a39b2464e957657caebbb54071635060da651fbff5f84c8c22a",
+      "bytes": 4332,
+      "lines": 92,
+      "sha256": "5e5bf5f10e48122c2b8273d85d317a7857f8251c0a5da83e115ff903cda897db",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -165320,57 +165642,57 @@
         },
         {
           "name": "tokensCss",
-          "line": 17,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "lightDark",
-          "line": 19,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hexToRgb",
-          "line": 24,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseColor",
-          "line": 27,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "over",
-          "line": 33,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "luminance",
           "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "luminance",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "contrast",
-          "line": 44,
+          "line": 48,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "text",
-          "line": 49,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "tint",
-          "line": 50,
+          "line": 54,
           "kind": "Variable"
         },
         {
           "name": "pageBg",
-          "line": 51,
+          "line": 55,
           "kind": "Variable"
         },
         {
           "name": "surface",
-          "line": 52,
+          "line": 56,
           "kind": "Variable"
         }
       ],
@@ -165380,9 +165702,9 @@
       "path": "tests/lib/success-text-token-contrast.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3720,
-      "lines": 82,
-      "sha256": "51a4dd80d681d5b8cc9a2828effa1c930944752f263334b9c0d94c4e1c92b47d",
+      "bytes": 3959,
+      "lines": 86,
+      "sha256": "c60fecee74d7ee04cd8740ca9b1c416d166d9f3cf2297faeaede9c0acec5cab1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -165393,37 +165715,37 @@
         },
         {
           "name": "tokensCss",
-          "line": 19,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "lightDark",
-          "line": 21,
+          "line": 25,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hexToRgb",
-          "line": 26,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseColor",
-          "line": 29,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "over",
-          "line": 35,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "luminance",
           "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "luminance",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "contrast",
-          "line": 46,
+          "line": 50,
           "kind": "FunctionDeclaration"
         }
       ],

@@ -330,7 +330,7 @@
 | [components/portal/JobApplicationKanban.tsx](../../../components/portal/JobApplicationKanban.tsx) | 283 | components | default:189 |
 | [components/portal/JobApplicationsTracker.tsx](../../../components/portal/JobApplicationsTracker.tsx) | 209 | components | default:19 |
 | [components/portal/JobReadinessScore.tsx](../../../components/portal/JobReadinessScore.tsx) | 67 | components | default:14 |
-| [components/portal/JobTailorPanel.tsx](../../../components/portal/JobTailorPanel.tsx) | 345 | components | JOB_TAILOR_PREVIEW_RESULT:50, default:103 |
+| [components/portal/JobTailorPanel.tsx](../../../components/portal/JobTailorPanel.tsx) | 347 | components | JOB_TAILOR_PREVIEW_RESULT:50, default:105 |
 | [components/portal/JourneyStageGuide.tsx](../../../components/portal/JourneyStageGuide.tsx) | 190 | components | default:19 |
 | [components/portal/LanguageToggle.test.tsx](../../../components/portal/LanguageToggle.test.tsx) | 52 | components |  |
 | [components/portal/LanguageToggle.tsx](../../../components/portal/LanguageToggle.tsx) | 99 | components | default:23 |
@@ -439,7 +439,7 @@
 | [components/portal/SkillsetProgressList.tsx](../../../components/portal/SkillsetProgressList.tsx) | 134 | components | default:22 |
 | [components/portal/StaffViewBanner.tsx](../../../components/portal/StaffViewBanner.tsx) | 82 | components | default:19 |
 | [components/portal/StartHereCard.tsx](../../../components/portal/StartHereCard.tsx) | 58 | components | default:25 |
-| [components/portal/StatusBadge.test.tsx](../../../components/portal/StatusBadge.test.tsx) | 212 | components |  |
+| [components/portal/StatusBadge.test.tsx](../../../components/portal/StatusBadge.test.tsx) | 216 | components |  |
 | [components/portal/StatusBadge.tsx](../../../components/portal/StatusBadge.tsx) | 37 | components | BadgeVariant:16, default:18 |
 | [components/portal/StatusCard.tsx](../../../components/portal/StatusCard.tsx) | 54 | components | StatusCard:27 |
 | [components/portal/TodayHero.module.css](../../../components/portal/TodayHero.module.css) | 197 | components |  |
@@ -466,7 +466,7 @@
 | [components/portal/WorkforceApModuleCompleteButton.test.tsx](../../../components/portal/WorkforceApModuleCompleteButton.test.tsx) | 57 | components |  |
 | [components/portal/WorkforceApModuleCompleteButton.tsx](../../../components/portal/WorkforceApModuleCompleteButton.tsx) | 63 | components | default:6 |
 | [components/portal/WorkforceApModuleLessons.tsx](../../../components/portal/WorkforceApModuleLessons.tsx) | 58 | components | WorkforceApLesson:3, lessonCtaLabel:11, default:15 |
-| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 742 | components | default:49 |
+| [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 750 | components | default:49 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
 | [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1062 | member-counselor | AtRiskFactor:51, AtRiskMember:57, AtRiskDashboardViewProps:187, AtRiskDashboardView:202, default:734 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
@@ -531,7 +531,7 @@
 | [components/portal/kit/kitTableSort.tsx](../../../components/portal/kit/kitTableSort.tsx) | 55 | components | KitSortDirection:6, ariaSortForColumn:8, useKitTableSort:21 |
 | [components/portal/kit/pages/PartnerOverviewKit.module.css](../../../components/portal/kit/pages/PartnerOverviewKit.module.css) | 20 | components |  |
 | [components/portal/kit/pages/PartnerOverviewKit.tsx](../../../components/portal/kit/pages/PartnerOverviewKit.tsx) | 268 | components | PartnerKpiTile:37, PartnerKpiGrid:54, PartnerFunnelStage:77, PartnerReferralFunnel:85, PartnerPayoutLedgerRow:101, PartnerPayoutLedger:112, PartnerAttentionCard:142, PartnerAssistantAccordion:167, PartnerQuickAction:207, PartnerQuickActions:227 |
-| [components/portal/kit/pages/VoiceStudioKit.tsx](../../../components/portal/kit/pages/VoiceStudioKit.tsx) | 1627 | components | VoiceStudioAgentKey:77, VOICE_STUDIO_AGENT_KEYS:78, SessionAgentConfig:85, ResumeStudioIssue:171, ResumeStudioData:172, VoiceStudioKitProps:181, VoiceStudioKit:200 |
+| [components/portal/kit/pages/VoiceStudioKit.tsx](../../../components/portal/kit/pages/VoiceStudioKit.tsx) | 1637 | components | VoiceStudioAgentKey:77, VOICE_STUDIO_AGENT_KEYS:78, SessionAgentConfig:85, ResumeStudioIssue:171, ResumeStudioData:172, VoiceStudioKitProps:181, VoiceStudioKit:200 |
 | [components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx](../../../components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx) | 371 | components | AdminDashboardFunnel:66, AdminDashboardTrendPoint:74, AdminDashboardSummary:79, AdminDashboardWorkItem:97, AdminDashboardKitProps:106, AdminDashboardKit:125, default:371 |
 | [components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx](../../../components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx) | 225 | components | AgentInboxRow:32, AgentInboxKitProps:50, AgentInboxKit:62 |
 | [components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx](../../../components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx) | 118 | components | AiEfficacyKitProps:20, AiEfficacyKit:48 |

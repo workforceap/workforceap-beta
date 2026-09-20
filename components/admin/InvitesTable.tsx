@@ -37,7 +37,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   pending: { bg: 'var(--surface-container)', color: 'var(--color-on-surface)' },
-  accepted: { bg: 'var(--surface-container)', color: 'var(--color-green)' },
+  accepted: { bg: 'var(--surface-container)', color: 'var(--wa-success-dark)' },
   expired: { bg: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' },
   revoked: { bg: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' },
 };

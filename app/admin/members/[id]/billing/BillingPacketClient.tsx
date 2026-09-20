@@ -183,7 +183,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
         </div>
         <div className="portal-profile-section-card__body">
           {lastCreated ? (
-            <p role="status" style={{ margin: '0 0 0.75rem', fontWeight: 600, color: 'var(--color-green, #15803d)' }}>
+            <p role="status" style={{ margin: '0 0 0.75rem', fontWeight: 600, color: 'var(--wa-success-dark)' }}>
               Invoice {lastCreated.packetNumber} is ready. Next step: press &ldquo;Email to counselor and student&rdquo;.
             </p>
           ) : null}
@@ -385,7 +385,7 @@ export default function BillingPacketClient(props: BillingPacketClientProps) {
           </div>
 
           {msg ? (
-            <p role="status" style={{ margin: 0, fontWeight: 600, color: msg.type === 'ok' ? 'var(--color-green, #15803d)' : 'var(--color-accent, #ad2c4d)' }}>
+            <p role="status" style={{ margin: 0, fontWeight: 600, color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent, #ad2c4d)' }}>
               {msg.text}
             </p>
           ) : null}

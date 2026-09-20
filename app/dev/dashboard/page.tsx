@@ -73,7 +73,7 @@ export default function DevDashboardPage() {
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.75 }}>12-day streak 🔥</div>
             <h2 className="h-font" style={{ fontSize: 26, margin: '4px 0 2px' }}>Mike</h2>
             <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>You're 78% to your AWS cert — one module today hits your weekly goal.</p>
-            <button style={{ marginTop: 12, padding: '9px 18px', background: '#fff', color: 'var(--wa-accent)', fontWeight: 700, fontSize: 13, borderRadius: 999, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <button style={{ marginTop: 12, padding: '9px 18px', background: 'var(--wa-hero-action-bg)', color: 'var(--wa-hero-action-text)', fontWeight: 700, fontSize: 13, borderRadius: 999, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <Play size={13} /> Resume module
             </button>
           </div>
@@ -108,7 +108,7 @@ export default function DevDashboardPage() {
           <FeatureTile icon={<Medal size={22} />} badge="NEXT" title="Next Badge" body="2 modules to Cloud Foundations." tone="gold" />
           <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
-              <div style={{ width: 44, height: 44, borderRadius: 'var(--wa-radius-sm)', background: '#eef5fb', color: 'var(--wa-info)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} /></div>
+              <div style={{ width: 44, height: 44, borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} /></div>
               <h3 style={{ fontWeight: 800, fontSize: 17, marginTop: 14, letterSpacing: '-.02em' }}>Learning Hub</h3>
               <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>Your connected Coursera courses.</p>
             </div>

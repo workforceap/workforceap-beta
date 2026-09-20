@@ -121,7 +121,7 @@ export default function DeletedUsersClient({
             aria-hidden
             style={{
               background: 'rgba(43,123,185,0.12)',
-              color: 'var(--color-blue, #2b7bb9)',
+              color: 'var(--wa-info-dark)',
               borderRadius: 'var(--radius-md)',
               padding: '0.5rem',
               display: 'inline-flex',
@@ -178,8 +178,8 @@ export default function DeletedUsersClient({
           style={{
             padding: '0.75rem 1rem',
             borderRadius: 'var(--radius-md)',
-            background: 'color-mix(in srgb, var(--color-green, #4a9b4f) 8%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--color-green, #4a9b4f) 24%, var(--outline-variant))',
+            background: 'color-mix(in srgb, var(--wa-success) 8%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--wa-success) 24%, var(--outline-variant))',
             color: 'var(--color-on-surface)',
             fontSize: '0.9rem',
           }}
@@ -240,8 +240,8 @@ export default function DeletedUsersClient({
                           letterSpacing: '0.06em',
                           padding: '0.15rem 0.5rem',
                           borderRadius: '999px',
-                          background: 'color-mix(in srgb, var(--color-green, #4a9b4f) 14%, transparent)',
-                          color: 'var(--color-green, #4a9b4f)',
+                          background: 'color-mix(in srgb, var(--wa-success) 14%, transparent)',
+                          color: 'var(--wa-success-dark)',
                           verticalAlign: 'middle',
                         }}
                       >

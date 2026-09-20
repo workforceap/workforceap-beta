@@ -79,7 +79,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           Link an existing WorkforceAP user. Choose <strong>WorkforceAP Staff</strong> for internal team, <strong>Partner Org</strong> for affiliated counselors, or <strong>Independent Advisor</strong> for solo practitioners.
         </p>
         {msg && (
-          <div style={{ padding: '0.625rem 0.875rem', borderRadius: '0.625rem', background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: msg.type === 'ok' ? 'var(--color-green, #4a9b4f)' : 'var(--color-accent)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+          <div style={{ padding: '0.625rem 0.875rem', borderRadius: '0.625rem', background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)', color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
             {msg.text}
           </div>
         )}
@@ -171,7 +171,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
                     <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.affiliation === 'independent' ? 'rgba(30,58,138,0.12)' : 'var(--surface-container-high)', color: r.affiliation === 'independent' ? '#1e3a8a' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {r.affiliation === 'independent' ? 'Advisor' : 'Counselor'}
                     </span>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.active ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)', color: r.active ? 'var(--color-green, #4a9b4f)' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.active ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)', color: r.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {r.active ? 'Active' : 'Inactive'}
                     </span>
                   </div>

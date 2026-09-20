@@ -24,10 +24,10 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const STATUS_TEXT_COLOR: Record<string, string> = {
-  SUCCESS: 'var(--color-green, #4a9b4f)',
+  SUCCESS: 'var(--wa-success-dark)',
   FAILED: 'var(--color-accent)',
-  RUNNING: 'var(--color-blue, #2b7bb9)',
-  SKIPPED: 'var(--color-gold)',
+  RUNNING: 'var(--wa-info-dark)',
+  SKIPPED: 'var(--wa-gold-dark)',
 };
 
 /** Icon per status so a run's outcome reads at a glance, not by color alone. */

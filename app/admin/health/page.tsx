@@ -55,9 +55,9 @@ function statusColor(status: HealthStatus | 'ok' | 'degraded' | 'fail'): string 
   switch (status) {
     case 'healthy':
     case 'ok':
-      return 'var(--color-green, #4a9b4f)';
+      return 'var(--wa-success-dark)';
     case 'degraded':
-      return 'var(--color-gold, #a47f38)';
+      return 'var(--wa-gold-dark)';
     case 'unhealthy':
     case 'fail':
       return 'var(--color-accent, #ad2c4d)';
@@ -229,7 +229,7 @@ function AlertLog({ alerts }: { alerts: AlertEntry[] }) {
   if (alerts.length === 0) {
     return (
       <div className="portal-card portal-card--flat portal-card--padded" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <span className="material-symbols-outlined" style={{ color: 'var(--color-green)', fontSize: '1.25rem' }}>check_circle</span>
+        <span className="material-symbols-outlined" style={{ color: 'var(--wa-success-dark)', fontSize: '1.25rem' }}>check_circle</span>
         <span style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>No alerts — all subsystems nominal.</span>
       </div>
     );
@@ -242,7 +242,7 @@ function AlertLog({ alerts }: { alerts: AlertEntry[] }) {
           alert.severity === 'critical'
             ? 'var(--color-accent)'
             : alert.severity === 'warning'
-              ? 'var(--color-gold)'
+              ? 'var(--wa-gold-dark)'
               : 'var(--color-on-surface-variant)';
         const bg =
           alert.severity === 'critical'

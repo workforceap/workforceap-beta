@@ -177,7 +177,7 @@ export default async function AdminEmailCronsPage({
 
       {/* Notice about enable/disable */}
       <div style={{ padding: '0.875rem 1rem', background: 'rgba(43,123,185,0.07)', border: '1px solid rgba(43,123,185,0.15)', borderRadius: '0.75rem', marginBottom: '1.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
-        <strong style={{ color: 'var(--color-blue, #2b7bb9)' }}>How toggling works:</strong> Enabling/disabling a job saves a persistent setting.
+        <strong style={{ color: 'var(--wa-info-dark)' }}>How toggling works:</strong> Enabling/disabling a job saves a persistent setting.
         The Vercel scheduler still calls the endpoint on schedule — but the job checks this setting before running. To permanently remove a job from the schedule,
         edit <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.8125rem' }}>vercel.json</code>.
         Manual triggers always run regardless of enabled state.

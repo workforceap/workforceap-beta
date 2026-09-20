@@ -78,7 +78,7 @@ export default function BoardOutcomesView({
           icon={Users}
           label="Members served"
           value={t.membersServed.toString()}
-          accent="#2b7bb9"
+          accent="var(--wa-info-dark)"
         />
         <Kpi
           icon={Briefcase}
@@ -93,14 +93,14 @@ export default function BoardOutcomesView({
           label="Median annual wage"
           value={t.medianAnnualSalary ? `$${formatThousands(t.medianAnnualSalary)}` : '—'}
           subline="At placement"
-          accent="var(--color-green, #4a9b4f)"
+          accent="var(--wa-success-dark)"
         />
         <Kpi
           icon={Award}
           label="Total wage value"
           value={t.totalAnnualSalaryValue ? `$${formatThousands(t.totalAnnualSalaryValue)}` : '$0'}
           subline="Sum of placed-member wages"
-          accent="var(--color-gold, #a47f38)"
+          accent="var(--wa-gold-dark)"
         />
       </section>
 
@@ -333,8 +333,8 @@ function PilotPhaseBanner({ totals }: { totals: BoardOutcomes['totals'] }) {
     <section
       style={{
         padding: '1rem 1.25rem',
-        background: 'color-mix(in srgb, var(--color-blue, #2b7bb9) 8%, white)',
-        border: '1px solid color-mix(in srgb, var(--color-blue, #2b7bb9) 22%, var(--outline-variant))',
+        background: 'color-mix(in srgb, var(--wa-info) 8%, white)',
+        border: '1px solid color-mix(in srgb, var(--wa-info) 22%, var(--outline-variant))',
         borderRadius: '0.875rem',
         display: 'flex',
         alignItems: 'flex-start',
@@ -344,8 +344,8 @@ function PilotPhaseBanner({ totals }: { totals: BoardOutcomes['totals'] }) {
       <span
         aria-hidden
         style={{
-          background: 'color-mix(in srgb, var(--color-blue, #2b7bb9) 14%, transparent)',
-          color: 'var(--color-blue, #2b7bb9)',
+          background: 'color-mix(in srgb, var(--wa-info) 14%, transparent)',
+          color: 'var(--wa-info-dark)',
           width: '2.25rem',
           height: '2.25rem',
           borderRadius: 'var(--radius-md)',
@@ -365,7 +365,7 @@ function PilotPhaseBanner({ totals }: { totals: BoardOutcomes['totals'] }) {
             fontWeight: 800,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: 'var(--color-blue, #2b7bb9)',
+            color: 'var(--wa-info-dark)',
           }}
         >
           Reporting context &middot; {membersServed} member{membersServed === 1 ? '' : 's'} served
@@ -468,7 +468,7 @@ function FunnelBars({ funnel }: { funnel: Array<{ stage: string; count: number }
                 style={{
                   width: `${pct}%`,
                   height: '100%',
-                  background: 'linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 80%, var(--color-gold, #a47f38)))',
+                  background: 'linear-gradient(90deg, var(--color-accent), color-mix(in srgb, var(--color-accent) 80%, var(--wa-gold)))',
                   transition: 'width 0.4s ease',
                 }}
               />
@@ -521,7 +521,7 @@ function DemographicCard({
                   style={{
                     width: `${pct}%`,
                     height: '100%',
-                    background: 'color-mix(in srgb, var(--color-blue, #2b7bb9) 80%, var(--color-accent))',
+                    background: 'color-mix(in srgb, var(--wa-info) 80%, var(--color-accent))',
                   }}
                 />
               </div>
