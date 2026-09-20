@@ -1,16 +1,15 @@
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
 import { StatTile } from './StatTile';
-import type { KitColor } from './tokens';
+import type { KitTone } from './tokens';
 
 export interface KpiItem {
   label: string;
   value: string | number;
   delta?: string;
-  /** @deprecated Categorical colour; does not paint the value. Use `tone` for a state derived from the value. */
-  color?: KitColor;
-  /** Semantic state derived from the value; the only thing that colours the number. */
-  tone?: KitColor;
-  deltaColor?: KitColor;
+  /** Semantic state derived from the value (KitTone); paints the tile's edge accent, never the number. */
+  tone?: KitTone;
+  /** Tone of the caption line. Defaults to `ok`; `muted` for a definition caption. */
+  deltaTone?: KitTone;
 }
 
 interface KpiStripProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {

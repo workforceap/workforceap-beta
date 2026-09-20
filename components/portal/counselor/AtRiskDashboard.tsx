@@ -98,14 +98,15 @@ function compareActivity(a: AtRiskMember, b: AtRiskMember): number {
 
 const RISK_CONFIG: Record<
   AtRiskMember['riskLevel'],
-  { label: string; color: KitColor; icon: LucideIcon }
+  { label: string; color: KitColor; tone: KitTone; icon: LucideIcon }
 > = {
   // Same severity→color mapping as QueueRow / StatusTag app-wide: the brand
-  // crimson accent carries "critical", not a separate true-red.
-  CRITICAL: { label: 'Critical', color: 'accent', icon: ShieldAlert },
-  HIGH: { label: 'High', color: 'gold', icon: ShieldHalf },
-  MEDIUM: { label: 'Medium', color: 'info', icon: ShieldCheck },
-  LOW: { label: 'Low', color: 'success', icon: ShieldCheck }};
+  // crimson accent carries "critical", not a separate true-red. `tone` is the
+  // same mapping in KitTone terms for the severity StatSparkTiles.
+  CRITICAL: { label: 'Critical', color: 'accent', tone: 'alert', icon: ShieldAlert },
+  HIGH: { label: 'High', color: 'gold', tone: 'warn', icon: ShieldHalf },
+  MEDIUM: { label: 'Medium', color: 'info', tone: 'info', icon: ShieldCheck },
+  LOW: { label: 'Low', color: 'success', tone: 'ok', icon: ShieldCheck }};
 
 const STATUS_LABEL: Record<AtRiskMember['status'], string> = {
   open: 'Open',
@@ -464,7 +465,7 @@ export function AtRiskDashboardView({
                 icon={<Icon size={16} />}
                 label={`${RISK_CONFIG[level].label} risk`}
                 value={severityCounts[level]}
-                color={RISK_CONFIG[level].color}
+                tone={RISK_CONFIG[level].tone}
               />
             );
           })}

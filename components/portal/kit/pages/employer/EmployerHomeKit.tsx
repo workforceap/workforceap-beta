@@ -280,11 +280,11 @@ export function EmployerHomeKit({
 }: EmployerHomeKitProps) {
   const giveback = givebackFigure ?? illustrativeGiveback(hires);
 
-  const kpiTiles: Array<{ key: string; icon: LucideIcon; label: string; value: number; color: KitColor; spark?: SparkStat }> = [
-    { key: 'openRoles', icon: Briefcase, label: 'Open roles', value: openRoles, color: 'accent', spark: openRolesSpark },
-    { key: 'pipeline', icon: Users, label: 'In pipeline', value: inPipeline, color: 'info', spark: pipelineSpark },
-    { key: 'interviews', icon: CalendarClock, label: 'Interviews', value: interviews, color: 'gold', spark: interviewsSpark },
-    { key: 'hires', icon: Award, label: 'Hires', value: hires, color: 'success', spark: hiresSpark },
+  const kpiTiles: Array<{ key: string; icon: LucideIcon; label: string; value: number; spark?: SparkStat }> = [
+    { key: 'openRoles', icon: Briefcase, label: 'Open roles', value: openRoles, spark: openRolesSpark },
+    { key: 'pipeline', icon: Users, label: 'In pipeline', value: inPipeline, spark: pipelineSpark },
+    { key: 'interviews', icon: CalendarClock, label: 'Interviews', value: interviews, spark: interviewsSpark },
+    { key: 'hires', icon: Award, label: 'Hires', value: hires, spark: hiresSpark },
   ];
 
   return (
@@ -310,7 +310,7 @@ export function EmployerHomeKit({
         {/* 2. KPI row — icon chip + optional delta chip + sparkline. */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {kpiTiles.map((t) => (
-            <StatSparkTile key={t.key} icon={<t.icon size={16} />} label={t.label} value={t.value} color={t.color} spark={t.spark} />
+            <StatSparkTile key={t.key} icon={<t.icon size={16} />} label={t.label} value={t.value} spark={t.spark} />
           ))}
         </div>
 

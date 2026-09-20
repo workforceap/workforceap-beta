@@ -17654,37 +17654,37 @@
       {
         "level": 2,
         "title": "5. The `KitBaseProps` contract",
-        "line": 264
+        "line": 274
       },
       {
         "level": 2,
         "title": "6. Component index (`components/portal/kit/index.ts`)",
-        "line": 280
+        "line": 290
       },
       {
         "level": 2,
         "title": "7. Icons, styling, and motion",
-        "line": 416
+        "line": 427
       },
       {
         "level": 2,
         "title": "8. Common mistakes (all observed in this repo — don't repeat them)",
-        "line": 453
+        "line": 464
       },
       {
         "level": 2,
         "title": "9. Astryx coexistence (`@astryxdesign/core`)",
-        "line": 478
+        "line": 489
       },
       {
         "level": 3,
         "title": "Stakeholder workflow contracts (2026-09-09)",
-        "line": 515
+        "line": 526
       },
       {
         "level": 3,
         "title": "Portal polish contracts (2026-09-09)",
-        "line": 525
+        "line": 536
       }
     ],
     "datedFilename": false,

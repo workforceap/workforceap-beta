@@ -150,9 +150,9 @@ export function CareerMappingsKit({
   const partners = totalPartners ?? paths.reduce((sum, p) => sum + p.employerPartners, 0);
 
   const kpis: KpiItem[] = [
-    { label: 'Career paths', value: programs, color: 'accent' },
-    { label: 'Mapped roles', value: roles, color: 'info' },
-    { label: 'Employer partners', value: partners, color: 'gold' },
+    { label: 'Career paths', value: programs },
+    { label: 'Mapped roles', value: roles },
+    { label: 'Employer partners', value: partners },
   ];
 
   return (

@@ -65,20 +65,18 @@ export default async function BoardOutcomesPage({
     // salary the outcomes module computes (the only wage statistic available);
     // it is the board's headline "wage" number. Empty data renders 0 / "—".
     const kpis: KpiItem[] = [
-      { label: 'Placement Rate', value: `${totals.placementRate}%`, color: 'success' },
+      { label: 'Placement Rate', value: `${totals.placementRate}%` },
       {
         label: 'Avg Wage',
         value:
           totals.medianAnnualSalary != null
             ? `$${totals.medianAnnualSalary.toLocaleString('en-US')}`
             : '—',
-        color: 'text',
       },
-      { label: 'Credentials', value: snapshot.certifications.totalEarned, color: 'gold' },
+      { label: 'Credentials', value: snapshot.certifications.totalEarned },
       {
         label: '90-Day Retention',
         value: retentionRate != null ? `${retentionRate}%` : '—',
-        color: 'info',
       },
     ];
 

@@ -104,7 +104,7 @@ export function CounselorsRosterKit({
     { label: 'Counselors', value: total },
     { label: 'Avg Caseload', value: avgCaseload },
     // Only a real state colours a number: at-risk owned > 0 is one.
-    { label: 'At-Risk Owned', value: atRiskOwned, tone: typeof atRiskOwned === 'number' && atRiskOwned > 0 ? 'accent' : undefined },
+    { label: 'At-Risk Owned', value: atRiskOwned, tone: typeof atRiskOwned === 'number' && atRiskOwned > 0 ? 'alert' : undefined },
     { label: 'Avg Response', value: avgResponse },
   ];
 

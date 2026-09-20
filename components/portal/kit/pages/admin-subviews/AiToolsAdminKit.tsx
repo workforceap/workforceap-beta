@@ -155,10 +155,10 @@ export function AiToolsAdminKit({ usage = [], tools = DEFAULT_TOOLS }: AiToolsAd
   const betaCount = tools.filter((t) => t.state === 'Beta').length;
 
   const kpis: KpiItem[] = [
-    { label: 'Tools', value: tools.length, color: 'text' },
-    { label: 'Live', value: liveCount, color: 'success' },
-    { label: 'Beta', value: betaCount, color: 'gold' },
-    { label: 'Total uses', value: totalUses.toLocaleString(), color: 'accent' },
+    { label: 'Tools', value: tools.length },
+    { label: 'Live', value: liveCount },
+    { label: 'Beta', value: betaCount },
+    { label: 'Total uses', value: totalUses.toLocaleString() },
   ];
 
   return (

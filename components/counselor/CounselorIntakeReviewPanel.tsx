@@ -11,6 +11,8 @@ import {
   type CounselorWioaReviewStatus,
 } from '@/lib/wioa/wioaReview';
 import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
+import { StatusTag, type KitTone } from '@/components/portal/kit';
+import styles from './CounselorIntakeReviewPanel.module.css';
 
 /**
  * Counselor approvals (Mike, 2026-09-19). Counselors review the member's
@@ -23,6 +25,11 @@ import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wio
  * Wording rule: this panel says "intake verified" / "intake complete" —
  * never "eligible". The legal eligibility determination belongs to the
  * workforce board, not to WorkforceAP staff.
+ *
+ * Chrome: kit `.wa-kit-card` section, section h2 + `.wa-kit-stat-label` h3
+ * card head, `.wa-kit-meta` captions, `StatusTag` for the application status
+ * and the kit tone hooks for outcome copy; layout in the colocated module
+ * (`--wa-*` only, 13px floor, no inline sizes).
  */
 
 type CounselorReviewableApplication = {
@@ -57,6 +64,14 @@ const APPLICATION_STATUS_LABEL: Record<string, string> = {
   NEEDS_INFO: 'Needs more information',
 };
 
+/** KIT_GUIDE §4: `danger` for a denied (rejected) application, `alert` for "needs a look". */
+const APPLICATION_STATUS_TONE: Record<string, KitTone> = {
+  PENDING: 'warn',
+  APPROVED: 'ok',
+  DENIED: 'danger',
+  NEEDS_INFO: 'alert',
+};
+
 const DECISION_BUTTON_LABEL: Record<Decision, string> = {
   APPROVED: 'Approve',
   DENIED: 'Deny',
@@ -74,29 +89,6 @@ const DECISION_DONE_COPY: Record<Decision, string> = {
   DENIED: 'Application denied.',
   NEEDS_INFO: 'Application marked as needing more information.',
 };
-
-const sectionStyle = {
-  padding: '1rem',
-  background: 'var(--color-light)',
-  borderRadius: 'var(--radius-md)',
-} as const;
-
-const helpStyle = {
-  fontSize: '0.85rem',
-  color: 'var(--color-on-surface-variant)',
-  lineHeight: 1.45,
-  marginBottom: '0.75rem',
-} as const;
-
-const labelStyle = { display: 'block', fontWeight: 600, marginBottom: '0.35rem', fontSize: '0.9rem' } as const;
-
-const fieldStyle = {
-  width: '100%',
-  padding: '0.5rem',
-  borderRadius: '6px',
-  fontFamily: 'inherit',
-  marginBottom: '0.75rem',
-} as const;
 
 export default function CounselorIntakeReviewPanel({ memberId, applications, wioa }: Props) {
   const router = useRouter();
@@ -184,48 +176,40 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
   };
 
   return (
-    <section style={sectionStyle} data-testid="counselor-intake-review-panel">
-      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Application review</h2>
-      <p style={helpStyle}>
+    <section className="wa-kit-card" data-testid="counselor-intake-review-panel">
+      <h2 className={styles.title}>Application review</h2>
+      <p className={`wa-kit-meta ${styles.help}`}>
         Approve, deny, or request more information on this member&apos;s program application. Decisions use the same
         emails and audit trail as the admin review, recorded under your name.
       </p>
 
       {applications.length === 0 ? (
-        <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+        <p className={`wa-kit-meta ${styles.quiet}`}>
           No program application on file for this member yet.
         </p>
       ) : (
-        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.75rem' }}>
+        <ul className={styles.applications}>
           {applications.map((app) => {
             const current = statusById[app.id] ?? app.status;
             const pending = pendingDecision?.applicationId === app.id ? pendingDecision.decision : null;
             const busy = busyId === app.id;
             return (
-              <li
-                key={app.id}
-                style={{
-                  padding: '0.75rem',
-                  borderRadius: '6px',
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--outline-variant)',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <strong style={{ fontSize: '0.95rem' }}>{app.programTitle}</strong>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+              <li key={app.id} className="wa-kit-card wa-kit-card--sm">
+                <div className={styles.applicationHead}>
+                  <strong className={styles.programTitle}>{app.programTitle}</strong>
+                  <StatusTag tone={APPLICATION_STATUS_TONE[current] ?? 'muted'}>
                     {APPLICATION_STATUS_LABEL[current] ?? current}
-                  </span>
+                  </StatusTag>
                 </div>
                 {app.submittedAt ? (
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0.75rem' }}>
+                  <p className={`wa-kit-meta ${styles.submitted}`}>
                     Submitted {formatPortalDate(app.submittedAt)}
                   </p>
                 ) : (
-                  <div style={{ height: '0.5rem' }} />
+                  <div className={styles.spacer} />
                 )}
 
-                <label htmlFor={`intake-decision-notes-${app.id}`} style={labelStyle}>
+                <label htmlFor={`intake-decision-notes-${app.id}`} className={`wa-kit-field-label ${styles.label}`}>
                   Decision notes (optional)
                 </label>
                 <textarea
@@ -235,13 +219,13 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
                   rows={2}
                   maxLength={2000}
                   placeholder="Documents received, intake complete, follow-ups…"
-                  style={fieldStyle}
+                  className={styles.field}
                 />
 
                 {pending ? (
                   <div>
-                    <p style={{ ...helpStyle, marginBottom: '0.5rem' }}>{DECISION_CONFIRM_COPY[pending]}</p>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <p className={`wa-kit-meta ${styles.help} ${styles.helpTight}`}>{DECISION_CONFIRM_COPY[pending]}</p>
+                    <div className={styles.buttons}>
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
@@ -262,7 +246,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div className={styles.buttons}>
                     {DECISIONS.map((decision) => (
                       <button
                         key={decision}
@@ -283,43 +267,43 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
       )}
 
       {decisionError ? (
-        <p role="alert" style={{ color: '#b91c1c', fontSize: '0.9rem', margin: '0.75rem 0 0' }}>
+        <p role="alert" className={`wa-kit-tone--danger ${styles.outcome}`}>
           {decisionError}
         </p>
       ) : null}
       {decisionDone ? (
-        <p role="status" style={{ color: 'var(--color-green, #16a34a)', fontSize: '0.9rem', margin: '0.75rem 0 0' }}>
+        <p role="status" className={`wa-kit-tone--ok ${styles.outcome}`}>
           {decisionDone}
         </p>
       ) : null}
 
-      <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem', marginTop: '1rem' }}>
-        <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>WIOA intake verification</h3>
-        <p style={helpStyle}>
+      <div className={styles.intake}>
+        <h3 className={`wa-kit-stat-label ${styles.subtitle}`}>WIOA intake verification</h3>
+        <p className={`wa-kit-meta ${styles.help}`}>
           Record whether the member&apos;s WIOA intake paperwork is complete. This is an internal workflow status,
           not an eligibility determination — that stays with the workforce board.
         </p>
 
         {!wioa.hasScreening ? (
-          <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
+          <p className={`wa-kit-meta ${styles.quiet}`}>
             This member has not submitted the WIOA self-screening yet, so there is nothing to verify.
           </p>
         ) : (
           <>
             {adminOnlyStatus ? (
-              <p style={helpStyle}>
+              <p className={`wa-kit-meta ${styles.help}`}>
                 An administrator recorded this screening as <strong>{wioaReviewLabel(adminOnlyStatus)}</strong>.
                 Saving below replaces that status.
               </p>
             ) : null}
-            <label htmlFor="counselor-intake-status" style={labelStyle}>
+            <label htmlFor="counselor-intake-status" className={`wa-kit-field-label ${styles.label}`}>
               Intake status
             </label>
             <select
               id="counselor-intake-status"
               value={intakeStatus}
               onChange={(e) => setIntakeStatus(e.target.value as CounselorWioaReviewStatus)}
-              style={{ ...fieldStyle, maxWidth: '320px' }}
+              className={`${styles.field} ${styles.fieldNarrow}`}
             >
               {COUNSELOR_WIOA_REVIEW_STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -328,7 +312,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
               ))}
             </select>
 
-            <label htmlFor="counselor-intake-notes" style={labelStyle}>
+            <label htmlFor="counselor-intake-notes" className={`wa-kit-field-label ${styles.label}`}>
               Internal notes
             </label>
             <textarea
@@ -338,11 +322,11 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
               rows={3}
               maxLength={8000}
               placeholder="Documents checked, AJC referral, follow-ups…"
-              style={fieldStyle}
+              className={styles.field}
             />
 
             {intakeError ? (
-              <p role="alert" style={{ color: '#b91c1c', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+              <p role="alert" className={`wa-kit-tone--danger ${styles.outcome} ${styles.outcomeTight}`}>
                 {intakeError}
               </p>
             ) : null}
@@ -358,7 +342,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
             </button>
 
             {intakeSavedAt ? (
-              <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
+              <p className={`wa-kit-meta ${styles.saved}`}>
                 Last saved {formatPortalDateTime(intakeSavedAt)}
                 {intakeSavedByYou ? ' · You' : ''}
               </p>

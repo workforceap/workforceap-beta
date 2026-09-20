@@ -1,0 +1,69 @@
+/* Staff read-only record panels (WioaScreeningReadonly, AssessmentAnswersReadonly)
+   on the counselor student detail and admin member detail pages. The section is
+   a kit `.wa-kit-card`; the h2 mirrors the student detail's section title;
+   captions are `.wa-kit-meta`. --wa-* tokens only, 13px floor, no hex. */
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.lede {
+  margin: 0 0 0.75rem;
+}
+
+.body {
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+  line-height: 1.5;
+}
+
+.facts {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.disclosure {
+  margin-bottom: 0.75rem;
+}
+
+.summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reasons {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.answers {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.answer {
+  margin-bottom: 0.25rem;
+}
+
+.mark {
+  font-weight: 700;
+  color: var(--wa-kit-tone, var(--wa-text));
+}
+
+.review {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--wa-border);
+}
+
+.review p {
+  margin: 0 0 0.25rem;
+}
+
+.reviewNotes {
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}

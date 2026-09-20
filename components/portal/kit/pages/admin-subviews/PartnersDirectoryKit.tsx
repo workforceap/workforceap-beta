@@ -104,8 +104,8 @@ export function PartnersDirectoryKit({
   const kpis: KpiItem[] = [
     { label: 'Partners', value: count },
     { label: 'Referrals', value: totalReferrals.toLocaleString() },
-    { label: 'Placed', value: totalPlaced.toLocaleString(), color: 'success' },
-    { label: 'Avg placement rate', value: `${avgPlacement}%`, color: 'success' },
+    { label: 'Placed', value: totalPlaced.toLocaleString() },
+    { label: 'Avg placement rate', value: `${avgPlacement}%` },
   ];
 
   return (

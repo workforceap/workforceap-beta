@@ -59,17 +59,15 @@ export default async function OutcomesPage({
     // when no placement has a decided retention outcome yet — show "—" then.
     const retentionRate = snapshot.kpis.retentionRate;
     const kpis: KpiItem[] = [
-      { label: 'Placement Rate', value: `${t.placementRate}%`, color: 'success' },
+      { label: 'Placement Rate', value: `${t.placementRate}%` },
       {
         label: 'Median Wage',
         value: t.medianAnnualSalary != null ? `$${t.medianAnnualSalary.toLocaleString('en-US')}` : '—',
-        color: 'text',
       },
-      { label: 'Credentials Earned', value: snapshot.certifications.totalEarned, color: 'gold' },
+      { label: 'Credentials Earned', value: snapshot.certifications.totalEarned },
       {
         label: '90-Day Retention',
         value: retentionRate != null ? `${retentionRate}%` : '—',
-        color: 'info',
       },
     ];
 

@@ -62,9 +62,9 @@ export function FeatureFlagsKit({
 }: FeatureFlagsKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Total Flags', value: total },
-    { label: 'On', value: on, color: 'success' },
-    { label: 'Off', value: off, color: 'muted' },
-    { label: 'Changed (7d)', value: recentlyChanged, color: 'info' },
+    { label: 'On', value: on },
+    { label: 'Off', value: off },
+    { label: 'Changed (7d)', value: recentlyChanged },
   ];
 
   const numStyle = { fontVariantNumeric: 'tabular-nums' as const };

@@ -189,26 +189,23 @@ export default async function AdminTodayPage({
       {
         label: 'Active Students',
         value: headline.attention.totals.enrolled,
-        color: 'text',
         delta: 'Members with an enrolled program',
-        deltaColor: 'muted',
+        deltaTone: 'muted',
       },
       {
         label: 'Placements YTD',
         value: placementsYtd,
-        color: 'success',
         spark: placementsSpark ? { series: placementsSpark } : undefined,
       },
-      { label: 'Interview prep', value: totals.interviewingCount, color: 'info' },
+      { label: 'Interview prep', value: totals.interviewingCount },
       ...attentionTiles
         .filter((tile) => tile.key !== 'new_no_counselor')
         .map((tile): CommandCenterKpiItem => ({
           label: tile.label,
           value: tile.value,
-          color: 'accent',
-          tone: tile.value > 0 ? 'accent' : 'muted',
+          tone: tile.value > 0 ? 'alert' : undefined,
           delta: tile.definition,
-          deltaColor: 'muted',
+          deltaTone: 'muted',
         })),
     ];
 

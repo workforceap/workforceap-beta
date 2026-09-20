@@ -135,11 +135,11 @@ export interface CommandCenterKitProps {
 /* ---- Defaults pulled straight from the mockup ---------------------------- */
 
 const DEFAULT_KPIS: CommandCenterKpiItem[] = [
-  { label: 'Active Students', value: '847', color: 'text', delta: '↑ 32 this month', deltaColor: 'success' },
-  { label: 'Placements YTD', value: '213', color: 'success', delta: '↑ 18 this month', deltaColor: 'success' },
-  { label: 'Completion Rate', value: '71%', color: 'info', delta: 'cohort avg', deltaColor: 'muted' },
-  { label: 'Job-Ready Now', value: '64', color: 'gold', delta: 'ready to place', deltaColor: 'muted' },
-  { label: 'At Risk', value: '19', color: 'accent', delta: 'need outreach', deltaColor: 'accent' },
+  { label: 'Active Students', value: '847', delta: '↑ 32 this month', deltaTone: 'ok' },
+  { label: 'Placements YTD', value: '213', delta: '↑ 18 this month', deltaTone: 'ok' },
+  { label: 'Completion Rate', value: '71%', delta: 'cohort avg', deltaTone: 'muted' },
+  { label: 'Job-Ready Now', value: '64', delta: 'ready to place', deltaTone: 'muted' },
+  { label: 'At Risk', value: '19', tone: 'alert', delta: 'need outreach', deltaTone: 'alert' },
 ];
 
 const DEFAULT_QUEUE: CommandCenterQueueItem[] = [
@@ -319,9 +319,9 @@ export function CommandCenterKit({
   const metricItems = kpis.map((item) => ({
     label: item.label,
     value: item.value,
-    color: item.color,
+    tone: item.tone,
     delta: item.spark?.delta ?? item.delta,
-    deltaColor: item.deltaColor,
+    deltaTone: item.deltaTone,
   }));
 
   return (

@@ -82,10 +82,10 @@ export default function DevDashboardPage() {
         <div style={{ marginBottom: 20 }}>
           <KpiStrip
             items={[
-              { label: 'Course', value: '78%', color: 'accent' },
-              { label: 'Active Jobs', value: 4, color: 'info' },
-              { label: 'Certs', value: 2, color: 'gold' },
-              { label: 'Points', value: '1,240', color: 'success' },
+              { label: 'Course', value: '78%' },
+              { label: 'Active Jobs', value: 4 },
+              { label: 'Certs', value: 2 },
+              { label: 'Points', value: '1,240' },
             ]}
           />
         </div>

@@ -54,10 +54,13 @@ export function BarChartMini({ data, highlightLast = false, height = 160 }: BarC
 export function Sparkline({
   series,
   color = 'accent',
+  stroke,
   height = 28,
 }: {
   series: number[];
   color?: KitColor;
+  /** Raw CSS colour for the line (e.g. `var(--wa-kit-tone)` inside a tone hook); wins over `color`. */
+  stroke?: string;
   height?: number;
 }) {
   if (!series || series.length < 2) return null;
@@ -80,7 +83,7 @@ export function Sparkline({
       <polyline
         points={points}
         fill="none"
-        stroke={colorVar(color)}
+        stroke={stroke ?? colorVar(color)}
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"

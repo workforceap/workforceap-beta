@@ -40,10 +40,10 @@ export interface MetricsKitProps {
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
-  { label: 'API p50', value: '—', color: 'success' },
-  { label: 'API p99', value: '—', color: 'gold' },
-  { label: 'Error rate', value: '—', color: 'success' },
-  { label: 'Uptime 30d', value: '—', color: 'success' },
+  { label: 'API p50', value: '—' },
+  { label: 'API p99', value: '—' },
+  { label: 'Error rate', value: '—' },
+  { label: 'Uptime 30d', value: '—' },
 ];
 
 const DEFAULT_BY_SURFACE: RankDatum[] = [

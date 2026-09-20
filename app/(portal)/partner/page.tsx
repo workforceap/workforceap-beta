@@ -360,21 +360,18 @@ export default async function PartnerDashboardPage({
                 label: t('membersReferred'),
                 value: referredCount,
                 subtitle: t('inYourPortal'),
-                color: 'accent',
                 icon: <Users size={16} />,
               },
               {
                 label: t('membersEnrolled'),
                 value: enrolledCount,
                 subtitle: t('startedAProgram'),
-                color: 'info',
                 icon: <GraduationCap size={16} />,
               },
               {
                 label: t('placementRate'),
                 value: `${placementRate}%`,
                 subtitle: t('placementEstimate'),
-                color: 'gold',
                 icon: <Percent size={16} />,
               },
               showPayouts
@@ -382,14 +379,12 @@ export default async function PartnerDashboardPage({
                     label: 'Payout due',
                     value: fmtMoneyKit(payoutDueUsd),
                     subtitle: t('placementEstimate'),
-                    color: 'success',
                     icon: <Wallet size={16} />,
                   }
                 : {
                     label: t('membersPlaced'),
                     value: placedCount,
                     subtitle: t('verifiedHires'),
-                    color: 'success',
                     icon: <CheckCircle2 size={16} />,
                   },
             ]}
