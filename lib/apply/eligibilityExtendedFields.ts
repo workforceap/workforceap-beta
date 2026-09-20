@@ -7,7 +7,7 @@
  */
 
 import {
-  PUBLIC_REFERRAL_SOURCE_OPTIONS,
+  CENTRAL_TEXAS_REFERRAL_SOURCES,
   REFERRAL_SOURCE_COMMUNITY_AMBASSADOR,
   REFERRAL_SOURCE_OTHER_PARTNER,
 } from '@/lib/referralSources';
@@ -21,7 +21,7 @@ export type YesNo = (typeof YES_NO)[number];
  * row: "Community Ambassador (write in)" and "Other Partner (write in)" already
  * cover it. The constant below stays so previously saved answers keep working.
  */
-export const APPLY_HEAR_ABOUT_OPTIONS = [...PUBLIC_REFERRAL_SOURCE_OPTIONS] as const;
+export const APPLY_HEAR_ABOUT_OPTIONS = [...CENTRAL_TEXAS_REFERRAL_SOURCES] as const;
 
 export type ApplyHearAboutOption = (typeof APPLY_HEAR_ABOUT_OPTIONS)[number];
 

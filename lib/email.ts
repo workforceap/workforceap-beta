@@ -48,7 +48,6 @@ import {
   partnerWeeklyDigestHtml,
   counselorAssignedHtml,
   partnerReferralInviteHtml,
-  atRiskDigestHtml,
   onboardingStallsDigestHtml,
   counselorAtRiskBatchHtml,
   placementSurveyHtml,
@@ -617,51 +616,6 @@ export async function sendCourseraUnmatchedActorAlertEmail(params: {
       return { ok: false, skipped: true, error: err.reason };
     }
     console.error('sendCourseraUnmatchedActorAlertEmail failed:', err);
-    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
-  }
-}
-
-/** Send at-risk member daily digest to admin/counselor emails */
-export async function sendAtRiskAlertDigestEmail(params: {
-  to: string[];
-  dateLabel: string;
-  criticalCount: number;
-  highCount: number;
-  mediumCount: number;
-  members: {
-    fullName: string | null;
-    email: string;
-    score: number;
-    level: string;
-    factors: string[];
-    recommendedAction: string;
-    adminUrl: string;
-  }[];
-}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
-  const resend = getResend();
-  if (!resend) {
-    console.warn('sendAtRiskAlertDigestEmail: RESEND_API_KEY not set');
-    return { ok: false, error: 'Email not configured' };
-  }
-  const html = brandedEmailLayout({
-    title: `At-Risk Member Digest — ${params.dateLabel}`,
-    bodyHtml: atRiskDigestHtml(params),
-    ctaText: 'View At-Risk Dashboard',
-    ctaUrl: `${SITE_URL}/counselor/at-risk`,
-  });
-  try {
-    await sendBrandedEmail(resend, {
-      from: getFrom(),
-      to: params.to,
-      subject: sanitizeEmailSubjectLine(`At-Risk Digest — ${params.criticalCount} critical, ${params.highCount} high (${params.dateLabel})`),
-      html,
-    });
-    return { ok: true };
-  } catch (err) {
-    if (err instanceof FixtureRecipientSkippedError) {
-      return { ok: false, skipped: true, error: err.reason };
-    }
-    console.error('sendAtRiskAlertDigestEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
   }
 }
@@ -2583,7 +2537,8 @@ export async function sendInterviewDebriefPromptEmail(params: {
  * One email per counselor per day with all CRITICAL at-risk members.
  */
 export async function sendCounselorAtRiskAlertEmail(params: {
-  to: string;
+  /** One counselor, or the staff fallback list for members with no counselor. */
+  to: string | string[];
   counselorName: string;
   members: {
     memberName: string;

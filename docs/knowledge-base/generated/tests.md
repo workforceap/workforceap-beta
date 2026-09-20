@@ -20,7 +20,7 @@
 | [tests/api/admin-member-delete.spec.ts](../../../tests/api/admin-member-delete.spec.ts) | 185 | tests |  |
 | [tests/api/admin-member-enrollment-funding.spec.ts](../../../tests/api/admin-member-enrollment-funding.spec.ts) | 147 | tests |  |
 | [tests/api/admin-member-merge.spec.ts](../../../tests/api/admin-member-merge.spec.ts) | 247 | tests |  |
-| [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 149 | tests |  |
+| [tests/api/admin-member-program-route.spec.ts](../../../tests/api/admin-member-program-route.spec.ts) | 177 | tests |  |
 | [tests/api/admin-members-bulk.spec.ts](../../../tests/api/admin-members-bulk.spec.ts) | 588 | tests |  |
 | [tests/api/admin-members-counselor.spec.ts](../../../tests/api/admin-members-counselor.spec.ts) | 203 | tests |  |
 | [tests/api/admin-members.spec.ts](../../../tests/api/admin-members.spec.ts) | 179 | tests |  |
@@ -49,12 +49,12 @@
 | [tests/api/apply-confirmation-clarity.spec.ts](../../../tests/api/apply-confirmation-clarity.spec.ts) | 66 | tests |  |
 | [tests/api/apply-status-lookup.spec.ts](../../../tests/api/apply-status-lookup.spec.ts) | 164 | tests |  |
 | [tests/api/assessment.spec.ts](../../../tests/api/assessment.spec.ts) | 583 | tests |  |
-| [tests/api/at-risk-alert.spec.ts](../../../tests/api/at-risk-alert.spec.ts) | 641 | tests |  |
+| [tests/api/at-risk-alert.spec.ts](../../../tests/api/at-risk-alert.spec.ts) | 695 | tests |  |
 | [tests/api/at-risk-api.spec.ts](../../../tests/api/at-risk-api.spec.ts) | 312 | tests |  |
 | [tests/api/auth-boundaries.spec.ts](../../../tests/api/auth-boundaries.spec.ts) | 216 | tests |  |
 | [tests/api/auth-read-recovery.spec.ts](../../../tests/api/auth-read-recovery.spec.ts) | 155 | tests |  |
 | [tests/api/auth-routes.spec.ts](../../../tests/api/auth-routes.spec.ts) | 1694 | tests |  |
-| [tests/api/billing-packets.spec.ts](../../../tests/api/billing-packets.spec.ts) | 279 | tests |  |
+| [tests/api/billing-packets.spec.ts](../../../tests/api/billing-packets.spec.ts) | 284 | tests |  |
 | [tests/api/bulk-email-fixture-accounting.spec.ts](../../../tests/api/bulk-email-fixture-accounting.spec.ts) | 89 | tests |  |
 | [tests/api/careers-occupation-program-title.spec.ts](../../../tests/api/careers-occupation-program-title.spec.ts) | 86 | tests |  |
 | [tests/api/concordia-enroll-page.spec.ts](../../../tests/api/concordia-enroll-page.spec.ts) | 86 | tests |  |
@@ -74,8 +74,8 @@
 | [tests/api/coursera-replay-email-pacing.spec.ts](../../../tests/api/coursera-replay-email-pacing.spec.ts) | 62 | learning-coursera |  |
 | [tests/api/coursera-rest-webhook.spec.ts](../../../tests/api/coursera-rest-webhook.spec.ts) | 280 | learning-coursera |  |
 | [tests/api/cover-letter.spec.ts](../../../tests/api/cover-letter.spec.ts) | 167 | tests |  |
-| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 180 | tests |  |
-| [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 236 | tests |  |
+| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 188 | tests |  |
+| [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 157 | tests |  |
 | [tests/api/cron-course-accountability.spec.ts](../../../tests/api/cron-course-accountability.spec.ts) | 71 | tests |  |
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
 | [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 205 | tests |  |
@@ -119,7 +119,7 @@
 | [tests/api/member-messages.spec.ts](../../../tests/api/member-messages.spec.ts) | 521 | tests |  |
 | [tests/api/member-nba-reliability.spec.ts](../../../tests/api/member-nba-reliability.spec.ts) | 76 | tests |  |
 | [tests/api/member-onboard.spec.ts](../../../tests/api/member-onboard.spec.ts) | 523 | tests |  |
-| [tests/api/member-profile.spec.ts](../../../tests/api/member-profile.spec.ts) | 469 | tests |  |
+| [tests/api/member-profile.spec.ts](../../../tests/api/member-profile.spec.ts) | 475 | tests |  |
 | [tests/api/member-readiness-summary.spec.ts](../../../tests/api/member-readiness-summary.spec.ts) | 123 | tests |  |
 | [tests/api/member-referral-privacy.spec.ts](../../../tests/api/member-referral-privacy.spec.ts) | 29 | tests |  |
 | [tests/api/member-resume.spec.ts](../../../tests/api/member-resume.spec.ts) | 276 | tests |  |
@@ -152,7 +152,7 @@
 | [tests/api/program-enrollment.spec.ts](../../../tests/api/program-enrollment.spec.ts) | 409 | tests |  |
 | [tests/api/public-abuse-hardening.spec.ts](../../../tests/api/public-abuse-hardening.spec.ts) | 253 | tests |  |
 | [tests/api/public-api-hardening-batch4.spec.ts](../../../tests/api/public-api-hardening-batch4.spec.ts) | 310 | tests |  |
-| [tests/api/public-api-hardening-followups.spec.ts](../../../tests/api/public-api-hardening-followups.spec.ts) | 352 | tests |  |
+| [tests/api/public-api-hardening-followups.spec.ts](../../../tests/api/public-api-hardening-followups.spec.ts) | 292 | tests |  |
 | [tests/api/public-route-error-handling.spec.ts](../../../tests/api/public-route-error-handling.spec.ts) | 286 | tests |  |
 | [tests/api/public-wioa-qualification.spec.ts](../../../tests/api/public-wioa-qualification.spec.ts) | 183 | tests |  |
 | [tests/api/quarterly-outcomes.spec.ts](../../../tests/api/quarterly-outcomes.spec.ts) | 207 | tests |  |
@@ -170,7 +170,7 @@
 | [tests/api/webhook-retry-persistence.spec.ts](../../../tests/api/webhook-retry-persistence.spec.ts) | 148 | tests |  |
 | [tests/api/webhooks-learning-completion.spec.ts](../../../tests/api/webhooks-learning-completion.spec.ts) | 162 | tests |  |
 | [tests/api/weekly-recap.spec.ts](../../../tests/api/weekly-recap.spec.ts) | 565 | tests |  |
-| [tests/api/wioa-report.spec.ts](../../../tests/api/wioa-report.spec.ts) | 487 | partners-funding |  |
+| [tests/api/wioa-report.spec.ts](../../../tests/api/wioa-report.spec.ts) | 432 | partners-funding |  |
 | [tests/api/xapi-inbound-program.spec.ts](../../../tests/api/xapi-inbound-program.spec.ts) | 457 | tests |  |
 | [tests/api/xapi-persistence.spec.ts](../../../tests/api/xapi-persistence.spec.ts) | 437 | tests |  |
 | [tests/app/account-privacy-consent.spec.tsx](../../../tests/app/account-privacy-consent.spec.tsx) | 89 | tests |  |
@@ -288,7 +288,7 @@
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
 | [tests/e2e/ai-tool-resume-analysis.spec.ts](../../../tests/e2e/ai-tool-resume-analysis.spec.ts) | 74 | tests |  |
 | [tests/e2e/ai-tool-resume.spec.ts](../../../tests/e2e/ai-tool-resume.spec.ts) | 74 | tests |  |
-| [tests/e2e/auth-helpers.ts](../../../tests/e2e/auth-helpers.ts) | 137 | tests | PortalSmokeRole:8, addAuthCookie:14, hasProdE2ECredentials:55, hasMemberPortalCredentials:60, hasAdminE2ECredentials:63, loginMemberPortal:73, loginAdminPortal:100, hasPortalRoleCredentials:105, loginPortalRole:114 |
+| [tests/e2e/auth-helpers.ts](../../../tests/e2e/auth-helpers.ts) | 136 | tests | PortalSmokeRole:8, addAuthCookie:14, hasProdE2ECredentials:55, hasAdminE2ECredentials:62, loginMemberPortal:72, loginAdminPortal:99, hasPortalRoleCredentials:104, loginPortalRole:113 |
 | [tests/e2e/auth.spec.ts](../../../tests/e2e/auth.spec.ts) | 67 | identity-tenancy |  |
 | [tests/e2e/concordia-referral.spec.ts](../../../tests/e2e/concordia-referral.spec.ts) | 59 | tests |  |
 | [tests/e2e/coursera-launch.spec.ts](../../../tests/e2e/coursera-launch.spec.ts) | 100 | learning-coursera |  |
@@ -424,7 +424,7 @@
 | [tests/lib/program-slug-compatibility.spec.ts](../../../tests/lib/program-slug-compatibility.spec.ts) | 22 | tests |  |
 | [tests/lib/public-job-filters.spec.ts](../../../tests/lib/public-job-filters.spec.ts) | 81 | tests |  |
 | [tests/lib/recommendPrograms.test.ts](../../../tests/lib/recommendPrograms.test.ts) | 38 | tests |  |
-| [tests/lib/referral-rewards.spec.ts](../../../tests/lib/referral-rewards.spec.ts) | 141 | applications-enrollment |  |
+| [tests/lib/referral-rewards.spec.ts](../../../tests/lib/referral-rewards.spec.ts) | 223 | applications-enrollment |  |
 | [tests/lib/retention-window-evidence.spec.ts](../../../tests/lib/retention-window-evidence.spec.ts) | 40 | tests |  |
 | [tests/lib/self-serve-counselor-assign.spec.ts](../../../tests/lib/self-serve-counselor-assign.spec.ts) | 255 | tests |  |
 | [tests/lib/skill-mission-kit-tokens.spec.ts](../../../tests/lib/skill-mission-kit-tokens.spec.ts) | 17 | tests |  |

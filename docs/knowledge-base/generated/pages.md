@@ -393,7 +393,7 @@
 | [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | 91 | administration | generateMetadata:15, default:35 |
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
-| [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 405 | administration | dynamic:39, generateMetadata:50, default:142 |
+| [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
 | [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 677 | administration | default:634 |
 | [app/admin/invites/InvitesLegacyClient.tsx](../../../app/admin/invites/InvitesLegacyClient.tsx) | 202 | administration | default:196 |
 | [app/admin/invites/layout.tsx](../../../app/admin/invites/layout.tsx) | 14 | administration | generateMetadata:4, default:12 |
@@ -632,7 +632,7 @@
 | [app/pwa-start/page.tsx](../../../app/pwa-start/page.tsx) | 32 | pages | metadata:7, default:16 |
 | [app/q/\[token\]/PublicEligibilityForm.tsx](../../../app/q/%5Btoken%5D/PublicEligibilityForm.tsx) | 359 | pages | PublicEligibilityPrefill:24, default:89 |
 | [app/q/\[token\]/page.tsx](../../../app/q/%5Btoken%5D/page.tsx) | 145 | pages | dynamic:5, default:50 |
-| [app/r/\[code\]/route.ts](../../../app/r/%5Bcode%5D/route.ts) | 24 | pages | GET:9 |
+| [app/r/\[code\]/route.ts](../../../app/r/%5Bcode%5D/route.ts) | 26 | pages | GET:11 |
 | [app/robots.ts](../../../app/robots.ts) | 10 | pages | default:5 |
 | [app/seo.ts](../../../app/seo.ts) | 77 | pages | SITE_URL:8, DEFAULT_OG_IMAGE:9, PageSeoInputWithoutLocale:22, buildPageMetadataAsync:25, buildPageMetadata:41 |
 | [app/share/achievement/page.tsx](../../../app/share/achievement/page.tsx) | 143 | pages | dynamic:7, generateMetadata:40, default:79 |

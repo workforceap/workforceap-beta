@@ -24,6 +24,13 @@ export const CONVERSION_VALUE_USD = {
 
 export type ConversionEventName = keyof typeof CONVERSION_VALUE_USD;
 
+/**
+ * Basis of the values above. Flip to `'outcome_derived'` only when the
+ * numbers come from placement rate × average wage × retention (WAP-37).
+ * The admin growth card reads this to label every row "Estimate" until then.
+ */
+export const CONVERSION_VALUE_BASIS: 'estimate' | 'outcome_derived' = 'estimate';
+
 export function getConversionValuePayload(eventName: ConversionEventName): {
   conversion_event: ConversionEventName;
   conversion_value_usd: number;

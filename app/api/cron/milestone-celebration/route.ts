@@ -6,6 +6,7 @@ import { getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { awardPoints } from '@/lib/member/points';
+import { settlePendingReferralRewards } from '@/lib/member/referrals';
 import { TESTIMONIALS } from '@/content/testimonials';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
@@ -125,7 +126,18 @@ async function handle(_req: NextRequest) {
     }
   }
 
-  const runResult = { sent, total: completions.length, pointsAwardedCount, emailPacing: emailPacer.summary() };
+  // Referral settlement (WAP-32): pay pending member referrals whose referee
+  // was enrolled by a path that never saw the cookie (admin program assignment,
+  // invite accept, Coursera sync). Same idempotent points machinery as above.
+  let referralSettlement: Awaited<ReturnType<typeof settlePendingReferralRewards>> | { error: string };
+  try {
+    referralSettlement = await settlePendingReferralRewards();
+  } catch (error) {
+    referralSettlement = { error: error instanceof Error ? error.message : 'settlement failed' };
+    console.error('[milestone-celebration] referral settlement failed:', error);
+  }
+
+  const runResult = { sent, total: completions.length, pointsAwardedCount, referralSettlement, emailPacing: emailPacer.summary() };
   await setCronRecordsProcessed(sent);
   await logCronRun('cron_milestone_celebration', runResult);
   return NextResponse.json(runResult);

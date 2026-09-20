@@ -14,7 +14,7 @@ interface MagicLinkEmailProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.workforceap.org";
 
-export const MagicLinkEmail = ({
+const MagicLinkEmail = ({
   loginUrl = `${baseUrl}/login`,
   userEmail = "you@example.com",
 }: MagicLinkEmailProps) => {

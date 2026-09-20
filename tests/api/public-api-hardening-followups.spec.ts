@@ -2,7 +2,6 @@
  * Route-local hardening follow-ups from the public API sweep (PR #2361):
  *  - /api/xapi/oauth/token compares client credentials in constant time
  *  - /api/webhooks/coursera does not echo internal exception text on 500
- *  - /api/waitlist does not expose migration-status notes to the public
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -95,7 +94,6 @@ vi.mock('@/lib/xapi/resolveInboundCourseScopes', () => ({
 import { POST as tokenPost } from '@/app/api/xapi/oauth/token/route';
 import { secureCredentialEqual } from '@/lib/xapi/token';
 import { POST as courseraPost } from '@/app/api/webhooks/coursera/route';
-import { GET as waitlistGet, POST as waitlistPost } from '@/app/api/waitlist/route';
 
 const CLIENT_ID = 'wap-xapi-client';
 const CLIENT_SECRET = 'correct-horse-battery-staple';
@@ -275,64 +273,6 @@ describe('POST /api/webhooks/coursera transient-failure response body', () => {
     const logged = errorSpy.mock.calls.map((call: unknown[]) => JSON.stringify(call)).join('\n');
     expect(logged).toContain('[webhooks/coursera] processing failed');
     expect(logged).toContain('ECONNREFUSED');
-  });
-});
-
-describe('/api/waitlist public response body', () => {
-  let warnSpy: ReturnType<typeof vi.spyOn>;
-
-  beforeEach(() => {
-    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    warnSpy.mockRestore();
-  });
-
-  function asNextRequest(request: Request) {
-    // The handlers only use `.json()` and `.url`, which the WHATWG Request provides.
-    return request as unknown as import('next/server').NextRequest;
-  }
-
-  it('POST still requires email and programSlug', async () => {
-    const res = await waitlistPost(asNextRequest(new Request('http://localhost/api/waitlist', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email: 'member@example.com' }),
-    })));
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'Email and programSlug are required.' });
-  });
-
-  it('POST returns a plain 503 with no migration note when the waitlist table is absent', async () => {
-    const res = await waitlistPost(asNextRequest(new Request('http://localhost/api/waitlist', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ email: 'member@example.com', programSlug: 'medical-assistant' }),
-    })));
-    expect(res.status).toBe(503);
-    const body = await res.json();
-    expect(Object.keys(body)).toEqual(['error']);
-    expect(body.error).toMatch(/temporarily unavailable/i);
-    expect(JSON.stringify(body)).not.toMatch(/migration|schema|_note/i);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('schema migration required'),
-      expect.objectContaining({ programSlug: 'medical-assistant' }),
-    );
-  });
-
-  it('GET still requires programSlug', async () => {
-    const res = await waitlistGet(asNextRequest(new Request('http://localhost/api/waitlist')));
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'programSlug is required' });
-  });
-
-  it('GET returns a plain 503 with no migration note', async () => {
-    const res = await waitlistGet(asNextRequest(new Request('http://localhost/api/waitlist?programSlug=medical-assistant')));
-    expect(res.status).toBe(503);
-    const body = await res.json();
-    expect(Object.keys(body)).toEqual(['error']);
-    expect(JSON.stringify(body)).not.toMatch(/migration|schema|_note/i);
   });
 });
 

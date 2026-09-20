@@ -73,7 +73,7 @@ number change from staff, not notice it themselves.
 
 ---
 
-### TODO-006: Consolidate the five independent "at-risk" implementations
+### ~~TODO-006: Consolidate the five independent "at-risk" implementations~~ ✓ CLOSED
 
 **What:** The codebase has at least five separate, disagreeing notions of member risk:
 1. `lib/member/atRiskScoring.ts` `calculateAtRiskScore` — the real 0–100 scorer, persisted to `AtRiskAlert`, drives the counselor dashboard + digest emails.
@@ -95,6 +95,17 @@ rather than "is this member at risk," so collapsing them would lose signal, not 
 
 **Deferred because:** Touches four dashboards staff use daily; wanted the higher-value,
 lower-risk fixes (verification integrity, xAPI signal) shipped and reviewed first.
+
+**Closed:** 2026-09-20 (WAP-30). #3 (`lib/admin/commandCenter.ts` `loadAtRisk`) and #4
+(`lib/counselor/commandCenter.ts` `AtRiskRow`) read the persisted `AtRiskAlert` table since
+PR #2383, so the admin command center, counselor command center and at-risk dashboard show
+the same risk state for the same member. One scorer, one sender, one schedule: the nightly
+`/api/cron/at-risk-check` scores, persists and resolves stale alerts and sends nothing; the
+weekly `/api/cron/at-risk-alerts` (Monday 13:07 UTC — cadence confirmed by Mike 2026-09-20)
+runs `runAtRiskCounselorAlerts` on those persisted rows via `loadPersistedAtRiskScores` (no
+re-scoring; batched per counselor; members with no counselor go to `AT_RISK_DIGEST_EMAILS`)
+plus the G5 member retention nudges (#2), which stay as designed. The separate digest
+template is gone. #5 (partner pipeline staleness) is untouched, as recommended.
 
 ---
 
@@ -274,15 +285,11 @@ remove the `lib/**/*.test.ts` line from `vitest.config.ts`'s `exclude` array and
 
 ---
 
-## TODO-008: Waitlist API — enable after Prisma migration
+## ~~TODO-008: Waitlist API — enable after Prisma migration~~ ✓ CLOSED (route removed)
 
-**What:** `app/api/waitlist/route.ts` has the handler stubbed out with two `// TODO: Re-enable after Prisma schema migration` comments. The `ProgramWaitlist` model needs to be added to the Prisma schema and a migration committed.
+**What:** `app/api/waitlist/route.ts` was a stub: both handlers returned a hard-coded 503, no `ProgramWaitlist` model ever existed, nothing linked to it, and it was an unauthenticated, unrated POST in the production route tree.
 
-**Why:** Program waitlists allow members to express interest in fully-subscribed programs, enabling counselors to manage overflow.
-
-**Priority:** P3
-
-**Fix shape:** Add `ProgramWaitlist` model to `prisma/schema.prisma`, run `prisma migrate dev`, commit the migration, and remove the stub comments in the route.
+**Closed:** 2026-09-20 (WAP-37). The stub was deleted rather than enabled — a waitlist is a product decision, not a migration; when it is wanted it should be designed fresh (model, rate limit, consent copy), not resurrected from the stub.
 
 ---
 
