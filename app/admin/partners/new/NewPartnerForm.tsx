@@ -120,7 +120,7 @@ export default function NewPartnerForm({ programs }: { programs: { slug: string;
           value={slug}
           onChange={(e) => { setSlug(e.target.value); setSlugEdited(true); }}
           required
-          pattern="[a-z0-9-]+"
+          pattern="[a-z0-9\-]+"
           title="Lowercase letters, numbers, and hyphens only"
           className="admin-form-input"
           style={inputStyle}

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { collectInvalidFieldLabels, describeMissingRequired, focusFirstInvalid } from '@/lib/forms/requiredFields';
 
 type MemberRow = { id: string; fullName: string; email: string };
 
@@ -49,10 +50,17 @@ export default function CreateEmployerAccountClient() {
     setQ('');
   }
 
-  async function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!selected) {
-      setError('Search and select a user who will log in to the employer portal.');
+    // Name every blocker at once, inline, instead of the browser tooltip
+    // (audit 2026-09-20: eight fields filled, nothing sent, no message).
+    const formEl = e.currentTarget;
+    const portalUser = selected;
+    const missing = collectInvalidFieldLabels(formEl);
+    if (!portalUser) missing.unshift('Portal user (search above and select who will log in)');
+    if (!portalUser || missing.length > 0) {
+      setError(describeMissingRequired(missing, { leadIn: 'Before you can create this employer account' }));
+      if (portalUser) focusFirstInvalid(formEl);
       return;
     }
     if (!companyName.trim() || !contactName.trim() || !contactEmail.trim()) {
@@ -66,7 +74,7 @@ export default function CreateEmployerAccountClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: selected.id,
+          userId: portalUser.id,
           companyName: companyName.trim(),
           contactName: contactName.trim(),
           contactEmail: contactEmail.trim(),
@@ -101,6 +109,8 @@ export default function CreateEmployerAccountClient() {
 
       {error && (
         <div
+          id="createemployeraccountclient-error"
+          role="alert"
           style={{
             padding: '0.75rem',
             marginBottom: '1rem',
@@ -114,7 +124,7 @@ export default function CreateEmployerAccountClient() {
         </div>
       )}
 
-      <form onSubmit={submit} style={{ maxWidth: 520 }}>
+      <form onSubmit={submit} noValidate style={{ maxWidth: 520 }}>
         <div className="form-group">
           <label htmlFor="createemployeraccountclient-find-user-by-name-or-email-field">Find user by name or email</label>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -212,7 +222,7 @@ export default function CreateEmployerAccountClient() {
             disabled={saving}
           />
         </div>
-        <button type="submit" className="btn btn-primary" disabled={saving}>
+        <button type="submit" className="btn btn-primary" disabled={saving} aria-describedby={error ? 'createemployeraccountclient-error' : undefined}>
           {saving ? 'Creating…' : 'Create employer account'}
         </button>
       </form>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { collectInvalidFieldLabels, describeMissingRequired, focusFirstInvalid } from '@/lib/forms/requiredFields';
 
 type UserOpt = { id: string; fullName: string; email: string };
 type PartnerOpt = { id: string; name: string };
@@ -29,8 +30,16 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Inline summary instead of the browser tooltip (audit 2026-09-20).
+    const formEl = e.currentTarget;
+    const missing = collectInvalidFieldLabels(formEl);
+    if (missing.length > 0) {
+      setError(describeMissingRequired(missing, { leadIn: 'Before you can save this subgroup' }));
+      focusFirstInvalid(formEl);
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -71,9 +80,9 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
   const labelStyle = { display: 'block', marginBottom: '0.25rem', fontWeight: 500 } as const;
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: '560px' }}>
+    <form onSubmit={handleSubmit} noValidate style={{ maxWidth: '560px' }}>
       {error && (
-        <div style={{ padding: '0.75rem', marginBottom: '1rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', borderRadius: '6px', color: 'var(--color-accent)' }}>
+        <div id="subgroupform-error" role="alert" style={{ padding: '0.75rem', marginBottom: '1rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', borderRadius: '6px', color: 'var(--color-accent)' }}>
           {error}
         </div>
       )}
@@ -161,7 +170,7 @@ export default function SubgroupForm({ users, partners, subgroup }: Props) {
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button type="submit" className="btn btn-primary" disabled={saving} aria-busy={saving}>
+        <button type="submit" className="btn btn-primary" disabled={saving} aria-busy={saving} aria-describedby={error ? 'subgroupform-error' : undefined}>
           <span aria-live="polite" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
             {saving ? (
               <>

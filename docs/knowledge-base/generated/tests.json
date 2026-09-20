@@ -3439,6 +3439,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/auth/authProviderError.test.ts",
+    "area": "libraries",
+    "domain": "identity-tenancy",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/auth/authProviderError.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/auth/currentUserClient.test.ts",
     "area": "libraries",
     "domain": "identity-tenancy",
@@ -6452,6 +6476,30 @@
       {
         "file": "lib/feature-flags/publicApi.ts",
         "line": 9
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/forms/requiredFields.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/forms/requiredFields.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -11075,35 +11123,35 @@
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 48
+        "line": 52
       },
       {
         "file": "app/api/admin/partners/[id]/invite/route.ts",
-        "line": 65
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 66
-      },
-      {
-        "file": "lib/auth/roles.ts",
-        "line": 67
-      },
-      {
-        "file": "lib/tenant/organization.ts",
-        "line": 68
-      },
-      {
-        "file": "lib/supabase-admin.ts",
         "line": 69
       },
       {
-        "file": "lib/auth/supabaseAdminUsers.ts",
+        "file": "lib/auth/server.ts",
         "line": 70
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 71
+      },
+      {
+        "file": "lib/tenant/organization.ts",
+        "line": 72
+      },
+      {
+        "file": "lib/supabase-admin.ts",
+        "line": 73
+      },
+      {
+        "file": "lib/auth/supabaseAdminUsers.ts",
+        "line": 74
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 75
       }
     ],
     "kind": "test-candidate",
@@ -11411,6 +11459,38 @@
       {
         "file": "app/api/admin/users/route.ts",
         "line": 55
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/admin-user-create-provider-failure.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/admin/users/route.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 40
+      },
+      {
+        "file": "lib/tenant/organization.ts",
+        "line": 41
       }
     ],
     "kind": "test-candidate",
@@ -19086,6 +19166,56 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/admin-functional-audit-fixes.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "@testing-library/user-event",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/admin/InvitePartnerUserButton.tsx",
+        "line": 4
+      },
+      {
+        "file": "components/admin/AdminCounselorsClient.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/portal/sessions/WalkInSessionClient.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/admin/SubgroupForm.tsx",
+        "line": 7
+      },
+      {
+        "file": "app/admin/partners/new/NewPartnerForm.tsx",
+        "line": 8
+      },
+      {
+        "file": "components/admin/OrgWideChangeNotice.tsx",
+        "line": 9
+      },
+      {
+        "file": "components/portal/forms/RequiredFieldsHint.tsx",
+        "line": 10
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/admin-hydration-hardening.test.ts",
     "area": "tests",
     "domain": "tests",
@@ -20943,6 +21073,43 @@
       {
         "file": "messages/en.json",
         "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/staff-shell-auth-reads.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/AdminPortalShell.tsx",
+        "line": 4
+      },
+      {
+        "file": "components/portal/CounselorPortalShell.tsx",
+        "line": 5
+      },
+      {
+        "file": "lib/auth/currentUserClient.ts",
+        "line": 6
+      },
+      {
+        "file": "messages/en.json",
+        "line": 7
       }
     ],
     "kind": "test-candidate",
@@ -25052,6 +25219,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/required-fields-dom.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/forms/requiredFields.ts",
+        "line": 2
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/retention-window-evidence.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -25839,6 +26030,30 @@
     "kind": "test-helper",
     "declaredRunners": [],
     "collectionStatus": "helper-not-a-suite",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/next-config-csp-form-action.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "next.config.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {

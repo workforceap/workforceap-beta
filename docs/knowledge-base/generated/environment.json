@@ -2117,7 +2117,7 @@
         },
         {
           "file": "app/api/admin/partners/[id]/invite/route.ts",
-          "line": 121
+          "line": 127
         },
         {
           "file": "app/api/admin/partners/invite/route.ts",

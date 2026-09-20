@@ -6,6 +6,7 @@ import { isSuperAdmin, requireAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { apiError } from '@/lib/http/errorResponse';
+import { captureApiError } from '@/lib/observability/captureApiError';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope, crossTenantOK } from '@/lib/tenant/withTenantScope';
 import {
@@ -16,6 +17,11 @@ import {
 } from '@/lib/admin/adminUserProvisioning';
 import { sendPasswordResetEmail } from '@/lib/auth/passwordReset';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
+import {
+  authProviderFailureStatus,
+  classifyAuthProviderError,
+  describeAuthProviderFailure,
+} from '@/lib/auth/authProviderError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -134,7 +140,19 @@ const createSchema = z.object({
       );
     }
   
-    const supabase = getSupabaseAdmin();
+    // Provider failures are classified (duplicate / validation / unavailable)
+    // so the admin sees the reason instead of "Failed to create user." — the
+    // raw provider text is still only logged, never returned (audit 2026-09-20).
+    let supabase: ReturnType<typeof getSupabaseAdmin>;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (error) {
+      return apiError(error, {
+        route: 'admin/users/create',
+        status: 503,
+        message: describeAuthProviderFailure('unavailable', 'create'),
+      });
+    }
     const tempPassword = `WfAP!${randomUUID()}`;
   
     let authUserId: string | null = null;
@@ -148,24 +166,28 @@ const createSchema = z.object({
   
       if (!error && data.user?.id) {
         authUserId = data.user.id;
-      } else if (error?.message?.includes('already') || error?.code === 'user_already_exists') {
+      } else if (error && classifyAuthProviderError(error) === 'duplicate') {
         authUserId = (await findSupabaseAuthUserByEmail(supabase, email, { perPage: 200, maxPages: 25 }))?.id ?? null;
         if (!authUserId) {
-          return NextResponse.json({ error: 'This email already exists in auth, but could not be linked.' }, { status: 409 });
+          return NextResponse.json({ error: 'This email already exists in auth, but could not be linked.', reason: 'duplicate' }, { status: 409 });
         }
       } else if (error) {
-        // Don't echo raw Supabase error text — log to Sentry instead and
-        // return a generic message. The previous version leaked
-        // provider-specific phrasing useful for enumeration.
-        return apiError(error, {
-          route: 'admin/users/create',
-          status: 400,
-          message: 'Failed to create user.',
-        });
+        const kind = classifyAuthProviderError(error);
+        const status = authProviderFailureStatus(kind);
+        captureApiError(error, { route: 'admin/users/create', extra: { kind } });
+        return NextResponse.json(
+          { error: describeAuthProviderFailure(kind, 'create'), reason: kind },
+          { status },
+        );
       }
     } catch (error) {
+      const kind = classifyAuthProviderError(error) === 'unavailable' ? 'unavailable' : 'unknown';
       console.error('[admin/users POST] create auth user failed', error);
-      return NextResponse.json({ error: 'Failed to create auth user.' }, { status: 500 });
+      captureApiError(error, { route: 'admin/users/create', extra: { kind, thrown: true } });
+      return NextResponse.json(
+        { error: describeAuthProviderFailure(kind, 'create'), reason: kind },
+        { status: kind === 'unavailable' ? 503 : 500 },
+      );
     }
   
     if (!authUserId) {
