@@ -33,7 +33,7 @@
 | [scripts/check-migration-history.test.cjs](../../../scripts/check-migration-history.test.cjs) | 101 | operations |  |
 | [scripts/check-public-surface-icons.mjs](../../../scripts/check-public-surface-icons.mjs) | 157 | operations | ROOT:29, ENTRY_POINTS:32, ALLOWED:55, isCommentLine:65, findLigatureRenders:74, collectModules:92, check:123 |
 | [scripts/check-public-surface-icons.test.cjs](../../../scripts/check-public-surface-icons.test.cjs) | 101 | operations |  |
-| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 130 | operations |  |
+| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 134 | operations |  |
 | [scripts/clawpatch-pre-push.sh](../../../scripts/clawpatch-pre-push.sh) | 50 | operations |  |
 | [scripts/cleanup-fixtures.ts](../../../scripts/cleanup-fixtures.ts) | 46 | operations |  |
 | [scripts/coursera-integration-test.ts](../../../scripts/coursera-integration-test.ts) | 605 | learning-coursera |  |
@@ -91,7 +91,7 @@
 | [scripts/lib/portal-qa-guard.test.cjs](../../../scripts/lib/portal-qa-guard.test.cjs) | 59 | operations |  |
 | [scripts/lib/prisma-resolve-benign.cjs](../../../scripts/lib/prisma-resolve-benign.cjs) | 36 | operations | isBenignMigrateResolveError:36 |
 | [scripts/lib/runtime-pool-contract.cjs](../../../scripts/lib/runtime-pool-contract.cjs) | 35 | operations | inspectRuntimePoolContract:35 |
-| [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 86 | operations |  |
+| [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 90 | operations |  |
 | [scripts/lib/supabase-project-guard.cjs](../../../scripts/lib/supabase-project-guard.cjs) | 261 | operations | DEMO_REF:253, PROD_REF:254, assertSupabaseEnvironment:255, expectedProjectForVercelEnv:256, formatSupabaseEnvGuardFailure:257, inspectSupabaseEnvironment:258, projectForAnonKey:259, projectForUrl:260 |
 | [scripts/lint/check-coursera-catalog-placeholders.mjs](../../../scripts/lint/check-coursera-catalog-placeholders.mjs) | 204 | learning-coursera |  |
 | [scripts/lint/check-type-floor.mjs](../../../scripts/lint/check-type-floor.mjs) | 302 | operations | FLOOR_PX:39, FLOOR_REM:41, ALLOW_MARKER:42, SCAN_ROOTS:45, SCAN_EXTENSIONS:46, toPx:67, scanSource:172, listSourceFiles:217, runCheck:251 |

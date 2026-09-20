@@ -219,7 +219,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 60
+          "line": 64
         }
       ]
     },
@@ -1013,7 +1013,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 72
+          "line": 76
         },
         {
           "file": "scripts/ensure-prisma-env.cjs",
@@ -1879,7 +1879,7 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 60
+          "line": 64
         }
       ]
     },
@@ -2451,7 +2451,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 90
+          "line": 94
         },
         {
           "file": "tests/api/employer-signup.spec.ts",
@@ -2534,7 +2534,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 69
+          "line": 73
         },
         {
           "file": "scripts/create-employer-michael-brown.ts",
@@ -2816,7 +2816,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 66
+          "line": 70
         },
         {
           "file": "sentry.edge.config.ts",
@@ -3320,11 +3320,11 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 70
+          "line": 74
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 104
+          "line": 108
         },
         {
           "file": "scripts/cronq.ts",
@@ -3379,7 +3379,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 71
+          "line": 75
         },
         {
           "file": "scripts/cronq.ts",
@@ -4174,15 +4174,15 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 59
+          "line": 63
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 92
+          "line": 96
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 100
+          "line": 104
         }
       ]
     },
@@ -4464,7 +4464,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 66
+          "line": 70
         },
         {
           "file": "scripts/vercel-build.cjs",
