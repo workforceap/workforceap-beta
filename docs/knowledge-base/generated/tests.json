@@ -19734,19 +19734,27 @@
       },
       {
         "file": "app/(portal)/dashboard/program/start/page.tsx",
-        "line": 28
-      },
-      {
-        "file": "lib/auth/server.ts",
         "line": 29
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/server.ts",
         "line": 30
       },
       {
-        "file": "lib/member/getActiveProgramForDashboard.ts",
+        "file": "lib/db/prisma.ts",
         "line": 31
+      },
+      {
+        "file": "lib/content/programEnrollmentSteps.ts",
+        "line": 32
+      },
+      {
+        "file": "lib/member/getActiveProgramForDashboard.ts",
+        "line": 33
+      },
+      {
+        "file": "lib/member/memberProgramTrainingView.ts",
+        "line": 34
       }
     ],
     "kind": "test-candidate",
@@ -28178,6 +28186,58 @@
       {
         "file": "scripts/vitest-library-specs.mjs",
         "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/webhook-retries-audit-noise.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/admin/webhooks/process-retries/route.ts",
+        "line": 19
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 20
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 21
+      },
+      {
+        "file": "lib/webhooks/retry.ts",
+        "line": 22
+      },
+      {
+        "file": "app/api/admin/webhooks/process-retries/_processRetries.ts",
+        "line": 23
+      },
+      {
+        "file": "lib/audit.ts",
+        "line": 24
+      },
+      {
+        "file": "lib/audit/log.ts",
+        "line": 25
+      },
+      {
+        "file": "lib/cron/authorizeCronRequest.ts",
+        "line": 26
       }
     ],
     "kind": "test-candidate",

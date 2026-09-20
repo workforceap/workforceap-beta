@@ -6271,7 +6271,9 @@ td.admin-members-col-select {
     }
 }
 .admin-score-high {
-    color: var(--color-green);
+    /* --wa-success reads at 3.45:1 on the white table surface; the dark
+       step clears the 4.5:1 WCAG AA text floor in both colour schemes. */
+    color: var(--wa-success-dark);
     font-weight: 600;
 }
 .admin-score-mid {

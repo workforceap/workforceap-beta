@@ -223,7 +223,7 @@
 | [app/(portal)/dashboard/program/employer-screening/page.tsx](../../../app/%28portal%29/dashboard/program/employer-screening/page.tsx) | 140 | member-counselor | metadata:13, default:21 |
 | [app/(portal)/dashboard/program/loading.tsx](../../../app/%28portal%29/dashboard/program/loading.tsx) | 6 | member-counselor | default:3 |
 | [app/(portal)/dashboard/program/page.tsx](../../../app/%28portal%29/dashboard/program/page.tsx) | 426 | member-counselor | generateMetadata:35, default:44 |
-| [app/(portal)/dashboard/program/start/page.tsx](../../../app/%28portal%29/dashboard/program/start/page.tsx) | 181 | member-counselor | metadata:15, default:21 |
+| [app/(portal)/dashboard/program/start/page.tsx](../../../app/%28portal%29/dashboard/program/start/page.tsx) | 242 | member-counselor | metadata:17, default:23 |
 | [app/(portal)/dashboard/readiness/ReadinessMemberClient.tsx](../../../app/%28portal%29/dashboard/readiness/ReadinessMemberClient.tsx) | 152 | member-counselor | default:35 |
 | [app/(portal)/dashboard/readiness/loading.tsx](../../../app/%28portal%29/dashboard/readiness/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/dashboard/readiness/page.tsx](../../../app/%28portal%29/dashboard/readiness/page.tsx) | 209 | member-counselor | generateMetadata:21, default:37 |
