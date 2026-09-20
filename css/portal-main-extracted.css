@@ -2165,7 +2165,8 @@ html.dark .workspace-sidebar-group-label {
     color: #991b1b;
 }
 html.dark .workspace-sidebar-signout {
-    border-color: rgba(248, 113, 113, 0.35);
+    /* WAP-145 dark: a 35% tint measured 1.84:1 against the rail; the solid danger token clears 3:1. */
+    border-color: var(--wa-danger);
     background: rgba(248, 113, 113, 0.1);
     color: #fecaca;
 }

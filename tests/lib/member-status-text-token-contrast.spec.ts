@@ -101,3 +101,45 @@ describe('member surfaces paint small status text with the -dark text tokens', (
     expect(read('css/portal-kit.css')).toContain('.wa-kit-training-success { color: var(--wa-success-dark); }');
   });
 });
+
+/** Constant (non light-dark) brand token. */
+function constantToken(token: string): string {
+  const m = tokensCss.match(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{6});`));
+  expect(m, `${token} must be a constant hex in the brand token layer`).not.toBeNull();
+  return m![1];
+}
+
+describe('solid-accent controls and hero actions clear AA in dark mode (WAP-145 / WAP-154)', () => {
+  it('--wa-on-accent-control on --wa-accent (icon-only send / camera buttons)', () => {
+    const fg = lightDark('--wa-on-accent-control');
+    const bg = lightDark('--wa-accent');
+    for (const mode of ['light', 'dark'] as const) {
+      expect(ratio(fg[mode], bg[mode], bg[mode]), `on-accent-control ${mode}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('hero action pair stays readable in both themes (home "Do this next" pill)', () => {
+    const bg = constantToken('--wa-hero-action-bg');
+    const fg = constantToken('--wa-hero-action-text');
+    expect(ratio(fg, bg, bg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('call sites read the adaptive pairs', () => {
+    expect(read('components/portal/kit/ChatThread.tsx')).toContain("background: 'var(--wa-accent)',\n            color: 'var(--wa-on-accent-control)',");
+    expect(read('components/portal/kit/MemberProfilePhotoEditor.tsx')).toContain("background: 'var(--wa-accent)',\n              color: 'var(--wa-on-accent-control)',");
+    const card = read('components/portal/MemberDoThisNextCard.tsx');
+    expect(card).not.toMatch(/background: 'var\(--wa-on-accent\)',\s*\n\s*color: 'var\(--wa-accent\)'/);
+    expect(card.match(/background: 'var\(--wa-hero-action-bg\)',\s*\n\s*color: 'var\(--wa-hero-action-text\)'/g)?.length).toBe(2);
+  });
+
+  it('legacy .btn family keeps its labels and borders readable in dark mode', () => {
+    const main = read('css/main.css');
+    const primary = main.match(/\.btn-primary,\s*\na\.btn-primary,\s*\nbutton\.btn-primary \{[^}]*\}/)?.[0] ?? '';
+    expect(primary).toContain('color: var(--wa-on-accent);');
+    expect(primary).not.toContain('color: var(--color-white);');
+    const outlineDark = main.match(/html\.dark \.btn-outline,\s*\nhtml\.dark \.btn-secondary \{[^}]*\}/)?.[0] ?? '';
+    expect(outlineDark).toContain('border-color: var(--wa-control-border');
+    const signout = read('css/portal-main-extracted.css').match(/html\.dark \.workspace-sidebar-signout \{[^}]*\}/)?.[0] ?? '';
+    expect(signout).toContain('border-color: var(--wa-danger);');
+  });
+});
