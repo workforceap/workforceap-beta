@@ -95288,46 +95288,6 @@
     "target": "lib/attention/rules.ts"
   },
   {
-    "from": "lib/attention/index.ts",
-    "specifier": "./reasons",
-    "line": 9,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/reasons.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./rules",
-    "line": 10,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/rules.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./evaluate",
-    "line": 11,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/evaluate.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./counselorViews",
-    "line": 12,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/counselorViews.ts"
-  },
-  {
-    "from": "lib/attention/index.ts",
-    "specifier": "./adminViews",
-    "line": 13,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/attention/adminViews.ts"
-  },
-  {
     "from": "lib/attention/loadFacts.ts",
     "specifier": "@/lib/db/prisma",
     "line": 14,

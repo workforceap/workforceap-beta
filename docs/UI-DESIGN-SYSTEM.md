@@ -49,7 +49,7 @@ These routes use the same **`DataTable`** + **`SectionHeader`** + **`PortalEmpty
 | Counselor | `app/(portal)/counselor/placements/page.tsx`, `inactive-members/page.tsx` |
 | Employer | `components/employer/EmployerApplicationsClient.tsx` (expandable chat via `renderSubRow`), `EmployerMatchHistoryClient.tsx` |
 
-Forms on placements use **`FormField`** / **`TextInput`** / **`TextArea`** from `components/portal/ui/FormField.tsx`.
+Forms on placements use **`FormField`** (and **`Toggle`**) from `components/portal/kit/FormField.tsx`, re-exported through `@/components/portal/kit`.
 
 ---
 
@@ -161,7 +161,6 @@ After this PR lands, these are the next files to migrate. Each has multiple inli
 | `components/admin/EmailCronsClient.tsx` | 838 | 2 |
 | `components/admin/AdminSuperMessagesClient.tsx` | 780 | 1–2 |
 | `components/admin/BoardOutcomesView.tsx` | 463 | 4–5 |
-| `components/portal/ApplicationTrackerTable.tsx` | 534 | 1 (the entire file is the table) |
 | `components/portal/AiResultRenderer.tsx` | 629 | varies |
 
 ---
