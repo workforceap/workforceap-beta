@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 interface ContactInfoCardProps {
   icon: string;
@@ -23,9 +24,7 @@ export function ContactInfoCard({ icon, title, accentColor = 'var(--color-accent
           flexShrink: 0,
         }}
       >
-        <span className="material-symbols-outlined" aria-hidden="true">
-          {icon}
-        </span>
+        <LegacyGlyph name={icon} size={24} style={{ display: 'block' }} />
       </div>
       <div>
         <p style={{ fontWeight: 700, fontSize: '1rem', margin: '0 0 0.25rem', color: 'var(--color-on-surface)' }}>

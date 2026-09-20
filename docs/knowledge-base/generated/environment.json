@@ -1900,7 +1900,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 25
+          "line": 26
         },
         {
           "file": "app/api/apply/signup/route.test.ts",
@@ -1932,7 +1932,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 29
+          "line": 31
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",
@@ -1944,7 +1944,7 @@
         },
         {
           "file": "app/employers/signup/page.tsx",
-          "line": 14
+          "line": 15
         },
         {
           "file": "components/partner/PartnerSignupForm.tsx",
@@ -2522,7 +2522,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 26
+          "line": 27
         },
         {
           "file": "app/api/apply/signup/route.ts",
@@ -2550,7 +2550,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 30
+          "line": 32
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",
@@ -2562,7 +2562,7 @@
         },
         {
           "file": "app/employers/signup/page.tsx",
-          "line": 15
+          "line": 16
         },
         {
           "file": "components/partner/PartnerSignupForm.tsx",
@@ -2689,7 +2689,7 @@
         },
         {
           "file": "components/error/RouteErrorFallback.tsx",
-          "line": 126
+          "line": 127
         },
         {
           "file": "components/onboarding/PortalEntryClient.tsx",

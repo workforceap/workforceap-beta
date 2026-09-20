@@ -222,7 +222,8 @@ export default function PaidApplyVariant({ utmSource, stepNav, mobileTrustBar, p
         }
 
         .paid-apply-proof__badge-icon {
-          font-size: 1.5rem;
+          width: 1.5rem;
+          height: 1.5rem;
           color: var(--color-green);
           flex-shrink: 0;
           margin-top: 2px;

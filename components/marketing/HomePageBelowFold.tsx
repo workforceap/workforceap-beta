@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import { BadgeCheck, Building2, CircleCheck, Clock, Handshake, User } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import LocalizedLinkServer from '@/components/LocalizedLinkServer';
 import { MARKETING_JOURNEY_STEPS, type MarketingJourneyStep } from '@/lib/content/marketingJourneySteps';
 import { getProgramExtra } from '@/lib/content/programExtras';
@@ -196,15 +198,11 @@ export default async function HomePageBelowFold({
                       fontWeight: 600,
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">
-                      schedule
-                    </span>
+                    <Clock size={14} aria-hidden="true" />
                     {p.duration ?? p.static?.duration ?? '3-5 months'}
                   </span>
                   <span className="marketing-cert-badge">
-                    <span className="material-symbols-outlined" style={{ fontSize: '0.875rem' }} aria-hidden="true">
-                      verified
-                    </span>
+                    <BadgeCheck size={14} aria-hidden="true" />
                     {t('programsCertBadge')}
                   </span>
                 </div>
@@ -277,18 +275,11 @@ export default async function HomePageBelowFold({
                     border: '1px solid rgba(0,0,0,0.06)',
                   }}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: '1.25rem',
-                      color: 'var(--color-accent)',
-                      flexShrink: 0,
-                      marginTop: '0.05rem',
-                    }}
-                    aria-hidden="true"
-                  >
-                    {row.icon}
-                  </span>
+                  <LegacyGlyph
+                    name={row.icon}
+                    size={20}
+                    style={{ color: 'var(--color-accent)', flexShrink: 0, marginTop: '0.05rem' }}
+                  />
                   <p
                     style={{
                       margin: 0,
@@ -379,34 +370,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  person
-                </span>
+                <User size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('memberCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardNoCost')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardCount')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardResume')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
                   {t('memberCardJobs')}
                 </li>
               </ul>
@@ -434,34 +415,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  handshake
-                </span>
+                <Handshake size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('partnerCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardSharing')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardRefer')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardImpact')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-blue, #2b7bb9)' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} aria-hidden="true" style={{ color: 'var(--color-blue, #2b7bb9)', flexShrink: 0 }} />
                   {t('partnerCardSystem')}
                 </li>
               </ul>
@@ -489,34 +460,24 @@ export default async function HomePageBelowFold({
                   marginBottom: '1.5rem',
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  business
-                </span>
+                <Building2 size={24} aria-hidden="true" />
               </div>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('employerCardTitle')}</h3>
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardCandidates')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardTraining')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardBenefit')}
                 </li>
                 <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                  <span className="material-symbols-outlined marketing-chip-text--gold" style={{ fontSize: '1rem' }} aria-hidden="true">
-                    check_circle
-                  </span>
+                  <CircleCheck size={16} className="marketing-chip-text--gold" aria-hidden="true" style={{ flexShrink: 0 }} />
                   {t('employerCardGrads')}
                 </li>
               </ul>

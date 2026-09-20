@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import LocalizedLink from '@/components/LocalizedLink';
 import { Suspense } from 'react';
+import { Check } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { buildPageMetadataAsync } from '@/app/seo';
 import Footer from '@/components/Footer';
 import MobileBottomNav from '@/components/MobileBottomNav';
@@ -101,7 +103,7 @@ export default async function ApplyConfirmationPage({ searchParams }: PageProps)
           <div className="apply-confirmation-shell afd-confirm__shell">
             <div className="afd-confirm__hero">
               <div className="afd-confirm__badge" aria-hidden="true">
-                <span className="material-symbols-outlined">check</span>
+                <Check size={44} strokeWidth={2.5} />
               </div>
               <h1 className="text-display-sm afd-confirm__title">{t('confirmationHeroTitle')}</h1>
               <p className="afd-confirm__lead">{tKey('confirmationHeroLead', 'confirmationSchoolHeroLead')}</p>
@@ -128,10 +130,10 @@ export default async function ApplyConfirmationPage({ searchParams }: PageProps)
                 <h2>{t('confirmationSignedInTitle')}</h2>
                 <p className="afd-confirm__recommend-body">{t('confirmationSignedInBody')}</p>
                 <div className="afd-confirm__recommend-actions">
-                  <LocalizedLink href="/dashboard" className="btn btn-primary mdx-btn mdx-btn--primary">
+                  <LocalizedLink href="/dashboard" className="btn btn-primary">
                     {t('confirmationOpenDashboard')}
                   </LocalizedLink>
-                  <LocalizedLink href="/apply/status" className="btn btn-outline mdx-btn mdx-btn--ghost">
+                  <LocalizedLink href="/apply/status" className="btn btn-secondary">
                     {t('confirmationCheckStatusShort')}
                   </LocalizedLink>
                 </div>
@@ -196,9 +198,7 @@ export default async function ApplyConfirmationPage({ searchParams }: PageProps)
                 {trustSignals.map((item) => (
                   <div key={item.title} className="afd-confirm__trust-card">
                     <div className="afd-confirm__trust-head">
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        {item.icon}
-                      </span>
+                      <LegacyGlyph name={item.icon} size={18} />
                       <p>{item.title}</p>
                     </div>
                     <p>{item.desc}</p>
@@ -241,13 +241,13 @@ export default async function ApplyConfirmationPage({ searchParams }: PageProps)
             </section>
 
             <div className="afd-confirm__foot-actions">
-              <LocalizedLink href="/apply/status" className="btn btn-outline mdx-btn mdx-btn--ghost">
+              <LocalizedLink href="/apply/status" className="btn btn-secondary">
                 {t('confirmationCtaStatus')}
               </LocalizedLink>
-              <LocalizedLink href="/programs" className="btn btn-outline mdx-btn mdx-btn--ghost">
+              <LocalizedLink href="/programs" className="btn btn-secondary">
                 {t('confirmationCtaPrograms')}
               </LocalizedLink>
-              <LocalizedLink href="/" className="btn btn-muted mdx-btn mdx-btn--ghost">
+              <LocalizedLink href="/" className="btn btn-secondary">
                 {t('confirmationCtaHome')}
               </LocalizedLink>
             </div>
