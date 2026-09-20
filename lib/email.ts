@@ -42,6 +42,12 @@ import {
   schoolEnrollmentParentAckHtml,
   schoolEnrollmentPartnerAckHtml,
   applicantFollowupHtml,
+  applicantChaseHtml,
+  APPLICANT_CHASE_SUBJECT,
+  APPLICANT_CHASE_TITLE,
+  type ApplicantChaseStage,
+  applicantAgingDigestHtml,
+  type ApplicantAgingDigestParams,
   adminPendingApplicantsHtml,
   adminWeeklyRecapHtml,
   enrollmentConfirmationHtml,
@@ -532,6 +538,7 @@ export async function sendEnrollmentConfirmationEmail(params: {
       to: params.to,
       subject,
       html,
+      template: { name: 'enrollment_confirmation', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -711,6 +718,7 @@ export async function sendApplicationAcceptedEmail(params: {
       to: params.to,
       subject,
       html,
+      template: { name: 'application_accepted', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -745,6 +753,7 @@ export async function sendApplicationRejectedEmail(params: {
       to: params.to,
       subject: 'WorkforceAP Application Update',
       html,
+      template: { name: 'application_rejected', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -864,6 +873,7 @@ export async function sendCourseEnrolledEmail(params: {
       to: params.to,
       subject: sanitizeEmailSubjectLine(`Your ${params.programName} program selection is saved`),
       html,
+      template: { name: 'course_enrolled', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -905,6 +915,7 @@ export async function sendCourseKickoffEmail(params: {
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
+      template: { name: 'course_kickoff', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -1904,6 +1915,7 @@ export async function sendApplicantFollowupEmail(params: {
       to: params.to,
       subject: 'Your WorkforceAP Application is Being Reviewed',
       html,
+      template: { name: 'applicant_followup', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -1936,6 +1948,7 @@ export async function sendAdminPendingApplicantsEmail(params: {
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`Action Needed: ${params.pendingCount} pending applications over 3 days old`),
       html,
+      template: { name: 'admin_pending_applicants', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -1943,6 +1956,88 @@ export async function sendAdminPendingApplicantsEmail(params: {
       return { ok: false, skipped: true, error: err.reason };
     }
     console.error('sendAdminPendingApplicantsEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/**
+ * Day-10 / Day-20 applicant chase (WAP-167). The cron owns idempotency (one
+ * send per application per stage, recorded as an `application_reminder_sent`
+ * MemberEvent); this wrapper only renders and sends.
+ */
+export async function sendApplicantChaseEmail(params: {
+  to: string;
+  fullName: string;
+  stage: ApplicantChaseStage;
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendApplicantChaseEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const first = params.fullName.trim().split(/\s+/)[0] || 'there';
+  const html = brandedEmailLayout({
+    title: APPLICANT_CHASE_TITLE[params.stage],
+    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, dashboardUrl: `${SITE_URL}/dashboard` }),
+    ctaText: 'Open my dashboard',
+    ctaUrl: `${SITE_URL}/dashboard`,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      to: params.to,
+      subject: APPLICANT_CHASE_SUBJECT[params.stage],
+      html,
+      template: { name: 'applicant_chase', params: { ...params } },
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendApplicantChaseEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/** Weekly staff digest: pending applications by age bucket, oldest first (WAP-167). */
+export async function sendApplicantAgingDigestEmail(params: ApplicantAgingDigestParams & {
+  to: string[];
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendApplicantAgingDigestEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const recipients = Array.from(
+    new Set(params.to.map((email) => email.trim().toLowerCase()).filter(Boolean))
+  );
+  if (recipients.length === 0) {
+    return { ok: false, error: 'No recipients configured' };
+  }
+  const { to: _to, ...digest } = params;
+  const html = brandedEmailLayout({
+    title: `${params.total} application${params.total === 1 ? '' : 's'} waiting for review`,
+    bodyHtml: applicantAgingDigestHtml(digest),
+    ctaText: 'Open the review queue',
+    ctaUrl: params.queueLink,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      to: recipients,
+      subject: sanitizeEmailSubjectLine(
+        `Aging applications: ${params.total} waiting, oldest ${params.oldest[0]?.daysWaiting ?? 0} days`
+      ),
+      html,
+      template: { name: 'applicant_aging_digest', params: { ...params } },
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendApplicantAgingDigestEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
   }
 }

@@ -19248,6 +19248,38 @@
     "target": "components/portal/kit/pages/admin-subviews/DiagnosticsKit.tsx"
   },
   {
+    "from": "app/admin/diagnostics/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EmailFailuresPanel",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx"
+  },
+  {
+    "from": "app/admin/diagnostics/page.tsx",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "app/admin/diagnostics/page.tsx",
+    "specifier": "@/lib/email/failureAlert",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureAlert.ts"
+  },
+  {
+    "from": "app/admin/diagnostics/page.tsx",
+    "specifier": "@/lib/email/resendRegistry",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendRegistry.ts"
+  },
+  {
     "from": "app/admin/email-crons/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -31139,6 +31171,78 @@
     "from": "app/api/admin/email-crons/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/email/resendRegistry",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendRegistry.ts"
+  },
+  {
+    "from": "app/api/admin/email-failures/[id]/resend/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -47488,6 +47592,70 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/email",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/admin/logCronRun",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/logCronRun.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/cron/withCronLogging",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/withCronLogging.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/cron/cronExecution",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/cronExecution.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-aging-digest/route.ts",
+    "specifier": "@/lib/cron/applicantAging",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/applicantAging.ts"
+  },
+  {
     "from": "app/api/cron/applicant-followup/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -47545,8 +47713,32 @@
   },
   {
     "from": "app/api/cron/applicant-followup/route.ts",
-    "specifier": "@/lib/email/pacing",
+    "specifier": "@/lib/events/track",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-followup/route.ts",
+    "specifier": "@/lib/events/names",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-followup/route.ts",
+    "specifier": "@/lib/cron/applicantChase",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/applicantChase.ts"
+  },
+  {
+    "from": "app/api/cron/applicant-followup/route.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -49134,6 +49326,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
+  },
+  {
+    "from": "app/api/cron/verification/route.ts",
+    "specifier": "@/lib/email/failureAlert",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureAlert.ts"
   },
   {
     "from": "app/api/cron/weekly-recap-email/route.ts",
@@ -83752,6 +83952,38 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx",
+    "specifier": "@astryxdesign/core/Card",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "components/portal/kit/pages/admin-subviews/EmailTemplatesKit.tsx",
     "specifier": "lucide-react",
     "line": 3,
@@ -89008,6 +89240,22 @@
     "target": "lib/email/escapeHtml.ts"
   },
   {
+    "from": "emails/applicant-aging-digest.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "emails/applicant-chase.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
     "from": "emails/applicant-followup.ts",
     "specifier": "@/lib/email/escapeHtml",
     "line": 11,
@@ -89649,8 +89897,24 @@
   },
   {
     "from": "emails/index.ts",
-    "specifier": "./admin-pending-applicants",
+    "specifier": "./applicant-chase",
     "line": 33,
+    "kind": "re-export",
+    "external": false,
+    "target": "emails/applicant-chase.ts"
+  },
+  {
+    "from": "emails/index.ts",
+    "specifier": "./applicant-aging-digest",
+    "line": 39,
+    "kind": "re-export",
+    "external": false,
+    "target": "emails/applicant-aging-digest.ts"
+  },
+  {
+    "from": "emails/index.ts",
+    "specifier": "./admin-pending-applicants",
+    "line": 45,
     "kind": "re-export",
     "external": false,
     "target": "emails/admin-pending-applicants.ts"
@@ -89658,7 +89922,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./admin-weekly-recap",
-    "line": 34,
+    "line": 46,
     "kind": "re-export",
     "external": false,
     "target": "emails/admin-weekly-recap.ts"
@@ -89666,7 +89930,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./partner-weekly-digest",
-    "line": 35,
+    "line": 47,
     "kind": "re-export",
     "external": false,
     "target": "emails/partner-weekly-digest.ts"
@@ -89674,7 +89938,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./onboarding-stalls-digest",
-    "line": 36,
+    "line": 48,
     "kind": "re-export",
     "external": false,
     "target": "emails/onboarding-stalls-digest.ts"
@@ -89682,7 +89946,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./counselor-at-risk-alert",
-    "line": 37,
+    "line": 49,
     "kind": "re-export",
     "external": false,
     "target": "emails/counselor-at-risk-alert.ts"
@@ -89690,7 +89954,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./placement-survey",
-    "line": 38,
+    "line": 50,
     "kind": "re-export",
     "external": false,
     "target": "emails/placement-survey.ts"
@@ -89698,7 +89962,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./counselor-assigned",
-    "line": 39,
+    "line": 51,
     "kind": "re-export",
     "external": false,
     "target": "emails/counselor-assigned.ts"
@@ -89706,7 +89970,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./partner-referral-invite",
-    "line": 40,
+    "line": 52,
     "kind": "re-export",
     "external": false,
     "target": "emails/partner-referral-invite.ts"
@@ -89714,7 +89978,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-welcome",
-    "line": 41,
+    "line": 53,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-welcome.ts"
@@ -89722,7 +89986,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-verify-email",
-    "line": 42,
+    "line": 54,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-verify-email.ts"
@@ -89730,7 +89994,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-signup-admin-alert",
-    "line": 43,
+    "line": 55,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-signup-admin-alert.ts"
@@ -89738,7 +90002,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-approved",
-    "line": 44,
+    "line": 56,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-approved.ts"
@@ -89746,7 +90010,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-rejected",
-    "line": 45,
+    "line": 57,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-rejected.ts"
@@ -89754,7 +90018,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./wioa-report",
-    "line": 46,
+    "line": 58,
     "kind": "re-export",
     "external": false,
     "target": "emails/wioa-report.ts"
@@ -89762,7 +90026,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-check-in",
-    "line": 47,
+    "line": 59,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-check-in.ts"
@@ -89770,7 +90034,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-come-back",
-    "line": 48,
+    "line": 60,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-come-back.ts"
@@ -89778,7 +90042,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./member-stuck",
-    "line": 49,
+    "line": 61,
     "kind": "re-export",
     "external": false,
     "target": "emails/member-stuck.ts"
@@ -89786,7 +90050,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./job-alert-digest",
-    "line": 50,
+    "line": 62,
     "kind": "re-export",
     "external": false,
     "target": "emails/job-alert-digest.ts"
@@ -89794,7 +90058,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./employer-pending-applicants",
-    "line": 51,
+    "line": 63,
     "kind": "re-export",
     "external": false,
     "target": "emails/employer-pending-applicants.ts"
@@ -89802,7 +90066,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./admin-stale-applicants-digest",
-    "line": 52,
+    "line": 64,
     "kind": "re-export",
     "external": false,
     "target": "emails/admin-stale-applicants-digest.ts"
@@ -89810,7 +90074,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./job-expiry",
-    "line": 53,
+    "line": 65,
     "kind": "re-export",
     "external": false,
     "target": "emails/job-expiry.ts"
@@ -89818,7 +90082,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./school-enrollment-parent-ack",
-    "line": 54,
+    "line": 66,
     "kind": "re-export",
     "external": false,
     "target": "emails/school-enrollment-parent-ack.ts"
@@ -89826,7 +90090,7 @@
   {
     "from": "emails/index.ts",
     "specifier": "./school-enrollment-partner-ack",
-    "line": 55,
+    "line": 67,
     "kind": "re-export",
     "external": false,
     "target": "emails/school-enrollment-partner-ack.ts"
@@ -101416,6 +101680,14 @@
     "package": "crypto"
   },
   {
+    "from": "lib/cron/applicantChase.ts",
+    "specifier": "@/lib/events/names",
+    "line": 14,
+    "kind": "type",
+    "external": false,
+    "target": "lib/events/names.ts"
+  },
+  {
     "from": "lib/cron/at-risk-alerts.ts",
     "specifier": "@/lib/db/prisma",
     "line": 20,
@@ -102706,7 +102978,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/invitations/loginCode",
-    "line": 72,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "lib/invitations/loginCode.ts"
@@ -102784,6 +103056,62 @@
     "target": "lib/email/escapeHtml.ts"
   },
   {
+    "from": "lib/email/failureAlert.ts",
+    "specifier": "@prisma/client",
+    "line": 9,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/email/failureAlert.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/email/failureAlert.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/failureAlert.ts",
+    "specifier": "@/lib/notify/discord",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "lib/email/failureAlert.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "lib/email/failureRecord.ts",
+    "specifier": "node:crypto",
+    "line": 17,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/email/failureRecord.ts",
+    "specifier": "@/lib/email/rateLimitError",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/rateLimitError.ts"
+  },
+  {
     "from": "lib/email/pacing.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -102830,6 +103158,14 @@
     "kind": "import",
     "external": true,
     "package": "node:async_hooks"
+  },
+  {
+    "from": "lib/email/resendRegistry.ts",
+    "specifier": "@/lib/email",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
   },
   {
     "from": "lib/email/send.test.ts",
@@ -102969,8 +103305,16 @@
   },
   {
     "from": "lib/email/send.ts",
-    "specifier": "@/lib/email/unsubscribeToken",
+    "specifier": "@/lib/email/failureRecord",
     "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/unsubscribeToken",
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/email/unsubscribeToken.ts"
@@ -102978,10 +103322,26 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 28,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/rateLimitError",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/rateLimitError.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/rateLimitError",
+    "line": 37,
+    "kind": "re-export",
+    "external": false,
+    "target": "lib/email/rateLimitError.ts"
   },
   {
     "from": "lib/email/template.ts",
@@ -130736,6 +131096,30 @@
     "target": "lib/coursera/provisioningState.ts"
   },
   {
+    "from": "tests/components/email-failures-panel.spec.tsx",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/email-failures-panel.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/email-failures-panel.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EmailFailuresPanel",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmailFailuresPanel.tsx"
+  },
+  {
     "from": "tests/components/employer-action-connection-failure.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 13,
@@ -133272,6 +133656,126 @@
     "package": "next"
   },
   {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/app/api/cron/applicant-aging-digest/route",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/applicant-aging-digest/route.ts"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/lib/cron/cronExecution",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/cronExecution.ts"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/lib/cron/applicantAging",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/applicantAging.ts"
+  },
+  {
+    "from": "tests/cron/applicant-aging-digest.spec.ts",
+    "specifier": "@/emails/applicant-aging-digest",
+    "line": 30,
+    "kind": "import",
+    "external": false,
+    "target": "emails/applicant-aging-digest.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/app/api/cron/applicant-followup/route",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/applicant-followup/route.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/lib/cron/applicantChase",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/applicantChase.ts"
+  },
+  {
+    "from": "tests/cron/applicant-chase.spec.ts",
+    "specifier": "@/emails/applicant-chase",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "emails/applicant-chase.ts"
+  },
+  {
     "from": "tests/e2e/admin-login-search.spec.ts",
     "specifier": "@playwright/test",
     "line": 1,
@@ -133750,6 +134254,158 @@
     "kind": "import",
     "external": true,
     "package": "@playwright/test"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "@/lib/notify/discord",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "@/lib/email/failureAlert",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureAlert.ts"
+  },
+  {
+    "from": "tests/email/failure-alert.spec.ts",
+    "specifier": "@/app/api/cron/verification/route",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/verification/route.ts"
+  },
+  {
+    "from": "tests/email/failure-record.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/email/failure-record.spec.ts",
+    "specifier": "resend",
+    "line": 7,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "tests/email/failure-record.spec.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "tests/email/failure-record.spec.ts",
+    "specifier": "@/lib/email/send",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "tests/email/failure-record.spec.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/app/api/admin/email-failures/[id]/resend/route",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/admin/email-failures/[id]/resend/route.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 36,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/audit",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/email/resend-route.spec.ts",
+    "specifier": "@/lib/email/resendRegistry",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendRegistry.ts"
   },
   {
     "from": "tests/find-your-path-recommendations.test.ts",

@@ -34,6 +34,8 @@ export interface DiagnosticsKitProps {
   note: string;
   /** Optional caption (e.g. measurement window) shown under the note. */
   noteCaption?: string;
+  /** Extra measured sections rendered between the tiles and the note (e.g. failed sends). */
+  children?: ReactNode;
 }
 
 const ICONS: Record<DiagnosticTile['iconKey'], ReactNode> = {
@@ -53,7 +55,7 @@ const TONE_SWATCH: Record<DiagnosticTone, { bg: string; fg: string }> = {
   muted: { bg: 'var(--wa-surface-2, rgba(0,0,0,0.05))', fg: 'var(--wa-muted)' },
 };
 
-export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps) {
+export function DiagnosticsKit({ tiles, note, noteCaption, children }: DiagnosticsKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5" title="Diagnostics" lede="Live system diagnostics" kicker="System" />
@@ -115,6 +117,8 @@ export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps
           );
         })}
       </div>
+
+      {children}
 
       <Card>
         <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--wa-text)', margin: 0 }}>{note}</p>

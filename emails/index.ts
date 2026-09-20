@@ -30,6 +30,18 @@ export { eligibilityScreeningSummaryHtml } from './eligibility-screening-summary
 export { eligibilityScreeningConfirmationHtml } from './eligibility-screening-confirmation';
 export { eligibilityScreeningAdminAlertHtml } from './eligibility-screening-admin-alert';
 export { applicantFollowupHtml } from './applicant-followup';
+export {
+  applicantChaseHtml,
+  APPLICANT_CHASE_SUBJECT,
+  APPLICANT_CHASE_TITLE,
+  type ApplicantChaseStage,
+} from './applicant-chase';
+export {
+  applicantAgingDigestHtml,
+  type ApplicantAgingBucket,
+  type ApplicantAgingDigestParams,
+  type ApplicantAgingNamedRow,
+} from './applicant-aging-digest';
 export { adminPendingApplicantsHtml } from './admin-pending-applicants';
 export { adminWeeklyRecapHtml } from './admin-weekly-recap';
 export { partnerWeeklyDigestHtml } from './partner-weekly-digest';

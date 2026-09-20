@@ -264,6 +264,7 @@
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
 | [tests/components/coursera-provisioning-queue-last-activity.spec.tsx](../../../tests/components/coursera-provisioning-queue-last-activity.spec.tsx) | 134 | learning-coursera |  |
+| [tests/components/email-failures-panel.spec.tsx](../../../tests/components/email-failures-panel.spec.tsx) | 86 | communications |  |
 | [tests/components/employer-action-connection-failure.spec.tsx](../../../tests/components/employer-action-connection-failure.spec.tsx) | 154 | tests |  |
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
@@ -316,6 +317,8 @@
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
 | [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
+| [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
+| [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -349,6 +352,9 @@
 | [tests/e2e/sprint-p2-xapi-coursera-smoke.spec.ts](../../../tests/e2e/sprint-p2-xapi-coursera-smoke.spec.ts) | 81 | learning-coursera |  |
 | [tests/e2e/visual-regression-smoke.spec.ts](../../../tests/e2e/visual-regression-smoke.spec.ts) | 144 | tests |  |
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
+| [tests/email/failure-alert.spec.ts](../../../tests/email/failure-alert.spec.ts) | 99 | communications |  |
+| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 157 | communications |  |
+| [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 196 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
 | [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |

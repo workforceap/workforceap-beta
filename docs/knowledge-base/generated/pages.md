@@ -376,7 +376,7 @@
 | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 509 | member-counselor | default:191 |
 | [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 144 | administration | generateMetadata:12, default:82 |
 | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 508 | administration | generateMetadata:18, default:171 |
+| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 565 | administration | generateMetadata:28, default:203 |
 | [app/admin/email-crons/page.tsx](../../../app/admin/email-crons/page.tsx) | 195 | communications | generateMetadata:18, default:40 |
 | [app/admin/email-templates/loading.tsx](../../../app/admin/email-templates/loading.tsx) | 5 | communications | default:3 |
 | [app/admin/email-templates/page.tsx](../../../app/admin/email-templates/page.tsx) | 115 | communications | generateMetadata:16, default:32 |
