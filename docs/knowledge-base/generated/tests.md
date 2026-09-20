@@ -329,6 +329,7 @@
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
 | [tests/hello.txt](../../../tests/hello.txt) | 1 | tests |  |
 | [tests/instrumentation-client-hydration-filter.test.ts](../../../tests/instrumentation-client-hydration-filter.test.ts) | 13 | tests |  |
+| [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 76 | tests |  |
 | [tests/lib/admin-job-match-prisma-scope.spec.ts](../../../tests/lib/admin-job-match-prisma-scope.spec.ts) | 65 | tests |  |
 | [tests/lib/admin-post-commit-notifications.spec.ts](../../../tests/lib/admin-post-commit-notifications.spec.ts) | 30 | communications |  |
 | [tests/lib/admin-user-provisioning-tenant-race.spec.ts](../../../tests/lib/admin-user-provisioning-tenant-race.spec.ts) | 145 | tests |  |
