@@ -10,6 +10,7 @@ Fast, stable smoke tests for critical public user flows. Run these before deploy
 | `smoke/login.spec.ts` | Login page loads, form fields render, links to signup/recovery |
 | `smoke/programs.spec.ts` | Programs catalog loads, cards visible, apply CTA present |
 | `smoke/apply.spec.ts` | Apply page loads, form area + sidebar render |
+| `partner-signup-viewports.spec.ts` | `/partner-signup` lands on `/partners#partner-signup` by document navigation at 390, 768 and 1280 wide, no aborted navigation (WAP-118) |
 
 These are **unauthenticated** smoke tests — no credentials required.
 

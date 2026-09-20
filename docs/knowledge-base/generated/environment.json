@@ -84,7 +84,7 @@
         },
         {
           "file": "lib/ai/groq.ts",
-          "line": 19
+          "line": 20
         }
       ]
     },
@@ -1815,7 +1815,7 @@
         },
         {
           "file": "lib/ai/groq.ts",
-          "line": 18
+          "line": 19
         }
       ]
     },
@@ -1826,7 +1826,7 @@
       "references": [
         {
           "file": "lib/ai/groq.ts",
-          "line": 109
+          "line": 126
         }
       ]
     },
@@ -1885,7 +1885,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 26
+          "line": 27
         },
         {
           "file": "app/api/apply/signup/route.test.ts",
@@ -2001,7 +2001,7 @@
       "references": [
         {
           "file": "instrumentation-client.ts",
-          "line": 3
+          "line": 9
         }
       ]
     },
@@ -2012,7 +2012,7 @@
       "references": [
         {
           "file": "instrumentation-client.ts",
-          "line": 178
+          "line": 223
         }
       ]
     },
@@ -2023,7 +2023,7 @@
       "references": [
         {
           "file": "instrumentation-client.ts",
-          "line": 117
+          "line": 160
         }
       ]
     },
@@ -2479,7 +2479,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 27
+          "line": 28
         },
         {
           "file": "app/api/apply/signup/route.ts",
@@ -2530,7 +2530,7 @@
       "references": [
         {
           "file": "instrumentation-client.ts",
-          "line": 178
+          "line": 223
         }
       ]
     },
@@ -2654,11 +2654,11 @@
         },
         {
           "file": "instrumentation-client.ts",
-          "line": 4
+          "line": 10
         },
         {
           "file": "instrumentation-client.ts",
-          "line": 178
+          "line": 223
         },
         {
           "file": "lib/apply/applyReferralCapture.ts",
