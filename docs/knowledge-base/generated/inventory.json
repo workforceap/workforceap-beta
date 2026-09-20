@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "8c3eb80274811111ac99917f587f5a518894556d5526b53b3738dd78289af709",
+  "inputTreeSha256": "29969387d9d91ecc0ec8e20bfdf88122369d6f25b6e5b74ea31417a791a57350",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -159322,6 +159322,84 @@
         {
           "name": "INSTANT",
           "line": 27,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/portal-h1-ownership.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6737,
+      "lines": 164,
+      "sha256": "6d052a6aa8f844a34163d94932a05d47fc8150a06991e21ad08191b4851d21b2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "read",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "walk",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RESOLVE_EXTS",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "resolveImport",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HEADER_COMPONENT",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "RAW_H1",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "reachesHeader",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isPassThrough",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "RAW_H1_ALLOWLIST",
+          "line": 62,
+          "kind": "Variable"
+        },
+        {
+          "name": "LEGACY_SR_ONLY_H1",
+          "line": 70,
+          "kind": "Variable"
+        },
+        {
+          "name": "portalPages",
+          "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "ROUTE_KIT_DIRS",
+          "line": 107,
           "kind": "Variable"
         }
       ],

@@ -127032,6 +127032,30 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "node:fs",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "node:path",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/app/portal-h1-ownership.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
     "from": "tests/app/portal-page-outlines.spec.tsx",
     "specifier": "vitest",
     "line": 1,

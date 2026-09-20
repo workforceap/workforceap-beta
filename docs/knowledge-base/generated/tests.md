@@ -209,6 +209,7 @@
 | [tests/app/partner-referral-pages.spec.tsx](../../../tests/app/partner-referral-pages.spec.tsx) | 76 | tests |  |
 | [tests/app/partner-referred-member-times.spec.tsx](../../../tests/app/partner-referred-member-times.spec.tsx) | 76 | tests |  |
 | [tests/app/partner-settings-dates.spec.tsx](../../../tests/app/partner-settings-dates.spec.tsx) | 48 | tests |  |
+| [tests/app/portal-h1-ownership.spec.ts](../../../tests/app/portal-h1-ownership.spec.ts) | 164 | tests |  |
 | [tests/app/portal-page-outlines.spec.tsx](../../../tests/app/portal-page-outlines.spec.tsx) | 62 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
