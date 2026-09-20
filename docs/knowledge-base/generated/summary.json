@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "a9acaa79c9ab9c590781e7c5728d7ccc32ff25afb34dcf479c180f3a77e6952b",
+  "inputTreeSha256": "cc0eb91f171042a976d823c39cc07a770fca8c3c1827124e5355ea1ce58ec3b4",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4882,
-    "sourceModules": 3544,
-    "importReferences": 17273,
-    "resolvedLocalReferences": 11498,
+    "files": 4896,
+    "sourceModules": 3556,
+    "importReferences": 17322,
+    "resolvedLocalReferences": 11524,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,14 +22,14 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 862,
-    "testCandidates": 854,
+    "testFiles": 867,
+    "testCandidates": 859,
     "testHelpers": 8,
-    "staticallySelectedTests": 851,
-    "unselectedTestCandidates": 3,
+    "staticallySelectedTests": 857,
+    "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 201
+    "environmentNames": 202
   },
   "areas": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 201
+      "files": 202
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1042
+      "files": 1050
     },
     {
       "area": "localization",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 130
+      "files": 135
     },
     {
       "area": "pages",
@@ -112,7 +112,7 @@
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 889
+      "references": 890
     },
     {
       "file": "lib/auth/server.ts",
@@ -160,7 +160,7 @@
     },
     {
       "file": "lib/observability/captureApiError.ts",
-      "references": 111
+      "references": 112
     },
     {
       "file": "lib/rate-limit.ts",
@@ -236,7 +236,7 @@
     },
     {
       "file": "lib/admin/logCronRun.ts",
-      "references": 38
+      "references": 40
     },
     {
       "file": "lib/cron/cronExecution.ts",
@@ -306,7 +306,7 @@
     },
     {
       "file": "tests/api/placement-survey.spec.ts",
-      "lines": 1397
+      "lines": 1403
     },
     {
       "file": "app/(portal)/partner/page.tsx",
@@ -373,6 +373,10 @@
       "lines": 1187
     },
     {
+      "file": "app/apply/ApplyEligibilityClient.tsx",
+      "lines": 1143
+    },
+    {
       "file": "scripts/p1/test-force-rls.ts",
       "lines": 1126
     },
@@ -385,12 +389,8 @@
       "lines": 1091
     },
     {
-      "file": "components/portal/counselor/AtRiskDashboard.tsx",
-      "lines": 1062
-    },
-    {
-      "file": "lib/coursera/progressQueries.ts",
-      "lines": 1055
+      "file": "app/api/apply/signup/route.ts",
+      "lines": 1082
     }
   ]
 }

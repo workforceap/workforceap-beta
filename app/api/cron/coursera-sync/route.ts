@@ -9,6 +9,10 @@ import { resolveCourseraProgramId, resolveCourseraSkillsetIds } from '@/lib/cour
 import { fetchCourseraLearnerSkillsetProgress } from '@/lib/coursera/client';
 import { fetchEligibleCourseraMembers, type CourseraSyncMember } from '@/lib/coursera/syncMembers';
 
+// WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
+// by data-cleanup instead of pinning a RUNNING row forever.
+export const maxDuration = 300;
+
 /**
  * GET/POST /api/cron/coursera-sync
  *

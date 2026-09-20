@@ -333,7 +333,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/employers | page |  | [app/admin/employers/page.tsx](../../../app/admin/employers/page.tsx) | @/lib/auth/server:6, @/lib/auth/roles:7, @/lib/tenant/adminPageScope:8 |
 | /admin | error |  | [app/admin/error.tsx](../../../app/admin/error.tsx) |  |
 | /admin/exports | loading |  | [app/admin/exports/loading.tsx](../../../app/admin/exports/loading.tsx) |  |
-| /admin/exports | page |  | [app/admin/exports/page.tsx](../../../app/admin/exports/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
+| /admin/exports | page |  | [app/admin/exports/page.tsx](../../../app/admin/exports/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
 | /admin/feature-flags | loading |  | [app/admin/feature-flags/loading.tsx](../../../app/admin/feature-flags/loading.tsx) |  |
 | /admin/feature-flags | page |  | [app/admin/feature-flags/page.tsx](../../../app/admin/feature-flags/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/feedback | loading |  | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) |  |

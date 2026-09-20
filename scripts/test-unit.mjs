@@ -43,6 +43,17 @@ const SKIP_REASONS = {
  */
 const KNOWN_VITEST_SPECS = new Set(VITEST_LIBRARY_SPECS);
 
+/**
+ * `TEST_REAL_DB=1` (set by the database-contract CI job and by
+ * `npm run test:db-contract`) un-skips suites that need a live PostgreSQL.
+ * `--only <file>` restricts the run to the named files so that lane does not
+ * repeat the whole mocked suite.
+ */
+const REAL_DB = process.env.TEST_REAL_DB?.trim() === '1';
+const ONLY = new Set(
+  process.argv.slice(2).flatMap((arg, index, args) => (arg === '--only' && args[index + 1] ? [args[index + 1].replace(/\\/g, '/')] : [])),
+);
+
 async function listTestFiles() {
   const out = new Set();
   for await (const entry of glob('lib/**/*.test.ts', { cwd: ROOT })) {
@@ -86,18 +97,25 @@ function classify(relPath) {
     }
     return { unknownVitest: true };
   }
-  if (/lib\/auth\/roles\.test\.ts/.test(normalized)) {
+  if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
-    // server we don't have in CI. Mocking Prisma here would mean
-    // rewriting the test against the wrapper rather than the real
-    // function, which defeats most of its value. Daytime cleanup item.
+    // server. The default lane has none; the `database-contract` CI job
+    // (WAP-175) runs this lane with TEST_REAL_DB=1 against a pushed schema.
+    // Mocking Prisma here would mean rewriting the test against the wrapper
+    // rather than the real function, which defeats most of its value.
     return { skip: 'realDb' };
   }
   return null;
 }
 
 async function main() {
-  const all = (await listTestFiles()).sort();
+  const discovered = (await listTestFiles()).sort();
+  const all = ONLY.size ? discovered.filter((file) => ONLY.has(file)) : discovered;
+  if (ONLY.size && all.length !== ONLY.size) {
+    const missing = [...ONLY].filter((file) => !all.includes(file));
+    console.error(`--only named ${missing.length} file(s) the runner does not own: ${missing.join(', ')}`);
+    process.exit(1);
+  }
   const runnable = [];
   const skipped = [];
   const unknownVitest = [];

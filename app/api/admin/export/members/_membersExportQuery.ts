@@ -93,6 +93,8 @@ const memberExportSelect = {
       exhaustedUnemployment: true,
       layoffCompany: true,
       snapWic: true,
+      publicAssistancePrograms: true,
+      publicAssistanceHelpRequested: true,
       hearAbout: true,
       hearAboutOther: true,
       partnerAmbassadorReferral: true,

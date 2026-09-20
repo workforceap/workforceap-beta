@@ -2143,6 +2143,10 @@ model ApplyEligibilityScreening {
   layoffCompany String? @map("layoff_company")
   /// Currently receiving SNAP and/or WIC (yes | no). Distinct from barrier multi-select.
   snapWic String? @map("snap_wic")
+  /// WAP-53: programs selected after snapWic = yes (tanf | wic | snap | other_unsure). Empty for older rows.
+  publicAssistancePrograms String[] @default([]) @map("public_assistance_programs")
+  /// WAP-53: wants help applying for benefits (yes | no). A staff signal, never verified enrollment.
+  publicAssistanceHelpRequested String? @map("public_assistance_help_requested")
   /// How the applicant heard about WorkforceAP.
   hearAbout String? @map("hear_about")
   /// Free-text when hearAbout is Other.

@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
-import { countThreadsWithSlaBreach, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
+import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
@@ -26,8 +26,11 @@ export async function getNavBadgeCountsForUser(
     const scope = await resolveCascadeScope(userId).catch(() => ({ kind: 'deny' as const }));
     const milestones_awaiting_approval = await countAwaitingApprovalCascades({ scope }).catch(() => 0);
     if (await isSuperAdmin(userId)) {
-      const counselor_sla_breach_48h = await countThreadsWithSlaBreach(48);
-      return { counselor_sla_breach_48h, milestones_awaiting_approval };
+      const [counselor_sla_breach_48h, member_messages_unanswered] = await Promise.all([
+        countThreadsWithSlaBreach(48),
+        countUnansweredMemberThreads(),
+      ]);
+      return { counselor_sla_breach_48h, member_messages_unanswered, milestones_awaiting_approval };
     }
     return { milestones_awaiting_approval };
   }

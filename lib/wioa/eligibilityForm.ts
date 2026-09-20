@@ -12,6 +12,9 @@ export type EligibilityFormMeta = {
   exhaustedUnemployment: string | null;
   layoffCompany: string | null;
   snapWic: string | null;
+  /** WAP-53 follow-ups; optional so version-1 documents saved before they existed still read. */
+  publicAssistancePrograms?: string[] | null;
+  publicAssistanceHelpRequested?: string | null;
   hearAbout: string | null;
   hearAboutOther: string | null;
   partnerAmbassadorReferral: string | null;

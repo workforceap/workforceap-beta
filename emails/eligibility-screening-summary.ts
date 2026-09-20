@@ -8,6 +8,7 @@ import {
   hasEligibilityScreeningFields,
   type EligibilityScreeningFields,
 } from '@/lib/apply/eligibilityScreeningFields';
+import { formatPublicAssistancePrograms } from '@/lib/apply/publicAssistance';
 
 function row(label: string, value: string | null | undefined): string {
   if (!value) return '';
@@ -40,6 +41,8 @@ export function eligibilityScreeningSummaryHtml(
     row('Exhausted unemployment', f.exhaustedUnemployment),
     row('Layoff / last employer', f.layoffCompany),
     row('SNAP/WIC', f.snapWic),
+    row('Benefit programs', formatPublicAssistancePrograms(f.publicAssistancePrograms)),
+    row('Wants help applying for benefits', f.publicAssistanceHelpRequested),
     row('Heard about us', f.hearAbout),
     row('Heard about us (other)', f.hearAboutOther),
     row('Partner / ambassador referral', f.partnerAmbassadorReferral),

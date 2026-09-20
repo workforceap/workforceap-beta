@@ -46,6 +46,12 @@ import {
 } from '@/lib/apply/schoolCollection';
 import { normalizeHearAbout, normalizeYesNo } from '@/lib/apply/eligibilityExtendedFields';
 import {
+  formatPublicAssistancePrograms,
+  normalizePublicAssistanceFollowUp,
+  publicAssistanceFollowUpIssue,
+  publicAssistanceFollowUpSchema,
+} from '@/lib/apply/publicAssistance';
+import {
   sendApplicationConfirmationEmail,
   sendNewApplicationAdminEmail,
   sendSchoolEnrollmentParentAckEmail,
@@ -163,6 +169,8 @@ const applySignupSchema = z.object({
   exhaustedUnemployment: z.enum(['yes', 'no']).optional().nullable(),
   layoffCompany: z.string().trim().max(200).optional().nullable(),
   snapWic: z.enum(['yes', 'no']).optional().nullable(),
+  // WAP-53 follow-ups after snapWic = yes; optional so older drafts still parse.
+  ...publicAssistanceFollowUpSchema,
   hearAbout: z.string().trim().max(200).optional().nullable(),
   hearAboutOther: z.string().trim().max(200).optional().nullable(),
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
@@ -202,6 +210,13 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.errors[0]?.message ?? 'Please review your information and try again.' }, { status: 400 });
     }
+    const publicAssistanceIssue = publicAssistanceFollowUpIssue({
+      snapWic: parsed.data.snapWic,
+      publicAssistancePrograms: parsed.data.publicAssistancePrograms,
+    });
+    if (publicAssistanceIssue) {
+      return NextResponse.json({ error: publicAssistanceIssue }, { status: 400 });
+    }
   
     const {
       firstName,
@@ -239,6 +254,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       exhaustedUnemployment,
       layoffCompany,
       snapWic,
+      publicAssistancePrograms,
+      publicAssistanceHelpRequested,
       hearAbout,
       hearAboutOther,
       partnerAmbassadorReferral,
@@ -323,6 +340,11 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const receivingUnemploymentNormalized = normalizeYesNo(receivingUnemployment);
     const exhaustedUnemploymentNormalized = normalizeYesNo(exhaustedUnemployment);
     const snapWicNormalized = normalizeYesNo(snapWic);
+    const publicAssistanceFollowUp = normalizePublicAssistanceFollowUp({
+      snapWic: snapWicNormalized,
+      publicAssistancePrograms,
+      publicAssistanceHelpRequested,
+    });
     const layoffCompanyNormalized = layoffCompany?.trim() ? layoffCompany.trim().slice(0, 200) : null;
     const partnerAmbassadorNormalized = partnerAmbassadorReferral?.trim()
       ? partnerAmbassadorReferral.trim().slice(0, 200)
@@ -340,6 +362,12 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       exhaustedUnemploymentNormalized ? `Exhausted unemployment: ${exhaustedUnemploymentNormalized}` : null,
       layoffCompanyNormalized ? `Layoff / last employer: ${layoffCompanyNormalized}` : null,
       snapWicNormalized ? `SNAP/WIC: ${snapWicNormalized}` : null,
+      publicAssistanceFollowUp.publicAssistancePrograms.length > 0
+        ? `Benefit programs: ${formatPublicAssistancePrograms(publicAssistanceFollowUp.publicAssistancePrograms)}`
+        : null,
+      publicAssistanceFollowUp.publicAssistanceHelpRequested
+        ? `Wants help applying for benefits: ${publicAssistanceFollowUp.publicAssistanceHelpRequested}`
+        : null,
       hearAboutNormalized ? `Heard about us: ${hearAboutNormalized}` : null,
       hearAboutOtherNormalized ? `Heard about us (other): ${hearAboutOtherNormalized}` : null,
       partnerAmbassadorNormalized ? `Partner/ambassador referral: ${partnerAmbassadorNormalized}` : null,
@@ -751,6 +779,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               exhaustedUnemployment: exhaustedUnemploymentNormalized,
               layoffCompany: layoffCompanyNormalized,
               snapWic: snapWicNormalized,
+              ...publicAssistanceFollowUp,
               hearAbout: hearAboutNormalized,
               hearAboutOther: hearAboutOtherNormalized,
               partnerAmbassadorReferral: partnerAmbassadorNormalized,
@@ -809,6 +838,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         exhaustedUnemployment: exhaustedUnemploymentNormalized,
         layoffCompany: layoffCompanyNormalized,
         snapWic: snapWicNormalized,
+        ...publicAssistanceFollowUp,
         hearAbout: hearAboutNormalized,
         hearAboutOther: hearAboutOtherNormalized,
         partnerAmbassadorReferral: partnerAmbassadorNormalized,

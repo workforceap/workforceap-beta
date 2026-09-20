@@ -104,6 +104,41 @@ export async function countThreadsWithSlaBreach(minHours: 48 | 72, organizationI
   return result[0]?.count ?? 0;
 }
 
+/**
+ * Member threads whose latest member message has no staff reply after it,
+ * regardless of age. This is the staff-facing "unanswered member messages"
+ * count (WAP-168 fix 3); the SLA counters above only start at 48h, so a
+ * message sent yesterday was invisible to every badge and dashboard.
+ */
+export async function countUnansweredMemberThreads(organizationId?: string): Promise<number> {
+  const result = await prisma.$queryRawUnsafe<Array<{ count: number }>>(
+    `WITH latest_member_message AS (
+       SELECT DISTINCT ON (m.thread_id)
+         m.thread_id,
+         m.created_at AS member_last_msg_at
+       FROM messages m
+       JOIN message_threads t ON m.thread_id = t.id
+       WHERE t.kind = 'member'
+         AND m.author_id = t.member_id
+         AND t.member_id IS NOT NULL
+         AND EXISTS (SELECT 1 FROM users u WHERE u.id = t.member_id AND u.deleted_at IS NULL
+           AND ($1::text IS NULL OR u.organization_id = $1))
+       ORDER BY m.thread_id, m.created_at DESC
+     )
+     SELECT COUNT(*)::int AS count
+     FROM latest_member_message lmm
+     WHERE NOT EXISTS (
+       SELECT 1 FROM messages m2
+       JOIN message_threads t2 ON m2.thread_id = t2.id
+       WHERE m2.thread_id = lmm.thread_id
+         AND m2.author_id != t2.member_id
+         AND m2.created_at > lmm.member_last_msg_at
+     )`,
+    organizationId ?? null,
+  );
+  return result[0]?.count ?? 0;
+}
+
 export async function countMessageThreadsWithActivity(): Promise<number> {
   return prisma.messageThread.count({
     where: { kind: 'member', messages: { some: {} } },

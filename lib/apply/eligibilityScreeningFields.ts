@@ -3,11 +3,17 @@
  * Used by confirmation emails, admin alerts, and CSV / datasheet exports.
  */
 
+import { formatPublicAssistancePrograms } from './publicAssistance';
+
 export type EligibilityScreeningFields = {
   receivingUnemployment?: string | null;
   exhaustedUnemployment?: string | null;
   layoffCompany?: string | null;
   snapWic?: string | null;
+  /** WAP-53: programs named after snapWic = yes (tanf | wic | snap | other_unsure). */
+  publicAssistancePrograms?: string[] | null;
+  /** WAP-53: wants help applying for benefits (yes | no) — a staff signal, stored separately from receipt. */
+  publicAssistanceHelpRequested?: string | null;
   hearAbout?: string | null;
   hearAboutOther?: string | null;
   partnerAmbassadorReferral?: string | null;
@@ -33,6 +39,9 @@ export const ELIGIBILITY_DATASHEET_COLUMNS = [
   'Eligibility Q3',
   'Eligibility Qualifies',
   'Eligibility Yes Count',
+  // WAP-53 — appended so existing column positions stay stable for consumers.
+  'Public Assistance Programs',
+  'Wants Help Applying',
 ] as const;
 
 export type EligibilityDatasheetColumn = (typeof ELIGIBILITY_DATASHEET_COLUMNS)[number];
@@ -46,6 +55,8 @@ export function hasEligibilityScreeningFields(
       fields.exhaustedUnemployment ||
       fields.layoffCompany ||
       fields.snapWic ||
+      (fields.publicAssistancePrograms?.length ?? 0) > 0 ||
+      fields.publicAssistanceHelpRequested ||
       fields.hearAbout ||
       fields.hearAboutOther ||
       fields.partnerAmbassadorReferral ||
@@ -75,6 +86,8 @@ export function eligibilityDatasheetCells(
     f.q3 ?? '',
     typeof f.qualifies === 'boolean' ? (f.qualifies ? 'yes' : 'no') : '',
     typeof f.yesCount === 'number' ? String(f.yesCount) : '',
+    formatPublicAssistancePrograms(f.publicAssistancePrograms),
+    f.publicAssistanceHelpRequested ?? '',
   ];
 }
 
@@ -97,6 +110,12 @@ export function eligibilityFieldsPlainLines(fields: EligibilityScreeningFields):
   }
   if (fields.layoffCompany) lines.push(`Layoff / last employer: ${fields.layoffCompany}`);
   if (fields.snapWic) lines.push(`SNAP/WIC: ${fields.snapWic}`);
+  if (fields.publicAssistancePrograms?.length) {
+    lines.push(`Benefit programs: ${formatPublicAssistancePrograms(fields.publicAssistancePrograms)}`);
+  }
+  if (fields.publicAssistanceHelpRequested) {
+    lines.push(`Wants help applying for benefits: ${fields.publicAssistanceHelpRequested}`);
+  }
   if (fields.hearAbout) lines.push(`Heard about us: ${fields.hearAbout}`);
   if (fields.hearAboutOther) lines.push(`Heard about us (other): ${fields.hearAboutOther}`);
   if (fields.partnerAmbassadorReferral) {

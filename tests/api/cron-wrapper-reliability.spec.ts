@@ -16,7 +16,7 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { captureApiError } from '@/lib/observability/captureApiError';
 const req = (secret = 'test-secret') => new Request('https://example.test/api/cron/test', { headers: { authorization: `Bearer ${secret}` } });
 
-describe('cron failures are observable without unauthorized database writes', () => {
+describe('cron failures are observable and unauthorized traces are bounded', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv('CRON_SECRET', 'test-secret');
@@ -29,16 +29,37 @@ describe('cron failures are observable without unauthorized database writes', ()
   });
   afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
-  it('throttles rejected-auth reporting and performs no database work', async () => {
+  it('records one throttled FAILED: unauthorized trace and never repeats it inside the window (WAP-177)', async () => {
     const handler = vi.fn();
     const route = withCronLogging('cron_test', handler);
     expect((await route(req('wrong'))).status).toBe(401);
     expect((await route(req('wrong-again'))).status).toBe(401);
     expect(handler).not.toHaveBeenCalled();
-    expect(prisma.cronExecution.create).not.toHaveBeenCalled();
-    expect(prisma.workflowDiagnostic.create).not.toHaveBeenCalled();
+    // The first rejection leaves a trace so a missing/rotated secret is visible on
+    // /admin/crons: one execution row marked FAILED and one error diagnostic.
+    expect(prisma.cronExecution.create).toHaveBeenCalledOnce();
+    expect(prisma.cronExecution.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ jobName: 'cron_test', status: 'RUNNING' }),
+    }));
+    expect(prisma.cronExecution.update).toHaveBeenCalledOnce();
+    expect(prisma.cronExecution.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: 'FAILED', errorMessage: 'unauthorized: unauthorized' }),
+    }));
+    expect(prisma.workflowDiagnostic.create).toHaveBeenCalledOnce();
+    expect(prisma.workflowDiagnostic.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ workflow: 'cron_test', status: 'error' }),
+    }));
+    // The repeat inside the five-minute window adds nothing: unauthenticated
+    // traffic cannot become an unbounded database write amplifier.
     expect(Sentry.captureException).toHaveBeenCalledOnce();
-    expect(JSON.stringify(vi.mocked(Sentry.captureException).mock.calls)).not.toContain('wrong');
+    const persisted = JSON.stringify([
+      vi.mocked(prisma.cronExecution.create).mock.calls,
+      vi.mocked(prisma.cronExecution.update).mock.calls,
+      vi.mocked(prisma.workflowDiagnostic.create).mock.calls,
+      vi.mocked(Sentry.captureException).mock.calls,
+    ]);
+    expect(persisted).not.toContain('wrong');
+    expect(persisted).not.toContain('test-secret');
   });
 
   it('reports missing configuration even after an earlier wrong-secret rejection', async () => {

@@ -28,6 +28,22 @@ test('eligibility datasheet columns include WS4 screening fields', () => {
   assert.ok(ELIGIBILITY_DATASHEET_COLUMNS.includes('SNAP/WIC'));
   assert.ok(ELIGIBILITY_DATASHEET_COLUMNS.includes('Heard About Us'));
   assert.ok(ELIGIBILITY_DATASHEET_COLUMNS.includes('Partner/Ambassador Referral'));
+  // WAP-53: benefit detail and the help request are separate columns from the yes/no.
+  assert.ok(ELIGIBILITY_DATASHEET_COLUMNS.includes('Public Assistance Programs'));
+  assert.ok(ELIGIBILITY_DATASHEET_COLUMNS.includes('Wants Help Applying'));
+});
+
+test('eligibilityDatasheetCells distinguish self-report, programs and help requested (WAP-53)', () => {
+  const cells = eligibilityDatasheetCells({ snapWic: 'yes', publicAssistancePrograms: ['snap', 'tanf'], publicAssistanceHelpRequested: 'yes' });
+  const col = (name: string) => cells[ELIGIBILITY_DATASHEET_COLUMNS.indexOf(name as never)];
+  assert.equal(col('SNAP/WIC'), 'yes');
+  assert.equal(col('Public Assistance Programs'), 'TANF, SNAP / food stamps');
+  assert.equal(col('Wants Help Applying'), 'yes');
+  // Pre-WAP-53 rows have neither follow-up and export as blanks, not errors.
+  const legacy = eligibilityDatasheetCells({ snapWic: 'yes' });
+  assert.equal(legacy.length, ELIGIBILITY_DATASHEET_COLUMNS.length);
+  assert.equal(legacy[ELIGIBILITY_DATASHEET_COLUMNS.indexOf('Public Assistance Programs')], '');
+  assert.equal(legacy[ELIGIBILITY_DATASHEET_COLUMNS.indexOf('Wants Help Applying')], '');
 });
 
 test('eligibilityDatasheetCells align with column order', () => {
