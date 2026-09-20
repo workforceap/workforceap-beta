@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
 import { getErrorMessageFromResponse } from '@/lib/fetchWithTimeout';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 type NotificationItem = {
   id: string;
@@ -298,9 +299,11 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
               style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 1rem', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: n.readAt ? 0.7 : 1, background: n.readAt ? 'transparent' : 'color-mix(in srgb, var(--color-accent) 4%, transparent)' }}
             >
               <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '0.125rem' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
-                  {n.type === 'message' ? 'forum' : n.type === 'course_complete' ? 'school' : n.type === 'job_match' ? 'work' : n.type === 'survey_due' ? 'assignment' : n.type === 'broadcast' ? 'campaign' : 'notifications'}
-                </span>
+                <LegacyGlyph
+                  name={n.type === 'message' ? 'forum' : n.type === 'course_complete' ? 'school' : n.type === 'job_match' ? 'work' : n.type === 'survey_due' ? 'assignment' : n.type === 'broadcast' ? 'campaign' : 'notifications'}
+                  size={16}
+                  style={{ color: 'var(--color-accent)' }}
+                />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <a href={getNotificationLink(n)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -357,9 +360,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
         aria-expanded={open}
         style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '2.25rem', height: '2.25rem', borderRadius: '0.5rem', background: open ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'transparent', border: 'none', cursor: 'pointer', color: totalUnread > 0 ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', transition: 'background 0.15s' }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', fontVariationSettings: totalUnread > 0 ? "'FILL' 1" : "'FILL' 0" }}>
-          notifications
-        </span>
+        <LegacyGlyph name="notifications" size={20} strokeWidth={totalUnread > 0 ? 2.5 : 2} />
         {totalUnread > 0 && (
           <span style={{ position: 'absolute', top: '-2px', right: '-2px', minWidth: '1.125rem', height: '1.125rem', borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff', fontSize: '0.8125rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 0.25rem', lineHeight: 1, border: '2px solid var(--surface-container-low, #1a1c1e)' }}>
             {totalUnread > 9 ? '9+' : totalUnread}
@@ -388,7 +389,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
 
           {fetchError && (
             <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(173,44,77,0.08)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '1.1rem', color: 'var(--color-accent)' }}>error</span>
+              <LegacyGlyph name="error" size={18} style={{ color: 'var(--color-accent)' }} />
               <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-accent)', fontWeight: 600 }}>{fetchError}</p>
             </div>
           )}
@@ -400,7 +401,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
               </div>
             ) : dbNotifications.length === 0 && !fetchError ? (
               <div style={{ padding: '1.5rem 1rem', textAlign: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.75rem', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.5rem', fontVariationSettings: "'FILL' 1" }}>notifications_none</span>
+                <LegacyGlyph name="notifications_none" size={28} style={{ color: 'var(--color-on-surface-variant)', display: 'block', margin: '0 auto 0.5rem' }} />
                 <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>All caught up</p>
               </div>
             ) : (
@@ -409,7 +410,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
           ) : (
             shownBadges.length === 0 ? (
               <div style={{ padding: '1.5rem 1rem', textAlign: 'center' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.75rem', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.5rem', fontVariationSettings: "'FILL' 1" }}>notifications_none</span>
+                <LegacyGlyph name="notifications_none" size={28} style={{ color: 'var(--color-on-surface-variant)', display: 'block', margin: '0 auto 0.5rem' }} />
                 <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>All caught up</p>
               </div>
             ) : (
@@ -423,7 +424,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                     style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s', borderBottom: '1px solid rgba(255,255,255,0.04)' }}
                   >
                     <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>{n.icon}</span>
+                      <LegacyGlyph name={n.icon} size={16} style={{ color: 'var(--color-accent)' }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.label}</p>

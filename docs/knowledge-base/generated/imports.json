@@ -79328,6 +79328,14 @@
     "target": "hooks/useFocusTrap.ts"
   },
   {
+    "from": "components/portal/NotificationBell.tsx",
+    "specifier": "@/components/icons/LegacyGlyph",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/icons/LegacyGlyph.tsx"
+  },
+  {
     "from": "components/portal/PageHeader.tsx",
     "specifier": "./PortalBreadcrumb",
     "line": 1,
@@ -81414,6 +81422,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
+  },
+  {
+    "from": "components/portal/UnreviewedLocaleBanner.tsx",
+    "specifier": "@/components/icons/LegacyGlyph",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/icons/LegacyGlyph.tsx"
   },
   {
     "from": "components/portal/VoiceAgentSurface.tsx",
@@ -104938,7 +104954,7 @@
   {
     "from": "lib/email/failureSnapshot.ts",
     "specifier": "@/lib/email/failureRecord",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -113568,6 +113584,30 @@
     "target": "lib/retention/config.ts"
   },
   {
+    "from": "lib/retention/config.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/retention/config.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/retention/config.test.ts",
+    "specifier": "./config",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/retention/config.ts"
+  },
+  {
     "from": "lib/security/auditAiToolsHistory.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -117096,9 +117136,105 @@
     "package": "@prisma/client"
   },
   {
+    "from": "scripts/check-migration-history.mjs",
+    "specifier": "node:fs",
+    "line": 28,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/check-migration-history.mjs",
+    "specifier": "node:path",
+    "line": 29,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/check-migration-history.mjs",
+    "specifier": "node:url",
+    "line": 30,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/check-migration-history.test.cjs",
+    "specifier": "node:test",
+    "line": 8,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/check-migration-history.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 9,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/check-migration-history.test.cjs",
+    "specifier": "./check-migration-history.mjs",
+    "line": 13,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "scripts/check-migration-history.mjs"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.mjs",
+    "specifier": "node:fs",
+    "line": 25,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.mjs",
+    "specifier": "node:path",
+    "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.mjs",
+    "specifier": "node:url",
+    "line": 27,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.test.cjs",
+    "specifier": "node:test",
+    "line": 8,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 9,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/check-public-surface-icons.test.cjs",
+    "specifier": "./check-public-surface-icons.mjs",
+    "line": 13,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "scripts/check-public-surface-icons.mjs"
+  },
+  {
     "from": "scripts/check-supabase-env.mjs",
     "specifier": "./lib/supabase-project-guard.cjs",
-    "line": 18,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "scripts/lib/supabase-project-guard.cjs"
@@ -117106,7 +117242,7 @@
   {
     "from": "scripts/check-supabase-env.mjs",
     "specifier": "./lib/runtime-pool-contract.cjs",
-    "line": 19,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "scripts/lib/runtime-pool-contract.cjs"
@@ -118322,7 +118458,7 @@
   {
     "from": "scripts/snapshot-email-failures.ts",
     "specifier": "@prisma/client",
-    "line": 18,
+    "line": 21,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -118330,7 +118466,7 @@
   {
     "from": "scripts/snapshot-email-failures.ts",
     "specifier": "../lib/email/failureSnapshot",
-    "line": 20,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureSnapshot.ts"
@@ -118338,7 +118474,7 @@
   {
     "from": "scripts/snapshot-email-failures.ts",
     "specifier": "../lib/email/failureRecord",
-    "line": 25,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"

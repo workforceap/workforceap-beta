@@ -2,7 +2,8 @@
  * Email failure evidence snapshot.
  *
  * `workflow_diagnostics` is the only record of the 818 outbound emails that
- * failed in 2026, and its 90-day retention purge deletes more of it every
+ * failed in 2026, and its retention purge (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
+ * default 90; WAP-17 lowers it to 60 only after this snapshot has run) deletes more of it every
  * day. `email_failure_snapshots` keeps a verbatim copy of every `email_send`
  * failure row for a year. This module holds the pure mapping from a
  * diagnostic row to a snapshot row so the copy script and its tests share

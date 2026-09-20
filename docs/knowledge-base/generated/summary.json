@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "fc27f3e7f0a67fe38eab8d6d6963f1fc5ab9aa69e976986458e9254919fde0a6",
+  "inputTreeSha256": "832abd884b4344c63608d68f34f98ea75d3be9208242a31767cac3fbdfe52d3e",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4951,
-    "sourceModules": 3600,
-    "importReferences": 17958,
-    "resolvedLocalReferences": 12076,
+    "files": 4942,
+    "sourceModules": 3590,
+    "importReferences": 17862,
+    "resolvedLocalReferences": 11985,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,14 +22,14 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 960,
-    "testCandidates": 950,
+    "testFiles": 954,
+    "testCandidates": 944,
     "testHelpers": 10,
-    "staticallySelectedTests": 948,
+    "staticallySelectedTests": 942,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 200
+    "environmentNames": 201
   },
   "areas": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 207
+      "files": 208
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1072
+      "files": 1064
     },
     {
       "area": "localization",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 137
+      "files": 141
     },
     {
       "area": "pages",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 564
+      "files": 558
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 931
+      "references": 927
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 750
+      "references": 749
     },
     {
       "file": "lib/auth/roles.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 248
+      "references": 246
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -191,24 +191,16 @@
       "references": 71
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 71
-    },
-    {
       "file": "lib/email/escapeHtml.ts",
       "references": 68
     },
     {
+      "file": "lib/content/programSlug.ts",
+      "references": 67
+    },
+    {
       "file": "lib/audit/readOnlyPortalAudit.ts",
       "references": 61
-    },
-    {
-      "file": "lib/admin/memberOnlyWhere.ts",
-      "references": 56
-    },
-    {
-      "file": "lib/content/programCurriculumManifest.ts",
-      "references": 54
     },
     {
       "file": "lib/supabase-admin.ts",
@@ -216,6 +208,10 @@
     },
     {
       "file": "components/portal/ui/DataTable.tsx",
+      "references": 52
+    },
+    {
+      "file": "lib/content/programCurriculumManifest.ts",
       "references": 52
     },
     {
@@ -232,7 +228,7 @@
     },
     {
       "file": "messages/en.json",
-      "references": 45
+      "references": 44
     },
     {
       "file": "lib/ai/groq.ts",
@@ -247,8 +243,12 @@
       "references": 39
     },
     {
-      "file": "lib/notifications/create.ts",
-      "references": 38
+      "file": "components/LocalizedLink.tsx",
+      "references": 37
+    },
+    {
+      "file": "lib/db/queryCaps.ts",
+      "references": 37
     }
   ],
   "largestSourceFiles": [
@@ -317,10 +317,6 @@
       "lines": 1382
     },
     {
-      "file": "lib/admin/boardOutcomes.ts",
-      "lines": 1357
-    },
-    {
       "file": "app/api/apply/signup/route.test.ts",
       "lines": 1353
     },
@@ -345,6 +341,10 @@
       "lines": 1296
     },
     {
+      "file": "lib/admin/boardOutcomes.ts",
+      "lines": 1284
+    },
+    {
       "file": "tests/portal-audit-five-role.test.ts",
       "lines": 1282
     },
@@ -358,7 +358,7 @@
     },
     {
       "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1210
+      "lines": 1209
     },
     {
       "file": "components/admin/MembersTable.tsx",

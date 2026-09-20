@@ -219,7 +219,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 38
+          "line": 59
         }
       ]
     },
@@ -1013,7 +1013,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 50
+          "line": 71
         },
         {
           "file": "scripts/ensure-prisma-env.cjs",
@@ -1879,7 +1879,7 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 38
+          "line": 59
         }
       ]
     },
@@ -2451,7 +2451,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 68
+          "line": 89
         },
         {
           "file": "tests/api/employer-signup.spec.ts",
@@ -2534,7 +2534,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 47
+          "line": 68
         },
         {
           "file": "scripts/create-employer-michael-brown.ts",
@@ -2816,7 +2816,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 44
+          "line": 65
         },
         {
           "file": "sentry.edge.config.ts",
@@ -3320,11 +3320,11 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 48
+          "line": 69
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 79
+          "line": 103
         },
         {
           "file": "scripts/cronq.ts",
@@ -3379,7 +3379,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 49
+          "line": 70
         },
         {
           "file": "scripts/cronq.ts",
@@ -4178,11 +4178,15 @@
       "references": [
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 37
+          "line": 58
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 70
+          "line": 91
+        },
+        {
+          "file": "scripts/check-supabase-env.mjs",
+          "line": 99
         }
       ]
     },
@@ -4464,7 +4468,7 @@
         },
         {
           "file": "scripts/check-supabase-env.mjs",
-          "line": 44
+          "line": 65
         },
         {
           "file": "scripts/vercel-build.cjs",
@@ -4938,6 +4942,17 @@
         {
           "file": "lib/wioa/wioaNotification.ts",
           "line": 8
+        }
+      ]
+    },
+    {
+      "name": "WORKFLOW_DIAGNOSTIC_RETENTION_DAYS",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "lib/retention/config.ts",
+          "line": 104
         }
       ]
     },

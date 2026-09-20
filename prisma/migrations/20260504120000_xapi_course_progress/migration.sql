@@ -1,3 +1,5 @@
+-- xAPI storage, per-course progress, and program-level rollup for training pipeline
+
 CREATE TABLE "xapi_statements" (
     "id" TEXT NOT NULL,
     "statement_id" TEXT,

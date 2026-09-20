@@ -1,3 +1,14 @@
+-- Adds the `webhook_events` table that backs the Prisma `WebhookEvent`
+-- model. This PR (#1188) added the model + a retention page/API that
+-- calls `prisma.webhookEvent.findMany`, but no CREATE TABLE migration
+-- was committed. Without this migration, deploying via
+-- `prisma migrate deploy` produces a generated client that exposes the
+-- delegate while the table is absent — the retention page 500s with a
+-- missing-relation error.
+--
+-- Mirrors the Prisma model field-for-field. Idempotent (IF NOT EXISTS
+-- on the table and all five indexes) so it's safe to apply in any env.
+
 CREATE TABLE IF NOT EXISTS "webhook_events" (
     "id" TEXT NOT NULL,
     "source" TEXT NOT NULL,
