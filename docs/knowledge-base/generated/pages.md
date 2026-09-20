@@ -37,7 +37,7 @@
 | [app/(portal)/certifications/page.tsx](../../../app/%28portal%29/certifications/page.tsx) | 6 | pages | default:4 |
 | [app/(portal)/coach/chat/route.ts](../../../app/%28portal%29/coach/chat/route.ts) | 105 | pages | POST:48 |
 | [app/(portal)/coach/page.tsx](../../../app/%28portal%29/coach/page.tsx) | 85 | pages | generateMetadata:11, default:20 |
-| [app/(portal)/counselor/at-risk/page.tsx](../../../app/%28portal%29/counselor/at-risk/page.tsx) | 46 | member-counselor | generateMetadata:11, dynamic:20, default:22 |
+| [app/(portal)/counselor/at-risk/page.tsx](../../../app/%28portal%29/counselor/at-risk/page.tsx) | 55 | member-counselor | generateMetadata:12, dynamic:21, default:23 |
 | [app/(portal)/counselor/error.tsx](../../../app/%28portal%29/counselor/error.tsx) | 13 | member-counselor | default:5 |
 | [app/(portal)/counselor/guide/error.tsx](../../../app/%28portal%29/counselor/guide/error.tsx) | 13 | member-counselor | default:5 |
 | [app/(portal)/counselor/guide/loading.tsx](../../../app/%28portal%29/counselor/guide/loading.tsx) | 6 | member-counselor | default:3 |

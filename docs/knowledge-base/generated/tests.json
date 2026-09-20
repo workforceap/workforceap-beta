@@ -19575,6 +19575,43 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/at-risk-dashboard-states.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/counselor/AtRiskDashboard.tsx",
+        "line": 3
+      },
+      {
+        "file": "lib/member/atRiskRow.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/attention/reasons.ts",
+        "line": 5
+      },
+      {
+        "file": "lib/portal/memberRequestFailure.ts",
+        "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/at-risk-search-label.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -23372,6 +23409,38 @@
       {
         "file": "lib/messages/contextSelection.ts",
         "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/counselor-at-risk-page-data.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/counselor/atRiskPageData.ts",
+        "line": 7
+      },
+      {
+        "file": "lib/member/atRiskScoring.ts",
+        "line": 15
+      },
+      {
+        "file": "lib/member/atRiskRow.ts",
+        "line": 16
       }
     ],
     "kind": "test-candidate",

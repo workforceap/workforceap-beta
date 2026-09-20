@@ -229,6 +229,7 @@
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
+| [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 149 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
@@ -358,6 +359,7 @@
 | [tests/lib/coach-memory-safety.spec.ts](../../../tests/lib/coach-memory-safety.spec.ts) | 151 | tests |  |
 | [tests/lib/contextual-message-links.spec.ts](../../../tests/lib/contextual-message-links.spec.ts) | 22 | tests |  |
 | [tests/lib/contextual-message-selection.spec.ts](../../../tests/lib/contextual-message-selection.spec.ts) | 50 | tests |  |
+| [tests/lib/counselor-at-risk-page-data.spec.ts](../../../tests/lib/counselor-at-risk-page-data.spec.ts) | 155 | tests |  |
 | [tests/lib/counselor-booking-email.spec.ts](../../../tests/lib/counselor-booking-email.spec.ts) | 59 | tests |  |
 | [tests/lib/counselor-roster-stats.spec.ts](../../../tests/lib/counselor-roster-stats.spec.ts) | 127 | tests |  |
 | [tests/lib/counselor-thread-assign-flag.spec.ts](../../../tests/lib/counselor-thread-assign-flag.spec.ts) | 153 | tests |  |
