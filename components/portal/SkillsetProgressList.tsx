@@ -64,7 +64,7 @@ export default function SkillsetProgressList({ rows, variant = 'member', emptyHi
           {isMember ? 'Skillset progress' : 'Coursera skillsets'}
         </h4>
         {lastSync ? (
-          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             Synced {formatRelative(lastSync)}
           </span>
         ) : null}

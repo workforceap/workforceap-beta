@@ -350,7 +350,7 @@ export default function InboxZeroClient({ initialQueue }: Props) {
           </label>
         }
       />
-      <p style={{ margin: '-0.75rem 0 1rem', fontSize: 12, color: 'var(--wa-muted)' }}>
+      <p style={{ margin: '-0.75rem 0 1rem', fontSize: 13, color: 'var(--wa-muted)' }}>
         {t('inboxZeroSortHint')}
       </p>
 
@@ -517,7 +517,7 @@ function InboxZeroRowCard({
           }
         />
         {row.additionalFlags.length > 0 ? (
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, paddingLeft: 50, fontSize: 11, color: 'var(--wa-muted)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6, paddingLeft: 50, fontSize: 13, color: 'var(--wa-muted)' }}>
             <span>{t('inboxZeroAlso')}:</span>
             {row.additionalFlags.map((f) => (
               <StatusTag key={f} tone="muted">{INBOX_FLAG_LABELS[f]}</StatusTag>

@@ -156,7 +156,7 @@ export default async function AdminSubgroupDetailPage({ params }: Props) {
             }}
           >
             <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{s.value}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{s.label}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{s.label}</div>
           </div>
         ))}
       </div>

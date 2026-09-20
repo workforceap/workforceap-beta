@@ -56,7 +56,7 @@ function StatCard({
       </span>
       <span
         style={{
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           fontWeight: 600,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
@@ -66,7 +66,7 @@ function StatCard({
         {label}
       </span>
       {hint ? (
-        <span style={{ fontSize: '0.78rem', color: MUTED, lineHeight: 1.35 }}>{hint}</span>
+        <span style={{ fontSize: '0.8125rem', color: MUTED, lineHeight: 1.35 }}>{hint}</span>
       ) : null}
     </div>
   );
@@ -160,8 +160,8 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
             <div style={{ width: '100%', height: 260 }}>
               <ResponsiveContainer>
                 <BarChart data={data.enrollmentTrend}>
-                  <XAxis dataKey="monthLabel" tick={{ fontSize: 12, fill: MUTED }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: MUTED }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <XAxis dataKey="monthLabel" tick={{ fontSize: 13, fill: MUTED }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 13, fill: MUTED }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
                       background: 'var(--surface-container)',
@@ -200,7 +200,7 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
                     height={36}
                     iconType="circle"
                     formatter={(value: string) => (
-                      <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface)' }}>{value}</span>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface)' }}>{value}</span>
                     )}
                   />
                   <Tooltip
@@ -243,7 +243,7 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: '0.78rem', color: MUTED, marginTop: '0.35rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: MUTED, marginTop: '0.35rem' }}>
                     {fmtNumber(p.activeMembers)} active members
                   </div>
                 </div>

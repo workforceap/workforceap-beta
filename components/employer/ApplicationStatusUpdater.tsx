@@ -77,10 +77,10 @@ export default function ApplicationStatusUpdater({
       </select>
       {saving && <PortalInlineSpinner size={16} />}
       {saved && (
-        <span style={{ fontSize: '0.75rem', color: 'var(--color-green)', fontWeight: 700 }} aria-live="polite">Saved</span>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green)', fontWeight: 700 }} aria-live="polite">Saved</span>
       )}
       {error && (
-        <span role="alert" style={{ fontSize: '0.75rem', color: 'var(--color-accent)', fontWeight: 700 }}>{error}</span>
+        <span role="alert" style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', fontWeight: 700 }}>{error}</span>
       )}
     </div>
   );

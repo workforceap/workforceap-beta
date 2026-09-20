@@ -63,7 +63,7 @@ export default function EmployerJobQuickActions({
     background: 'var(--surface-container)',
     color: 'var(--color-on-surface)',
     borderRadius: '0.375rem',
-    fontSize: '0.8rem',
+    fontSize: '0.8125rem',
     fontWeight: 600,
     border: '1px solid var(--outline-variant)',
     cursor: busy ? 'wait' : 'pointer',
@@ -81,7 +81,7 @@ export default function EmployerJobQuickActions({
             background: 'var(--color-accent)',
             color: '#fff',
             borderRadius: '0.375rem',
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             fontWeight: 600,
             textDecoration: 'none',
           }}
@@ -115,7 +115,7 @@ export default function EmployerJobQuickActions({
         )}
       </div>
       {error ? (
-        <p role="alert" className="form-error" style={{ margin: 0, fontSize: '0.8rem' }}>
+        <p role="alert" className="form-error" style={{ margin: 0, fontSize: '0.8125rem' }}>
           {error}
         </p>
       ) : null}
@@ -125,7 +125,7 @@ export default function EmployerJobQuickActions({
           display: 'block',
           textAlign: 'center',
           padding: '0.45rem',
-          fontSize: '0.775rem',
+          fontSize: '0.8125rem',
           fontWeight: 600,
           color: 'var(--color-accent)',
           textDecoration: 'none',

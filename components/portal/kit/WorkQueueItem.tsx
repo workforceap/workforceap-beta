@@ -50,7 +50,7 @@ export function WorkQueueItem({ icon, title, detail, action, urgent = false }: W
             <div style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
             {urgent ? <Badge label="Urgent" variant="error" /> : null}
           </HStack>
-          {detail ? <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2 }}>{detail}</div> : null}
+          {detail ? <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{detail}</div> : null}
         </div>
         {action}
       </HStack>

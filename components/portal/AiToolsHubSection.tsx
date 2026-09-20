@@ -31,7 +31,7 @@ export default function AiToolsHubSection() {
                       style={{
                         marginLeft: '0.5rem',
                         verticalAlign: 'middle',
-                        fontSize: '0.6rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.08em',

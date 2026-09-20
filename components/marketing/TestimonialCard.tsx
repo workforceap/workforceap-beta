@@ -96,7 +96,7 @@ export default function TestimonialCard({
                 color: 'var(--color-on-surface-variant)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
-                fontSize: '0.6875rem',
+                fontSize: '0.8125rem',
               }}
             >
               {salaryLiftLabel}
@@ -165,7 +165,7 @@ export default function TestimonialCard({
           {program && (
             <span
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.8125rem',
                 color: 'var(--color-on-surface-variant)',
                 marginTop: '0.125rem',
               }}

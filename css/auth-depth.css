@@ -121,10 +121,10 @@ html.dark .auth-depth,
 .auth-depth select:focus,
 .auth-depth textarea:focus,
 .auth-depth .login-field:focus {
-  outline: 2px solid var(--ad-crimson);
-  outline-offset: 2px;
   border-color: var(--ad-crimson) !important;
-  box-shadow: 0 0 0 4px rgba(173, 44, 77, 0.12);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* ============================================================

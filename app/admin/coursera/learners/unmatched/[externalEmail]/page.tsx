@@ -213,7 +213,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                     <>
                       <strong>{evt.courseName ?? evt.courseSlug ?? '—'}</strong>
                       {evt.courseSlug && evt.courseName ? (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                           {evt.courseSlug}
                         </div>
                       ) : null}
@@ -223,7 +223,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                 {
                   key: 'verb',
                   header: 'Verb',
-                  cell: (evt) => <code style={{ fontSize: '0.78rem' }}>{shortVerb(evt.verbId)}</code>,
+                  cell: (evt) => <code style={{ fontSize: '0.8125rem' }}>{shortVerb(evt.verbId)}</code>,
                 },
                 {
                   key: 'status',
@@ -235,7 +235,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                           display: 'inline-block',
                           padding: '0.1rem 0.45rem',
                           borderRadius: 999,
-                          fontSize: '0.72rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 600,
                           background:
                             evt.completionStatus === 'unmatched'
@@ -252,7 +252,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                       {evt.error ? (
                         <div
                           style={{
-                            fontSize: '0.72rem',
+                            fontSize: '0.8125rem',
                             color: 'var(--color-on-surface-variant)',
                             marginTop: '0.2rem',
                           }}
@@ -268,7 +268,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                   header: 'Actor identifier',
                   cell: (evt) =>
                     evt.actorIdentifier ? (
-                      <code style={{ fontSize: '0.78rem', wordBreak: 'break-all' }}>
+                      <code style={{ fontSize: '0.8125rem', wordBreak: 'break-all' }}>
                         {evt.actorIdentifier}
                       </code>
                     ) : (
@@ -325,7 +325,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                   cell: (course) => (
                     <>
                       <strong>{course.courseName}</strong>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {course.university ?? course.programName ?? course.programSlug}
                       </div>
                     </>
@@ -342,7 +342,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                         <span
                           style={{
                             marginLeft: '0.4rem',
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(34, 197, 94, 0.15)',
@@ -408,7 +408,7 @@ export default async function AdminCourseraUnmatchedLearnerPage({
                         <span
                           style={{
                             marginLeft: '0.4rem',
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(34, 197, 94, 0.15)',

@@ -83,13 +83,13 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
                 }}
               >
                 <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700 }}>{item.title}</p>
-                <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem' }}>{item.detail}</p>
+                <p style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem' }}>{item.detail}</p>
               </div>
             );
           })}
 
           <details style={{ marginTop: '0.25rem' }}>
-            <summary style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', cursor: 'pointer' }}>
+            <summary style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', cursor: 'pointer' }}>
               Raw diagnostic numbers
             </summary>
             <dl
@@ -99,7 +99,7 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
                 gridTemplateColumns: 'minmax(11rem, max-content) 1fr',
                 rowGap: '0.25rem',
                 columnGap: '1rem',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
               }}
             >
               <dt style={{ color: 'var(--color-on-surface-variant)' }}>xAPI events (this learner)</dt>
@@ -135,10 +135,10 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
 
             {report.xapi.latestIgnored.length > 0 ? (
               <div style={{ marginTop: '0.6rem' }}>
-                <p style={{ margin: '0 0 0.3rem', fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: '0 0 0.3rem', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
                   Latest ignored xAPI events
                 </p>
-                <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.78rem' }}>
+                <ul style={{ margin: 0, paddingLeft: '1rem', fontSize: '0.8125rem' }}>
                   {report.xapi.latestIgnored.map((ev, i) => (
                     <li key={i}>
                       <code>{ev.courseSlug ?? '(no course slug)'}</code> · {ev.verbId.split('/').pop()} ·{' '}
@@ -151,12 +151,12 @@ export default function MemberCourseraDiagnoseButton({ memberId }: { memberId: s
 
             {report.reconciliation.length > 0 ? (
               <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.75rem' }}>
-                <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface-variant)' }}>
                   Validated Coursera reconciliation
                 </p>
                 {report.reconciliation.map((program) => (
                   <div key={program.programSlug} style={{ overflowX: 'auto' }}>
-                    <p style={{ margin: '0 0 0.3rem', fontSize: '0.78rem', fontWeight: 700 }}>
+                    <p style={{ margin: '0 0 0.3rem', fontSize: '0.8125rem', fontWeight: 700 }}>
                       {program.programSlug}: {program.completedCount}/{program.totalCourses} · {program.programPercent}%
                     </p>
                     <DataTable

@@ -286,7 +286,7 @@ export default function MobileApplyFunnel({
           </p>
         )}
 
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 12, lineHeight: 1.45 }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 12, lineHeight: 1.45 }}>
           Your information will only be shared with this employer for this specific job application.
           You can manage your applications in your{' '}
           <Link href="/dashboard/job-applications" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>

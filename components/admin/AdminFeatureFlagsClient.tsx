@@ -42,7 +42,7 @@ function RoleBadge({ role }: { role: string }) {
     <span
       style={{
         display: 'inline-block',
-        fontSize: '0.625rem',
+        fontSize: '0.8125rem',
         fontWeight: 700,
         padding: '0.15rem 0.5rem',
         borderRadius: '9999px',
@@ -386,7 +386,7 @@ export default function AdminFeatureFlagsClient() {
                       </p>
                       <span
                         style={{
-                          fontSize: '0.625rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 800,
                           padding: '0.15rem 0.5rem',
                           borderRadius: '9999px',
@@ -400,7 +400,7 @@ export default function AdminFeatureFlagsClient() {
                         {flag.enabled ? 'Enabled' : 'Disabled'}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
                       <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.35rem', borderRadius: '0.25rem' }}>{flag.key}</code>
                       {flag.description && <span style={{ marginLeft: '0.5rem' }}>{flag.description}</span>}
                     </div>
@@ -448,7 +448,7 @@ export default function AdminFeatureFlagsClient() {
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         <span>Rollout: {flag.rolloutPercentage}%</span>
                         <span>·</span>
                         <span style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>

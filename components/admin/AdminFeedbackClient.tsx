@@ -133,14 +133,14 @@ export default function AdminFeedbackClient() {
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
         <div className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-          <p style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>Total Responses</p>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>Total Responses</p>
           <p style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'var(--color-on-surface)' }}>{summaryLoading ? '…' : total}</p>
         </div>
         {summary.map((s) => (
           <div key={s.type} className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-            <p style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>{s.type}</p>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>{s.type}</p>
             <p style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: ratingColor(s.averageRating) }}>{summaryLoading ? '…' : s.averageRating}</p>
-            <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{s.count} responses</p>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>{s.count} responses</p>
           </div>
         ))}
       </div>
@@ -162,7 +162,7 @@ export default function AdminFeedbackClient() {
                     </p>
                   )}
                 </div>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
                   {new Date(item.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -174,26 +174,26 @@ export default function AdminFeedbackClient() {
       {/* Filters */}
       <div className="portal-card portal-card--flat" style={{ padding: '1rem', marginBottom: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
         <div>
-          <label htmlFor="adminfeedbackclient-type-field" style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Type</label>
+          <label htmlFor="adminfeedbackclient-type-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Type</label>
           <select id="adminfeedbackclient-type-field" value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setSkip(0); }}
             style={{ padding: '0.4rem 0.625rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem' }}>
             {FEEDBACK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="adminfeedbackclient-rating-field" style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Rating</label>
+          <label htmlFor="adminfeedbackclient-rating-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Rating</label>
           <select id="adminfeedbackclient-rating-field" value={ratingFilter} onChange={(e) => { setRatingFilter(e.target.value); setSkip(0); }}
             style={{ padding: '0.4rem 0.625rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem' }}>
             {RATING_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="adminfeedbackclient-from-field" style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>From</label>
+          <label htmlFor="adminfeedbackclient-from-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>From</label>
           <input id="adminfeedbackclient-from-field" type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); setSkip(0); }}
             style={{ padding: '0.4rem 0.625rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem' }} />
         </div>
         <div>
-          <label htmlFor="adminfeedbackclient-to-field" style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>To</label>
+          <label htmlFor="adminfeedbackclient-to-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>To</label>
           <input id="adminfeedbackclient-to-field" type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); setSkip(0); }}
             style={{ padding: '0.4rem 0.625rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem' }} />
         </div>
@@ -205,7 +205,7 @@ export default function AdminFeedbackClient() {
       {/* Table */}
       <div className="portal-dash-section-header" style={{ marginBottom: '0.875rem' }}>
         <h2 className="portal-heading-with-bar portal-section-heading" style={{ margin: 0 }}>All Feedback</h2>
-        <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {loading ? '…' : `${total} total`}
         </span>
       </div>
@@ -224,7 +224,7 @@ export default function AdminFeedbackClient() {
               return (
                 <div key={r.id} className="portal-activity-item" style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem', flex: 1, minWidth: 0 }}>
-                    <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.75rem', flexShrink: 0, marginTop: '0.125rem' }}>
+                    <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: '0.8125rem', flexShrink: 0, marginTop: '0.125rem' }}>
                       {initials}
                     </div>
                     <div style={{ minWidth: 0 }}>
@@ -234,7 +234,7 @@ export default function AdminFeedbackClient() {
                           {r.memberEmail}
                         </span>
                       </p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
                         <span style={{ fontWeight: 700, color: ratingColor(r.rating) }}>{r.rating}/5</span>
                         {' · '}
                         {r.type}

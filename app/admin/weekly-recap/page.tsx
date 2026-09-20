@@ -86,7 +86,7 @@ export default async function AdminWeeklyRecapAnalyticsPage({
               <div style={{ marginTop: '0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                 {formatDelta(scoreboard.comparison.deltas[metric.key], scoreboard.comparison.pctChanges[metric.key])}
               </div>
-              <div style={{ marginTop: '0.25rem', color: 'var(--color-on-surface-variant)', fontSize: '0.78rem' }}>
+              <div style={{ marginTop: '0.25rem', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                 Last week: {scoreboard.comparison.previous[metric.key].toLocaleString()}
               </div>
             </div>
@@ -136,7 +136,7 @@ export default async function AdminWeeklyRecapAnalyticsPage({
               <div style={{ marginTop: '0.5rem', color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
                 Trailing 4-week average: <strong>{formatDays(scoreboard.funnelVelocity.trailingFourWeekAvgDays)}</strong>
               </div>
-              <div style={{ marginTop: '0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.78rem' }}>
+              <div style={{ marginTop: '0.35rem', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem' }}>
                 {scoreboard.funnelVelocity.currentApprovedCount} approvals this week · {scoreboard.funnelVelocity.trailingApprovedCount} in trailing baseline
               </div>
             </div>

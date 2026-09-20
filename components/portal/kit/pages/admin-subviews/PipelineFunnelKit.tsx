@@ -68,7 +68,7 @@ export function PipelineFunnelKit({
       <div className="wa-mt-6">
         <Card style={{ minWidth: 0 }}>
           <h2 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em' }}>{funnelTitle}</h2>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2, marginBottom: 20 }}>
             {funnelSubtitle}
           </p>
           {hasData ? (

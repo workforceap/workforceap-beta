@@ -211,7 +211,7 @@ export default function RecordPlacementPage() {
                         position: 'absolute',
                         right: '0.875rem',
                         top: '1.25rem',
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         color: 'var(--color-on-surface-variant)',
                       }}
                     >
@@ -257,7 +257,7 @@ export default function RecordPlacementPage() {
                           }}
                         >
                           <div style={{ fontWeight: 600 }}>{m.fullName}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{m.email}</div>
+                          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{m.email}</div>
                         </li>
                       ))}
                     </ul>
@@ -282,7 +282,7 @@ export default function RecordPlacementPage() {
                     </div>
                   )}
                   {memberId && (
-                    <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
                       Prefilled member ID: {memberId} — search above to confirm or change.
                     </p>
                   )}

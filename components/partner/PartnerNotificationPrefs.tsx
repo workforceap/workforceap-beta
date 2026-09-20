@@ -66,7 +66,7 @@ export default function PartnerNotificationPrefs({ initial }: { initial: Prefs }
               }}
               label={label}
             />
-            <span style={{ fontSize: 12, color: 'var(--wa-muted)' }}>{desc}</span>
+            <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{desc}</span>
           </div>
         ))}
       </div>

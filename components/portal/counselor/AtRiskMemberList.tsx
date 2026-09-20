@@ -55,7 +55,7 @@ export default function AtRiskMemberList({ members }: Props) {
         </h3>
         <Link
           href="/counselor/at-risk"
-          style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
+          style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
         >
           View all →
         </Link>
@@ -89,7 +89,7 @@ export default function AtRiskMemberList({ members }: Props) {
                     width: 28,
                     height: 28,
                     borderRadius: '50%',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 800,
                     color: style.color,
                     background: 'rgba(255,255,255,0.7)',
@@ -101,7 +101,7 @@ export default function AtRiskMemberList({ members }: Props) {
                   {m.riskLevel}
                 </span>
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : 'No program'}
               </span>
             </Link>

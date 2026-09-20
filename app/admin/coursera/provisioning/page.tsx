@@ -77,14 +77,14 @@ export default async function AdminCourseraProvisioningPage() {
           <div style={{ fontSize: '1.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
             {summary.needsAttention}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>Needs attention</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Needs attention</div>
         </div>
         {QUEUE_TILES.map((state) => (
           <div key={state} className="content-card" style={{ padding: '1rem', borderRadius: '8px' }}>
             <div style={{ fontSize: '1.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
               {summary.byState[state]}
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               {PROVISIONING_STATE_LABELS[state]}
             </div>
           </div>

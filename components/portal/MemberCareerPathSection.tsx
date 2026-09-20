@@ -41,7 +41,7 @@ export default function MemberCareerPathSection({
       <p style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', lineHeight: 1.55 }}>{top.description}</p>
       {(top.skills?.length ?? 0) > 0 && (
         <div style={{ marginBottom: '0.75rem' }}>
-          <p style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Skills employers often look for</p>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.35rem' }}>Skills employers often look for</p>
           <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.88rem' }}>
             {top.skills.slice(0, 6).map((s) => (
               <li key={s}>{s}</li>
@@ -60,7 +60,7 @@ export default function MemberCareerPathSection({
             background: 'color-mix(in srgb, var(--color-accent) 7%, transparent)',
           }}
         >
-          <p style={{ margin: '0 0 0.25rem', fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
+          <p style={{ margin: '0 0 0.25rem', fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
             Training next step
           </p>
           <p style={{ margin: '0 0 0.55rem', fontSize: '0.92rem', lineHeight: 1.45 }}>
@@ -71,7 +71,7 @@ export default function MemberCareerPathSection({
           </Link>
         </div>
       ) : null}
-      <p style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem' }}>Suggested next steps</p>
+      <p style={{ fontSize: '0.8125rem', fontWeight: 600, marginBottom: '0.35rem' }}>Suggested next steps</p>
       <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.88rem' }}>
         <li>
           <Link href="/dashboard/ai-tools/resume-studio?view=rewrite">Resume Rewriter</Link>

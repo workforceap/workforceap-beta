@@ -835,7 +835,7 @@ export default function PortalVoiceSession({
             color: 'rgba(255,255,255,0.72)',
             margin: '0 0 1rem',
             lineHeight: 1.5,
-            fontSize: '0.78rem',
+            fontSize: '0.8125rem',
             textAlign: 'center',
           }}
         >
@@ -950,7 +950,7 @@ export default function PortalVoiceSession({
               padding: '0.2rem 0.65rem',
               borderRadius: 999,
               background: 'rgba(173,44,77,0.18)',
-              fontSize: '0.75rem',
+              fontSize: '0.8125rem',
               color: accent,
               fontWeight: 600,
             }}
@@ -968,7 +968,7 @@ export default function PortalVoiceSession({
               background: 'rgba(255,255,255,0.06)',
               border: '1px solid rgba(255,255,255,0.12)',
               color: 'rgba(255,255,255,0.78)',
-              fontSize: '0.8rem',
+              fontSize: '0.8125rem',
               lineHeight: 1.45,
               textAlign: 'center',
             }}
@@ -1002,7 +1002,7 @@ export default function PortalVoiceSession({
             >
               <span
                 style={{
-                  fontSize: '0.65rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   letterSpacing: '0.1em',
                   textTransform: 'uppercase',
@@ -1011,7 +1011,7 @@ export default function PortalVoiceSession({
               >
                 Live transcript
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.4)' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.4)' }}>
                 Powered by ElevenLabs
               </span>
             </div>
@@ -1048,7 +1048,7 @@ export default function PortalVoiceSession({
                       <span
                         style={{
                           flexShrink: 0,
-                          fontSize: '0.62rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 800,
                           letterSpacing: '0.06em',
                           textTransform: 'uppercase',
@@ -1206,7 +1206,7 @@ export default function PortalVoiceSession({
                     >
                       <span
                         style={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.8125rem',
                           fontWeight: 700,
                           textTransform: 'uppercase',
                           letterSpacing: '0.06em',
@@ -1239,7 +1239,7 @@ export default function PortalVoiceSession({
                   >
                     <span
                       style={{
-                        fontSize: '0.65rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.06em',
@@ -1253,7 +1253,7 @@ export default function PortalVoiceSession({
                     </p>
                   </div>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem', fontStyle: 'italic' }}>{s.context}</p>
+                <p style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem', fontStyle: 'italic' }}>{s.context}</p>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <button
                     type="button"

@@ -228,7 +228,7 @@ export default async function MemberGuidePage() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '0.375rem' }}>
                     <span style={{
-                      fontSize: '0.625rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       textTransform: 'uppercase',
                       letterSpacing: '0.1em',

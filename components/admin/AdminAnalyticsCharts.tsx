@@ -31,7 +31,7 @@ const PROGRAM_COLORS = [ACCENT, BLUE, GOLD, GREEN, '#c4456a', '#0d9488', '#ea580
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
     <div style={{ marginBottom: '0.875rem' }}>
-      <h2 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: 0 }}>{title}</h2>
+      <h2 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: 0 }}>{title}</h2>
       {sub && <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{sub}</p>}
     </div>
   );
@@ -51,7 +51,7 @@ const tooltipStyle = {
   itemStyle: { color: 'var(--color-on-surface-variant)', paddingTop: '0.15rem' },
 };
 
-const axisTick = { fontSize: 12, fill: MUTED };
+const axisTick = { fontSize: 13, fill: MUTED };
 
 function ActivityLegend({ payload }: { payload?: Array<{ color?: string; value?: string }> }) {
   if (!payload?.length) return null;
@@ -67,7 +67,7 @@ function ActivityLegend({ payload }: { payload?: Array<{ color?: string; value?:
         padding: 0,
         margin: '0.5rem 0 0',
         listStyle: 'none',
-        fontSize: '0.75rem',
+        fontSize: '0.8125rem',
         color: 'var(--color-on-surface-variant)',
       }}
     >
@@ -137,8 +137,8 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="date" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
+            <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
             <Tooltip {...tooltipStyle} />
             <Legend verticalAlign="bottom" content={<ActivityLegend />} />
             <Area type="monotone" dataKey="events" name="Member events" stroke={ACCENT} fill="url(#gEvents)" strokeWidth={2} dot={false} />
@@ -176,8 +176,8 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={enrollmentByProgram} layout="vertical" margin={{ left: 8, right: 16, top: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
-              <YAxis type="category" dataKey="program" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} width={110}
+              <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="program" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={110}
                 tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + '…' : v} />
               <Tooltip {...tooltipStyle} />
               <Bar dataKey="count" name="Enrolled" radius={[0, 4, 4, 0]}>
@@ -205,7 +205,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" fill={GREEN} fontSize={20} fontWeight={800}>
                   {placementStats.placementRate}%
                 </text>
-                <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" fill={MUTED} fontSize={10}>
+                <text x="50%" y="60%" textAnchor="middle" dominantBaseline="middle" fill={MUTED} fontSize={13}>
                   placed
                 </text>
               </PieChart>
@@ -222,7 +222,7 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
                 <div key={s.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{s.label}</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{s.label}</span>
                   </div>
                   <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-on-surface)', fontVariantNumeric: 'tabular-nums' }}>{s.value.toLocaleString()}</span>
                 </div>
@@ -243,10 +243,10 @@ export default function AdminAnalyticsCharts({ dailyActivity, enrollmentByProgra
           <ResponsiveContainer width="100%" height={Math.max(180, aiBreakdown.length * 36)}>
             <BarChart data={aiBreakdown} layout="vertical" margin={{ left: 8, right: 40, top: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} allowDecimals={false} />
-              <YAxis type="category" dataKey="tool" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
+              <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <YAxis type="category" dataKey="tool" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
               <Tooltip {...tooltipStyle} />
-              <Bar dataKey="count" name="Runs" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 10, fill: MUTED }}>
+              <Bar dataKey="count" name="Runs" radius={[0, 4, 4, 0]} label={{ position: 'right', fontSize: 13, fill: MUTED }}>
                 {aiBreakdown.map((_, i) => (
                   <Cell key={i} fill={PROGRAM_COLORS[i % PROGRAM_COLORS.length]} fillOpacity={0.85} />
                 ))}

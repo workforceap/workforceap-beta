@@ -145,7 +145,7 @@ export default function AdminProgramCatalogClient() {
             {
               key: 'slug',
               header: 'Slug',
-              cell: (r) => <code style={{ fontSize: '0.8rem' }}>{r.programSlug}</code>,
+              cell: (r) => <code style={{ fontSize: '0.8125rem' }}>{r.programSlug}</code>,
             },
             {
               key: 'name',

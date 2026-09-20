@@ -191,7 +191,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
         </button>
       </div>
 
-      <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0 0 1rem' }}>
+      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 1rem' }}>
         Campaign excludes Concordia High School (CHS) referrals. Soft deadline language only — no hard lockout
         if members miss September 14.
       </p>

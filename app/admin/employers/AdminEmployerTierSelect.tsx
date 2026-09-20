@@ -58,7 +58,7 @@ export default function AdminEmployerTierSelect({
         <option value="partner">Hiring Partner</option>
       </select>
       {error ? (
-        <span style={{ display: 'block', color: 'var(--color-danger, #b91c1c)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+        <span style={{ display: 'block', color: 'var(--color-danger, #b91c1c)', fontSize: '0.8125rem', marginTop: '0.25rem' }}>
           {error}
         </span>
       ) : null}

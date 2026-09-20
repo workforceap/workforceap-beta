@@ -90,6 +90,8 @@
 | [scripts/lib/runtime-pool-contract.test.cjs](../../../scripts/lib/runtime-pool-contract.test.cjs) | 36 | operations |  |
 | [scripts/lib/supabase-project-guard.cjs](../../../scripts/lib/supabase-project-guard.cjs) | 261 | operations | DEMO_REF:253, PROD_REF:254, assertSupabaseEnvironment:255, expectedProjectForVercelEnv:256, formatSupabaseEnvGuardFailure:257, inspectSupabaseEnvironment:258, projectForAnonKey:259, projectForUrl:260 |
 | [scripts/lint/check-coursera-catalog-placeholders.mjs](../../../scripts/lint/check-coursera-catalog-placeholders.mjs) | 204 | learning-coursera |  |
+| [scripts/lint/check-type-floor.mjs](../../../scripts/lint/check-type-floor.mjs) | 302 | operations | FLOOR_PX:39, FLOOR_REM:41, ALLOW_MARKER:42, SCAN_ROOTS:45, SCAN_EXTENSIONS:46, toPx:67, scanSource:172, listSourceFiles:217, runCheck:251 |
+| [scripts/lint/check-type-floor.test.cjs](../../../scripts/lint/check-type-floor.test.cjs) | 90 | operations |  |
 | [scripts/locked-stakes/check-i18n-safe-diff.mjs](../../../scripts/locked-stakes/check-i18n-safe-diff.mjs) | 296 | operations | checkI18nSafeDiff:225 |
 | [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 217 | operations |  |
 | [scripts/migrate-metadata-async.mjs](../../../scripts/migrate-metadata-async.mjs) | 80 | operations |  |
@@ -111,7 +113,7 @@
 | [scripts/seed-partner-school.ts](../../../scripts/seed-partner-school.ts) | 188 | operations |  |
 | [scripts/seed-test-user.sql](../../../scripts/seed-test-user.sql) | 39 | operations |  |
 | [scripts/send-eligibility-campaign.ts](../../../scripts/send-eligibility-campaign.ts) | 96 | operations |  |
-| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 106 | operations |  |
+| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 107 | operations |  |
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |

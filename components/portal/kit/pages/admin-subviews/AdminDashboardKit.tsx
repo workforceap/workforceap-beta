@@ -198,7 +198,7 @@ export function AdminDashboardKit({
           style={{ textDecoration: 'none', color: 'inherit', display: 'block', minWidth: 0 }}
         >
           <div style={{ fontWeight: 700 }}>{row.label}</div>
-          <div style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{row.detail}</div>
+          <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{row.detail}</div>
         </a>
       ),
     },
@@ -299,7 +299,7 @@ export function AdminDashboardKit({
                 >
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 700 }}>{row.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{row.detail}</div>
+                    <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{row.detail}</div>
                   </div>
                   <span style={{ ...numStyle, fontWeight: 800, fontSize: 18 }}>{row.value}</span>
                 </div>
@@ -331,7 +331,7 @@ export function AdminDashboardKit({
           <h3 style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em', margin: 0 }}>
             30-Day Trends
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>
             Signups, enrollments, and dashboard views — sourced from member_events.
           </p>
         </div>
@@ -356,7 +356,7 @@ export function AdminDashboardKit({
 
       <p
         style={{
-          fontSize: 11,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           textAlign: 'center',
           marginTop: 20,

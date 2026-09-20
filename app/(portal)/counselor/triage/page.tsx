@@ -272,7 +272,7 @@ function TriageRowCard({ row, priority }: { row: TriageRow; priority: Priority }
               <Link
                 href={`/counselor/messages?thread=${row.context.threadId}`}
                 className="btn btn-sm btn-secondary"
-                style={{ fontSize: 11, textDecoration: 'none' }}
+                style={{ fontSize: 13, textDecoration: 'none' }}
               >
                 Open thread
               </Link>
@@ -280,7 +280,7 @@ function TriageRowCard({ row, priority }: { row: TriageRow; priority: Priority }
             <Link
               href={`/counselor/students/${row.memberId}`}
               className="btn btn-sm btn-secondary"
-              style={{ fontSize: 11, textDecoration: 'none' }}
+              style={{ fontSize: 13, textDecoration: 'none' }}
             >
               View
             </Link>
@@ -288,11 +288,11 @@ function TriageRowCard({ row, priority }: { row: TriageRow; priority: Priority }
         }
       />
       <div style={{ paddingLeft: 50, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-        <p style={{ margin: 0, fontSize: 12, color: 'var(--wa-muted)' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)' }}>
           {row.memberEmail} · {programLabelText}
         </p>
         {row.additionalFlags.length > 0 ? (
-          <p style={{ margin: 0, fontSize: 11, color: 'var(--wa-muted)' }}>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)' }}>
             Also: {row.additionalFlags.map((f) => FLAG_LABELS[f]).join(' · ')}
           </p>
         ) : null}

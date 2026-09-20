@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "85249abbabf07e08f037bff9c1c21618cc6e41688fd3658d11903639bb1a19cd",
+  "inputTreeSha256": "260d681a7fe2457340730b52e49ee0b566c8b4784557337a8d4ebc70ea6c6a81",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4839,
-    "sourceModules": 3499,
-    "importReferences": 17036,
-    "resolvedLocalReferences": 11356,
+    "files": 4845,
+    "sourceModules": 3505,
+    "importReferences": 17054,
+    "resolvedLocalReferences": 11358,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1054,
     "nextRouteFiles": 1021,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 834,
-    "testCandidates": 827,
+    "testFiles": 839,
+    "testCandidates": 832,
     "testHelpers": 7,
-    "staticallySelectedTests": 825,
+    "staticallySelectedTests": 830,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 131
+      "files": 133
     },
     {
       "area": "pages",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 460
+      "files": 464
     }
   ],
   "mostReferenced": [
@@ -310,7 +310,7 @@
     },
     {
       "file": "app/(portal)/partner/page.tsx",
-      "lines": 1390
+      "lines": 1387
     },
     {
       "file": "app/admin/coursera/health/page.tsx",

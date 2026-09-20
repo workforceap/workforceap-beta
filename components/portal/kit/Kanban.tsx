@@ -31,15 +31,15 @@ export function KanbanBoard({ columns }: { columns: KanbanColumnData[] }) {
           <Card key={col.label}>
             <div style={{ minWidth: 200, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 700 }}>{col.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{col.label}</span>
                 <Token label={String(col.count)} size="sm" color={toneToTokenColor(col.tone ?? 'muted')} />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {col.cards.map((c) => (
                   <Card key={c.id}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 11 }}>{c.title}</div>
-                      {c.meta ? <div style={{ fontSize: 10, color: 'var(--wa-muted)', marginTop: 2 }}>{c.meta}</div> : null}
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{c.title}</div>
+                      {c.meta ? <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{c.meta}</div> : null}
                     </div>
                   </Card>
                 ))}
@@ -53,5 +53,5 @@ export function KanbanBoard({ columns }: { columns: KanbanColumnData[] }) {
 }
 
 export function KanbanColumnHeader({ children }: { children: ReactNode }) {
-  return <div style={{ fontSize: 12, fontWeight: 700 }}>{children}</div>;
+  return <div style={{ fontSize: 13, fontWeight: 700 }}>{children}</div>;
 }

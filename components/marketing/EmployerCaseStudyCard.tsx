@@ -55,7 +55,7 @@ export default function EmployerCaseStudyCard({
             style={{
               display: 'inline-flex',
               alignSelf: 'flex-start',
-              fontSize: '0.625rem',
+              fontSize: '0.8125rem',
               letterSpacing: '0.08em',
               color: isAccent ? 'rgba(255,255,255,0.95)' : 'var(--color-on-surface-variant)',
               fontWeight: 700,
@@ -71,7 +71,7 @@ export default function EmployerCaseStudyCard({
         <span
           className="text-label-upper"
           style={{
-            fontSize: '0.65rem',
+            fontSize: '0.8125rem',
             letterSpacing: '0.1em',
             color: labelColor,
             fontWeight: 700,
@@ -145,7 +145,7 @@ export default function EmployerCaseStudyCard({
             color: avatarColor,
             display: 'grid',
             placeItems: 'center',
-            fontSize: '0.8rem',
+            fontSize: '0.8125rem',
             fontWeight: 800,
             letterSpacing: '0.02em',
           }}

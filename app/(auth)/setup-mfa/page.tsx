@@ -290,7 +290,7 @@ export default function SetupMfaPage() {
                 background: 'transparent',
                 color: 'var(--color-on-surface-variant)',
                 border: 'none',
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 cursor: 'pointer',
                 marginTop: '0.5rem',
               }}

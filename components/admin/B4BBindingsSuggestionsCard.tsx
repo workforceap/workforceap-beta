@@ -109,7 +109,7 @@ export default function B4BBindingsSuggestionsCard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>B4B program-id bindings</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             Match catalog programs to live B4B program ids — fixes name-only resolution.
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function B4BBindingsSuggestionsCard() {
               all to the umbrella URL. No catalog change required.
             </div>
           ) : null}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.8rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.8125rem' }}>
             <div>Catalog: <strong>{report.totalCatalogPrograms}</strong></div>
             <div>B4B: <strong>{report.totalB4BPrograms}</strong></div>
             <div>Already bound: <strong style={{ color: '#16a34a' }}>{report.alreadyBound}</strong></div>
@@ -171,7 +171,7 @@ export default function B4BBindingsSuggestionsCard() {
                   padding: '0.55rem 0.75rem',
                   borderRadius: '0.5rem',
                   background: severityColor(s),
-                  fontSize: '0.8rem',
+                  fontSize: '0.8125rem',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.15rem',
@@ -179,7 +179,7 @@ export default function B4BBindingsSuggestionsCard() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <strong>{s.catalogTitle}</strong>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>{severityLabel(s)}</span>
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, letterSpacing: '0.05em' }}>{severityLabel(s)}</span>
                 </div>
                 <div style={{ color: 'var(--color-on-surface-variant)' }}>
                   catalog slug: <code>{s.catalogSlug}</code>
@@ -212,13 +212,13 @@ export default function B4BBindingsSuggestionsCard() {
                 border: '1px solid var(--outline-variant)',
                 background: 'transparent',
                 fontWeight: 600,
-                fontSize: '0.8rem',
+                fontSize: '0.8125rem',
                 cursor: 'pointer',
               }}
             >
               {copied ? 'Copied!' : 'Copy patch hint'}
             </button>
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Paste into <code>lib/content/programs.ts</code> in a follow-up PR.
             </span>
           </div>

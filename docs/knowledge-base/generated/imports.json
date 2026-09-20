@@ -15009,16 +15009,8 @@
   },
   {
     "from": "app/(portal)/partner/page.tsx",
-    "specifier": "@/components/portal/StatusBadge",
-    "line": 31,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/StatusBadge.tsx"
-  },
-  {
-    "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/PortalKpiCard",
-    "line": 32,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalKpiCard.tsx"
@@ -15026,7 +15018,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 33,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -15034,7 +15026,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 34,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -15042,7 +15034,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 35,
+    "line": 34,
     "kind": "type",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -15050,7 +15042,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PartnerReferralResourcesSection",
-    "line": 36,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/partner/PartnerReferralResourcesSection.tsx"
@@ -15058,7 +15050,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PendingApprovalBanner",
-    "line": 37,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/partner/PendingApprovalBanner.tsx"
@@ -15066,7 +15058,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/partner/PartnerConnectPayoutButton",
-    "line": 38,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/partner/PartnerConnectPayoutButton.tsx"
@@ -15074,7 +15066,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/partner/partnerPayout",
-    "line": 39,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/partner/partnerPayout.ts"
@@ -15082,7 +15074,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/partner/partnerType",
-    "line": 40,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/partner/partnerType.ts"
@@ -15090,7 +15082,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/outcomes/socialProof",
-    "line": 41,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/outcomes/socialProof.ts"
@@ -15098,7 +15090,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 42,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -15106,7 +15098,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 43,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -115152,6 +115144,62 @@
     "package": "node:path"
   },
   {
+    "from": "scripts/lint/check-type-floor.mjs",
+    "specifier": "node:fs",
+    "line": 35,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.mjs",
+    "specifier": "node:path",
+    "line": 36,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.mjs",
+    "specifier": "node:url",
+    "line": 37,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.test.cjs",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 3,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.test.cjs",
+    "specifier": "./check-type-floor.mjs",
+    "line": 5,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "scripts/lint/check-type-floor.mjs"
+  },
+  {
+    "from": "scripts/lint/check-type-floor.test.cjs",
+    "specifier": "node:path",
+    "line": 85,
+    "kind": "require",
+    "external": true,
+    "package": "node:path"
+  },
+  {
     "from": "scripts/locked-stakes/check-i18n-safe-diff.mjs",
     "specifier": "node:fs",
     "line": 22,
@@ -128696,6 +128744,30 @@
     "package": "@testing-library/react"
   },
   {
+    "from": "tests/components/at-risk-search-label.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/at-risk-search-label.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/at-risk-search-label.spec.tsx",
+    "specifier": "@/components/portal/counselor/AtRiskDashboard",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/counselor/AtRiskDashboard.tsx"
+  },
+  {
     "from": "tests/components/auth-connection-failure.spec.tsx",
     "specifier": "react",
     "line": 1,
@@ -129518,6 +129590,30 @@
     "kind": "import",
     "external": false,
     "target": "app/employers/signup/page.tsx"
+  },
+  {
+    "from": "tests/components/feature-tile-heading.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/feature-tile-heading.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/feature-tile-heading.spec.tsx",
+    "specifier": "@/components/portal/kit/FeatureTile",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/FeatureTile.tsx"
   },
   {
     "from": "tests/components/form-a11y-sweep.spec.tsx",
@@ -130382,6 +130478,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/partner/referralLink.ts"
+  },
+  {
+    "from": "tests/components/partner-status-pill.spec.ts",
+    "specifier": "node:fs",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/components/partner-status-pill.spec.ts",
+    "specifier": "node:path",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/components/partner-status-pill.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
   },
   {
     "from": "tests/components/persisted-risk-presentation.spec.tsx",
@@ -133470,6 +133590,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/isNewMember.ts"
+  },
+  {
+    "from": "tests/lib/focus-ring-recipe.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/lib/focus-ring-recipe.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/lib/focus-ring-recipe.spec.ts",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
   },
   {
     "from": "tests/lib/google-it-support-completion.spec.ts",

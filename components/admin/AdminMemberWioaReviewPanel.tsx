@@ -213,7 +213,7 @@ export default function AdminMemberWioaReviewPanel({
       {decisionHistory.length > 0 && (
         <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem', marginTop: '1rem' }}>
           <h3 style={{ fontSize: '0.95rem', marginBottom: '0.25rem' }}>Decision history</h3>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
             Immutable record — one row per WIOA review, application decision, or enrollment funding decision.
           </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.5rem' }}>

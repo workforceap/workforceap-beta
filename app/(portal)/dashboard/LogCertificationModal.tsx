@@ -60,7 +60,7 @@ export default function LogCertificationModal() {
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
+          <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent-dark)' }}>
             Certification update
           </p>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', lineHeight: 1.45, color: 'var(--color-on-surface)' }}>
@@ -102,7 +102,7 @@ export default function LogCertificationModal() {
       </div>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>Certification name</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>Certification name</span>
           <input
             name="certName"
             placeholder="AWS Cloud Practitioner"
@@ -111,7 +111,7 @@ export default function LogCertificationModal() {
           />
         </label>
         <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>Date earned</span>
+          <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-on-surface)' }}>Date earned</span>
           <input
             type="date"
             name="earnedAt"

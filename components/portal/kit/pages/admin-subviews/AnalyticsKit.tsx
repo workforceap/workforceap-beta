@@ -67,7 +67,7 @@ export function AnalyticsKit({
           <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 2 }}>
             Most-used tools
           </h3>
-          <p style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
             last 30 days
           </p>
           {topTools && topTools.length > 0 ? <RankBars data={topTools} /> : EMPTY_HINT}

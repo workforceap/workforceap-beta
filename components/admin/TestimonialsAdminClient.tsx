@@ -138,7 +138,7 @@ export default function TestimonialsAdminClient() {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.25rem',
-          fontSize: '0.75rem',
+          fontSize: '0.8125rem',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '0.04em',
@@ -203,7 +203,7 @@ export default function TestimonialsAdminClient() {
             {s.icon}
             <div>
               <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{s.value}</div>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7 }}>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7 }}>
                 {s.label}
               </div>
             </div>
@@ -250,12 +250,12 @@ export default function TestimonialsAdminClient() {
             </caption>
             <thead>
               <tr style={{ background: 'var(--surface-container-low, #f8f5f3)' }}>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Member</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Content</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Rating</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Status</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Source</th>
-                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Actions</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Member</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Content</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Rating</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Status</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Source</th>
+                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -263,9 +263,9 @@ export default function TestimonialsAdminClient() {
                 <tr key={t.id} style={{ borderTop: '1px solid var(--color-outline, #eee)' }}>
                   <td style={{ padding: '0.75rem 1rem' }}>
                     <div style={{ fontWeight: 600 }}>{t.member.fullName}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{t.member.email}</div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t.member.email}</div>
                     {t.member.enrolledProgram && (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.125rem' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.125rem' }}>
                         {programDisplayTitle(t.member.enrolledProgram)}
                       </div>
                     )}
@@ -275,7 +275,7 @@ export default function TestimonialsAdminClient() {
                       {t.content}
                     </div>
                     {t.rejectionReason && (
-                      <div style={{ fontSize: '0.75rem', color: '#ad2c4d', marginTop: '0.25rem' }}>
+                      <div style={{ fontSize: '0.8125rem', color: '#ad2c4d', marginTop: '0.25rem' }}>
                         <AlertCircle className="w-3 h-3" style={{ display: 'inline', verticalAlign: 'text-bottom' }} /> {t.rejectionReason}
                       </div>
                     )}
@@ -290,7 +290,7 @@ export default function TestimonialsAdminClient() {
                     )}
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>{statusBadge(t.status)}</td>
-                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontSize: '0.8125rem', textTransform: 'uppercase', fontWeight: 600, color: 'var(--color-on-surface-variant)' }}>
                     {t.source}
                   </td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>

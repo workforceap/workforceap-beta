@@ -162,11 +162,11 @@ export default async function AdminEmailCronsPage({
                 Cron secret not configured — jobs cannot run
               </p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', lineHeight: 1.55 }}>
-                Vercel scheduled crons and manual triggers both require <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.75rem' }}>CRON_SECRET</code> to be set as an environment variable. Without it, all jobs return 401 Unauthorized and show "Never run."
+                Vercel scheduled crons and manual triggers both require <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.8125rem' }}>CRON_SECRET</code> to be set as an environment variable. Without it, all jobs return 401 Unauthorized and show "Never run."
               </p>
               <ol style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, paddingLeft: '1.25rem', lineHeight: 1.6 }}>
                 <li>Go to <strong>Vercel Dashboard → Project → Settings → Environment Variables</strong></li>
-                <li>Add <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.75rem' }}>CRON_SECRET</code> with a random 32+ character string</li>
+                <li>Add <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.8125rem' }}>CRON_SECRET</code> with a random 32+ character string</li>
                 <li>Redeploy the project</li>
                 <li>Return here and click <strong>Run now</strong> on any cron to verify</li>
               </ol>
@@ -179,7 +179,7 @@ export default async function AdminEmailCronsPage({
       <div style={{ padding: '0.875rem 1rem', background: 'rgba(43,123,185,0.07)', border: '1px solid rgba(43,123,185,0.15)', borderRadius: '0.75rem', marginBottom: '1.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.55 }}>
         <strong style={{ color: 'var(--wa-info-dark)' }}>How toggling works:</strong> Enabling/disabling a job saves a persistent setting.
         The Vercel scheduler still calls the endpoint on schedule — but the job checks this setting before running. To permanently remove a job from the schedule,
-        edit <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.75rem' }}>vercel.json</code>.
+        edit <code style={{ background: 'var(--surface-container)', padding: '0.1rem 0.3rem', borderRadius: '0.25rem', fontSize: '0.8125rem' }}>vercel.json</code>.
         Manual triggers always run regardless of enabled state.
       </div>
 

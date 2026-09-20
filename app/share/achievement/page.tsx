@@ -117,7 +117,7 @@ export default async function ShareAchievementPage({
             {isCertificate ? 'workspace_premium' : 'verified'}
           </span>
         </div>
-        <p style={{ margin: '0 0 0.5rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.8rem' }}>
+        <p style={{ margin: '0 0 0.5rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.8125rem' }}>
           {isCertificate ? 'Certificate earned' : 'Skill checkpoint complete'}
         </p>
         <h1 style={{ margin: '0 0 0.75rem', fontSize: 'clamp(2rem, 6vw, 3.25rem)', lineHeight: 1.05, color: 'var(--color-on-surface)' }}>

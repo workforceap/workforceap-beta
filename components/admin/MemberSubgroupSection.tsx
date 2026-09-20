@@ -87,7 +87,7 @@ export default function MemberSubgroupSection({
                 <button
                   type="button"
                   className="btn btn-outline"
-                  style={{ fontSize: '0.75rem', padding: '0.15rem 0.35rem' }}
+                  style={{ fontSize: '0.8125rem', padding: '0.15rem 0.35rem' }}
                   onClick={() => remove(id)}
                   disabled={loading}
                   aria-label={`Remove from ${sg.name}`}

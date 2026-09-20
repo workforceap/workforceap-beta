@@ -195,7 +195,7 @@ export default function VerifyMfaPage() {
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           {tAuth('mfaVerify.lostAuthenticator')} <LocalizedLink href="/login" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{tAuth('mfaVerify.signInAgain')}</LocalizedLink>
         </p>
       </div>

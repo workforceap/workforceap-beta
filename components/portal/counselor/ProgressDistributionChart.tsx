@@ -46,13 +46,13 @@ export default function ProgressDistributionChart({ data }: Props) {
           <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <XAxis
               dataKey="range"
-              tick={{ fontSize: 12, fill: 'var(--color-on-surface-variant)' }}
+              tick={{ fontSize: 13, fill: 'var(--color-on-surface-variant)' }}
               axisLine={{ stroke: 'var(--outline-variant)' }}
               tickLine={false}
             />
             <YAxis
               allowDecimals={false}
-              tick={{ fontSize: 12, fill: 'var(--color-on-surface-variant)' }}
+              tick={{ fontSize: 13, fill: 'var(--color-on-surface-variant)' }}
               axisLine={false}
               tickLine={false}
             />
