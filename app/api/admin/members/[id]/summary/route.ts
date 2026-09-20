@@ -105,7 +105,7 @@ export const POST = withApiGuc(
       // admin surfaces reconcile local rows only (see audit S28).
       const trainingAssignment = resolveTrainingProgressAssignment(
         member.enrolledProgram,
-        member.courseEnrollments,
+        member.courseEnrollments ?? [],
       );
       const trainingView = trainingAssignment.programSlug
         ? await loadMemberProgramTrainingView({

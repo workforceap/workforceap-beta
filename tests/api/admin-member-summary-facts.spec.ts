@@ -128,6 +128,21 @@ describe('POST /api/admin/members/[id]/summary facts', () => {
     expect(select.courseEnrollments).toBeDefined();
   });
 
+  it('does not 500 when the member row carries no courseEnrollments', async () => {
+    // Callers that select a narrower member shape (and the tenant-boundary
+    // spec's fixture) leave the relation undefined; resolving the assignment
+    // must not throw before the route can answer.
+    findUnique.mockResolvedValue({
+      fullName: 'Sparse Fixture', email: 'sparse@example.com', deletedAt: null,
+      enrolledProgram: null, enrolledAt: null, assessmentCompleted: false,
+      assessmentScorePct: null, wioaReviewStatus: null, profile: null,
+      courseProgress: [], placementRecord: null,
+    });
+    const res = await call();
+    expect(res.status).toBe(200);
+    expect(promptText()).toContain('Enrolled program: None');
+  });
+
   it('says so plainly when the assigned program has no course data', async () => {
     vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(null);
     await call();
