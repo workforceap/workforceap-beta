@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import PortalNav from './PortalNav';
 import PortalRoleSwitcher from './PortalRoleSwitcher';
 import type { PortalRole } from '@/lib/nav/portalNav';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const MEMBER_PORTAL_PREFIXES = ['/dashboard', '/programs', '/apply', '/certifications', '/profile'];
 const DEDICATED_SHELL_PREFIXES = ['/employer', '/partner', '/counselor'];
@@ -29,41 +30,24 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const isPartnerPortal = normalizedPath.startsWith('/partner');
   const isDedicatedShell = hasDedicatedShell(normalizedPath);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [userRoles, setUserRoles] = useState<{ role: PortalRole; roleLabel: string; homeHref: string }[]>([]);
-  const [currentRole, setCurrentRole] = useState<PortalRole>('member');
+  const showNav = !isDashboard && !isPartnerPortal && !isDedicatedShell;
 
-  // Fetch user roles and determine current portal
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        const data = await res.json() as {
-          availablePortals?: { role: PortalRole; roleLabel: string; homeHref: string }[];
-        };
-        
-        if (cancelled) return;
-        
-        const roles = data.availablePortals ?? [];
+  // Roles come from the shared current-user snapshot (WAP-27) and only when
+  // this shell renders its own nav; the workspace shells (/dashboard,
+  // /employer, /partner, /counselor) already know the roles server-side.
+  const { user } = useCurrentUser({ enabled: showNav });
+  const userRoles = (user?.availablePortals ?? []) as { role: PortalRole; roleLabel: string; homeHref: string }[];
 
-        // Determine current portal based on pathname (strip locale prefix first)
-        const np = stripLocale(pathname);
-        let current: PortalRole = 'member';
-        if (np.startsWith('/employer')) current = 'employer';
-        else if (np.startsWith('/partner')) current = 'partner';
-        else if (np.startsWith('/counselor')) current = 'counselor';
-        else if (np.startsWith('/admin')) current = 'admin';
-        
-        setUserRoles(roles);
-        setCurrentRole(current);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
+  // Determine current portal based on pathname (strip locale prefix first)
+  const currentRole: PortalRole = normalizedPath.startsWith('/employer')
+    ? 'employer'
+    : normalizedPath.startsWith('/partner')
+      ? 'partner'
+      : normalizedPath.startsWith('/counselor')
+        ? 'counselor'
+        : normalizedPath.startsWith('/admin')
+          ? 'admin'
+          : 'member';
 
   // Body scroll lock when sidebar is open
   useEffect(() => {
@@ -99,7 +83,6 @@ export default function PortalShell({ children }: { children: React.ReactNode })
     setSidebarOpen(false);
   }, [pathname]);
 
-  const showNav = !isDashboard && !isPartnerPortal && !isDedicatedShell;
   const showRoleSwitcher = userRoles.length > 1;
 
   return (

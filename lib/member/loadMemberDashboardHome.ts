@@ -568,6 +568,13 @@ function userSelect() {
     wioaReviewedAt: true,
     courseraEnrollmentApproved: true,
     courseraEnrollmentApprovedAt: true,
+    // WAP-91: names who owns the staff-side approval steps (same single query).
+    counselorAssignments: {
+      where: { active: true },
+      orderBy: { assignedAt: 'desc' as const },
+      take: 1,
+      select: { counselor: { select: { user: { select: { fullName: true } } } } },
+    },
     enrolledProgram: true,
     assessmentCompleted: true,
     organization: {

@@ -48,12 +48,12 @@ export default async function VoiceInterviewPage() {
       <div style={{ maxWidth: 980, margin: '0 auto', padding: '1.25rem 1rem 1rem' }} className="wa-space-y-5">
         <PortalBreadcrumb
           items={[
-            { label: 'AI Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: 'Voice Job/Role Interviewer' },
           ]}
         />
         <PageOpener
-          kicker="AI Career Toolkit"
+          kicker="AI Career Tools"
           title="Voice Job/Role Interviewer"
           lede="Open a dedicated mock interview flow, answer questions out loud, and get live coaching feedback in a setup built specifically for practice."
         />

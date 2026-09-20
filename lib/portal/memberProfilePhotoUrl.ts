@@ -11,7 +11,19 @@ export async function getMemberProfilePhotoSignedUrl(
     where: { userId },
     select: { profilePhotoPath: true },
   });
-  const path = profile?.profilePhotoPath?.trim();
+  return getMemberProfilePhotoSignedUrlForPath(profile?.profilePhotoPath);
+}
+
+/**
+ * Signs an already-loaded `Profile.profilePhotoPath`. Callers that have the
+ * profile row in hand (the member shell layout) use this to avoid a second
+ * `profile.findUnique` per request. Returns null for a missing path or any
+ * storage failure — the shell then falls back to initials.
+ */
+export async function getMemberProfilePhotoSignedUrlForPath(
+  storagePath: string | null | undefined,
+): Promise<string | null> {
+  const path = storagePath?.trim();
   if (!path) return null;
 
   try {

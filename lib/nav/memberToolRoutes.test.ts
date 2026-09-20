@@ -32,7 +32,7 @@ test('a tool route marks that tool current, not the hub', () => {
   assert.equal(toolItem.label, 'Cover letter');
   assert.equal(toolItem.nestedUnder, MEMBER_TOOLKIT_HUB_HREF);
   assert.equal(toolItem.group, 'primary');
-  // The row sits directly under the Career Studio entry.
+  // The row sits directly under the AI Career Tools entry.
   const hubIndex = items.findIndex((item) => item.href === MEMBER_TOOLKIT_HUB_HREF);
   assert.equal(items[hubIndex + 1]?.href, '/dashboard/ai-tools/cover-letter');
 });
@@ -118,5 +118,5 @@ test('PR #2322 primary ordering survives the contextual row', () => {
 test('the hub keeps one name across the rail and the tool pages', () => {
   const hub = MEMBER_PORTAL_NAV_ITEMS.find((item) => item.href === MEMBER_TOOLKIT_HUB_HREF);
   assert.equal(hub?.label, MEMBER_TOOLKIT_HUB_LABEL);
-  assert.equal(MEMBER_TOOLKIT_HUB_LABEL, 'Career Studio');
+  assert.equal(MEMBER_TOOLKIT_HUB_LABEL, 'AI Career Tools');
 });
