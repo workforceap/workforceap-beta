@@ -7,6 +7,7 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/member/persistedAtRisk';
 import { APPLICANT_TRIAGE_BUCKET_RANK, APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { loadApplicantTriageByUserIds, type ApplicantTriageLoaded } from '@/lib/admin/applicantTriageLoad';
 import {
   buildApplicationEmailPacket,
@@ -240,6 +241,8 @@ async function loadProgramHealth(orgId: string): Promise<AdminProgramHealthRow[]
       organizationId: orgId,
       deletedAt: null,
       enrolledProgram: { not: null },
+      // Staff / dogfood accounts never count as members on the Command Center.
+      ...MEMBER_ONLY_WHERE,
     },
     _count: true,
   });

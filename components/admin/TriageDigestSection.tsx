@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import type { TriageDigest } from '@/lib/admin/triageDigest';
+import type { TriageDigest } from '@/lib/admin/triageDigestTypes';
 
 /**
  * "Who needs you today" — the prioritized triage section at the top of the
@@ -112,17 +112,31 @@ export default function TriageDigestSection({ digest }: { digest: TriageDigest }
                     {bucket.icon}
                   </span>
                 </div>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    color: 'var(--color-on-surface)',
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {bucket.label}
-                </p>
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      color: 'var(--color-on-surface)',
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {bucket.label}
+                  </p>
+                  {/* The rule behind the number — the Command Center prints the
+                      same definition, so the two pages cannot disagree silently. */}
+                  <p
+                    style={{
+                      margin: '0.2rem 0 0',
+                      fontSize: '0.8125rem',
+                      color: 'var(--color-on-surface-variant)',
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {bucket.definition}
+                  </p>
+                </div>
               </div>
 
               <ul
