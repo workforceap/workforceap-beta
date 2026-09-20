@@ -70,7 +70,8 @@ import {
   runDailyAtRiskCounselorAlerts,
   runMemberRetentionNudges,
 } from '@/lib/cron/at-risk-alerts';
-import { completeCronExecution } from '@/lib/cron/cronExecution';
+import { completeCronExecution, startCronExecution } from '@/lib/cron/cronExecution';
+import { logCronRun } from '@/lib/admin/logCronRun';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 const CRON_SECRET = 'test-cron-secret';
@@ -112,13 +113,27 @@ describe('/api/cron/at-risk-alerts authorization', () => {
     expect(runMemberRetentionNudges).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects a request with no cron secret and runs no work', async () => {
+  it('rejects a request with no cron secret, runs no work, and leaves a FAILED: unauthorized trace (WAP-177)', async () => {
     const res = await POST(request());
 
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'Unauthorized' });
     expect(runDailyAtRiskCounselorAlerts).not.toHaveBeenCalled();
     expect(runMemberRetentionNudges).not.toHaveBeenCalled();
+    // The first rejection per wrapper/reason within five minutes is recorded:
+    // a CronExecution row, an error diagnostic and an error report. Later
+    // rejections in this file fall inside the throttle window and add nothing.
+    expect(startCronExecution).toHaveBeenCalledWith('cron_at_risk_alerts');
+    expect(completeCronExecution).toHaveBeenCalledWith('exec-test-id', 'FAILED', 'unauthorized: unauthorized');
+    expect(logCronRun).toHaveBeenCalledWith(
+      'cron_at_risk_alerts',
+      expect.objectContaining({ ok: false, status: 401, reason: 'unauthorized' }),
+      'error',
+    );
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ route: 'cron/cron_at_risk_alerts' }),
+    );
   });
 
   it('rejects a wrong secret in either header form and runs no work', async () => {

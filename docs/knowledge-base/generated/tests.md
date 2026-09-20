@@ -74,7 +74,7 @@
 | [tests/api/coursera-replay-email-pacing.spec.ts](../../../tests/api/coursera-replay-email-pacing.spec.ts) | 62 | learning-coursera |  |
 | [tests/api/coursera-rest-webhook.spec.ts](../../../tests/api/coursera-rest-webhook.spec.ts) | 280 | learning-coursera |  |
 | [tests/api/cover-letter.spec.ts](../../../tests/api/cover-letter.spec.ts) | 167 | tests |  |
-| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 180 | tests |  |
+| [tests/api/cron-at-risk-alerts-auth.spec.ts](../../../tests/api/cron-at-risk-alerts-auth.spec.ts) | 195 | tests |  |
 | [tests/api/cron-at-risk-check.spec.ts](../../../tests/api/cron-at-risk-check.spec.ts) | 236 | tests |  |
 | [tests/api/cron-course-accountability.spec.ts](../../../tests/api/cron-course-accountability.spec.ts) | 71 | tests |  |
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
@@ -146,7 +146,7 @@
 | [tests/api/partner-signup.spec.ts](../../../tests/api/partner-signup.spec.ts) | 526 | tests |  |
 | [tests/api/password-recovery-destination.spec.ts](../../../tests/api/password-recovery-destination.spec.ts) | 172 | tests |  |
 | [tests/api/pathway-progress.spec.ts](../../../tests/api/pathway-progress.spec.ts) | 713 | tests |  |
-| [tests/api/placement-survey.spec.ts](../../../tests/api/placement-survey.spec.ts) | 1397 | tests |  |
+| [tests/api/placement-survey.spec.ts](../../../tests/api/placement-survey.spec.ts) | 1403 | tests |  |
 | [tests/api/points-routes.spec.ts](../../../tests/api/points-routes.spec.ts) | 451 | tests |  |
 | [tests/api/portal-nav-badges.spec.ts](../../../tests/api/portal-nav-badges.spec.ts) | 69 | tests |  |
 | [tests/api/program-enrollment.spec.ts](../../../tests/api/program-enrollment.spec.ts) | 409 | tests |  |
@@ -181,7 +181,7 @@
 | [tests/app/admin-weekly-recap-page.spec.tsx](../../../tests/app/admin-weekly-recap-page.spec.tsx) | 109 | tests |  |
 | [tests/app/api-docs-page-access.spec.tsx](../../../tests/app/api-docs-page-access.spec.tsx) | 35 | tests |  |
 | [tests/app/apply-funnel-token-scope.spec.ts](../../../tests/app/apply-funnel-token-scope.spec.ts) | 125 | tests |  |
-| [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 177 | tests |  |
+| [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 184 | tests |  |
 | [tests/app/apply-school-recovery.spec.tsx](../../../tests/app/apply-school-recovery.spec.tsx) | 65 | tests |  |
 | [tests/app/counselor-contextual-messages.spec.tsx](../../../tests/app/counselor-contextual-messages.spec.tsx) | 97 | tests |  |
 | [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 74 | tests |  |

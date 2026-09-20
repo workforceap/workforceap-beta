@@ -11,6 +11,10 @@ type PreviewRow = {
   receivingUnemployment: string | null;
   layoffCompany: string | null;
   snapWic: string | null;
+  /** WAP-53: staff label for the programs named after a Yes, or null. */
+  publicAssistancePrograms: string | null;
+  /** WAP-53: yes | no — a follow-up request, not verified enrollment. */
+  publicAssistanceHelpRequested: string | null;
   hearAbout: string | null;
   screeningAt: string | null;
 };
@@ -49,6 +53,16 @@ const columns: DataTableColumn<PreviewRow>[] = [
     key: 'snapWic',
     header: 'SNAP/WIC',
     cell: (row) => row.snapWic ?? '—',
+  },
+  {
+    key: 'publicAssistancePrograms',
+    header: 'Programs',
+    cell: (row) => row.publicAssistancePrograms || '—',
+  },
+  {
+    key: 'publicAssistanceHelpRequested',
+    header: 'Wants help applying',
+    cell: (row) => (row.publicAssistanceHelpRequested === 'yes' ? 'Yes — follow up' : row.publicAssistanceHelpRequested ?? '—'),
   },
   {
     key: 'hearAbout',
@@ -124,7 +138,7 @@ export default function EligibilityDatasheetPanel({ previewRows }: Props) {
             Eligibility screening datasheet
           </h2>
           <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.125rem 0 0' }}>
-            WS4 fields (unemployment, layoff/last employer, SNAP/WIC, hear-about, ambassador) · CSV export
+            WS4 fields (unemployment, layoff/last employer, SNAP/WIC plus which programs and help requested, hear-about, ambassador) · CSV export
             in-admin (not Google Sheets). Member Training Report also includes these columns.
           </p>
         </div>

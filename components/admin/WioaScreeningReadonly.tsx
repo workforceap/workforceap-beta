@@ -1,5 +1,5 @@
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
-import { barrierLabel, formatWioaReasons, publicAssistanceLabel } from '@/lib/wioa/wioaQualification';
+import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel } from '@/lib/wioa/wioaQualification';
 import { wioaReviewLabel } from '@/lib/wioa/wioaReview';
 
 const AGE_LABEL: Record<string, string> = {
@@ -41,6 +41,16 @@ export default function WioaScreeningReadonly({ snapshot, reviewStatus, reviewed
         <li>
           <strong>Receiving TANF / WIC / Food stamps (SNAP):</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
         </li>
+        {a.publicAssistanceSelfReport === true ? (
+          <>
+            <li>
+              <strong>Programs named (self-reported, unverified):</strong> {publicAssistanceProgramsLabel(a)}
+            </li>
+            <li>
+              <strong>Wants help applying for benefits:</strong> {publicAssistanceHelpLabel(a)}
+            </li>
+          </>
+        ) : null}
       </ul>
       <details style={{ marginBottom: '0.75rem' }}>
         <summary>Screening explanations (staff copy)</summary>

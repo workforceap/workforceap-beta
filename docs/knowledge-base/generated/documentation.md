@@ -269,10 +269,10 @@
 | [docs/knowledge-base/audit-baseline.json](../../../docs/knowledge-base/audit-baseline.json) | 6 | documentation |  |
 | [docs/knowledge-base/audit-report.md](../../../docs/knowledge-base/audit-report.md) | 37 | documentation |  |
 | [docs/knowledge-base/data.md](../../../docs/knowledge-base/data.md) | 62 | documentation |  |
-| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 45 | documentation |  |
+| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 47 | documentation |  |
 | [docs/knowledge-base/integrations.md](../../../docs/knowledge-base/integrations.md) | 143 | documentation |  |
 | [docs/knowledge-base/maintenance.md](../../../docs/knowledge-base/maintenance.md) | 68 | documentation |  |
-| [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 170 | documentation |  |
+| [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 172 | documentation |  |
 | [docs/knowledge-base/technical-debt.md](../../../docs/knowledge-base/technical-debt.md) | 68 | documentation |  |
 | [docs/live-qa-sweep-2026-05-14.md](../../../docs/live-qa-sweep-2026-05-14.md) | 55 | documentation |  |
 | [docs/marketing-perf-audit-2026-05-13.md](../../../docs/marketing-perf-audit-2026-05-13.md) | 272 | documentation |  |

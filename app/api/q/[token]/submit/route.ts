@@ -15,6 +15,11 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { normalizeHearAbout, normalizeYesNo } from '@/lib/apply/eligibilityExtendedFields';
 import {
+  normalizePublicAssistanceFollowUp,
+  publicAssistanceFollowUpIssue,
+  publicAssistanceFollowUpSchema,
+} from '@/lib/apply/publicAssistance';
+import {
   sendEligibilityScreeningAdminEmail,
   sendEligibilityScreeningConfirmationEmail,
 } from '@/lib/email';
@@ -59,6 +64,8 @@ const submitSchema = z.object({
   exhaustedUnemployment: z.enum(['yes', 'no']).optional().nullable(),
   layoffCompany: z.string().trim().max(200).optional().nullable(),
   snapWic: z.enum(['yes', 'no']).optional().nullable(),
+  // WAP-53 follow-ups after snapWic = yes; optional so older links/clients still parse.
+  ...publicAssistanceFollowUpSchema,
   hearAbout: z.string().trim().max(200).optional().nullable(),
   hearAboutOther: z.string().trim().max(200).optional().nullable(),
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
@@ -111,6 +118,11 @@ export const POST = withApiGuc(
         );
       }
       const data = parsed.data;
+      const followUpIssue = publicAssistanceFollowUpIssue({
+        snapWic: data.snapWic,
+        publicAssistancePrograms: data.publicAssistancePrograms,
+      });
+      if (followUpIssue) return NextResponse.json({ error: followUpIssue }, { status: 400 });
       const barrierTypes = (data.primaryBarriers ?? [])
         .map((b) => b.trim())
         .filter((b) => b && b !== 'none');
@@ -122,6 +134,11 @@ export const POST = withApiGuc(
         exhaustedUnemployment: normalizeYesNo(data.exhaustedUnemployment),
         layoffCompany: data.layoffCompany?.trim() ? data.layoffCompany.trim().slice(0, 200) : null,
         snapWic: normalizeYesNo(data.snapWic),
+        ...normalizePublicAssistanceFollowUp({
+          snapWic: data.snapWic,
+          publicAssistancePrograms: data.publicAssistancePrograms,
+          publicAssistanceHelpRequested: data.publicAssistanceHelpRequested,
+        }),
         hearAbout: normalizeHearAbout(data.hearAbout),
         hearAboutOther: normalizeHearAbout(data.hearAboutOther),
         partnerAmbassadorReferral: data.partnerAmbassadorReferral?.trim()

@@ -185,8 +185,9 @@
 | [prisma/migrations/20260912173000_organization_stripe_event_ordering/migration.sql](../../../prisma/migrations/20260912173000_organization_stripe_event_ordering/migration.sql) | 17 | database |  |
 | [prisma/migrations/20260912203000_add_subscription_state_revisions/migration.sql](../../../prisma/migrations/20260912203000_add_subscription_state_revisions/migration.sql) | 7 | database |  |
 | [prisma/migrations/20260918160000_add_profile_photo_path/migration.sql](../../../prisma/migrations/20260918160000_add_profile_photo_path/migration.sql) | 2 | database |  |
+| [prisma/migrations/20260920120000_public_assistance_follow_up/migration.sql](../../../prisma/migrations/20260920120000_public_assistance_follow_up/migration.sql) | 7 | database |  |
 | [prisma/migrations/migration_lock.toml](../../../prisma/migrations/migration_lock.toml) | 3 | database |  |
-| [prisma/schema.prisma](../../../prisma/schema.prisma) | 3175 | database |  |
+| [prisma/schema.prisma](../../../prisma/schema.prisma) | 3179 | database |  |
 | [prisma/seed-automation-rules.ts](../../../prisma/seed-automation-rules.ts) | 46 | database |  |
 | [prisma/seed-blog.ts](../../../prisma/seed-blog.ts) | 377 | database | seedBlogPosts:350 |
 | [prisma/seed-demo.ts](../../../prisma/seed-demo.ts) | 697 | database |  |

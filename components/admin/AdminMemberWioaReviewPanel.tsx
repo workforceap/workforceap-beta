@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
-import { barrierLabel, formatWioaReasons, publicAssistanceLabel } from '@/lib/wioa/wioaQualification';
+import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel } from '@/lib/wioa/wioaQualification';
 import { WIOA_REVIEW_LABELS, WIOA_REVIEW_STATUSES, type WioaReviewStatus } from '@/lib/wioa/wioaReview';
 import type { WioaReviewSnapshotRow } from '@/lib/wioa/reviewSnapshot';
 
@@ -112,6 +112,16 @@ export default function AdminMemberWioaReviewPanel({
         <li>
           <strong>Receiving TANF / WIC / Food stamps (SNAP):</strong> {publicAssistanceLabel(a.publicAssistanceSelfReport)}
         </li>
+        {a.publicAssistanceSelfReport === true ? (
+          <>
+            <li>
+              <strong>Programs named (self-reported, unverified):</strong> {publicAssistanceProgramsLabel(a)}
+            </li>
+            <li>
+              <strong>Wants help applying for benefits:</strong> {publicAssistanceHelpLabel(a)}
+            </li>
+          </>
+        ) : null}
         <li>
           <strong>Training interest:</strong> {a.trainingInterest ? 'Yes' : 'No'}
         </li>

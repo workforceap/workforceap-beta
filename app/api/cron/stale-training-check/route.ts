@@ -6,6 +6,10 @@ import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { runStaleCourseraTrainingCheck } from '@/lib/member/staleTrainingCron';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
+// WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
+// by data-cleanup instead of pinning a RUNNING row forever.
+export const maxDuration = 300;
+
 /**
  * GET /api/cron/stale-training-check
  *

@@ -44,7 +44,7 @@
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
-| [package.json](../../../package.json) | 143 | root |  |
+| [package.json](../../../package.json) | 146 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |
 | [pnpm-lock.yaml](../../../pnpm-lock.yaml) | 12644 | root |  |
 | [pnpm-workspace.yaml](../../../pnpm-workspace.yaml) | 13 | root |  |

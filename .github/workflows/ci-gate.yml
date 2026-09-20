@@ -119,6 +119,13 @@ jobs:
       - name: Verify high-risk tenant routes
         run: node scripts/verify-high-risk-tenant-routes.cjs
 
+      # Source-text test retirement contract (WAP-175). A test that reads an
+      # application source file and asserts on its text proves nothing about
+      # behaviour. Today's inventory is frozen in
+      # scripts/source-text-tests-baseline.json; that list may only shrink.
+      - name: Verify no new source-text tests
+        run: node scripts/verify-no-source-text-tests.mjs
+
       - name: Build
         run: npm run build
         env:
@@ -131,3 +138,69 @@ jobs:
       - name: Verify deployed PDF parser assets
         run: node scripts/verify-pdf-deployment.mjs
         timeout-minutes: 2
+
+  # Real PostgreSQL contract (WAP-175 lever 1). The typecheck/build job above
+  # has no database, so migrations, RLS policies and role queries were never
+  # exercised by CI. This job stands up PostgreSQL 16, applies the current
+  # schema.prisma with `db push` (clean migration replay is unsupported — see
+  # docs/DATABASE-RECOVERY.md — so the schema file is the executable baseline
+  # until WAP-178 lands a replayable chain), then runs the suites that need a
+  # live database: the isolated migration proof, the member-message RLS proof
+  # and the real-Prisma role tests. Required gate.
+  database-contract:
+    name: Database contract (PostgreSQL 16)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: wap_shadow
+        ports:
+          - 5432:5432
+          # The member-message RLS proof only accepts the isolated 55437 port.
+          - 55437:5432
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/wap_contract"
+      POSTGRES_PRISMA_URL: "postgresql://ci:ci@localhost:5432/wap_contract"
+      POSTGRES_URL_NON_POOLING: "postgresql://ci:ci@localhost:5432/wap_contract"
+      SHADOW_DATABASE_URL: "postgresql://ci:ci@localhost:5432/wap_shadow"
+      RLS_PROOF_DATABASE_URL: "postgresql://ci:ci@127.0.0.1:55437/workforceap_message_rls_proof_20260909"
+      RLS_PROOF_ARTIFACT_DIR: "${{ github.workspace }}/.db-contract/member-message-rls-proof"
+      NODE_OPTIONS: "--max-old-space-size=4096"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run database contract suite
+        run: node scripts/run-db-contract-tests.mjs
+
+      - name: Upload RLS proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: member-message-rls-proof
+          path: .db-contract/member-message-rls-proof
+          if-no-files-found: ignore
