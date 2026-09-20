@@ -138738,7 +138738,7 @@
   {
     "from": "tests/lib/milestone-email-provider.spec.ts",
     "specifier": "resend",
-    "line": 35,
+    "line": 39,
     "kind": "type",
     "external": true,
     "package": "resend"

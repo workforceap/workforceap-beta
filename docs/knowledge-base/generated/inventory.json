@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "a2c557ba439dd191da247d1dc5b08cedff4643d97e95711b34916a045592df80",
+  "inputTreeSha256": "a3f09a639ad8e312f669d2071519f9422f9cd3ceb7b5666dfe2975b8040e2fc3",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -169710,9 +169710,9 @@
       "path": "tests/lib/milestone-email-provider.spec.ts",
       "area": "tests",
       "domain": "member-counselor",
-      "bytes": 2478,
-      "lines": 39,
-      "sha256": "f5bb3d387536d2b3a5e1e0ee03ce282b333dfef9076d797a07546ce82232e90a",
+      "bytes": 3062,
+      "lines": 48,
+      "sha256": "b0acfd5d26ef3326a367d7844629a4586a49706e0f8e8924659b0b99736b9d0a",
       "binary": false,
       "exports": [],
       "declarations": [
