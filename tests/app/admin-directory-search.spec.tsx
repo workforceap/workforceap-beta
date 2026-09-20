@@ -44,6 +44,8 @@ function matches(value: unknown, where: unknown): boolean {
   if ('contains' in filters) return typeof value === 'string' && value.toLowerCase().includes(String(filters.contains).toLowerCase());
   if ('in' in filters) return (filters.in as unknown[]).includes(value);
   if ('notIn' in filters) return !(filters.notIn as unknown[]).includes(value);
+  if ('startsWith' in filters) return typeof value === 'string' && value.startsWith(String(filters.startsWith));
+  if ('endsWith' in filters) return typeof value === 'string' && value.endsWith(String(filters.endsWith));
   if ('not' in filters) return !matches(value, filters.not);
   if ('gte' in filters && !(value instanceof Date && value >= (filters.gte as Date))) return false;
   if ('lte' in filters && !(value instanceof Date && value <= (filters.lte as Date))) return false;
@@ -53,6 +55,8 @@ function matches(value: unknown, where: unknown): boolean {
   return Object.entries(filters).every(([key, filter]) => {
     if (key === 'AND') return (Array.isArray(filter) ? filter : [filter]).every((entry) => matches(value, entry));
     if (key === 'OR') return (filter as unknown[]).some((entry) => matches(value, entry));
+    // Prisma `NOT: [...]` (the seeded-fixture email patterns in MEMBER_ONLY_WHERE): out when any entry matches.
+    if (key === 'NOT') return !(Array.isArray(filter) ? filter : [filter]).some((entry) => matches(value, entry));
     if (key === 'gte' || key === 'lte') return true;
     return matches((value as RecordValue | null)?.[key], filter);
   });

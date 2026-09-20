@@ -184,7 +184,7 @@
 | [tests/app/add-member-wizard.spec.tsx](../../../tests/app/add-member-wizard.spec.tsx) | 247 | tests |  |
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
-| [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
+| [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 216 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |

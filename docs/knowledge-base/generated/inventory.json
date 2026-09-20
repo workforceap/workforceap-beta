@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "492d2badd53dc07cd141e3777a4911bf31c372ccf74ffd00d6659b1ac2670402",
+  "inputTreeSha256": "43bedbd503979583831fa08bd4cbcef9d7dda06e8be9cf1cc4b71c8d76142803",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -164409,9 +164409,9 @@
       "path": "tests/app/admin-directory-search.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 13047,
-      "lines": 212,
-      "sha256": "023ce9ae49cb29bdb94c2d0c732fb2cbe7d82a384cafb0e76138d4c93c773bd5",
+      "bytes": 13495,
+      "lines": 216,
+      "sha256": "4b99413d2fae0c1d20a057f67d4365a17a56b80903270820640b4f4eafce531d",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -164432,12 +164432,12 @@
         },
         {
           "name": "user",
-          "line": 61,
+          "line": 65,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "propsFor",
-          "line": 69,
+          "line": 73,
           "kind": "FunctionDeclaration"
         }
       ],
