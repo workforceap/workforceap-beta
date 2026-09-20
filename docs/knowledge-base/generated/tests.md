@@ -64,7 +64,7 @@
 | [tests/api/counselor-feedback.spec.ts](../../../tests/api/counselor-feedback.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-handoff-atomicity.spec.ts](../../../tests/api/counselor-handoff-atomicity.spec.ts) | 56 | tests |  |
 | [tests/api/counselor-inbox-zero-bulk.spec.ts](../../../tests/api/counselor-inbox-zero-bulk.spec.ts) | 187 | tests |  |
-| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 148 | tests |  |
+| [tests/api/counselor-inbox-zero.spec.ts](../../../tests/api/counselor-inbox-zero.spec.ts) | 149 | tests |  |
 | [tests/api/counselor-notes-author-gate.spec.ts](../../../tests/api/counselor-notes-author-gate.spec.ts) | 127 | tests |  |
 | [tests/api/counselor-routes.spec.ts](../../../tests/api/counselor-routes.spec.ts) | 1751 | tests |  |
 | [tests/api/counselor-thread-access-gate.spec.ts](../../../tests/api/counselor-thread-access-gate.spec.ts) | 139 | tests |  |
@@ -185,7 +185,7 @@
 | [tests/app/apply-readiness-substeps.spec.tsx](../../../tests/app/apply-readiness-substeps.spec.tsx) | 177 | tests |  |
 | [tests/app/apply-school-recovery.spec.tsx](../../../tests/app/apply-school-recovery.spec.tsx) | 65 | tests |  |
 | [tests/app/counselor-contextual-messages.spec.tsx](../../../tests/app/counselor-contextual-messages.spec.tsx) | 97 | tests |  |
-| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 74 | tests |  |
+| [tests/app/counselor-handoff-access.spec.tsx](../../../tests/app/counselor-handoff-access.spec.tsx) | 75 | tests |  |
 | [tests/app/counselor-member-pageheader.spec.ts](../../../tests/app/counselor-member-pageheader.spec.ts) | 30 | tests |  |
 | [tests/app/counselor-roster-failure.spec.tsx](../../../tests/app/counselor-roster-failure.spec.tsx) | 26 | tests |  |
 | [tests/app/counselor-student-detail-dates.spec.tsx](../../../tests/app/counselor-student-detail-dates.spec.tsx) | 117 | tests |  |
@@ -224,6 +224,7 @@
 | [tests/components/admin-training-progress-roster.test.tsx](../../../tests/components/admin-training-progress-roster.test.tsx) | 275 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
+| [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 147 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
 | [tests/components/auth-controls.spec.tsx](../../../tests/components/auth-controls.spec.tsx) | 61 | tests |  |
@@ -233,7 +234,7 @@
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/counselor-analytics.spec.tsx](../../../tests/components/counselor-analytics.spec.tsx) | 145 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
-| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 25 | tests |  |
+| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 35 | tests |  |
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
 | [tests/components/coursera-provisioning-queue-last-activity.spec.tsx](../../../tests/components/coursera-provisioning-queue-last-activity.spec.tsx) | 134 | learning-coursera |  |
@@ -241,8 +242,9 @@
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
 | [tests/components/employer-signup-password-toggle.spec.tsx](../../../tests/components/employer-signup-password-toggle.spec.tsx) | 51 | tests |  |
+| [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
-| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 68 | tests |  |
+| [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
@@ -259,6 +261,7 @@
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
 | [tests/components/partner-overview-density.spec.tsx](../../../tests/components/partner-overview-density.spec.tsx) | 41 | tests |  |
 | [tests/components/partner-referral-share.spec.tsx](../../../tests/components/partner-referral-share.spec.tsx) | 56 | tests |  |
+| [tests/components/partner-status-pill.spec.ts](../../../tests/components/partner-status-pill.spec.ts) | 19 | tests |  |
 | [tests/components/persisted-risk-presentation.spec.tsx](../../../tests/components/persisted-risk-presentation.spec.tsx) | 59 | tests |  |
 | [tests/components/portal-date-inputs-today.spec.tsx](../../../tests/components/portal-date-inputs-today.spec.tsx) | 44 | tests |  |
 | [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 113 | communications |  |
@@ -312,6 +315,7 @@
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
+| [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |
 | [tests/fixtures/boardSnapshot.ts](../../../tests/fixtures/boardSnapshot.ts) | 28 | tests | boardSnapshotFixture:4 |
 | [tests/fixtures/member-message-rls-baseline.json](../../../tests/fixtures/member-message-rls-baseline.json) | 204 | tests |  |
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
@@ -372,6 +376,7 @@
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
 | [tests/lib/event-persistence.spec.ts](../../../tests/lib/event-persistence.spec.ts) | 43 | tests |  |
 | [tests/lib/firstValueActions.test.ts](../../../tests/lib/firstValueActions.test.ts) | 70 | tests |  |
+| [tests/lib/focus-ring-recipe.spec.ts](../../../tests/lib/focus-ring-recipe.spec.ts) | 131 | tests |  |
 | [tests/lib/google-it-support-completion.spec.ts](../../../tests/lib/google-it-support-completion.spec.ts) | 49 | tests |  |
 | [tests/lib/i18n-page-message-keys.spec.ts](../../../tests/lib/i18n-page-message-keys.spec.ts) | 45 | tests |  |
 | [tests/lib/job-expiry-instant.spec.ts](../../../tests/lib/job-expiry-instant.spec.ts) | 43 | tests |  |
