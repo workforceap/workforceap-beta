@@ -55,10 +55,6 @@ export default async function EmployerJobPostPage() {
         kicker={t('employerPortal')}
         title={t('postAJobTitle')}
         subtitle={t('publishToJobBoard')}
-        breadcrumbs={[
-          { label: t('jobPostings'), href: '/employer/jobs' },
-          { label: t('postAJobTitle') },
-        ]}
         action={
           <Link
             href="/employer/jobs/new"

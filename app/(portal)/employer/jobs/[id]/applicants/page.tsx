@@ -76,11 +76,6 @@ export default async function EmployerJobApplicantsPage({ params }: Props) {
         kicker={t('employerPortal')}
         title={`${t('applicantsFor')}: ${job.title}`}
         subtitle={`${applicants.length} ${applicants.length === 1 ? t('applicant') : t('applicants')}`}
-        breadcrumbs={[
-          { label: t('jobPostings'), href: '/employer/jobs' },
-          { label: job.title, href: `/employer/jobs/${id}` },
-          { label: t('applicantsMetaTitle') },
-        ]}
         action={
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <a href={`/api/employer/jobs/${id}/applications/export`} className="btn btn-outline btn-sm">
