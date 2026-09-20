@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -80,38 +80,148 @@ import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
 import PageHeader from '@/components/portal/PageHeader';
 
-export default function ExecutiveDashboardPage() {
-  const searchParams = useSearchParams();
-  const legacy = searchParams?.get('ui') === 'legacy';
+/** Give up on a stalled metrics request after this long and offer Retry. */
+export const ADMIN_METRICS_TIMEOUT_MS = 20_000;
 
+function DashboardFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ padding: 'clamp(1rem, 3vw, 2rem)', maxWidth: 1200, margin: '0 auto' }}>
+      <PageHeader
+        title="Executive Dashboard"
+        subtitle="Real-time metrics across all 7 CEO funnels and placement KPIs"
+        breadcrumbs={[{ href: '/admin', label: 'Admin' }, { label: 'Executive Dashboard' }]}
+      />
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Loading state with the page header in place, so the route never renders
+ * as an unnamed blank page while the request is in flight (audit 2026-09-20:
+ * the page sat on a bare "Loading metrics…" line with no header).
+ */
+function DashboardLoading() {
+  return (
+    <DashboardFrame>
+      <p role="status" data-portal-loading-state="admin-metrics" style={{ margin: '0 0 1rem', color: 'var(--wa-muted)' }}>
+        Loading metrics…
+      </p>
+      <div
+        aria-hidden="true"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+          gap: '0.75rem',
+          marginBottom: '1.5rem',
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            style={{
+              background: 'var(--surface-container-low)',
+              borderRadius: 12,
+              border: '1px solid var(--outline-variant)',
+              height: 88,
+            }}
+          />
+        ))}
+      </div>
+    </DashboardFrame>
+  );
+}
+
+/**
+ * Metrics request with an abort timeout. A fetch that never settles (dev
+ * server recompiling, proxy stall) used to leave the page on "Loading
+ * metrics…" forever; now it becomes an error state with Retry.
+ */
+function useAdminMetrics() {
   const [data, setData] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
-  useEffect(() => {
-    fetch('/api/admin/metrics')
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) throw new Error(d.error);
-        setData(d);
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+  const retry = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    setAttempt((n) => n + 1);
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), ADMIN_METRICS_TIMEOUT_MS);
+    let cancelled = false;
+
+    fetch('/api/admin/metrics', { credentials: 'include', signal: controller.signal })
+      .then(async (r) => {
+        const body = (await r.json().catch(() => null)) as (MetricsData & { error?: string }) | null;
+        if (!r.ok || !body || body.error) {
+          throw new Error(body?.error || `Metrics request failed (${r.status})`);
+        }
+        return body;
+      })
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        if (e instanceof DOMException && e.name === 'AbortError') {
+          setError('The metrics request timed out.');
+        } else {
+          setError(e instanceof Error ? e.message : 'Metrics request failed');
+        }
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [attempt]);
+
+  return { data, loading, error, retry };
+}
+
+export default function ExecutiveDashboardPage() {
+  // useSearchParams needs a Suspense boundary or the whole route can bail
+  // out to client rendering (same guard as app/admin/layout.tsx).
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <ExecutiveDashboardContent />
+    </Suspense>
+  );
+}
+
+function ExecutiveDashboardContent() {
+  const searchParams = useSearchParams();
+  const legacy = searchParams?.get('ui') === 'legacy';
+
+  const { data, loading, error, retry } = useAdminMetrics();
+
   if (loading) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <p>Loading metrics…</p>
-      </div>
-    );
+    return <DashboardLoading />;
   }
 
   if (error || !data) {
     return (
-      <div data-portal-error-state="admin-metrics" style={{ padding: '2rem', color: 'var(--color-error)' }}>
-        <p>Error loading metrics: {error || 'No data'}</p>
-      </div>
+      <DashboardFrame>
+        <div
+          data-portal-error-state="admin-metrics"
+          role="alert"
+          className="admin-inline-feedback admin-inline-feedback--error"
+        >
+          <p>Could not load metrics: {error || 'no data was returned'}.</p>
+          <button type="button" className="btn btn-outline btn-sm" onClick={retry}>
+            Retry
+          </button>
+        </div>
+      </DashboardFrame>
     );
   }
 

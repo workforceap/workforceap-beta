@@ -6,6 +6,12 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
+import {
+  authProviderFailureStatus,
+  classifyAuthProviderError,
+  describeAuthProviderFailure,
+} from '@/lib/auth/authProviderError';
+import { captureApiError } from '@/lib/observability/captureApiError';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -122,21 +128,55 @@ async function ensurePartnerInviteUser(params: {
     const displayName = partner.contactName?.trim() || 'Partner User';
   
     let authUserId: string | null = null;
-    const supabase = getSupabaseAdmin();
+    // Provider failures used to escape to the outer catch as a bare 500
+    // "Internal server error" and the partner page showed nothing. Classify
+    // them and answer with an "Invite not sent: …" reason (audit 2026-09-20).
+    let supabase: ReturnType<typeof getSupabaseAdmin>;
+    try {
+      supabase = getSupabaseAdmin();
+    } catch (error) {
+      captureApiError(error, { route: 'admin/partners/invite', extra: { kind: 'unavailable', stage: 'client' } });
+      return NextResponse.json(
+        { error: describeAuthProviderFailure('unavailable', 'invite'), reason: 'unavailable' },
+        { status: 503 },
+      );
+    }
   
-    const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `${siteUrl}/partner`,
-      data: { full_name: displayName },
-    });
+    try {
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${siteUrl}/partner`,
+        data: { full_name: displayName },
+      });
   
-    if (!inviteError && inviteData.user?.id) {
-      authUserId = inviteData.user.id;
-    } else {
-      authUserId = (await findSupabaseAuthUserByEmail(supabase, email, { perPage: 200, maxPages: 25 }))?.id ?? null;
-      if (!authUserId) {
-        const msg = inviteError?.message ?? 'Could not invite or find this user';
-        return NextResponse.json({ error: msg }, { status: 400 });
+      if (!inviteError && inviteData.user?.id) {
+        authUserId = inviteData.user.id;
+      } else {
+        const inviteKind = inviteError ? classifyAuthProviderError(inviteError) : 'unknown';
+        if (inviteKind === 'unavailable') {
+          captureApiError(inviteError, { route: 'admin/partners/invite', extra: { kind: inviteKind, stage: 'invite' } });
+          return NextResponse.json(
+            { error: describeAuthProviderFailure('unavailable', 'invite'), reason: 'unavailable' },
+            { status: 503 },
+          );
+        }
+        authUserId = (await findSupabaseAuthUserByEmail(supabase, email, { perPage: 200, maxPages: 25 }))?.id ?? null;
+        if (!authUserId) {
+          const kind = inviteKind === 'duplicate' ? 'unknown' : inviteKind;
+          if (inviteError) captureApiError(inviteError, { route: 'admin/partners/invite', extra: { kind, stage: 'invite' } });
+          return NextResponse.json(
+            { error: describeAuthProviderFailure(kind, 'invite'), reason: kind },
+            { status: authProviderFailureStatus(kind) },
+          );
+        }
       }
+    } catch (error) {
+      const kind = classifyAuthProviderError(error) === 'unavailable' ? 'unavailable' : 'unknown';
+      console.error('[admin/partners/invite] provider call failed', error);
+      captureApiError(error, { route: 'admin/partners/invite', extra: { kind, stage: 'provider', thrown: true } });
+      return NextResponse.json(
+        { error: describeAuthProviderFailure(kind, 'invite'), reason: kind },
+        { status: kind === 'unavailable' ? 503 : 502 },
+      );
     }
   
     try {

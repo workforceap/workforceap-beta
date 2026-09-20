@@ -8453,8 +8453,13 @@
     "routing": "filesystem",
     "exports": [
       {
+        "name": "ADMIN_METRICS_TIMEOUT_MS",
+        "line": 84,
+        "kind": "Variable"
+      },
+      {
         "name": "default",
-        "line": 83,
+        "line": 191,
         "kind": "FunctionDeclaration",
         "localName": "ExecutiveDashboardPage"
       }
@@ -8864,12 +8869,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 15,
+        "line": 16,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 35,
+        "line": 36,
         "kind": "FunctionDeclaration",
         "localName": "AdminFeatureFlagsPage"
       }
@@ -10903,12 +10908,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 13,
+        "line": 14,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 21,
+        "line": 22,
         "kind": "FunctionDeclaration",
         "localName": "AdminSettingsPage"
       }
@@ -18021,7 +18026,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 95,
+        "line": 101,
         "kind": "Variable"
       }
     ],
@@ -18056,8 +18061,13 @@
         "kind": "import"
       },
       {
+        "specifier": "@/lib/auth/authProviderError",
+        "line": 9,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 11,
+        "line": 17,
         "kind": "import"
       }
     ]
@@ -19669,12 +19679,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 49,
+        "line": 55,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 236,
+        "line": 258,
         "kind": "Variable"
       }
     ],
@@ -19696,27 +19706,32 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 9,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/withTenantScope",
         "line": 10,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/passwordReset",
-        "line": 17,
+        "specifier": "@/lib/tenant/withTenantScope",
+        "line": 11,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/supabaseAdminUsers",
+        "specifier": "@/lib/auth/passwordReset",
         "line": 18,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/db/withRequestGuc",
+        "specifier": "@/lib/auth/supabaseAdminUsers",
+        "line": 19,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/authProviderError",
         "line": 20,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 26,
         "kind": "import"
       }
     ]

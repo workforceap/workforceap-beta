@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { Button } from '@astryxdesign/core/Button';
@@ -47,6 +48,8 @@ export interface FeatureFlagsKitProps {
   off: number;
   /** Flags changed within the recent window (e.g. last 7 days). */
   recentlyChanged: number;
+  /** Optional notice under the opener (e.g. org-wide warning for non-super admins). */
+  notice?: ReactNode;
 }
 
 export function FeatureFlagsKit({
@@ -55,6 +58,7 @@ export function FeatureFlagsKit({
   on,
   off,
   recentlyChanged,
+  notice,
 }: FeatureFlagsKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Total Flags', value: total },
@@ -143,6 +147,8 @@ export function FeatureFlagsKit({
           </AstryxLink>
         }
       />
+
+      {notice}
 
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />

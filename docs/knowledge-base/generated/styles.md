@@ -18,6 +18,6 @@
 | [css/portal-kit.css](../../../css/portal-kit.css) | 1224 | styles |  |
 | [css/portal-main-extracted.css](../../../css/portal-main-extracted.css) | 10103 | styles |  |
 | [css/portal-tokens.css](../../../css/portal-tokens.css) | 239 | styles |  |
-| [css/portal-ui-kit.css](../../../css/portal-ui-kit.css) | 270 | styles |  |
+| [css/portal-ui-kit.css](../../../css/portal-ui-kit.css) | 282 | styles |  |
 | [css/portal.css](../../../css/portal.css) | 3401 | styles |  |
 | [css/wa-brand-tokens.css](../../../css/wa-brand-tokens.css) | 70 | styles |  |

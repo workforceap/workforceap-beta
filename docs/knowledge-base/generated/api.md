@@ -169,7 +169,7 @@
 | [app/api/admin/partner-payouts/route.ts](../../../app/api/admin/partner-payouts/route.ts) | 103 | administration | GET:103 |
 | [app/api/admin/partners/\[id\]/approve/route.ts](../../../app/api/admin/partners/%5Bid%5D/approve/route.ts) | 117 | partners-funding | POST:16 |
 | [app/api/admin/partners/\[id\]/deactivate/route.ts](../../../app/api/admin/partners/%5Bid%5D/deactivate/route.ts) | 111 | partners-funding | POST:15 |
-| [app/api/admin/partners/\[id\]/invite/route.ts](../../../app/api/admin/partners/%5Bid%5D/invite/route.ts) | 166 | partners-funding | POST:95 |
+| [app/api/admin/partners/\[id\]/invite/route.ts](../../../app/api/admin/partners/%5Bid%5D/invite/route.ts) | 206 | partners-funding | POST:101 |
 | [app/api/admin/partners/\[id\]/quarterly-outcomes/route.ts](../../../app/api/admin/partners/%5Bid%5D/quarterly-outcomes/route.ts) | 68 | partners-funding | GET:27 |
 | [app/api/admin/partners/\[id\]/reactivate/route.ts](../../../app/api/admin/partners/%5Bid%5D/reactivate/route.ts) | 65 | partners-funding | POST:11 |
 | [app/api/admin/partners/\[id\]/reject/route.ts](../../../app/api/admin/partners/%5Bid%5D/reject/route.ts) | 121 | partners-funding | POST:14 |
@@ -207,7 +207,7 @@
 | [app/api/admin/users/_deletedEmail.test.ts](../../../app/api/admin/users/_deletedEmail.test.ts) | 31 | administration |  |
 | [app/api/admin/users/_deletedEmail.ts](../../../app/api/admin/users/_deletedEmail.ts) | 21 | administration | buildDeletedEmail:6, parseDeletedEmail:11, isDeletedEmail:15, isDeletedEmailMarker:19 |
 | [app/api/admin/users/free-deleted-emails/route.ts](../../../app/api/admin/users/free-deleted-emails/route.ts) | 85 | administration | POST:85 |
-| [app/api/admin/users/route.ts](../../../app/api/admin/users/route.ts) | 236 | administration | GET:49, POST:236 |
+| [app/api/admin/users/route.ts](../../../app/api/admin/users/route.ts) | 258 | administration | GET:55, POST:258 |
 | [app/api/admin/webhook-events/export/route.ts](../../../app/api/admin/webhook-events/export/route.ts) | 91 | administration | GET:91 |
 | [app/api/admin/webhooks/process-retries/_processRetries.ts](../../../app/api/admin/webhooks/process-retries/_processRetries.ts) | 78 | administration | RetryResult:7, processRetryEvent:43 |
 | [app/api/admin/webhooks/process-retries/route.test.ts](../../../app/api/admin/webhooks/process-retries/route.test.ts) | 100 | administration |  |

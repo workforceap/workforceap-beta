@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "de6d6adaeecc34924cfa10e34249c5c20a08605819cd7c3a6e104826bbacc544",
+  "inputTreeSha256": "a4b1e9b4e5af1c63566dc7f073a29afcc566a73a7261f98bef45e44a4791eb7e",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4831,
-    "sourceModules": 3493,
-    "importReferences": 17005,
-    "resolvedLocalReferences": 11332,
+    "files": 4842,
+    "sourceModules": 3504,
+    "importReferences": 17053,
+    "resolvedLocalReferences": 11365,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1054,
     "nextRouteFiles": 1021,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 834,
-    "testCandidates": 827,
+    "testFiles": 841,
+    "testCandidates": 834,
     "testHelpers": 7,
-    "staticallySelectedTests": 824,
+    "staticallySelectedTests": 831,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 682
+      "files": 684
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1014
+      "files": 1018
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 464
+      "files": 469
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 729
+      "references": 730
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -132,7 +132,7 @@
     },
     {
       "file": "lib/tenant/organization.ts",
-      "references": 241
+      "references": 242
     },
     {
       "file": "lib/audit.ts",
@@ -160,7 +160,7 @@
     },
     {
       "file": "lib/observability/captureApiError.ts",
-      "references": 109
+      "references": 111
     },
     {
       "file": "lib/rate-limit.ts",

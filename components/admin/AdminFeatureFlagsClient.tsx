@@ -57,7 +57,7 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
-export default function AdminFeatureFlagsClient() {
+export default function AdminFeatureFlagsClient({ notice }: { notice?: React.ReactNode } = {}) {
   const router = useRouter();
   const [flags, setFlags] = useState<FeatureFlag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -233,6 +233,7 @@ export default function AdminFeatureFlagsClient() {
           </button>
         }
       />
+      {notice}
 
       {error && (
         <div role="alert" style={{ padding: '1rem', background: 'rgba(173,44,77,0.08)', color: '#ad2c4d', borderRadius: '0.625rem', marginBottom: '1rem' }}>
