@@ -9,10 +9,10 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import CounselorStudentsRosterClient from '@/components/portal/counselor/CounselorStudentsRosterClient';
 import { loadCounselorRosterRiskAndActivity } from '@/lib/counselor/counselorStudentsRoster';
-import CounselorAnalyticsCards, { CounselorAnalyticsCardsDesktop } from '@/components/portal/counselor/CounselorAnalyticsCards';
-import ProgressDistributionChart from '@/components/portal/counselor/ProgressDistributionChartLazy';
-import AtRiskMemberList from '@/components/portal/counselor/AtRiskMemberList';
-import RecentActivityFeed from '@/components/portal/counselor/RecentActivityFeed';
+import CounselorRosterStats from '@/components/portal/counselor/CounselorRosterStats';
+import { buildAttentionQueue, selectByReason, type AttentionQueue } from '@/lib/attention';
+import { loadAttentionFacts } from '@/lib/attention/loadFacts';
+import { buildCounselorRosterStats, ROSTER_STAT_LOOKBACK_DAYS } from '@/lib/counselor/rosterStats';
 import styles from './students.module.css';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 
@@ -74,8 +74,6 @@ export default async function CounselorStudentsPage({
       })
     : [];
 
-  const activeCount = assignments.length;
-  const enrolledCount = assignments.filter((a) => a.member.enrolledProgram).length;
   const memberIds = assignments.map((a) => a.memberId);
 
   const activityRiskByMember = await loadCounselorRosterRiskAndActivity(memberIds);
@@ -176,141 +174,67 @@ export default async function CounselorStudentsPage({
   const membersWithUpcomingSession = new Set(upcomingSessions.map((s) => s.memberId));
   const membersWithPendingApplication = new Set(pendingApplications.map((a) => a.userId));
 
+  // ── Attention facts ─────────────────────────────────────
+  // The same loader + evaluator every counselor surface uses (lib/attention),
+  // run over exactly the members in this roster, so the tiles above the table
+  // and the "At risk" chip agree with Inbox zero, Triage and the Work queue.
+  let attention: AttentionQueue | null = null;
+  try {
+    attention = buildAttentionQueue(await loadAttentionFacts(memberIds, now), now);
+  } catch (err) {
+    console.error('[counselor:students] attention queue failed:', err);
+  }
+  const riskAlertMemberIds = attention
+    ? new Set(selectByReason(attention, 'risk_alert').map((row) => row.memberId))
+    : null;
+
   const filterMeta = rosterRows.map((r) => ({
     memberId: r.memberId,
-    atRisk: r.riskScore != null && r.riskLevel !== 'LOW',
+    atRisk: riskAlertMemberIds
+      ? riskAlertMemberIds.has(r.memberId)
+      : r.riskScore != null && r.riskLevel !== 'LOW',
     upcomingSession: membersWithUpcomingSession.has(r.memberId),
     pendingApplication: membersWithPendingApplication.has(r.memberId),
   }));
 
-  // ── Analytics ───────────────────────────────────────────
-  // Per-member average progress from the already-loaded memberProgramProgress.
-  // A member's progress is the mean of their program averagePercent values.
-  const memberAvgProgress = assignments.map((a) => {
-    const percents = a.member.memberProgramProgress.map((p) => p.averagePercent);
-    if (percents.length === 0) return 0;
-    return percents.reduce((sum, p) => sum + p, 0) / percents.length;
-  });
-
-  const avgProgress = memberAvgProgress.length
-    ? Math.round(memberAvgProgress.reduce((sum, p) => sum + p, 0) / memberAvgProgress.length)
-    : 0;
-
-  // Bucket each member's average progress into four ranges.
-  const progressBuckets = [0, 0, 0, 0];
-  for (const p of memberAvgProgress) {
-    if (p < 25) progressBuckets[0] += 1;
-    else if (p < 50) progressBuckets[1] += 1;
-    else if (p < 75) progressBuckets[2] += 1;
-    else progressBuckets[3] += 1;
-  }
-  const progressDistribution = [
-    { range: '0–25%', count: progressBuckets[0] },
-    { range: '25–50%', count: progressBuckets[1] },
-    { range: '50–75%', count: progressBuckets[2] },
-    { range: '75–100%', count: progressBuckets[3] },
-  ];
-
-  // 30-day completion / placement counts from member_events.
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  // ── 30-day completion / placement counts from member_events ──
+  const lookbackStart = new Date(now.getTime() - ROSTER_STAT_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
   const [recentCompletions, recentPlacements] = memberIds.length
     ? await Promise.all([
         prisma.memberEvent.count({
           where: {
             userId: { in: memberIds },
             eventName: 'course_completed',
-            createdAt: { gte: thirtyDaysAgo },
+            createdAt: { gte: lookbackStart },
           },
         }),
         prisma.memberEvent.count({
           where: {
             userId: { in: memberIds },
             eventName: 'placement_recorded',
-            createdAt: { gte: thirtyDaysAgo },
+            createdAt: { gte: lookbackStart },
           },
         }),
       ])
     : [0, 0];
 
-  const analytics = {
-    totalMembers: activeCount,
-    activeMembers: enrolledCount,
-    atRiskMembers: rosterRows.filter((r) => r.riskScore != null && r.riskLevel !== 'LOW').length,
-    avgProgress,
-    recentCompletions,
-    recentPlacements,
-    progressDistribution,
-    byStatus: [
-      { status: 'active', count: enrolledCount },
-      { status: 'not_enrolled', count: activeCount - enrolledCount },
-    ],
-    recentActivity: [],
-    atRiskList: rosterRows
-      .filter((r) => r.riskScore != null && r.riskLevel !== 'LOW')
-      .map((r) => ({ memberId: r.memberId, riskScore: r.riskScore ?? 0, riskLevel: r.riskLevel, enrolledProgram: r.enrolledProgram }))
-      .sort((a, b) => b.riskScore - a.riskScore)
-      .slice(0, 10),
-  };
+  // Four tiles, each captioned with the rule it counts (counselor audit §6 item 4).
+  // When the attention facts failed to load the tiles are withheld rather than
+  // printing zeros the roster below would contradict.
+  const rosterStats = attention
+    ? buildCounselorRosterStats({ queue: attention, recentCompletions, recentPlacements })
+    : null;
 
   return (
     <PortalPageFrame>
       <PageHeader title={t('myMembersTitle')} subtitle={t('membersAssignedForCoaching')} />
+      {rosterStats ? (
+        <CounselorRosterStats stats={rosterStats} className={styles.statsRow} />
+      ) : (
+        <span hidden data-portal-error-state="counselor-roster-attention-load" />
+      )}
       {/* ── Mobile ─────────────────────────────────────────── */}
       <div className="md:wa-hidden" style={{ paddingBottom: '6rem' }}>
-        {/* Analytics cards */}
-        <CounselorAnalyticsCards data={analytics} />
-
-        {/* Stats row (legacy) */}
-        <div
-          style={{
-            display: 'flex', flexWrap: 'wrap',
-            gap: '0.75rem',
-            padding: '1rem 1rem 0',
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
-          }}
-        >
-          {[
-            { label: t('activeMembers'), value: activeCount, accent: 'var(--color-accent)' },
-            { label: t('enrolled'), value: enrolledCount, accent: 'var(--color-gold)' },
-            { label: t('hotMemberQueue'), value: hotQueue.length, accent: 'var(--color-amber)' },
-          ].map(({ label, value, accent }) => (
-            <div
-              key={label}
-              style={{
-                flexShrink: 0,
-                background: 'var(--surface-container-low)',
-                borderRadius: '0.75rem',
-                padding: '0.875rem 1.125rem',
-                minWidth: '110px',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '13px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: 'var(--color-on-surface-variant)',
-                  margin: '0 0 0.25rem',
-                }}
-              >
-                {label}
-              </p>
-              <p style={{ fontSize: '1.75rem', fontWeight: 800, color: accent, margin: 0, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                {value}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Progress distribution + at-risk + activity */}
-        {assignments.length > 0 && (
-          <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <ProgressDistributionChart data={analytics.progressDistribution} />
-            <AtRiskMemberList members={analytics.atRiskList} />
-            <RecentActivityFeed items={analytics.recentActivity} />
-          </div>
-        )}
 
         {hotQueue.length > 0 ? (
           <div style={{ padding: '1rem 1rem 0' }}>
@@ -383,19 +307,6 @@ export default async function CounselorStudentsPage({
 
       {/* ── Desktop ─────────────────────────────────────────── */}
       <div className="wa-hidden md:wa-block">
-        <CounselorAnalyticsCardsDesktop data={analytics} />
-
-        {/* Dashboard grid */}
-        {assignments.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-            <ProgressDistributionChart data={analytics.progressDistribution} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <AtRiskMemberList members={analytics.atRiskList} />
-              <RecentActivityFeed items={analytics.recentActivity} />
-            </div>
-          </div>
-        )}
-
         {hotQueue.length > 0 ? (
           <section style={{ marginBottom: '1.5rem' }}>
             <div

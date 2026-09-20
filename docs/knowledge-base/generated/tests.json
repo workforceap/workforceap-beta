@@ -1334,35 +1334,6 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
-    "file": "components/portal/counselor/AtRiskMemberList.test.tsx",
-    "area": "components",
-    "domain": "member-counselor",
-    "frameworkImports": [
-      "@testing-library/react",
-      "vitest"
-    ],
-    "localReferences": [
-      {
-        "file": "lib/content/programs.ts",
-        "line": 3
-      },
-      {
-        "file": "components/portal/counselor/AtRiskMemberList.tsx",
-        "line": 4
-      }
-    ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "vitest",
-        "source": "vitest.config.ts",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
     "file": "components/portal/counselor/CounselorTrainingHandoff.test.tsx",
     "area": "components",
     "domain": "member-counselor",
@@ -18365,6 +18336,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/app/counselor-student-detail-messages-rail.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
+        "line": 76
+      },
+      {
+        "file": "lib/messages/counselorThread.ts",
+        "line": 141
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/app/dashboard-training-redirect.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -19839,47 +19838,6 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
-    "file": "tests/components/counselor-analytics.spec.tsx",
-    "area": "tests",
-    "domain": "tests",
-    "frameworkImports": [
-      "@testing-library/react",
-      "vitest"
-    ],
-    "localReferences": [
-      {
-        "file": "components/portal/counselor/CounselorAnalyticsCards.tsx",
-        "line": 3
-      },
-      {
-        "file": "components/portal/counselor/ProgressDistributionChart.tsx",
-        "line": 4
-      },
-      {
-        "file": "components/portal/counselor/AtRiskMemberList.tsx",
-        "line": 5
-      },
-      {
-        "file": "components/portal/counselor/RecentActivityFeed.tsx",
-        "line": 6
-      },
-      {
-        "file": "components/portal/counselor/MemberProgressTimeline.tsx",
-        "line": 7
-      }
-    ],
-    "kind": "test-candidate",
-    "declaredRunners": [
-      {
-        "runner": "vitest",
-        "source": "vitest.config.ts",
-        "status": "selected"
-      }
-    ],
-    "collectionStatus": "statically-selected",
-    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
-  },
-  {
     "file": "tests/components/counselor-note-saves.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -19928,6 +19886,35 @@
       {
         "file": "components/portal/kit/pages/admin-subviews/CounselorsRosterKit.tsx",
         "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/counselor-roster-stats.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/counselor/CounselorRosterStats.tsx",
+        "line": 3
+      },
+      {
+        "file": "lib/counselor/rosterStats.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -20587,6 +20574,31 @@
       {
         "file": "lib/content/courseDelivery.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/member-progress-timeline.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/counselor/MemberProgressTimeline.tsx",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -23256,6 +23268,34 @@
       {
         "file": "lib/email.ts",
         "line": 9
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/counselor-roster-stats.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/attention/index.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/counselor/rosterStats.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",

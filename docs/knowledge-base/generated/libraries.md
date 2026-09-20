@@ -410,6 +410,7 @@
 | [lib/counselor/placementsQuery.test.ts](../../../lib/counselor/placementsQuery.test.ts) | 50 | member-counselor |  |
 | [lib/counselor/placementsQuery.ts](../../../lib/counselor/placementsQuery.ts) | 54 | member-counselor | buildPlacementsQuery:5 |
 | [lib/counselor/priorityQueue.ts](../../../lib/counselor/priorityQueue.ts) | 34 | member-counselor | PriorityBucket:17, PriorityQueueData:18, PriorityQueueRow:19, getCounselorPriorityQueue:29 |
+| [lib/counselor/rosterStats.ts](../../../lib/counselor/rosterStats.ts) | 100 | member-counselor | ROSTER_STAT_LOOKBACK_DAYS:21, CounselorRosterStatKey:23, CounselorRosterStat:25, buildCounselorRosterStats:48 |
 | [lib/counselor/staffMemberAccess.ts](../../../lib/counselor/staffMemberAccess.ts) | 39 | member-counselor | assertStaffCanAccessMemberRecord:14 |
 | [lib/counselor/templates.test.ts](../../../lib/counselor/templates.test.ts) | 27 | member-counselor |  |
 | [lib/counselor/templates.ts](../../../lib/counselor/templates.ts) | 92 | member-counselor | FollowUpTemplateId:9, FollowUpTemplate:15, FOLLOW_UP_TEMPLATES:23, listFollowUpTemplates:54, getFollowUpTemplate:58, FollowUpRenderContext:62, renderFollowUpTemplate:68, templateMatchesFlags:86 |
