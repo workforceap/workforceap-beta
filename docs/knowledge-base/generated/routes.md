@@ -893,7 +893,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/public/wioa-qualification | route | POST | [app/api/public/wioa-qualification/route.ts](../../../app/api/public/wioa-qualification/route.ts) | @/lib/rate-limit:5, @/lib/tenant/organization:8, @/lib/db/withRequestGuc:9 |
 | /api/public/wioa-qualification/voice-session | route | POST | [app/api/public/wioa-qualification/voice-session/route.ts](../../../app/api/public/wioa-qualification/voice-session/route.ts) | @/lib/rate-limit:5 |
 | /api/push/subscribe | route | POST, DELETE | [app/api/push/subscribe/route.ts](../../../app/api/push/subscribe/route.ts) | @/lib/auth/server:8, @/lib/db/withRequestGuc:10 |
-| /api/q/\[token\]/submit | route | POST | [app/api/q/\[token\]/submit/route.ts](../../../app/api/q/%5Btoken%5D/submit/route.ts) | @/lib/db/withRequestGuc:8, @/lib/rate-limit:13 |
+| /api/q/\[token\]/submit | route | POST | [app/api/q/\[token\]/submit/route.ts](../../../app/api/q/%5Btoken%5D/submit/route.ts) | @/lib/db/withRequestGuc:8, @/lib/rate-limit:13, @/lib/tenant/organization:35 |
 | /api/recommend | route | GET | [app/api/recommend/route.ts](../../../app/api/recommend/route.ts) | @/lib/auth/server:2, @/lib/db/withRequestGuc:9 |
 | /api/referral-sources | route | GET | [app/api/referral-sources/route.ts](../../../app/api/referral-sources/route.ts) | @/lib/db/withRequestGuc:9 |
 | /api/skill-missions/\[courseSlug\]/evaluate | route | POST | [app/api/skill-missions/\[courseSlug\]/evaluate/route.ts](../../../app/api/skill-missions/%5BcourseSlug%5D/evaluate/route.ts) | @/lib/auth/server:3, @/lib/db/withRequestGuc:4, @/lib/rate-limit:6 |
