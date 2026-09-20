@@ -28,6 +28,7 @@ import { partnerVoiceSurface } from '@/lib/portal/voice';
 import { getTranslations } from 'next-intl/server';
 import { BarChart3, CheckCircle2, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
+import { StatusTag } from '@/components/portal/kit/StatusTag';
 import PortalKpiCard from '@/components/portal/PortalKpiCard';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import DataTable from '@/components/portal/ui/DataTable';
@@ -45,7 +46,6 @@ import {
   PageOpener,
   DataTable as KitDataTable,
   QueueRow,
-  StatusTag,
 } from '@/components/portal/kit';
 import {
   PartnerKpiGrid,
