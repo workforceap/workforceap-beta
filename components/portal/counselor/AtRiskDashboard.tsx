@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/portal/memberRequestFailure';
+import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
+import { toAtRiskMemberRow, type AtRiskFactor, type AtRiskMember, type SavedAtRiskCase } from '@/lib/member/atRiskRow';
 import {
   BookOpen,
   Check,
@@ -48,42 +52,28 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface AtRiskFactor {
-  name: string;
-  weight: number;
-  description: string;
-}
-
-export interface AtRiskMember {
-  userId: string;
-  alertId: string;
-  name: string;
-  email: string;
-  phone: string | null;
-  score: number;
-  riskLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-  status: 'open' | 'acknowledged' | 'resolved' | 'escalated';
-  factors: AtRiskFactor[];
-  enrolledProgram: string | null;
-  enrolledAt: string | null;
-  memberSince: string;
-  profile: {
-    employmentStatus: string | null;
-    educationLevel: string | null;
-  } | null;
-  alertCreatedAt: string;
-  alertUpdatedAt: string;
-  /** ISO timestamp of the latest recorded member event; null when none is recorded. */
-  lastActivityAt?: string | null;
-}
+// Row shape lives in lib/member/atRiskRow so the server loader, this client
+// and the dev showcase share one definition. Re-exported for existing imports.
+export type { AtRiskFactor, AtRiskMember };
 
 interface ApiResponse {
   count: number;
   threshold: number;
-  results: AtRiskMember[];
+  results: SavedAtRiskCase[];
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
+
+/** A hung request must fail visibly instead of leaving "Refreshing…" on screen forever. */
+const AT_RISK_REQUEST_TIMEOUT_MS = 20_000;
+
+/**
+ * The attention model's vocabulary for a saved case. Printed next to every
+ * row and above the list so this page and /counselor/today agree on what
+ * "at risk" means (lib/attention/reasons.ts owns the rule; nothing here
+ * re-derives it).
+ */
+const RISK_ALERT_REASON = ATTENTION_REASON_META.risk_alert;
 
 const RISK_LEVEL_ORDER: Array<AtRiskMember['riskLevel']> = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
 
@@ -193,6 +183,8 @@ export interface AtRiskDashboardViewProps {
   error?: string | null;
   /** Re-run the initial fetch (wired to the error state's Retry button). */
   onRetry?: () => void;
+  /** Reload the list from the server on demand (Refresh button beside the results header). */
+  onRefresh?: () => void;
   /** Persist a single status change (Ack/Resolve row buttons). */
   onUpdateStatus: (alertId: string, status: 'acknowledged' | 'resolved' | 'escalated') => Promise<void>;
   /** Persist a bulk-acknowledge over the given (already-open-filtered) alert ids. */
@@ -204,6 +196,7 @@ export function AtRiskDashboardView({
   loading = false,
   error = null,
   onRetry,
+  onRefresh,
   onUpdateStatus,
   onBulkAcknowledge}: AtRiskDashboardViewProps) {
   const tCommon = useTranslations('common');
@@ -400,7 +393,10 @@ export function AtRiskDashboardView({
   if (loading && localMembers.length === 0) {
     return (
       <DesignSurface surface="dense">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '3rem 1rem', color: 'var(--wa-muted)' }}>
+        <div
+          role="status"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '3rem 1rem', color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}
+        >
           <PortalInlineSpinner size={20} />
           <span>Loading at-risk members…</span>
         </div>
@@ -411,21 +407,15 @@ export function AtRiskDashboardView({
   if (error && localMembers.length === 0) {
     return (
       <DesignSurface surface="dense">
-        <div
-          className="wa-kit-card"
-          style={{ borderLeft: '4px solid var(--wa-accent)' }}
-        >
-          <p style={{ margin: 0, fontWeight: 700, color: 'var(--wa-accent)' }}>Couldn&rsquo;t load at-risk members</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: 13, color: 'var(--wa-muted)' }}>{error}</p>
-          <button
-            type="button"
-            className="btn btn-muted btn-sm"
-            onClick={onRetry}
-            style={{ marginTop: 12 }}
-          >
-            <RotateCcw size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-            Retry
-          </button>
+        <div role="alert">
+          <PortalEmptyState
+            headingAs="h2"
+            title="We couldn’t load at-risk members"
+            description={error}
+            icon={<TriangleAlert size={32} style={{ color: 'var(--wa-accent)' }} />}
+            primaryAction={onRetry ? { label: 'Try again', onClick: onRetry } : undefined}
+            secondaryAction={{ label: 'Back to Today', href: '/counselor' }}
+          />
         </div>
       </DesignSurface>
     );
@@ -458,6 +448,9 @@ export function AtRiskDashboardView({
             Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
             <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
             <strong>Resolve</strong> only when disengagement is fixed or the case is closed.
+            <br />
+            <strong style={{ color: 'var(--wa-text)' }}>Counted here:</strong>{' '}
+            {RISK_ALERT_REASON.definition} &mdash; the same &ldquo;{RISK_ALERT_REASON.label}&rdquo; rule Today uses.
           </p>
         </div>
 
@@ -676,28 +669,58 @@ export function AtRiskDashboardView({
           title="Needs attention"
           goal={`Showing ${filteredMembers.length} member${filteredMembers.length === 1 ? '' : 's'}${loading ? ' · Refreshing…' : ''}`}
           action={
-            filteredMembers.length > 0 ? (
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
-                <input
-                  type="checkbox"
-                  aria-label="Select all visible"
-                  checked={allSelectedOnPage}
-                  onChange={toggleSelectAll}
-                  style={{ cursor: 'pointer', width: 15, height: 15 }}
-                />
-                Select all visible
-              </label>
-            ) : undefined
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              {filteredMembers.length > 0 ? (
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
+                  <input
+                    type="checkbox"
+                    aria-label="Select all visible"
+                    checked={allSelectedOnPage}
+                    onChange={toggleSelectAll}
+                    style={{ cursor: 'pointer', width: 15, height: 15 }}
+                  />
+                  Select all visible
+                </label>
+              ) : null}
+              {onRefresh ? (
+                <button
+                  type="button"
+                  className="btn btn-muted btn-sm"
+                  onClick={onRefresh}
+                  disabled={loading}
+                  aria-label="Refresh at-risk members"
+                  title="Reload saved cases from the server"
+                  style={{ fontSize: 13, padding: '5px 10px' }}
+                >
+                  <RotateCcw size={13} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                  {loading ? 'Refreshing…' : 'Refresh'}
+                </button>
+              ) : null}
+            </div>
           }
         />
 
+        {error ? (
+          <p role="alert" style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)' }}>
+            {error} Showing the last list we loaded.
+          </p>
+        ) : null}
+
         {/* Hero list */}
-        {filteredMembers.length === 0 ? (
+        {localMembers.length === 0 ? (
+          <PortalEmptyState
+            title="No at-risk members on your caseload"
+            description={`Nobody you support has a ${RISK_ALERT_REASON.label.toLowerCase()} right now (${RISK_ALERT_REASON.definition.toLowerCase()}). New cases appear here after the nightly risk scan.`}
+            icon={<ShieldCheck size={32} style={{ color: 'var(--wa-success-dark)' }} />}
+            primaryAction={{ label: 'Open Today', href: '/counselor' }}
+            secondaryAction={{ label: 'View caseload', href: '/counselor/students' }}
+          />
+        ) : filteredMembers.length === 0 ? (
           <PortalEmptyState
             title="No at-risk members match your filters"
             description="Try adjusting severity or status filters, or check back after the next nightly risk scan."
             icon={<TriangleAlert size={32} style={{ color: 'var(--wa-gold)' }} />}
-            primaryAction={{ label: 'Clear filters', href: '#', onClick: clearAllFilters }}
+            primaryAction={{ label: 'Clear filters', onClick: clearAllFilters }}
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -731,12 +754,32 @@ export function AtRiskDashboardView({
 
 // ─── Data-fetching container (the real /counselor/at-risk route) ──────────
 
-export default function AtRiskDashboard() {
-  const tCommon = useTranslations('common');
-  const [members, setMembers] = useState<AtRiskMember[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export interface AtRiskDashboardProps {
+  /** Saved cases loaded on the server by lib/counselor/atRiskPageData; the first paint needs no client fetch. */
+  initialMembers: AtRiskMember[];
+  /** Plain-language message when the server load failed; the view offers Try again. */
+  initialError?: string | null;
+}
 
+async function patchAlertStatus(alertId: string, status: 'acknowledged' | 'resolved' | 'escalated'): Promise<Response> {
+  return fetchWithTimeout(
+    '/api/admin/members/at-risk',
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alertId, status }),
+    },
+    AT_RISK_REQUEST_TIMEOUT_MS,
+  );
+}
+
+export default function AtRiskDashboard({ initialMembers, initialError = null }: AtRiskDashboardProps) {
+  const [members, setMembers] = useState<AtRiskMember[]>(initialMembers);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(initialError);
+
+  // Refresh / retry only. The first render already has the server's rows,
+  // so there is no mount-time fetch and nothing to hang on.
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -746,32 +789,29 @@ export default function AtRiskDashboard() {
       // Always fetch with threshold 0 so we get all risk levels; filter client-side by severity/status.
       params.set('threshold', '0');
 
-      const res = await fetch(`/api/admin/members/at-risk?${params.toString()}`);
+      const res = await fetchWithTimeout(`/api/admin/members/at-risk?${params.toString()}`, {}, AT_RISK_REQUEST_TIMEOUT_MS);
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Failed to load at-risk members (${res.status})`);
+        throw new Error(await readMemberRequestFailure(res));
       }
-      const data: ApiResponse = await res.json();
-      setMembers(data.results);
+      const data = (await res.json()) as ApiResponse;
+      setMembers(data.results.map(toAtRiskMemberRow));
     } catch (err) {
-      setError(requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Unknown error' }, 'at-risk-dashboard'));
+      console.error('[at-risk-dashboard] refresh failed', err);
+      setError(err instanceof Error && err.message.trim() && !isTransportFailure(err) ? err.message : describeMemberRequestException(err));
     } finally {
       setLoading(false);
     }
-  }, [tCommon]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  }, []);
 
   const updateStatus = useCallback(async (alertId: string, status: 'acknowledged' | 'resolved' | 'escalated') => {
-    const res = await fetch('/api/admin/members/at-risk', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ alertId, status })});
+    let res: Response;
+    try {
+      res = await patchAlertStatus(alertId, status);
+    } catch (err) {
+      throw new Error(describeMemberRequestException(err));
+    }
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.error || 'Update failed');
+      throw new Error(await readMemberRequestFailure(res));
     }
     setMembers((prev) => prev.map((m) => (m.alertId === alertId ? { ...m, status } : m)));
   }, []);
@@ -779,14 +819,9 @@ export default function AtRiskDashboard() {
   const bulkAcknowledge = useCallback(
     async (alertIds: string[]): Promise<{ failed: number; total: number }> => {
       const results = await Promise.all(
-        alertIds.map((alertId) =>
-          fetch('/api/admin/members/at-risk', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alertId, status: 'acknowledged' })}),
-        ),
+        alertIds.map((alertId) => patchAlertStatus(alertId, 'acknowledged').catch(() => null)),
       );
-      const failed = results.filter((r) => !r.ok).length;
+      const failed = results.filter((r) => !r || !r.ok).length;
       await fetchData();
       return { failed, total: alertIds.length };
     },
@@ -799,10 +834,16 @@ export default function AtRiskDashboard() {
       loading={loading}
       error={error}
       onRetry={fetchData}
+      onRefresh={fetchData}
       onUpdateStatus={updateStatus}
       onBulkAcknowledge={bulkAcknowledge}
     />
   );
+}
+
+/** A dropped connection, a timeout or a non-JSON answer: the message is a browser internal, not for counselors. */
+function isTransportFailure(err: Error): boolean {
+  return err instanceof TypeError || err instanceof SyntaxError || err.name === 'AbortError' || err.name === 'TimeoutError';
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
@@ -1001,6 +1042,22 @@ function RiskRow({
               {cfg.label}
             </span>
             <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
+            <span
+              title={RISK_ALERT_REASON.definition}
+              aria-label={`${RISK_ALERT_REASON.label}: ${RISK_ALERT_REASON.definition}`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 13,
+                fontWeight: 600,
+                padding: '2px 8px',
+                borderRadius: 999,
+                background: 'var(--wa-accent-soft)',
+                color: 'var(--wa-accent)'}}
+            >
+              {RISK_ALERT_REASON.label}
+            </span>
           </div>
           <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>
             {row.email}
