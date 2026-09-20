@@ -11,6 +11,7 @@ import { test } from 'node:test';
  */
 const scheduledEmailInventory = {
   '/api/cron/applicant-followup': { kind: 'bulk', helpers: [] },
+  '/api/cron/applicant-aging-digest': { kind: 'single', helpers: [], reason: 'one staff digest request with a recipient array' },
   '/api/cron/at-risk-alerts': { kind: 'bulk', helpers: ['lib/cron/at-risk-alerts.ts'] },
   '/api/cron/course-accountability': { kind: 'bulk', helpers: [] },
   '/api/cron/coursera-auto-heal': { kind: 'bulk', helpers: ['lib/xapi/reprocess.ts', 'lib/coursera/replayPendingXapi.ts', 'lib/xapi/inboundStatementPipeline.ts', 'lib/member/courseCompletion.ts', 'lib/notifications/partner-notify.ts', 'lib/xapi/mappings.ts'] },

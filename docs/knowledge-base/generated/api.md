@@ -65,6 +65,7 @@
 | [app/api/admin/email-crons/\[id\]/trigger/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/trigger/route.ts) | 108 | communications | POST:11 |
 | [app/api/admin/email-crons/activate-all/route.ts](../../../app/api/admin/email-crons/activate-all/route.ts) | 73 | communications | POST:12 |
 | [app/api/admin/email-crons/route.ts](../../../app/api/admin/email-crons/route.ts) | 66 | communications | GET:9 |
+| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 149 | communications | maxDuration:17, POST:32 |
 | [app/api/admin/email-templates/\[id\]/preview/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.test.ts) | 6 | communications |  |
 | [app/api/admin/email-templates/\[id\]/preview/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.ts) | 43 | communications | POST:9 |
 | [app/api/admin/email-templates/\[id\]/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/route.test.ts) | 6 | communications |  |
@@ -282,7 +283,8 @@
 | [app/api/counselor/sessions/upload-resume/route.ts](../../../app/api/counselor/sessions/upload-resume/route.ts) | 155 | member-counselor | POST:38 |
 | [app/api/counselor/sessions/voice-walkthrough/route.ts](../../../app/api/counselor/sessions/voice-walkthrough/route.ts) | 192 | member-counselor | POST:192 |
 | [app/api/counselor/sessions/walk-in/route.ts](../../../app/api/counselor/sessions/walk-in/route.ts) | 324 | member-counselor | POST:60 |
-| [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) | 89 | communications | maxDuration:11, GET:88, POST:89 |
+| [app/api/cron/applicant-aging-digest/route.ts](../../../app/api/cron/applicant-aging-digest/route.ts) | 97 | communications | maxDuration:12, GET:96, POST:97 |
+| [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) | 183 | communications | maxDuration:22, GET:182, POST:183 |
 | [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) | 59 | communications | runtime:10, maxDuration:11, GET:58, POST:59 |
 | [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | 86 | communications | runtime:13, maxDuration:14, GET:85, POST:86 |
 | [app/api/cron/course-accountability/route.ts](../../../app/api/cron/course-accountability/route.ts) | 154 | communications | maxDuration:15, GET:153, POST:154 |
@@ -307,7 +309,7 @@
 | [app/api/cron/retention-decisions/route.ts](../../../app/api/cron/retention-decisions/route.ts) | 197 | communications | maxDuration:11, GET:196, POST:197 |
 | [app/api/cron/smoke-test/route.ts](../../../app/api/cron/smoke-test/route.ts) | 183 | communications | maxDuration:9, GET:182, POST:183 |
 | [app/api/cron/stale-training-check/route.ts](../../../app/api/cron/stale-training-check/route.ts) | 37 | communications | maxDuration:11, GET:37 |
-| [app/api/cron/verification/route.ts](../../../app/api/cron/verification/route.ts) | 88 | communications | maxDuration:8, GET:87, POST:88 |
+| [app/api/cron/verification/route.ts](../../../app/api/cron/verification/route.ts) | 97 | communications | maxDuration:9, GET:96, POST:97 |
 | [app/api/cron/weekly-recap-email/route.ts](../../../app/api/cron/weekly-recap-email/route.ts) | 77 | communications | maxDuration:11, GET:76, POST:77 |
 | [app/api/cron/weekly-recap/_weeklyRecapCronStatus.ts](../../../app/api/cron/weekly-recap/_weeklyRecapCronStatus.ts) | 3 | communications | getWeeklyRecapCronStatus:1 |
 | [app/api/cron/weekly-recap/route.test.ts](../../../app/api/cron/weekly-recap/route.test.ts) | 10 | communications |  |

@@ -12,17 +12,54 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 11,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 88,
+          "line": 182,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 89,
+          "line": 183,
+          "kind": "Variable"
+        }
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "configuration": {
+        "maxDuration": 300
+      },
+      "boundaryReferences": []
+    }
+  },
+  {
+    "path": "/api/cron/applicant-aging-digest",
+    "schedule": "37 14 * * 1",
+    "timezone": "UTC",
+    "route": {
+      "file": "app/api/cron/applicant-aging-digest/route.ts",
+      "kind": "route",
+      "path": "/api/cron/applicant-aging-digest",
+      "groups": [],
+      "routing": "filesystem",
+      "exports": [
+        {
+          "name": "maxDuration",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "GET",
+          "line": 96,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 97,
           "kind": "Variable"
         }
       ],
@@ -937,17 +974,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 8,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 87,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 88,
+          "line": 97,
           "kind": "Variable"
         }
       ],
