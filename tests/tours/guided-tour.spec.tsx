@@ -15,7 +15,8 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-const MEMBER_ANCHORS = ['tour-dashboard', 'tour-ai-tools', 'tour-learning', 'tour-messages', 'tour-profile'];
+// member.home v3 (tours wave 3): all seven anchors are member shell chrome.
+const MEMBER_ANCHORS = ['tour-dashboard', 'tour-programs', 'tour-jobs', 'tour-ai-tools', 'tour-messages', 'tour-account', 'tour-help'];
 
 function Trigger({ tourKey, legacy }: { tourKey: string; legacy?: boolean }) {
   const { start, startTour } = useTour();
@@ -92,9 +93,9 @@ describe('GuidedTour (kit engine)', () => {
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(dialog).toHaveAttribute('aria-labelledby', 'wa-guided-tour-title');
     expect(dialog).toHaveAttribute('aria-describedby', 'wa-guided-tour-body');
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Dashboard');
-    expect(dialog).toHaveTextContent('Step 1 of 5');
-    expect(dialog).toHaveTextContent(/Open My program in the menu/);
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Your home base');
+    expect(dialog).toHaveTextContent('Step 1 of 7');
+    expect(dialog).toHaveTextContent(/My program in the menu/);
     expect(screen.getByRole('button', { name: 'Skip tour' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled();
@@ -102,7 +103,7 @@ describe('GuidedTour (kit engine)', () => {
     await waitFor(() => expect(posted()).toHaveLength(1));
     expect(posted()[0]).toEqual({
       url: '/api/tours/member.home',
-      body: { version: 2, status: 'STARTED', lastStep: 0, sourcePage: '/' },
+      body: { version: 3, status: 'STARTED', lastStep: 0, sourcePage: '/' },
     });
     expect(screen.getByTestId('guided-tour-dialog')).toHaveAttribute('data-tour-step', '1');
   });
@@ -110,10 +111,10 @@ describe('GuidedTour (kit engine)', () => {
   it('renders Spanish chrome and step copy under the es catalogue', async () => {
     open({ locale: 'es' });
     const dialog = await screen.findByRole('dialog');
-    expect(dialog).toHaveTextContent('Paso 1 de 5');
+    expect(dialog).toHaveTextContent('Paso 1 de 7');
     expect(screen.getByRole('button', { name: 'Omitir el recorrido' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Siguiente' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Panel');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Tu punto de partida');
   });
 
   it('moves focus to the primary action and announces each step through the live region', async () => {
@@ -122,14 +123,14 @@ describe('GuidedTour (kit engine)', () => {
     await waitFor(() => expect(document.activeElement).toBe(next));
     await waitFor(() =>
       expect(document.querySelector('[role="status"][aria-live="polite"]')).toHaveTextContent(
-        'Tour step 1 of 5: Dashboard',
+        'Tour step 1 of 7: Your home base',
       ),
     );
     fireEvent.click(next);
-    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('AI Career Tools'));
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Training progress'));
     await waitFor(() =>
       expect(document.querySelector('[role="status"][aria-live="polite"]')).toHaveTextContent(
-        'Tour step 2 of 5: AI Career Tools',
+        'Tour step 2 of 7: Training progress',
       ),
     );
   });
@@ -142,13 +143,13 @@ describe('GuidedTour (kit engine)', () => {
     fireEvent.click(trigger);
     await screen.findByRole('dialog');
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 2 of 5'));
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 2 of 7'));
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     await waitFor(() => expect(posted().some((p) => p.body.status === 'DISMISSED')).toBe(true));
     const dismissed = posted().find((p) => p.body.status === 'DISMISSED')!;
     expect(dismissed.url).toBe('/api/tours/member.home');
-    expect(dismissed.body).toMatchObject({ version: 2, lastStep: 1 });
+    expect(dismissed.body).toMatchObject({ version: 3, lastStep: 1 });
     expect(document.activeElement).toBe(trigger);
     // Legacy tour-complete is NOT written on a dismissal.
     expect(posted().some((p) => p.url === '/api/onboarding/tour-complete')).toBe(false);
@@ -171,9 +172,9 @@ describe('GuidedTour (kit engine)', () => {
   it('Done on the last step writes COMPLETED, the legacy per-portal timestamp, and refreshes', async () => {
     open();
     await screen.findByRole('dialog');
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-      await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 2} of 5`));
+      await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 2} of 7`));
     }
     const done = screen.getByRole('button', { name: 'Done' });
     expect(screen.getByRole('button', { name: 'Back' })).toBeEnabled();
@@ -188,7 +189,7 @@ describe('GuidedTour (kit engine)', () => {
         ['/api/onboarding/tour-complete', 'member'],
       ]),
     );
-    expect(posted()[1].body).toMatchObject({ version: 2, lastStep: 4 });
+    expect(posted()[1].body).toMatchObject({ version: 3, lastStep: 6 });
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
@@ -196,7 +197,7 @@ describe('GuidedTour (kit engine)', () => {
     open();
     await screen.findByRole('dialog');
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 2 of 5'));
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 2 of 7'));
     const back = screen.getByRole('button', { name: 'Back' });
     const next = screen.getByRole('button', { name: 'Next' });
     next.focus();
@@ -205,14 +206,14 @@ describe('GuidedTour (kit engine)', () => {
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(next);
     fireEvent.click(back);
-    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 1 of 5'));
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveTextContent('Step 1 of 7'));
   });
 
   it('skips steps whose data-tour anchor is missing', async () => {
-    open({ anchors: ['tour-learning', 'tour-profile'] });
+    open({ anchors: ['tour-jobs', 'tour-account'] });
     const dialog = await screen.findByRole('dialog');
-    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Learning'));
-    expect(dialog).toHaveTextContent('Step 3 of 5');
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Find a job'));
+    expect(dialog).toHaveTextContent('Step 3 of 7');
     const spotlight = screen.getByTestId('guided-tour-spotlight');
     expect(spotlight).toHaveAttribute('aria-hidden');
   });
@@ -232,7 +233,7 @@ describe('GuidedTour (kit engine)', () => {
   it('legacy startTour(steps, portal) still opens the member tour and maps onto member.home', async () => {
     open({ legacy: true });
     await screen.findByRole('dialog');
-    await waitFor(() => expect(posted()[0]).toMatchObject({ url: '/api/tours/member.home', body: { status: 'STARTED', version: 2 } }));
+    await waitFor(() => expect(posted()[0]).toMatchObject({ url: '/api/tours/member.home', body: { status: 'STARTED', version: 3 } }));
   });
 
   it('components/onboarding/PortalTour stays a working re-export of the kit engine', async () => {

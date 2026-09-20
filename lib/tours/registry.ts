@@ -63,17 +63,32 @@ function step(
 }
 
 export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
+  /**
+   * Member first-login tour (tours wave 3, v3). Written for the /dashboard
+   * overview (the default `MemberHomeKit` home): every anchor is shell chrome
+   * that `MemberWorkspaceShell` renders on every member page, so the step
+   * counter never jumps. The `tour-*` nav anchors are `tourTarget`s on
+   * `MEMBER_PORTAL_NAV_ITEMS` (all in the always-open primary group),
+   * `tour-account` is the header identity link (Profile & settings sits in a
+   * collapsed rail group on the overview, so the header link is the visible
+   * anchor) and `tour-help` is the header Help menu that reopens the tour.
+   * Home → training progress → jobs → AI tools → messages → profile → help.
+   * v3 re-tours everyone who finished the v2 walk-through (which pointed at
+   * the Learning Hub row and the collapsed Profile & settings row).
+   */
   'member.home': {
     key: 'member.home',
-    version: 2,
+    version: 3,
     role: 'member',
     route: '/dashboard',
     steps: [
       step('member.home', 'dashboard', 'tour-dashboard'),
+      step('member.home', 'program', 'tour-programs'),
+      step('member.home', 'jobs', 'tour-jobs'),
       step('member.home', 'aiTools', 'tour-ai-tools'),
-      step('member.home', 'learning', 'tour-learning'),
       step('member.home', 'messages', 'tour-messages'),
-      step('member.home', 'profile', 'tour-profile'),
+      step('member.home', 'profile', 'tour-account', 'bottom'),
+      step('member.home', 'help', 'tour-help', 'bottom'),
     ],
   },
   'employer.home': {

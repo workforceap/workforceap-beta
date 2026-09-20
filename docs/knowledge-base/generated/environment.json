@@ -4035,6 +4035,10 @@
         {
           "file": "tests/lib/weekly-recap-label.spec.ts",
           "line": 19
+        },
+        {
+          "file": "tests/tours/member-overview-anchors.spec.tsx",
+          "line": 1
         }
       ]
     },

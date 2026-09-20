@@ -554,7 +554,9 @@
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
 | [tests/tours/counselor-tour.spec.tsx](../../../tests/tours/counselor-tour.spec.tsx) | 237 | tests |  |
 | [tests/tours/get-tour-offer.spec.ts](../../../tests/tours/get-tour-offer.spec.ts) | 78 | tests |  |
-| [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 265 | tests |  |
+| [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 266 | tests |  |
+| [tests/tours/member-overview-anchors.spec.tsx](../../../tests/tours/member-overview-anchors.spec.tsx) | 100 | tests |  |
+| [tests/tours/member-tour.spec.tsx](../../../tests/tours/member-tour.spec.tsx) | 260 | tests |  |
 | [tests/tours/onboarding-reset-tour-state.spec.ts](../../../tests/tours/onboarding-reset-tour-state.spec.ts) | 95 | tests |  |
 | [tests/tours/tour-auto-start.spec.tsx](../../../tests/tours/tour-auto-start.spec.tsx) | 71 | tests |  |
 | [tests/tours/tour-offer-strip.spec.tsx](../../../tests/tours/tour-offer-strip.spec.tsx) | 87 | tests |  |
