@@ -786,7 +786,7 @@ export default async function AdminMemberDetailPage({
                   <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>{lp.pathwayId}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '100px', height: '6px', background: 'var(--surface-container-highest)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${lp.progress}%`, height: '100%', background: lp.completed ? 'var(--color-green)' : 'var(--color-accent)' }} />
+                      <div style={{ width: `${lp.progress}%`, height: '100%', background: lp.completed ? 'var(--wa-success)' : 'var(--color-accent)' }} />
                     </div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{lp.progress}%</span>
                   </div>
@@ -801,7 +801,7 @@ export default async function AdminMemberDetailPage({
               const completed = progress?.status === 'COMPLETED';
               return (
                 <li key={c.slug} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                  {completed ? <CheckCircle size={18} style={{ color: 'var(--color-green)', flexShrink: 0 }} /> : <span style={{ display: 'inline-block', width: 18, height: 18, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />}
+                  {completed ? <CheckCircle size={18} style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }} /> : <span style={{ display: 'inline-block', width: 18, height: 18, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />}
                   <span style={{ flex: 1 }}>
                     {c.name}
                     {progress ? (
@@ -1014,7 +1014,7 @@ export default async function AdminMemberDetailPage({
                   {courseraDetail.courses.slice(0, 5).map((c) => (
                     <li key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem' }}>
                       {c.isCompleted ? (
-                        <CheckCircle size={16} style={{ color: 'var(--color-green)', flexShrink: 0 }} />
+                        <CheckCircle size={16} style={{ color: 'var(--wa-success-dark)', flexShrink: 0 }} />
                       ) : (
                         <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />
                       )}

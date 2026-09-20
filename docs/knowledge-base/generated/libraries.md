@@ -943,9 +943,13 @@
 | [lib/time/greeting.ts](../../../lib/time/greeting.ts) | 37 | libraries | getTimeOfDayGreeting:5, getGoodTimeOfDayPhrase:29 |
 | [lib/tokenizedLink.ts](../../../lib/tokenizedLink.ts) | 90 | libraries | newTokenString:12, createTokenizedLink:16, ValidatedTokenLink:40, TokenValidation:48, validateTokenizedLink:52, consumeTokenizedLink:69 |
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
+| [lib/ui/adminSemanticTokens.test.ts](../../../lib/ui/adminSemanticTokens.test.ts) | 92 | libraries |  |
+| [lib/ui/brandTokens.test.ts](../../../lib/ui/brandTokens.test.ts) | 143 | libraries |  |
 | [lib/ui/buttonClasses.test.ts](../../../lib/ui/buttonClasses.test.ts) | 33 | libraries |  |
 | [lib/ui/buttonClasses.ts](../../../lib/ui/buttonClasses.ts) | 166 | libraries | BUTTON_VARIANT_CLASS:14, BUTTON_RADIUS_CLASS:20, button:27, ButtonVariant:41, ButtonRadius:42, ButtonClassOptions:44, buttonClasses:57, primaryButtonClasses:77, secondaryButtonClasses:81, ghostButtonClasses:85, numPillClasses:90, buttonPresets:102 |
-| [lib/ui/statusColors.test.ts](../../../lib/ui/statusColors.test.ts) | 94 | libraries |  |
+| [lib/ui/cssTokenContrast.test-helpers.ts](../../../lib/ui/cssTokenContrast.test-helpers.ts) | 144 | libraries | Rgba:13, Scheme:14, ROOT:16, readCss:18, loadRootTokens:27, loadBlockTokens:40, splitTopLevel:50, resolve:67, parseColor:97, over:117, luminance:126, contrast:135, colorOf:142 |
+| [lib/ui/portalCanvas.test.ts](../../../lib/ui/portalCanvas.test.ts) | 73 | libraries |  |
+| [lib/ui/statusColors.test.ts](../../../lib/ui/statusColors.test.ts) | 95 | libraries |  |
 | [lib/ui/statusColors.ts](../../../lib/ui/statusColors.ts) | 72 | libraries | StatusTone:23, StatusColorSet:25, STATUS_COLORS:34, statusColor:70 |
 | [lib/ui/statusToneAdapters.ts](../../../lib/ui/statusToneAdapters.ts) | 20 | libraries | statusToneToKitTone:14, badgeVariantToStatusTone:18 |
 | [lib/util/ageCalculation.ts](../../../lib/util/ageCalculation.ts) | 82 | libraries | calculateAge:5, isMinorAge:18, isYouthAge:23, meetsMinimumAge:29, AgeGroup:35, getAgeGroup:37, getAgeGroupLabel:45, isJobAgeAppropriate:59 |

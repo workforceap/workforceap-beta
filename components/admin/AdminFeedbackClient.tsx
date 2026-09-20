@@ -123,7 +123,7 @@ export default function AdminFeedbackClient() {
   useEffect(() => { void loadSummary(); }, [loadSummary]);
 
   const ratingColor = (r: number) => {
-    if (r >= 4) return 'var(--color-green, #4a9b4f)';
+    if (r >= 4) return 'var(--wa-success-dark)';
     if (r === 3) return '#f5a623';
     return 'var(--color-accent)';
   };

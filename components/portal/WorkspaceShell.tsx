@@ -408,6 +408,14 @@ export default function WorkspaceShell({
 
   return (
     <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+      {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
+          portal canvas on first paint instead of after hydration (WAP-153). The
+          value is a fixed PortalRole union member, never user input. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.setAttribute('data-portal-role',${JSON.stringify(portalRole)});`,
+        }}
+      />
       {readOnlyAudit ? (
         <span hidden data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling" />
       ) : null}

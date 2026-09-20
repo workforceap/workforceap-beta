@@ -18,6 +18,30 @@ html .workspace-shell-root[data-workspace-role] {
   background: var(--wa-bg-wave, var(--wa-bg));
 }
 
+/* WAP-153: the shell paints its own wash, but anything the shell does not
+ * cover — the strip below a short page, rubber-band overscroll at either end,
+ * the body seen through a translucent header — is painted by <html>/<body>.
+ * css/main.css gives those the marketing site's cool grey
+ * (`html.dark body { background: var(--color-background-dark) }`), so the
+ * portal's warm dark canvas stopped at the shell edge. WorkspaceShell marks
+ * the document with `data-portal-role` for as long as a shell is mounted
+ * (inline at parse time and again on mount), so only portal documents take
+ * the portal canvas; marketing bodies are untouched. Solid --wa-bg, not the
+ * wave: the radial washes fade into --wa-bg, so the canvas continues the
+ * shell without a second gradient origin. The compound selectors out-rank
+ * `html.dark body` (0,1,2) regardless of stylesheet order. */
+html[data-portal-role],
+html[data-portal-role].dark,
+html[data-portal-role][data-theme='dark'] {
+  background: var(--wa-bg);
+}
+html[data-portal-role] body,
+html[data-portal-role].dark body,
+html[data-portal-role][data-theme='dark'] body {
+  background: var(--wa-bg);
+  color: var(--wa-text);
+}
+
 .wa-kit-card {
   background: var(--wa-surface);
   border: 1px solid var(--wa-border);

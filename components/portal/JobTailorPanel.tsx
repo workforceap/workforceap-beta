@@ -63,9 +63,11 @@ export const JOB_TAILOR_PREVIEW_RESULT: TailorResult = {
     'JORDAN REYES\nCloud support · Austin, TX\n\nSUMMARY\nIT support graduate who triages VPN and identity tickets, writes runbooks, and has lab hours on AWS and Azure. Looking for a hybrid Austin cloud support seat.\n\nEXPERIENCE\nWorkforceAP labs — Ticket triage, runbook drafts, and escalation notes for cloud identity incidents.\n',
 };
 
+/** Score text sits on a light card; use the text-grade tokens (--wa-success is
+ *  a fill colour at 3.4:1 on white, --wa-gold 3.5:1), see WAP-100. */
 function scoreColor(score: number): string {
-  if (score >= 75) return 'var(--wa-success)';
-  if (score >= 50) return 'var(--wa-gold)';
+  if (score >= 75) return 'var(--wa-success-dark)';
+  if (score >= 50) return 'var(--wa-gold-dark)';
   return 'var(--wa-danger)';
 }
 

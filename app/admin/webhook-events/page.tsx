@@ -157,9 +157,9 @@ export default async function AdminWebhookEventsPage({ searchParams }: Props) {
       >
         {[
           { label: '7d Total', value: stats.total.toLocaleString(), icon: 'timeline', color: 'var(--color-accent)' },
-          { label: 'Success', value: (stats.byStatus.success ?? 0).toLocaleString(), icon: 'check_circle', color: 'var(--color-green)' },
+          { label: 'Success', value: (stats.byStatus.success ?? 0).toLocaleString(), icon: 'check_circle', color: 'var(--wa-success-dark)' },
           { label: 'Failed', value: (stats.byStatus.failed ?? 0).toLocaleString(), icon: 'error', color: 'var(--color-red)' },
-          { label: 'Retrying', value: (stats.byStatus.retrying ?? 0).toLocaleString(), icon: 'refresh', color: 'var(--color-blue)' },
+          { label: 'Retrying', value: (stats.byStatus.retrying ?? 0).toLocaleString(), icon: 'refresh', color: 'var(--wa-info-dark)' },
           { label: 'Dead Letter', value: (stats.byStatus.dead_letter ?? 0).toLocaleString(), icon: 'report', color: 'var(--color-orange)' },
         ].map((s) => (
           <div

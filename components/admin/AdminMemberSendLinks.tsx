@@ -149,7 +149,7 @@ export default function AdminMemberSendLinks({ memberId }: { memberId: string })
             marginTop: '0.6rem',
             marginBottom: 0,
             fontSize: '0.85rem',
-            color: feedback.ok ? 'var(--color-green, #15803d)' : 'rgb(153,27,27)',
+            color: feedback.ok ? 'var(--wa-success-dark)' : 'rgb(153,27,27)',
           }}
         >
           {feedback.message}

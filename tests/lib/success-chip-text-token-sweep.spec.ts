@@ -14,11 +14,15 @@ import path from 'node:path';
  */
 
 const root = path.resolve(__dirname, '../..');
-const tokensCss = readFileSync(path.join(root, 'css/portal-tokens.css'), 'utf8');
+// Brand hues (--wa-success*, --wa-gold*, ...) live in css/wa-brand-tokens.css, which portal-tokens.css @imports.
+const tokensCss =
+  readFileSync(path.join(root, 'css/wa-brand-tokens.css'), 'utf8') +
+  '\n' +
+  readFileSync(path.join(root, 'css/portal-tokens.css'), 'utf8');
 
 function lightDark(token: string): { light: string; dark: string } {
   const m = tokensCss.match(new RegExp(`${token}:\\s*light-dark\\(\\s*([^,]+?)\\s*,\\s*(.+?)\\s*\\);`));
-  expect(m, `${token} must be declared with light-dark() in css/portal-tokens.css`).not.toBeNull();
+  expect(m, `${token} must be declared with light-dark() in the token layer (css/wa-brand-tokens.css or css/portal-tokens.css)`).not.toBeNull();
   return { light: m![1], dark: m![2] };
 }
 function hexToRgb(hex: string): number[] {
