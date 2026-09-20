@@ -56,7 +56,8 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /counselor/messages | page |  | [app/(portal)/counselor/messages/page.tsx](../../../app/%28portal%29/counselor/messages/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
 | /counselor | not-found |  | [app/(portal)/counselor/not-found.tsx](../../../app/%28portal%29/counselor/not-found.tsx) |  |
 | /counselor/notifications | page |  | [app/(portal)/counselor/notifications/page.tsx](../../../app/%28portal%29/counselor/notifications/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
-| /counselor | page |  | [app/(portal)/counselor/page.tsx](../../../app/%28portal%29/counselor/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
+| /counselor/overview | page |  | [app/(portal)/counselor/overview/page.tsx](../../../app/%28portal%29/counselor/overview/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
+| /counselor | page |  | [app/(portal)/counselor/page.tsx](../../../app/%28portal%29/counselor/page.tsx) |  |
 | /counselor/placements | error |  | [app/(portal)/counselor/placements/error.tsx](../../../app/%28portal%29/counselor/placements/error.tsx) |  |
 | /counselor/placements | loading |  | [app/(portal)/counselor/placements/loading.tsx](../../../app/%28portal%29/counselor/placements/loading.tsx) |  |
 | /counselor/placements | page |  | [app/(portal)/counselor/placements/page.tsx](../../../app/%28portal%29/counselor/placements/page.tsx) |  |
@@ -76,6 +77,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /counselor/students | error |  | [app/(portal)/counselor/students/error.tsx](../../../app/%28portal%29/counselor/students/error.tsx) |  |
 | /counselor/students | loading |  | [app/(portal)/counselor/students/loading.tsx](../../../app/%28portal%29/counselor/students/loading.tsx) |  |
 | /counselor/students | page |  | [app/(portal)/counselor/students/page.tsx](../../../app/%28portal%29/counselor/students/page.tsx) | @/lib/auth/server:3, @/lib/auth/roles:4 |
+| /counselor/today | page |  | [app/(portal)/counselor/today/page.tsx](../../../app/%28portal%29/counselor/today/page.tsx) | @/lib/auth/server:2, @/lib/auth/roles:3 |
 | /counselor/triage | error |  | [app/(portal)/counselor/triage/error.tsx](../../../app/%28portal%29/counselor/triage/error.tsx) |  |
 | /counselor/triage | loading |  | [app/(portal)/counselor/triage/loading.tsx](../../../app/%28portal%29/counselor/triage/loading.tsx) |  |
 | /counselor/triage | page |  | [app/(portal)/counselor/triage/page.tsx](../../../app/%28portal%29/counselor/triage/page.tsx) | @/lib/auth/server:6, @/lib/auth/roles:7 |

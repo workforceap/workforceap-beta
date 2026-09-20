@@ -74,6 +74,7 @@
         "messages": "Messages"
       },
       "counselor": {
+        "today": "Today",
         "overview": "Overview",
         "inbox": "Inbox",
         "members": "Members",

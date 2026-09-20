@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "dbfcba0115340c23e15c4b794147ed0f57416ca67af6266318937953eae1aea9",
+  "inputTreeSha256": "bb51db80f3869165997268b7088fb8189296202824adec9b79e7722b05031ef5",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -5165,17 +5165,17 @@
       "directive": null
     },
     {
-      "path": "app/(portal)/counselor/page.tsx",
+      "path": "app/(portal)/counselor/overview/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 37542,
-      "lines": 696,
-      "sha256": "079f5c8f1d5460269743c5af2d4cde373bccfafb014ef1b19fc59dbb1135769d",
+      "bytes": 37791,
+      "lines": 701,
+      "sha256": "5ffde801752d7befa1370f9f191b5d0e3f675777d0756ae8ddf3a618e9f17e3d",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 49,
+          "line": 54,
           "kind": "FunctionDeclaration",
           "localName": "CounselorPortalPage"
         }
@@ -5188,7 +5188,32 @@
         },
         {
           "name": "CounselorPortalPage",
-          "line": 49,
+          "line": 54,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/(portal)/counselor/page.tsx",
+      "area": "pages",
+      "domain": "member-counselor",
+      "bytes": 637,
+      "lines": 17,
+      "sha256": "280ce843bb41c6295dfadd59841968a647d3402f8557fd4ba408801968b430eb",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 10,
+          "kind": "FunctionDeclaration",
+          "localName": "CounselorRootPage"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CounselorRootPage",
+          "line": 10,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -5979,6 +6004,41 @@
       "lines": 42,
       "sha256": "4c9ad5ef3aae8516e6cfcf1802c7d359ba259b59db9a0cdc8eaab0a861be3f75",
       "binary": false
+    },
+    {
+      "path": "app/(portal)/counselor/today/page.tsx",
+      "area": "pages",
+      "domain": "member-counselor",
+      "bytes": 1425,
+      "lines": 35,
+      "sha256": "ea7cc23df8572c685e07ecc769c8b8961a237a858e9e1e4df35f84feb4781723",
+      "binary": false,
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "default",
+          "line": 17,
+          "kind": "FunctionDeclaration",
+          "localName": "CounselorTodayPage"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "dynamic",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "CounselorTodayPage",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "app/(portal)/counselor/triage/error.tsx",
@@ -47896,9 +47956,9 @@
       "path": "components/MobileBottomNav.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7128,
+      "bytes": 7127,
       "lines": 174,
-      "sha256": "c51ca939c87244ddb8543f248ce998e35fdab213f5d43a48effa61fc37d039c7",
+      "sha256": "4017c3487aabec68d60c896b15667fce7083f544c59fcf41992747acd9994079",
       "binary": false,
       "exports": [
         {
@@ -71360,6 +71420,80 @@
       "directive": "use client"
     },
     {
+      "path": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+      "area": "components",
+      "domain": "member-counselor",
+      "bytes": 10282,
+      "lines": 260,
+      "sha256": "757bb9eca5ddb5f788df7a484d0140385b6e6c40b3129023657be9b50e7f065c",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CounselorTodayKitProps",
+          "line": 47,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CounselorTodayKit",
+          "line": 188,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CounselorTodayKitProps",
+          "line": 47,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "GROUP_ICON",
+          "line": 56,
+          "kind": "Variable"
+        },
+        {
+          "name": "SEVERITY_TONE",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "SEVERITY_TAG",
+          "line": 71,
+          "kind": "Variable"
+        },
+        {
+          "name": "plural",
+          "line": 77,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "todayRowDetail",
+          "line": 82,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayTile",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayRowItem",
+          "line": 115,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayGroupSection",
+          "line": 157,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CounselorTodayKit",
+          "line": 188,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/kit/pages/employer/EmployerHomeKit.tsx",
       "area": "components",
       "domain": "jobs-employers",
@@ -78593,9 +78727,9 @@
       "path": "docs/knowledge-base/features.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 15933,
+      "bytes": 16285,
       "lines": 47,
-      "sha256": "61d948e19faea366d635565d0548f9f9911941cd5cb7d5f8d062b262de4e1580",
+      "sha256": "03ccef82ca5ff787c0e1e43585151bccdc989edc403f867f05589d208c0e2d71",
       "binary": false
     },
     {
@@ -96754,25 +96888,25 @@
       "path": "lib/attention/counselorAgreement.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 3933,
-      "lines": 85,
-      "sha256": "26d1b0e0b276225cff794ee067c0ea58c65c660f27a25592cf932d527891b4b6",
+      "bytes": 7283,
+      "lines": 151,
+      "sha256": "f71e8c2c0b0e24195c9b04cde2fd411511df08372503b6e6d588d8f31e564d20",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "queue",
-          "line": 24,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "flagged",
-          "line": 25,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "sorted",
-          "line": 26,
+          "line": 31,
           "kind": "Variable"
         }
       ],
@@ -96782,266 +96916,366 @@
       "path": "lib/attention/counselorViews.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 10633,
-      "lines": 294,
-      "sha256": "7cba4aa45eb10c31caa65657747c788a97ad21b37d54ba0a2de15047eb4110f1",
+      "bytes": 15990,
+      "lines": 447,
+      "sha256": "ea773f8f5288be41b4465f022d9f1ce3ee91bbf820a254665ff0b22e03fb8e5e",
       "binary": false,
       "exports": [
         {
           "name": "PriorityBucket",
-          "line": 22,
+          "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PriorityQueueRow",
-          "line": 24,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PriorityQueueData",
-          "line": 44,
+          "line": 45,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PRIORITY_QUEUE_ON_TRACK_DISPLAY_CAP",
-          "line": 50,
+          "line": 51,
           "kind": "Variable"
         },
         {
           "name": "severityToBucket",
-          "line": 52,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toPriorityQueue",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "InboxZeroContext",
-          "line": 107,
+          "line": 108,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "InboxZeroRow",
-          "line": 109,
+          "line": 110,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "InboxZeroQueue",
-          "line": 122,
+          "line": 123,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "toInboxZeroQueue",
-          "line": 133,
+          "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TriagePriority",
-          "line": 164,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "TriageContext",
           "line": 165,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "TriageContext",
+          "line": 166,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "TriageRow",
-          "line": 167,
+          "line": 168,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "TriageQueue",
-          "line": 178,
+          "line": 179,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SEVERITY_TO_TRIAGE_PRIORITY",
-          "line": 191,
+          "line": 192,
           "kind": "Variable"
         },
         {
           "name": "FLAG_PRIORITY",
-          "line": 197,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "toTriageQueue",
-          "line": 217,
+          "line": 218,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyTriageQueue",
-          "line": 234,
+          "line": 235,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueRow",
-          "line": 240,
+          "line": 241,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WORK_QUEUE_REASONS",
-          "line": 250,
+          "line": 251,
           "kind": "Variable"
         },
         {
           "name": "toWorkQueueRows",
-          "line": 253,
+          "line": 254,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueContext",
-          "line": 275,
+          "line": 276,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "toWorkQueueContext",
-          "line": 282,
+          "line": 283,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "orderedReasonCounts",
-          "line": 290,
+          "line": 291,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayGroupKey",
+          "line": 306,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayGroupMeta",
+          "line": 308,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TODAY_GROUP_ORDER",
+          "line": 318,
+          "kind": "Variable"
+        },
+        {
+          "name": "TODAY_GROUPS",
+          "line": 327,
+          "kind": "Variable"
+        },
+        {
+          "name": "todayGroupForReason",
+          "line": 376,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayRow",
+          "line": 380,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayGroup",
+          "line": 394,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayQueue",
+          "line": 396,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "toTodayQueue",
+          "line": 428,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "PriorityBucket",
-          "line": 22,
+          "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PriorityQueueRow",
-          "line": 24,
+          "line": 25,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PriorityQueueData",
-          "line": 44,
+          "line": 45,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PRIORITY_QUEUE_ON_TRACK_DISPLAY_CAP",
-          "line": 50,
+          "line": 51,
           "kind": "Variable"
         },
         {
           "name": "severityToBucket",
-          "line": 52,
+          "line": 53,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attentionToPriorityRow",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toPriorityQueue",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "InboxZeroContext",
-          "line": 107,
+          "line": 108,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "InboxZeroRow",
-          "line": 109,
+          "line": 110,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "InboxZeroQueue",
-          "line": 122,
+          "line": 123,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SEVERITY_RANK",
-          "line": 131,
+          "line": 132,
           "kind": "Variable"
         },
         {
           "name": "toInboxZeroQueue",
-          "line": 133,
+          "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TriagePriority",
-          "line": 164,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "TriageContext",
           "line": 165,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "TriageContext",
+          "line": 166,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "TriageRow",
-          "line": 167,
+          "line": 168,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "TriageQueue",
-          "line": 178,
+          "line": 179,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SEVERITY_TO_TRIAGE_PRIORITY",
-          "line": 191,
+          "line": 192,
           "kind": "Variable"
         },
         {
           "name": "FLAG_PRIORITY",
-          "line": 197,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "attentionToTriageRow",
-          "line": 204,
+          "line": 205,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTriageQueue",
-          "line": 217,
+          "line": 218,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "emptyTriageQueue",
-          "line": 234,
+          "line": 235,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueRow",
-          "line": 240,
+          "line": 241,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WORK_QUEUE_REASONS",
-          "line": 250,
+          "line": 251,
           "kind": "Variable"
         },
         {
           "name": "toWorkQueueRows",
-          "line": 253,
+          "line": 254,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueContext",
-          "line": 275,
+          "line": 276,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "toWorkQueueContext",
-          "line": 282,
+          "line": 283,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "orderedReasonCounts",
-          "line": 290,
+          "line": 291,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayGroupKey",
+          "line": 306,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayGroupMeta",
+          "line": 308,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TODAY_GROUP_ORDER",
+          "line": 318,
+          "kind": "Variable"
+        },
+        {
+          "name": "TODAY_GROUPS",
+          "line": 327,
+          "kind": "Variable"
+        },
+        {
+          "name": "REASON_TO_TODAY_GROUP",
+          "line": 372,
+          "kind": "Variable"
+        },
+        {
+          "name": "todayGroupForReason",
+          "line": 376,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TodayRow",
+          "line": 380,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayGroup",
+          "line": 394,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "TodayQueue",
+          "line": 396,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "attentionToTodayRow",
+          "line": 412,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toTodayQueue",
+          "line": 428,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128853,206 +129087,206 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 21293,
-      "lines": 508,
-      "sha256": "f6933e341adc5570a0d87ba820940c10d58ae21308ab5f7f4c388aa2e2c4fcc9",
+      "bytes": 21531,
+      "lines": 511,
+      "sha256": "76b6549665e23bfba1a57ce537ba9c4e6d69a47ac80f54d4ef80f6b099ee183f",
       "binary": false,
       "exports": [
         {
           "name": "PortalRole",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavGroup",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavTab",
-          "line": 66,
+          "line": 67,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavBadgeKey",
-          "line": 68,
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PortalNavItem",
-          "line": 84,
+          "line": 85,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NAV_TAB_META",
-          "line": 107,
+          "line": 108,
           "kind": "Variable"
         },
         {
           "name": "NAV_TAB_ORDER",
-          "line": 114,
+          "line": 115,
           "kind": "Variable"
         },
         {
           "name": "NAV_GROUP_LABELS",
-          "line": 116,
+          "line": 117,
           "kind": "Variable"
         },
         {
           "name": "GROUP_ORDER",
-          "line": 133,
+          "line": 134,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_PORTAL_NAV_ITEMS",
-          "line": 154,
+          "line": 155,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_NAV_ITEMS",
-          "line": 266,
+          "line": 267,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_NAV_ITEMS",
-          "line": 308,
+          "line": 309,
           "kind": "Variable"
         },
         {
           "name": "GROUP_PORTAL_NAV_ITEMS",
-          "line": 349,
+          "line": 350,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_PORTAL_NAV_ITEMS",
-          "line": 357,
+          "line": 358,
           "kind": "Variable"
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 449,
+          "line": 450,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 468,
+          "line": 471,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 477,
+          "line": 480,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 482,
+          "line": 485,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 499,
+          "line": 502,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "PortalRole",
-          "line": 48,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavGroup",
-          "line": 50,
+          "line": 51,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavTab",
-          "line": 66,
+          "line": 67,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavBadgeKey",
-          "line": 68,
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PortalNavItem",
-          "line": 84,
+          "line": 85,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NAV_TAB_META",
-          "line": 107,
+          "line": 108,
           "kind": "Variable"
         },
         {
           "name": "NAV_TAB_ORDER",
-          "line": 114,
+          "line": 115,
           "kind": "Variable"
         },
         {
           "name": "NAV_GROUP_LABELS",
-          "line": 116,
+          "line": 117,
           "kind": "Variable"
         },
         {
           "name": "GROUP_ORDER",
-          "line": 133,
+          "line": 134,
           "kind": "Variable"
         },
         {
           "name": "WIOA_AVAILABLE",
-          "line": 152,
+          "line": 153,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_PORTAL_NAV_ITEMS",
-          "line": 154,
+          "line": 155,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_NAV_ITEMS",
-          "line": 266,
+          "line": 267,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_NAV_ITEMS",
-          "line": 308,
+          "line": 309,
           "kind": "Variable"
         },
         {
           "name": "GROUP_PORTAL_NAV_ITEMS",
-          "line": 349,
+          "line": 350,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_PORTAL_NAV_ITEMS",
-          "line": 357,
+          "line": 358,
           "kind": "Variable"
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 449,
+          "line": 450,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 468,
+          "line": 471,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 477,
+          "line": 480,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 482,
+          "line": 485,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 499,
+          "line": 502,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -145430,27 +145664,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 213568,
-      "lines": 3510,
-      "sha256": "44443f9c83cfbbcb63ce1cef12e7d0c79142638b94bf06cd95f6a53f28e4dc3a",
+      "bytes": 213594,
+      "lines": 3511,
+      "sha256": "0b7fabc885a9d20b886de4750fa70fbfaff88b1f2daf81c2b76f8e9af0c07c67",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 236772,
-      "lines": 3510,
-      "sha256": "49d618ed594e432d34c3d33d4873b5eb437dc6b33f44c25b38ced73175d7ea5a",
+      "bytes": 236796,
+      "lines": 3511,
+      "sha256": "816d3e759e7d45d8d5fbb4a24779407b45a03730417099a643011af5d40cce30",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 237201,
-      "lines": 3450,
-      "sha256": "8865456fb46e4d485c25ee7e25a3f9bfe0ae7b881bd9e18bcc5ffef994dd383c",
+      "bytes": 237233,
+      "lines": 3451,
+      "sha256": "c4a14e14ace0e9938ca920abf0e1bc66946fb0a98699cbb438c3ca6ccd750580",
       "binary": false
     },
     {
@@ -145466,9 +145700,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227545,
-      "lines": 3450,
-      "sha256": "f9ff1d615d9e4272c97510cbffcae111fec64358d0db91bf0e153d3089c3a65c",
+      "bytes": 227570,
+      "lines": 3451,
+      "sha256": "5ab7ceb31ce8e0d39615c8a5157b5a45a303ee5a8da7867babcae6308c36c019",
       "binary": false
     },
     {
@@ -153083,9 +153317,9 @@
       "path": "scripts/lib/portal-audit-paths.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 15377,
-      "lines": 525,
-      "sha256": "066d954077998339a55ca867537a4fd7d1f17eb1032367a0cbd42cc201b54d26",
+      "bytes": 15695,
+      "lines": 534,
+      "sha256": "586a00d939fb8deff01b3e1cbd37e28a5f958e24b55695fafd0643f9f5edc9f6",
       "binary": false,
       "exports": [
         {
@@ -153095,47 +153329,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 202,
+          "line": 203,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 244,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 257,
+          "line": 258,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 352,
+          "line": 353,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 382,
+          "line": 383,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 482,
+          "line": 491,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 488,
+          "line": 497,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 492,
+          "line": 501,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 504,
+          "line": 513,
           "kind": "Variable"
         }
       ],
@@ -153147,47 +153381,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 202,
+          "line": 203,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 244,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 257,
+          "line": 258,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 352,
+          "line": 353,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 382,
+          "line": 383,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 482,
+          "line": 491,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 488,
+          "line": 497,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 492,
+          "line": 501,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 504,
+          "line": 513,
           "kind": "Variable"
         }
       ],
@@ -153271,9 +153505,9 @@
       "path": "scripts/lib/portal-hub-smoke-paths.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 1427,
-      "lines": 45,
-      "sha256": "62ccbcdf80eda6f4592bf88431ca9187badf3be58219f77710443ee948af787b",
+      "bytes": 1546,
+      "lines": 46,
+      "sha256": "15a00b5cd697ba109ab660efc263725629be56996aea68a33db59851951920fd",
       "binary": false,
       "exports": [
         {
@@ -153288,7 +153522,7 @@
         },
         {
           "name": "isPortalHubSmokePath",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -153305,7 +153539,7 @@
         },
         {
           "name": "isPortalHubSmokePath",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163021,6 +163255,29 @@
       "directive": null
     },
     {
+      "path": "tests/components/counselor-today.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5962,
+      "lines": 118,
+      "sha256": "015e7a38d38cc5523f8cf5bb8276dfe4c7af6cccb84ae74cab0c902d8d9702c0",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "group",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "tile",
+          "line": 17,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/coursera-diagnostics-evidence.spec.tsx",
       "area": "tests",
       "domain": "learning-coursera",
@@ -169176,9 +169433,9 @@
       "path": "tests/portal-audit-five-role.test.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 47329,
+      "bytes": 47341,
       "lines": 1282,
-      "sha256": "b9bc2463a582a18c48a0491fbe60fc78135f98f158e09c2721894a56bbec010e",
+      "sha256": "33aae8cc1d7683a3da6cd75dc1587b7a9c65b5d364a09126537c7f903f6d3939",
       "binary": false,
       "exports": [],
       "declarations": [
