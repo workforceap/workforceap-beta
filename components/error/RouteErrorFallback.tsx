@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { CircleAlert, RefreshCw, RotateCcw } from 'lucide-react';
 import * as Sentry from '@sentry/nextjs';
 
 export type ErrorContext =
@@ -168,17 +169,7 @@ export default function RouteErrorFallback({
             margin: '0 auto 1rem',
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: '1.75rem',
-              color: 'var(--color-accent, #2563eb)',
-              fontVariationSettings: "'FILL' 1",
-            }}
-            aria-hidden="true"
-          >
-            error
-          </span>
+          <CircleAlert size={28} aria-hidden="true" style={{ color: 'var(--color-accent, #2563eb)' }} />
         </div>
 
         {/* Text */}
@@ -258,18 +249,7 @@ export default function RouteErrorFallback({
             onClick={() => reset()}
             style={{ minHeight: 44, flex: '1 1 auto', maxWidth: '12rem' }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: '1rem',
-                fontVariationSettings: "'FILL' 1",
-                verticalAlign: 'middle',
-                marginRight: '0.25rem',
-              }}
-              aria-hidden="true"
-            >
-              refresh
-            </span>
+            <RefreshCw size={16} aria-hidden="true" style={{ marginRight: '0.25rem' }} />
             Try again
           </button>
           <button
@@ -278,18 +258,7 @@ export default function RouteErrorFallback({
             onClick={handleReload}
             style={{ minHeight: 44, flex: '1 1 auto', maxWidth: '12rem' }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: '1rem',
-                fontVariationSettings: "'FILL' 1",
-                verticalAlign: 'middle',
-                marginRight: '0.25rem',
-              }}
-              aria-hidden="true"
-            >
-              restart_alt
-            </span>
+            <RotateCcw size={16} aria-hidden="true" style={{ marginRight: '0.25rem' }} />
             Reload page
           </button>
         </div>

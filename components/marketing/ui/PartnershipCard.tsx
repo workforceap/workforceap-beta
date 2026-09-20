@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { ArrowRight } from 'lucide-react';
 import LocalizedLink from '@/components/LocalizedLink';
 
 interface PartnershipCardProps {
@@ -69,9 +70,7 @@ export function PartnershipCard({ icon, title, who, why, cta, ctaHref, span = 4 
         }}
       >
         {cta}
-        <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">
-          arrow_forward
-        </span>
+        <ArrowRight size={16} aria-hidden="true" />
       </LocalizedLink>
     </div>
   );

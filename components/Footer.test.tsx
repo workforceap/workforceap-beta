@@ -27,6 +27,8 @@ vi.mock('@/components/portal/LanguageToggle', () => ({
 
 vi.mock('lucide-react', () => ({
   Linkedin: () => <span data-testid="linkedin-icon" />,
+  // WAP-110: the email link draws a Lucide glyph instead of an icon-font ligature.
+  AtSign: () => <span data-testid="email-icon" />,
 }));
 
 function headingLevels(root: HTMLElement): number[] {

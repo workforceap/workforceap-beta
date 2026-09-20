@@ -9,23 +9,23 @@
 | [app/(auth)/forgot-password/page.tsx](../../../app/%28auth%29/forgot-password/page.tsx) | 166 | pages | default:160 |
 | [app/(auth)/layout.tsx](../../../app/%28auth%29/layout.tsx) | 34 | pages | default:21 |
 | [app/(auth)/loading.tsx](../../../app/%28auth%29/loading.tsx) | 5 | pages | default:3 |
-| [app/(auth)/login/LoginForm.tsx](../../../app/%28auth%29/login/LoginForm.tsx) | 688 | pages | default:252 |
+| [app/(auth)/login/LoginForm.tsx](../../../app/%28auth%29/login/LoginForm.tsx) | 650 | pages | default:216 |
 | [app/(auth)/login/loading.tsx](../../../app/%28auth%29/login/loading.tsx) | 5 | pages | default:3 |
 | [app/(auth)/login/page.tsx](../../../app/%28auth%29/login/page.tsx) | 70 | pages | generateMetadata:14, default:24 |
 | [app/(auth)/not-found.tsx](../../../app/%28auth%29/not-found.tsx) | 20 | pages | default:3 |
 | [app/(auth)/reset-password/layout.tsx](../../../app/%28auth%29/reset-password/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
-| [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | 332 | pages | default:326 |
+| [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | 302 | pages | default:296 |
 | [app/(auth)/setup-mfa/layout.tsx](../../../app/%28auth%29/setup-mfa/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
 | [app/(auth)/setup-mfa/loading.tsx](../../../app/%28auth%29/setup-mfa/loading.tsx) | 5 | pages | default:3 |
-| [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | 316 | pages | default:20 |
-| [app/(auth)/signup/SignupForm.tsx](../../../app/%28auth%29/signup/SignupForm.tsx) | 642 | applications-enrollment | default:253 |
+| [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | 315 | pages | default:19 |
+| [app/(auth)/signup/SignupForm.tsx](../../../app/%28auth%29/signup/SignupForm.tsx) | 610 | applications-enrollment | default:221 |
 | [app/(auth)/signup/loading.tsx](../../../app/%28auth%29/signup/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/(auth)/signup/page.tsx](../../../app/%28auth%29/signup/page.tsx) | 41 | applications-enrollment | generateMetadata:11, default:20 |
 | [app/(auth)/verify-mfa/layout.tsx](../../../app/%28auth%29/verify-mfa/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
 | [app/(auth)/verify-mfa/loading.tsx](../../../app/%28auth%29/verify-mfa/loading.tsx) | 5 | pages | default:3 |
-| [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | 211 | pages | default:18 |
+| [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | 210 | pages | default:17 |
 | [app/(decision-journey)/error.tsx](../../../app/%28decision-journey%29/error.tsx) | 13 | pages | default:5 |
-| [app/(decision-journey)/find-your-path/FindYourPathClient.tsx](../../../app/%28decision-journey%29/find-your-path/FindYourPathClient.tsx) | 970 | pages | default:548 |
+| [app/(decision-journey)/find-your-path/FindYourPathClient.tsx](../../../app/%28decision-journey%29/find-your-path/FindYourPathClient.tsx) | 973 | pages | default:550 |
 | [app/(decision-journey)/find-your-path/loading.tsx](../../../app/%28decision-journey%29/find-your-path/loading.tsx) | 5 | pages | default:3 |
 | [app/(decision-journey)/layout.tsx](../../../app/%28decision-journey%29/layout.tsx) | 23 | pages | default:13 |
 | [app/(decision-journey)/loading.tsx](../../../app/%28decision-journey%29/loading.tsx) | 5 | pages | default:3 |
@@ -287,7 +287,7 @@
 | [app/(portal)/employer/work-queue/page.tsx](../../../app/%28portal%29/employer/work-queue/page.tsx) | 94 | jobs-employers | generateMetadata:15, default:24 |
 | [app/(portal)/error.tsx](../../../app/%28portal%29/error.tsx) | 13 | pages | default:5 |
 | [app/(portal)/help/page.tsx](../../../app/%28portal%29/help/page.tsx) | 14 | pages | default:12 |
-| [app/(portal)/layout.tsx](../../../app/%28portal%29/layout.tsx) | 45 | pages | metadata:15, maxDuration:28, default:30 |
+| [app/(portal)/layout.tsx](../../../app/%28portal%29/layout.tsx) | 50 | pages | metadata:16, maxDuration:29, default:31 |
 | [app/(portal)/leader/dashboard/page.tsx](../../../app/%28portal%29/leader/dashboard/page.tsx) | 375 | member-counselor | default:88 |
 | [app/(portal)/loading.tsx](../../../app/%28portal%29/loading.tsx) | 5 | pages | default:3 |
 | [app/(portal)/not-found.tsx](../../../app/%28portal%29/not-found.tsx) | 20 | pages | default:3 |
@@ -404,7 +404,7 @@
 | [app/admin/jobs/\[id\]/page.tsx](../../../app/admin/jobs/%5Bid%5D/page.tsx) | 73 | jobs-employers | generateMetadata:13, default:35 |
 | [app/admin/jobs/loading.tsx](../../../app/admin/jobs/loading.tsx) | 6 | jobs-employers | default:3 |
 | [app/admin/jobs/page.tsx](../../../app/admin/jobs/page.tsx) | 416 | jobs-employers | generateMetadata:27, default:103 |
-| [app/admin/layout.tsx](../../../app/admin/layout.tsx) | 117 | administration | dynamic:22, metadata:24, default:31 |
+| [app/admin/layout.tsx](../../../app/admin/layout.tsx) | 121 | administration | dynamic:23, metadata:25, default:32 |
 | [app/admin/loading.tsx](../../../app/admin/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/members/\[id\]/AdminMemberAiMatches.tsx](../../../app/admin/members/%5Bid%5D/AdminMemberAiMatches.tsx) | 57 | administration | default:6 |
 | [app/admin/members/\[id\]/CreateSuccessToast.tsx](../../../app/admin/members/%5Bid%5D/CreateSuccessToast.tsx) | 45 | administration | default:7 |
@@ -497,15 +497,15 @@
 | [app/admin/wioa-screening/loading.tsx](../../../app/admin/wioa-screening/loading.tsx) | 6 | partners-funding | default:3 |
 | [app/admin/wioa-screening/page.tsx](../../../app/admin/wioa-screening/page.tsx) | 386 | partners-funding | generateMetadata:25, default:91 |
 | [app/api-docs/page.tsx](../../../app/api-docs/page.tsx) | 24 | pages | dynamic:9, generateMetadata:11, default:19 |
-| [app/apply/ApplyEligibilityClient.tsx](../../../app/apply/ApplyEligibilityClient.tsx) | 987 | applications-enrollment | default:41, APPLY_STORAGE_KEY:987 |
+| [app/apply/ApplyEligibilityClient.tsx](../../../app/apply/ApplyEligibilityClient.tsx) | 1040 | applications-enrollment | default:41, APPLY_STORAGE_KEY:1040 |
 | [app/apply/ApplyPageSkeleton.tsx](../../../app/apply/ApplyPageSkeleton.tsx) | 21 | applications-enrollment | default:1 |
-| [app/apply/OrganicApplyPage.module.css](../../../app/apply/OrganicApplyPage.module.css) | 73 | applications-enrollment |  |
-| [app/apply/OrganicApplyPage.tsx](../../../app/apply/OrganicApplyPage.tsx) | 618 | applications-enrollment | default:185 |
-| [app/apply/PaidApplyVariant.tsx](../../../app/apply/PaidApplyVariant.tsx) | 318 | applications-enrollment | default:31 |
-| [app/apply/apply-funnel-depth.css](../../../app/apply/apply-funnel-depth.css) | 486 | applications-enrollment |  |
+| [app/apply/OrganicApplyPage.module.css](../../../app/apply/OrganicApplyPage.module.css) | 76 | applications-enrollment |  |
+| [app/apply/OrganicApplyPage.tsx](../../../app/apply/OrganicApplyPage.tsx) | 620 | applications-enrollment | default:187 |
+| [app/apply/PaidApplyVariant.tsx](../../../app/apply/PaidApplyVariant.tsx) | 319 | applications-enrollment | default:31 |
+| [app/apply/apply-funnel-depth.css](../../../app/apply/apply-funnel-depth.css) | 488 | applications-enrollment |  |
 | [app/apply/confirmation/loading.tsx](../../../app/apply/confirmation/loading.tsx) | 5 | applications-enrollment | default:3 |
-| [app/apply/confirmation/page.tsx](../../../app/apply/confirmation/page.tsx) | 263 | applications-enrollment | generateMetadata:18, default:31 |
-| [app/apply/create-account/ApplyCreateAccountForm.tsx](../../../app/apply/create-account/ApplyCreateAccountForm.tsx) | 1039 | applications-enrollment | default:53 |
+| [app/apply/confirmation/page.tsx](../../../app/apply/confirmation/page.tsx) | 263 | applications-enrollment | generateMetadata:20, default:33 |
+| [app/apply/create-account/ApplyCreateAccountForm.tsx](../../../app/apply/create-account/ApplyCreateAccountForm.tsx) | 1037 | applications-enrollment | default:55 |
 | [app/apply/create-account/error.tsx](../../../app/apply/create-account/error.tsx) | 13 | applications-enrollment | default:5 |
 | [app/apply/create-account/loading.tsx](../../../app/apply/create-account/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/apply/create-account/page.tsx](../../../app/apply/create-account/page.tsx) | 66 | applications-enrollment | generateMetadata:15, default:25 |
@@ -514,7 +514,7 @@
 | [app/apply/loading.tsx](../../../app/apply/loading.tsx) | 13 | applications-enrollment | default:1 |
 | [app/apply/not-found.tsx](../../../app/apply/not-found.tsx) | 46 | applications-enrollment | metadata:6, default:10 |
 | [app/apply/page.tsx](../../../app/apply/page.tsx) | 47 | applications-enrollment | generateMetadata:19, default:24 |
-| [app/apply/results/ApplyResultsClient.tsx](../../../app/apply/results/ApplyResultsClient.tsx) | 430 | applications-enrollment | default:32 |
+| [app/apply/results/ApplyResultsClient.tsx](../../../app/apply/results/ApplyResultsClient.tsx) | 431 | applications-enrollment | default:33 |
 | [app/apply/results/error.tsx](../../../app/apply/results/error.tsx) | 13 | applications-enrollment | default:5 |
 | [app/apply/results/loading.tsx](../../../app/apply/results/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/apply/results/page.tsx](../../../app/apply/results/page.tsx) | 66 | applications-enrollment | generateMetadata:16, default:25 |
@@ -606,23 +606,23 @@
 | [app/employer/outcomes/page.tsx](../../../app/employer/outcomes/page.tsx) | 54 | jobs-employers | generateMetadata:12, default:21 |
 | [app/employer/thank-you/page.tsx](../../../app/employer/thank-you/page.tsx) | 31 | jobs-employers | generateMetadata:6, default:16 |
 | [app/employers/EmployerContactForm.tsx](../../../app/employers/EmployerContactForm.tsx) | 266 | pages | default:41 |
-| [app/employers/EmployerHiringPartnerCta.tsx](../../../app/employers/EmployerHiringPartnerCta.tsx) | 39 | pages | default:13 |
+| [app/employers/EmployerHiringPartnerCta.tsx](../../../app/employers/EmployerHiringPartnerCta.tsx) | 38 | pages | default:14 |
 | [app/employers/signup/layout.tsx](../../../app/employers/signup/layout.tsx) | 15 | applications-enrollment | generateMetadata:4, default:13 |
-| [app/employers/signup/page.tsx](../../../app/employers/signup/page.tsx) | 404 | applications-enrollment | default:17 |
-| [app/employers/signup/signup-depth.css](../../../app/employers/signup/signup-depth.css) | 167 | applications-enrollment |  |
+| [app/employers/signup/page.tsx](../../../app/employers/signup/page.tsx) | 383 | applications-enrollment | default:18 |
+| [app/employers/signup/signup-depth.css](../../../app/employers/signup/signup-depth.css) | 134 | applications-enrollment |  |
 | [app/enroll/\[school\]/page.tsx](../../../app/enroll/%5Bschool%5D/page.tsx) | 44 | applications-enrollment | dynamic:12, generateMetadata:16, default:30 |
 | [app/error.tsx](../../../app/error.tsx) | 66 | pages | default:9 |
 | [app/favicon.ico](../../../app/favicon.ico) | binary | pages |  |
 | [app/global-error.tsx](../../../app/global-error.tsx) | 56 | pages | default:7 |
 | [app/invite/layout.tsx](../../../app/invite/layout.tsx) | 20 | pages | generateMetadata:7, default:17 |
 | [app/invite/page.tsx](../../../app/invite/page.tsx) | 415 | pages | default:408 |
-| [app/layout.tsx](../../../app/layout.tsx) | 317 | pages | viewport:58, metadata:64, default:89 |
+| [app/layout.tsx](../../../app/layout.tsx) | 313 | pages | viewport:58, metadata:64, default:89 |
 | [app/mentor/apply/MentorApplyForm.tsx](../../../app/mentor/apply/MentorApplyForm.tsx) | 187 | applications-enrollment | default:25 |
 | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) | 13 | applications-enrollment | metadata:4, default:11 |
-| [app/mentor/apply/mentor-apply.module.css](../../../app/mentor/apply/mentor-apply.module.css) | 119 | applications-enrollment |  |
+| [app/mentor/apply/mentor-apply.module.css](../../../app/mentor/apply/mentor-apply.module.css) | 111 | applications-enrollment |  |
 | [app/mentor/apply/page.tsx](../../../app/mentor/apply/page.tsx) | 29 | applications-enrollment | generateMetadata:5, default:14 |
 | [app/not-found.tsx](../../../app/not-found.tsx) | 46 | pages | metadata:6, default:10 |
-| [app/org/\[slug\]/outcomes/OrgOutcomesClient.tsx](../../../app/org/%5Bslug%5D/outcomes/OrgOutcomesClient.tsx) | 325 | pages | default:68 |
+| [app/org/\[slug\]/outcomes/OrgOutcomesClient.tsx](../../../app/org/%5Bslug%5D/outcomes/OrgOutcomesClient.tsx) | 324 | pages | default:67 |
 | [app/org/\[slug\]/outcomes/page.tsx](../../../app/org/%5Bslug%5D/outcomes/page.tsx) | 31 | pages | generateMetadata:7, default:22 |
 | [app/org/onboard/layout.tsx](../../../app/org/onboard/layout.tsx) | 16 | pages | generateMetadata:4, default:14 |
 | [app/org/onboard/page.tsx](../../../app/org/onboard/page.tsx) | 115 | pages | default:12 |
@@ -635,7 +635,7 @@
 | [app/r/\[code\]/route.ts](../../../app/r/%5Bcode%5D/route.ts) | 24 | pages | GET:9 |
 | [app/robots.ts](../../../app/robots.ts) | 10 | pages | default:5 |
 | [app/seo.ts](../../../app/seo.ts) | 77 | pages | SITE_URL:8, DEFAULT_OG_IMAGE:9, PageSeoInputWithoutLocale:22, buildPageMetadataAsync:25, buildPageMetadata:41 |
-| [app/share/achievement/page.tsx](../../../app/share/achievement/page.tsx) | 144 | pages | dynamic:6, generateMetadata:39, default:78 |
+| [app/share/achievement/page.tsx](../../../app/share/achievement/page.tsx) | 143 | pages | dynamic:7, generateMetadata:40, default:79 |
 | [app/sitemap.ts](../../../app/sitemap.ts) | 139 | pages | revalidate:36, default:67 |
 | [app/survey/placement/\[token\]/page.tsx](../../../app/survey/placement/%5Btoken%5D/page.tsx) | 109 | jobs-employers | dynamic:6, metadata:7, default:29 |
 | [app/wioa-qualification/page.tsx](../../../app/wioa-qualification/page.tsx) | 28 | partners-funding | generateMetadata:12, default:21 |

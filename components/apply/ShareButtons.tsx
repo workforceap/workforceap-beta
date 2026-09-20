@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { Check, Copy, Mail, MessageSquare } from 'lucide-react';
 
 const KNOWN_LOCALES = ['en', 'es', 'fr', 'pt'] as const;
 
@@ -56,9 +57,11 @@ export default function ShareButtons() {
   return (
     <div className="afd-confirm__share-grid">
       <button type="button" onClick={handleCopyLink} className="afd-confirm__share-btn">
-        <span className="material-symbols-outlined afd-confirm__share-icon" aria-hidden="true">
-          {copied ? 'check' : 'content_copy'}
-        </span>
+        {copied ? (
+          <Check className="afd-confirm__share-icon" aria-hidden="true" />
+        ) : (
+          <Copy className="afd-confirm__share-icon" aria-hidden="true" />
+        )}
         <span aria-live="polite" className="afd-confirm__share-caption">
           {copied ? t('shareButtonCopied') : t('shareButtonCopyLink')}
         </span>
@@ -69,9 +72,7 @@ export default function ShareButtons() {
         className="afd-confirm__share-btn"
         aria-label={t('shareButtonEmailAria')}
       >
-        <span className="material-symbols-outlined afd-confirm__share-icon" aria-hidden="true">
-          mail
-        </span>
+        <Mail className="afd-confirm__share-icon" aria-hidden="true" />
         <span className="afd-confirm__share-caption">{t('shareButtonEmail')}</span>
       </button>
       <button
@@ -80,9 +81,7 @@ export default function ShareButtons() {
         className="afd-confirm__share-btn"
         aria-label={t('shareButtonSmsAria')}
       >
-        <span className="material-symbols-outlined afd-confirm__share-icon" aria-hidden="true">
-          chat_bubble
-        </span>
+        <MessageSquare className="afd-confirm__share-icon" aria-hidden="true" />
         <span className="afd-confirm__share-caption">{t('shareButtonSms')}</span>
       </button>
     </div>

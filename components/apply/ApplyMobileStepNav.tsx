@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 /** Shorter labels than the desktop sidebar — mobile step pills are one-third width. */
 const APPLY_PROGRESS_STEPS = [
@@ -58,9 +59,7 @@ export default async function ApplyMobileStepNav({
             <span className="apply-mobile-step-nav__index" aria-hidden="true">
               {i + 1}
             </span>
-            <span className="material-symbols-outlined apply-mobile-step-nav__icon" aria-hidden="true">
-              {step.icon}
-            </span>
+            <LegacyGlyph name={step.icon} size={16} className="apply-mobile-step-nav__icon" />
             <span className="apply-mobile-step-nav__label">
               {t(step.labelKey as Parameters<typeof t>[0])}
             </span>

@@ -221,14 +221,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         ) : null}
 
-        <link
-          rel="preload"
-          href="/fonts/material-symbols-outlined.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        {/* Material Symbols Outlined is self-hosted via @font-face in main.css */}
+        {/* WAP-110: the Material Symbols icon font is no longer preloaded from the
+            root layout. Public routes, the apply funnel and the member shell draw
+            Lucide SVGs; the self-hosted @font-face stays in main.css for legacy
+            portal pages and is preloaded from the (portal) and admin layouts. */}
         {/* Register service worker — updateViaCache:'none' ensures browser always fetches fresh sw.js */}
         {!readOnlyAudit ? (
           <Script id="sw-register" strategy="lazyOnload">

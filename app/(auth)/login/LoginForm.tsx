@@ -1,6 +1,7 @@
 'use client';
 
-import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { LockKeyhole, ShieldCheck } from 'lucide-react';
+import PasswordToggle from '@/components/forms/PasswordToggle';
 
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import Image from 'next/image';
@@ -147,24 +148,6 @@ const s = {
     position: 'relative' as const,
   } as React.CSSProperties,
 
-  passwordToggle: {
-    position: 'absolute' as const,
-    right: 0,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    color: 'var(--color-on-surface-variant)',
-    cursor: 'pointer',
-    padding: '12px 14px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '44px',
-    minHeight: '44px',
-    transition: 'color 0.2s',
-  } as React.CSSProperties,
-
   recoverLink: {
     fontSize: 'var(--font-size-sm)',
     color: 'var(--color-accent)',
@@ -177,25 +160,6 @@ const s = {
     alignItems: 'center',
     gap: 'var(--space-2)',
     margin: 'var(--space-6) 0',
-  } as React.CSSProperties,
-
-  primaryBtn: {
-    width: '100%',
-    minHeight: '44px',
-    padding: 'var(--space-4)',
-    fontSize: 'var(--font-size-base)',
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase' as const,
-    color: 'var(--color-white)',
-    /* Crimson primary CTA — the kit's primary-action treatment (.btn-primary / .mdx-btn--primary).
-       --ad-grad is the auth-depth crimson gradient; white on its lightest stop is 6.5:1. */
-    background: 'var(--ad-grad, var(--color-accent))',
-    border: 'none',
-    borderRadius: 'var(--radius-md)',
-    cursor: 'pointer',
-    transition: 'opacity 0.2s, box-shadow 0.2s',
-    boxShadow: '0 12px 30px -12px rgba(173, 44, 77, 0.5)',
   } as React.CSSProperties,
 
   footer: {
@@ -575,15 +539,13 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
                   className="login-field"
                   style={{ ...s.input, ...(passwordError ? { borderColor: 'var(--color-accent)' } : {}) }}
                 />
-                <button
-                  type="button"
-                  style={s.passwordToggle}
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? tAuth('login.hidePassword') : tAuth('login.showPassword')}
-                  aria-pressed={showPassword}
-                >
-                  {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
-                </button>
+                <PasswordToggle
+                  visible={showPassword}
+                  onToggle={() => setShowPassword((v) => !v)}
+                  showLabel={tAuth('login.showPassword')}
+                  hideLabel={tAuth('login.hidePassword')}
+                  controls="password"
+                />
               </div>
               {passwordError && (
                 <p id="password-error" role="alert" style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)', marginTop: 'var(--space-1)', margin: 'var(--space-1) 0 0' }}>
@@ -618,7 +580,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
               type="submit"
               disabled={loading}
               aria-busy={loading}
-              style={{ ...s.primaryBtn, opacity: loading ? 0.7 : 1 }}
+              className="btn btn-primary btn-full-width"
             >
               <span aria-live="polite">{loading ? tAuth('login.signingIn') : tAuth('login.signIn')}</span>
             </button>

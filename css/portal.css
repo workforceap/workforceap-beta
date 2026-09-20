@@ -3238,7 +3238,9 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     color: var(--wa-accent);
   }
   .member-portal-top-nav__icon {
-    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
   }
   .member-portal-top-nav__badge {
     display: inline-flex;

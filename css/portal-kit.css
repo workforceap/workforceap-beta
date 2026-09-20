@@ -994,6 +994,134 @@ html.dark [data-surface] .wa-kit-card,
 .wa-shell-text-action:disabled {
   cursor: default;
 }
+/* =============================================================================
+   WAP-105 — member CTA geometry convergence
+   Every member route renders inside `.workspace-shell-root[data-workspace-role='member']`
+   (MemberWorkspaceShell → WorkspaceShell). Legacy `.btn` markup on those routes
+   used to draw five primary shapes (44px/8px-radius marketing button, `.btn-sm`
+   and `.btn-small` 13–14px pills, inline 999px pills, `.wa-kit-cta`). Inside the
+   member shell they now share the kit geometry documented in docs/KIT_GUIDE.md §1:
+     primary   → `.wa-kit-cta`        44px pill, --wa-type-body, --wa-accent / --wa-on-accent-control
+     secondary → `.wa-kit-cta--ghost` 44px pill, --wa-control-border
+     quiet     → `.wa-page-action`    44px transparent text action
+     larger    → `.wa-kit-cta--xl`    52px (lesson-start; `.btn-large` maps here — the guide's
+                                        "larger primary controls" win over a blanket 44px rule)
+   `.btn-sm` / `.btn-small` no longer shrink below 44px or --wa-type-body (guide: member pills are
+   not 13–14px inline sizes). Kit classes themselves are untouched; this only retargets legacy
+   `.btn` markup so the 28 member routes converge without per-file churn.
+   ============================================================================= */
+.workspace-shell-root[data-workspace-role='member'] .btn {
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  line-height: 1.2;
+  gap: 6px;
+  overflow: visible;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn::after {
+  display: none;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn:hover {
+  transform: none;
+  box-shadow: none;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-primary {
+  background: var(--wa-accent);
+  color: var(--wa-on-accent-control);
+  border: none;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-primary:hover {
+  background: var(--wa-accent-dark);
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-secondary,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-outline,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-muted {
+  background: transparent;
+  color: var(--wa-accent);
+  border: 1px solid var(--wa-control-border);
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-secondary:hover,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-outline:hover,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-muted:hover {
+  background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
+  color: var(--wa-accent);
+  border-color: var(--wa-accent);
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-ghost,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-tertiary {
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--wa-radius-sm);
+  background: transparent;
+  color: var(--wa-accent);
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-ghost:hover,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-tertiary:hover {
+  background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
+  text-decoration: none;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-sm,
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-small {
+  min-height: 44px;
+  padding: 10px 16px;
+  font-size: var(--wa-type-body);
+}
+.workspace-shell-root[data-workspace-role='member'] .btn.btn-large {
+  min-height: 52px;
+  padding: 14px 22px;
+  font-weight: 800;
+}
+.workspace-shell-root[data-workspace-role='member'] .btn:focus-visible {
+  outline: 2px solid var(--wa-accent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Card heads: the dashboard section header used a 0.7rem/0.1em kicker beside the
+   kit's `CardHead` 13px/0.06em `.wa-kit-stat-label`; card titles were drawn at
+   1.05rem/700, 1.1rem/600 and 1.1rem/600. One kicker treatment, one title treatment. */
+.workspace-shell-root[data-workspace-role='member'] .portal-dash-section-header__title {
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wa-muted);
+}
+.workspace-shell-root[data-workspace-role='member'] .portal-dash-section-header__action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: var(--wa-radius-sm);
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  color: var(--wa-accent);
+  opacity: 1;
+}
+.workspace-shell-root[data-workspace-role='member'] .portal-dash-section-header__action:hover {
+  background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
+}
+.workspace-shell-root[data-workspace-role='member'] .benefit-card-title,
+.workspace-shell-root[data-workspace-role='member'] .resource-card-title,
+.workspace-shell-root[data-workspace-role='member'] .learning-hub-card-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+.workspace-shell-root[data-workspace-role='member'] .benefit-card-header,
+.workspace-shell-root[data-workspace-role='member'] .resource-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 /* People directories: readable identities and controls from phones to desktop. */
 .wa-kit-people-roster {
   min-width: 0;

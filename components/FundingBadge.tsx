@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Landmark } from 'lucide-react';
 import type { FundingSource } from '@/lib/content/programs';
 import { FUNDING_SOURCES, FUNDING_COLORS, formatFundingSourceLabel } from '@/lib/content/programs';
 
@@ -34,7 +35,7 @@ export default function FundingBadge({ source, showTooltip = true }: { source?: 
         }}
         aria-label={`Funding source: ${displayLabel}`}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '0.8rem' }} aria-hidden="true">account_balance</span>
+        <Landmark size={13} aria-hidden="true" />
         {displayLabel}
       </button>
       {open && (

@@ -2,7 +2,6 @@
 
 import { CircleCheck, ShieldCheck } from 'lucide-react';
 
-import actionStyles from '@/components/auth/AuthActions.module.css';
 import { fetchAuth } from '@/lib/fetchWithTimeout';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
@@ -181,7 +180,7 @@ export default function VerifyMfaPage() {
             type="submit"
             disabled={loading || code.length !== 6}
             aria-busy={loading}
-            className={actionStyles.primary}
+            className="btn btn-primary btn-full-width"
             style={{
               width: '100%',
               minHeight: 44,

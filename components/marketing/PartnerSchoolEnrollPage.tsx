@@ -182,8 +182,8 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
                   <span className="ppartner">Sponsored by {shortName}</span>
                   <span className="pcert">Certificate: {p.partner}</span>
                   <div className="pacts">
-                    <Link className="btn btn--ghost btn--sm" href={programUrl(p.slug)}>View Program</Link>
-                    <Link className="btn btn--primary btn--sm" href={applyUrl(p.slug)}>Get Started →</Link>
+                    <Link className="btn btn-secondary btn-sm" href={programUrl(p.slug)}>View Program</Link>
+                    <Link className="btn btn-primary btn-sm" href={applyUrl(p.slug)}>Get Started →</Link>
                   </div>
                 </div>
               </div>

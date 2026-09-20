@@ -4,6 +4,7 @@ import { getMessages } from 'next-intl/server';
 import PartnerExclusiveServerGate from '@/components/portal/PartnerExclusiveServerGate';
 import PortalLayoutClient from '@/components/portal/PortalLayoutClient';
 import { Suspense } from 'react';
+import { preload } from 'react-dom';
 import LegacyViewNotice from '@/components/portal/LegacyViewNotice';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import '@/css/portal.css';
@@ -32,6 +33,10 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Legacy portal pages still render `.material-symbols-outlined` ligatures, so
+  // the self-hosted font is preloaded here rather than from the root layout
+  // (WAP-110 keeps it off the public site, the apply funnel and the shell).
+  preload('/fonts/material-symbols-outlined.woff2', { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });
   const messages = pickPortalClientMessages(await getMessages());
   return (
     <NextIntlClientProvider messages={messages}>
