@@ -4,6 +4,8 @@ import { isAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope, memberInOrg } from '@/lib/tenant/withTenantScope';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 /**
  * Admin credential-review endpoint.
@@ -78,6 +80,23 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         },
       }),
     );
+
+    // Dual audit (WAP-18): a certification review is a funder-facing decision.
+    void auditLog({
+      actorUserId: user.id,
+      action: `admin_certification_${nextStatus}`,
+      targetType: 'user_certification',
+      targetId: certId,
+      metadata: { action, previousStatus: cert.status, status: nextStatus, orgId },
+    }).catch(() => {});
+    void logAuditEvent({
+      user: { id: user.id, role: 'admin' },
+      verb: action === 'approve' ? 'approved' : 'rejected',
+      object: { type: 'UserCertification', id: certId },
+      result: { success: true, extensions: { previousStatus: cert.status, status: nextStatus } },
+      request: auditRequestMeta(request),
+      orgId,
+    }).catch(() => {});
 
     return NextResponse.json({ success: true, certification: updated });
   } catch (error) {

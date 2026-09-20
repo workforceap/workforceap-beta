@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { captureApiError } from '@/lib/observability/captureApiError';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
 
 const questionSchema = z.object({
   id: z.string().min(1).max(80),
@@ -57,6 +58,13 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
           isActive: parsed.data.isActive ?? true,
         },
       }));
+      void auditLog({
+        actorUserId: user.id,
+        action: 'admin_screening_pack_create',
+        targetType: 'employer_screening_pack',
+        targetId: pack.id,
+        metadata: { programSlug: pack.programSlug, employerLabel: pack.employerLabel, isActive: pack.isActive },
+      }).catch(() => {});
       return NextResponse.json({ pack });
     } catch (err) {
       captureApiError(err, { route: 'admin/employer-screening-packs' });

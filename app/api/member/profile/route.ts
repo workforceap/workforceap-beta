@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
+import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 const updateSchema = z.object({
   fullName: z.string().min(1).max(200).optional(),
@@ -100,6 +102,27 @@ export const GET = withApiGuc(_GET);async function _PATCH(request: Request) {
   }));
 
   if (!updated) return NextResponse.json({ error: 'Profile update failed' }, { status: 500 });
+
+  // Dual audit (WAP-18): record WHICH fields changed, never their values —
+  // address/phone are PII and the audit tables are broader-read than the profile.
+  const changedFields = Object.entries({ fullName, phone, address, city, state, zip })
+    .filter(([, value]) => value !== undefined)
+    .map(([key]) => key);
+  void auditLog({
+    actorUserId: user.id,
+    action: 'member_profile_update',
+    targetType: 'user',
+    targetId: user.id,
+    metadata: { fields: changedFields },
+  }).catch(() => {});
+  void logAuditEvent({
+    user: { id: user.id, role: 'member' },
+    verb: 'update',
+    object: { type: 'MemberProfile', id: user.id },
+    result: { success: true, extensions: { fields: changedFields } },
+    request: auditRequestMeta(request),
+  }).catch(() => {});
+
   return NextResponse.json({
     user: {
       id: updated.id,

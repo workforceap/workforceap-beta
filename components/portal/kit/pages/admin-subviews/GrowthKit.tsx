@@ -6,6 +6,7 @@ import {
   PageOpener,
   RankBars,
   DataTable,
+  StatusTag,
   type KpiItem,
   type RankDatum,
   type Column,
@@ -48,6 +49,8 @@ export interface GrowthApplyEventRow {
 export interface GrowthConversionValueRow {
   name: string;
   valueUsd: number;
+  /** True while the value is a hand-set placeholder rather than one derived from outcome data. */
+  estimate?: boolean;
 }
 
 export interface GrowthKitProps {
@@ -115,6 +118,18 @@ const CONVERSION_COLUMNS: Column<GrowthConversionValueRow>[] = [
     header: 'Value (USD)',
     align: 'right',
     render: (r) => `$${r.valueUsd.toLocaleString('en-US')}`,
+  },
+  {
+    key: 'estimate',
+    header: 'Basis',
+    render: (r) =>
+      r.estimate ? (
+        <span title="Hand-set placeholder — not derived from placement or wage outcomes">
+          <StatusTag tone="warn">Estimate</StatusTag>
+        </span>
+      ) : (
+        <StatusTag tone="ok">Outcome-derived</StatusTag>
+      ),
   },
 ];
 
@@ -197,7 +212,10 @@ export function GrowthKit({
           Conversion values
         </h3>
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 0, marginBottom: 16 }}>
-          USD values forwarded with each conversion so the bid optimizer can learn CPA → LTV
+          USD values forwarded with each conversion so the bid optimizer can learn CPA → LTV.
+          {conversionValues?.some((r) => r.estimate)
+            ? ' Rows marked Estimate are placeholders (see lib/analytics/conversionValue.ts) and should not be read as measured LTV.'
+            : ''}
         </p>
         <DataTable<GrowthConversionValueRow>
           columns={CONVERSION_COLUMNS}

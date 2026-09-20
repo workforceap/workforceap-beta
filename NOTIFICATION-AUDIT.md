@@ -68,7 +68,6 @@ Two parallel template systems live under `emails/`:
 | `ai-match-suggestion.ts` | `aiMatchSuggestionHtml` | AI candidate match suggestion |
 | `partner-weekly-digest.ts` | `partnerWeeklyDigestHtml` | Partner weekly digest |
 | `partner-referral-invite.ts` | `partnerReferralInviteHtml` | Partner referral invite |
-| `at-risk-digest.ts` | `atRiskDigestHtml` | At-risk member digest |
 | `counselor-at-risk-alert.ts` | `counselorAtRiskAlertHtml`, `counselorAtRiskBatchHtml` | Counselor at-risk alerts (single + batch) |
 | `counselor-assigned.ts` | `counselorAssignedHtml` | Counselor assigned → member |
 | `placement-survey.ts` | `placementSurveyHtml`, `placementSurveyEscalationHtml` | Placement survey + escalation |

@@ -65,14 +65,11 @@ export const CRITICAL_AUDIT_ACTION_PREFIXES: readonly string[] = [
  */
 export const RETENTION_AUDIT_DAYS = 365 * 3 + 1;
 
-/**
- * Retention period applied to audit rows whose action matches a critical prefix.
- *
- * Currently equal to RETENTION_AUDIT_DAYS — kept as a separate constant so
- * a future "extended hold" bucket (fraud trail, litigation hold) can be
- * lengthened without touching the default sweep.
+/*
+ * Critical-prefix audit rows currently share RETENTION_AUDIT_DAYS. When an
+ * "extended hold" bucket (fraud trail, litigation hold) is wanted, add a
+ * distinct constant here and switch lib/retention/cleanup.ts to it.
  */
-export const CRITICAL_AUDIT_RETENTION_DAYS = RETENTION_AUDIT_DAYS;
 
 export const RETENTION_TABLES: RetentionTableConfig[] = [
   {

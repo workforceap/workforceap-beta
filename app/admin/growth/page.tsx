@@ -32,7 +32,7 @@ import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/queryCaps';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalCard from '@/components/portal/ui/PortalCard';
-import { CONVERSION_VALUE_USD } from '@/lib/analytics/conversionValue';
+import { CONVERSION_VALUE_BASIS, CONVERSION_VALUE_USD } from '@/lib/analytics/conversionValue';
 import { GrowthKit } from '@/components/portal/kit/pages/admin-subviews/GrowthKit';
 import type { KpiItem, RankDatum } from '@/components/portal/kit';
 
@@ -206,6 +206,7 @@ export default async function AdminGrowthPage({
         conversionValues={Object.entries(CONVERSION_VALUE_USD).map(([name, value]) => ({
           name,
           valueUsd: Number(value),
+          estimate: CONVERSION_VALUE_BASIS === 'estimate',
         }))}
         headerAction={
           GA4_FUNNEL_DASHBOARD_URL ? (

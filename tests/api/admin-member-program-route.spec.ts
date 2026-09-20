@@ -43,6 +43,10 @@ vi.mock('@/lib/notifications/partner-notify', () => ({
   sendPartnerMilestoneEmail: vi.fn(),
 }));
 
+vi.mock('@/lib/member/referrals', () => ({
+  rewardReferralOnEnrollment: vi.fn(async () => false),
+}));
+
 vi.mock('@/lib/member/getMemberState', () => ({
   invalidateMemberState: vi.fn(),
 }));
@@ -78,6 +82,7 @@ import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/o
 import { getProgramBySlug } from '@/lib/content/programs';
 import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
+import { rewardReferralOnEnrollment } from '@/lib/member/referrals';
 
 const ADMIN_ID = '550e8400-e29b-41d4-a716-446655440001';
 const MEMBER_ID = '550e8400-e29b-41d4-a716-446655440002';
@@ -129,6 +134,29 @@ describe('PATCH /api/admin/members/[id]/program', () => {
       Program: 'Data Analytics',
     });
     expect(invalidateMemberState).toHaveBeenCalledWith(MEMBER_ID);
+  });
+
+  it('settles a captured member referral once the staff-led enrollment has committed (WAP-32)', async () => {
+    const res = await PATCH(makeRequest({ programSlug: 'data-analytics' }), {
+      params: Promise.resolve({ id: MEMBER_ID }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(rewardReferralOnEnrollment).toHaveBeenCalledTimes(1);
+    expect(rewardReferralOnEnrollment).toHaveBeenCalledWith(MEMBER_ID);
+  });
+
+  it('does not turn a referral settlement failure into a failed program change', async () => {
+    vi.mocked(rewardReferralOnEnrollment).mockRejectedValueOnce(new Error('points ledger unavailable'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await PATCH(makeRequest({ programSlug: 'data-analytics' }), {
+      params: Promise.resolve({ id: MEMBER_ID }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(errorSpy).toHaveBeenCalledWith('[admin/member-program] post-commit side effect failed', expect.any(Error));
+    errorSpy.mockRestore();
   });
 
   it('rejects an inactive program from an explicit tenant catalog', async () => {

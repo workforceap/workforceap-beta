@@ -70,11 +70,8 @@ export const CENTRAL_TEXAS_REFERRAL_SOURCES = [
   ...GENERIC_REFERRAL_CHANNELS,
 ] as const;
 
-/** Used when the referral-sources API cannot reach the database. */
-export const FALLBACK_REFERRAL_SOURCES = CENTRAL_TEXAS_REFERRAL_SOURCES;
-
-/** Public/member intake options. Keep partner orgs separate from individual counselors. */
-export const PUBLIC_REFERRAL_SOURCE_OPTIONS = CENTRAL_TEXAS_REFERRAL_SOURCES;
+// `CENTRAL_TEXAS_REFERRAL_SOURCES` is both the public/member intake option list
+// and the fallback when the referral-sources API cannot reach the database.
 
 /** Historical admin values remain accepted so stale tabs and older records keep working. */
 const LEGACY_ADMIN_REFERRAL_SOURCE_OPTIONS = [

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "d4e47235689ffb0b4ed9353f6d518d767719ab15b9848151d835895d922d90dd",
+  "inputTreeSha256": "2f3ae407f23d99f61c0b4334ae670c30302453fb818585f8639c126f5aa472fb",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4847,
+    "files": 4848,
     "sourceModules": 3510,
-    "importReferences": 17104,
-    "resolvedLocalReferences": 11372,
+    "importReferences": 17128,
+    "resolvedLocalReferences": 11390,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1056,
-    "nextRouteFiles": 1023,
-    "apiHandlers": 490,
+    "routeFiles": 1055,
+    "nextRouteFiles": 1022,
+    "apiHandlers": 489,
     "pageFiles": 314,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 844,
-    "testCandidates": 837,
+    "testFiles": 845,
+    "testCandidates": 838,
     "testHelpers": 7,
-    "staticallySelectedTests": 834,
+    "staticallySelectedTests": 835,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -38,7 +38,7 @@
     },
     {
       "area": "api",
-      "files": 520
+      "files": 519
     },
     {
       "area": "assets",
@@ -54,7 +54,7 @@
     },
     {
       "area": "communications",
-      "files": 71
+      "files": 70
     },
     {
       "area": "components",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 128
+      "files": 130
     },
     {
       "area": "pages",
@@ -94,7 +94,7 @@
     },
     {
       "area": "root",
-      "files": 55
+      "files": 56
     },
     {
       "area": "styles",
@@ -120,7 +120,7 @@
     },
     {
       "file": "lib/db/withRequestGuc.ts",
-      "references": 432
+      "references": 434
     },
     {
       "file": "lib/auth/roles.ts",
@@ -136,7 +136,7 @@
     },
     {
       "file": "lib/audit.ts",
-      "references": 213
+      "references": 225
     },
     {
       "file": "app/seo.ts",
@@ -148,7 +148,7 @@
     },
     {
       "file": "lib/audit/log.ts",
-      "references": 189
+      "references": 193
     },
     {
       "file": "components/portal/PageHeader.tsx",
@@ -176,7 +176,7 @@
     },
     {
       "file": "lib/email.ts",
-      "references": 93
+      "references": 91
     },
     {
       "file": "lib/content/programTitle.ts",
@@ -196,7 +196,7 @@
     },
     {
       "file": "lib/email/escapeHtml.ts",
-      "references": 63
+      "references": 62
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
@@ -258,7 +258,7 @@
     },
     {
       "file": "lib/email.ts",
-      "lines": 2875
+      "lines": 2830
     },
     {
       "file": "lib/content/courseSkillMap.ts",

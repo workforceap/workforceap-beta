@@ -368,4 +368,3 @@ export function AdminDashboardKit({
   );
 }
 
-export default AdminDashboardKit;

@@ -328,7 +328,7 @@
 | [components/portal/InterviewPrepBundle.tsx](../../../components/portal/InterviewPrepBundle.tsx) | 348 | components | PrepBundleItem:9, default:29 |
 | [components/portal/JobApplicationCard.tsx](../../../components/portal/JobApplicationCard.tsx) | 262 | components | default:38 |
 | [components/portal/JobApplicationForm.tsx](../../../components/portal/JobApplicationForm.tsx) | 247 | components | default:14 |
-| [components/portal/JobApplicationKanban.tsx](../../../components/portal/JobApplicationKanban.tsx) | 283 | components | default:189 |
+| [components/portal/JobApplicationKanban.tsx](../../../components/portal/JobApplicationKanban.tsx) | 284 | components | default:190 |
 | [components/portal/JobApplicationsTracker.tsx](../../../components/portal/JobApplicationsTracker.tsx) | 209 | components | default:19 |
 | [components/portal/JobReadinessScore.tsx](../../../components/portal/JobReadinessScore.tsx) | 67 | components | default:14 |
 | [components/portal/JobTailorPanel.tsx](../../../components/portal/JobTailorPanel.tsx) | 347 | components | JOB_TAILOR_PREVIEW_RESULT:50, default:105 |
@@ -533,7 +533,7 @@
 | [components/portal/kit/pages/PartnerOverviewKit.module.css](../../../components/portal/kit/pages/PartnerOverviewKit.module.css) | 20 | components |  |
 | [components/portal/kit/pages/PartnerOverviewKit.tsx](../../../components/portal/kit/pages/PartnerOverviewKit.tsx) | 268 | components | PartnerKpiTile:37, PartnerKpiGrid:54, PartnerFunnelStage:77, PartnerReferralFunnel:85, PartnerPayoutLedgerRow:101, PartnerPayoutLedger:112, PartnerAttentionCard:142, PartnerAssistantAccordion:167, PartnerQuickAction:207, PartnerQuickActions:227 |
 | [components/portal/kit/pages/VoiceStudioKit.tsx](../../../components/portal/kit/pages/VoiceStudioKit.tsx) | 1637 | components | VoiceStudioAgentKey:77, VOICE_STUDIO_AGENT_KEYS:78, SessionAgentConfig:85, ResumeStudioIssue:171, ResumeStudioData:172, VoiceStudioKitProps:181, VoiceStudioKit:200 |
-| [components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx](../../../components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx) | 371 | components | AdminDashboardFunnel:66, AdminDashboardTrendPoint:74, AdminDashboardSummary:79, AdminDashboardWorkItem:97, AdminDashboardKitProps:106, AdminDashboardKit:125, default:371 |
+| [components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx](../../../components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx) | 370 | components | AdminDashboardFunnel:66, AdminDashboardTrendPoint:74, AdminDashboardSummary:79, AdminDashboardWorkItem:97, AdminDashboardKitProps:106, AdminDashboardKit:125 |
 | [components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx](../../../components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx) | 225 | components | AgentInboxRow:32, AgentInboxKitProps:50, AgentInboxKit:62 |
 | [components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx](../../../components/portal/kit/pages/admin-subviews/AiEfficacyKit.tsx) | 118 | components | AiEfficacyKitProps:20, AiEfficacyKit:48 |
 | [components/portal/kit/pages/admin-subviews/AiToolsAdminKit.tsx](../../../components/portal/kit/pages/admin-subviews/AiToolsAdminKit.tsx) | 196 | components | AiToolDef:42, AiToolUsage:63, AiToolsAdminKitProps:68, AiToolsAdminKit:134 |
@@ -556,7 +556,7 @@
 | [components/portal/kit/pages/admin-subviews/ExportsKit.tsx](../../../components/portal/kit/pages/admin-subviews/ExportsKit.tsx) | 195 | components | ExportTone:22, ExportOption:24, ExportsKitProps:45, ExportsKit:171 |
 | [components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx) | 219 | components | FeatureFlagRow:25, FeatureFlagsKitProps:40, FeatureFlagsKit:52 |
 | [components/portal/kit/pages/admin-subviews/FeedbackKit.tsx](../../../components/portal/kit/pages/admin-subviews/FeedbackKit.tsx) | 252 | components | FeedbackSentiment:26, FeedbackRow:28, FeedbackKitProps:43, FeedbackKit:73 |
-| [components/portal/kit/pages/admin-subviews/GrowthKit.tsx](../../../components/portal/kit/pages/admin-subviews/GrowthKit.tsx) | 213 | components | GrowthUtmRow:34, GrowthApplyEventRow:43, GrowthConversionValueRow:48, GrowthKitProps:53, GrowthKit:121 |
+| [components/portal/kit/pages/admin-subviews/GrowthKit.tsx](../../../components/portal/kit/pages/admin-subviews/GrowthKit.tsx) | 231 | components | GrowthUtmRow:35, GrowthApplyEventRow:44, GrowthConversionValueRow:49, GrowthKitProps:56, GrowthKit:136 |
 | [components/portal/kit/pages/admin-subviews/InvitesKit.tsx](../../../components/portal/kit/pages/admin-subviews/InvitesKit.tsx) | 198 | components | InviteRow:22, InvitesKitProps:33, InvitesKit:61 |
 | [components/portal/kit/pages/admin-subviews/JobsBoardKit.tsx](../../../components/portal/kit/pages/admin-subviews/JobsBoardKit.tsx) | 270 | components | JobDisplayStatus:37, JobRow:45, JobsBoardKitProps:57, JobsBoardKit:104 |
 | [components/portal/kit/pages/admin-subviews/MentorsDirectoryKit.tsx](../../../components/portal/kit/pages/admin-subviews/MentorsDirectoryKit.tsx) | 132 | components | MentorCard:24, MentorsDirectoryKitProps:41, MentorsDirectoryKit:61 |
@@ -579,8 +579,8 @@
 | [components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx](../../../components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx) | 232 | partners-funding | WioaDetermination:28, WioaScreeningRow:30, WioaScreeningKitProps:47, WioaScreeningKit:69 |
 | [components/portal/kit/pages/admin/AdminSidebarNav.tsx](../../../components/portal/kit/pages/admin/AdminSidebarNav.tsx) | 276 | administration | AdminSidebarNavProps:51, AdminSidebarNav:236, default:276 |
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
-| [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 405 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:88, CommandCenterKitProps:101, CommandCenterKit:304, default:405 |
-| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 420 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244, default:420 |
+| [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 404 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:88, CommandCenterKitProps:101, CommandCenterKit:304 |
+| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 419 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
 | [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 387 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |
 | [components/portal/kit/pages/member/CareerBusinessCoachKit.tsx](../../../components/portal/kit/pages/member/CareerBusinessCoachKit.tsx) | 51 | member-counselor | CareerBusinessCoachKit:16 |
@@ -677,7 +677,7 @@
 | [components/ui/Button.tsx](../../../components/ui/Button.tsx) | 118 | components | Button:27 |
 | [components/ui/Card.tsx](../../../components/ui/Card.tsx) | 90 | components | Card:12, CardHeader:48, CardBody:64, CardFooter:80 |
 | [components/ui/ShareButton.test.tsx](../../../components/ui/ShareButton.test.tsx) | 88 | components |  |
-| [components/ui/ShareButton.tsx](../../../components/ui/ShareButton.tsx) | 133 | components | ShareButtonProps:7, ShareButton:25, default:133 |
+| [components/ui/ShareButton.tsx](../../../components/ui/ShareButton.tsx) | 132 | components | ShareButtonProps:7, ShareButton:25 |
 | [components/ui/Skeleton.tsx](../../../components/ui/Skeleton.tsx) | 80 | components | Skeleton:11, TableSkeleton:31, CardSkeleton:50, ReadinessSkeleton:61 |
 | [hooks/useCopyToClipboard.ts](../../../hooks/useCopyToClipboard.ts) | 22 | components | useCopyToClipboard:6 |
 | [hooks/useCurrentUser.ts](../../../hooks/useCurrentUser.ts) | 57 | components | useCurrentUser:18 |

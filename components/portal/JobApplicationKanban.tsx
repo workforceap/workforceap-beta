@@ -4,7 +4,8 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import type { JobApplication } from "@/types/job-application";
 import {
-  JOB_APPLICATION_PIPELINE_COLUMNS,
+  // Kanban columns are the full pipeline, in Prisma enum order.
+  JOB_APPLICATION_STATUS as JOB_APPLICATION_PIPELINE_COLUMNS,
   type JobApplicationStatus,
 } from "@/lib/jobApplications/constants";
 import JobApplicationCard from "./JobApplicationCard";

@@ -12,7 +12,6 @@ import { test } from 'node:test';
 const scheduledEmailInventory = {
   '/api/cron/applicant-followup': { kind: 'bulk', helpers: [] },
   '/api/cron/at-risk-alerts': { kind: 'bulk', helpers: ['lib/cron/at-risk-alerts.ts'] },
-  '/api/cron/at-risk-check': { kind: 'single', helpers: [], reason: 'one digest request with all configured recipients' },
   '/api/cron/course-accountability': { kind: 'bulk', helpers: [] },
   '/api/cron/coursera-auto-heal': { kind: 'bulk', helpers: ['lib/xapi/reprocess.ts', 'lib/coursera/replayPendingXapi.ts', 'lib/xapi/inboundStatementPipeline.ts', 'lib/member/courseCompletion.ts', 'lib/notifications/partner-notify.ts', 'lib/xapi/mappings.ts'] },
   '/api/cron/coursera-training-sync': { kind: 'bulk', helpers: ['lib/coursera/replayPendingXapi.ts', 'lib/xapi/inboundStatementPipeline.ts', 'lib/member/courseCompletion.ts', 'lib/notifications/partner-notify.ts', 'lib/xapi/mappings.ts'] },

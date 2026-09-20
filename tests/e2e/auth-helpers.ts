@@ -57,7 +57,6 @@ export function hasProdE2ECredentials(): boolean {
   return Boolean(email && password);
 }
 
-export const hasMemberPortalCredentials = hasProdE2ECredentials;
 
 /** Admin credentials check */
 export function hasAdminE2ECredentials(): boolean {

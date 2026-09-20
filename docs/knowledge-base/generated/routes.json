@@ -12005,7 +12005,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 10,
+        "line": 11,
         "kind": "Variable"
       }
     ],
@@ -12045,7 +12045,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 9,
+        "line": 10,
         "kind": "Variable"
       }
     ],
@@ -12240,7 +12240,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 20,
+        "line": 22,
         "kind": "Variable"
       }
     ],
@@ -12642,12 +12642,12 @@
     "exports": [
       {
         "name": "POST",
-        "line": 121,
+        "line": 138,
         "kind": "Variable"
       },
       {
         "name": "DELETE",
-        "line": 145,
+        "line": 170,
         "kind": "Variable"
       }
     ],
@@ -12688,12 +12688,12 @@
     "exports": [
       {
         "name": "runtime",
-        "line": 21,
+        "line": 22,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 163,
+        "line": 187,
         "kind": "Variable"
       }
     ],
@@ -14051,12 +14051,12 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 45,
+        "line": 53,
         "kind": "Variable"
       },
       {
         "name": "DELETE",
-        "line": 62,
+        "line": 77,
         "kind": "Variable"
       }
     ],
@@ -14092,12 +14092,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 35,
+        "line": 36,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 70,
+        "line": 78,
         "kind": "Variable"
       }
     ],
@@ -15389,12 +15389,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 38,
+        "line": 40,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 59,
+        "line": 61,
         "kind": "Variable"
       }
     ],
@@ -15630,7 +15630,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 19,
+        "line": 21,
         "kind": "Variable"
       }
     ],
@@ -16073,7 +16073,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 24,
+        "line": 25,
         "kind": "Variable"
       }
     ],
@@ -16104,7 +16104,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 15,
+        "line": 16,
         "kind": "import"
       }
     ]
@@ -16817,7 +16817,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 292,
+        "line": 301,
         "kind": "Variable"
       }
     ],
@@ -17243,8 +17243,8 @@
     "exports": [
       {
         "name": "GET",
-        "line": 6,
-        "kind": "FunctionDeclaration"
+        "line": 29,
+        "kind": "Variable"
       }
     ],
     "methods": [
@@ -17260,6 +17260,11 @@
       {
         "specifier": "@/lib/auth/roles",
         "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 5,
         "kind": "import"
       }
     ]
@@ -17349,12 +17354,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 205,
+        "line": 206,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 335,
+        "line": 345,
         "kind": "Variable"
       }
     ],
@@ -17697,7 +17702,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 12,
+        "line": 13,
         "kind": "Variable"
       }
     ],
@@ -18701,7 +18706,7 @@
     "exports": [
       {
         "name": "PATCH",
-        "line": 25,
+        "line": 26,
         "kind": "Variable"
       }
     ],
@@ -18923,18 +18928,12 @@
     "exports": [
       {
         "name": "POST",
-        "line": 12,
-        "kind": "FunctionDeclaration"
-      },
-      {
-        "name": "GET",
-        "line": 41,
-        "kind": "FunctionDeclaration"
+        "line": 46,
+        "kind": "Variable"
       }
     ],
     "methods": [
-      "POST",
-      "GET"
+      "POST"
     ],
     "configuration": {},
     "boundaryReferences": [
@@ -18946,6 +18945,11 @@
       {
         "specifier": "@/lib/auth/roles",
         "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 5,
         "kind": "import"
       }
     ]
@@ -20645,7 +20649,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 182,
+        "line": 183,
         "kind": "Variable"
       }
     ],
@@ -22391,12 +22395,12 @@
       },
       {
         "name": "GET",
-        "line": 53,
+        "line": 58,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 54,
+        "line": 59,
         "kind": "Variable"
       }
     ],
@@ -22419,22 +22423,22 @@
     "exports": [
       {
         "name": "runtime",
-        "line": 18,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "maxDuration",
-        "line": 19,
+        "line": 14,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 146,
+        "line": 85,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 147,
+        "line": 86,
         "kind": "Variable"
       }
     ],
@@ -22449,7 +22453,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/cron/authorizeCronRequest",
-        "line": 14,
+        "line": 9,
         "kind": "import"
       }
     ]
@@ -22889,17 +22893,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 14,
+        "line": 15,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 134,
+        "line": 146,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 135,
+        "line": 147,
         "kind": "Variable"
       }
     ],
@@ -26797,12 +26801,12 @@
     "exports": [
       {
         "name": "GET",
-        "line": 48,
+        "line": 50,
         "kind": "Variable"
       },
       {
         "name": "PATCH",
-        "line": 125,
+        "line": 148,
         "kind": "Variable"
       }
     ],
@@ -29483,7 +29487,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 12,
+        "line": 11,
         "kind": "Variable"
       }
     ],
@@ -29494,7 +29498,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 9,
         "kind": "import"
       }
     ]
@@ -29821,31 +29825,6 @@
         "kind": "import"
       }
     ]
-  },
-  {
-    "file": "app/api/waitlist/route.ts",
-    "kind": "route",
-    "path": "/api/waitlist",
-    "groups": [],
-    "routing": "filesystem",
-    "exports": [
-      {
-        "name": "POST",
-        "line": 28,
-        "kind": "FunctionDeclaration"
-      },
-      {
-        "name": "GET",
-        "line": 52,
-        "kind": "FunctionDeclaration"
-      }
-    ],
-    "methods": [
-      "POST",
-      "GET"
-    ],
-    "configuration": {},
-    "boundaryReferences": []
   },
   {
     "file": "app/api/webhooks/coursera/route.ts",
@@ -32735,7 +32714,7 @@
     "exports": [
       {
         "name": "GET",
-        "line": 9,
+        "line": 11,
         "kind": "FunctionDeclaration"
       }
     ],

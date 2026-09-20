@@ -417,4 +417,3 @@ export function CounselorHomeKit({
   );
 }
 
-export default CounselorHomeKit;

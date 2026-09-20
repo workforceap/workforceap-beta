@@ -7,6 +7,7 @@ import { promoteCsvProgressToCanonical } from '@/lib/coursera/csvImport.server';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
 
 async function requireAdminUser() {
   const user = await getUser();
@@ -106,6 +107,22 @@ async function requireAdminUser() {
     promoted += result.upserted;
   }
 
+  // Audit (WAP-18): a mapping change rewrites canonical progress for every affected learner.
+  void auditLog({
+    actorUserId: user.id,
+    action: 'admin_coursera_canonical_mapping_upsert',
+    targetType: 'coursera_canonical_course_mapping',
+    targetId: mapping.id,
+    metadata: {
+      courseraCourseId,
+      canonicalProgramSlug,
+      canonicalCourseSlug,
+      affectedUsers: affectedUsers.length,
+      promotedRows: promoted,
+      orgId: organizationId,
+    },
+  }).catch(() => {});
+
   return NextResponse.json({
     ok: true,
     mapping,
@@ -131,9 +148,17 @@ export const POST = withApiGuc(_POST);async function _DELETE(request: Request) {
     return NextResponse.json({ error: 'courseraCourseId query param is required' }, { status: 400 });
   }
 
-  await prisma.$transaction((tx) => tx.courseraCanonicalCourseMapping.deleteMany({
+  const removed = await prisma.$transaction((tx) => tx.courseraCanonicalCourseMapping.deleteMany({
     where: { courseraCourseId },
   }));
+
+  void auditLog({
+    actorUserId: user.id,
+    action: 'admin_coursera_canonical_mapping_delete',
+    targetType: 'coursera_canonical_course_mapping',
+    targetId: courseraCourseId,
+    metadata: { courseraCourseId, removed: removed.count },
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 

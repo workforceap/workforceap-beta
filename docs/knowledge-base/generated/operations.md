@@ -120,7 +120,9 @@
 | [scripts/validate-approved-coursera-track.ts](../../../scripts/validate-approved-coursera-track.ts) | 67 | learning-coursera |  |
 | [scripts/vercel-build.cjs](../../../scripts/vercel-build.cjs) | 69 | operations | appBuildScriptForEnvironment:65, copyMarketingBuild:66, main:67, runNpm:68 |
 | [scripts/vercel-deploy-fix.sh](../../../scripts/vercel-deploy-fix.sh) | 35 | operations |  |
-| [scripts/verify-high-risk-tenant-routes.cjs](../../../scripts/verify-high-risk-tenant-routes.cjs) | 653 | operations |  |
+| [scripts/verify-admin-mutation-audit.cjs](../../../scripts/verify-admin-mutation-audit.cjs) | 158 | operations | classify:156, exportedMutatingMethods:156, ALLOWLIST:156, DELEGATED_AUDIT_HELPERS:156 |
+| [scripts/verify-admin-mutation-audit.test.cjs](../../../scripts/verify-admin-mutation-audit.test.cjs) | 70 | operations |  |
+| [scripts/verify-high-risk-tenant-routes.cjs](../../../scripts/verify-high-risk-tenant-routes.cjs) | 673 | operations |  |
 | [scripts/verify-i18n-completeness.cjs](../../../scripts/verify-i18n-completeness.cjs) | 153 | operations |  |
 | [scripts/verify-material-symbols-font-size.mjs](../../../scripts/verify-material-symbols-font-size.mjs) | 38 | operations |  |
 | [scripts/verify-no-per-query-guc.cjs](../../../scripts/verify-no-per-query-guc.cjs) | 71 | operations | findViolations:56, TARGET:56 |

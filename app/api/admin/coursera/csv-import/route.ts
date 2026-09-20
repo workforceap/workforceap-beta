@@ -12,6 +12,7 @@ import {
   ingestLearningPathActivityRows,
 } from '@/lib/coursera/csvImport.server';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { auditLog } from '@/lib/audit';
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -109,6 +110,13 @@ async function _POST(request: NextRequest) {
   
       try {
         const result = await ingestCourseActivityRows(parsedRows, { source: 'csv_import', organizationId });
+        void auditLog({
+          actorUserId: user.id,
+          action: 'admin_coursera_csv_import',
+          targetType: 'organization',
+          targetId: organizationId,
+          metadata: { kind, filename: read.filename, parsed: parsedRows.length, ...summarizeIngest(result) },
+        }).catch(() => {});
         return NextResponse.json({
           ok: true,
           kind,
@@ -143,6 +151,13 @@ async function _POST(request: NextRequest) {
   
     try {
       const result = await ingestLearningPathActivityRows(parsedBadgeRows, { source: 'csv_import', organizationId });
+      void auditLog({
+        actorUserId: user.id,
+        action: 'admin_coursera_csv_import',
+        targetType: 'organization',
+        targetId: organizationId,
+        metadata: { kind, filename: read.filename, parsed: parsedBadgeRows.length, ...summarizeIngest(result) },
+      }).catch(() => {});
       return NextResponse.json({
         ok: true,
         kind,
@@ -158,6 +173,15 @@ async function _POST(request: NextRequest) {
     console.error('/admin/coursera/csv-import:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+/** Numeric ingest counters only — never row contents (learner emails). */
+function summarizeIngest(result: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(result)) {
+    if (typeof value === 'number') out[key] = value;
+  }
+  return out;
 }
 
 export const POST = withApiGuc(_POST);
