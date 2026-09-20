@@ -3,7 +3,7 @@ import { Card } from '@astryxdesign/core/Card';
 import {
   DesignSurface,
   KpiStrip,
-  SectionHeader,
+  PageOpener,
   RankBars,
   DataTable,
   type KpiItem,
@@ -131,7 +131,7 @@ export function GrowthKit({
 }: GrowthKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader title={title} kicker={kicker} goal={goal} action={headerAction} />
+      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />
 
       <KpiStrip cols={4} items={kpis} />
 

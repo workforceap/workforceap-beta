@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Linkedin, Building2 } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
 import { Token } from '@astryxdesign/core/Token';
-import { DesignSurface, Avatar } from '@/components/portal/kit';
+import { DesignSurface, Avatar, PageOpener } from '@/components/portal/kit';
 
 /**
  * Member Portal — MENTOR PROFILE / SESSION REQUEST view.
@@ -49,21 +49,22 @@ export function MemberMentorProfileKit({ mentor, sessionForm }: MemberMentorProf
           <ArrowLeft size={13} aria-hidden="true" /> Back to mentors
         </Link>
 
+        <PageOpener
+          kicker="Mentor"
+          title={mentor.fullName}
+          lede={metaLine || undefined}
+          action={mentor.industry ? <Token label={mentor.industry} size="sm" color="blue" /> : undefined}
+        />
+
         <Card>
           <div className="wa-flex wa-items-center wa-gap-4" style={{ flexWrap: 'wrap' }}>
             <Avatar initials={initialsOf(mentor.fullName)} size={56} />
             <div style={{ minWidth: 0, flex: 1 }}>
-              <h1
-                className="h-font"
-                style={{ fontSize: 'clamp(20px, 5vw, 26px)', fontWeight: 800, letterSpacing: '-0.03em', textWrap: 'balance' }}
-              >
-                {mentor.fullName}
-              </h1>
-              {metaLine ? (
-                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>{metaLine}</p>
+              <h2 style={{ fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>About {mentor.fullName.split(' ')[0]}</h2>
+              {mentor.company ? (
+                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>{mentor.company}</p>
               ) : null}
             </div>
-            {mentor.industry ? <Token label={mentor.industry} size="sm" color="blue" /> : null}
           </div>
 
           {mentor.bio ? (

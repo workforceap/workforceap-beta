@@ -32,15 +32,16 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('employer page opener', () => {
-  it('preserves long titles, breadcrumb links and interactive actions without a client locale provider', () => {
+  it('preserves long titles and interactive actions, with no breadcrumb row, without a client locale provider', () => {
     const exportCsv = vi.fn();
     const title = 'Applications for a very long international company name and a translated specialist position';
-    render(<EmployerPageOpener kicker="Employer portal" title={title} subtitle="Review the current hiring queue." breadcrumbs={[{ href: '/employer', label: 'Workspace' }, { label: 'Applications' }]} action={<><a href="/employer/jobs/new">Post a job</a><button onClick={exportCsv}>Export CSV</button></>} />);
+    render(<EmployerPageOpener kicker="Employer portal" title={title} subtitle="Review the current hiring queue." action={<><a href="/employer/jobs/new">Post a job</a><button onClick={exportCsv}>Export CSV</button></>} />);
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(title);
+    expect(screen.getByText('Employer portal')).toBeInTheDocument();
     expect(screen.getByText('Review the current hiring queue.')).toHaveClass('wa-page-opener-lede');
-    expect(screen.getByRole('link', { name: 'Workspace' })).toHaveAttribute('href', '/employer');
-    expect(screen.getByText('Applications').closest('[aria-current]')).toHaveAttribute('aria-current', 'page');
+    // KIT_GUIDE §6: the opener is kicker + h1 + lede — never a PageHeader breadcrumb row.
+    expect(screen.queryByRole('navigation')).toBeNull();
     expect(screen.getByRole('link', { name: 'Post a job' })).toHaveAttribute('href', '/employer/jobs/new');
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     expect(exportCsv).toHaveBeenCalledTimes(1);
@@ -54,7 +55,8 @@ describe('employer page opener', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(`${copy.applicantsMetaTitle} — ${copy.filtered} (0)`);
     expect(screen.getByText(copy.reviewCandidatesMobile)).toHaveClass('md:wa-hidden');
     expect(screen.getByText(copy.reviewCandidatesDesktop)).toHaveClass('md:wa-block');
-    expect(screen.getByRole('link', { name: copy.employerPortal })).toHaveAttribute('href', '/employer');
+    expect(screen.getByText(copy.employerPortal)).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /breadcrumb/i })).toBeNull();
     expect(screen.getByRole('link', { name: copy.postJob })).toHaveAttribute('href', '/employer/jobs/new');
     expect(screen.getByRole('link', { name: copy.postAJobBtn })).toHaveAttribute('href', '/employer/jobs/new');
     expect(screen.getByText('Desktop applicants fixture')).toBeInTheDocument();

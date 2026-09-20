@@ -201,7 +201,7 @@ export default function ImportJobClient({ companyName, programSlugs }: ImportJob
             ← Back
           </button>
         </div>
-        <h1 style={{ fontSize: '1.35rem', marginBottom: '0.5rem' }}>Review before saving</h1>
+        <h2 style={{ fontSize: '1.35rem', marginBottom: '0.5rem' }}>Review before saving</h2>
         <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1rem', fontSize: '0.9rem' }}>
           This is still private. Adjust anything that does not sound like your team, then save as a draft or send for
           WorkforceAP review.
@@ -265,12 +265,8 @@ export default function ImportJobClient({ companyName, programSlugs }: ImportJob
         <Link href="/employer/jobs">← Back to jobs</Link>
       </div>
 
+      {/* Page kicker/title/lede render once in the route via EmployerPageOpener. */}
       <header className="import-job-header">
-        <h1>Add roles from your site</h1>
-        <p className="import-job-tagline">
-          We turn what is already on your public careers page into private drafts. You edit, then choose when to send a
-          posting for WorkforceAP review. Candidates never see anything until after that review — and your approval.
-        </p>
         <ul className="import-job-confidence">
           <li>Every draft is yours to polish: pay, location, and must-haves should match how you actually hire.</li>
           <li>We cap bulk pulls so each posting stays accurate — quality over speed.</li>

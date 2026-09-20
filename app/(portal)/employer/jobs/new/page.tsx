@@ -48,10 +48,6 @@ export default async function NewJobPage() {
         kicker={t('employerPortal')}
         title={t('createJobPosting')}
         subtitle={t('createJobDesc')}
-        breadcrumbs={[
-          { label: t('jobPostings'), href: '/employer/jobs' },
-          { label: t('createJobPosting') },
-        ]}
         action={
           <Link
             href="/employer/jobs/post"

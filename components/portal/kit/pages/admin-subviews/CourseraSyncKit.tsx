@@ -17,7 +17,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 
 /**
  * Coursera Sync — sync-status card + unmatched-learners list (dense).
@@ -174,10 +174,10 @@ export function CourseraSyncKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <SectionHeader
+      <PageOpener className="wa-mb-5"
         title="Coursera Sync"
         kicker="Integrations"
-        goal="Keep Coursera learning flowing into the right members"
+        lede="Keep Coursera learning flowing into the right members"
         action={headerAction}
       />
 

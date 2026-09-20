@@ -9,11 +9,11 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getMemberResources, getMemberResourcesResult } from '@/lib/content/memberResources';
 import { SignOutButton } from '@/components/portal/SignOutButton';
-import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import ResourceViewTracker from '@/components/portal/ResourceViewTracker';
 import ResourceProgressActions from '@/components/portal/ResourceProgressActions';
 import ResourceDownloadButton from '@/components/portal/ResourceDownloadButton';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { PageOpener } from '@/components/portal/kit';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -84,32 +84,24 @@ export default async function DashboardCareerLibraryDetailPage({ params }: Props
         ) : null}
         {progressLoadFailed ? <span hidden data-portal-error-state="career-library-progress-load" /> : null}
         {contentLoadFailed ? <span hidden data-portal-error-state="career-library-content-load" /> : null}
-        <section className="page-hero">
-          <div className="page-hero-content page-hero-content--split">
-            <div>
-              <div style={{ marginBottom: '0.75rem' }}>
-                <PortalBreadcrumb
-                  variant="on-dark"
-                  items={[
-                    { href: '/dashboard', label: 'Dashboard' },
-                    { href: '/dashboard/learning', label: 'Learning hub' },
-                    { href: '/dashboard/career-library', label: 'Career library' },
-                    { label: resource.title },
-                  ]}
-                />
-              </div>
-              <h1>{resource.title}</h1>
-              <p>{resource.summary}</p>
-            </div>
-            <div className="page-hero-actions">
-              <Link href="/dashboard/learning" className="btn btn-outline">
-                Learning hub
-              </Link>
-              <Link href="/dashboard" className="btn btn-outline">
-                Dashboard
-              </Link>
-              <SignOutButton className="btn btn-outline" />
-            </div>
+        <section className="content-section" style={{ paddingBottom: 0 }}>
+          <div className="container">
+            <PageOpener
+              kicker="Career library"
+              title={resource.title}
+              lede={resource.summary}
+              action={
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <Link href="/dashboard/learning" className="wa-kit-cta wa-kit-cta--ghost">
+                    Learning hub
+                  </Link>
+                  <Link href="/dashboard" className="wa-kit-cta wa-kit-cta--ghost">
+                    Dashboard
+                  </Link>
+                  <SignOutButton className="wa-kit-cta wa-kit-cta--ghost" />
+                </div>
+              }
+            />
           </div>
         </section>
 
