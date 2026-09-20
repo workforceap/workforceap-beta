@@ -5,7 +5,6 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [lib/a11y/scrollBehavior.ts](../../../lib/a11y/scrollBehavior.ts) | 17 | libraries | prefersReducedMotion:9, scrollBehavior:15 |
-| [lib/a11y/touchTarget.ts](../../../lib/a11y/touchTarget.ts) | 15 | libraries | MIN_TOUCH_TARGET_CSS:8, touchTargetStyle:10 |
 | [lib/admin-ai-tools-page-structure.test.ts](../../../lib/admin-ai-tools-page-structure.test.ts) | 95 | libraries |  |
 | [lib/admin-coursera-catalog-health-structure.test.ts](../../../lib/admin-coursera-catalog-health-structure.test.ts) | 21 | learning-coursera |  |
 | [lib/admin-coursera-subject-scope-structure.test.ts](../../../lib/admin-coursera-subject-scope-structure.test.ts) | 89 | learning-coursera |  |
@@ -104,7 +103,6 @@
 | [lib/admin/withSoftTimeout.ts](../../../lib/admin/withSoftTimeout.ts) | 22 | administration | SoftTimeoutError:6, withSoftTimeout:13 |
 | [lib/agents/gateway/core.test.ts](../../../lib/agents/gateway/core.test.ts) | 252 | libraries |  |
 | [lib/agents/gateway/core.ts](../../../lib/agents/gateway/core.ts) | 442 | libraries | createMemberAgentGateway:135 |
-| [lib/agents/gateway/index.ts](../../../lib/agents/gateway/index.ts) | 18 | libraries | createMemberAgentGateway:1, MEMBER_AGENT_TOOL_DEFINITIONS:2, AgentGatewayHandoff:4, AgentGatewayResponse:5, AgentGatewaySource:6, AgentGatewayStatus:7, AuthenticatedAgentPrincipal:8, MemberAgentGateway:9, MemberAgentGatewayReader:10, MemberAgentToolName:11, MemberCourseraProgressData:12, MemberNextStepData:13, MemberTrainingStatusData:14 |
 | [lib/agents/gateway/server.ts](../../../lib/agents/gateway/server.ts) | 257 | libraries | SERVER_MEMBER_AGENT_GATEWAY_READER:90, createMemberAgentGatewayForPrincipal:223, createAuthenticatedMemberAgentGateway:240 |
 | [lib/agents/gateway/sessionStore.test.ts](../../../lib/agents/gateway/sessionStore.test.ts) | 165 | libraries |  |
 | [lib/agents/gateway/sessionStore.ts](../../../lib/agents/gateway/sessionStore.ts) | 272 | libraries | AGENT_GATEWAY_SESSION_TTL_SECONDS:5, AGENT_GATEWAY_MAX_TOOL_CALLS:6, AGENT_GATEWAY_SECRET_VARIABLE:7, AgentGatewaySessionClaims:22, AgentGatewaySessionError:35, hashAgentGatewayToken:66, resolveAgentGatewayIssuer:75, issueAgentGatewaySession:148, authorizeAgentGatewaySession:208, readBearerToken:267 |
@@ -122,7 +120,6 @@
 | [lib/ai/careerBriefAI.ts](../../../lib/ai/careerBriefAI.ts) | 37 | ai-voice | generatePersonalizedBriefSection:4 |
 | [lib/ai/clampElevenLabsDynamicVariables.ts](../../../lib/ai/clampElevenLabsDynamicVariables.ts) | 39 | ai-voice | clampElevenLabsDynamicVariables:15 |
 | [lib/ai/coachContextBlock.ts](../../../lib/ai/coachContextBlock.ts) | 21 | ai-voice | loadCoachContextBlock:13 |
-| [lib/ai/coachMemory.ts](../../../lib/ai/coachMemory.ts) | 29 | ai-voice | appendCoachMemoryToSystemPrompt:5, formatCoachTranscript:6, getCoachMemoryDynamicVariables:7, loadCoachMemory:8, takeLastCoachExchanges:9, updateCoachMemory:10, CoachTurn:11, CoachTranscriptTurn:14, getCoachMemorySummary:19, updateCoachMemoryFromTranscript:24 |
 | [lib/ai/configured.test.ts](../../../lib/ai/configured.test.ts) | 35 | ai-voice |  |
 | [lib/ai/configured.ts](../../../lib/ai/configured.ts) | 17 | ai-voice | isAIConfigured:6, AI_UNCONFIGURED_CODE:14, AI_UNCONFIGURED_MESSAGE:16 |
 | [lib/ai/elevenLabsDynamicVariablePolicy.test.ts](../../../lib/ai/elevenLabsDynamicVariablePolicy.test.ts) | 37 | ai-voice |  |
@@ -180,7 +177,6 @@
 | [lib/analytics/aiToolEfficacy.ts](../../../lib/analytics/aiToolEfficacy.ts) | 462 | administration | AIEfficacyDateRange:13, ToolCohortMetrics:18, OverallCohortMetrics:35, AIEfficacyReport:52, analyzeAIEfficacy:261, formatEfficacyReportMarkdown:369, efficacyReportToCsvRows:423 |
 | [lib/analytics/conversionValue.test.ts](../../../lib/analytics/conversionValue.test.ts) | 16 | administration |  |
 | [lib/analytics/conversionValue.ts](../../../lib/analytics/conversionValue.ts) | 59 | administration | CONVERSION_VALUE_USD:19, ConversionEventName:25, CONVERSION_VALUE_BASIS:32, getConversionValuePayload:34, trackConversionWithValue:51 |
-| [lib/analytics/ctaExperiment.ts](../../../lib/analytics/ctaExperiment.ts) | 65 | administration | getExperimentVariant:44 |
 | [lib/analytics/events.ts](../../../lib/analytics/events.ts) | 256 | administration | trackFunnelEvent:26, trackLeadFormEvent:39, trackMemberReferralShare:52, trackApplyFunnel:59, trackLearningHubNavigate:72, trackEmployerJobAction:81, trackEmployerBulkDelete:94, trackResourceOpen:102, trackToolLaunch:110, trackAIToolRun:118, trackEmployerImport:131, trackLicenseRequest:142, trackBriefOpen:149, trackApplicationTrackerOpen:157, trackConversionRouteView:163, LearningMilestone:170, trackLearningMilestone:172, trackPortalRouteView:186, trackWebVitalMetric:193, trackCtaExperimentExposure:210, trackCtaExperimentClick:219, trackPaidApplyVariantRendered:234, trackMemberLoggedIn:241, ThankYouFunnel:248, trackThankYouViewed:251 |
 | [lib/analytics/partnerQuarterlyOutcomes.ts](../../../lib/analytics/partnerQuarterlyOutcomes.ts) | 491 | administration | QuarterSpec:25, PartnerQuarterlyOutcomesReport:30, getDefaultQuarter:100, generatePartnerQuarterlyOutcomes:164 |
 | [lib/analytics/quarterlyOutcomes.test.ts](../../../lib/analytics/quarterlyOutcomes.test.ts) | 556 | administration |  |
@@ -270,7 +266,6 @@
 | [lib/billing/sendPacket.ts](../../../lib/billing/sendPacket.ts) | 123 | partners-funding | SendPacketResult:16, sendBillingPacketEmails:30 |
 | [lib/blog/blogHeroImage.test.ts](../../../lib/blog/blogHeroImage.test.ts) | 20 | public-experience |  |
 | [lib/blog/blogHeroImage.ts](../../../lib/blog/blogHeroImage.ts) | 41 | public-experience | resolveBlogHeroImage:15 |
-| [lib/blog/blogListingImage.ts](../../../lib/blog/blogListingImage.ts) | 36 | public-experience | BLOG_LISTING_FALLBACK_IMAGE:5, blogListingCardImage:10, blogListingCardAlt:24 |
 | [lib/blog/defaultImages.ts](../../../lib/blog/defaultImages.ts) | 77 | public-experience | getDefaultImage:65, getAllDefaultImages:75 |
 | [lib/blog/formatPublishedDate.test.ts](../../../lib/blog/formatPublishedDate.test.ts) | 16 | public-experience |  |
 | [lib/blog/formatPublishedDate.ts](../../../lib/blog/formatPublishedDate.ts) | 10 | public-experience | formatPublishedDate:8 |
@@ -290,11 +285,9 @@
 | [lib/consent/state.ts](../../../lib/consent/state.ts) | 104 | learning-coursera | COOKIE_CONSENT_KEY:14, CONSENT_EVENT:15, ConsentDecision:17, ConsentRecord:19, detectGpc:30, readConsent:36, writeConsent:62, subscribeConsent:73, pushConsentToGtag:87 |
 | [lib/content/benefitsCliff.test.ts](../../../lib/content/benefitsCliff.test.ts) | 182 | public-experience |  |
 | [lib/content/benefitsCliff.ts](../../../lib/content/benefitsCliff.ts) | 390 | public-experience | CliffSource:16, BENEFITS_CLIFF_RULES_VERSION:25, FPL_SOURCE:31, monthlyFpl:43, SNAP_SOURCE:52, SNAP_RULES:61, MEDICAID_ADULT_SOURCE:88, MEDICAID_CHILD_SOURCE:97, MEDICAID_RULES:106, TANF_SOURCE:123, TANF_RULES:132, ALL_CLIFF_SOURCES:145, CliffProgramId:157, CliffInput:159, CliffProgramResult:178, CliffVerdict:192, CliffResult:194, ABOUT_THE_SAME_BAND:211, clampHouseholdSize:215, monthlyEarnings:228, estimateSnapMonthly:249, isAdultMedicaidEligible:272, isChildCoverageEligible:277, estimateTanfMonthly:282, computeCliff:293 |
-| [lib/content/blogGradients.ts](../../../lib/content/blogGradients.ts) | 17 | public-experience | BLOG_GRADIENTS:5, DEFAULT_BLOG_GRADIENT:13, getBlogGradient:15 |
 | [lib/content/blogTopicSuggestions.ts](../../../lib/content/blogTopicSuggestions.ts) | 36 | public-experience | BLOG_TOPIC_SUGGESTIONS:5 |
 | [lib/content/careerBriefPersonalization.ts](../../../lib/content/careerBriefPersonalization.ts) | 341 | public-experience | MemberCareerBriefUser:12, CareerSearchEngine:14, CareerSearchPreset:20, CareerBriefContext:25, fetchCareerBriefRelations:132, assembleCareerBriefContext:171, loadMemberCareerBriefBundle:227, loadMemberCareerBriefBundleSafe:252, getCareerBriefContext:333 |
 | [lib/content/careerBriefs.ts](../../../lib/content/careerBriefs.ts) | 43 | public-experience | CareerBriefMeta:4, getCareerBriefs:16, getCareerBriefContent:20 |
-| [lib/content/certToSkills.ts](../../../lib/content/certToSkills.ts) | 134 | public-experience | CertSkillProfile:3, CERT_SKILL_PROFILES:13, computeMemberSkillProfile:62, recommendCertsForGaps:86 |
 | [lib/content/certificationTracks.ts](../../../lib/content/certificationTracks.ts) | 42 | public-experience | CertItem:1, CertTrack:8, CERTIFICATION_TRACKS:14 |
 | [lib/content/checkpoints/businessAndDesign.ts](../../../lib/content/checkpoints/businessAndDesign.ts) | 1334 | public-experience | BUSINESS_AND_DESIGN_PACKS:11 |
 | [lib/content/checkpoints/dataAndSoftware.ts](../../../lib/content/checkpoints/dataAndSoftware.ts) | 1975 | public-experience | DATA_AND_SOFTWARE_PACKS:15 |
@@ -319,9 +312,6 @@
 | [lib/content/coursera/lp_mapping.json](../../../lib/content/coursera/lp_mapping.json) | 754 | learning-coursera |  |
 | [lib/content/courseraDiscoveredCatalog.ts](../../../lib/content/courseraDiscoveredCatalog.ts) | 369 | learning-coursera | CourseraProgramSlug:327, CourseraDiscoveredProgram:332, CourseraDiscoveredCourse:344, DISCOVERED_COURSERA_PROGRAMS:368 |
 | [lib/content/digitalLiteracyUiTruth.test.ts](../../../lib/content/digitalLiteracyUiTruth.test.ts) | 61 | public-experience |  |
-| [lib/content/employer-case-studies-real.ts](../../../lib/content/employer-case-studies-real.ts) | 136 | public-experience | RealEmployerCaseStudy:8, loadRealEmployerCaseStudies:27 |
-| [lib/content/employer-case-studies.ts](../../../lib/content/employer-case-studies.ts) | 54 | public-experience | EmployerCaseStudy:7, EMPLOYER_CASE_STUDIES:20 |
-| [lib/content/faqData.ts](../../../lib/content/faqData.ts) | 84 | public-experience | FaqItem:8, FaqCategoryKey:14, FAQ_CATEGORIES:23, FAQ_DATA:33 |
 | [lib/content/itSupportLabs.test.ts](../../../lib/content/itSupportLabs.test.ts) | 125 | public-experience |  |
 | [lib/content/itSupportLabs.ts](../../../lib/content/itSupportLabs.ts) | 383 | public-experience | IT_SUPPORT_LAB_CONTENT_VERSION:5, IT_SUPPORT_LAB_RUBRIC_VERSION:6, IT_SUPPORT_LAB_PROGRAM_SLUG:7, IT_SUPPORT_LAB_COURSE_SLUG:8, PracticeLab:10, IT_SUPPORT_LAB_SCOPE:35, getPracticeLab:366, listPracticeLabsForAssignment:371 |
 | [lib/content/leadership.ts](../../../lib/content/leadership.ts) | 507 | public-experience | LeaderBioBlock:5, LeaderStat:10, LeaderSpotlightCard:16, LeaderPartnerTile:23, LeaderAchievementTile:24, LeaderWriting:26, LeaderSection:32, Leader:34, LEADERS:61, getLeaderBySlug:505 |
@@ -336,7 +326,6 @@
 | [lib/content/programComparisonTracks.ts](../../../lib/content/programComparisonTracks.ts) | 194 | public-experience | ComparisonTrack:14, PROGRAM_COMPARISON_FEATURED:37, getProgramComparisonTracks:176 |
 | [lib/content/programCurriculumManifest.test.ts](../../../lib/content/programCurriculumManifest.test.ts) | 197 | public-experience |  |
 | [lib/content/programCurriculumManifest.ts](../../../lib/content/programCurriculumManifest.ts) | 297 | public-experience | APPROVED_CURRICULUM_VERSION:8, LEGACY_CURRICULUM_VERSION:9, CATALOG_CURRICULUM_VERSION:10, CurriculumVersion:12, CurriculumCourseBinding:17, MaterializedCurriculumCourse:31, ProgramCurriculumManifest:36, normalizeCourseraCourseId:60, APPROVED_PROGRAM_CURRICULA:232, getProgramCurriculumManifest:242, getApprovedCurriculumCourseAliases:252, isExternalCurriculumTrackReady:264, isApprovedCurriculumReadyForAssignment:274, isApprovedCurriculumReadyForCanary:281, isExternalCurriculumTrackAssignmentReady:288 |
-| [lib/content/programDescriptions.ts](../../../lib/content/programDescriptions.ts) | 78 | public-experience | PROGRAM_CATEGORY_DESCRIPTIONS:9, PROGRAM_SLUG_DESCRIPTIONS:32, getProgramDescription:69 |
 | [lib/content/programEnrollmentSteps.ts](../../../lib/content/programEnrollmentSteps.ts) | 146 | public-experience | ProgramEnrollmentStep:6, getProgramEnrollmentSteps:143 |
 | [lib/content/programExtras.ts](../../../lib/content/programExtras.ts) | 138 | public-experience | ProgramExtra:6, PROGRAM_EXTRAS:15, getProgramExtra:136 |
 | [lib/content/programOccupationAlignment.test.ts](../../../lib/content/programOccupationAlignment.test.ts) | 177 | public-experience |  |
@@ -356,7 +345,6 @@
 | [lib/content/quizReasoning.ts](../../../lib/content/quizReasoning.ts) | 111 | public-experience | getFitReasoning:97, getTopFitSummary:101 |
 | [lib/content/quizScoring.ts](../../../lib/content/quizScoring.ts) | 177 | public-experience | CATEGORY_KEYS:6, CategoryKey:16, CategoryWeights:18, createEmptyWeights:20, QuizAnswers:39, QUIZ_SHORT_FORM_DEFAULTS:49, mergeQuizShortAnswers:55, scoreQuiz:59 |
 | [lib/content/readinessChecklist.ts](../../../lib/content/readinessChecklist.ts) | 206 | public-experience | ReadinessItem:6, ReadinessSection:15, READINESS_SECTIONS:21, getCheckboxItemKeys:175, getJobSiteItemKey:189, getAllItemKeys:194 |
-| [lib/content/relatedPrograms.ts](../../../lib/content/relatedPrograms.ts) | 34 | public-experience | getRelatedPrograms:13 |
 | [lib/content/skillMissionCatalog.ts](../../../lib/content/skillMissionCatalog.ts) | 7173 | public-experience | QuizQuestion:3, SkillMissionDefinition:10, getSkillMissionDefinitionsForProgram:7167, getSkillMissionDefinition:7171 |
 | [lib/content/trainingBridge.ts](../../../lib/content/trainingBridge.ts) | 360 | public-experience | BridgeSkill:18, BridgeOccupation:28, TRAINING_BRIDGE_OCCUPATIONS:51, MemberSkill:289, findBridgeOccupation:295, getBridgeOccupationById:316, BridgeGapResult:320, computeBridgeGap:331, getBridgeProgram:358 |
 | [lib/content/workforceApModule.test.ts](../../../lib/content/workforceApModule.test.ts) | 107 | public-experience |  |
@@ -422,7 +410,6 @@
 | [lib/coursera/csvImport.ts](../../../lib/coursera/csvImport.ts) | 494 | learning-coursera | ParsedCourseActivityRow:44, IngestResult:72, ParsedBadgeRow:90, BadgeIngestResult:111, CsvKind:120, detectCourseraCsvKind:126, clampCourseraPercent:266, parseCourseActivityCsv:286, ingestCourseActivityRows:393, parseLearningPathActivityCsv:410, ingestLearningPathActivityRows:488 |
 | [lib/coursera/curriculumMapping.test.ts](../../../lib/coursera/curriculumMapping.test.ts) | 341 | learning-coursera |  |
 | [lib/coursera/curriculumMapping.ts](../../../lib/coursera/curriculumMapping.ts) | 348 | learning-coursera | CurriculumMappingRow:23, CurriculumMappingIndex:31, emptyCurriculumMappingIndex:36, isMissingCurriculumMappingTableError:49, buildCurriculumMappingIndex:58, loadCurriculumMappingsForCourseraIds:114, resolveCurriculumMappingsForCourse:150, legacyCandidatesForProviderCourse:190, resolveProviderCourseMappings:250 |
-| [lib/coursera/dashboardAutoSync.ts](../../../lib/coursera/dashboardAutoSync.ts) | 204 | learning-coursera | DashboardAutoSyncOutcome:49, maybeAutoSyncCourseraOnDashboard:181 |
 | [lib/coursera/enrollPort.ts](../../../lib/coursera/enrollPort.ts) | 154 | learning-coursera | CourseraRosterIncompleteError:35, buildB4BPort:74, _resetRosterLookupCacheForTesting:112, writeEnrollAudit:121 |
 | [lib/coursera/enrollState.test.ts](../../../lib/coursera/enrollState.test.ts) | 230 | learning-coursera |  |
 | [lib/coursera/enrollState.ts](../../../lib/coursera/enrollState.ts) | 328 | learning-coursera | EnrollStatus:43, EnrollResult:49, EnrollAuditError:60, EnrollAuditEvent:68, B4BPort:100, EnrollStateInput:124, runEnrollStateMachine:165, EnrollStateError:311 |
@@ -566,9 +553,7 @@
 | [lib/events/names.ts](../../../lib/events/names.ts) | 158 | libraries | EVENT_NAMES:5, EventName:95, isEventName:97, LEGACY_EVENT_NAME_ALIASES:108, LegacyEventNameAlias:115, isLegacyEventNameAlias:121, canonicalEventName:129, eventNameReadCandidates:140, CLIENT_EVENT_NAMES:149, ClientEventName:158 |
 | [lib/events/track.ts](../../../lib/events/track.ts) | 66 | libraries | EventName:7, TrackEventParams:9, persistEvent:35, trackEvent:56 |
 | [lib/experiments/client.ts](../../../lib/experiments/client.ts) | 14 | libraries | EXPERIMENTS:4, getExperimentVariant:5, readExperimentOverrideFromSearch:6, ExperimentDefinition:10, ExperimentOverride:11, ExperimentSubject:12, Variant:13 |
-| [lib/experiments/index.ts](../../../lib/experiments/index.ts) | 58 | libraries | ExperimentDefinition:18, ExperimentOverride:18, ExperimentSubject:18, Variant:18, EXPERIMENTS:19, readExperimentOverrideFromSearch:19, getExperimentVariant:31, signExperimentOverride:55 |
 | [lib/experiments/shared.ts](../../../lib/experiments/shared.ts) | 152 | libraries | Variant:3, ExperimentDefinition:5, ExperimentSubject:10, ExperimentOverride:15, getExperimentVariantClient:87, readExperimentOverrideFromSearch:118, EXPERIMENTS:147 |
-| [lib/experiments/verify-override.server.ts](../../../lib/experiments/verify-override.server.ts) | 26 | libraries | verifyOverrideSignature:5, signExperimentOverride:18 |
 | [lib/export/brandingHeader.ts](../../../lib/export/brandingHeader.ts) | 23 | libraries | withCsvBranding:7, csvBrandingFooter:21 |
 | [lib/feature-flags/adminApi.test.ts](../../../lib/feature-flags/adminApi.test.ts) | 71 | libraries |  |
 | [lib/feature-flags/adminApi.ts](../../../lib/feature-flags/adminApi.ts) | 38 | libraries | fetchFeatureFlags:4, validateCreateBody:12 |
@@ -600,12 +585,10 @@
 | [lib/i18n/cookieLocale.ts](../../../lib/i18n/cookieLocale.ts) | 12 | public-experience | getAppLocaleFromCookieStore:6 |
 | [lib/i18n/date.ts](../../../lib/i18n/date.ts) | 83 | public-experience | formatDate:37, formatDateTime:47, formatLocalizedDate:71 |
 | [lib/i18n/esCopyDeckParity.test.ts](../../../lib/i18n/esCopyDeckParity.test.ts) | 136 | public-experience |  |
-| [lib/i18n/getT.ts](../../../lib/i18n/getT.ts) | 4 | public-experience | getTranslations:4 |
 | [lib/i18n/localizeHref.ts](../../../lib/i18n/localizeHref.ts) | 31 | public-experience | LocalizedHrefResolution:4, localizeHref:10, resolveLocalizedHref:22 |
 | [lib/i18n/pickRootClientMessages.test.ts](../../../lib/i18n/pickRootClientMessages.test.ts) | 163 | public-experience |  |
 | [lib/i18n/pickRootClientMessages.ts](../../../lib/i18n/pickRootClientMessages.ts) | 210 | public-experience | ROOT_CHROME_NAMESPACES:6, ROOT_MARKETING_CLIENT_KEYS:12, PORTAL_CLIENT_NAMESPACES:15, WIOA_CLIENT_NAMESPACES:45, ADMIN_DASHBOARD_CLIENT_KEYS:53, ClientMessageSlice:65, pickRootClientMessages:101, pickPortalClientMessages:105, pickAdminClientMessages:109, pickApplyClientMessages:113, pickAuthClientMessages:117, pickWioaClientMessages:121, pickClientMessageSlice:125, clientMessagesBytes:170, pickLegacyFatRootClientMessages:175 |
 | [lib/i18n/server.ts](../../../lib/i18n/server.ts) | 10 | public-experience | getRequestLocale:5 |
-| [lib/i18n/serverLocale.ts](../../../lib/i18n/serverLocale.ts) | 13 | public-experience | WAPLocale:5, LOCALE_COOKIE:7, getLocale:9 |
 | [lib/interview/voiceTranscript.test.ts](../../../lib/interview/voiceTranscript.test.ts) | 67 | jobs-employers |  |
 | [lib/interview/voiceTranscript.ts](../../../lib/interview/voiceTranscript.ts) | 78 | jobs-employers | VoiceTranscriptTurn:1, extractVoiceTranscriptTurn:20, appendVoiceTranscriptTurn:42, buildInterviewQaFromVoiceTurns:57 |
 | [lib/invitations/inviteRoleLabels.ts](../../../lib/invitations/inviteRoleLabels.ts) | 22 | libraries | invitationRoleLabel:2, inviteAcceptLoginRedirect:17 |
@@ -623,7 +606,6 @@
 | [lib/locked-stakes/checkI18nSafeDiff.test.ts](../../../lib/locked-stakes/checkI18nSafeDiff.test.ts) | 26 | libraries |  |
 | [lib/marketing-public-ui-regressions.test.ts](../../../lib/marketing-public-ui-regressions.test.ts) | 144 | libraries |  |
 | [lib/marketing/buttonClasses.ts](../../../lib/marketing/buttonClasses.ts) | 18 | public-experience | MARKETING_BUTTON_VARIANT_CLASS:6, MARKETING_BUTTON_RADIUS_CLASS:7, marketingButton:8, marketingButtonClasses:9, marketingPrimaryButtonClasses:10, marketingSecondaryButtonClasses:11, marketingGhostButtonClasses:12, marketingNumPillClasses:13, marketingButtonPresets:14, MarketingButtonVariant:15, MarketingButtonRadius:16, MarketingButtonOptions:17 |
-| [lib/marketing/employerLanding.ts](../../../lib/marketing/employerLanding.ts) | 153 | public-experience | getEmployerHiringPartnerCtaHref:15, isEmployerHiringPartnerCtaExternal:20, EmployerTrustLogo:24, EmployerLandingTrustMetrics:29, formatEmployerTrustStat:49, getEmployerTrustPlaceholders:60, getEmployerLandingTrustMetrics:64, loadEmployerLandingTrustMetrics:136 |
 | [lib/marketing/googleItSupportLanding.test.ts](../../../lib/marketing/googleItSupportLanding.test.ts) | 71 | public-experience |  |
 | [lib/marketing/googleItSupportLanding.ts](../../../lib/marketing/googleItSupportLanding.ts) | 199 | public-experience | GOOGLE_IT_LANDING_SLUG:15, GOOGLE_IT_PROGRAM_SLUGS:17, GOOGLE_IT_PRIMARY_HANDOFF_PROGRAM_SLUG:47, GOOGLE_IT_COMPLETION_RATE_MIN_ENROLLMENTS:49, GOOGLE_IT_PLACEMENT_RATE_MIN_ENROLLMENTS:50, GoogleItLandingMetrics:52, GoogleItPublicMetricCard:60, buildGoogleItPublicMetricCards:72, getGoogleItLandingMetrics:115, loadGoogleItLandingMetrics:190 |
 | [lib/marketing/heroImage.test.ts](../../../lib/marketing/heroImage.test.ts) | 33 | public-experience |  |
@@ -635,7 +617,6 @@
 | [lib/marketing/trustStripMetrics.test.ts](../../../lib/marketing/trustStripMetrics.test.ts) | 38 | public-experience |  |
 | [lib/marketing/trustStripMetrics.ts](../../../lib/marketing/trustStripMetrics.ts) | 111 | public-experience | TrustStripMetrics:9, TRUST_STRIP_PLACEHOLDER_LINE:16, formatTrustStripLine:27, getTrustStripMetrics:45, loadTrustStripMetrics:95 |
 | [lib/marketing/utmCapture.ts](../../../lib/marketing/utmCapture.ts) | 66 | public-experience | UTM_SESSION_KEYS:17, MarketingAttribution:26, readMarketingAttribution:36, clearMarketingAttribution:57 |
-| [lib/marketing/wapJobs.ts](../../../lib/marketing/wapJobs.ts) | 48 | public-experience | WapJobListing:4, loadOpenWapJobs:14, formatWapJobType:37 |
 | [lib/member/aiToolFollowThrough.test.ts](../../../lib/member/aiToolFollowThrough.test.ts) | 26 | member-counselor |  |
 | [lib/member/aiToolFollowThrough.ts](../../../lib/member/aiToolFollowThrough.ts) | 148 | member-counselor | AIToolFollowThrough:1, getAIToolFollowThrough:14 |
 | [lib/member/applicationAiFeedback.ts](../../../lib/member/applicationAiFeedback.ts) | 51 | member-counselor | APPLICATION_FEEDBACK_TOOL_TYPES:4, RecentAiToolForFeedback:11, findRecentAiToolsForApplicationFeedback:25, formatFeedbackPromptDate:49 |
@@ -703,7 +684,6 @@
 | [lib/member/missionCourseUnlock.ts](../../../lib/member/missionCourseUnlock.ts) | 44 | member-counselor | MissionUnlockCourse:8, normalizeCourseName:13, resolveMissionUnlockSlugs:22, isMissionCourseComplete:37 |
 | [lib/member/nextBestActions.test.ts](../../../lib/member/nextBestActions.test.ts) | 240 | member-counselor |  |
 | [lib/member/nextBestActions.ts](../../../lib/member/nextBestActions.ts) | 326 | member-counselor | NextBestAction:6, NextBestActionsContext:17, buildNextBestActions:44 |
-| [lib/member/parseCourseSlugList.ts](../../../lib/member/parseCourseSlugList.ts) | 11 | member-counselor | parseCourseSlugList:5 |
 | [lib/member/persistedAtRisk.ts](../../../lib/member/persistedAtRisk.ts) | 82 | member-counselor | ACTIVE_AT_RISK_STATUSES:7, PersistedRiskScope:9, PersistedAtRiskMember:13, loadPersistedAtRiskMembers:26, persistedRiskCommandRow:74 |
 | [lib/member/points.ts](../../../lib/member/points.ts) | 72 | member-counselor | LevelName:6, getLevelForPoints:7, getNextLevel:7, LEVELS:7, awardPoints:13, getMemberPoints:56, getStreak:72 |
 | [lib/member/pointsConfig.ts](../../../lib/member/pointsConfig.ts) | 59 | member-counselor | POINT_VALUES:3, LEVELS:26, LevelName:33, getLevelForPoints:35, getNextLevel:39, EVENT_LABELS:44 |
@@ -811,8 +791,6 @@
 | [lib/onet/sync.ts](../../../lib/onet/sync.ts) | 180 | libraries | syncOccupation:19, syncOccupationBundle:46, syncTopMappedOccupations:152 |
 | [lib/onet/types.ts](../../../lib/onet/types.ts) | 24 | libraries | ExperienceBandUi:1, CareerMatchResult:3 |
 | [lib/onet/workActivityMap.ts](../../../lib/onet/workActivityMap.ts) | 91 | libraries | WorkActivityMapping:8, WORK_ACTIVITY_MAPPINGS:19, scoreWorkActivities:67 |
-| [lib/outcomes/placementPublicMetrics.ts](../../../lib/outcomes/placementPublicMetrics.ts) | 63 | libraries | PlacementPublicMetrics:4, getPlacementPublicMetrics:15 |
-| [lib/outcomes/publicPlacementOutcomes.ts](../../../lib/outcomes/publicPlacementOutcomes.ts) | 88 | libraries | ProgramPlacementRow:4, FundingPlacementRow:5, RetentionPlacementRow:6, PublicOutcomesBundle:8, getPublicPlacementOutcomes:18, wilsonInterval:75 |
 | [lib/outcomes/socialProof.ts](../../../lib/outcomes/socialProof.ts) | 141 | libraries | OutcomesSocialProofRate:5, PlacementStoryCard:7, PartnerOutcomeSnapshot:17, PartnerReferralBadge:24, OutcomesSocialProofBundle:26, isOutcomesSocialProofEnabled:55, formatSuppressedRate:59, buildPartnerReferralBadge:66, getOutcomesSocialProof:91 |
 | [lib/partner/adminSchoolPartner.test.ts](../../../lib/partner/adminSchoolPartner.test.ts) | 111 | partners-funding |  |
 | [lib/partner/adminSchoolPartner.ts](../../../lib/partner/adminSchoolPartner.ts) | 76 | partners-funding | sponsorshipWindowFromTerm:6, validateAdminProgramSlugs:17, sponsorshipStampFields:32, partnerDirectoryMeta:51, isSchoolManagedPartner:66 |
@@ -848,13 +826,8 @@
 | [lib/platform/seedProgramCatalog.ts](../../../lib/platform/seedProgramCatalog.ts) | 38 | administration | seedOrganizationProgramCatalog:5 |
 | [lib/platform/trainingEnrollmentGate.test.ts](../../../lib/platform/trainingEnrollmentGate.test.ts) | 33 | administration |  |
 | [lib/platform/trainingEnrollmentGate.ts](../../../lib/platform/trainingEnrollmentGate.ts) | 33 | administration | memberTrainingProfileComplete:2, WioaGateResult:17, isMemberWioaVerified:22 |
-| [lib/platform/videoEmbed.ts](../../../lib/platform/videoEmbed.ts) | 32 | administration | toVideoEmbedUrl:2 |
-| [lib/portal/aiToolsHub.ts](../../../lib/portal/aiToolsHub.ts) | 124 | libraries | AiToolsHubLink:4, AiToolkitToolCard:5, AiToolkitSection:6, AiToolsHubCategory:8, AI_TOOLS_HUB:42, AI_TOOLKIT_EXTRA_SECTIONS:111 |
 | [lib/portal/astryxMap.test.ts](../../../lib/portal/astryxMap.test.ts) | 15 | libraries |  |
-| [lib/portal/counselorVoice.ts](../../../lib/portal/counselorVoice.ts) | 25 | libraries | getWioaGuideTtsOverrides:8 |
 | [lib/portal/cropProfilePhoto.ts](../../../lib/portal/cropProfilePhoto.ts) | 47 | libraries | cropProfilePhotoToSquare:7 |
-| [lib/portal/interviewVoice.ts](../../../lib/portal/interviewVoice.ts) | 26 | libraries | InterviewerVoiceOption:1, INTERVIEWER_VOICE_OPTIONS:11, getInterviewerTtsOverrides:16 |
-| [lib/portal/journeyStages.ts](../../../lib/portal/journeyStages.ts) | 85 | libraries | JourneyStageId:8, JourneyStageTool:10, JourneyStage:18, JOURNEY_STAGE_STORAGE_KEY:26, JOURNEY_STAGES:28, isJourneyStageId:83 |
 | [lib/portal/kit-architecture.test.ts](../../../lib/portal/kit-architecture.test.ts) | 48 | libraries |  |
 | [lib/portal/member-program-coursera-links.test.ts](../../../lib/portal/member-program-coursera-links.test.ts) | 80 | learning-coursera |  |
 | [lib/portal/memberProfilePhoto.test.ts](../../../lib/portal/memberProfilePhoto.test.ts) | 25 | libraries |  |
@@ -874,7 +847,6 @@
 | [lib/rate-limit-policy.ts](../../../lib/rate-limit-policy.ts) | 82 | libraries | ALLOW_MISSING_UPSTASH_ENV:21, APPLY_FAIL_CLOSED_ENV:22, MissingLimiterMode:24, MissingLimiterReason:26, MissingLimiterDecision:33, isAllowMissingUpstashEnabled:39, isApplyFailClosedEnvEnabled:45, decideMissingLimiter:51 |
 | [lib/rate-limit.ts](../../../lib/rate-limit.ts) | 742 | libraries | VOICE_SESSION_STARTS_PER_HOUR:101, VOICE_SESSION_LIMIT_MESSAGE:102, checkSignupRateLimit:455, checkApplySignupRateLimit:459, checkAuthRateLimit:463, checkAuthIpRateLimit:472, checkVoiceSessionRateLimit:483, checkSignupEmailRateLimit:494, checkAIToolRateLimit:500, checkResumeUploadRateLimit:506, checkResumeDraftSaveRateLimit:512, checkContactRateLimit:518, checkPartnerSignupRateLimit:523, checkAdminInviteRateLimit:528, checkBulkEmailRateLimit:540, checkEmployerJobImportRateLimit:545, checkConfirmationEmailRateLimit:552, checkConfirmationEmailEmailRateLimit:558, checkCareersRecommendRateLimit:566, checkInterestProfilerRateLimit:573, checkForgotPasswordRateLimit:580, checkForgotPasswordEmailRateLimit:586, checkPublicCareersGetRateLimit:592, checkPublicVoiceSessionRateLimit:599, checkInviteAcceptRateLimit:606, checkPublicInviteValidateRateLimit:613, checkPublicOrgOutcomesRateLimit:620, checkPublicUnsubscribeRateLimit:627, checkVerifyMfaRateLimit:634, checkPublicHealthRateLimit:640, checkXapiConfigGetRateLimit:647, checkXapiOAuthTokenRateLimit:654, checkXapiStatementsPostRateLimit:661, checkPlacementSurveyRateLimit:668, checkPublicWioaQualificationRateLimit:675, checkWebhookRateLimit:682, checkOrgOnboardRateLimit:689, checkPublicInterestProfilerRateLimit:696, checkAdminTokenLinksRateLimit:705, checkPublicQuestionnaireSubmitRateLimit:716, checkCourseraIdentityRateLimit:723, checkMessageSendRateLimit:736 |
 | [lib/rate-limit.wrappers.test.ts](../../../lib/rate-limit.wrappers.test.ts) | 24 | libraries |  |
-| [lib/readiness/index.ts](../../../lib/readiness/index.ts) | 12 | libraries | READINESS_SECTIONS:6, getCheckboxItemKeys:7, getJobSiteItemKey:8, getAllItemKeys:9, ReadinessItem:10, ReadinessSection:11 |
 | [lib/readiness/memberReadinessSections.ts](../../../lib/readiness/memberReadinessSections.ts) | 62 | libraries | MemberReadinessItem:4, MemberReadinessSection:13, getMemberReadinessSections:24 |
 | [lib/readiness/progressSummary.test.ts](../../../lib/readiness/progressSummary.test.ts) | 69 | libraries |  |
 | [lib/readiness/progressSummary.ts](../../../lib/readiness/progressSummary.ts) | 128 | libraries | ReadinessSummarySource:4, READINESS_SCORE_LOAD_ERROR:6, READINESS_EMPTY_RECAP:9, buildFactualReadinessRecap:39, buildReadinessSummaryPrompt:69, allowedReadinessPercents:105, readinessSummaryLooksGrounded:118, cleanReadinessSummary:126 |
@@ -968,7 +940,6 @@
 | [lib/ui/statusColors.ts](../../../lib/ui/statusColors.ts) | 72 | libraries | StatusTone:23, StatusColorSet:25, STATUS_COLORS:34, statusColor:70 |
 | [lib/ui/statusToneAdapters.ts](../../../lib/ui/statusToneAdapters.ts) | 20 | libraries | statusToneToKitTone:14, badgeVariantToStatusTone:18 |
 | [lib/util/ageCalculation.ts](../../../lib/util/ageCalculation.ts) | 82 | libraries | calculateAge:5, isMinorAge:18, isYouthAge:23, meetsMinimumAge:29, AgeGroup:35, getAgeGroup:37, getAgeGroupLabel:45, isJobAgeAppropriate:59 |
-| [lib/validation/aiCoachResponses.ts](../../../lib/validation/aiCoachResponses.ts) | 125 | libraries | aiTextOutputResponseSchema:4, AiTextOutputResponse:8, elevatorPitchResponseSchema:11, ElevatorPitchResponse:17, interviewPracticeResponseSchema:20, InterviewPracticeResponse:24, linkedinHeadlinesResponseSchema:27, LinkedinHeadlinesResponse:31, jobMatchScorerParsedSchema:34, jobMatchScorerResponseSchema:41, JobMatchScorerResponse:48, skillMapperOccupationResultSchema:51, skillMapperDetailSchema:61, SkillMapperOccupationResult:85, SkillMapperDetail:86, coachChatResponseSchema:89, CoachChatResponse:93, careerBusinessCoachCompletionResponseSchema:96, CareerBusinessCoachCompletionResponse:101, careerBusinessCoachVoiceSessionResponseSchema:104, CareerBusinessCoachVoiceSessionResponse:109, resumeCoachLiveSuggestionsResponseSchema:112, ResumeCoachLiveSuggestionsResponse:116, resumeCoachSessionResponseSchema:119, ResumeCoachSessionResponse:125 |
 | [lib/validation/aiInterview.ts](../../../lib/validation/aiInterview.ts) | 28 | libraries | interviewResponseSchema:3, interviewStartResponseSchema:9, interviewResultsResponseSchema:22 |
 | [lib/validation/benefitRequest.ts](../../../lib/validation/benefitRequest.ts) | 9 | libraries | BENEFITS:3, benefitRequestSchema:5, BenefitRequestInput:9 |
 | [lib/validation/careerMatchResult.ts](../../../lib/validation/careerMatchResult.ts) | 14 | libraries | careerMatchResultSchema:9, careerMatchResultNullableSchema:14 |
