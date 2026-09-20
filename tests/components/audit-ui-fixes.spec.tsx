@@ -86,18 +86,21 @@ describe('admin headings', () => {
   });
 });
 
-describe('stat tiles colour numbers by state, not by column (WAP-99)', () => {
-  it('ignores the categorical color prop and paints only a derived tone', async () => {
+describe('stat tiles colour by state, not by column (WAP-99)', () => {
+  it('keeps every number neutral and declares a derived tone only on the tile hook', async () => {
     const { StatTile } = await import('@/components/portal/kit/StatTile');
     const { container } = render(
       <>
-        <StatTile label="Avg Caseload" value={12} color="info" />
-        <StatTile label="At-Risk Owned" value={3} tone="accent" />
+        <StatTile label="Avg Caseload" value={12} />
+        <StatTile label="At-Risk Owned" value={3} tone="alert" />
       </>,
     );
-    const values = container.querySelectorAll('.wa-kit-stat-value');
-    expect((values[0] as HTMLElement).style.color).toBe('var(--wa-text)');
-    expect((values[1] as HTMLElement).style.color).toBe('var(--wa-accent)');
+    const values = container.querySelectorAll<HTMLElement>('.wa-kit-stat-value');
+    expect(values[0].style.color).toBe('');
+    expect(values[1].style.color).toBe('');
+    const cards = container.querySelectorAll<HTMLElement>('.wa-kit-card');
+    expect(cards[0].className).not.toMatch(/wa-kit-tone--/);
+    expect(cards[1].classList.contains('wa-kit-tone--alert')).toBe(true);
   });
 });
 

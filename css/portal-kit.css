@@ -417,6 +417,23 @@ html.dark [data-surface] .wa-kit-card,
   font-weight: 700;
   white-space: nowrap;
 }
+/* StatTile parts. The number is neutral --wa-text whatever the tile's tone
+   (WAP-99: categorical totals never paint); a tone declared on the card paints
+   the edge accent (.wa-kit-tone-edge) only. The caption carries its own tone
+   hook, so a definition caption stays muted inside an alert tile. */
+.wa-kit-stat-tile {
+  height: 100%;
+}
+.wa-kit-stat-tile__value {
+  margin-top: 4px;
+  font-size: 1.875rem;
+  color: var(--wa-text);
+}
+.wa-kit-stat-tile__delta {
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--wa-kit-tone, var(--wa-muted));
+}
 
 /* Section tabs (Tabs / TabPanel in components/portal/kit/Tabs.tsx). One row
    that scrolls sideways on narrow screens instead of wrapping; the selected

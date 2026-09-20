@@ -732,9 +732,9 @@ export default function EmployerJobsBoard({
 
       {/* KPI strip — accurate, prop-derived counts only (no new queries). */}
       <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-3">
-        <StatSparkTile icon={<Briefcase size={16} />} label="All postings" value={totalInDb} color="accent" />
-        <StatSparkTile icon={<ListFilter size={16} />} label="In this view" value={totalInFilter} color="info" />
-        <StatSparkTile icon={<Users size={16} />} label="Applicants (this page)" value={applicantsOnPage} color="gold" />
+        <StatSparkTile icon={<Briefcase size={16} />} label="All postings" value={totalInDb} />
+        <StatSparkTile icon={<ListFilter size={16} />} label="In this view" value={totalInFilter} />
+        <StatSparkTile icon={<Users size={16} />} label="Applicants (this page)" value={applicantsOnPage} />
       </div>
 
       <div className="wa-flex wa-flex-wrap wa-gap-2" role="toolbar" aria-label="Filter by hiring stage">

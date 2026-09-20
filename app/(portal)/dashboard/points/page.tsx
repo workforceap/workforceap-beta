@@ -202,14 +202,13 @@ export default async function DashboardPointsPage() {
         <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 1.25rem 4rem' }} className="wa-space-y-4">
           {/* ── KPI strip ── */}
           <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-3 wa-gap-3">
-            <StatSparkTile icon={<Trophy size={16} />} label="Total points" value={total.toLocaleString()} color="accent" />
+            <StatSparkTile icon={<Trophy size={16} />} label="Total points" value={total.toLocaleString()} />
             <StatSparkTile
               icon={<Flame size={16} />}
               label="Current streak"
               value={`${memberPoints.currentStreak} ${memberPoints.currentStreak === 1 ? 'day' : 'days'}`}
-              color="gold"
             />
-            <StatSparkTile icon={<Star size={16} />} label="Level rank" value={`${levelRank} of ${LEVELS.length} · ${levelMeta.label}`} color="info" />
+            <StatSparkTile icon={<Star size={16} />} label="Level rank" value={`${levelRank} of ${LEVELS.length} · ${levelMeta.label}`} />
           </div>
 
           {/* ── Invite a friend (referral) ── */}

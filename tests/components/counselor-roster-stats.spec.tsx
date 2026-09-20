@@ -29,12 +29,14 @@ describe('CounselorRosterStats', () => {
     }
   });
 
-  it('paints only the toned value and leaves neutral tiles on the text token (WAP-99)', () => {
+  it('maps the attention tone onto the tile hook and keeps every number neutral (WAP-99)', () => {
     render(<CounselorRosterStats stats={STATS} />);
     const atRiskValue = screen.getByText('2');
-    expect(atRiskValue.style.color).toBe('var(--wa-accent)');
+    expect(atRiskValue.style.color).toBe('');
+    expect(atRiskValue.closest('.wa-kit-card')!.classList.contains('wa-kit-tone--alert')).toBe(true);
     const replyOwedValue = screen.getByText('0');
-    expect(replyOwedValue.style.color).toBe('var(--wa-text)');
+    expect(replyOwedValue.style.color).toBe('');
+    expect(replyOwedValue.closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
   });
 
   it('no longer prints the roster-size and cohort cards the audit flagged as repeats', () => {

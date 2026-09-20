@@ -75,9 +75,9 @@ export function WioaScreeningKit({
   notEligible,
 }: WioaScreeningKitProps) {
   const kpis: KpiItem[] = [
-    { label: 'Eligible', value: eligible, color: 'success' },
-    { label: 'Pending Review', value: pendingReview, color: 'gold' },
-    { label: 'Need Docs', value: needDocs, color: 'accent' },
+    { label: 'Eligible', value: eligible },
+    { label: 'Pending Review', value: pendingReview, tone: pendingReview > 0 ? 'warn' : undefined },
+    { label: 'Need Docs', value: needDocs, tone: needDocs > 0 ? 'alert' : undefined },
     { label: 'Not Eligible', value: notEligible },
   ];
 

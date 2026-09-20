@@ -174,7 +174,7 @@ export default function PlacementsPage() {
     return `$${n.toLocaleString()}/yr`;
   };
 
-  const kpis: KpiItem[] = [{ label: t('total'), value: placements.length, color: 'accent' }];
+  const kpis: KpiItem[] = [{ label: t('total'), value: placements.length }];
 
   const columns: Column<Placement>[] = [
     {

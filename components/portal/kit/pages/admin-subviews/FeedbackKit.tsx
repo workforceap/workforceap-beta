@@ -79,9 +79,9 @@ export function FeedbackKit({
 }: FeedbackKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Total', value: total },
-    { label: 'New (7d)', value: recent, color: 'info' },
-    { label: 'Critical', value: critical, color: 'accent' },
-    { label: 'Avg Rating', value: avgRating, color: 'success' },
+    { label: 'New (7d)', value: recent },
+    { label: 'Critical', value: critical, tone: critical > 0 ? 'alert' : undefined },
+    { label: 'Avg Rating', value: avgRating },
   ];
 
   const numStyle = { fontVariantNumeric: 'tabular-nums' as const };

@@ -98,9 +98,9 @@ export function AuditLogsKit({
   distinctActors = 0,
 }: AuditLogsKitProps) {
   const kpis: KpiItem[] = [
-    { label: 'Events today', value: eventsToday.toLocaleString(), color: 'accent' },
-    { label: 'This week', value: eventsThisWeek.toLocaleString(), color: 'info' },
-    { label: 'Distinct actors', value: distinctActors.toLocaleString(), color: 'text' },
+    { label: 'Events today', value: eventsToday.toLocaleString() },
+    { label: 'This week', value: eventsThisWeek.toLocaleString() },
+    { label: 'Distinct actors', value: distinctActors.toLocaleString() },
   ];
 
   const columns: Column<AuditRow>[] = [

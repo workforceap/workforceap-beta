@@ -483,10 +483,10 @@ export function StudentsRosterKit({
 
   const kpis: KpiItem[] | null = summary
     ? [
-        { label: 'On Track', value: summary.onTrack, tone: 'success' },
-        { label: 'Behind', value: summary.behind, tone: 'gold' },
-        { label: 'Stalled', value: summary.stalled, tone: 'accent' },
-        { label: 'Avg %', value: `${summary.avgPercent}%`, tone: 'info' },
+        { label: 'On Track', value: summary.onTrack, tone: 'ok' },
+        { label: 'Behind', value: summary.behind, tone: 'warn' },
+        { label: 'Stalled', value: summary.stalled, tone: 'alert' },
+        { label: 'Avg %', value: `${summary.avgPercent}%` },
       ]
     : null;
 

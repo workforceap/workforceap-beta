@@ -320,10 +320,10 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
       </div>
 
       <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" style={{ marginBottom: 24 }}>
-        <StatSparkTile icon={<Users size={16} />} label="Total Referred" value={members.length} color="text" />
-        <StatSparkTile icon={<Activity size={16} />} label="Active (Not Placed)" value={active} color="info" />
-        <StatSparkTile icon={<GraduationCap size={16} />} label="Completions" value={completions} color="gold" />
-        <StatSparkTile icon={<Trophy size={16} />} label="Placements" value={placements} color="success" />
+        <StatSparkTile icon={<Users size={16} />} label="Total Referred" value={members.length} />
+        <StatSparkTile icon={<Activity size={16} />} label="Active (Not Placed)" value={active} />
+        <StatSparkTile icon={<GraduationCap size={16} />} label="Completions" value={completions} />
+        <StatSparkTile icon={<Trophy size={16} />} label="Placements" value={placements} />
       </div>
 
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-2 wa-gap-4" style={{ marginBottom: 24 }}>

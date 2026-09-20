@@ -27,7 +27,6 @@ import {
   StatusTag,
   StatSparkTile,
   KpiStrip,
-  type KitColor,
   type KitTone,
   type KpiItem,
 } from '@/components/portal/kit';
@@ -61,12 +60,6 @@ const PRIORITY_TAG_LABEL: Record<Priority, string> = {
 const PRIORITY_TAG_TONE: Record<Priority, KitTone> = {
   red: 'alert',
   yellow: 'warn',
-  blue: 'info',
-};
-
-const PRIORITY_STAT_COLOR: Record<Priority, KitColor> = {
-  red: 'accent',
-  yellow: 'gold',
   blue: 'info',
 };
 
@@ -166,7 +159,7 @@ function TriageSummary({ queue }: { queue: TriageQueue }) {
       label: FLAG_LABELS[reason],
       value: count,
       delta: ATTENTION_REASON_META[reason].definition,
-      deltaColor: 'muted',
+      deltaTone: 'muted',
     }));
 
   return (
@@ -180,7 +173,7 @@ function TriageSummary({ queue }: { queue: TriageQueue }) {
               icon={<Icon size={16} />}
               label={p.label}
               value={p.value}
-              color={PRIORITY_STAT_COLOR[p.key]}
+              tone={PRIORITY_TAG_TONE[p.key]}
             />
           );
         })}

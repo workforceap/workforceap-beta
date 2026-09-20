@@ -70,9 +70,9 @@ export function EmailTemplatesKit({ templates = DEFAULT_TEMPLATES }: EmailTempla
   const inactive = total - active;
 
   const kpis: KpiItem[] = [
-    { label: 'Templates', value: total, color: 'text' },
-    { label: 'Active', value: active, color: 'success' },
-    { label: 'Inactive', value: inactive, color: 'muted' },
+    { label: 'Templates', value: total },
+    { label: 'Active', value: active },
+    { label: 'Inactive', value: inactive },
   ];
 
   const columns: Column<EmailTemplateRow>[] = [

@@ -4,8 +4,28 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
+import {
+  MEMBER_REQUEST_FAILURE,
+  describeMemberRequestException,
+  readMemberRequestFailure,
+} from '@/lib/portal/memberRequestFailure';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import styles from './notesPanel.module.css';
+
+/**
+ * Session-notes card on the counselor student record (Notes tab). Kit chrome:
+ * `.wa-kit-card` + `.wa-kit-stat-label` card head + `.wa-kit-meta` captions;
+ * layout in notesPanel.module.css (`--wa-*` only, 13px floor). The heading
+ * stays an h3 — the page's Notes panel owns the h2 above this card.
+ *
+ * Loading follows the #2404 pattern: `fetchWithTimeout` with the effect's
+ * AbortSignal, so a hung request fails visibly and a request cancelled by a
+ * re-render or unmount never paints "Couldn't load notes". Failures read as
+ * one plain sentence from lib/portal/memberRequestFailure, never the server body.
+ */
+
+/** Long enough for a slow notes read, short enough that a hung request still fails visibly. */
+const NOTES_REQUEST_TIMEOUT_MS = 15000;
 
 interface SessionNote {
   id: string;
@@ -34,7 +54,7 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
   const [newNote, setNewNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [fetchError, setFetchError] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -44,33 +64,40 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
   const saveInFlight = useRef(false);
   const loadRequest = useRef(0);
 
-  const fetchNotes = useCallback(async () => {
+  const fetchNotes = useCallback(async (signal?: AbortSignal) => {
     const request = ++loadRequest.current;
     const revision = notesRevision.current;
+    /** False once a newer load started or this one was cancelled — then nothing may paint. */
+    const current = () => request === loadRequest.current && !signal?.aborted;
     setLoading(true);
-    setFetchError(false);
+    setFetchError('');
     try {
-      const res = await fetchWithTimeout(`/api/counselor/members/${memberId}/session-notes`, {}, 15000);
-      if (request !== loadRequest.current) return;
+      const res = await fetchWithTimeout(`/api/counselor/members/${memberId}/session-notes`, { signal }, NOTES_REQUEST_TIMEOUT_MS);
+      if (!current()) return;
       if (!res.ok) {
-        setFetchError(true);
+        setFetchError(await readMemberRequestFailure(res));
         return;
       }
       const data = await res.json();
-      if (request === loadRequest.current && revision === notesRevision.current) {
-        if (Array.isArray(data)) setNotes(data);
-        else setFetchError(true);
-      }
-    } catch {
-      if (request === loadRequest.current) setFetchError(true);
+      if (!current() || revision !== notesRevision.current) return;
+      if (Array.isArray(data)) setNotes(data);
+      else setFetchError(MEMBER_REQUEST_FAILURE.generic);
+    } catch (e) {
+      // Cancelled by a re-render or unmount: not a failure, and nothing to paint.
+      if (!current()) return;
+      setFetchError(describeMemberRequestException(e));
     } finally {
-      if (request === loadRequest.current) setLoading(false);
+      if (current()) setLoading(false);
     }
   }, [memberId]);
 
   useEffect(() => {
-    void fetchNotes();
-    return () => { loadRequest.current += 1; };
+    const controller = new AbortController();
+    void fetchNotes(controller.signal);
+    return () => {
+      controller.abort();
+      loadRequest.current += 1;
+    };
   }, [fetchNotes]);
 
   const handleAdd = async () => {
@@ -127,16 +154,9 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
   };
 
   return (
-    <div style={{
-      background: 'var(--surface-container, #fff)',
-      borderRadius: '0.75rem',
-      padding: '1.25rem',
-      border: '1px solid var(--outline-variant, #ebe7e7)',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: 0 }}>
-          Session Notes
-        </h3>
+    <div className="wa-kit-card">
+      <div className={styles.head}>
+        <h3 className={`wa-kit-stat-label ${styles.title}`}>Session Notes</h3>
         {!adding && (
           <button type="button"
             onClick={() => { setAdding(true); setSaveStatus(''); }}
@@ -148,7 +168,7 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
       </div>
 
       {adding && (
-        <div style={{ marginBottom: '1rem' }}>
+        <div className={styles.compose}>
           <label htmlFor={`session-note-${memberId}`} className="wa-sr-only">
             Session note
           </label>
@@ -159,21 +179,10 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
             maxLength={5000}
             placeholder="Write a session note about this member..."
             rows={4}
-            style={{
-              width: '100%',
-              border: '1px solid var(--outline-variant)',
-              borderRadius: '0.5rem',
-              padding: '0.5rem 0.75rem',
-              fontSize: '0.8125rem',
-              fontFamily: 'inherit',
-              resize: 'vertical',
-              background: 'var(--surface-container-low)',
-              color: 'var(--color-on-surface)',
-              boxSizing: 'border-box',
-            }}
+            className={styles.textarea}
           />
-          {error && <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.8125rem', margin: '0.25rem 0' }}>{error}</p>}
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          {error && <p role="alert" className={styles.alert}>{error}</p>}
+          <div className={styles.actions}>
             <button type="button"
               onClick={handleAdd}
               disabled={submitting || !newNote.trim()}
@@ -193,36 +202,36 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
         </div>
       )}
 
-      {saveStatus && <p role="status" style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>{saveStatus}</p>}
+      {saveStatus && <p role="status" className={`wa-kit-meta ${styles.status}`}>{saveStatus}</p>}
 
       {deleteError && (
-        <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0 0 0.5rem' }}>
+        <p className={styles.alert}>
           {deleteError}
         </p>
       )}
 
       {fetchError && (
-        <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent, #b00020)', margin: '0 0 0.5rem' }}>
-          Couldn’t load notes.{' '}
+        <p role="alert" className={styles.alert}>
+          Couldn’t load notes. {fetchError}{' '}
           <button type="button" className={styles.addButton} onClick={() => void fetchNotes()} disabled={loading}>
             {loading ? 'Loading…' : 'Try again'}
           </button>
         </p>
       )}
 
-      {loading && <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Loading notes…</p>}
+      {loading && <p className={`wa-kit-meta ${styles.status}`}>Loading notes…</p>}
 
       {!loading && !fetchError && notes.length === 0 && !adding && (
-        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontStyle: 'italic' }}>
+        <p className={`wa-kit-meta ${styles.empty}`}>
           No session notes yet. Add one to track progress.
         </p>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <div className={styles.list}>
         {notes.map((note) => (
-          <div key={note.id} style={{ borderLeft: '3px solid var(--color-accent)', paddingLeft: '0.75rem', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+          <div key={note.id} className={styles.note}>
+            <div className={styles.noteHead}>
+              <p className={`wa-kit-meta ${styles.noteMeta}`}>
                 {formatDateTime(note.createdAt)} · {note.author.fullName ?? note.author.email}
               </p>
               <button type="button"
@@ -234,7 +243,7 @@ export default function AdvisorSessionNotesPanel({ memberId }: { memberId: strin
                 ×
               </button>
             </div>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0, whiteSpace: 'pre-wrap' }}>
+            <p className={styles.noteBody}>
               {note.content}
             </p>
           </div>

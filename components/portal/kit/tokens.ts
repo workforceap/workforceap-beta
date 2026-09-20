@@ -26,3 +26,14 @@ export function colorVar(c: KitColor | undefined, fallback: KitColor = 'text'): 
  * another brand-colored highlight — reach for `danger` there instead of `alert`.
  */
 export type KitTone = 'ok' | 'warn' | 'alert' | 'danger' | 'info' | 'muted';
+
+/**
+ * Class name of the semantic tone hook (`.wa-kit-tone--<tone>` in
+ * css/portal-kit.css). A container declares its tone once; `.wa-kit-tone-edge`,
+ * `.wa-kit-tone-icon`, `.wa-kit-tone-text` and the stat tile parts then paint
+ * from `--wa-kit-tone` / `--wa-kit-tone-soft`. `undefined` in → `undefined` out,
+ * so it slots straight into `cx()`.
+ */
+export function toneClass(tone: KitTone | undefined): string | undefined {
+  return tone ? `wa-kit-tone--${tone}` : undefined;
+}

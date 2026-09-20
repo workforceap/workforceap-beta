@@ -135,20 +135,18 @@ export function AdminDashboardKit({
     {
       label: 'Enrolled',
       value: summary.enrolledMembers,
-      color: 'success',
       delta: `${summary.enrollmentRate}% enrolled`,
-      deltaColor: 'success',
+      deltaTone: 'ok',
     },
-    { label: 'Assessment Done', value: `${summary.assessmentRate}%`, color: 'info' },
+    { label: 'Assessment Done', value: `${summary.assessmentRate}%` },
     { label: 'Dashboard Active', value: summary.activeDashboardUsers },
-    { label: 'Activation Rate', value: `${summary.activationRate}%`, color: 'accent' },
-    { label: 'AI Tool Runs', value: summary.aiToolRuns, color: 'gold' },
-    { label: 'Placements', value: summary.totalPlacements, color: 'success' },
-    { label: 'Placement Rate', value: `${summary.placementRate}%`, color: 'accent' },
+    { label: 'Activation Rate', value: `${summary.activationRate}%` },
+    { label: 'AI Tool Runs', value: summary.aiToolRuns },
+    { label: 'Placements', value: summary.totalPlacements },
+    { label: 'Placement Rate', value: `${summary.placementRate}%` },
     {
       label: 'Avg Salary',
       value: `$${summary.avgPlacementSalary.toLocaleString()}`,
-      color: 'info',
     },
   ];
 
