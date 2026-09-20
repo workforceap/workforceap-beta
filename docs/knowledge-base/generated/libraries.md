@@ -30,7 +30,7 @@
 | [lib/admin/careerPlanSignal.ts](../../../lib/admin/careerPlanSignal.ts) | 201 | administration | CareerPlanActivationStage:1, CareerPlanSignal:8, DeriveCareerPlanSignalInput:31, deriveCareerPlanSignal:150 |
 | [lib/admin/cohortAnalytics.ts](../../../lib/admin/cohortAnalytics.ts) | 640 | administration | cohortLabel:16, WeeklyRecapCohortRow:34, getWeeklyRecapCohortStats:44, WeeklyScoreboardComparison:145, WeeklyCounselorLeaderboardRow:151, WeeklyFunnelVelocity:161, WeeklyAtRiskMember:168, WeeklyScoreboardStats:176, getWeeklyScoreboardStats:218, AiToolsCohortRow:442, aiToolsUserScope:457, aiToolsActivityScope:464, getAiToolsCohortStats:482, AiToolUsageRow:545, getAiToolUsageCounts:563, CertificationsCohortRow:601, getCertificationsCohortStats:609 |
 | [lib/admin/commandCenter.test.ts](../../../lib/admin/commandCenter.test.ts) | 130 | administration |  |
-| [lib/admin/commandCenter.ts](../../../lib/admin/commandCenter.ts) | 273 | administration | buildApplicationEmailPacket:23, bucketCommandCenterTotals:23, AdminApplicationPendingRow:25, AdminAtRiskRow:26, AdminCommandCenter:27, AdminCommandCenterBaseRow:28, AdminCommandCenterTotals:29, AdminInterviewingRow:30, AdminNeedsReplyRow:31, AdminProgramHealthRow:32, ApplicationEmailPacket:33, getAdminCommandCenter:40 |
+| [lib/admin/commandCenter.ts](../../../lib/admin/commandCenter.ts) | 276 | administration | buildApplicationEmailPacket:24, bucketCommandCenterTotals:24, AdminApplicationPendingRow:26, AdminAtRiskRow:27, AdminCommandCenter:28, AdminCommandCenterBaseRow:29, AdminCommandCenterTotals:30, AdminInterviewingRow:31, AdminNeedsReplyRow:32, AdminProgramHealthRow:33, ApplicationEmailPacket:34, getAdminCommandCenter:41 |
 | [lib/admin/commandCenterHelpers.ts](../../../lib/admin/commandCenterHelpers.ts) | 161 | administration | AdminCommandCenterBaseRow:3, AdminNeedsReplyRow:9, AdminAtRiskRow:16, AdminInterviewingRow:25, ApplicationEmailPacket:32, AdminApplicationPendingRow:38, AdminCommandCenterTotals:52, AdminProgramHealthRow:67, ADMIN_QUEUE_KEYS:74, AdminQueueKey:75, normalizeAdminQueueRequest:76, adminQueueHref:83, AdminCommandCenter:87, buildApplicationEmailPacket:97, bucketCommandCenterTotals:146 |
 | [lib/admin/counselorRoster.ts](../../../lib/admin/counselorRoster.ts) | 51 | administration | COUNSELOR_PAGE_SIZE:5, parseCounselorRosterQuery:7, loadCounselorRoster:13 |
 | [lib/admin/counselorRosterAggregates.test.ts](../../../lib/admin/counselorRosterAggregates.test.ts) | 33 | administration |  |
@@ -75,7 +75,8 @@
 | [lib/admin/memberDeleteStorage.test.ts](../../../lib/admin/memberDeleteStorage.test.ts) | 37 | administration |  |
 | [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 288 | administration |  |
 | [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 611 | administration | MergeConflict:5, MergePreview:12, MergeResult:20, assertNoCourseraOwnershipForMemberMerge:40, checkMergeConflicts:103, buildMergePreview:168, executeMemberMerge:325 |
-| [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 31 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:4, MEMBER_ONLY_WHERE:13, MEMBER_OR_DOGFOOD_WHERE:28 |
+| [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 71 | administration |  |
+| [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 42 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:4, STAFF_PROFILE_ROLES:15, MEMBER_ONLY_WHERE:24, MEMBER_OR_DOGFOOD_WHERE:39 |
 | [lib/admin/memberOutcomesSummary.ts](../../../lib/admin/memberOutcomesSummary.ts) | 35 | administration | getMemberOutcomesSummary:8 |
 | [lib/admin/mentorStatusUpdate.ts](../../../lib/admin/mentorStatusUpdate.ts) | 48 | administration | MentorAdminAction:4, runMentorStatusUpdate:9 |
 | [lib/admin/metrics.test.ts](../../../lib/admin/metrics.test.ts) | 99 | administration |  |
@@ -91,6 +92,8 @@
 | [lib/admin/studentsRosterEnrichmentQuery.ts](../../../lib/admin/studentsRosterEnrichmentQuery.ts) | 76 | administration | StudentRosterQueryScope:3, buildStudentRosterEnrichmentQuery:10 |
 | [lib/admin/studentsRosterFacts.ts](../../../lib/admin/studentsRosterFacts.ts) | 59 | administration | StudentRosterAssignmentSource:8, StudentRosterActivitySource:9, StudentRosterCourseFact:10, resolveStudentRosterAssignment:13, STUDENT_ROSTER_ACTIVITY_LABELS:34, resolveStudentRosterActivity:41 |
 | [lib/admin/studentsRosterSort.ts](../../../lib/admin/studentsRosterSort.ts) | 105 | administration | STUDENT_SORT_KEYS:7, StudentSortKey:18, StudentSortDirection:19, DEFAULT_STUDENT_SORT_KEY:21, DEFAULT_STUDENT_SORT_DIRECTION:22, sortStudentRows:65, isStudentSortKey:103 |
+| [lib/admin/studentsUnmatchedCoursera.test.ts](../../../lib/admin/studentsUnmatchedCoursera.test.ts) | 35 | learning-coursera |  |
+| [lib/admin/studentsUnmatchedCoursera.ts](../../../lib/admin/studentsUnmatchedCoursera.ts) | 53 | learning-coursera | loadUnmatchedCourseraRoster:32 |
 | [lib/admin/trainingDashboard.ts](../../../lib/admin/trainingDashboard.ts) | 315 | administration | TrainingDashboardMetrics:20, TrainingDashboardRow:29, TrainingDashboardData:56, loadTrainingDashboardData:70 |
 | [lib/admin/trainingProgressGrades.ts](../../../lib/admin/trainingProgressGrades.ts) | 56 | administration | CourseGradeFact:21, latestCompletedGradeByUser:31 |
 | [lib/admin/trainingProgressPrograms.ts](../../../lib/admin/trainingProgressPrograms.ts) | 76 | administration | TrainingPace:10, STALLED_IDLE_DAYS:13, TrainingLearnerRef:15, programSlugsForLearner:28, deriveTrainingPace:64 |
@@ -359,8 +362,8 @@
 | [lib/content/trainingBridge.ts](../../../lib/content/trainingBridge.ts) | 360 | public-experience | BridgeSkill:18, BridgeOccupation:28, TRAINING_BRIDGE_OCCUPATIONS:51, MemberSkill:289, findBridgeOccupation:295, getBridgeOccupationById:316, BridgeGapResult:320, computeBridgeGap:331, getBridgeProgram:358 |
 | [lib/content/workforceApModule.test.ts](../../../lib/content/workforceApModule.test.ts) | 107 | public-experience |  |
 | [lib/content/workforceApModule.ts](../../../lib/content/workforceApModule.ts) | 18 | public-experience | resolveWorkforceApModule:6 |
-| [lib/counselor/adminMemberScope.test.ts](../../../lib/counselor/adminMemberScope.test.ts) | 11 | member-counselor |  |
-| [lib/counselor/adminMemberScope.ts](../../../lib/counselor/adminMemberScope.ts) | 23 | member-counselor | enrolledMembersInOrganizationWhere:4, resolveAdminEnrolledMemberIds:12 |
+| [lib/counselor/adminMemberScope.test.ts](../../../lib/counselor/adminMemberScope.test.ts) | 18 | member-counselor |  |
+| [lib/counselor/adminMemberScope.ts](../../../lib/counselor/adminMemberScope.ts) | 30 | member-counselor | enrolledMembersInOrganizationWhere:10, resolveAdminEnrolledMemberIds:19 |
 | [lib/counselor/ambassadorAutoAssign.ts](../../../lib/counselor/ambassadorAutoAssign.ts) | 188 | member-counselor | AmbassadorAutoAssignInput:12, AmbassadorAutoAssignResult:20, autoAssignAmbassadorFromReferral:46 |
 | [lib/counselor/ambassadorReferral.test.ts](../../../lib/counselor/ambassadorReferral.test.ts) | 55 | member-counselor |  |
 | [lib/counselor/ambassadorReferral.ts](../../../lib/counselor/ambassadorReferral.ts) | 88 | member-counselor | AmbassadorCandidate:18, AmbassadorMatch:25, pickAmbassadorReferralText:33, normalizePersonName:51, matchAmbassador:68 |
@@ -600,6 +603,7 @@
 | [lib/i18n/localizeHref.ts](../../../lib/i18n/localizeHref.ts) | 31 | public-experience | LocalizedHrefResolution:4, localizeHref:10, resolveLocalizedHref:22 |
 | [lib/i18n/pickRootClientMessages.test.ts](../../../lib/i18n/pickRootClientMessages.test.ts) | 163 | public-experience |  |
 | [lib/i18n/pickRootClientMessages.ts](../../../lib/i18n/pickRootClientMessages.ts) | 210 | public-experience | ROOT_CHROME_NAMESPACES:6, ROOT_MARKETING_CLIENT_KEYS:12, PORTAL_CLIENT_NAMESPACES:15, WIOA_CLIENT_NAMESPACES:45, ADMIN_DASHBOARD_CLIENT_KEYS:53, ClientMessageSlice:65, pickRootClientMessages:101, pickPortalClientMessages:105, pickAdminClientMessages:109, pickApplyClientMessages:113, pickAuthClientMessages:117, pickWioaClientMessages:121, pickClientMessageSlice:125, clientMessagesBytes:170, pickLegacyFatRootClientMessages:175 |
+| [lib/i18n/pluralCount.ts](../../../lib/i18n/pluralCount.ts) | 8 | public-experience | pluralCount:6 |
 | [lib/i18n/server.ts](../../../lib/i18n/server.ts) | 10 | public-experience | getRequestLocale:5 |
 | [lib/i18n/serverLocale.ts](../../../lib/i18n/serverLocale.ts) | 13 | public-experience | WAPLocale:5, LOCALE_COOKIE:7, getLocale:9 |
 | [lib/interview/voiceTranscript.test.ts](../../../lib/interview/voiceTranscript.test.ts) | 67 | jobs-employers |  |

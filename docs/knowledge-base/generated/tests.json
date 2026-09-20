@@ -2456,6 +2456,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/admin/memberOnlyWhere.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/admin/metrics.test.ts",
     "area": "libraries",
     "domain": "administration",
@@ -2528,6 +2552,34 @@
       {
         "file": "lib/ai/matchStudents.ts",
         "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/admin/studentsUnmatchedCoursera.test.ts",
+    "area": "libraries",
+    "domain": "learning-coursera",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/withSoftTimeout.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/admin/studentsUnmatchedCoursera.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -4530,8 +4582,12 @@
     ],
     "localReferences": [
       {
-        "file": "lib/counselor/adminMemberScope.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 3
+      },
+      {
+        "file": "lib/counselor/adminMemberScope.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -22054,6 +22110,34 @@
       "vitest"
     ],
     "localReferences": [],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/admin-data-hygiene.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/i18n/pluralCount.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/formatDate.ts",
+        "line": 5
+      }
+    ],
     "kind": "test-candidate",
     "declaredRunners": [
       {

@@ -23528,6 +23528,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/admin/overview/page.tsx",
+    "specifier": "@/lib/i18n/pluralCount",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pluralCount.ts"
+  },
+  {
     "from": "app/admin/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -23670,6 +23678,14 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/admin/page.tsx",
+    "specifier": "@/lib/i18n/pluralCount",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pluralCount.ts"
   },
   {
     "from": "app/admin/partners/OpenPartnerPortalButton.tsx",
@@ -25577,8 +25593,16 @@
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/withSoftTimeout",
+    "specifier": "@/lib/admin/studentsUnmatchedCoursera",
     "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsUnmatchedCoursera.ts"
+  },
+  {
+    "from": "app/admin/students/page.tsx",
+    "specifier": "@/lib/admin/withSoftTimeout",
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/admin/withSoftTimeout.ts"
@@ -25586,7 +25610,7 @@
   {
     "from": "app/admin/students/page.tsx",
     "specifier": "@/lib/admin/studentsRosterFacts",
-    "line": 31,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterFacts.ts"
@@ -69264,6 +69288,14 @@
     "target": "lib/wioa/denialReason.ts"
   },
   {
+    "from": "components/admin/AdminCommandCenterClient.tsx",
+    "specifier": "@/lib/i18n/pluralCount",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pluralCount.ts"
+  },
+  {
     "from": "components/admin/AdminCounselorsClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -92097,8 +92129,16 @@
   },
   {
     "from": "lib/admin/commandCenter.ts",
-    "specifier": "@/lib/admin/applicantTriageLoad",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/commandCenter.ts",
+    "specifier": "@/lib/admin/applicantTriageLoad",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriageLoad.ts"
@@ -92106,7 +92146,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -92114,7 +92154,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 23,
+    "line": 24,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -92122,7 +92162,7 @@
   {
     "from": "lib/admin/commandCenter.ts",
     "specifier": "@/lib/admin/commandCenterHelpers",
-    "line": 24,
+    "line": 25,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
@@ -93192,6 +93232,30 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/admin/memberOnlyWhere.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/memberOnlyWhere.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/memberOnlyWhere.test.ts",
+    "specifier": "./memberOnlyWhere",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
     "from": "lib/admin/memberOnlyWhere.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -93534,6 +93598,46 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "lib/admin/studentsUnmatchedCoursera.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/studentsUnmatchedCoursera.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/studentsUnmatchedCoursera.test.ts",
+    "specifier": "./withSoftTimeout",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/withSoftTimeout.ts"
+  },
+  {
+    "from": "lib/admin/studentsUnmatchedCoursera.test.ts",
+    "specifier": "./studentsUnmatchedCoursera",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsUnmatchedCoursera.ts"
+  },
+  {
+    "from": "lib/admin/studentsUnmatchedCoursera.ts",
+    "specifier": "@/lib/admin/withSoftTimeout",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/withSoftTimeout.ts"
   },
   {
     "from": "lib/admin/trainingDashboard.ts",
@@ -98737,8 +98841,16 @@
   },
   {
     "from": "lib/counselor/adminMemberScope.test.ts",
-    "specifier": "./adminMemberScope",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/counselor/adminMemberScope.test.ts",
+    "specifier": "./adminMemberScope",
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/adminMemberScope.ts"
@@ -98758,6 +98870,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
+  },
+  {
+    "from": "lib/counselor/adminMemberScope.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
   },
   {
     "from": "lib/counselor/ambassadorAutoAssign.ts",
@@ -132646,6 +132766,46 @@
     "kind": "import",
     "external": true,
     "package": "path"
+  },
+  {
+    "from": "tests/lib/admin-data-hygiene.spec.ts",
+    "specifier": "node:fs",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/lib/admin-data-hygiene.spec.ts",
+    "specifier": "node:path",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/lib/admin-data-hygiene.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/admin-data-hygiene.spec.ts",
+    "specifier": "@/lib/i18n/pluralCount",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pluralCount.ts"
+  },
+  {
+    "from": "tests/lib/admin-data-hygiene.spec.ts",
+    "specifier": "@/lib/formatDate",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/formatDate.ts"
   },
   {
     "from": "tests/lib/admin-job-match-prisma-scope.spec.ts",

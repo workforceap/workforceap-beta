@@ -22,6 +22,7 @@ import {
   type ProgramHealthDatum,
 } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import type { ChartDatum } from '@/components/portal/kit';
+import { pluralCount } from '@/lib/i18n/pluralCount';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -208,7 +209,7 @@ export default async function AdminTodayPage({
         iconColor: 'var(--wa-info)',
         title: `${totals.needsReplyCount} ${totals.needsReplyCount === 1 ? 'conversation needs' : 'conversations need'} a reply`,
         detail: 'Members are waiting on a response',
-        actionLabel: `${totals.needsReplyCount} items`,
+        actionLabel: pluralCount(totals.needsReplyCount, 'item'),
         href: '/admin/command-center?queue=needs-reply',
         count: totals.needsReplyCount,
       },
@@ -218,7 +219,7 @@ export default async function AdminTodayPage({
         iconColor: 'var(--wa-gold)',
         title: `${totals.applicationsPendingCount} ${totals.applicationsPendingCount === 1 ? 'application needs' : 'applications need'} review`,
         detail: 'Eligibility + program-fit review pending',
-        actionLabel: `${totals.applicationsPendingCount} items`,
+        actionLabel: pluralCount(totals.applicationsPendingCount, 'item'),
         href: '/admin/command-center?queue=applications',
         count: totals.applicationsPendingCount,
       },
@@ -228,7 +229,7 @@ export default async function AdminTodayPage({
         iconColor: 'var(--wa-gold)',
         title: `${totals.certificationsPendingCount} ${totals.certificationsPendingCount === 1 ? 'certification' : 'certifications'} awaiting review`,
         detail: 'Verify proof to count toward outcomes',
-        actionLabel: `${totals.certificationsPendingCount} items`,
+        actionLabel: pluralCount(totals.certificationsPendingCount, 'item'),
         urgent: totals.certificationsPendingCount > 0,
         href: '/admin/certifications',
         count: totals.certificationsPendingCount,
@@ -239,7 +240,7 @@ export default async function AdminTodayPage({
         iconColor: 'var(--wa-success)',
         title: `${totals.interviewingCount} ${totals.interviewingCount === 1 ? 'opportunity needs' : 'opportunities need'} interview prep`,
         detail: 'Phone screens, interviews, and offers to prep',
-        actionLabel: `${totals.interviewingCount} items`,
+        actionLabel: pluralCount(totals.interviewingCount, 'item'),
         href: '/admin/command-center?queue=interviewing',
         count: totals.interviewingCount,
       },

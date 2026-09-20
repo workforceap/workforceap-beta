@@ -41,7 +41,7 @@
 | [components/admin/AdminAnalyticsCharts.tsx](../../../components/admin/AdminAnalyticsCharts.tsx) | 267 | administration | default:102 |
 | [components/admin/AdminAnalyticsChartsLazy.tsx](../../../components/admin/AdminAnalyticsChartsLazy.tsx) | 14 | administration | default:14 |
 | [components/admin/AdminChartsLoading.tsx](../../../components/admin/AdminChartsLoading.tsx) | 13 | administration | default:6 |
-| [components/admin/AdminCommandCenterClient.tsx](../../../components/admin/AdminCommandCenterClient.tsx) | 549 | administration | default:37 |
+| [components/admin/AdminCommandCenterClient.tsx](../../../components/admin/AdminCommandCenterClient.tsx) | 550 | administration | default:38 |
 | [components/admin/AdminCounselorsClient.tsx](../../../components/admin/AdminCounselorsClient.tsx) | 186 | administration | default:27 |
 | [components/admin/AdminCronsClient.test.tsx](../../../components/admin/AdminCronsClient.test.tsx) | 113 | administration |  |
 | [components/admin/AdminCronsClient.tsx](../../../components/admin/AdminCronsClient.tsx) | 269 | administration | CronExecutionRow:7, default:41 |

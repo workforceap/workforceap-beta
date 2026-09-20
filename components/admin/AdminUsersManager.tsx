@@ -360,7 +360,7 @@ export default function AdminUsersManager({
             {
               key: 'created',
               header: 'Created',
-              cell: (user) => new Date(user.createdAt).toLocaleDateString(),
+              cell: (user) => formatPortalDate(user.createdAt),
             },
             {
               key: 'actions',

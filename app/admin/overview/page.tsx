@@ -27,7 +27,7 @@ import { isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { loadTrainingDashboardData } from '@/lib/admin/trainingDashboard';
-import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { countThreadsWithSlaBreach } from '@/lib/messages/superAdminMessageQueries';
 import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
@@ -44,6 +44,7 @@ import {
   colorVar,
   type KitColor,
 } from '@/components/portal/kit';
+import { pluralCount } from '@/lib/i18n/pluralCount';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -147,9 +148,12 @@ export default async function AdminOverviewPage() {
       pendingApplicationsResult,
       pendingPlacementsResult,
     ] = await withAdminPageScope(scope, (db) => Promise.allSettled([
-      db.user.count({ where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE } }),
+      // Members only: staff and dogfood admin accounts never count as members
+      // on the overview (admin audit 2026-09-20, 4.1) — same roster the
+      // attention model and the Command Center use.
+      db.user.count({ where: { deletedAt: null, ...MEMBER_ONLY_WHERE } }),
       db.user.count({
-        where: { assessmentCompleted: true, deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE },
+        where: { assessmentCompleted: true, deletedAt: null, ...MEMBER_ONLY_WHERE },
       }),
       // Recent signups are members only; staff/dogfood accounts are not
       // "pending enrollment" (admin audit 2026-09-20, 4.1).
@@ -412,7 +416,7 @@ export default async function AdminOverviewPage() {
         {pendingPlacements.length > 0 && (
           <div className="wa-hidden md:wa-block portal-alert" style={{ marginBottom: '1.5rem', borderColor: 'color-mix(in srgb, var(--wa-success) 35%, transparent)' }}>
             <span className="portal-alert__label">
-              {pendingPlacements.length} placement{pendingPlacements.length === 1 ? '' : 's'} waiting for counselor review
+              {pluralCount(pendingPlacements.length, 'placement')} waiting for counselor review
             </span>
             <Link href="/admin/members" className="portal-alert__action">
               Finalize &rarr;
