@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "08e2abd9a6d071709d8bbfed918a9c1372322712104e5fcb7aca48009a6629a1",
+  "inputTreeSha256": "206f26a2511d10e2878c5e00c050f2998499663a3fac3eaf9a156bccb12ecdbf",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -5805,14 +5805,14 @@
       "path": "app/(portal)/counselor/students/[memberId]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 66042,
-      "lines": 1459,
-      "sha256": "68010f4f79949dd5b7b5af33c88f1aa4e4b8cd72489e53f1e05856387f0d7b44",
+      "bytes": 66716,
+      "lines": 1475,
+      "sha256": "d66b29fdb0bb785da8a0b9aac05e80de20ab225fecf4d2d251b5784c10dee41f",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 68,
+          "line": 69,
           "kind": "FunctionDeclaration",
           "localName": "CounselorStudentDetailPage"
         }
@@ -5820,66 +5820,75 @@
       "declarations": [
         {
           "name": "Props",
-          "line": 56,
+          "line": 57,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getInitials",
-          "line": 58,
+          "line": 59,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CounselorStudentDetailPage",
-          "line": 68,
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskAlertDisplay",
-          "line": 1299,
+          "line": 1315,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NextBestActionRow",
-          "line": 1306,
+          "line": 1322,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Counselor360Signals",
-          "line": 1316,
+          "line": 1332,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CARD_STYLE",
-          "line": 1334,
+          "line": 1350,
           "kind": "Variable"
         },
         {
           "name": "AT_RISK_ALERT_STATUS_LABEL",
-          "line": 1338,
+          "line": 1354,
           "kind": "Variable"
         },
         {
           "name": "atRiskAlertStatusLabel",
-          "line": 1345,
+          "line": 1361,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskSignalCard",
-          "line": 1349,
+          "line": 1365,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CareerQuizRecommendationCard",
-          "line": 1407,
+          "line": 1423,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NextBestActionsCard",
-          "line": 1433,
+          "line": 1449,
           "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
+    },
+    {
+      "path": "app/(portal)/counselor/students/[memberId]/studentDetail.module.css",
+      "area": "pages",
+      "domain": "member-counselor",
+      "bytes": 879,
+      "lines": 37,
+      "sha256": "6a5728c47732a11d47489c09e8aed24323de8aa1a2de385cafa9fba454b99d85",
+      "binary": false
     },
     {
       "path": "app/(portal)/counselor/students/error.tsx",
@@ -5935,9 +5944,9 @@
       "path": "app/(portal)/counselor/students/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 20370,
-      "lines": 473,
-      "sha256": "a31a7a0a1cfb144aa922dd9287a9a5da2ef9bc2c544910b09cb8506b8356aec4",
+      "bytes": 16973,
+      "lines": 384,
+      "sha256": "962e4e741fd29a3e4bce14662534b7096a533a1e0ed89c353f8f5fe4eed24668",
       "binary": false,
       "exports": [
         {
@@ -5975,9 +5984,9 @@
       "path": "app/(portal)/counselor/students/students.module.css",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 1045,
-      "lines": 42,
-      "sha256": "4c9ad5ef3aae8516e6cfcf1802c7d359ba259b59db9a0cdc8eaab0a861be3f75",
+      "bytes": 1344,
+      "lines": 56,
+      "sha256": "807a5be90a812ca4ae72178cb65af41a963ce79b9a67781e4812fc6d3d49b60c",
       "binary": false
     },
     {
@@ -62910,58 +62919,6 @@
       "directive": "use client"
     },
     {
-      "path": "components/portal/counselor/AtRiskMemberList.test.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 1190,
-      "lines": 24,
-      "sha256": "212383dec2f378bf9fd3719e3e525d71f4b9d8cc4bc4178088be3e8204383f47",
-      "binary": false,
-      "exports": [],
-      "declarations": [],
-      "directive": null
-    },
-    {
-      "path": "components/portal/counselor/AtRiskMemberList.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 3659,
-      "lines": 113,
-      "sha256": "ee70896693812bec1994444044503698ac8ae5750f9a81157f19cf399e931c25",
-      "binary": false,
-      "exports": [
-        {
-          "name": "default",
-          "line": 40,
-          "kind": "FunctionDeclaration",
-          "localName": "AtRiskMemberList"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "AtRiskMember",
-          "line": 6,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "Props",
-          "line": 13,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "LEVEL_STYLES",
-          "line": 17,
-          "kind": "Variable"
-        },
-        {
-          "name": "AtRiskMemberList",
-          "line": 40,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
       "path": "components/portal/counselor/AtRiskSummaryWidget.tsx",
       "area": "components",
       "domain": "member-counselor",
@@ -62986,56 +62943,6 @@
         {
           "name": "AtRiskSummaryWidget",
           "line": 23,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
-      "path": "components/portal/counselor/CounselorAnalyticsCards.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 6207,
-      "lines": 224,
-      "sha256": "9b916f4aef0a726ee2c4635157fe6e40cc6e59d403b5576c624e36d78f113fc4",
-      "binary": false,
-      "exports": [
-        {
-          "name": "CounselorAnalytics",
-          "line": 5,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "default",
-          "line": 18,
-          "kind": "FunctionDeclaration",
-          "localName": "CounselorAnalyticsCards"
-        },
-        {
-          "name": "CounselorAnalyticsCardsDesktop",
-          "line": 122,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "CounselorAnalytics",
-          "line": 5,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "Props",
-          "line": 14,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "CounselorAnalyticsCards",
-          "line": 18,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "CounselorAnalyticsCardsDesktop",
-          "line": 122,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63230,6 +63137,36 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/portal/counselor/CounselorRosterStats.tsx",
+      "area": "components",
+      "domain": "member-counselor",
+      "bytes": 1364,
+      "lines": 43,
+      "sha256": "70839cc2948947479335cc6c3d95453d77f11bc02219a6696e59e22b1aedf2d8",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 17,
+          "kind": "FunctionDeclaration",
+          "localName": "CounselorRosterStats"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "Props",
+          "line": 5,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CounselorRosterStats",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "components/portal/counselor/CounselorStudentsRosterClient.tsx",
@@ -63609,110 +63546,6 @@
         {
           "name": "MemberProgressTimeline",
           "line": 56,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
-      "path": "components/portal/counselor/ProgressDistributionChart.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 2168,
-      "lines": 79,
-      "sha256": "10ee050c358127e962b2139c9f100f0a1517315846956e5898146b6f765bc58f",
-      "binary": false,
-      "exports": [
-        {
-          "name": "default",
-          "line": 24,
-          "kind": "FunctionDeclaration",
-          "localName": "ProgressDistributionChart"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "Props",
-          "line": 13,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "COLORS",
-          "line": 17,
-          "kind": "Variable"
-        },
-        {
-          "name": "ProgressDistributionChart",
-          "line": 24,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
-      "path": "components/portal/counselor/ProgressDistributionChartLazy.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 395,
-      "lines": 19,
-      "sha256": "f17a41449fe60b11919da2f3a6b147cf97caab6f686927c0926d49ee03d014fd",
-      "binary": false,
-      "exports": [
-        {
-          "name": "default",
-          "line": 19,
-          "kind": "ExportAssignment"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "ProgressDistributionChart",
-          "line": 5,
-          "kind": "Variable"
-        }
-      ],
-      "directive": "use client"
-    },
-    {
-      "path": "components/portal/counselor/RecentActivityFeed.tsx",
-      "area": "components",
-      "domain": "member-counselor",
-      "bytes": 3967,
-      "lines": 130,
-      "sha256": "d1c73a1257be8cb67941884d0869460efb24fd33b9a5b5c2b32d394f2f1c2525",
-      "binary": false,
-      "exports": [
-        {
-          "name": "default",
-          "line": 37,
-          "kind": "FunctionDeclaration",
-          "localName": "RecentActivityFeed"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "ActivityItem",
-          "line": 5,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "Props",
-          "line": 12,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "ACTIVITY_CONFIG",
-          "line": 16,
-          "kind": "Variable"
-        },
-        {
-          "name": "formatDate",
-          "line": 25,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "RecentActivityFeed",
-          "line": 37,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -104559,6 +104392,70 @@
         {
           "name": "getCounselorPriorityQueue",
           "line": 29,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/counselor/rosterStats.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 3668,
+      "lines": 97,
+      "sha256": "8a2d81e08ec1a5df185df7573bec48bcbf49adfb02f0ffe3af6220180319b370",
+      "binary": false,
+      "exports": [
+        {
+          "name": "ROSTER_STAT_LOOKBACK_DAYS",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "CounselorRosterStatKey",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CounselorRosterStat",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "buildCounselorRosterStats",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "ROSTER_STAT_LOOKBACK_DAYS",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "CounselorRosterStatKey",
+          "line": 20,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CounselorRosterStat",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CounselorRosterStatsInput",
+          "line": 33,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "plural",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildCounselorRosterStats",
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -158492,6 +158389,34 @@
       "directive": null
     },
     {
+      "path": "tests/app/counselor-student-detail-messages-rail.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7623,
+      "lines": 150,
+      "sha256": "f5da2869cc71c16d9a7926988a56fbba1ded16df3e03c618939a61a36d4864fc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "INSTANT",
+          "line": 78,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderPage",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/dashboard-training-redirect.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -159766,18 +159691,6 @@
       "directive": null
     },
     {
-      "path": "tests/components/counselor-analytics.spec.tsx",
-      "area": "tests",
-      "domain": "tests",
-      "bytes": 5856,
-      "lines": 145,
-      "sha256": "128ea5c8f98ba3c96e3c9c81e128468b4c6fc3aa668bbcbcbc99454d81e0e8da",
-      "binary": false,
-      "exports": [],
-      "declarations": [],
-      "directive": null
-    },
-    {
       "path": "tests/components/counselor-note-saves.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -159820,6 +159733,24 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/counselor-roster-stats.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2547,
+      "lines": 46,
+      "sha256": "fd3aeea9af1adbe8d284c0d2a9223a7f6cb85bed0041f1805dacdc3564dfc4dc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "STATS",
+          "line": 10,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -160390,6 +160321,18 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/member-progress-timeline.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 2131,
+      "lines": 35,
+      "sha256": "ddc6ff952c9505266e50b2d2018eefdaa3d5d3c07b50259ade5deab9538317c9",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -162976,6 +162919,39 @@
       "directive": null
     },
     {
+      "path": "tests/lib/counselor-roster-stats.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5958,
+      "lines": 127,
+      "sha256": "34fcce6edf49c32abb0475b4775a61f23e12dcfab1c0eb50eaa35a57cac12ecf",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "NOW",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "HOUR",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "member",
+          "line": 16,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/counselor-thread-assign-flag.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -165132,9 +165108,9 @@
       "path": "tests/lib/staff-program-label-contract.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 924,
-      "lines": 23,
-      "sha256": "0270423e555d7c2bcd7bf6c78c7d1f0be4364bfbb5fca4b612420dcbcd50d6fe",
+      "bytes": 870,
+      "lines": 22,
+      "sha256": "f687b0b4f379abf133a6bacc0744d17648adee92b633dfa8716d9737e1fbbd52",
       "binary": false,
       "exports": [],
       "declarations": [

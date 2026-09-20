@@ -405,13 +405,11 @@
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
 | [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1119 | member-counselor | AtRiskFactor:57, AtRiskMember:57, AtRiskDashboardViewProps:177, AtRiskDashboardView:194, AtRiskDashboardProps:757, default:776 |
 | [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
-| [components/portal/counselor/AtRiskMemberList.test.tsx](../../../components/portal/counselor/AtRiskMemberList.test.tsx) | 24 | member-counselor |  |
-| [components/portal/counselor/AtRiskMemberList.tsx](../../../components/portal/counselor/AtRiskMemberList.tsx) | 113 | member-counselor | default:40 |
 | [components/portal/counselor/AtRiskSummaryWidget.tsx](../../../components/portal/counselor/AtRiskSummaryWidget.tsx) | 185 | member-counselor | default:23 |
-| [components/portal/counselor/CounselorAnalyticsCards.tsx](../../../components/portal/counselor/CounselorAnalyticsCards.tsx) | 224 | member-counselor | CounselorAnalytics:5, default:18, CounselorAnalyticsCardsDesktop:122 |
 | [components/portal/counselor/CounselorCommandCenter.tsx](../../../components/portal/counselor/CounselorCommandCenter.tsx) | 243 | member-counselor | default:20 |
 | [components/portal/counselor/CounselorNotificationCenter.tsx](../../../components/portal/counselor/CounselorNotificationCenter.tsx) | 333 | communications | default:103 |
 | [components/portal/counselor/CounselorPriorityQueue.tsx](../../../components/portal/counselor/CounselorPriorityQueue.tsx) | 408 | member-counselor | CounselorPriorityQueueProps:58, default:68 |
+| [components/portal/counselor/CounselorRosterStats.tsx](../../../components/portal/counselor/CounselorRosterStats.tsx) | 43 | member-counselor | default:17 |
 | [components/portal/counselor/CounselorStudentsRosterClient.tsx](../../../components/portal/counselor/CounselorStudentsRosterClient.tsx) | 437 | member-counselor | CounselorRosterClientRow:41, CounselorRosterFilterMeta:58, default:147 |
 | [components/portal/counselor/CounselorTrainingHandoff.test.tsx](../../../components/portal/counselor/CounselorTrainingHandoff.test.tsx) | 40 | member-counselor |  |
 | [components/portal/counselor/CounselorTrainingHandoff.tsx](../../../components/portal/counselor/CounselorTrainingHandoff.tsx) | 64 | member-counselor | CounselorTrainingEnrollment:12, default:21 |
@@ -419,9 +417,6 @@
 | [components/portal/counselor/LabEvidenceReview.tsx](../../../components/portal/counselor/LabEvidenceReview.tsx) | 161 | member-counselor | default:49 |
 | [components/portal/counselor/LabReviewQueue.tsx](../../../components/portal/counselor/LabReviewQueue.tsx) | 71 | member-counselor | LAB_REVIEW_LABELS:14, labReviewDate:17, default:21 |
 | [components/portal/counselor/MemberProgressTimeline.tsx](../../../components/portal/counselor/MemberProgressTimeline.tsx) | 221 | member-counselor | TimelineStage:5, TimelineEvent:12, default:56 |
-| [components/portal/counselor/ProgressDistributionChart.tsx](../../../components/portal/counselor/ProgressDistributionChart.tsx) | 79 | member-counselor | default:24 |
-| [components/portal/counselor/ProgressDistributionChartLazy.tsx](../../../components/portal/counselor/ProgressDistributionChartLazy.tsx) | 19 | member-counselor | default:19 |
-| [components/portal/counselor/RecentActivityFeed.tsx](../../../components/portal/counselor/RecentActivityFeed.tsx) | 130 | member-counselor | default:37 |
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
 | [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |

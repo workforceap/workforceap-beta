@@ -1,0 +1,37 @@
+/* Student detail layout. The message thread is the one section the roster
+   deep-links to (#counselor-member-messages), so it renders first on mobile
+   and as a sticky right rail on desktop; the ~15 record sections keep their
+   order in the main column. Colocated with [memberId]/page.tsx. */
+
+.detailLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.messagesRail {
+  min-width: 0;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .detailLayout {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 24rem);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .messagesRail {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0;
+    /* Clears the sticky shell header (44px control + 12px padding each side). */
+    position: sticky;
+    top: 5.25rem;
+  }
+
+  .detailLayout > :not(.messagesRail) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
