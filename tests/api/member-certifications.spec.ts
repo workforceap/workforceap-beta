@@ -42,6 +42,9 @@ vi.mock('@/lib/db/prisma', () => ({
 import { GET, POST } from '@/app/api/member/certifications/route';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
+import { trackEvent } from '@/lib/events/track';
+import { awardPoints } from '@/lib/member/points';
+import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
 
 const postReq = (body: unknown) =>
   new Request('http://localhost:3000/api/member/certifications', {
@@ -62,13 +65,15 @@ describe('GET /api/member/certifications', () => {
   it('returns user certifications for authenticated user', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
     vi.mocked(prisma.userCertification.findMany).mockResolvedValue([
-      { certName: 'AWS', earnedAt: new Date('2026-01-01') } as any,
+      { certName: 'AWS', earnedAt: new Date('2026-01-01'), status: 'pending' } as any,
     ]);
     const res = await GET(new Request('http://localhost'));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.certifications).toHaveLength(1);
     expect(body.certifications[0].certName).toBe('AWS');
+    // WAP-20: the member can see that a self-report is awaiting review.
+    expect(body.certifications[0].status).toBe('pending');
   });
 
   it('returns 500 on db error', async () => {
@@ -100,14 +105,36 @@ describe('POST /api/member/certifications', () => {
     expect(res.status).toBe(400);
   });
 
-  it('upserts new certification when earned=true', async () => {
+  it('creates a self-reported certification as pending and fires no credential effects', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
-    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.userCertification.upsert).mockResolvedValue({} as any);
+    vi.mocked(prisma.userCertification.upsert).mockResolvedValue({ status: 'pending' } as any);
 
     const res = await POST(postReq({ certName: 'AWS Cloud Practitioner', earned: true }));
     expect(res.status).toBe(200);
-    expect(prisma.userCertification.upsert).toHaveBeenCalled();
+    expect(await res.json()).toEqual({ success: true, status: 'pending' });
+    expect(prisma.userCertification.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ userId: 'u1', certName: 'AWS Cloud Practitioner', status: 'pending', submittedAt: expect.any(Date) }),
+      }),
+    );
+    // WAP-20: a typed-in name is not a verified credential — the lifecycle
+    // event, points and partner milestone fire from the admin review route.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(trackEvent).not.toHaveBeenCalled();
+    expect(awardPoints).not.toHaveBeenCalled();
+    expect(sendPartnerMilestoneEmail).not.toHaveBeenCalled();
+  });
+
+  it('re-adding an existing certification refreshes only the date, not its review status', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.upsert).mockResolvedValue({ status: 'approved' } as any);
+
+    const res = await POST(postReq({ certName: 'AWS', earned: true, earnedAt: '2026-02-01T00:00:00.000Z' }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ success: true, status: 'approved' });
+    const call = vi.mocked(prisma.userCertification.upsert).mock.calls[0][0] as { update: Record<string, unknown> };
+    expect(call.update).toEqual({ earnedAt: new Date('2026-02-01T00:00:00.000Z') });
+    expect(call.update).not.toHaveProperty('status');
   });
 
   it('deletes certification when earned=false', async () => {
@@ -123,7 +150,7 @@ describe('POST /api/member/certifications', () => {
 
   it('returns 500 on db error', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
-    vi.mocked(prisma.userCertification.findUnique).mockRejectedValue(new Error('db down'));
+    vi.mocked(prisma.userCertification.upsert).mockRejectedValue(new Error('db down'));
     const res = await POST(postReq({ certName: 'AWS', earned: true }));
     expect(res.status).toBe(500);
   });

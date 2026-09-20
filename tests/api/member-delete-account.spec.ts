@@ -48,6 +48,11 @@ vi.mock('@/lib/gdpr/deleteUserStorage', () => ({
     'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
   deleteUserStorageObjects: vi.fn(),
 }));
+// WAP-169: the route delegates every users/profiles write to the shared
+// anonymiser (covered in tests/gdpr/anonymize-member.spec.ts).
+vi.mock('@/lib/member/anonymizeMember', () => ({ anonymizeMember: vi.fn() }));
+vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => {}) }));
+vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => {}) }));
 
 // ─── Imports after mocks ───
 import { POST as deleteAccount } from '@/app/api/member/delete-account/route';
@@ -56,6 +61,17 @@ import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { isAdmin } from '@/lib/auth/roles';
+import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { auditLog } from '@/lib/audit';
+import { logAuditEvent } from '@/lib/audit/log';
+
+const anonymized = (overrides: Partial<{ alreadyDeleted: boolean }> = {}) => ({
+  userId: UUIDS.user,
+  deletedAt: new Date('2026-09-20T12:00:00Z'),
+  alreadyDeleted: false,
+  profileRowsCleared: 1,
+  ...overrides,
+});
 
 const UUIDS = {
   user: '550e8400-e29b-41d4-a716-446655440001',
@@ -74,18 +90,14 @@ describe('POST /api/member/delete-account', () => {
     const res = await deleteAccount(new Request('http://localhost'));
     expect(res.status).toBe(403);
     expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
-  it('soft-deletes user account for authenticated member', async () => {
+  it('soft-deletes and anonymises the account through the shared anonymiser', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: UUIDS.user,
-      email: 'test@example.com',
-      deletedAt: null,
-    } as any);
-    vi.mocked(prisma.user.update).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       auth: {
         admin: {
@@ -98,30 +110,39 @@ describe('POST /api/member/delete-account', () => {
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: UUIDS.user },
-        data: expect.objectContaining({
-          deletedAt: expect.any(Date),
-          email: expect.stringContaining('deleted'),
-        }),
-      })
-    );
+    expect(anonymizeMember).toHaveBeenCalledTimes(1);
+    expect(anonymizeMember).toHaveBeenCalledWith(UUIDS.user, { reason: 'member_self_delete' }, prisma);
+    // The route writes no users/profiles row of its own any more.
+    expect(prisma.user.update).not.toHaveBeenCalled();
     // Ordering contract (formerly lib/gdpr/erase-routes.test.ts): blobs are
     // removed before the soft-delete write.
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
-    const [updateOrder] = vi.mocked(prisma.user.update).mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(updateOrder);
+    const [anonymizeOrder] = vi.mocked(anonymizeMember).mock.invocationCallOrder;
+    expect(storageOrder).toBeLessThan(anonymizeOrder);
+    expect(logAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ verb: 'deleted', object: { type: 'User', id: UUIDS.user } }),
+    );
   });
 
-  it('skips email mutation if user already deleted', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: UUIDS.user,
-      email: 'already_deleted_email',
-      deletedAt: new Date('2025-01-01'),
+  it('never writes the original email into the three-year audit log', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'jane@example.com' } as any);
+    vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
+    vi.mocked(getSupabaseAdmin).mockReturnValue({
+      auth: { admin: { deleteUser: vi.fn().mockResolvedValue({ error: null }) } },
     } as any);
-    vi.mocked(prisma.user.update).mockResolvedValue({ id: UUIDS.user } as any);
+
+    const res = await deleteAccount(new Request('http://localhost'));
+
+    expect(res.status).toBe(200);
+    // The former `member_self_delete` row carried `metadata.originalEmail`;
+    // the anonymiser now writes the (PII-free) audit row itself.
+    expect(auditLog).not.toHaveBeenCalled();
+    expect(JSON.stringify(vi.mocked(logAuditEvent).mock.calls)).not.toContain('jane@example.com');
+  });
+
+  it('still completes when the account was already soft-deleted', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(anonymizeMember).mockResolvedValue(anonymized({ alreadyDeleted: true }));
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       auth: {
         admin: {
@@ -134,18 +155,12 @@ describe('POST /api/member/delete-account', () => {
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0] as any;
-    expect(updateCall.data.email).toBe('already_deleted_email');
+    expect(anonymizeMember).toHaveBeenCalledTimes(1);
   });
 
   it('returns an error when Supabase auth deletion fails', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      id: UUIDS.user,
-      email: 'test@example.com',
-      deletedAt: null,
-    } as any);
-    vi.mocked(prisma.user.update).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(anonymizeMember).mockResolvedValue(anonymized());
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       auth: {
         admin: {
@@ -170,19 +185,20 @@ describe('POST /api/member/delete-account', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('returns 500 on database error', async () => {
+  it('returns 500 when the anonymiser fails, and does not delete the login', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockRejectedValue(new Error('DB error'));
+    vi.mocked(anonymizeMember).mockRejectedValue(new Error('DB error'));
 
     const res = await deleteAccount(new Request('http://localhost'));
 
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'Failed to delete account' });
+    expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });
 
   it('returns ok even when user not found in DB', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    vi.mocked(anonymizeMember).mockResolvedValue(null);
     vi.mocked(getSupabaseAdmin).mockReturnValue({
       auth: {
         admin: {
@@ -196,6 +212,7 @@ describe('POST /api/member/delete-account', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(logAuditEvent).not.toHaveBeenCalled();
   });
 
   it('does not claim deleted when storage object delete fails', async () => {
@@ -212,6 +229,7 @@ describe('POST /api/member/delete-account', () => {
     expect(await res.json()).toEqual({
       error: 'Stored files could not be deleted. Account was not erased. Please try again or contact support.',
     });
+    expect(anonymizeMember).not.toHaveBeenCalled();
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(getSupabaseAdmin).not.toHaveBeenCalled();
   });

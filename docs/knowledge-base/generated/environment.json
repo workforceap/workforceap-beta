@@ -126,6 +126,17 @@
       ]
     },
     {
+      "name": "AUDIT_EVENTS_ACTOR_PROOF_DATABASE_URL",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "tests/migrations/audit-events-actor-set-null.mjs",
+          "line": 15
+        }
+      ]
+    },
+    {
       "name": "AUDIT_GRAPH_DIR",
       "publicPrefix": false,
       "declaredInRootExample": false,
@@ -3587,6 +3598,10 @@
         {
           "file": "scripts/p1/test-force-rls.ts",
           "line": 591
+        },
+        {
+          "file": "tests/migrations/audit-events-actor-set-null.mjs",
+          "line": 15
         },
         {
           "file": "tests/migrations/placement-survey-sent-state.mjs",
