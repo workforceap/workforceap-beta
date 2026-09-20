@@ -132,7 +132,8 @@ export default async function AdminExportsPage({
         href: '/api/admin/funder-program-summary',
         iconKey: 'csv',
         tone: 'success',
-        newTab: true,
+        download: true,
+        actionLabel: t('exportFunderCsvDownload'),
       },
       {
         id: 'program-catalog',
@@ -141,6 +142,26 @@ export default async function AdminExportsPage({
         href: '/api/admin/programs/export-twc',
         iconKey: 'roster',
         tone: 'info',
+        download: true,
+      },
+      // Outcomes snapshots used to be listed again on /admin/outcomes; this is
+      // now their only list (admin audit 2026-09-20, Outcomes).
+      {
+        id: 'outcomes-csv',
+        title: 'Outcomes CSV',
+        description: 'Board-ready · funnel waterfall (counts + conversion), all time',
+        href: '/api/admin/outcomes/snapshot?period=all-time&format=csv',
+        iconKey: 'csv',
+        tone: 'success',
+        download: true,
+      },
+      {
+        id: 'board-packet-pdf',
+        title: 'Board meeting PDF',
+        description: 'Printable snapshot with KPIs, cohorts and methodology notes, all time',
+        href: '/api/admin/outcomes/snapshot?period=all-time&format=pdf',
+        iconKey: 'download',
+        tone: 'muted',
         download: true,
       },
     ];

@@ -103,15 +103,48 @@ describe('/admin/exports?ui=legacy — one verb, one icon treatment', () => {
 });
 
 describe('/admin/exports kit grid — verb follows the row type', () => {
-  it('says Open for in-portal pages and Download for file endpoints', async () => {
+  it('says Open for in-portal pages and Download for file endpoints, with matching icons', async () => {
     const doc = await renderPage();
     const tiles = Array.from(doc.querySelectorAll<HTMLAnchorElement>('a.wa-kit-card'));
     expect(tiles.length).toBeGreaterThanOrEqual(4);
+    const kinds = new Set<string>();
     for (const tile of tiles) {
       const href = tile.getAttribute('href') ?? '';
-      const verb = tile.lastElementChild?.textContent?.trim();
-      expect(verb, href).toBe(href.includes('ui=legacy') ? 'Open' : 'Download');
+      const action = tile.lastElementChild as HTMLElement;
+      const verb = action.textContent?.trim() ?? '';
+      const icon = action.querySelector('svg')?.getAttribute('class') ?? '';
+      const kind = tile.dataset.exportAction ?? '';
+      kinds.add(kind);
+      if (href.includes('ui=legacy')) {
+        expect(kind, href).toBe('open');
+        expect(verb, href).toBe('Open');
+        expect(tile.hasAttribute('download'), href).toBe(false);
+        expect(icon, href).toMatch(/lucide-arrow-right/);
+      } else {
+        expect(kind, href).toBe('download');
+        expect(verb, href).toMatch(/^Download\b/);
+        expect(tile.hasAttribute('download'), href).toBe(true);
+        expect(icon, href).toMatch(/lucide-download/);
+        expect(tile.getAttribute('target')).toBeNull();
+      }
     }
+    expect([...kinds].sort()).toEqual(['download', 'open']);
     expect(doc.querySelector('.material-symbols-outlined')).toBeNull();
+  });
+
+  it('reuses the translated funder-summary download label on the funder CSV tile', async () => {
+    const doc = await renderPage();
+    const funder = doc.querySelector<HTMLAnchorElement>('a.wa-kit-card[href="/api/admin/funder-program-summary"]');
+    expect(funder).not.toBeNull();
+    expect(funder?.lastElementChild?.textContent?.trim()).toBe(en.admin.exportFunderCsvDownload);
+  });
+
+  it('is the only list of the outcomes snapshot files', async () => {
+    const doc = await renderPage();
+    const hrefs = Array.from(doc.querySelectorAll<HTMLAnchorElement>('a.wa-kit-card')).map((a) => a.getAttribute('href'));
+    expect(hrefs).toEqual(expect.arrayContaining([
+      '/api/admin/outcomes/snapshot?period=all-time&format=csv',
+      '/api/admin/outcomes/snapshot?period=all-time&format=pdf',
+    ]));
   });
 });

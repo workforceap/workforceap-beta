@@ -183,7 +183,7 @@
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 212 | tests |  |
-| [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 117 | tests |  |
+| [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
@@ -243,11 +243,14 @@
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-member-notes-panel.spec.tsx](../../../tests/components/admin-member-notes-panel.spec.tsx) | 81 | tests |  |
+| [tests/components/admin-overview-page.spec.tsx](../../../tests/components/admin-overview-page.spec.tsx) | 149 | tests |  |
+| [tests/components/admin-pipeline-funnel-order.spec.tsx](../../../tests/components/admin-pipeline-funnel-order.spec.tsx) | 68 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
 | [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 172 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
 | [tests/components/admin-users-self-guard.spec.tsx](../../../tests/components/admin-users-self-guard.spec.tsx) | 165 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
+| [tests/components/analytics-kit-tabs-empty.spec.tsx](../../../tests/components/analytics-kit-tabs-empty.spec.tsx) | 102 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
@@ -257,6 +260,7 @@
 | [tests/components/auth-invitation-copy.spec.tsx](../../../tests/components/auth-invitation-copy.spec.tsx) | 166 | tests |  |
 | [tests/components/auth-training-return.spec.tsx](../../../tests/components/auth-training-return.spec.tsx) | 218 | tests |  |
 | [tests/components/board-completion-labels.test.tsx](../../../tests/components/board-completion-labels.test.tsx) | 50 | tests |  |
+| [tests/components/board-outcomes-exports-link.spec.tsx](../../../tests/components/board-outcomes-exports-link.spec.tsx) | 40 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/command-center-system-health.spec.tsx](../../../tests/components/command-center-system-health.spec.tsx) | 228 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
@@ -266,9 +270,11 @@
 | [tests/components/counselor-roster-stats.spec.tsx](../../../tests/components/counselor-roster-stats.spec.tsx) | 48 | tests |  |
 | [tests/components/counselor-student-panels-kit.spec.tsx](../../../tests/components/counselor-student-panels-kit.spec.tsx) | 133 | tests |  |
 | [tests/components/counselor-today.spec.tsx](../../../tests/components/counselor-today.spec.tsx) | 118 | tests |  |
+| [tests/components/coursera-catalog-health-table.spec.tsx](../../../tests/components/coursera-catalog-health-table.spec.tsx) | 131 | learning-coursera |  |
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
 | [tests/components/coursera-provisioning-queue-last-activity.spec.tsx](../../../tests/components/coursera-provisioning-queue-last-activity.spec.tsx) | 134 | learning-coursera |  |
+| [tests/components/email-failures-panel.spec.tsx](../../../tests/components/email-failures-panel.spec.tsx) | 86 | communications |  |
 | [tests/components/employer-action-connection-failure.spec.tsx](../../../tests/components/employer-action-connection-failure.spec.tsx) | 154 | tests |  |
 | [tests/components/employer-outcomes-status-labels.spec.tsx](../../../tests/components/employer-outcomes-status-labels.spec.tsx) | 43 | tests |  |
 | [tests/components/employer-page-opener.spec.tsx](../../../tests/components/employer-page-opener.spec.tsx) | 76 | tests |  |
@@ -279,6 +285,8 @@
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
+| [tests/components/kit-data-table-primitive.spec.tsx](../../../tests/components/kit-data-table-primitive.spec.tsx) | 245 | tests |  |
+| [tests/components/kit-table-toolbar.spec.tsx](../../../tests/components/kit-table-toolbar.spec.tsx) | 138 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
 | [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 115 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
@@ -313,15 +321,19 @@
 | [tests/components/stat-tile-tones.spec.tsx](../../../tests/components/stat-tile-tones.spec.tsx) | 111 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
+| [tests/components/students-roster-needs-link.spec.tsx](../../../tests/components/students-roster-needs-link.spec.tsx) | 140 | tests |  |
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
 | [tests/components/training-feedback-handoff.test.tsx](../../../tests/components/training-feedback-handoff.test.tsx) | 100 | tests |  |
+| [tests/components/users-kit-row-menu.spec.tsx](../../../tests/components/users-kit-row-menu.spec.tsx) | 194 | tests |  |
 | [tests/components/wioa-qualification.spec.tsx](../../../tests/components/wioa-qualification.spec.tsx) | 145 | partners-funding |  |
 | [tests/components/wioa-review-revision.spec.tsx](../../../tests/components/wioa-review-revision.spec.tsx) | 64 | partners-funding |  |
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
 | [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
 | [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
+| [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
+| [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -355,6 +367,9 @@
 | [tests/e2e/sprint-p2-xapi-coursera-smoke.spec.ts](../../../tests/e2e/sprint-p2-xapi-coursera-smoke.spec.ts) | 81 | learning-coursera |  |
 | [tests/e2e/visual-regression-smoke.spec.ts](../../../tests/e2e/visual-regression-smoke.spec.ts) | 144 | tests |  |
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
+| [tests/email/failure-alert.spec.ts](../../../tests/email/failure-alert.spec.ts) | 99 | communications |  |
+| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 157 | communications |  |
+| [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 196 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |
 | [tests/fixtures/attentionRoster.ts](../../../tests/fixtures/attentionRoster.ts) | 101 | tests | FIXTURE_NOW:8, member:14, FIXTURE_EXPECTED:37, FIXTURE_FLAGGED_IDS:50, FIXTURE_AWAITING_REPLY_IDS:51, fixtureRoster:53 |

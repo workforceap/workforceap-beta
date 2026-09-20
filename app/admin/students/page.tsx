@@ -13,8 +13,11 @@ import {
 } from '@/lib/admin/studentsRosterLoad';
 import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
 import {
+  STUDENTS_NEEDS_PARAM,
   STUDENTS_ROSTER_VIEW_HREFS,
   TRAINING_PROGRESS_LEGACY_HREF,
+  chipForStudentsNeeds,
+  parseStudentsNeeds,
   parseStudentsRosterView,
 } from '@/lib/admin/studentsRosterView';
 
@@ -30,7 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
 /**
  * The one admin roster. `?view=training` swaps the column preset to training
  * progress (same kit, same member population); the default is the Students
- * roster. `?ui=legacy` forwards to the management hub (/admin/members).
+ * roster. `?needs=at-risk|stalled|new-applicants` (the attention model's
+ * links from the Command Center and overview) opens the nearest chip.
+ * `?ui=legacy` forwards to the management hub (/admin/members).
  */
 export default async function AdminStudentsPage({
   searchParams,
@@ -57,6 +62,7 @@ export default async function AdminStudentsPage({
   }
 
   const view = parseStudentsRosterView(params.view);
+  const initialChip = chipForStudentsNeeds(parseStudentsNeeds(params[STUDENTS_NEEDS_PARAM]), view);
 
   if (view === 'training') {
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
@@ -72,6 +78,7 @@ export default async function AdminStudentsPage({
           students={training.students}
           total={training.total}
           showingLabel={training.showingLabel}
+          initialChip={initialChip}
           notice={training.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
         />
       </>
@@ -92,6 +99,7 @@ export default async function AdminStudentsPage({
         viewHrefs={STUDENTS_ROSTER_VIEW_HREFS}
         students={roster.students}
         total={roster.total}
+        initialChip={initialChip}
         notice={roster.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
       />
     </>

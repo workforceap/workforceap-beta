@@ -57,6 +57,6 @@
 | [tsconfig.json](../../../tsconfig.json) | 26 | root |  |
 | [tsconfig.tests.json](../../../tsconfig.tests.json) | 16 | root |  |
 | [tsconfig.vitest.json](../../../tsconfig.vitest.json) | 7 | root |  |
-| [vercel.json](../../../vercel.json) | 126 | root |  |
+| [vercel.json](../../../vercel.json) | 130 | root |  |
 | [vitest.config.ts](../../../vitest.config.ts) | 38 | root | default:6 |
 | [wap_logo.jpg](../../../wap_logo.jpg) | binary | root |  |

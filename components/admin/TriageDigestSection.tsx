@@ -1,15 +1,33 @@
 import Link from 'next/link';
+import { Inbox } from 'lucide-react';
 
 import type { TriageDigest } from '@/lib/admin/triageDigestTypes';
+
+/** Applications waiting for a decision: not an attention reason, but still work. */
+export type PendingApplicationsCard = { count: number; href: string };
+
+export function pendingApplicationsLabel(count: number): string {
+  return `${count} pending application${count === 1 ? '' : 's'} awaiting review`;
+}
 
 /**
  * "Who needs you today" — the prioritized triage section at the top of the
  * admin home. Designed for a NON-technical admin: plain language, one clear
  * card per bucket, big tap targets, the top few names, and a single obvious
  * action per card. Empty buckets are omitted upstream; an all-clear state
- * shows a friendly reassurance instead of an empty shell.
+ * shows a friendly reassurance instead of an empty shell. Pending
+ * applications render as one more card inside the list, so the section never
+ * says "All clear" while an application waits.
  */
-export default function TriageDigestSection({ digest }: { digest: TriageDigest }) {
+export default function TriageDigestSection({
+  digest,
+  pendingApplications,
+}: {
+  digest: TriageDigest;
+  pendingApplications?: PendingApplicationsCard;
+}) {
+  const pendingCount = pendingApplications?.count ?? 0;
+  const allClear = digest.allClear && pendingCount === 0;
   return (
     <section style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
       <h2
@@ -28,7 +46,7 @@ export default function TriageDigestSection({ digest }: { digest: TriageDigest }
         The people most likely to need a hand right now.
       </p>
 
-      {digest.allClear ? (
+      {allClear ? (
         <div
           className="portal-card portal-card--flat"
           style={{
@@ -77,6 +95,53 @@ export default function TriageDigestSection({ digest }: { digest: TriageDigest }
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           }}
         >
+          {pendingApplications && pendingCount > 0 ? (
+            <div
+              className="portal-card portal-card--flat"
+              data-triage-card="pending-applications"
+              style={{
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                borderTop: '4px solid var(--wa-accent)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: '2.5rem',
+                    height: '2.5rem',
+                    borderRadius: '0.5rem',
+                    background: 'color-mix(in srgb, var(--wa-accent) 10%, transparent)',
+                    color: 'var(--wa-accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Inbox size={20} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-on-surface)', lineHeight: 1.25 }}>
+                    {pendingApplicationsLabel(pendingCount)}
+                  </p>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
+                    Submitted applications with no decision yet.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={pendingApplications.href}
+                className="btn btn-primary"
+                style={{ marginTop: 'auto', justifyContent: 'center' }}
+              >
+                Review applications
+              </Link>
+            </div>
+          ) : null}
           {digest.buckets.map((bucket) => (
             <div
               key={bucket.key}

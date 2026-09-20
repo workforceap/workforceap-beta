@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 /**
  * Shown when an admin Server Component fails to load data (DB timeout, etc.).
+ * Kit card on `--wa-*` with the page's single h1 and two real next steps
+ * (docs/KIT_GUIDE.md §6a, "Empty / loading / error").
  */
 export default function AdminDataLoadError({
   title = 'Could not load this page',
@@ -11,20 +13,21 @@ export default function AdminDataLoadError({
   message?: string;
 }) {
   return (
-    <div
+    <section
       data-portal-error-state="admin-data-load"
-      style={{ padding: '2rem 1.5rem', maxWidth: '32rem' }}
+      role="alert"
+      className="wa-kit-card wa-kit-card--sm wa-kit-load-error"
     >
-      <h1 style={{ fontSize: '1.25rem', marginBottom: '0.75rem', color: 'var(--color-on-surface)' }}>{title}</h1>
-      <p style={{ color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', lineHeight: 1.5 }}>{message}</p>
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <Link href="/admin" className="btn btn-primary btn-sm">
+      <h1 className="wa-kit-load-error__title">{title}</h1>
+      <p className="wa-kit-lede" style={{ margin: 0 }}>{message}</p>
+      <div className="wa-kit-load-error__actions">
+        <Link href="/admin" className="wa-kit-cta wa-kit-focus">
           Admin home
         </Link>
-        <Link href="/admin/jobs" className="btn btn-outline btn-sm">
+        <Link href="/admin/jobs" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
           Jobs
         </Link>
       </div>
-    </div>
+    </section>
   );
 }

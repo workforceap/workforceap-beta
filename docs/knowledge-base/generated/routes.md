@@ -289,7 +289,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/ai-tools | page |  | [app/admin/ai-tools/page.tsx](../../../app/admin/ai-tools/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/analytics/ai-efficacy | page |  | [app/admin/analytics/ai-efficacy/page.tsx](../../../app/admin/analytics/ai-efficacy/page.tsx) | @/lib/auth/server:3, @/lib/tenant/adminPageScope:4 |
 | /admin/analytics | loading |  | [app/admin/analytics/loading.tsx](../../../app/admin/analytics/loading.tsx) |  |
-| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:10 |
+| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:11 |
 | /admin/assessments | loading |  | [app/admin/assessments/loading.tsx](../../../app/admin/assessments/loading.tsx) |  |
 | /admin/assessments | page |  | [app/admin/assessments/page.tsx](../../../app/admin/assessments/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:66, @/lib/tenant/adminPageScope:117 |
 | /admin/audit-logs | loading |  | [app/admin/audit-logs/loading.tsx](../../../app/admin/audit-logs/loading.tsx) |  |
@@ -481,6 +481,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/admin/email-crons/\[id\]/trigger | route | POST | [app/api/admin/email-crons/\[id\]/trigger/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/trigger/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:10 |
 | /api/admin/email-crons/activate-all | route | POST | [app/api/admin/email-crons/activate-all/route.ts](../../../app/api/admin/email-crons/activate-all/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:7, @/lib/db/withRequestGuc:11 |
 | /api/admin/email-crons | route | GET | [app/api/admin/email-crons/route.ts](../../../app/api/admin/email-crons/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:8 |
+| /api/admin/email-failures/\[id\]/resend | route | POST | [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:14 |
 | /api/admin/email-templates/\[id\]/preview | route | POST | [app/api/admin/email-templates/\[id\]/preview/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:7 |
 | /api/admin/email-templates/\[id\] | route | GET, PATCH | [app/api/admin/email-templates/\[id\]/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:8 |
 | /api/admin/email-templates/\[id\]/test | route | POST | [app/api/admin/email-templates/\[id\]/test/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/test/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:9 |
@@ -682,6 +683,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/counselor/sessions/upload-resume | route | POST | [app/api/counselor/sessions/upload-resume/route.ts](../../../app/api/counselor/sessions/upload-resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/auth/actAsSubject:4, @/lib/tenant/withTenantScope:5, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:23 |
 | /api/counselor/sessions/voice-walkthrough | route | POST | [app/api/counselor/sessions/voice-walkthrough/route.ts](../../../app/api/counselor/sessions/voice-walkthrough/route.ts) | @/lib/auth/server:3, @/lib/rate-limit:5, @/lib/tenant/withTenantScope:6, @/lib/tenant/organization:7, @/lib/auth/actAsSubject:14, @/lib/db/withRequestGuc:17 |
 | /api/counselor/sessions/walk-in | route | POST | [app/api/counselor/sessions/walk-in/route.ts](../../../app/api/counselor/sessions/walk-in/route.ts) | @/lib/auth/server:5, @/lib/auth/roles:6, @/lib/tenant/organization:9, @/lib/tenant/withTenantScope:10, @/lib/auth/supabaseAdminUsers:12, @/lib/db/withRequestGuc:16 |
+| /api/cron/applicant-aging-digest | route | GET, POST | [app/api/cron/applicant-aging-digest/route.ts](../../../app/api/cron/applicant-aging-digest/route.ts) |  |
 | /api/cron/applicant-followup | route | GET, POST | [app/api/cron/applicant-followup/route.ts](../../../app/api/cron/applicant-followup/route.ts) |  |
 | /api/cron/at-risk-alerts | route | GET, POST | [app/api/cron/at-risk-alerts/route.ts](../../../app/api/cron/at-risk-alerts/route.ts) |  |
 | /api/cron/at-risk-check | route | GET, POST | [app/api/cron/at-risk-check/route.ts](../../../app/api/cron/at-risk-check/route.ts) | @/lib/cron/authorizeCronRequest:9 |
