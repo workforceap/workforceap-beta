@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "38bf96f8ec90b31d2797771b4308ab8fe1ca4664cedc83441d0a4ddc679c24e4",
+  "inputTreeSha256": "baacf35ce1a58e1823f88e2933fa98d1cefb0358bb0a3fc3c69b0576c2e53c6a",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4790,
-    "sourceModules": 3450,
-    "importReferences": 17101,
-    "resolvedLocalReferences": 11405,
+    "files": 4793,
+    "sourceModules": 3453,
+    "importReferences": 17127,
+    "resolvedLocalReferences": 11430,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 870,
-    "testCandidates": 862,
+    "testFiles": 872,
+    "testCandidates": 864,
     "testHelpers": 8,
-    "staticallySelectedTests": 860,
+    "staticallySelectedTests": 862,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 603
+      "files": 601
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1024
+      "files": 1027
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 483
+      "files": 485
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 886
+      "references": 887
     },
     {
       "file": "lib/auth/server.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 241
+      "references": 242
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -144,7 +144,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 202
+      "references": 200
     },
     {
       "file": "lib/audit/log.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 97
+      "references": 99
     },
     {
       "file": "lib/email.ts",
@@ -192,7 +192,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 66
+      "references": 67
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -200,7 +200,7 @@
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
-      "references": 59
+      "references": 60
     },
     {
       "file": "lib/supabase-admin.ts",
@@ -215,11 +215,11 @@
       "references": 52
     },
     {
-      "file": "lib/http/requestFailureCopy.ts",
-      "references": 49
+      "file": "lib/member/curriculumAssignment.ts",
+      "references": 50
     },
     {
-      "file": "lib/member/curriculumAssignment.ts",
+      "file": "lib/http/requestFailureCopy.ts",
       "references": 49
     },
     {
@@ -243,11 +243,11 @@
       "references": 37
     },
     {
-      "file": "lib/auth/ensureUser.ts",
-      "references": 35
+      "file": "lib/db/queryCaps.ts",
+      "references": 36
     },
     {
-      "file": "lib/db/queryCaps.ts",
+      "file": "lib/auth/ensureUser.ts",
       "references": 35
     }
   ],

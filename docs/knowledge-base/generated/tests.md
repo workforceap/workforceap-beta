@@ -224,8 +224,8 @@
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
+| [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 172 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
-| [tests/components/admin-training-progress-roster.test.tsx](../../../tests/components/admin-training-progress-roster.test.tsx) | 275 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
@@ -282,6 +282,7 @@
 | [tests/components/skill-mission-close-guard.test.tsx](../../../tests/components/skill-mission-close-guard.test.tsx) | 103 | tests |  |
 | [tests/components/staff-shell-auth-reads.spec.tsx](../../../tests/components/staff-shell-auth-reads.spec.tsx) | 115 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
+| [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |
 | [tests/components/students-roster-sort.spec.tsx](../../../tests/components/students-roster-sort.spec.tsx) | 92 | tests |  |
 | [tests/components/training-feedback-handoff.test.tsx](../../../tests/components/training-feedback-handoff.test.tsx) | 100 | tests |  |
@@ -331,7 +332,7 @@
 | [tests/fixtures/xapi/statement-progressed.json](../../../tests/fixtures/xapi/statement-progressed.json) | 18 | learning-coursera |  |
 | [tests/hello.txt](../../../tests/hello.txt) | 1 | tests |  |
 | [tests/instrumentation-client-hydration-filter.test.ts](../../../tests/instrumentation-client-hydration-filter.test.ts) | 13 | tests |  |
-| [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 76 | tests |  |
+| [tests/lib/admin-data-hygiene.spec.ts](../../../tests/lib/admin-data-hygiene.spec.ts) | 86 | tests |  |
 | [tests/lib/admin-job-match-prisma-scope.spec.ts](../../../tests/lib/admin-job-match-prisma-scope.spec.ts) | 65 | tests |  |
 | [tests/lib/admin-post-commit-notifications.spec.ts](../../../tests/lib/admin-post-commit-notifications.spec.ts) | 30 | communications |  |
 | [tests/lib/admin-user-provisioning-tenant-race.spec.ts](../../../tests/lib/admin-user-provisioning-tenant-race.spec.ts) | 145 | tests |  |
@@ -383,7 +384,7 @@
 | [tests/lib/coursera-tenant-index-migration.spec.ts](../../../tests/lib/coursera-tenant-index-migration.spec.ts) | 71 | learning-coursera |  |
 | [tests/lib/coursera-unmatched-learners-learning-paths.spec.ts](../../../tests/lib/coursera-unmatched-learners-learning-paths.spec.ts) | 157 | learning-coursera |  |
 | [tests/lib/cron-diagnostics-visibility.spec.ts](../../../tests/lib/cron-diagnostics-visibility.spec.ts) | 205 | tests |  |
-| [tests/lib/curriculum-versioned-read-surfaces.spec.ts](../../../tests/lib/curriculum-versioned-read-surfaces.spec.ts) | 133 | tests |  |
+| [tests/lib/curriculum-versioned-read-surfaces.spec.ts](../../../tests/lib/curriculum-versioned-read-surfaces.spec.ts) | 136 | tests |  |
 | [tests/lib/dashboard-white-pill-contrast.spec.tsx](../../../tests/lib/dashboard-white-pill-contrast.spec.tsx) | 64 | tests |  |
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
 | [tests/lib/event-persistence.spec.ts](../../../tests/lib/event-persistence.spec.ts) | 43 | tests |  |
@@ -449,6 +450,7 @@
 | [tests/lib/students-roster-enrichment.spec.ts](../../../tests/lib/students-roster-enrichment.spec.ts) | 156 | tests |  |
 | [tests/lib/students-roster-facts.spec.ts](../../../tests/lib/students-roster-facts.spec.ts) | 55 | tests |  |
 | [tests/lib/students-roster-sort.spec.ts](../../../tests/lib/students-roster-sort.spec.ts) | 62 | tests |  |
+| [tests/lib/students-roster-view.spec.ts](../../../tests/lib/students-roster-view.spec.ts) | 146 | tests |  |
 | [tests/lib/success-chip-text-token-sweep.spec.ts](../../../tests/lib/success-chip-text-token-sweep.spec.ts) | 92 | tests |  |
 | [tests/lib/success-text-token-contrast.spec.ts](../../../tests/lib/success-text-token-contrast.spec.ts) | 86 | tests |  |
 | [tests/lib/today-in-portal-timezone.spec.ts](../../../tests/lib/today-in-portal-timezone.spec.ts) | 22 | tests |  |

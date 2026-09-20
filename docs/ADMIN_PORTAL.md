@@ -186,6 +186,9 @@ Local `tsc --noEmit` is **not** enough — it misses two Vercel-only failures:
 - `/admin/certifications` renders (issue #2070 resolved — demo DB has the columns; client regenerated at build).
 - Nav "Students" → kit roster `/admin/students`; legacy `/admin/members` kept as the management hub
   (reachable via `/admin/students?ui=legacy` + Advanced nav).
+- Nav "Training progress" → the same kit with `view="training"` (`/admin/training-progress`, also
+  `/admin/students?view=training`). `/admin/members/training` redirects there; both legacy tables stay
+  behind `?ui=legacy` only.
 - Command rail matches `admin-full.html`: branded header, in-rail search, flat groups, crimson active, pills.
 - **Out of scope:** member top-nav flatten (#2069). Footer user-identity block (mockup's "Dad (Owner)")
   needs a user-name prop threaded into WorkspaceShell — not yet wired.
