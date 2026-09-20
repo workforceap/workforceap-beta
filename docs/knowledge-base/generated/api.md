@@ -343,7 +343,7 @@
 | [app/api/events/route.ts](../../../app/api/events/route.ts) | 56 | api | POST:19 |
 | [app/api/feature-flags/route.ts](../../../app/api/feature-flags/route.ts) | 46 | api | GET:11 |
 | [app/api/gdpr/consent/route.ts](../../../app/api/gdpr/consent/route.ts) | 74 | learning-coursera | GET:30, PATCH:73 |
-| [app/api/gdpr/delete/route.ts](../../../app/api/gdpr/delete/route.ts) | 134 | api | POST:20 |
+| [app/api/gdpr/delete/route.ts](../../../app/api/gdpr/delete/route.ts) | 145 | api | POST:20 |
 | [app/api/gdpr/export/route.ts](../../../app/api/gdpr/export/route.ts) | 81 | api | GET:6 |
 | [app/api/health/ready/_readyCache.ts](../../../app/api/health/ready/_readyCache.ts) | 20 | api | CACHE_TTL_MS:6, ReadyCacheEntry:8, readyCache:15, __resetReadyCache:18 |
 | [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | 139 | api | dynamic:12, OPTIONS:77, GET:86 |

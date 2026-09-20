@@ -121826,7 +121826,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/app/api/gdpr/delete/route",
-    "line": 74,
+    "line": 78,
     "kind": "import",
     "external": false,
     "target": "app/api/gdpr/delete/route.ts"
@@ -121834,7 +121834,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 75,
+    "line": 79,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -121842,7 +121842,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 76,
+    "line": 80,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -121850,7 +121850,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/gdpr/deleteAuthUser",
-    "line": 77,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/gdpr/deleteAuthUser.ts"
@@ -121858,7 +121858,7 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/gdpr/deleteUserStorage",
-    "line": 78,
+    "line": 82,
     "kind": "import",
     "external": false,
     "target": "lib/gdpr/deleteUserStorage.ts"
@@ -121866,10 +121866,18 @@
   {
     "from": "tests/api/gdpr-delete-route.spec.ts",
     "specifier": "@/lib/member/anonymizeMember",
-    "line": 79,
+    "line": 83,
     "kind": "import",
     "external": false,
     "target": "lib/member/anonymizeMember.ts"
+  },
+  {
+    "from": "tests/api/gdpr-delete-route.spec.ts",
+    "specifier": "@/lib/audit/log",
+    "line": 84,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/log.ts"
   },
   {
     "from": "tests/api/get-member-resume-plain-text.spec.ts",

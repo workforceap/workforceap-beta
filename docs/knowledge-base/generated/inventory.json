@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "2beb909d7ede9cccdc2400a78df68ff32b16252333d0354554b5bafc97d075b3",
+  "inputTreeSha256": "3b047fdbbb6d14ab4d1a8d7ff1e186944f191e38cbdfbc411714a8bdee55e002",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -34319,9 +34319,9 @@
       "path": "app/api/gdpr/delete/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 5192,
-      "lines": 134,
-      "sha256": "c560ca65d27fc658c488a173b5f7ec2beca6f6d0dc43c2717a0ed78f45fff8c8",
+      "bytes": 5573,
+      "lines": 145,
+      "sha256": "c4e18ee332e6e56251b10e2352b5d2b6218072a1406e537b0f91625128aeb2e2",
       "binary": false,
       "exports": [
         {
@@ -157026,9 +157026,9 @@
       "path": "tests/api/gdpr-delete-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6540,
-      "lines": 177,
-      "sha256": "ed9bb81978ce877d747e25b5de174d010b64042072bc7551fcabcae524bb3956",
+      "bytes": 8455,
+      "lines": 213,
+      "sha256": "a67d36137ebcc9c27e2bcaf4616aa0133015936c69c81870e69874c8f6a7ccd5",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -157040,6 +157040,16 @@
         {
           "name": "signOut",
           "line": 4,
+          "kind": "Variable"
+        },
+        {
+          "name": "ORIGINAL_EMAIL",
+          "line": 86,
+          "kind": "Variable"
+        },
+        {
+          "name": "DELETED_MARKER",
+          "line": 87,
           "kind": "Variable"
         }
       ],

@@ -120,7 +120,18 @@ export const POST = withApiGuc(async (request: Request) => {
     );
   }
 
-  auditLog({ actorUserId: userId, action: 'gdpr_account_delete', targetType: 'User', targetId: userId }).catch(() => {});
+  // The actor snapshot is pinned: `users.email` is now the recoverable
+  // deleted marker (which embeds the original address for the 30-day restore
+  // window), and letting auditLog look the actor up would copy it into the
+  // 3-year `actor_email_snapshot` — the leak WAP-169 exists to close.
+  auditLog({
+    actorUserId: userId,
+    action: 'gdpr_account_delete',
+    targetType: 'User',
+    targetId: userId,
+    actorEmailSnapshot: null,
+    actorRoleSnapshot: 'member',
+  }).catch(() => {});
   logAuditEvent({ user: { id: userId, role: 'member' }, verb: 'deleted', object: { type: 'User', id: userId }, result: { success: true } }).catch(() => {});
   return NextResponse.json({
     ok: true,

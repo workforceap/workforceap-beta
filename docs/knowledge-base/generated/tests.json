@@ -14477,27 +14477,31 @@
       },
       {
         "file": "app/api/gdpr/delete/route.ts",
-        "line": 74
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 75
-      },
-      {
-        "file": "lib/db/prisma.ts",
-        "line": 76
-      },
-      {
-        "file": "lib/gdpr/deleteAuthUser.ts",
-        "line": 77
-      },
-      {
-        "file": "lib/gdpr/deleteUserStorage.ts",
         "line": 78
       },
       {
-        "file": "lib/member/anonymizeMember.ts",
+        "file": "lib/auth/server.ts",
         "line": 79
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 80
+      },
+      {
+        "file": "lib/gdpr/deleteAuthUser.ts",
+        "line": 81
+      },
+      {
+        "file": "lib/gdpr/deleteUserStorage.ts",
+        "line": 82
+      },
+      {
+        "file": "lib/member/anonymizeMember.ts",
+        "line": 83
+      },
+      {
+        "file": "lib/audit/log.ts",
+        "line": 84
       }
     ],
     "kind": "test-candidate",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "2beb909d7ede9cccdc2400a78df68ff32b16252333d0354554b5bafc97d075b3",
+  "inputTreeSha256": "3b047fdbbb6d14ab4d1a8d7ff1e186944f191e38cbdfbc411714a8bdee55e002",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -10,8 +10,8 @@
   "counts": {
     "files": 4839,
     "sourceModules": 3494,
-    "importReferences": 17378,
-    "resolvedLocalReferences": 11645,
+    "importReferences": 17379,
+    "resolvedLocalReferences": 11646,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -148,7 +148,7 @@
     },
     {
       "file": "lib/audit/log.ts",
-      "references": 195
+      "references": 196
     },
     {
       "file": "components/portal/PageHeader.tsx",
