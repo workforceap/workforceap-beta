@@ -405,7 +405,7 @@ export default function AdminUsersManager({
                           aria-label={`Confirm delete user ${user.fullName}`}
                           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
                         >
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Confirm?</span>
+                          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Confirm?</span>
                           <button
                             type="button"
                             className="btn btn-sm"

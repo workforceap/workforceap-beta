@@ -128,7 +128,7 @@ export default function AdminChaptersPage() {
               alignItems: "center",
               padding: "0.2rem 0.6rem",
               borderRadius: "var(--radius-full)",
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               fontWeight: 700,
               color: fg,
               background: bg,

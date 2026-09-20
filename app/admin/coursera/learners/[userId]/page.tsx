@@ -189,7 +189,7 @@ export default async function AdminCourseraLearnerPage({
                   cell: (course) => (
                     <>
                       <strong>{course.courseName}</strong>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {course.university ?? course.programName ?? course.programSlug}
                       </div>
                     </>
@@ -206,7 +206,7 @@ export default async function AdminCourseraLearnerPage({
                         <span
                           style={{
                             marginLeft: '0.4rem',
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(34, 197, 94, 0.15)',
@@ -275,7 +275,7 @@ export default async function AdminCourseraLearnerPage({
                         <span
                           style={{
                             marginLeft: '0.4rem',
-                            fontSize: '0.7rem',
+                            fontSize: '0.8125rem',
                             padding: '0.1rem 0.35rem',
                             borderRadius: '0.4rem',
                             background: 'rgba(34, 197, 94, 0.15)',
@@ -286,7 +286,7 @@ export default async function AdminCourseraLearnerPage({
                         </span>
                       ) : null}
                       {badge.badgeLink ? (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                           <a href={badge.badgeLink} target="_blank" rel="noreferrer">
                             badge link ↗
                           </a>

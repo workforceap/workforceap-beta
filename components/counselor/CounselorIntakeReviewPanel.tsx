@@ -10,6 +10,7 @@ import {
   wioaReviewLabel,
   type CounselorWioaReviewStatus,
 } from '@/lib/wioa/wioaReview';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 /**
  * Counselor approvals (Mike, 2026-09-19). Counselors review the member's
@@ -109,6 +110,11 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
   const [decisionDone, setDecisionDone] = useState('');
 
   const submitDecision = async (applicationId: string, decision: Decision) => {
+    // WAP-184 G-3: a denial needs a written reason; the server enforces it too.
+    if (isMissingDenialReason('application_decision', decision, notesById[applicationId])) {
+      setDecisionError(DENIAL_REASON_REQUIRED_MESSAGE);
+      return;
+    }
     setBusyId(applicationId);
     setDecisionError('');
     setDecisionDone('');
@@ -212,7 +218,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
                   </span>
                 </div>
                 {app.submittedAt ? (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0.75rem' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0.75rem' }}>
                     Submitted {formatPortalDate(app.submittedAt)}
                   </p>
                 ) : (

@@ -58,6 +58,7 @@ import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
 import { deriveCareerPlanSignal } from '@/lib/admin/careerPlanSignal';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
+import { eventNameReadCandidates } from '@/lib/events/names';
 type AdminCourseProgressRow = {
   programSlug: string;
   courseSlug: string;
@@ -310,7 +311,7 @@ export default async function AdminMemberDetailPage({
       },
     }).catch(() => null),
     db.memberEvent.findMany({
-      where: { userId: id, eventName: 'PLACEMENT_CONFIRMATION_SUBMITTED' },
+      where: { userId: id, eventName: { in: eventNameReadCandidates('placement_confirmation_submitted') } },
       orderBy: { createdAt: 'desc' },
       take: 1,
       select: { metadata: true, createdAt: true },
@@ -604,7 +605,7 @@ export default async function AdminMemberDetailPage({
         <section className="portal-profile-section-card">
           <div className="portal-profile-section-card__header">
             <h2 className="portal-profile-section-card__title">Admin Actions</h2>
-            <span style={{ fontSize: '0.625rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Super admin</span>
+            <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.4rem', borderRadius: '9999px', background: 'rgba(173,44,77,0.1)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Super admin</span>
           </div>
           <div className="portal-profile-section-card__body">
             <AdminMemberDbActions
@@ -622,7 +623,7 @@ export default async function AdminMemberDetailPage({
               <AdminMemberQuickSummary memberId={id} />
             </div>
             <div style={{ marginTop: '1rem' }}>
-              <p style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant, #555)', margin: '0 0 0.5rem' }}>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant, #555)', margin: '0 0 0.5rem' }}>
                 Send a link to this member
               </p>
               <AdminMemberSendLinks memberId={id} />
@@ -662,7 +663,7 @@ export default async function AdminMemberDetailPage({
                       alignItems: 'center',
                       padding: '0.15rem 0.5rem',
                       borderRadius: '9999px',
-                      fontSize: '0.7rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       background: 'color-mix(in srgb, #f59e0b 12%, transparent)',
                       color: '#92400e',
@@ -710,25 +711,25 @@ export default async function AdminMemberDetailPage({
           <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
               <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Career-plan signal</h2>
-              <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '999px', background: 'rgba(37,99,235,0.1)', color: '#1d4ed8', textTransform: 'capitalize' }}>
+              <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '999px', background: 'rgba(37,99,235,0.1)', color: '#1d4ed8', textTransform: 'capitalize' }}>
                 {careerPlanSignal.stage.replace(/_/g, ' ')}
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <div>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Career type</p>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Career type</p>
                 <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.typeLabel ?? '—'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Target career</p>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Target career</p>
                 <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.topCareerTitle ?? '—'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>First program</p>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>First program</p>
                 <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.selectedProgramSlug ?? '—'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Shared</p>
+                <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Shared</p>
                 <p style={{ margin: 0, fontWeight: 700 }}>
                   {careerPlanSignal.shareCount > 0 ? `Yes · ${careerPlanSignal.shareCount}` : 'No'}
                   {careerPlanSignal.committedAt ? ` · ${careerPlanSignal.committedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : ''}
@@ -736,7 +737,7 @@ export default async function AdminMemberDetailPage({
               </div>
             </div>
             <div style={{ padding: '0.75rem 0.875rem', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.22)' }}>
-              <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Next counselor action</p>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Next counselor action</p>
               <p style={{ margin: 0, fontWeight: 700 }}>{careerPlanSignal.staffAction}</p>
             </div>
           </section>
@@ -787,7 +788,7 @@ export default async function AdminMemberDetailPage({
                     <div style={{ width: '100px', height: '6px', background: 'var(--surface-container-highest)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{ width: `${lp.progress}%`, height: '100%', background: lp.completed ? 'var(--wa-success)' : 'var(--color-accent)' }} />
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{lp.progress}%</span>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{lp.progress}%</span>
                   </div>
                 </div>
               ))}
@@ -804,7 +805,7 @@ export default async function AdminMemberDetailPage({
                   <span style={{ flex: 1 }}>
                     {c.name}
                     {progress ? (
-                      <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {progress.percentComplete}% · {progress.status === 'COMPLETED' ? 'completed' : 'in progress'}
                       </span>
                     ) : null}
@@ -893,7 +894,7 @@ export default async function AdminMemberDetailPage({
               Open full outcomes board →
             </Link>
           </div>
-          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             Cohort context for this member&apos;s organization, including exact placements over the last 90 days.
           </p>
           {outcomesSummary ? (
@@ -907,13 +908,13 @@ export default async function AdminMemberDetailPage({
                 }}
               >
                 <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
                     Placed (last 90d)
                   </p>
                   <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>{placedLast90d}</p>
                 </div>
                 <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
                     Placement rate
                   </p>
                   <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
@@ -921,12 +922,12 @@ export default async function AdminMemberDetailPage({
                       ? `N=${orgEnrolled}`
                       : `${orgPlacementRate ?? 0}%`}
                   </p>
-                  <p style={{ fontSize: '0.7rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0', fontVariantNumeric: 'tabular-nums' }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.15rem 0 0', fontVariantNumeric: 'tabular-nums' }}>
                     {orgPlaced} of {orgEnrolled} enrolled
                   </p>
                 </div>
                 <div style={{ padding: '0.625rem 0.75rem', borderRadius: 8, background: 'var(--color-surface-variant, #f5f5f5)' }}>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>
                     Avg time to placement
                   </p>
                   <p style={{ fontSize: '1.35rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
@@ -943,7 +944,7 @@ export default async function AdminMemberDetailPage({
                     border: '1px solid rgba(46, 125, 50, 0.2)',
                   }}
                 >
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.35rem' }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.35rem' }}>
                     This member&apos;s placement
                   </p>
                   <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>
@@ -990,19 +991,19 @@ export default async function AdminMemberDetailPage({
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
                 <div>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Courses</p>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Courses</p>
                   <p style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {courseraCompletedCount}/{courseraCourseCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>complete</span>
+                    {courseraCompletedCount}/{courseraCourseCount} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>complete</span>
                   </p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Specializations</p>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Specializations</p>
                   <p style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                    {courseraCompletedBadgeCount}/{courseraBadgeCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>earned</span>
+                    {courseraCompletedBadgeCount}/{courseraBadgeCount} <span style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--color-on-surface-variant)' }}>earned</span>
                   </p>
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Last activity</p>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Last activity</p>
                   <p style={{ fontSize: '0.95rem', fontWeight: 600, margin: 0 }}>
                     {courseraLastActivity ? courseraLastActivity.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                   </p>
@@ -1018,13 +1019,13 @@ export default async function AdminMemberDetailPage({
                         <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid var(--outline-variant)', borderRadius: 4, flexShrink: 0 }} />
                       )}
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.courseName}</span>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
                         {Number(c.overallProgress).toFixed(0)}%
                       </span>
                     </li>
                   ))}
                   {courseraCourseCount > 5 ? (
-                    <li style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)', paddingLeft: '1.6rem' }}>
+                    <li style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', paddingLeft: '1.6rem' }}>
                       + {courseraCourseCount - 5} more — see full detail
                     </li>
                   ) : null}

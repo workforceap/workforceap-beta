@@ -56,7 +56,7 @@ function WorkQueueRowCard({ row }: { row: WorkQueueRow }) {
               {row.memberName}
             </h3>
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: c, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: c, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                 {formatTimeWaiting(row.hoursWaiting)}
               </span>
               <StatusTag tone={tier.tone}>{tier.label}</StatusTag>
@@ -65,7 +65,7 @@ function WorkQueueRowCard({ row }: { row: WorkQueueRow }) {
           <p
             style={{
               margin: '4px 0 0',
-              fontSize: 12,
+              fontSize: 13,
               color: 'var(--wa-muted)',
               lineHeight: 1.45,
               overflow: 'hidden',

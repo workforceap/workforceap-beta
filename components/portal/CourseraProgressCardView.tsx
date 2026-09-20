@@ -193,7 +193,7 @@ export default function CourseraProgressCardView({
               {title}
             </h2>
           </div>
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
             {rows.length} {coursesLabel}
           </span>
         </div>
@@ -226,7 +226,7 @@ export default function CourseraProgressCardView({
                   <div style={{ minWidth: 0, flex: '1 1 14rem' }}>
                     <div style={{ fontWeight: 700, lineHeight: 1.3 }}>{row.courseName}</div>
                     {row.university ? (
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         {row.university}
                       </div>
                     ) : null}
@@ -241,7 +241,7 @@ export default function CourseraProgressCardView({
                         borderRadius: '999px',
                         background: 'rgba(34, 197, 94, 0.15)',
                         color: 'rgb(22, 163, 74)',
-                        fontSize: '0.75rem',
+                        fontSize: '0.8125rem',
                         fontWeight: 700,
                       }}
                     >
@@ -279,7 +279,7 @@ export default function CourseraProgressCardView({
                     justifyContent: 'space-between',
                     gap: '0.75rem',
                     flexWrap: 'wrap',
-                    fontSize: '0.8rem',
+                    fontSize: '0.8125rem',
                     color: 'var(--color-on-surface-variant)',
                   }}
                 >

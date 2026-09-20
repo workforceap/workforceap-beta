@@ -134,7 +134,7 @@ export default async function EmployerPipelinePage() {
       />
       {(isListTruncated(jobs.length, EMPLOYER_LIST_CAP, jobTotal) ||
         isListTruncated(allMatches.length, EMPLOYER_LIST_CAP, matchTotal)) && (
-        <p style={{ fontSize: 12, color: 'var(--wa-muted)', margin: '0 1rem 0.75rem' }}>
+        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 1rem 0.75rem' }}>
           {showingFirstLabel(
             Math.min(allMatches.length, EMPLOYER_LIST_CAP),
             Math.max(matchTotal, allMatches.length),
@@ -148,7 +148,7 @@ export default async function EmployerPipelinePage() {
           {PIPELINE_STRIP.map((stage) => (
             <div key={stage.label} className="portal-card portal-card--flat" style={{ flexShrink: 0, textAlign: 'center', padding: '0.625rem 1rem', minWidth: '80px' }}>
               <div style={{ fontSize: '1.125rem', fontWeight: 800, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{stage.count}</div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginTop: '0.125rem' }}>{stage.label}</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginTop: '0.125rem' }}>{stage.label}</div>
             </div>
           ))}
         </div>
@@ -180,15 +180,15 @@ export default async function EmployerPipelinePage() {
                     {matches.map((m) => (
                       <div key={m.id} className="portal-card portal-card--flat">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'var(--surface-container-low)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
+                          <div style={{ width: '2.25rem', height: '2.25rem', borderRadius: '9999px', background: 'var(--surface-container-low)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, flexShrink: 0 }}>
                             {getInitials(m.student.fullName ?? '?')}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div className="wa-truncate" style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>{m.student.fullName}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{programDisplayFor(m.student)}</div>
+                            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{programDisplayFor(m.student)}</div>
                           </div>
                           <div style={{ flexShrink: 0, textAlign: 'right', minWidth: 0, maxWidth: '42%' }}>
-                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{matchScoreAsPercent(m.matchScore)}%</div>
+                            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{matchScoreAsPercent(m.matchScore)}%</div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
                               <StatusBadge className="wa-truncate max-w-full" label={employerMatchPipelineLabel(m.status)} variant={employerAiMatchStatusBadgeVariant(m.status)} />
                             </div>

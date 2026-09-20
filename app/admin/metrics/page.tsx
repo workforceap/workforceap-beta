@@ -146,7 +146,7 @@ export default async function AdminMetricsPage({
 
       {/* Career OS funnel */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <p style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem' }}>
           {t('careerOsTrueCompletionLoop')}
         </p>
         <div className="portal-metric-strip">

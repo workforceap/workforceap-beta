@@ -97,7 +97,7 @@ export default async function AdminAiToolsPage({
                       <>
                         {r.membersUsedTools}
                         {r.memberCount > 0 ? (
-                          <span style={{ marginLeft: '0.4rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                          <span style={{ marginLeft: '0.4rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             ({Math.round((r.membersUsedTools / r.memberCount) * 100)}%)
                           </span>
                         ) : null}

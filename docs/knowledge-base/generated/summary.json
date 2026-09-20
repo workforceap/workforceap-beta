@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "6a0c44d4196b324d9f6653d887919e8b4291268aed480cc829d34b442a667597",
+  "inputTreeSha256": "de6d6adaeecc34924cfa10e34249c5c20a08605819cd7c3a6e104826bbacc544",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4846,
-    "sourceModules": 3508,
-    "importReferences": 17033,
-    "resolvedLocalReferences": 11358,
+    "files": 4831,
+    "sourceModules": 3493,
+    "importReferences": 17005,
+    "resolvedLocalReferences": 11332,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1055,
-    "nextRouteFiles": 1022,
+    "routeFiles": 1054,
+    "nextRouteFiles": 1021,
     "apiHandlers": 490,
-    "pageFiles": 314,
+    "pageFiles": 313,
     "astroPageFiles": 33,
     "configuredCrons": 30,
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 836,
-    "testCandidates": 828,
-    "testHelpers": 8,
-    "staticallySelectedTests": 825,
+    "testFiles": 834,
+    "testCandidates": 827,
+    "testHelpers": 7,
+    "staticallySelectedTests": 824,
     "unselectedTestCandidates": 3,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1031
+      "files": 1014
     },
     {
       "area": "localization",
@@ -86,11 +86,11 @@
     },
     {
       "area": "operations",
-      "files": 126
+      "files": 128
     },
     {
       "area": "pages",
-      "files": 636
+      "files": 635
     },
     {
       "area": "root",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 463
+      "files": 464
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 889
+      "references": 890
     },
     {
       "file": "lib/auth/server.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 249
+      "references": 246
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 97
+      "references": 96
     },
     {
       "file": "lib/email.ts",
@@ -183,12 +183,16 @@
       "references": 83
     },
     {
+      "file": "lib/events/track.ts",
+      "references": 74
+    },
+    {
       "file": "components/portal/PortalPageFrame.tsx",
       "references": 72
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 67
+      "references": 66
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -203,19 +207,15 @@
       "references": 55
     },
     {
-      "file": "lib/events/track.ts",
-      "references": 55
-    },
-    {
       "file": "lib/supabase-admin.ts",
       "references": 54
     },
     {
-      "file": "lib/analytics/events.ts",
-      "references": 51
+      "file": "lib/content/programCurriculumManifest.ts",
+      "references": 52
     },
     {
-      "file": "lib/content/programCurriculumManifest.ts",
+      "file": "lib/analytics/events.ts",
       "references": 51
     },
     {
@@ -239,15 +239,15 @@
       "references": 38
     },
     {
+      "file": "lib/db/queryCaps.ts",
+      "references": 38
+    },
+    {
       "file": "lib/cron/cronExecution.ts",
       "references": 37
     },
     {
       "file": "lib/auth/ensureUser.ts",
-      "references": 35
-    },
-    {
-      "file": "lib/db/queryCaps.ts",
       "references": 35
     }
   ],
@@ -310,7 +310,7 @@
     },
     {
       "file": "app/(portal)/partner/page.tsx",
-      "lines": 1386
+      "lines": 1387
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -361,11 +361,11 @@
       "lines": 1209
     },
     {
-      "file": "components/admin/MembersTable.tsx",
-      "lines": 1208
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1207
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
+      "file": "components/admin/MembersTable.tsx",
       "lines": 1206
     },
     {
@@ -386,7 +386,7 @@
     },
     {
       "file": "components/portal/counselor/AtRiskDashboard.tsx",
-      "lines": 1058
+      "lines": 1062
     },
     {
       "file": "lib/coursera/progressQueries.ts",

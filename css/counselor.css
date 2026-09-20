@@ -33,7 +33,7 @@
 }
 .counselor-resume-card h3 { font-size: 1rem; margin-bottom: 0.5rem; }
 .counselor-resume-card pre {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
   max-height: 200px;
   overflow: auto;
   white-space: pre-wrap;

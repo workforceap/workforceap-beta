@@ -136,7 +136,7 @@ export default function PartnerMilestonesView() {
           color="success"
           label="Share of recent milestones that are certifications or placements"
         />
-        <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 8 }}>
+        <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 8 }}>
           {counts?.pct ?? 0}% of recent activity is a certification or placement win.
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function PartnerMilestonesView() {
                     <StatusTag tone={KIND_TONE[m.kind] ?? 'muted'}>{KIND_LABEL[m.kind] ?? m.kind}</StatusTag>
                     <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{m.label}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--wa-muted)', marginTop: 3 }}>
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 3 }}>
                     <Link
                       href={`/partner/referred-members/${m.memberId}`}
                       style={{ color: 'var(--wa-accent)', textDecoration: 'none', fontWeight: 600 }}

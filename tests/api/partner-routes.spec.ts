@@ -553,7 +553,7 @@ describe('POST /api/partner/payout', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           userId: UUIDS.member,
-          eventName: 'PARTNER_PAYOUT_SENT',
+          eventName: 'partner_payout_sent',
           entityType: 'PlacementRecord',
           entityId: UUIDS.placement,
         }),

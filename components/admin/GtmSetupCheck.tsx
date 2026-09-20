@@ -34,7 +34,7 @@ export default function GtmSetupCheck() {
       <span className="portal-alert__label">
         {label}
       </span>
-      <span className="portal-alert__details" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+      <span className="portal-alert__details" style={{ marginLeft: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
         {details}
       </span>
     </div>

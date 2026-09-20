@@ -525,7 +525,7 @@ export default function AddMemberWizard({ programs, partners, subgroups }: Props
                 {p.curriculumMigrationPending ? (
                   <p
                     id={`program-${p.slug}-status`}
-                    style={{ margin: '0.65rem 0 0', fontSize: '0.8rem', color: 'var(--color-error)', fontWeight: 700 }}
+                    style={{ margin: '0.65rem 0 0', fontSize: '0.8125rem', color: 'var(--color-error)', fontWeight: 700 }}
                   >
                     Enrollment temporarily paused while the revised Coursera curriculum mapping is verified. Existing members keep access.
                   </p>

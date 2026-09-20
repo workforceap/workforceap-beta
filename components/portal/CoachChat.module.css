@@ -152,7 +152,7 @@
 }
 
 .bubbleMeta {
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -219,7 +219,7 @@
 
 .chipsLabel {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--color-on-surface-variant, #6b6566);
@@ -348,6 +348,6 @@
 
 .hint {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   color: var(--color-on-surface-variant, #6b6566);
 }

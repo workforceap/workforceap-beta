@@ -81,7 +81,7 @@ export default function AdminMemberDbActions({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       {/* Password Reset */}
       <div>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
           Password Reset
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -102,14 +102,14 @@ export default function AdminMemberDbActions({
             </span>
           )}
         </div>
-        <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginTop: '0.375rem' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.375rem' }}>
           Sends to: <strong>{memberEmail}</strong>
         </p>
       </div>
 
       {/* Profile Edit */}
       <div>
-        <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem' }}>
           Edit Profile
         </p>
         {!editOpen ? (
@@ -139,13 +139,13 @@ export default function AdminMemberDbActions({
               { label: 'LinkedIn URL', id: 'adminmemberdbactions-linkedin-field', value: profileLinkedin, set: setProfileLinkedin, type: 'url' },
             ].map(({ label, id, value, set, type }) => (
               <div key={label}>
-                <label htmlFor={id} style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.3rem' }}>{label}</label>
+                <label htmlFor={id} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.3rem' }}>{label}</label>
                 <input id={id} type={type} value={value} onChange={(e) => set(e.target.value)}
                   style={{ width: '100%', padding: '0.45rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem', boxSizing: 'border-box' as const }} />
               </div>
             ))}
             <div>
-              <label htmlFor="adminmemberdbactions-bio-field" style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.3rem' }}>Bio</label>
+              <label htmlFor="adminmemberdbactions-bio-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.3rem' }}>Bio</label>
               <textarea id="adminmemberdbactions-bio-field" value={profileBio} onChange={(e) => setProfileBio(e.target.value)} rows={3}
                 style={{ width: '100%', padding: '0.45rem 0.7rem', borderRadius: '0.5rem', border: '1px solid var(--outline-variant)', background: 'var(--surface-container)', color: 'var(--color-on-surface)', fontSize: '0.875rem', resize: 'vertical', boxSizing: 'border-box' as const }} />
             </div>

@@ -230,7 +230,7 @@ export function StudentsRosterKit({
         </p>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 13,
             color: 'var(--wa-muted)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -255,7 +255,7 @@ export function StudentsRosterKit({
           variant={row.status === 'At Risk' ? 'accent' : 'success'}
         />
       </div>
-      <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--wa-muted)' }}>
+      <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'var(--wa-muted)' }}>
         {row.progress}%
       </span>
     </div>
@@ -397,7 +397,7 @@ export function StudentsRosterKit({
                 <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />
               </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 11, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, fontSize: 13, color: 'var(--wa-muted)', margin: '12px 0 4px' }}>
               <span style={{ minWidth: 0 }}>{row.program} · {row.counselor}</span>
               <span style={{ whiteSpace: 'nowrap' }}>
                 Readiness{' '}
@@ -417,7 +417,7 @@ export function StudentsRosterKit({
               isLabelHidden
               variant={row.status === 'At Risk' ? 'accent' : 'success'}
             />}
-            <div style={{ fontSize: 10, color: 'var(--wa-muted)', marginTop: 6 }}>
+            <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
               {row.progressKnown === false ? 'Program progress unavailable' : `${row.progress}% complete`} · Coursera grade {formatRosterGrade(row.courseraGrade)} · last active{' '}
               <span title={row.lastActiveSource} aria-label={row.lastActiveSource ? `${row.lastActive} · ${row.lastActiveSource}` : undefined}>
                 {row.lastActive}
@@ -429,7 +429,7 @@ export function StudentsRosterKit({
         emptyDescription="Try a different filter."
       />
 
-      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--wa-muted)', marginTop: 16 }}>
+      <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--wa-muted)', marginTop: 16 }}>
         Showing {visible.length} of {total}
       </p>
     </DesignSurface>

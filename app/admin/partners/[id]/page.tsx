@@ -30,6 +30,7 @@ import {
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -125,7 +126,7 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
   const paidEvents = placementIds.length
     ? await withAdminPageScope(scope, (db) => db.memberEvent.findMany({
         where: {
-          eventName: 'PARTNER_PAYOUT_SENT',
+          eventName: { in: eventNameReadCandidates('partner_payout_sent') },
           entityType: 'PlacementRecord',
           entityId: { in: placementIds },
         },
@@ -339,8 +340,8 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
               {partner.counselors.map((c) => (
                 <div key={c.id} className="wa-kit-card wa-kit-card--sm">
                   <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)' }}>{c.user.fullName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--wa-muted)' }}>{c.user.email}</div>
-                  {c.title && <div style={{ fontSize: 12, color: 'var(--wa-muted)' }}>{c.title}</div>}
+                  <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{c.user.email}</div>
+                  {c.title && <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{c.title}</div>}
                 </div>
               ))}
             </div>

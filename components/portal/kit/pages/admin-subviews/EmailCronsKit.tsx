@@ -145,7 +145,7 @@ export function EmailCronsKit({
                 </div>
                 <div
                   style={{
-                    fontSize: 11,
+                    fontSize: 13,
                     color: 'var(--wa-muted)',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -165,7 +165,7 @@ export function EmailCronsKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 marginTop: 12,
               }}
@@ -183,7 +183,7 @@ export function EmailCronsKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

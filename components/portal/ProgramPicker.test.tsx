@@ -28,7 +28,6 @@ function program(overrides: Partial<Program>): Program {
     borderColor: 'var(--wa-info)',
     icon: 'Briefcase',
     duration: '160 hours',
-    salary: 'Starting salary: $60K',
     skills: [],
     courses: [],
     partner: 'WorkforceAP',

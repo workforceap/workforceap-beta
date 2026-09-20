@@ -47,7 +47,7 @@ const cardStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.75rem',
+  fontSize: '0.8125rem',
   fontWeight: 700,
   color: 'var(--color-on-surface-variant)',
   textTransform: 'uppercase',
@@ -171,7 +171,7 @@ export default function CourseraCsvImportClient() {
               style={{ display: 'block' }}
               disabled={isPending}
             />
-            <span style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
               Max 5 MB. Idempotent — re-uploads update existing rows in place.
             </span>
           </div>
@@ -301,7 +301,7 @@ function Stat({ label, value }: { label: string; value: number }) {
         border: '1px solid var(--outline-variant)',
       }}
     >
-      <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
+      <div style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)', fontWeight: 700 }}>
         {label}
       </div>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, marginTop: '0.25rem', fontVariantNumeric: 'tabular-nums' }}>{value}</div>

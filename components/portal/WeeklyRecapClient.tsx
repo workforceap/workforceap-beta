@@ -81,7 +81,7 @@ export default function WeeklyRecapClient({ recap, recapData, weekStart }: Props
       {/* Week label + score row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
         <div>
-          <p style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
+          <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
             Week of
           </p>
           <p style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0 }}>{weekLabel}</p>
@@ -89,7 +89,7 @@ export default function WeeklyRecapClient({ recap, recapData, weekStart }: Props
         {score !== null && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.875rem 1.25rem', borderRadius: '0.875rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.15)' }}>
             <div>
-              <p style={{ fontSize: '0.625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Readiness Score</p>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.2rem' }}>Readiness Score</p>
               <p style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.04em', color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>
                 {score}<span style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)' }}>%</span>
               </p>
@@ -114,7 +114,7 @@ export default function WeeklyRecapClient({ recap, recapData, weekStart }: Props
       {/* Goals snapshot */}
       {goals.length > 0 && (
         <div className="portal-card portal-card--flat" style={{ padding: '1.25rem', marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
             Goals
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -138,7 +138,7 @@ export default function WeeklyRecapClient({ recap, recapData, weekStart }: Props
       {/* Recommended actions for next week */}
       {actions.length > 0 && (
         <div style={{ marginBottom: '1.25rem' }}>
-          <h3 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
+          <h3 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: '0 0 0.875rem' }}>
             Recommended Actions
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

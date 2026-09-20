@@ -405,7 +405,7 @@ function CascadeCard({
           display: 'flex',
           flexWrap: 'wrap',
           gap: '0.75rem',
-          fontSize: '0.78rem',
+          fontSize: '0.8125rem',
           color: 'var(--color-on-surface-variant)',
         }}
       >
@@ -454,7 +454,7 @@ function DraftRow({
         }}
       >
         <strong style={{ fontSize: '0.92rem' }}>{ACTION_TYPE_LABELS[draft.type]}</strong>
-        <span style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
           confidence {(draft.confidence * 100).toFixed(0)}%
         </span>
       </div>
@@ -462,7 +462,7 @@ function DraftRow({
       {draft.type === 'celebrate_milestone' && (
         <>
           <label style={{ display: 'block', marginBottom: '0.4rem' }}>
-            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.2rem' }}>
+            <span style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.2rem' }}>
               Subject
             </span>
             <input
@@ -481,7 +481,7 @@ function DraftRow({
             />
           </label>
           <label style={{ display: 'block' }}>
-            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.2rem' }}>
+            <span style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.2rem' }}>
               Body
             </span>
             <textarea

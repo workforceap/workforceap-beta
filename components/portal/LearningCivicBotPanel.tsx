@@ -36,7 +36,7 @@ export default function LearningCivicBotPanel() {
             <span>WorkforceAP Study Assistant</span>
             <span
               style={{
-                fontSize: '0.65rem',
+                fontSize: '0.8125rem',
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
@@ -48,7 +48,7 @@ export default function LearningCivicBotPanel() {
               Preview
             </span>
           </div>
-          <div style={{ fontSize: '0.75rem', opacity: 0.85 }}>Use Training and pathway modules for study help today.</div>
+          <div style={{ fontSize: '0.8125rem', opacity: 0.85 }}>Use Training and pathway modules for study help today.</div>
         </div>
       </div>
       <div style={{ padding: 'var(--space-4)', minHeight: '120px' }}>

@@ -9,6 +9,7 @@ import { updateCoachMemory, type CoachTurn } from '@/lib/coach/memory';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { persistEvent } from '@/lib/events/track';
 
 type TranscriptTurn = { role: 'agent' | 'user'; text: string };
 
@@ -68,20 +69,18 @@ function hasMeaningfulUserPractice(transcript: TranscriptTurn[]) {
         }
   
         if (!alreadyRecorded) {
-          await prisma.$transaction((tx) => tx.memberEvent.create({
-            data: {
-              userId: user.id,
-              eventName: 'career_os.interview_practice_completed',
-              entityType: 'voice_interview_session',
-              entityId: sessionId ?? `voice-interview-${Date.now()}`,
-              sourcePage: '/api/member/voice-interview/transcript',
-              metadata: {
-                role: body.role?.trim() || null,
-                interviewType: body.interviewType?.trim() || null,
-                userTurnCount: transcript.filter((turn) => turn.role === 'user').length,
-              },
+          await prisma.$transaction((tx) => persistEvent({
+            userId: user.id,
+            eventName: 'career_os.interview_practice_completed',
+            entityType: 'voice_interview_session',
+            entityId: sessionId ?? `voice-interview-${Date.now()}`,
+            sourcePage: '/api/member/voice-interview/transcript',
+            metadata: {
+              role: body.role?.trim() || null,
+              interviewType: body.interviewType?.trim() || null,
+              userTurnCount: transcript.filter((turn) => turn.role === 'user').length,
             },
-          }));
+          }, tx));
         }
   
         await completeCareerOsInterviewActions(user.id).catch((error) => {

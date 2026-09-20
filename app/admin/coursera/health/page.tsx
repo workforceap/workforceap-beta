@@ -468,7 +468,7 @@ const cardStyle: CSSProperties = {
 };
 
 const cardTitleStyle: CSSProperties = {
-  fontSize: '0.78rem',
+  fontSize: '0.8125rem',
   textTransform: 'uppercase',
   letterSpacing: '0.04em',
   fontWeight: 600,
@@ -960,7 +960,7 @@ export default async function AdminCourseraHealthPage() {
                 cell: (row) => (
                   <span
                     style={{
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 600,
                       padding: '0.1rem 0.4rem',
                       borderRadius: '0.4rem',
@@ -985,7 +985,7 @@ export default async function AdminCourseraHealthPage() {
                 cell: (row) => (
                   <span
                     style={{
-                      fontSize: '0.8rem',
+                      fontSize: '0.8125rem',
                       color: 'var(--color-on-surface-variant)',
                       fontVariantNumeric: 'tabular-nums',
                     }}

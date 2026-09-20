@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { ApplicationStatus } from '@prisma/client';
 import { formatPhone } from '@/lib/formatPhone';
 import DataTable from '@/components/portal/ui/DataTable';
+import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
 type ApplicationWithUser = {
   id: string;
@@ -38,6 +39,11 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const handleStatusChange = async (applicationId: string, newStatus: ApplicationStatus) => {
+    // WAP-184 G-3: a denial needs a written reason; the server enforces it too.
+    if (isMissingDenialReason('application_decision', newStatus, notes[applicationId])) {
+      setFeedback(DENIAL_REASON_REQUIRED_MESSAGE);
+      return;
+    }
     setUpdatingId(applicationId);
     setFeedback(null);
     try {
@@ -129,7 +135,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                     display: 'inline-block',
                     padding: '0.25rem 0.5rem',
                     borderRadius: 'var(--radius-sm)',
-                    fontSize: '.8rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     background:
                       app.status === 'APPROVED'
@@ -180,7 +186,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                         className="btn"
                         style={{
                           padding: '0.35rem 0.6rem',
-                          fontSize: '.8rem',
+                          fontSize: '0.8125rem',
                           background:
                             opt.value === 'APPROVED'
                               ? 'var(--wa-success)'
@@ -248,7 +254,7 @@ export function MemberReviewTable({ applications }: MemberReviewTableProps) {
                   className="btn"
                   style={{
                     padding: '0.35rem 0.6rem',
-                    fontSize: '.8rem',
+                    fontSize: '0.8125rem',
                     background:
                       opt.value === 'APPROVED'
                         ? 'var(--wa-success)'

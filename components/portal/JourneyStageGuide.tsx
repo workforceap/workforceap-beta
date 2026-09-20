@@ -63,7 +63,7 @@ export default function JourneyStageGuide() {
           </h2>
           <span
             style={{
-              fontSize: '0.6rem',
+              fontSize: '0.8125rem',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '0.08em',
@@ -108,7 +108,7 @@ export default function JourneyStageGuide() {
                     <p className="portal-quick-action-item__label" style={{ whiteSpace: 'normal', lineHeight: 1.3 }}>
                       {t(`stages.${s.key}.label`)}
                     </p>
-                    <p style={{ margin: '0.15rem 0 0', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
+                    <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
                       {t(`stages.${s.key}.hint`)}
                     </p>
                   </div>
@@ -136,7 +136,7 @@ export default function JourneyStageGuide() {
                       border: isActive ? '1.5px solid var(--color-accent)' : '1px solid var(--outline-variant)',
                       background: isActive ? 'rgba(173,44,77,0.10)' : 'transparent',
                       color: isActive ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
-                      fontSize: '0.72rem',
+                      fontSize: '0.8125rem',
                       fontWeight: 700,
                       letterSpacing: '0.03em',
                       cursor: 'pointer',
@@ -169,7 +169,7 @@ export default function JourneyStageGuide() {
                     <p className="portal-quick-action-item__label" style={{ whiteSpace: 'normal', lineHeight: 1.35 }}>
                       {t(`tools.${tool.key}.label`)}
                     </p>
-                    <p style={{ margin: '0.15rem 0 0', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
+                    <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.35 }}>
                       {t(`tools.${tool.key}.hint`)} · {t('minutes', { count: tool.minutes })}
                     </p>
                   </div>

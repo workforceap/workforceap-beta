@@ -89,7 +89,7 @@ export default function First90DaysCard({
               id="first90-card-title"
               style={{
                 margin: 0,
-                fontSize: '0.7rem',
+                fontSize: '0.8125rem',
                 fontWeight: 800,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
@@ -132,7 +132,7 @@ export default function First90DaysCard({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.3rem',
-                  fontSize: '0.72rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   padding: '0.25rem 0.6rem',
                   borderRadius: '999px',
@@ -200,7 +200,7 @@ export default function First90DaysCard({
               ))}
             </div>
             {error && (
-              <p role="alert" style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'var(--color-accent)' }}>
+              <p role="alert" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
                 {t('saveError')}
               </p>
             )}
@@ -227,7 +227,7 @@ export default function First90DaysCard({
             {t('scriptsTitle')}
           </summary>
           <div style={{ marginTop: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{t('scriptsIntro')}</p>
+            <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t('scriptsIntro')}</p>
             {(['s1', 's2'] as const).map((key) => (
               <blockquote
                 key={key}
@@ -248,7 +248,7 @@ export default function First90DaysCard({
           </div>
         </details>
 
-        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{t('footerNote')}</p>
+        <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{t('footerNote')}</p>
       </div>
     </section>
   );

@@ -197,7 +197,7 @@ export default async function PartnerGuidePage() {
               <p className="wa-tabular-nums" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-on-surface)', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '0.375rem' }}>
                 {stat.value}
               </p>
-              <p style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-on-surface-variant)' }}>
                 {stat.label}
               </p>
             </div>

@@ -15,7 +15,6 @@ function mkProgram(slug: string, title: string, courseraB4BProgramId?: string): 
     borderColor: '#000',
     icon: '🧪',
     duration: '—',
-    salary: '—',
     skills: [],
     courses: [],
     partner: 'Test',

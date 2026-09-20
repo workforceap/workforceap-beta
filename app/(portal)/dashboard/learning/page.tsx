@@ -127,7 +127,7 @@ export default async function LearningPage() {
     <div className="md:wa-hidden">
       {/* Header */}
       <div style={{ padding: '1.5rem 1.5rem 0', marginBottom: '1.5rem' }}>
-        <p className="wa-text-[11px] wa-font-medium wa-tracking-[0.1em] wa-uppercase wa-text-[var(--color-accent)]" style={{ display: 'block', marginBottom: '0.5rem' }}>Your Learning</p>
+        <p className="wa-text-[13px] wa-font-medium wa-tracking-[0.1em] wa-uppercase wa-text-[var(--color-accent)]" style={{ display: 'block', marginBottom: '0.5rem' }}>Your Learning</p>
         <h2 className="wa-text-3xl wa-font-bold wa-tracking-tight wa-text-[var(--color-on-surface)] wa-leading-tight">The Learning Hub</h2>
       </div>
 
@@ -248,7 +248,7 @@ export default async function LearningPage() {
       <section style={{ margin: '0 1.5rem 1.5rem' }}>
         <div className="wa-bg-gradient-to-br from-[var(--color-accent-dark)] to-[var(--color-accent)] wa-text-white" style={{ padding: '1.25rem', borderRadius: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <span className="bg-white/20 wa-text-[10px] wa-font-bold wa-tracking-wider wa-uppercase" style={{ padding: '0.125rem 0.5rem', borderRadius: '0.25rem' }}>{overallPct > 0 ? 'Active' : 'Next up'}</span>
+            <span className="bg-white/20 wa-text-[13px] wa-font-bold wa-tracking-wider wa-uppercase" style={{ padding: '0.125rem 0.5rem', borderRadius: '0.25rem' }}>{overallPct > 0 ? 'Active' : 'Next up'}</span>
             <span className="material-symbols-outlined wa-text-sm" style={{ '--ms-fill': 1 }}>timer</span>
             <span className="wa-text-xs wa-font-medium">~{ACTIVE_PATHWAY.estimatedWeeks} weeks</span>
           </div>
@@ -343,7 +343,7 @@ export default async function LearningPage() {
                   </span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="wa-text-[10px] wa-font-bold wa-uppercase wa-tracking-tight wa-text-[var(--color-gold)]" style={{ marginBottom: '0.125rem' }}>Completed</p>
+                  <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-tight wa-text-[var(--color-gold)]" style={{ marginBottom: '0.125rem' }}>Completed</p>
                   <p className="wa-text-sm wa-font-semibold wa-text-[var(--color-on-surface)] wa-truncate">{m.label}</p>
                 </div>
               </div>
@@ -512,7 +512,7 @@ export default async function LearningPage() {
                     }}>
                       {m.label}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       {m.detail}
                     </div>
                   </div>

@@ -37,8 +37,8 @@ export default function ExecutiveTrendCharts({ signupData, enrollmentData, viewD
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={signupData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--outline-variant)" />
-              <XAxis dataKey="week" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey="week" tick={{ fontSize: 13 }} />
+              <YAxis tick={{ fontSize: 13 }} />
               <Tooltip />
               <Bar dataKey="count" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -53,8 +53,8 @@ export default function ExecutiveTrendCharts({ signupData, enrollmentData, viewD
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={enrollmentData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--outline-variant)" />
-              <XAxis dataKey="week" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey="week" tick={{ fontSize: 13 }} />
+              <YAxis tick={{ fontSize: 13 }} />
               <Tooltip />
               <Bar dataKey="count" fill="var(--wa-success)" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -69,8 +69,8 @@ export default function ExecutiveTrendCharts({ signupData, enrollmentData, viewD
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={viewData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--outline-variant)" />
-              <XAxis dataKey="week" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey="week" tick={{ fontSize: 13 }} />
+              <YAxis tick={{ fontSize: 13 }} />
               <Tooltip />
               <Line type="monotone" dataKey="count" stroke="var(--wa-info)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>

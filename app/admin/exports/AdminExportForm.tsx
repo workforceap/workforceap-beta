@@ -62,7 +62,7 @@ export default function AdminExportForm({ programs, stages }: Props) {
 
   const labelStyle: React.CSSProperties = {
     display: 'block',
-    fontSize: '0.75rem',
+    fontSize: '0.8125rem',
     fontWeight: 600,
     color: 'var(--color-on-surface-variant)',
     textTransform: 'uppercase',

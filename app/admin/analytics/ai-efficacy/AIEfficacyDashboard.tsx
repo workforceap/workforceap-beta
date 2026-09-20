@@ -59,7 +59,7 @@ function formatDateInput(d: Date): string {
 function SectionLabel({ title, sub }: { title: string; sub?: string }) {
   return (
     <div style={{ marginBottom: '0.875rem' }}>
-      <h2 style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: 0 }}>{title}</h2>
+      <h2 style={{ fontSize: '0.8125rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-on-surface-variant)', margin: 0 }}>{title}</h2>
       {sub && <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>{sub}</p>}
     </div>
   );
@@ -361,8 +361,8 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={placementComparisonData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} unit="%" />
+                    <XAxis dataKey="name" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} unit="%" />
                     <Tooltip {...tooltipStyle} />
                     <Legend />
                     <Bar dataKey="placed" name="Placed %" stackId="a" fill={GREEN} radius={[4, 4, 0, 0]} />
@@ -377,8 +377,8 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={timeToPlacementData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
                       <Tooltip {...tooltipStyle} />
                       <Bar dataKey="days" name="Days" fill={BLUE} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -395,8 +395,8 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={salaryData} margin={{ top: 4, right: 16, left: -10, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="name" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} />
                       <Tooltip {...tooltipStyle} formatter={((value: number) => `$${value.toLocaleString()}`) as any} />
                       <Bar dataKey="salary" name="Avg Salary" fill={GOLD} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -410,8 +410,8 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                   <ResponsiveContainer width="100%" height={Math.max(180, topToolsData.length * 36)}>
                     <BarChart data={topToolsData} layout="vertical" margin={{ left: 8, right: 40, top: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                      <XAxis type="number" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} unit="pp" />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
+                      <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} unit="pp" />
+                      <YAxis type="category" dataKey="name" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={130} />
                       <Tooltip {...tooltipStyle} formatter={((value: number) => `+${value}pp`) as any} />
                       <Bar dataKey="lift" name="Placement Lift" radius={[0, 4, 4, 0]} fill={ACCENT}>
                         {topToolsData.map((_, i) => (
@@ -431,8 +431,8 @@ export default function AIEfficacyDashboard({ orgId = null }: AIEfficacyDashboar
                 <ResponsiveContainer width="100%" height={Math.max(220, byToolBarData.length * 40)}>
                   <BarChart data={byToolBarData} layout="vertical" margin={{ left: 8, right: 16, top: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} unit="%" />
-                    <YAxis type="category" dataKey="tool" tick={{ fontSize: 10, fill: MUTED }} tickLine={false} axisLine={false} width={140} />
+                    <XAxis type="number" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} unit="%" />
+                    <YAxis type="category" dataKey="tool" tick={{ fontSize: 13, fill: MUTED }} tickLine={false} axisLine={false} width={140} />
                     <Tooltip {...tooltipStyle} />
                     <Legend />
                     <Bar dataKey="withTool" name="With Tool" fill={GREEN} radius={[0, 4, 4, 0]} />

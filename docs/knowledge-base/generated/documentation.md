@@ -47,7 +47,7 @@
 | [docs/I18N-LOCALE-ROUTING.md](../../../docs/I18N-LOCALE-ROUTING.md) | 520 | documentation |  |
 | [docs/INCIDENT-RESPONSE-PLAN.md](../../../docs/INCIDENT-RESPONSE-PLAN.md) | 340 | documentation |  |
 | [docs/JOB-CREATE-FIX.md](../../../docs/JOB-CREATE-FIX.md) | 33 | documentation |  |
-| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 481 | documentation |  |
+| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 493 | documentation |  |
 | [docs/LAUNCH-PREP-AUDIT.md](../../../docs/LAUNCH-PREP-AUDIT.md) | 146 | documentation |  |
 | [docs/LIVE-PORTAL-AUDIT-2026-04-26.md](../../../docs/LIVE-PORTAL-AUDIT-2026-04-26.md) | 707 | documentation |  |
 | [docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md](../../../docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md) | 318 | documentation |  |
@@ -273,7 +273,7 @@
 | [docs/knowledge-base/integrations.md](../../../docs/knowledge-base/integrations.md) | 143 | documentation |  |
 | [docs/knowledge-base/maintenance.md](../../../docs/knowledge-base/maintenance.md) | 68 | documentation |  |
 | [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 170 | documentation |  |
-| [docs/knowledge-base/technical-debt.md](../../../docs/knowledge-base/technical-debt.md) | 68 | documentation |  |
+| [docs/knowledge-base/technical-debt.md](../../../docs/knowledge-base/technical-debt.md) | 71 | documentation |  |
 | [docs/live-qa-sweep-2026-05-14.md](../../../docs/live-qa-sweep-2026-05-14.md) | 55 | documentation |  |
 | [docs/marketing-perf-audit-2026-05-13.md](../../../docs/marketing-perf-audit-2026-05-13.md) | 272 | documentation |  |
 | [docs/member-portal-content-editor-guide.md](../../../docs/member-portal-content-editor-guide.md) | 149 | documentation |  |

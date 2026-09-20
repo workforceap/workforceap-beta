@@ -150,7 +150,7 @@ export default function CertificationAddForm() {
 
       {/* Certificate name */}
       <div>
-        <label id={certNameLabelId} htmlFor={certNameId} style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+        <label id={certNameLabelId} htmlFor={certNameId} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
           Certificate Name
         </label>
         <select id={certNameId}
@@ -175,7 +175,7 @@ export default function CertificationAddForm() {
 
       {/* Date earned */}
       <div>
-        <label htmlFor={earnedDateId} style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+        <label htmlFor={earnedDateId} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
           Date Earned
         </label>
         <input id={earnedDateId}
@@ -189,7 +189,7 @@ export default function CertificationAddForm() {
 
       {/* Optional file upload */}
       <div>
-        <label htmlFor={certificateFileId} style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+        <label htmlFor={certificateFileId} style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
           Certificate File <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional · PDF or image)</span>
         </label>
         <input id={certificateFileId}
@@ -198,7 +198,7 @@ export default function CertificationAddForm() {
           accept=".pdf,.png,.jpg,.jpeg,.webp"
           style={{ width: '100%', padding: '0.375rem 0', fontSize: '0.875rem', color: 'var(--color-on-surface)' }}
         />
-        <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0' }}>
           Uploading stores your certificate for easy access — not required to record it.
         </p>
       </div>

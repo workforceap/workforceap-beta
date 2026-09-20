@@ -17,6 +17,7 @@ import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
+import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -194,19 +195,24 @@ const ETHNICITY_OPTIONS = [
   
         // INVARIANT: CourseEnrollment must stay in sync with User.enrolledProgram.
         // The member self-enrollment flow (POST /api/member/enroll) does this in a
-        // transaction. Admin creation must do the same.
+        // transaction. Admin creation must do the same, through the one canonical
+        // program-enrollment writer (WAP-174).
         // Multi-program: admin-created member's first row is primary.
-        const newEnrollment = await tx.courseEnrollment.create({
-          data: {
+        const newEnrollment = await upsertEquivalentCourseEnrollment(tx, {
+          userId: authUser.id,
+          programSlug,
+          create: {
             organizationId,
-            userId: authUser.id,
-            programSlug,
             curriculumVersion: activeCurriculumVersion(programSlug),
             isPrimary: true,
             enrolledAt,
             enrolledByAdminId: user.id,
           },
-          select: { id: true },
+          update: {
+            isPrimary: true,
+            enrolledAt,
+            enrolledByAdminId: user.id,
+          },
         });
         createdEnrollmentId = newEnrollment.id;
   

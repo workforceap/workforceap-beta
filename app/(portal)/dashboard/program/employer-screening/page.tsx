@@ -119,7 +119,7 @@ export default async function EmployerScreeningMemberPage() {
                 </span>
                 <div>
                   <p style={{ margin: 0, lineHeight: 1.55 }}>{q.prompt}</p>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {q.type.replace('_', ' ')}
                   </p>
                 </div>

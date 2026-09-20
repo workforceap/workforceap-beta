@@ -133,7 +133,7 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
 
   return (
     <DesignSurface surface="dense">
-      <p style={{ fontSize: 12.5, color: 'var(--wa-muted)', marginBottom: 16 }}>
+      <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginBottom: 16 }}>
         Drag cards between columns to move candidates through your pipeline.
       </p>
       <div className="wa-overflow-x-auto">
@@ -167,11 +167,11 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                   style={{ padding: '12px 14px', borderBottom: '1px solid var(--wa-border)', background: 'var(--wa-bg)' }}
                 >
                   <Icon size={14} aria-hidden style={{ color: c, flexShrink: 0 }} />
-                  <span style={{ fontWeight: 700, fontSize: 12.5, color: 'var(--wa-text)' }}>{col.label}</span>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{col.label}</span>
                   <span
                     style={{
                       marginLeft: 'auto',
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: 800,
                       color: c,
                       background: `color-mix(in srgb, ${c} 14%, transparent)`,
@@ -211,7 +211,7 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                             <p
                               style={{
                                 fontWeight: 700,
-                                fontSize: 12.5,
+                                fontSize: 13,
                                 color: 'var(--wa-text)',
                                 margin: 0,
                                 overflow: 'hidden',
@@ -223,7 +223,7 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                             </p>
                             <p
                               style={{
-                                fontSize: 11,
+                                fontSize: 13,
                                 color: 'var(--wa-muted)',
                                 margin: '1px 0 0',
                                 overflow: 'hidden',
@@ -234,23 +234,23 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                               {m.jobTitle}
                             </p>
                           </div>
-                          <span style={{ fontSize: 12.5, fontWeight: 800, color: scoreColor(score), flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(score), flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                             {score}%
                           </span>
                         </div>
                         {m.matchReasons.length > 0 && (
-                          <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
+                          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '8px 0 0', lineHeight: 1.4 }}>
                             {m.matchReasons[0]}
                           </p>
                         )}
                         <div className="wa-flex wa-items-center wa-gap-2" style={{ marginTop: 8 }}>
-                          <Link href={`/employer/candidates/${m.student.id}?jobId=${m.jobId}`} style={{ fontSize: 11, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}>
+                          <Link href={`/employer/candidates/${m.student.id}?jobId=${m.jobId}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}>
                             View →
                           </Link>
-                          {isBusy && <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>Moving…</span>}
+                          {isBusy && <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>Moving…</span>}
                         </div>
                         {revertError === m.id && (
-                          <p role="alert" style={{ fontSize: 11, fontWeight: 700, color: 'var(--wa-danger)', margin: '6px 0 0' }}>
+                          <p role="alert" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-danger)', margin: '6px 0 0' }}>
                             Couldn&apos;t update status — try again
                           </p>
                         )}
@@ -260,7 +260,7 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                   {colMatches.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '24px 8px', opacity: 0.5 }}>
                       <GripVertical size={20} aria-hidden style={{ color: 'var(--wa-muted)' }} />
-                      <p style={{ fontSize: 11, color: 'var(--wa-muted)', margin: '4px 0 0' }}>Drop here</p>
+                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '4px 0 0' }}>Drop here</p>
                     </div>
                   )}
                 </div>

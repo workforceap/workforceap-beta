@@ -152,7 +152,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             )}
 
             <div>
-              <label htmlFor="memberfeedbackmodal-what-is-this-about-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <label htmlFor="memberfeedbackmodal-what-is-this-about-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                 What is this about?
               </label>
               <select id="memberfeedbackmodal-what-is-this-about-field"
@@ -177,7 +177,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             </div>
 
             <div>
-              <span id="memberfeedbackmodal-rating-label" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <span id="memberfeedbackmodal-rating-label" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                 Rating
               </span>
               <div role="radiogroup" aria-labelledby="memberfeedbackmodal-rating-label" style={{ display: 'flex', gap: '0.25rem' }}>
@@ -209,7 +209,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
             </div>
 
             <div>
-              <label htmlFor="memberfeedbackmodal-comments-optional-field" style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
+              <label htmlFor="memberfeedbackmodal-comments-optional-field" style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.375rem' }}>
                 Comments (optional)
               </label>
               <textarea id="memberfeedbackmodal-comments-optional-field"
@@ -230,7 +230,7 @@ export default function MemberFeedbackModal({ open, onClose, defaultType = 'gene
                   boxSizing: 'border-box',
                 }}
               />
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'right', marginTop: '0.25rem' }}>
                 {comment.length}/5000
               </div>
             </div>

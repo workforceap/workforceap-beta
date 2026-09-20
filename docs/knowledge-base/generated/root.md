@@ -39,7 +39,7 @@
 | [brand-guide.html](../../../brand-guide.html) | 921 | root |  |
 | [css-vars-material-symbols.d.ts](../../../css-vars-material-symbols.d.ts) | 14 | root |  |
 | [deploy-to-homelab.sh](../../../deploy-to-homelab.sh) | 74 | root |  |
-| [eslint.config.mjs](../../../eslint.config.mjs) | 166 | root | default:166 |
+| [eslint.config.mjs](../../../eslint.config.mjs) | 209 | root | default:209 |
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 225 | root | onRouterTransitionStart:194, setSentryUser:213 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
@@ -52,7 +52,7 @@
 | [sentry.edge.config.ts](../../../sentry.edge.config.ts) | 40 | root |  |
 | [sentry.server.config.ts](../../../sentry.server.config.ts) | 44 | root |  |
 | [sprint-10-health-check-summary.md](../../../sprint-10-health-check-summary.md) | 76 | root |  |
-| [tailwind.config.ts](../../../tailwind.config.ts) | 71 | root | default:71 |
+| [tailwind.config.ts](../../../tailwind.config.ts) | 78 | root | default:78 |
 | [tsconfig.json](../../../tsconfig.json) | 26 | root |  |
 | [tsconfig.tests.json](../../../tsconfig.tests.json) | 16 | root |  |
 | [tsconfig.vitest.json](../../../tsconfig.vitest.json) | 7 | root |  |

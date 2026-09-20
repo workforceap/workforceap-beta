@@ -32,6 +32,11 @@ function storageErrorMessage(error: { message?: string } | null): string {
     if (!file || !certName) {
       return NextResponse.json({ error: 'file and certName are required' }, { status: 400 });
     }
+    // WAP-77: never stage an empty object as certificate proof (the logo
+    // routes already refuse size 0; this route silently uploaded zero bytes).
+    if (file.size === 0) {
+      return NextResponse.json({ error: 'The selected file is empty' }, { status: 400 });
+    }
   
     if (file.size > MAX_SIZE_BYTES) {
       return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 });

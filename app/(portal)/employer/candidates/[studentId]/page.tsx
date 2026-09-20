@@ -230,7 +230,7 @@ export default async function EmployerCandidateProfilePage({
           <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                   Candidate snapshot
                 </p>
                 <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: '0.35rem 0 0.2rem' }}>{student.fullName}</h2>
@@ -240,7 +240,7 @@ export default async function EmployerCandidateProfilePage({
                 {summaryStats.map((stat) => (
                   <div key={stat.label} style={{ padding: '0.75rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
                     <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-on-surface)' }}>{stat.value}</div>
-                    <div style={{ fontSize: '0.65rem', lineHeight: 1.25, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stat.label}</div>
+                    <div style={{ fontSize: '0.8125rem', lineHeight: 1.25, color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -248,14 +248,14 @@ export default async function EmployerCandidateProfilePage({
                 <div style={{ padding: '0.85rem', borderRadius: '0.75rem', background: 'color-mix(in srgb, var(--color-accent) 22%, var(--surface-container-lowest))', border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'flex-start' }}>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+                      <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                         Highlighted role
                       </p>
                       <p style={{ margin: '0.35rem 0 0', fontWeight: 700, color: 'var(--color-on-surface)' }}>{selectedMatch.job.title}</p>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-marketing-rose-on-light)' }}>{topMatchPct}%</div>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>match</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>match</div>
                     </div>
                   </div>
                   <div style={{ marginTop: '0.6rem' }}>
@@ -269,12 +269,12 @@ export default async function EmployerCandidateProfilePage({
               {(partnerReferral || counselorAssign) ? (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.25rem' }}>
                   {partnerReferral ? (
-                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.35rem 0.6rem', borderRadius: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.35rem 0.6rem', borderRadius: '0.5rem' }}>
                       Referred by {partnerReferral.partner.name}
                     </span>
                   ) : null}
                   {counselorAssign ? (
-                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.35rem 0.6rem', borderRadius: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.35rem 0.6rem', borderRadius: '0.5rem' }}>
                       Counselor: {counselorAssign.counselor.user.fullName}
                     </span>
                   ) : null}
@@ -284,20 +284,20 @@ export default async function EmployerCandidateProfilePage({
           </section>
 
           <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-            <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
               Readiness
             </p>
             <div style={{ display: 'grid', gap: '0.6rem', marginTop: '0.75rem' }}>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Program</p>
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Program</p>
                 <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{programDisplay}</p>
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Assessment</p>
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Assessment</p>
                 <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{student.assessmentCompleted ? 'Completed' : 'Not completed'}</p>
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Employment status</p>
+                <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employment status</p>
                 <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>{student.profile?.employmentStatus ?? '—'}</p>
               </div>
               {student.profile?.profileLinkedin ? (
@@ -309,10 +309,10 @@ export default async function EmployerCandidateProfilePage({
           </section>
 
           <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-            <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+            <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
               Coursera training
             </p>
-            <p style={{ margin: '0.45rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
+            <p style={{ margin: '0.45rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.45 }}>
               CourseProgress and MemberProgramProgress from Coursera for Business sync (same sources as the partner referral view).
             </p>
             {!trainingProgramSlug ? (
@@ -320,7 +320,7 @@ export default async function EmployerCandidateProfilePage({
             ) : (
               <>
                 <div style={{ marginTop: '0.75rem' }}>
-                  <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--color-on-surface-variant)' }}>Program rollup</p>
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Program rollup</p>
                   <p style={{ margin: '0.2rem 0 0', fontWeight: 700 }}>
                     {trainingRollupPct}% · {trainingProgramSlug ? programDisplayTitle(trainingProgramSlug) : null}
                   </p>
@@ -371,7 +371,7 @@ export default async function EmployerCandidateProfilePage({
 
           {student.profile?.profileBio ? (
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                 Candidate summary
               </p>
               <p style={{ margin: '0.75rem 0 0', lineHeight: 1.55, color: 'var(--color-on-surface-variant)' }}>{student.profile.profileBio}</p>
@@ -380,11 +380,11 @@ export default async function EmployerCandidateProfilePage({
 
           {matches.length > 0 ? (
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                 AI match history
               </p>
               {matchesTruncated ? (
-                <p style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{matchesLabel}</p>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{matchesLabel}</p>
               ) : null}
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
                 {matches.map((match) => (
@@ -394,7 +394,7 @@ export default async function EmployerCandidateProfilePage({
                         <Link href={`/employer/jobs/${match.jobId}`} className="hover:wa-underline" style={{ fontWeight: 700, color: 'var(--color-on-surface)', textDecoration: 'none' }}>
                           {match.job.title}
                         </Link>
-                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                           Added {formatDateTime(match.createdAt)}
                         </p>
                       </div>
@@ -408,7 +408,7 @@ export default async function EmployerCandidateProfilePage({
                         variant={employerAiMatchStatusBadgeVariant(match.status)}
                       />
                       {highlightJobId === match.jobId ? (
-                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span>
+                        <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span>
                       ) : null}
                     </div>
                   </div>
@@ -419,11 +419,11 @@ export default async function EmployerCandidateProfilePage({
 
           {applications.length > 0 ? (
             <section className="portal-card portal-card--flat" style={{ padding: '1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>
                 Applications
               </p>
               {applicationsTruncated ? (
-                <p style={{ margin: '0.35rem 0 0', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{applicationsLabel}</p>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{applicationsLabel}</p>
               ) : null}
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
                 {applications.map((application) => (
@@ -437,7 +437,7 @@ export default async function EmployerCandidateProfilePage({
                         variant={employerJobPostingApplicationStatusBadgeVariant(application.status)}
                       />
                     </div>
-                    <p style={{ margin: '0.45rem 0 0', fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                    <p style={{ margin: '0.45rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       Applied {formatDateTime(application.appliedAt)}
                     </p>
                   </div>
@@ -492,18 +492,18 @@ export default async function EmployerCandidateProfilePage({
               <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>Candidate snapshot</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>Candidate snapshot</p>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 800, margin: '0.35rem 0 0.2rem' }}>{student.fullName}</h2>
                     <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', overflowWrap: 'anywhere' }}>{student.email}</p>
                     {(partnerReferral || counselorAssign) ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
                         {partnerReferral ? (
-                          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.3rem 0.55rem', borderRadius: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.3rem 0.55rem', borderRadius: '0.5rem' }}>
                             Referred by {partnerReferral.partner.name}
                           </span>
                         ) : null}
                         {counselorAssign ? (
-                          <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.3rem 0.55rem', borderRadius: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', background: 'var(--surface-container)', padding: '0.3rem 0.55rem', borderRadius: '0.5rem' }}>
                             Counselor: {counselorAssign.counselor.user.fullName}
                           </span>
                         ) : null}
@@ -513,7 +513,7 @@ export default async function EmployerCandidateProfilePage({
                   {selectedMatch ? (
                     <div style={{ minWidth: '8.5rem', padding: '0.9rem 1rem', borderRadius: '0.9rem', background: 'color-mix(in srgb, var(--color-accent) 24%, var(--surface-container-lowest))', border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)' }}>
                       <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--color-marketing-rose-on-light)' }}>{topMatchPct}%</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>top match</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>top match</div>
                     </div>
                   ) : null}
                 </div>
@@ -522,29 +522,29 @@ export default async function EmployerCandidateProfilePage({
                   {summaryStats.map((stat) => (
                     <div key={stat.label} style={{ padding: '0.9rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
                       <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{stat.value}</div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{stat.label}</div>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{stat.label}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Program and readiness</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Program and readiness</h2>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.9rem' }}>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Program</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Program</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{programDisplay}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Assessment</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Assessment</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{student.assessmentCompleted ? 'Completed' : 'Not completed'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Employment status</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Employment status</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{student.profile?.employmentStatus ?? '—'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>LinkedIn</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>LinkedIn</p>
                     {student.profile?.profileLinkedin ? (
                       <a href={student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '0.3rem', fontWeight: 700 }}>
                         Open profile
@@ -560,7 +560,7 @@ export default async function EmployerCandidateProfilePage({
               </div>
 
               <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Coursera training</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>Coursera training</h2>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
                   CourseProgress and MemberProgramProgress from Coursera for Business sync (same sources as the partner referral view).
                 </p>
@@ -569,7 +569,7 @@ export default async function EmployerCandidateProfilePage({
                 ) : (
                   <>
                     <div style={{ marginTop: '0.85rem' }}>
-                      <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Program rollup</p>
+                      <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Program rollup</p>
                       <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>
                         {trainingRollupPct}% · {trainingProgramSlug ? programDisplayTitle(trainingProgramSlug) : null}
                       </p>
@@ -620,9 +620,9 @@ export default async function EmployerCandidateProfilePage({
 
               {matches.length > 0 ? (
                 <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                  <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>AI match history</h2>
+                  <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>AI match history</h2>
                   {matchesTruncated ? (
-                    <p style={{ margin: '-0.45rem 0 0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{matchesLabel}</p>
+                    <p style={{ margin: '-0.45rem 0 0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{matchesLabel}</p>
                   ) : null}
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {matches.map((match) => (
@@ -636,7 +636,7 @@ export default async function EmployerCandidateProfilePage({
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-accent)' }}>{matchScoreAsPercent(match.matchScore)}%</div>
-                            <div style={{ fontSize: '0.68rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>match</div>
+                            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>match</div>
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginTop: '0.65rem' }}>
@@ -644,7 +644,7 @@ export default async function EmployerCandidateProfilePage({
                             label={employerMatchPipelineLabel(match.status)}
                             variant={employerAiMatchStatusBadgeVariant(match.status)}
                           />
-                          {highlightJobId === match.jobId ? <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span> : null}
+                          {highlightJobId === match.jobId ? <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)' }}>Current focus</span> : null}
                         </div>
                       </div>
                     ))}
@@ -654,9 +654,9 @@ export default async function EmployerCandidateProfilePage({
 
               {applications.length > 0 ? (
                 <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                  <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Applications</h2>
+                  <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Applications</h2>
                   {applicationsTruncated ? (
-                    <p style={{ margin: '-0.45rem 0 0.75rem', fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>{applicationsLabel}</p>
+                    <p style={{ margin: '-0.45rem 0 0.75rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{applicationsLabel}</p>
                   ) : null}
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {applications.map((application) => (
@@ -682,7 +682,7 @@ export default async function EmployerCandidateProfilePage({
 
             <aside style={{ display: 'grid', gap: '1rem' }}>
               <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Next best action</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Next best action</h2>
                 {selectedMatch ? (
                   <>
                     <p style={{ margin: 0, color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
@@ -707,18 +707,18 @@ export default async function EmployerCandidateProfilePage({
               </div>
 
               <div className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
-                <h2 style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Pipeline notes</h2>
+                <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.9rem' }}>Pipeline notes</h2>
                 <div style={{ display: 'grid', gap: '0.85rem' }}>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Highlighted role</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Highlighted role</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{selectedMatch?.job.title ?? latestApplication?.job.title ?? '—'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Latest application</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Latest application</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>{latestApplication ? formatDateTime(latestApplication.appliedAt) : 'No application yet'}</p>
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>Profile completeness</p>
+                    <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>Profile completeness</p>
                     <p style={{ margin: '0.3rem 0 0', fontWeight: 700 }}>
                       {student.profile?.profileBio || student.profile?.profileLinkedin ? 'Strong enough to review' : 'Light profile, verify details in outreach'}
                     </p>

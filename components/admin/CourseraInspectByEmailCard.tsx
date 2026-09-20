@@ -71,7 +71,7 @@ const cardStyle: React.CSSProperties = {
 };
 
 const cardTitleStyle: React.CSSProperties = {
-  fontSize: '0.78rem',
+  fontSize: '0.8125rem',
   textTransform: 'uppercase',
   letterSpacing: '0.04em',
   color: 'var(--color-on-surface-variant)',
@@ -115,7 +115,7 @@ function YesNo({ value }: { value: boolean }) {
   return (
     <span
       style={{
-        fontSize: '0.72rem',
+        fontSize: '0.8125rem',
         padding: '0.15rem 0.5rem',
         borderRadius: '0.5rem',
         background: value ? 'rgba(34, 197, 94, 0.15)' : 'rgba(244, 63, 94, 0.12)',
@@ -346,7 +346,7 @@ export default function CourseraInspectByEmailCard() {
         {data && (
           <span
             style={{
-              fontSize: '0.78rem',
+              fontSize: '0.8125rem',
               color: 'var(--color-on-surface-variant)',
               marginLeft: 'auto',
             }}
@@ -390,30 +390,30 @@ export default function CourseraInspectByEmailCard() {
                   <div>
                     <strong>{data.wap.fullName || data.email}</strong>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     userId: <code>{data.wap.userId.slice(0, 8)}…</code>
                   </div>
-                  <div style={{ fontSize: '0.8rem' }}>
+                  <div style={{ fontSize: '0.8125rem' }}>
                     Profile role: <code>{data.wap.profileRole ?? '—'}</code>
                   </div>
                   {data.wap.extraRoles.length > 0 && (
-                    <div style={{ fontSize: '0.8rem' }}>
+                    <div style={{ fontSize: '0.8125rem' }}>
                       Extra roles: <code>{data.wap.extraRoles.join(', ')}</code>
                     </div>
                   )}
-                  <div style={{ fontSize: '0.8rem', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                  <div style={{ fontSize: '0.8125rem', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                     isMember: <YesNo value={data.wap.isMember} />
                   </div>
                   {data.wap.enrollments.length > 0 ? (
                     <div style={{ marginTop: '0.35rem' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                         Enrollments ({data.wap.enrollments.length})
                       </div>
                       <ul
                         style={{
                           margin: '0.2rem 0 0 1rem',
                           padding: 0,
-                          fontSize: '0.78rem',
+                          fontSize: '0.8125rem',
                           maxHeight: '8rem',
                           overflowY: 'auto',
                         }}
@@ -426,7 +426,7 @@ export default function CourseraInspectByEmailCard() {
                       </ul>
                     </div>
                   ) : (
-                    <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                       No CourseProgress rows.
                     </div>
                   )}
@@ -483,24 +483,24 @@ export default function CourseraInspectByEmailCard() {
               </div>
               {data.coursera.rosterEntry ? (
                 <>
-                  <div style={{ fontSize: '0.78rem', wordBreak: 'break-all' }}>
+                  <div style={{ fontSize: '0.8125rem', wordBreak: 'break-all' }}>
                     externalId: <code>{data.coursera.rosterEntry.externalId}</code>
                   </div>
-                  <div style={{ fontSize: '0.78rem' }}>
+                  <div style={{ fontSize: '0.8125rem' }}>
                     {data.coursera.rosterEntry.membershipProgramIds.length} program(s)
                   </div>
                 </>
               ) : null}
               {data.coursera.enrollmentReports.length > 0 && (
                 <div style={{ marginTop: '0.35rem' }}>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     enrollmentReports ({data.coursera.enrollmentReports.length})
                   </div>
                   <ul
                     style={{
                       margin: '0.2rem 0 0 1rem',
                       padding: 0,
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       maxHeight: '6rem',
                       overflowY: 'auto',
                     }}
@@ -519,14 +519,14 @@ export default function CourseraInspectByEmailCard() {
               )}
               {data.coursera.gradebookReports.length > 0 && (
                 <div style={{ marginTop: '0.35rem' }}>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     gradebookReports ({data.coursera.gradebookReports.length})
                   </div>
                   <ul
                     style={{
                       margin: '0.2rem 0 0 1rem',
                       padding: 0,
-                      fontSize: '0.78rem',
+                      fontSize: '0.8125rem',
                       maxHeight: '6rem',
                       overflowY: 'auto',
                     }}
@@ -546,7 +546,7 @@ export default function CourseraInspectByEmailCard() {
             <div style={cardStyle}>
               <span style={cardTitleStyle}>xAPI activity</span>
               <div style={{ fontSize: '1.4rem', fontWeight: 700 }}>{data.xapiActivity.statementCount}</div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--color-on-surface-variant)' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 statements received
               </div>
               <div style={{ fontSize: '0.85rem' }}>
@@ -571,7 +571,7 @@ export default function CourseraInspectByEmailCard() {
           >
             <span
               style={{
-                fontSize: '0.78rem',
+                fontSize: '0.8125rem',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
                 fontWeight: 700,
@@ -642,7 +642,7 @@ export default function CourseraInspectByEmailCard() {
                           display: 'block',
                           marginTop: '0.2rem',
                           color: 'var(--color-on-surface-variant)',
-                          fontSize: '0.78rem',
+                          fontSize: '0.8125rem',
                         }}
                       >
                         Dropped (no catalog mapping): {syncResult.detail.droppedNoMapping
@@ -661,7 +661,7 @@ export default function CourseraInspectByEmailCard() {
                           display: 'block',
                           marginTop: '0.2rem',
                           color: 'var(--color-on-surface-variant)',
-                          fontSize: '0.78rem',
+                          fontSize: '0.8125rem',
                         }}
                       >
                         Learning Paths (program-level progress):{' '}

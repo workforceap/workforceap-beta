@@ -43,7 +43,7 @@ export default function MobileDiscoverSection({
                 >
                 <div style={{ height:"7rem", position:"relative", background: `linear-gradient(135deg, ${prog.categoryColor} 0%, var(--surface-container-highest) 100%)` }} />
                 <div style={{ padding:"1rem", display:"flex", flexDirection:"column", gap:"0.25rem" }}>
-                  <p className="wa-text-[11px] wa-font-bold wa-uppercase wa-tracking-widest" style={{ color: 'var(--color-gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prog.partner || t('workforceAP')}</p>
+                  <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-widest" style={{ color: 'var(--color-gold)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prog.partner || t('workforceAP')}</p>
                   <h3 className="wa-font-bold wa-text-sm wa-text-[var(--color-on-surface)] wa-leading-tight" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prog.title}</h3>
                 </div>
                 </div>
@@ -95,7 +95,7 @@ export default function MobileDiscoverSection({
                     <div className="portal-card__body" style={{ padding:"1rem" }}>
                       <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:"0.75rem" }}>
                         <div style={{ minWidth:0, overflow: 'hidden' }}>
-                          <p className="wa-text-[10px] wa-font-bold wa-uppercase wa-tracking-widest" style={{ color:'var(--color-on-surface-variant)', margin:0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <p className="wa-text-[13px] wa-font-bold wa-uppercase wa-tracking-widest" style={{ color:'var(--color-on-surface-variant)', margin:0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {card.eyebrow}
                           </p>
                           <p className="wa-text-sm wa-font-bold wa-tracking-tight" style={{ color:'var(--color-on-surface)', margin:"0.35rem 0 0", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

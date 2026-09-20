@@ -63,7 +63,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
           style={{ display: 'flex', flexDirection: 'column', gap: 2, textDecoration: 'none' }}
         >
           <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{m.fullName}</span>
-          <span style={{ fontSize: 11, color: 'var(--wa-muted)' }}>{m.story}</span>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{m.story}</span>
         </Link>
       ),
     },
@@ -97,7 +97,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
             color={m.stage === 'placed' ? 'success' : 'accent'}
             width={100}
           />
-          <span style={{ fontSize: 11, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
             {m.progress}%
           </span>
         </div>
@@ -108,7 +108,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       header: 'Referred',
       align: 'right',
       render: (m) => (
-        <span style={{ fontSize: 12, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
           {m.referredAtLabel}
         </span>
       ),
@@ -158,7 +158,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
           <option value="placed">Placed</option>
         </select>
       </div>
-      <p style={{ fontSize: 12, color: 'var(--wa-muted)' }}>
+      <p style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
         {filtered.length} member{filtered.length !== 1 ? 's' : ''} shown
       </p>
       <DataTable<PartnerMember>

@@ -96,6 +96,10 @@ export function CounselorsRosterKit({
     [counselors, sortKey, sortDirection],
   );
 
+  // KPI totals are categorical and stay neutral (WAP-99): a caseload average
+  // is not "information" and a response time is not a "success". The only
+  // hue is state-derived — at-risk ownership reads as attention while any
+  // members are at risk, and neutral at zero.
   const kpis: KpiItem[] = [
     { label: 'Counselors', value: total },
     { label: 'Avg Caseload', value: avgCaseload },
@@ -120,7 +124,7 @@ export function CounselorsRosterKit({
         </div>
         <div
           style={{
-            fontSize: 10,
+            fontSize: 13,
             color: 'var(--wa-muted)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -257,7 +261,7 @@ export function CounselorsRosterKit({
                 alignItems: 'baseline',
                 justifyContent: 'space-between',
                 gap: 8,
-                fontSize: 11,
+                fontSize: 13,
                 color: 'var(--wa-muted)',
                 margin: '12px 0 0',
               }}
@@ -285,7 +289,7 @@ export function CounselorsRosterKit({
       <p
         style={{
           textAlign: 'center',
-          fontSize: 12,
+          fontSize: 13,
           color: 'var(--wa-muted)',
           marginTop: 16,
         }}

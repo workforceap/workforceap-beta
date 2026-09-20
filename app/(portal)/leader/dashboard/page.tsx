@@ -136,7 +136,7 @@ export default function LeaderDashboardPage() {
               alignItems: "center",
               padding: "0.2rem 0.6rem",
               borderRadius: "var(--radius-full)",
-              fontSize: "0.75rem",
+              fontSize: "0.8125rem",
               fontWeight: 700,
               color: fg,
               background: bg,
@@ -231,7 +231,7 @@ export default function LeaderDashboardPage() {
               </div>
               <div
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "0.8125rem",
                   fontWeight: 600,
                   color: "var(--color-on-surface-variant)",
                   marginTop: "0.25rem",
@@ -287,7 +287,7 @@ export default function LeaderDashboardPage() {
                         {mtg.attendanceCount !== null && (
                           <span
                             style={{
-                              fontSize: "0.75rem",
+                              fontSize: "0.8125rem",
                               color: "var(--color-on-surface-variant)",
                               fontVariantNumeric: "tabular-nums",
                             }}
@@ -343,7 +343,7 @@ export default function LeaderDashboardPage() {
                           borderRadius: "var(--radius-full)",
                           background: statusColor("info").bg,
                           color: statusColor("info").fg,
-                          fontSize: "0.7rem",
+                          fontSize: "0.8125rem",
                           fontWeight: 700,
                           fontVariantNumeric: "tabular-nums",
                           flexShrink: 0,
@@ -353,12 +353,12 @@ export default function LeaderDashboardPage() {
                       </span>
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{item.course.name}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)" }}>
+                        <div style={{ fontSize: "0.8125rem", color: "var(--color-on-surface-variant)" }}>
                           {programDisplayTitle(item.course.programSlug)}
                         </div>
                       </div>
                       {item.notes && (
-                        <div style={{ fontSize: "0.75rem", color: "var(--color-on-surface-variant)", marginLeft: "auto" }}>
+                        <div style={{ fontSize: "0.8125rem", color: "var(--color-on-surface-variant)", marginLeft: "auto" }}>
                           {item.notes}
                         </div>
                       )}

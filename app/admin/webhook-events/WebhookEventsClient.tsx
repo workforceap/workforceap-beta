@@ -419,7 +419,7 @@ export default function WebhookEventsClient({
                     borderRadius: 'var(--radius-sm)',
                     background: style.bg,
                     color: style.color,
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     textTransform: 'capitalize',
                   }}
@@ -427,10 +427,10 @@ export default function WebhookEventsClient({
                   {e.status}
                 </span>
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {e.eventType ?? '—'} · {formatBytes(e.payloadSize)} · {e.processingTimeMs ? `${e.processingTimeMs}ms` : '—'}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                 {formatTime(e.createdAt)}
                 {e.retryCount > 0 ? ` · Retry ${e.retryCount}` : ''}
               </div>
@@ -441,7 +441,7 @@ export default function WebhookEventsClient({
                     padding: '0.5rem',
                     borderRadius: 'var(--radius-sm)',
                     background: 'var(--surface-container-highest)',
-                    fontSize: '0.75rem',
+                    fontSize: '0.8125rem',
                     overflow: 'auto',
                     maxHeight: '200px',
                     whiteSpace: 'pre-wrap',

@@ -51,8 +51,8 @@ function studentCard(r: Student) {
       <div className="wa-flex wa-items-center wa-gap-3">
         <Avatar initials={r.name.split(' ').map((s) => s[0]).join('')} size={36} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 12 }}>{r.name}</div>
-          <div style={{ fontSize: 10, color: 'var(--wa-muted)' }}>{r.program}</div>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{r.name}</div>
+          <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{r.program}</div>
         </div>
         <StatusTag tone={r.tone}>{r.status}</StatusTag>
       </div>
@@ -88,21 +88,21 @@ function Showcase({ surface }: { surface: SurfaceMode }) {
             <div>
               <StatusTag tone="warn">In Progress</StatusTag>
               <h3 style={{ fontWeight: 800, fontSize: 18, marginTop: 8, letterSpacing: '-0.02em' }}>AWS Cloud Practitioner</h3>
-              <p style={{ fontSize: 12, color: 'var(--wa-muted)', marginTop: 2 }}>Next: Shared Responsibility Model</p>
+              <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>Next: Shared Responsibility Model</p>
             </div>
           </div>
           <div className="wa-kit-card wa-kit-card--gradient-crimson" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 150 }}>
             <div style={{ fontSize: 22 }}>✦</div>
             <div>
               <h3 style={{ fontWeight: 800, fontSize: 18 }}>Career Toolkit</h3>
-              <p style={{ fontSize: 12, opacity: 0.85 }}>gradient in warm · tint in dense</p>
+              <p style={{ fontSize: 13, opacity: 0.85 }}>gradient in warm · tint in dense</p>
             </div>
           </div>
           <div className="wa-kit-card wa-kit-card--gradient-gold" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 150 }}>
             <div style={{ fontSize: 22 }}>★</div>
             <div>
               <h3 style={{ fontWeight: 800, fontSize: 18 }}>Next Badge</h3>
-              <p style={{ fontSize: 12, opacity: 0.85 }}>2 modules to go</p>
+              <p style={{ fontSize: 13, opacity: 0.85 }}>2 modules to go</p>
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function DevKitPage() {
     <main>
       <div style={{ background: '#1a1a1a', color: '#fff', padding: '16px 28px' }}>
         <div style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Portal Design Kit — Phase 0 proof</div>
-        <div style={{ fontSize: 11, color: '#a3a3a3' }}>Every shipped primitive, both surface modes. Resize to mobile to see the table → cards fallback. Hidden in production.</div>
+        <div style={{ fontSize: 13, color: '#a3a3a3' }}>Every shipped primitive, both surface modes. Resize to mobile to see the table → cards fallback. Hidden in production.</div>
       </div>
       <Showcase surface="warm" />
       <div style={{ height: 1, background: 'var(--wa-border)' }} />

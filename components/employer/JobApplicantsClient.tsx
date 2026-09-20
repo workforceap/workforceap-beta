@@ -117,13 +117,13 @@ export default function JobApplicantsClient({
                   <p style={{ margin: 0, fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)' }} className="wa-truncate">
                     {studentName}
                   </p>
-                  <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }} className="wa-truncate">
+                  <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }} className="wa-truncate">
                     {app.student.email}
                   </p>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                   Applied {new Date(app.appliedAt).toLocaleDateString()}
                 </span>
                 <select
@@ -132,7 +132,7 @@ export default function JobApplicantsClient({
                   disabled={busyId === app.id}
                   aria-label={`Update application status for ${studentName}`}
                   onChange={(e) => patchStatus(app.id, e.target.value as JobPostingApplicationStatus)}
-                  style={{ fontSize: '0.75rem', padding: '0.375rem 0.5rem' }}
+                  style={{ fontSize: '0.8125rem', padding: '0.375rem 0.5rem' }}
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -154,13 +154,13 @@ export default function JobApplicantsClient({
             </caption>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--outline-variant)' }}>
-                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Candidate
                 </th>
-                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Applied
                 </th>
-                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <th style={{ padding: '0.875rem 1rem', textAlign: 'left', fontWeight: 700, color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Status
                 </th>
               </tr>
@@ -184,7 +184,7 @@ export default function JobApplicantsClient({
                             background: 'linear-gradient(135deg, var(--color-accent-dark), var(--color-accent))',
                             color: '#fff',
                             fontWeight: 700,
-                            fontSize: '0.75rem',
+                            fontSize: '0.8125rem',
                           }}
                         >
                           {studentName
@@ -201,7 +201,7 @@ export default function JobApplicantsClient({
                           >
                             {studentName}
                           </Link>
-                          <p style={{ margin: '0.125rem 0 0', fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>
+                          <p style={{ margin: '0.125rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             {app.student.email}
                           </p>
                         </div>

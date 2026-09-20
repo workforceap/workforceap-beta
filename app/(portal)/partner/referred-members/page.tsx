@@ -54,7 +54,7 @@ export default async function PartnerReferredMembersPage() {
                   padding: '0.5rem 0.875rem',
                   background: 'var(--wa-surface-2)',
                   borderRadius: 'var(--wa-radius-sm)',
-                  fontSize: '0.75rem',
+                  fontSize: '0.8125rem',
                   fontWeight: 700,
                   color: 'var(--wa-text)',
                   textDecoration: 'none',

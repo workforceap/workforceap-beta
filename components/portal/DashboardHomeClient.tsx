@@ -297,7 +297,7 @@ export default function DashboardHomeClient({
 
       {/* ── Page Header ── */}
       <header className="portal-dash-header portal-dash-inset">
-        <p className="text-label-upper" style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em', fontSize: '0.75rem', marginBottom: '0.375rem' }}>
+        <p className="text-label-upper" style={{ color: 'var(--color-on-surface-variant)', letterSpacing: '0.08em', fontSize: '0.8125rem', marginBottom: '0.375rem' }}>
           {weekEyebrow}
         </p>
         <h2 className="text-display-sm" style={{ color: 'var(--color-on-surface)', marginBottom: '0.5rem' }}>
@@ -311,15 +311,15 @@ export default function DashboardHomeClient({
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
           {programTitle ? (
-            <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'var(--surface-container-low)', color: 'var(--color-on-surface)', fontSize: '0.75rem', fontWeight: 700 }}>
+            <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'var(--surface-container-low)', color: 'var(--color-on-surface)', fontSize: '0.8125rem', fontWeight: 700 }}>
               {programTitle}
             </span>
           ) : null}
-          <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.75rem', fontWeight: 700 }}>
+          <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.8125rem', fontWeight: 700 }}>
             {state === 'A' ? t('stateGettingStarted') : state === 'B' ? t('stateReadyForPreassessment') : state === 'C' ? t('myTrainingMetricLabel') : t('trainingComplete')}
           </span>
           {(state === 'C' || state === 'D') && (
-            <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'var(--surface-container-low)', color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', fontWeight: 700 }}>
+            <span style={{ padding: '0.4rem 0.7rem', borderRadius: '999px', background: 'var(--surface-container-low)', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700 }}>
               {t('coursesDoneCount', { completed: completedCount, total: totalCourses })}
             </span>
           )}
@@ -393,7 +393,7 @@ export default function DashboardHomeClient({
                             />
                             <span
                               style={{
-                                fontSize: '0.6875rem',
+                                fontSize: '0.8125rem',
                                 fontWeight: current ? 700 : 600,
                                 color: locked ? 'var(--color-on-surface-variant)' : 'var(--color-on-surface)',
                                 opacity: locked ? 0.45 : 0.85,
@@ -408,7 +408,7 @@ export default function DashboardHomeClient({
                     </div>
                   )}
                   <div className="portal-card portal-card--flat portal-card--padded-sm" style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>Current status</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>Current status</p>
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{applicationStatus.label}</p>
                   </div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{applicationStatus.nextStep}</p>
@@ -423,12 +423,12 @@ export default function DashboardHomeClient({
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {showPreassessmentScore && (
-                        <span style={{ padding: '0.25rem 0.625rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.75rem', borderRadius: '9999px', fontWeight: 600 }}>
+                        <span style={{ padding: '0.25rem 0.625rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', fontSize: '0.8125rem', borderRadius: '9999px', fontWeight: 600 }}>
                           Preassessment: {assessmentScorePct}%
                         </span>
                       )}
                       {enrolledAt && (
-                        <span style={{ padding: '0.25rem 0.625rem', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface-variant)', fontSize: '0.75rem', borderRadius: '9999px', fontWeight: 600 }}>
+                        <span style={{ padding: '0.25rem 0.625rem', background: 'var(--surface-container-lowest)', color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', borderRadius: '9999px', fontWeight: 600 }}>
                           Enrolled: {formatPortalDate(enrolledAt)}
                         </span>
                       )}
@@ -506,7 +506,7 @@ export default function DashboardHomeClient({
                   <span style={{ fontSize: '3rem', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '-0.04em' }}>
                     {progressPct}<span style={{ fontSize: '1.25rem' }}>%</span>
                   </span>
-                  <span style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>Progress</span>
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)' }}>Progress</span>
                 </div>
               </div>
 
@@ -629,7 +629,7 @@ export default function DashboardHomeClient({
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.6875rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: dominantNextAction ? 'var(--color-on-surface-variant)' : 'var(--color-accent)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: dominantNextAction ? 'var(--color-on-surface-variant)' : 'var(--color-accent)' }}>
                 {state === 'A' ? t('stateGettingStarted') : state === 'B' ? t('yourNextStep') : state === 'C' ? t('firstCertTrainingStage') : t('trainingComplete')}
               </p>
               <h4 style={{ fontWeight: 700, fontSize: '1rem', margin: '0.45rem 0 0.35rem', color: 'var(--color-on-surface)' }}>
@@ -686,7 +686,7 @@ export default function DashboardHomeClient({
             </div>
 
             <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.6875rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
                 Support
               </p>
               <h4 style={{ fontWeight: 700, fontSize: '1rem', margin: '0.45rem 0 0.35rem', color: 'var(--color-on-surface)' }}>Talk to a counselor</h4>
@@ -704,7 +704,7 @@ export default function DashboardHomeClient({
             </div>
 
             <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.1rem' }}>
-              <p style={{ margin: 0, fontSize: '0.6875rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
+              <p style={{ margin: 0, fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)' }}>
                 Voice coach
               </p>
               <h4 style={{ fontWeight: 700, fontSize: '1rem', margin: '0.45rem 0 0.35rem', color: 'var(--color-on-surface)' }}>
@@ -745,7 +745,7 @@ export default function DashboardHomeClient({
                     <span className="material-symbols-outlined" style={{ fontSize: '1.25rem', color: 'var(--color-on-surface-variant)' }}>{item.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h5 style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>{item.label}</h5>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--color-on-surface-variant)' }}>{item.desc}</p>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{item.desc}</p>
                     </div>
                     <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', opacity: 0.3, flexShrink: 0 }}>chevron_right</span>
                   </div>
