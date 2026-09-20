@@ -21152,6 +21152,38 @@
     "target": "app/admin/members/[id]/introduceAction.ts"
   },
   {
+    "from": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+    "specifier": "@/lib/fetchWithTimeout",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/fetchWithTimeout.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+    "specifier": "@/lib/portal/memberRequestFailure",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/AdminMemberNotesPanel.tsx",
+    "specifier": "./notesPanel.module.css",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/notesPanel.module.css"
+  },
+  {
     "from": "app/admin/members/[id]/CreateSuccessToast.tsx",
     "specifier": "react",
     "line": 3,
@@ -21504,6 +21536,14 @@
     "target": "components/portal/StatusBadge.tsx"
   },
   {
+    "from": "app/admin/members/[id]/memberDetailTabs.ts",
+    "specifier": "@/components/portal/kit",
+    "line": 7,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -21777,8 +21817,16 @@
   },
   {
     "from": "app/admin/members/[id]/page.tsx",
-    "specifier": "@/lib/formatPhone",
+    "specifier": "./AdminMemberNotesPanel",
     "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/AdminMemberNotesPanel.tsx"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/lib/formatPhone",
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/formatPhone.ts"
@@ -21786,7 +21834,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/messages/counselorThread",
-    "line": 38,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/messages/counselorThread.ts"
@@ -21794,7 +21842,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 39,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -21802,7 +21850,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "lucide-react",
-    "line": 40,
+    "line": 41,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -21810,7 +21858,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/wioa/wioaQualification",
-    "line": 41,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaQualification.ts"
@@ -21818,7 +21866,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/wioa/wioaReview",
-    "line": 42,
+    "line": 43,
     "kind": "type",
     "external": false,
     "target": "lib/wioa/wioaReview.ts"
@@ -21826,7 +21874,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/AdminMemberWioaReviewPanel",
-    "line": 43,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminMemberWioaReviewPanel.tsx"
@@ -21834,7 +21882,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/ApplicantTriageChecklist",
-    "line": 44,
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "components/admin/ApplicantTriageChecklist.tsx"
@@ -21842,7 +21890,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/applicantTriage",
-    "line": 45,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriage.ts"
@@ -21850,7 +21898,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/applicantTriageLoad",
-    "line": 46,
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriageLoad.ts"
@@ -21858,7 +21906,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "next-intl/server",
-    "line": 47,
+    "line": 48,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -21866,7 +21914,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/wioa/reviewSnapshot",
-    "line": 48,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/reviewSnapshot.ts"
@@ -21874,7 +21922,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -21882,7 +21930,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "./AdminMemberAiMatches",
-    "line": 50,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/[id]/AdminMemberAiMatches.tsx"
@@ -21890,7 +21938,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/portal/MemberProgressStrip",
-    "line": 51,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberProgressStrip.tsx"
@@ -21898,7 +21946,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/coursera/progressQueries",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressQueries.ts"
@@ -21906,7 +21954,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/boardOutcomes",
-    "line": 53,
+    "line": 54,
     "kind": "import",
     "external": false,
     "target": "lib/admin/boardOutcomes.ts"
@@ -21914,7 +21962,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/memberOutcomesSummary",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOutcomesSummary.ts"
@@ -21922,7 +21970,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/MemberCourseraDiagnoseButton",
-    "line": 55,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "components/admin/MemberCourseraDiagnoseButton.tsx"
@@ -21930,7 +21978,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/components/admin/AdminMemberSkillCheckpointPanel",
-    "line": 56,
+    "line": 57,
     "kind": "import",
     "external": false,
     "target": "components/admin/AdminMemberSkillCheckpointPanel.tsx"
@@ -21938,7 +21986,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/member/skillMissions",
-    "line": 57,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissions.ts"
@@ -21946,7 +21994,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/admin/careerPlanSignal",
-    "line": 58,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/admin/careerPlanSignal.ts"
@@ -21954,7 +22002,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 59,
+    "line": 60,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -21962,7 +22010,7 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/coursera/progressReconciliation",
-    "line": 60,
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressReconciliation.ts"
@@ -21970,10 +22018,42 @@
   {
     "from": "app/admin/members/[id]/page.tsx",
     "specifier": "@/lib/events/names",
-    "line": 61,
+    "line": 62,
     "kind": "import",
     "external": false,
     "target": "lib/events/names.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 63,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "@/lib/admin/memberActivity",
+    "line": 64,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberActivity.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "./memberDetailTabs",
+    "line": 65,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/memberDetailTabs.ts"
+  },
+  {
+    "from": "app/admin/members/[id]/page.tsx",
+    "specifier": "./memberDetail.module.css",
+    "line": 71,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/memberDetail.module.css"
   },
   {
     "from": "app/admin/members/[id]/readiness/ReadinessCounselorClient.tsx",
@@ -24014,6 +24094,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/i18n/pluralCount.ts"
+  },
+  {
+    "from": "app/admin/page.tsx",
+    "specifier": "@/lib/admin/commandCenterHealth",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHealth.ts"
   },
   {
     "from": "app/admin/partners/OpenPartnerPortalButton.tsx",
@@ -83984,6 +84072,30 @@
     "package": "@astryxdesign/core"
   },
   {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
+    "specifier": "next/navigation",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
     "specifier": "react",
     "line": 1,
@@ -84022,6 +84134,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx",
+    "specifier": "./FeatureFlagToggle",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/FeedbackKit.tsx",
@@ -91374,6 +91494,14 @@
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/commandCenterHelpers.ts"
+  },
+  {
+    "from": "lib/admin/commandCenterHealth.ts",
+    "specifier": "@/components/portal/kit/tokens",
+    "line": 13,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/tokens.ts"
   },
   {
     "from": "lib/admin/commandCenterHelpers.ts",
@@ -127240,6 +127368,54 @@
     "target": "lib/tenant/adminPageScope.ts"
   },
   {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "react-dom/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "@/app/admin/members/[id]/page",
+    "line": 117,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "@/app/admin/members/[id]/memberDetailTabs",
+    "line": 118,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/memberDetailTabs.ts"
+  },
+  {
+    "from": "tests/app/admin-member-detail-tabs.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 123,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "tests/app/admin-partners-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -129688,6 +129864,30 @@
     "package": "path"
   },
   {
+    "from": "tests/components/admin-member-notes-panel.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-member-notes-panel.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-member-notes-panel.spec.tsx",
+    "specifier": "@/app/admin/members/[id]/AdminMemberNotesPanel",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/AdminMemberNotesPanel.tsx"
+  },
+  {
     "from": "tests/components/admin-overview-page.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -130544,6 +130744,38 @@
     "target": "components/admin/BulkUpdateModal.tsx"
   },
   {
+    "from": "tests/components/command-center-system-health.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/command-center-system-health.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/command-center-system-health.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
+    "from": "tests/components/command-center-system-health.spec.tsx",
+    "specifier": "@/lib/admin/commandCenterHealth",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHealth.ts"
+  },
+  {
     "from": "tests/components/counselor-note-saves.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -131222,6 +131454,38 @@
     "kind": "import",
     "external": false,
     "target": "app/employers/signup/page.tsx"
+  },
+  {
+    "from": "tests/components/feature-flags-kit.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/feature-flags-kit.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/feature-flags-kit.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/FeatureFlagsKit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/FeatureFlagsKit.tsx"
+  },
+  {
+    "from": "tests/components/feature-flags-kit.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/FeatureFlagToggle",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx"
   },
   {
     "from": "tests/components/feature-tile-heading.spec.tsx",
@@ -138214,6 +138478,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/xapi/token.ts"
+  },
+  {
+    "from": "tests/member-activity-rows.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/member-activity-rows.spec.ts",
+    "specifier": "@/lib/admin/memberActivity",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberActivity.ts"
   },
   {
     "from": "tests/migrations/placement-survey-sent-state.mjs",

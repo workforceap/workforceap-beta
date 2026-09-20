@@ -3824,6 +3824,10 @@
       "declaredInRootExample": false,
       "references": [
         {
+          "file": "tests/app/admin-member-detail-tabs.spec.tsx",
+          "line": 1
+        },
+        {
           "file": "tests/app/counselor-student-detail-dates.spec.tsx",
           "line": 1
         },
