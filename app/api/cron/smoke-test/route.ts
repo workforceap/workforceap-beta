@@ -25,6 +25,8 @@ type Probe = {
   name: string;
   kind: 'json-health' | 'public-page' | 'protected-redirect';
   bodyMarker?: string;
+  /** json-health only: fail unless the body reports `rateLimiter: "redis"` (WAP-13). */
+  requireRedisRateLimiter?: boolean;
 };
 
 type ProbeResult = {
@@ -38,7 +40,7 @@ type ProbeResult = {
 
 const PROBES: Probe[] = [
   { path: '/api/health', name: 'liveness', kind: 'json-health' },
-  { path: '/api/health/ready', name: 'readiness', kind: 'json-health' },
+  { path: '/api/health/ready', name: 'readiness', kind: 'json-health', requireRedisRateLimiter: true },
   { path: '/login', name: 'login', kind: 'public-page', bodyMarker: 'Sign In' },
   {
     path: '/programs',
@@ -90,8 +92,14 @@ async function runProbe(baseUrl: string, probe: Probe): Promise<ProbeResult> {
       reason = 'empty response body';
     } else if (probe.kind === 'json-health') {
       try {
-        const parsed = JSON.parse(body) as { status?: unknown };
-        if (parsed.status !== 'ok') reason = `health status ${String(parsed.status)}`;
+        const parsed = JSON.parse(body) as { status?: unknown; rateLimiter?: unknown };
+        if (parsed.status !== 'ok') {
+          reason = `health status ${String(parsed.status)}`;
+        } else if (probe.requireRedisRateLimiter && parsed.rateLimiter !== 'redis') {
+          // Production without Upstash either 429s every contact POST
+          // (fail-closed) or runs auth with no brute-force cap (fail-open).
+          reason = `rate limiter mode ${String(parsed.rateLimiter)} (expected redis)`;
+        }
       } catch {
         reason = 'invalid health JSON';
       }

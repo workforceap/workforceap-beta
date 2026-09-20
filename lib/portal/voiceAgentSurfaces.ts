@@ -14,7 +14,12 @@ type Surface = {
 const CRIMSON = '#ad2c4d';
 const CRIMSON_DARK = '#8c0f37';
 const GOLD = '#a47f38';
-const GOLD_DARK = '#7d5f26';
+/**
+ * White CTA text sits on these gradients, so the floor must be the tuned
+ * hero gold (#7d5f26, 5.9:1 with white) rather than brand gold (#a47f38,
+ * 3.7:1). `--wa-gold` stays a fill/stroke colour (WAP-100).
+ */
+export const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, var(--wa-hero-gold), var(--wa-hero-gold-dark))';
 const BLUE = '#2b7bb9';
 const BLUE_DARK = '#1f5a87';
 
@@ -27,8 +32,8 @@ export const readinessVoiceSurface: Surface = {
   subtext: 'Stuck on what to do next? Talk it through and leave with one clear next step.',
   icon: icon(Target),
   glowColor: GOLD,
-  gradient: `linear-gradient(135deg, ${GOLD}, ${GOLD_DARK})`,
-  ctaGradient: `linear-gradient(135deg, ${GOLD}, ${GOLD_DARK})`,
+  gradient: GOLD_TEXT_GRADIENT,
+  ctaGradient: GOLD_TEXT_GRADIENT,
   ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
 };
 
@@ -78,8 +83,8 @@ export const partnerVoiceSurface: Surface = {
   subtext: 'Referrals, member progress, and partner tools.',
   icon: icon(Handshake),
   glowColor: GOLD,
-  gradient: `linear-gradient(135deg, ${GOLD}, ${GOLD_DARK})`,
-  ctaGradient: `linear-gradient(135deg, ${GOLD}, ${GOLD_DARK})`,
+  gradient: GOLD_TEXT_GRADIENT,
+  ctaGradient: GOLD_TEXT_GRADIENT,
   ctaShadow: '0 8px 24px rgba(164,127,56,0.24)',
 };
 

@@ -39,6 +39,10 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
  * Pure and serializable: every string is computed from the queue so a render
  * test can drive it with the shared fixture roster.
  *
+ * `data-tour` anchors (`tour-today-attention`, `tour-today-queue`,
+ * `tour-today-roster`) are the page steps of the `counselor.home` guided tour
+ * (lib/tours/registry.ts); keep them on elements that render for an empty queue.
+ *
  * Target route: app/(portal)/counselor/today
  * Surface: dense (staff-facing).
  */
@@ -206,7 +210,7 @@ export function CounselorTodayKit({
           title="Today"
           lede={lede}
           action={
-            <Link href={rosterHref} className="wa-page-action">
+            <Link href={rosterHref} className="wa-page-action" data-tour="tour-today-roster">
               All members
             </Link>
           }
@@ -228,7 +232,7 @@ export function CounselorTodayKit({
           </div>
         ) : (
           <>
-            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-3 wa-gap-3">
+            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-3 wa-gap-3" data-tour="tour-today-attention">
               <TodayTile
                 id="flagged"
                 label="Needs attention"
@@ -246,7 +250,7 @@ export function CounselorTodayKit({
               <TodayTile id="on-track" label="On track" value={totals.onTrack} caption="No flags today" tone="ok" />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} data-tour="tour-today-queue">
               {queue.groups.map((group) => (
                 <TodayGroupSection key={group.key} group={group} memberHrefBase={memberHrefBase} />
               ))}

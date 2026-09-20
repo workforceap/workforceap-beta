@@ -1053,12 +1053,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 14,
+        "line": 16,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 25,
+        "line": 27,
         "kind": "FunctionDeclaration",
         "localName": "CounselorLayout"
       }
@@ -21307,7 +21307,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 19,
+        "line": 36,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -23264,12 +23264,12 @@
       },
       {
         "name": "GET",
-        "line": 182,
+        "line": 190,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 183,
+        "line": 191,
         "kind": "Variable"
       }
     ],
@@ -24576,12 +24576,12 @@
       },
       {
         "name": "OPTIONS",
-        "line": 77,
+        "line": 81,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "GET",
-        "line": 86,
+        "line": 90,
         "kind": "Variable"
       }
     ],
@@ -28487,7 +28487,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 11,
+        "line": 24,
         "kind": "Variable"
       }
     ],
@@ -33313,6 +33313,19 @@
     "file": "marketing/src/pages/contact.astro",
     "kind": "astro-page",
     "path": "/contact",
+    "groups": [],
+    "routing": "astro-filesystem-unexpanded",
+    "note": "Active static-build source pattern. getStaticPaths expansion, locale expansion, middleware/static/Next precedence and current deployed serving are not proven.",
+    "exports": [],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": [],
+    "extraction": "Filename route pattern only; Astro frontmatter and template imports are not AST-indexed."
+  },
+  {
+    "file": "marketing/src/pages/contact/thanks.astro",
+    "kind": "astro-page",
+    "path": "/contact/thanks",
     "groups": [],
     "routing": "astro-filesystem-unexpanded",
     "note": "Active static-build source pattern. getStaticPaths expansion, locale expansion, middleware/static/Next precedence and current deployed serving are not proven.",

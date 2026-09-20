@@ -36,6 +36,27 @@ export type MissingLimiterDecision = {
   reason: MissingLimiterReason;
 };
 
+/**
+ * Posture of the security-mode limiters (auth, contact, forgot-password, MFA …)
+ * as reported by `GET /api/health/ready` (WAP-13 / TODO-088):
+ * - `redis` — Upstash configured; every limiter is enforced.
+ * - `fail-open` — no Upstash and either non-production or
+ *   `RATE_LIMIT_ALLOW_MISSING_UPSTASH=1`; security limiters allow everything.
+ * - `fail-closed` — no Upstash in production without the opt-out; security
+ *   limiters reject everything (the contact form 429s on every POST).
+ */
+export type RateLimiterMode = 'redis' | 'fail-open' | 'fail-closed';
+
+export function resolveRateLimiterMode(args: {
+  upstashConfigured: boolean;
+  isProduction: boolean;
+  allowMissingUpstash: boolean;
+}): RateLimiterMode {
+  if (args.upstashConfigured) return 'redis';
+  if (!args.isProduction || args.allowMissingUpstash) return 'fail-open';
+  return 'fail-closed';
+}
+
 export function isAllowMissingUpstashEnabled(
   raw: string | undefined = process.env[ALLOW_MISSING_UPSTASH_ENV]
 ): boolean {

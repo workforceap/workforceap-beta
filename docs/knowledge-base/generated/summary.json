@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "f4fe5b1261ed9545aa002d70d1f42941b71af6544b5ca6d626ec84a7fcfcc433",
+  "inputTreeSha256": "1f3bad1f4a0820432c93fc87a32fa214939e64eab0aaf291f0a684b86d692633",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4921,
-    "sourceModules": 3571,
-    "importReferences": 17759,
-    "resolvedLocalReferences": 11923,
+    "files": 4936,
+    "sourceModules": 3585,
+    "importReferences": 17845,
+    "resolvedLocalReferences": 11980,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1062,
+    "routeFiles": 1063,
     "nextRouteFiles": 1029,
     "apiHandlers": 494,
     "pageFiles": 316,
-    "astroPageFiles": 33,
+    "astroPageFiles": 34,
     "configuredCrons": 31,
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 942,
-    "testCandidates": 933,
-    "testHelpers": 9,
-    "staticallySelectedTests": 931,
+    "testFiles": 951,
+    "testCandidates": 941,
+    "testHelpers": 10,
+    "staticallySelectedTests": 939,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -46,7 +46,7 @@
     },
     {
       "area": "astro-marketing",
-      "files": 106
+      "files": 107
     },
     {
       "area": "audit-graph",
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 611
+      "files": 613
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1058
+      "files": 1063
     },
     {
       "area": "localization",
@@ -106,25 +106,25 @@
     },
     {
       "area": "tests",
-      "files": 551
+      "files": 558
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 922
+      "references": 927
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 748
+      "references": 749
+    },
+    {
+      "file": "lib/auth/roles.ts",
+      "references": 438
     },
     {
       "file": "lib/db/withRequestGuc.ts",
       "references": 438
-    },
-    {
-      "file": "lib/auth/roles.ts",
-      "references": 437
     },
     {
       "file": "lib/content/programs.ts",
@@ -227,12 +227,12 @@
       "references": 45
     },
     {
-      "file": "lib/ai/groq.ts",
-      "references": 43
+      "file": "messages/en.json",
+      "references": 44
     },
     {
-      "file": "messages/en.json",
-      "references": 42
+      "file": "lib/ai/groq.ts",
+      "references": 43
     },
     {
       "file": "lib/admin/logCronRun.ts",

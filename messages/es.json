@@ -3626,6 +3626,51 @@
           "body": "Comparte este enlace con miembros de la comunidad para seguir su recorrido hasta ti."
         }
       }
+    },
+    "help": {
+      "label": "Ayuda",
+      "takeTour": "Hacer el recorrido",
+      "guide": "Guía del portal"
+    },
+    "offer": {
+      "take": "Hacer el recorrido",
+      "dismiss": "Ahora no"
+    },
+    "counselor": {
+      "home": {
+        "offer": {
+          "title": "¿Nuevo aquí? Haz un recorrido de dos minutos",
+          "body": "Descubre qué necesita atención hoy, cómo abrir un miembro, cómo escribirle y dónde están las notas."
+        },
+        "attention": {
+          "title": "Qué necesita atención hoy",
+          "body": "Tres cifras con una regla cada una: miembros marcados como urgentes o en observación, respuestas pendientes tras 24 horas y todos los que van bien. Hoy solo muestra a quienes te necesitan."
+        },
+        "queue": {
+          "title": "Una lista, cada miembro una vez",
+          "body": "Los miembros se agrupan según el tipo de contacto que necesitan — en riesgo, respuesta pendiente, inactivos, seguimientos, nuevos, celebrar — y cada fila explica el motivo. Las urgentes van primero."
+        },
+        "openMember": {
+          "title": "Abrir un miembro",
+          "body": "Usa Ver miembro en cualquier fila, o Todos los miembros para la lista completa. Las tarjetas de la lista explican por qué un miembro necesita atención y cada una enlaza a la página donde actuar."
+        },
+        "memberRecord": {
+          "title": "La ficha del miembro",
+          "body": "Cada miembro se abre en cuatro pestañas: Perfil, Formación, Notas y Mensajes. Las notas están en la pestaña Notas — notas del consejero y de sesión — y la acción Mensaje está en la parte superior de la página."
+        },
+        "atRisk": {
+          "title": "Miembros en riesgo",
+          "body": "El modelo de riesgo ordena tu cartera por inactividad, formación estancada y mensajes sin responder. Empieza aquí en un día ocupado."
+        },
+        "messages": {
+          "title": "Escribir a un miembro",
+          "body": "Mensajes reúne todas las conversaciones con tus miembros. Abrir hilo en una fila de Hoy te lleva directo a la persona que espera."
+        },
+        "help": {
+          "title": "Vuelve cuando quieras",
+          "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a la guía del portal."
+        }
+      }
     }
   }
 }

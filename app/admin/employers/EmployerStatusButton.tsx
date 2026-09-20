@@ -60,7 +60,7 @@ export default function EmployerStatusButton({
         <button
           type="button"
           className="btn btn-sm"
-          style={{ background: '#2d7a32', color: '#fff', border: 'none' }}
+          style={{ background: 'var(--wa-success-dark)', color: '#fff', border: 'none' }}
           disabled={loading}
           onClick={() => void updateStatus('approve')}
           title="Approve employer"
@@ -84,7 +84,7 @@ export default function EmployerStatusButton({
           </p>
         ) : null}
         {success ? (
-          <p style={{ margin: 0, fontSize: '0.82rem', color: '#2d7a32', maxWidth: '16rem' }} role="status">
+          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--wa-success-dark)', maxWidth: '16rem' }} role="status">
             {success}
           </p>
         ) : null}
@@ -122,7 +122,7 @@ export default function EmployerStatusButton({
         </p>
       ) : null}
       {success ? (
-        <p style={{ margin: 0, fontSize: '0.82rem', color: '#2d7a32', maxWidth: '16rem' }} role="status">
+        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--wa-success-dark)', maxWidth: '16rem' }} role="status">
           {success}
         </p>
       ) : null}

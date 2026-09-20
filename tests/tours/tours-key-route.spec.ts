@@ -121,6 +121,9 @@ describe('POST /api/tours/[tourKey]', () => {
         metadata: expect.objectContaining({ tourKey: 'member.home', version: 2, lastStep: 4, role: 'member' }),
       }),
     );
+    // sourcePage is a first-class event column, not repeated inside metadata (wave 1 follow-up).
+    const tracked = vi.mocked(trackEvent).mock.calls[0][0] as { metadata: Record<string, unknown> };
+    expect(tracked.metadata).toEqual({ tourKey: 'member.home', version: 2, lastStep: 4, role: 'member' });
     const body = await res.json();
     expect(body).toEqual({
       ok: true,

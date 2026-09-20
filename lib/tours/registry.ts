@@ -37,7 +37,7 @@ export interface TourDefinition {
   steps: readonly TourStepDefinition[];
 }
 
-export const TOUR_KEYS = ['member.home', 'employer.home', 'partner.home'] as const;
+export const TOUR_KEYS = ['member.home', 'employer.home', 'partner.home', 'counselor.home'] as const;
 export type TourKey = (typeof TOUR_KEYS)[number];
 
 /** Step shape consumed by the tour engine (`components/portal/kit/GuidedTour`). */
@@ -106,6 +106,30 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
       step('partner.home', 'referralLink', 'tour-referral-link', 'bottom'),
     ],
   },
+  /**
+   * Counselor wave (tours wave 2). Written for the Today landing page: the
+   * three page anchors live in `CounselorTodayKit`, the three `tour-nav-*`
+   * anchors are `tourTarget`s on `COUNSELOR_PORTAL_NAV_ITEMS` (rendered by
+   * `WorkspaceShell`), and `tour-help` is the header Help menu that reopens
+   * the tour (`PortalHelpMenu`). Every anchor is present on /counselor/today,
+   * so the step counter never jumps; the same steps still resolve from any
+   * counselor page for the shell anchors (missing page anchors are skipped).
+   */
+  'counselor.home': {
+    key: 'counselor.home',
+    version: 1,
+    role: 'counselor',
+    route: '/counselor/today',
+    steps: [
+      step('counselor.home', 'attention', 'tour-today-attention', 'bottom'),
+      step('counselor.home', 'queue', 'tour-today-queue'),
+      step('counselor.home', 'openMember', 'tour-today-roster', 'bottom'),
+      step('counselor.home', 'memberRecord', 'tour-nav-members'),
+      step('counselor.home', 'atRisk', 'tour-nav-at-risk'),
+      step('counselor.home', 'messages', 'tour-nav-messages'),
+      step('counselor.home', 'help', 'tour-help', 'bottom'),
+    ],
+  },
 };
 
 /** Portal names used by the legacy `startTour(steps, portal)` API and `/api/onboarding/tour-complete`. */
@@ -134,6 +158,15 @@ export function getTour(key: string): TourDefinition | null {
 
 export function listTours(): TourDefinition[] {
   return TOUR_KEYS.map((key) => TOUR_REGISTRY[key]);
+}
+
+/**
+ * The tour a persona's shell offers on first login and from the Help menu:
+ * the first registered tour written for that role, or null when the wave for
+ * that role has not landed. Order follows `TOUR_KEYS`.
+ */
+export function getHomeTourForRole(role: string): TourDefinition | null {
+  return listTours().find((tour) => tour.role === role) ?? null;
 }
 
 /** Engine steps for a registered tour. */

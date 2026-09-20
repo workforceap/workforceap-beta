@@ -3626,6 +3626,51 @@
           "body": "Share this link with community members to track their journey back to you."
         }
       }
+    },
+    "help": {
+      "label": "Help",
+      "takeTour": "Take the tour",
+      "guide": "Portal guide"
+    },
+    "offer": {
+      "take": "Take the tour",
+      "dismiss": "Not now"
+    },
+    "counselor": {
+      "home": {
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See what needs attention today, how to open a member, how to message them and where notes live."
+        },
+        "attention": {
+          "title": "What needs attention today",
+          "body": "Three numbers, one rule each: members flagged urgent or watch, replies you owe after 24 hours, and everyone on track. Today only lists people who need you."
+        },
+        "queue": {
+          "title": "One list, each member once",
+          "body": "Members are grouped by the kind of contact they need — at risk, reply owed, gone quiet, follow-ups, new, celebrate — and every row says why. Urgent rows sort first."
+        },
+        "openMember": {
+          "title": "Open a member",
+          "body": "Use View member on any row, or All members for the full roster. The roster stat cards say why a member needs attention and each card links to the page that acts on it."
+        },
+        "memberRecord": {
+          "title": "The member record",
+          "body": "Each member opens on four tabs: Profile, Training, Notes and Messages. Notes live on the Notes tab — counselor notes and session notes — and the Message action sits at the top of the page."
+        },
+        "atRisk": {
+          "title": "At-risk members",
+          "body": "The risk model ranks your caseload by inactivity, stalled training and unanswered messages. Start here on a busy day."
+        },
+        "messages": {
+          "title": "Message a member",
+          "body": "Messages holds every conversation with your members. Open thread on a Today row takes you straight to the person who is waiting."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it and links to the portal guide."
+        }
+      }
     }
   }
 }

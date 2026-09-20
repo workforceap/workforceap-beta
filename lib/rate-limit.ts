@@ -5,7 +5,9 @@ import {
   decideMissingLimiter,
   isAllowMissingUpstashEnabled,
   isApplyFailClosedEnvEnabled,
+  resolveRateLimiterMode,
   type MissingLimiterMode,
+  type RateLimiterMode,
 } from '@/lib/rate-limit-policy';
 
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
@@ -39,6 +41,15 @@ if (isProduction && !upstashConfigured && !allowMissingUpstash && nextPhase !== 
 // unless WAP_APPLY_RATE_LIMIT_FAIL_CLOSED=1). Contact/confirmation/partner/MFA/
 // bulk-email use security fail-closed. Add UPSTASH_* to enable Redis-backed limits.
 const FAIL_CLOSED = !upstashConfigured;
+
+/**
+ * Which posture the security-mode limiters are running in. Surfaced by
+ * `/api/health/ready` so operators can prove production is on Redis instead
+ * of inferring it from a contact form that 429s (WAP-13 / TODO-088).
+ */
+export function getRateLimiterMode(): RateLimiterMode {
+  return resolveRateLimiterMode({ upstashConfigured, isProduction, allowMissingUpstash });
+}
 
 // Observable: one-time warning when running without Upstash (dev only, since
 // production throws above).  Helps catch mis-configured preview deploys.

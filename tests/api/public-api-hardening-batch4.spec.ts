@@ -43,6 +43,8 @@ vi.mock('@/lib/http/publicApiCors', () => ({
 }));
 vi.mock('@/lib/rate-limit', () => ({
   checkPublicHealthRateLimit: mocks.healthRateLimit,
+  // Readiness reports the limiter posture (WAP-13); this suite is about the failure body.
+  getRateLimiterMode: () => 'redis',
   checkInviteAcceptRateLimit: mocks.inviteAcceptRateLimit,
   checkPublicInviteValidateRateLimit: mocks.inviteValidateRateLimit,
   checkPublicOrgOutcomesRateLimit: mocks.orgOutcomesRateLimit,

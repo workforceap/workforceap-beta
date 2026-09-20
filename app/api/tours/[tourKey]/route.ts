@@ -63,7 +63,8 @@ export const POST = withApiGuc(async (request: Request, context: { params: Promi
       entityType: 'tour',
       entityId: tour.key,
       sourcePage: sourcePage ?? tour.route,
-      metadata: { tourKey: tour.key, version, lastStep, role: tour.role, sourcePage: sourcePage ?? tour.route },
+      // sourcePage is a first-class event column; do not repeat it in metadata.
+      metadata: { tourKey: tour.key, version, lastStep, role: tour.role },
     });
 
     return NextResponse.json({

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import DataTable from '@/components/portal/ui/DataTable';
 
 export type PayoutRow = {
@@ -44,7 +44,6 @@ export default function PartnerPayoutsPanel({
   const closeConfirm = () => {
     if (!busy) setConfirming(null);
   };
-  const trapRef = useFocusTrap(!!confirming, closeConfirm);
 
   async function sendPayout(row: PayoutRow) {
     setBusy(true);
@@ -124,31 +123,26 @@ export default function PartnerPayoutsPanel({
         />
       </div>
 
-      {confirming && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="payout-confirm-title"
-          onClick={(e) => { if (e.target === e.currentTarget) closeConfirm(); }}
-          style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
-        >
-          <div ref={trapRef as React.RefObject<HTMLDivElement>} style={{ background: 'var(--color-surface, #fff)', borderRadius: 12, padding: '1.5rem', maxWidth: 420, width: '100%' }}>
-            <h3 id="payout-confirm-title" style={{ marginTop: 0 }}>Send ${payoutAmountUsd} payout?</h3>
-            <p style={{ fontSize: '0.9rem' }}>
+      {/* Shared Astryx-backed confirm: native <dialog> scrim, focus trap, Escape,
+          --z-* stacking (WAP-137). Stays mounted so focus returns to the trigger. */}
+      <ConfirmDialog
+        open={!!confirming}
+        title={`Send $${payoutAmountUsd} payout?`}
+        body={
+          confirming ? (
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--color-on-surface-variant)' }}>
               This transfers ${payoutAmountUsd} to the partner&apos;s Stripe account for {confirming.memberName}&apos;s
               placement{confirming.employerName ? ` at ${confirming.employerName}` : ''}. It cannot be undone from here.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <button type="button" className="btn btn-outline" onClick={closeConfirm} disabled={busy}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void sendPayout(confirming)}>
-                {busy ? 'Sending…' : 'Confirm payout'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ) : ''
+        }
+        confirmLabel="Confirm payout"
+        busy={busy}
+        onConfirm={() => {
+          if (confirming) void sendPayout(confirming);
+        }}
+        onCancel={closeConfirm}
+      />
     </section>
   );
 }

@@ -1,0 +1,36 @@
+---
+import Layout from '../../layouts/Layout.astro';
+// Confirmation page for native (no-JavaScript) contact form posts. The API
+// answers those with a 303 here; fetch-based submissions never leave /contact.
+// See marketing/src/pages/contact.astro and app/api/contact/route.ts (WAP-13).
+---
+<Layout
+  title="Message received — WorkforceAP"
+  description="Your message to Workforce Advancement Project was received. A team member responds within 1–2 business days."
+>
+<section class="thanks">
+  <div class="thanks__card">
+    <p class="thanks__eyebrow">Message received</p>
+    <h1>We got it — thank you.</h1>
+    <p class="thanks__body">
+      A WorkforceAP team member responds within 1–2 business days. If it's urgent, email
+      <a href="mailto:info@workforceap.org">info@workforceap.org</a> or call
+      <a href="tel:+15127771808">(512) 777-1808</a>.
+    </p>
+    <div class="thanks__actions">
+      <a class="btn btn--primary" href="/">Back to home</a>
+      <a class="btn btn--ghost" href="/programs">Explore programs</a>
+    </div>
+  </div>
+</section>
+</Layout>
+
+<style>
+  .thanks{padding:64px 0 96px;background:var(--surface-2, #f7f4f1)}
+  .thanks__card{width:min(640px, calc(100% - 48px));margin:0 auto;background:var(--surface, #fff);border:1px solid var(--border, #ece5e0);border-top:6px solid var(--crimson, #ad2c4d);border-radius:var(--radius, 16px);padding:40px 32px;box-shadow:var(--shadow, 0 8px 24px rgba(0,0,0,.06))}
+  .thanks__eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--crimson, #ad2c4d);margin:0 0 12px}
+  .thanks h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(28px, 4vw, 36px);margin:0 0 16px;line-height:1.15}
+  .thanks__body{font-size:17px;line-height:1.6;margin:0 0 28px}
+  .thanks__body a{color:var(--crimson, #ad2c4d);font-weight:600}
+  .thanks__actions{display:flex;flex-wrap:wrap;gap:12px}
+</style>

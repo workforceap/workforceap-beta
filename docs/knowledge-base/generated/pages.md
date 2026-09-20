@@ -50,7 +50,7 @@
 | [app/(portal)/counselor/inbox/page.tsx](../../../app/%28portal%29/counselor/inbox/page.tsx) | 76 | member-counselor | dynamic:12, default:14 |
 | [app/(portal)/counselor/lab-reviews/\[submissionId\]/page.tsx](../../../app/%28portal%29/counselor/lab-reviews/%5BsubmissionId%5D/page.tsx) | 6 | member-counselor | default:3 |
 | [app/(portal)/counselor/lab-reviews/page.tsx](../../../app/%28portal%29/counselor/lab-reviews/page.tsx) | 8 | member-counselor | default:4 |
-| [app/(portal)/counselor/layout.tsx](../../../app/%28portal%29/counselor/layout.tsx) | 70 | member-counselor | generateMetadata:14, default:25 |
+| [app/(portal)/counselor/layout.tsx](../../../app/%28portal%29/counselor/layout.tsx) | 78 | member-counselor | generateMetadata:16, default:27 |
 | [app/(portal)/counselor/loading.tsx](../../../app/%28portal%29/counselor/loading.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/counselor/messages/error.tsx](../../../app/%28portal%29/counselor/messages/error.tsx) | 13 | communications | default:5 |
 | [app/(portal)/counselor/messages/loading.tsx](../../../app/%28portal%29/counselor/messages/loading.tsx) | 6 | communications | default:3 |
@@ -351,7 +351,7 @@
 | [app/admin/blog/new/loading.tsx](../../../app/admin/blog/new/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/blog/new/page.tsx](../../../app/admin/blog/new/page.tsx) | 19 | administration | default:6 |
 | [app/admin/blog/page.tsx](../../../app/admin/blog/page.tsx) | 224 | administration | generateMetadata:20, default:42 |
-| [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) | 168 | administration | default:11 |
+| [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) | 170 | administration | default:11 |
 | [app/admin/board/loading.tsx](../../../app/admin/board/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | 195 | administration | generateMetadata:21, default:33 |
 | [app/admin/board/print/page.tsx](../../../app/admin/board/print/page.tsx) | 97 | administration | generateMetadata:13, default:31 |

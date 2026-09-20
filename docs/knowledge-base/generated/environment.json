@@ -1582,7 +1582,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 75
+          "line": 84
         },
         {
           "file": "app/api/counselor/sessions/email-packet/route.ts",
@@ -1977,7 +1977,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 24
+          "line": 26
         }
       ]
     },
@@ -1988,7 +1988,7 @@
       "references": [
         {
           "file": "app/api/cron/smoke-test/route.ts",
-          "line": 136
+          "line": 144
         }
       ]
     },
@@ -2011,7 +2011,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 44
+          "line": 59
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2047,7 +2047,11 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 51
+          "line": 75
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 164
         }
       ]
     },
@@ -2204,7 +2208,7 @@
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
-          "line": 135
+          "line": 143
         },
         {
           "file": "app/api/employer/checkout/route.ts",
@@ -2546,19 +2550,19 @@
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 119
+          "line": 120
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 129
+          "line": 130
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 133
+          "line": 134
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 137
+          "line": 138
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
@@ -2585,7 +2589,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 57
+          "line": 69
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2618,6 +2622,10 @@
         {
           "file": "app/employers/signup/page.tsx",
           "line": 16
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 166
         }
       ]
     },
@@ -2728,7 +2736,7 @@
         },
         {
           "file": "app/api/onboarding/reset/route.ts",
-          "line": 17
+          "line": 30
         },
         {
           "file": "app/api/test/xapi-access-token/route.ts",
@@ -2796,7 +2804,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 14
+          "line": 16
         },
         {
           "file": "lib/supabaseCookieOptions.ts",
@@ -2828,7 +2836,7 @@
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 110
+          "line": 111
         }
       ]
     },
@@ -3488,7 +3496,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 49
+          "line": 73
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
@@ -3911,7 +3919,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 46
+          "line": 61
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -3928,6 +3936,10 @@
         {
           "file": "app/api/partner/signup/route.ts",
           "line": 115
+        },
+        {
+          "file": "tests/api/contact-route.spec.ts",
+          "line": 165
         }
       ]
     },
@@ -4045,7 +4057,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 50
+          "line": 74
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
@@ -4080,7 +4092,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 12
+          "line": 14
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
@@ -4139,7 +4151,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 11
+          "line": 13
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
@@ -4468,7 +4480,7 @@
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 109
+          "line": 110
         }
       ]
     },
@@ -4479,7 +4491,7 @@
       "references": [
         {
           "file": "app/api/health/ready/route.ts",
-          "line": 40
+          "line": 44
         },
         {
           "file": "app/api/health/route.ts",
@@ -4491,7 +4503,7 @@
         },
         {
           "file": "tests/api/health-check.spec.ts",
-          "line": 108
+          "line": 109
         }
       ]
     },
@@ -4665,7 +4677,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 157
+          "line": 168
         },
         {
           "file": "tests/api/auth-routes.spec.ts",
@@ -4712,7 +4724,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 161
+          "line": 172
         },
         {
           "file": "tests/api/auth-routes.spec.ts",

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { publicApiCorsHeaders } from '@/lib/http/publicApiCors';
-import { checkPublicHealthRateLimit } from '@/lib/rate-limit';
+import { checkPublicHealthRateLimit, getRateLimiterMode } from '@/lib/rate-limit';
 import { DEFAULT_ORG_SLUG } from '@/lib/tenant/organization';
 import { CACHE_TTL_MS, readyCache } from './_readyCache';
 
@@ -25,6 +25,10 @@ export const dynamic = 'force-dynamic';
  *
  * One org `findUnique` covers Prisma + org. Do not add this query to the
  * public liveness probe.
+ *
+ * Also reports `rateLimiter: redis | fail-open | fail-closed` — the posture of
+ * the security-mode limiters (WAP-13 / TODO-088). It never changes the HTTP
+ * status here; `/api/cron/smoke-test` is what fails when it is not `redis`.
  */
 
 type CheckStatus = 'ok' | 'fail';
@@ -104,12 +108,18 @@ export const GET = withApiGuc(async (request: Request) => {
 
     const organization = await checkDefaultOrganization();
     const ok = organization.status === 'ok';
+    const rateLimiter = getRateLimiterMode();
     const body = {
       status: ok ? ('ok' as const) : ('fail' as const),
       probe: 'ready' as const,
       version: liveVersion(),
       timestamp: new Date().toISOString(),
+      rateLimiter,
       checks: {
+        rateLimiter: {
+          status: rateLimiter === 'redis' ? ('ok' as const) : ('warn' as const),
+          mode: rateLimiter,
+        },
         database: {
           status: organization.status,
           responseTimeMs: organization.responseTimeMs,

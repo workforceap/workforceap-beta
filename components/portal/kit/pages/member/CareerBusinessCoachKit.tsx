@@ -29,6 +29,7 @@ export function CareerBusinessCoachKit({
       <VoiceAgentSurface
         badge="Career & Business Coach"
         headline="Talk through any career or business challenge"
+        headlineAs="h2"
         subtext="Project management, sales, marketing, communication — get guidance tailored to your situation."
         icon={<Briefcase size={22} aria-hidden="true" />}
         glowColor={colorVar('accent')}

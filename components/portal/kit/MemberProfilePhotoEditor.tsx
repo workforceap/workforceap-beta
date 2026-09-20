@@ -182,9 +182,9 @@ export function MemberProfilePhotoEditor({
         }}
         onClose={closeDialog}
       >
-        <h3 id={dialogTitleId} style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 12 }}>
+        <h2 id={dialogTitleId} style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 12 }}>
           Profile photo
-        </h3>
+        </h2>
 
         <div
           aria-hidden={!previewUrl}

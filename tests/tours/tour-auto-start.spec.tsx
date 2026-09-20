@@ -55,7 +55,7 @@ describe('TourAutoStart (?tour=<key>)', () => {
   });
 
   it('ignores unknown keys and never writes state', async () => {
-    search = 'tour=counselor.home';
+    search = 'tour=admin.home';
     render(<Page />);
     await new Promise((r) => setTimeout(r, TOUR_DEEP_LINK_DELAY_MS + 100));
     expect(screen.queryByRole('dialog')).toBeNull();
