@@ -93,7 +93,7 @@
 | [docs/TESTING-STATUS.md](../../../docs/TESTING-STATUS.md) | 34 | documentation |  |
 | [docs/TODO-BACKLOG.md](../../../docs/TODO-BACKLOG.md) | 77 | documentation |  |
 | [docs/TROUBLESHOOTING.md](../../../docs/TROUBLESHOOTING.md) | 338 | documentation |  |
-| [docs/UI-DESIGN-SYSTEM.md](../../../docs/UI-DESIGN-SYSTEM.md) | 214 | documentation |  |
+| [docs/UI-DESIGN-SYSTEM.md](../../../docs/UI-DESIGN-SYSTEM.md) | 213 | documentation |  |
 | [docs/VERIFICATION-10-STAR-IMPORT.md](../../../docs/VERIFICATION-10-STAR-IMPORT.md) | 63 | documentation |  |
 | [docs/VERIFICATION-CONVERSION-STACK-10-STAR.md](../../../docs/VERIFICATION-CONVERSION-STACK-10-STAR.md) | 91 | documentation |  |
 | [docs/VERIFICATION-HOMEPAGE-10-STAR-SYSTEM.md](../../../docs/VERIFICATION-HOMEPAGE-10-STAR-SYSTEM.md) | 80 | documentation |  |
