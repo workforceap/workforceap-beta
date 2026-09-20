@@ -36,7 +36,7 @@ Open `http://localhost:3000` in a browser.
   - `(portal)/` — authenticated member, counselor, employer, and partner surfaces
   - `admin/` — staff administration surfaces
   - `api/` — application, integration, health, and cron route handlers
-- `components/` — shared React components (TopBanner, MainNav, Footer, PageHero, PhotoHighlight, ScrollAnimations)
+- `components/` — shared React components (MainNav, MobileBottomNav, Footer, PageHero, CookieConsentBanner, ScrollAnimations)
 - `css/main.css` — all styles (imported globally via layout.tsx)
 - `public/images/` — static image assets
 - `next.config.ts` — Next.js configuration including redirects for old `.html` URLs

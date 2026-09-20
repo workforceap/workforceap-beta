@@ -50,4 +50,22 @@ describe('LearningHubEnrolledCourses course ids', () => {
 
     expect(getByRole('link', { name: 'Open My Program' })).toHaveAttribute('href', '/dashboard/program');
   });
+
+  it('renders Open My Program as a kit ghost CTA with the kit focus ring, not a legacy .btn', () => {
+    const { getByRole } = render(
+      <LearningHubEnrolledCourses
+        programSlug="it-support-professional-certificate-ibm"
+        programTitle="IT Support"
+        courses={courses}
+        completedSlugs={[]}
+        assessmentCompleted
+      />,
+    );
+
+    const cta = getByRole('link', { name: 'Open My Program' });
+    expect(cta).toHaveClass('wa-kit-cta', 'wa-kit-cta--ghost', 'wa-kit-focus');
+    expect(cta).not.toHaveClass('btn');
+    expect(cta).not.toHaveClass('btn-outline');
+    expect(cta).not.toHaveClass('btn-sm');
+  });
 });
