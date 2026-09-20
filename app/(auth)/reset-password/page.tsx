@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
+import PasswordToggle from '@/components/forms/PasswordToggle';
 
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -210,28 +210,13 @@ function ResetPasswordForm() {
                       aria-describedby="new-password-hint"
                       style={{ paddingRight: '2.75rem' }}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      aria-label={showPassword ? tAuth('resetPassword.hidePassword') : tAuth('resetPassword.showPassword')}
-                      aria-pressed={showPassword}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--color-on-surface-variant)',
-                        cursor: 'pointer',
-                        padding: '12px 14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: 44,
-                        minHeight: 44,
-                      }}
-                    >
-                      {showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
-                    </button>
+                    <PasswordToggle
+                      visible={showPassword}
+                      onToggle={() => setShowPassword((v) => !v)}
+                      showLabel={tAuth('resetPassword.showPassword')}
+                      hideLabel={tAuth('resetPassword.hidePassword')}
+                      controls="new-password"
+                    />
                   </div>
                   <p id="new-password-hint" className="form-hint">
                     {tAuth('resetPassword.passwordHint')}
@@ -253,28 +238,13 @@ function ResetPasswordForm() {
                       aria-describedby={formError ? 'reset-password-error' : undefined}
                       style={{ paddingRight: '2.75rem' }}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm((v) => !v)}
-                      aria-label={showConfirm ? tAuth('resetPassword.hidePassword') : tAuth('resetPassword.showPassword')}
-                      aria-pressed={showConfirm}
-                      style={{
-                        position: 'absolute',
-                        right: 0,
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--color-on-surface-variant)',
-                        cursor: 'pointer',
-                        padding: '12px 14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: 44,
-                        minHeight: 44,
-                      }}
-                    >
-                      {showConfirm ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}
-                    </button>
+                    <PasswordToggle
+                      visible={showConfirm}
+                      onToggle={() => setShowConfirm((v) => !v)}
+                      showLabel={tAuth('resetPassword.showPassword')}
+                      hideLabel={tAuth('resetPassword.hidePassword')}
+                      controls="confirm-password"
+                    />
                   </div>
                 </div>
                 {formError && (

@@ -458,13 +458,25 @@ export default function ApplyEligibilityClient({
         .apply-flow--step1 .funding-questions {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          padding: 1.25rem;
-          margin-bottom: 1.25rem;
+          gap: 1rem;
+          padding: 1rem;
+          margin-bottom: 1rem;
         }
         .apply-flow--step1 .funding-questions .form-group { margin-bottom: 0; }
         .apply-flow--step1 .apply-eligibility-legend { margin-bottom: 0.25rem; }
-        .apply-flow--step1 .apply-eligibility-prompt { margin-bottom: 0.625rem; }
+        .apply-flow--step1 .apply-eligibility-prompt { margin-bottom: 0.5rem; line-height: 1.4; }
+        /* WAP-120: Yes / No are one word each — sit them side by side so each
+           funding question is one legend, one prompt and one 44px row instead of
+           two stacked cards (six questions × ~52px on a 390px phone). */
+        .apply-flow--step1 .funding-questions .form-radio-cards {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.5rem;
+        }
+        .apply-flow--step1 .funding-questions .form-radio-card {
+          justify-content: center;
+          padding: 0.625rem 0.75rem;
+        }
         .apply-flow--step1 .apply-personal-block { margin-bottom: 1.25rem; }
         .apply-flow--step1 .apply-personal-block__title { margin-bottom: 0.75rem; }
         @media (max-width: 768px) {
@@ -483,6 +495,47 @@ export default function ApplyEligibilityClient({
           }
           .apply-flow--step1 .apply-step-desc:not(.apply-eligibility-exception-note) {
             display: none;
+          }
+          /* WAP-120 phone density for the funding panel: the "what happens next"
+             card repeats the sidebar's expanded next-steps list and the social
+             proof repeats ApplyMobileTrustBar / TrustStrip directly above the
+             form, so both step aside on phones; spacing tightens to keep the
+             whole panel under the 1,500px target at 390×844. */
+          .apply-flow--step1 .apply-transition-card,
+          .apply-flow--step1 .apply-social-proof {
+            display: none;
+          }
+          .apply-flow--step1 .apply-panel-heading {
+            margin: 0.75rem 0;
+            font-size: 1.0625rem;
+          }
+          .apply-flow--step1 .funding-questions {
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+          }
+          .apply-flow--step1 .apply-eligibility-legend {
+            font-size: 0.9375rem;
+          }
+          .apply-flow--step1 .apply-eligibility-prompt {
+            font-size: 0.875rem;
+            margin-bottom: 0.375rem;
+          }
+          .apply-flow--step1 .apply-step1-actions {
+            padding: 0.5rem 0;
+          }
+          .apply-flow--step1 .funding-questions .form-radio-card {
+            min-height: 44px;
+            padding: 0.5rem 0.75rem;
+          }
+          .apply-flow--step1 .funding-questions .apply-field-hint,
+          .apply-flow--step1 .apply-continue-hint {
+            font-size: 0.8125rem;
+            line-height: 1.4;
+          }
+          .apply-flow--step1 .apply-eligibility-exception-note {
+            font-size: 0.8125rem;
+            line-height: 1.4;
           }
           .apply-flow--step1 .apply-eligibility-exception-note {
             margin-top: 0;

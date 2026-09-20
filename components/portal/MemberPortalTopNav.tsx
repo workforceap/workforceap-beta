@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useLayoutEffect, useRef } from 'react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
 
 export default function MemberPortalTopNav({
@@ -115,9 +116,7 @@ export default function MemberPortalTopNav({
                 className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
                 aria-current={active ? 'page' : undefined}
               >
-                <span className="material-symbols-outlined member-portal-top-nav__icon" aria-hidden="true">
-                  {tab.icon}
-                </span>
+                <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
                 <span className="member-portal-top-nav__label">{tab.label}</span>
                 {badge && badge > 0 ? (
                   <span className="member-portal-top-nav__badge" aria-label={t('unreadCount', { count: badge })}>

@@ -4,7 +4,8 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Loader2, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import PasswordToggle from '@/components/forms/PasswordToggle';
 import HearAboutSelect from '@/components/apply/HearAboutSelect';
 import { hearAboutNeedsOther } from '@/lib/apply/eligibilityExtendedFields';
 import './signup-depth.css';
@@ -108,27 +109,10 @@ export default function EmployerSignupPage() {
 
   return (
     <div className="mdx signup-depth wa-min-h-screen">
-      {/* Nav */}
-      <nav>
-        <div className="wa-max-w-5xl wa-mx-auto wa-px-4 wa-py-4 wa-flex wa-items-center wa-justify-between">
-          <Link href="/" className="wa-flex wa-items-center wa-gap-2">
-            <div className="sd-logo-mark wa-w-8 wa-h-8 wa-rounded-lg wa-flex wa-items-center wa-justify-center">
-              <Building2 className="wa-w-4 wa-h-4 wa-text-white" />
-            </div>
-            <span className="sd-brand wa-font-semibold wa-text-lg">WorkforceAP</span>
-          </Link>
-          <div className="wa-flex wa-items-center wa-gap-4">
-            <Link href="/employers" className="sd-navlink wa-text-sm">
-              For Employers
-            </Link>
-            <Link href="/login" className="sd-navlink sd-navlink--accent wa-text-sm hover:wa-underline">
-              Log in
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      <main className="wa-max-w-2xl wa-mx-auto wa-px-4 wa-py-12">
+      {/* The shared marketing MainNav (root layout) is the only header here.
+          WAP-109: the page used to paint a second logo + "For Employers" /
+          "Log in" bar beneath it, which read as a doubled header. */}
+      <div className="wa-max-w-2xl wa-mx-auto wa-px-4 wa-py-12">
         {success && !loading ? (
           <div className="mdx-card wa-p-8 wa-text-center">
             <div className="sd-success-ring wa-w-16 wa-h-16 wa-rounded-full wa-flex wa-items-center wa-justify-center wa-mx-auto wa-mb-4">
@@ -141,7 +125,7 @@ export default function EmployerSignupPage() {
             </p>
             <Link
               href="/login"
-              className="mdx-btn mdx-btn--primary wa-inline-flex wa-items-center wa-gap-2"
+              className="btn btn-primary"
             >
               Go to Log In
             </Link>
@@ -288,19 +272,14 @@ export default function EmployerSignupPage() {
                       aria-invalid={passwordErrors.length > 0}
                       aria-describedby={passwordErrors.length > 0 ? 'password-errors' : undefined}
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
+                    <PasswordToggle
+                      visible={showPassword}
+                      onToggle={() => setShowPassword((v) => !v)}
+                      showLabel="Show password"
+                      hideLabel="Hide password"
+                      controls="password"
                       className="sd-pw-toggle"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      aria-pressed={showPassword}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="wa-w-5 wa-h-5" aria-hidden="true" />
-                      ) : (
-                        <Eye className="wa-w-5 wa-h-5" aria-hidden="true" />
-                      )}
-                    </button>
+                    />
                   </div>
                   {passwordErrors.length > 0 && (
                     <ul id="password-errors" role="alert" className="wa-mt-2 wa-space-y-1">
@@ -377,7 +356,7 @@ export default function EmployerSignupPage() {
               <button
                 type="submit"
                 disabled={loading || (CAPTCHA_ENABLED && !!TURNSTILE_SITE_KEY && !turnstileToken)}
-                className="mdx-btn mdx-btn--primary wa-w-full wa-flex wa-items-center wa-justify-center wa-gap-2 disabled:wa-opacity-60 disabled:wa-cursor-not-allowed"
+                className="btn btn-primary btn-full-width"
               >
                 {loading ? (
                   <>
@@ -398,7 +377,7 @@ export default function EmployerSignupPage() {
             </form>
           </>
         )}
-      </main>
+      </div>
     </div>
   );
 }

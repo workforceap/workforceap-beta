@@ -17,6 +17,13 @@ type BenefitAccessCardProps = {
   assessmentCompleted?: boolean;
 };
 
+/** WAP-105: benefit status reads through the kit's two documented tones (ok / warn) plus muted. */
+const STATUS_TONE_CLASS: Record<BenefitStatus, string> = {
+  not_requested: 'wa-kit-tag wa-kit-tag--muted',
+  pending: 'wa-kit-tag wa-kit-tag--warn',
+  active: 'wa-kit-tag wa-kit-tag--ok',
+};
+
 const STATUS_LABELS: Record<BenefitStatus, string> = {
   not_requested: 'Not requested',
   pending: 'Pending',
@@ -96,7 +103,7 @@ export default function BenefitAccessCard({ benefitId, name, status: initialStat
       <div className="benefit-card">
         <div className="benefit-card-header">
           <h3 className="benefit-card-title">{name}</h3>
-          <span className="benefit-card-status status-active">{STATUS_LABELS.active}</span>
+          <span className={STATUS_TONE_CLASS.active}>{STATUS_LABELS.active}</span>
         </div>
         {description && <p className="benefit-card-desc">{description}</p>}
         <button
@@ -114,7 +121,7 @@ export default function BenefitAccessCard({ benefitId, name, status: initialStat
     <div className="benefit-card">
       <div className="benefit-card-header">
         <h3 className="benefit-card-title">{name}</h3>
-        <span className={`benefit-card-status status-${status}`}>{STATUS_LABELS[status]}</span>
+        <span className={STATUS_TONE_CLASS[status]}>{STATUS_LABELS[status]}</span>
       </div>
       {description && <p className="benefit-card-desc">{description}</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
