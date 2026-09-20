@@ -8,6 +8,8 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { formatPhone } from '@/lib/formatPhone';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -69,7 +71,7 @@ async function _POST(request: NextRequest) {
             },
           },
           courseEnrollments: {
-            select: { programSlug: true, isPrimary: true },
+            select: { programSlug: true, curriculumVersion: true, isPrimary: true },
           },
           partnerReferrals: {
             take: 1,
@@ -106,9 +108,12 @@ async function _POST(request: NextRequest) {
         coursesCompleted: true,
       },
     });
+    // Keyed on the canonical slug: rollups are written under alias slugs
+    // (comptia-a-plus vs comptia-a-professional-certificate), so an exact-slug
+    // lookup missed them (audit 2026-09-20, S17).
     const progressMap = new Map<string, { averagePercent: number; coursesCompleted: number }>();
     for (const p of programProgress) {
-      const key = `${p.userId}:${p.programSlug}`;
+      const key = `${p.userId}:${canonicalizeProgramSlug(p.programSlug)}`;
       progressMap.set(key, { averagePercent: p.averagePercent, coursesCompleted: p.coursesCompleted });
     }
 
@@ -147,9 +152,18 @@ async function _POST(request: NextRequest) {
     ];
 
     const rows = members.map((m) => {
-      const programTitle = m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '';
-      const progress = m.enrolledProgram
-        ? progressMap.get(`${m.id}:${m.enrolledProgram}`)
+      // Resolve the same assignment the roster row shows (primary enrollment
+      // first, then an alias-equivalent legacy pointer) instead of the raw
+      // `enrolledProgram` column, which is null for members whose program
+      // only exists as a CourseEnrollment row — they exported a blank
+      // Program / Progress % / Courses Completed (audit 2026-09-20, S17).
+      const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments);
+      const programSlug = assignment.programSlug
+        ? canonicalizeProgramSlug(assignment.programSlug)
+        : null;
+      const programTitle = programSlug ? programDisplayTitle(programSlug) : '';
+      const progress = programSlug
+        ? progressMap.get(`${m.id}:${programSlug}`)
         : null;
       const phone = formatPhone(m.profile?.profilePhone ?? m.phone) ?? '';
       const partner = m.partnerReferrals[0]?.partner.name ?? '';

@@ -587,6 +587,50 @@ describe('Bulk operations', () => {
       expect(text).toContain('alice@example.com');
     });
 
+    it('resolves Program and rollup progress from the enrollment row (audit S17)', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: uid(2),
+          fullName: 'Bob',
+          email: 'bob@example.com',
+          phone: null,
+          // No legacy pointer: the assignment lives on the enrollment row, and
+          // the rollup was written under the alias slug. Reading
+          // `enrolledProgram` blanked all three columns for 11 members.
+          enrolledProgram: null,
+          enrolledAt: new Date('2024-01-15'),
+          assessmentScorePct: null,
+          assessmentCompleted: false,
+          pipelineBoardStage: 'in_training',
+          updatedAt: new Date(),
+          createdAt: new Date(),
+          lastLoginAt: null,
+          profile: null,
+          courseEnrollments: [
+            { programSlug: 'comptia-a-professional-certificate', curriculumVersion: 'legacy-v1', isPrimary: true },
+          ],
+          partnerReferrals: [],
+          counselorAssignments: [],
+        },
+      ] as any);
+      vi.mocked(prisma.memberProgramProgress.findMany).mockResolvedValue([
+        { userId: uid(2), programSlug: 'comptia-a-plus', averagePercent: 24, coursesCompleted: 3 },
+      ] as any);
+      vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([] as any);
+
+      const res = await bulkExportPost(makeExportRequest({ memberIds: [uid(2)] }));
+      expect(res.status).toBe(200);
+      const [header, row] = (await res.text()).split('\n');
+      const columns = header.split(',');
+      const values = row.split(',');
+      expect(values[columns.indexOf('Program')]).not.toBe('');
+      expect(values[columns.indexOf('Progress %')]).toBe('24');
+      expect(values[columns.indexOf('Courses Completed')]).toBe('3');
+    });
+
     it('limits to 500 members', async () => {
       vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
       vi.mocked(isAdmin).mockResolvedValue(true);
