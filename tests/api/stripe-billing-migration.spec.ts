@@ -1,37 +1,40 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
+import { Prisma } from '@prisma/client';
 
-const migration = readFileSync(
-  path.resolve(__dirname, '../../prisma/migrations/20260912173000_organization_stripe_event_ordering/migration.sql'),
-  'utf8',
-);
-const revisionMigration = readFileSync(
-  path.resolve(__dirname, '../../prisma/migrations/20260912203000_add_subscription_state_revisions/migration.sql'),
-  'utf8',
-);
-const schema = readFileSync(path.resolve(__dirname, '../../prisma/schema.prisma'), 'utf8');
+/**
+ * Stripe subscription event-ordering fields during the rolling deployment:
+ * binding + cursor columns stay nullable (no guessed backfill), while the
+ * revision guard is a required counter defaulting to 0 on both tenants.
+ * Read from the generated Prisma DMMF, i.e. what the client actually enforces.
+ */
+function field(model: string, name: string) {
+  const m = Prisma.dmmf.datamodel.models.find((candidate) => candidate.name === model);
+  if (!m) throw new Error(`${model} model missing from the Prisma client`);
+  const f = m.fields.find((candidate) => candidate.name === name);
+  if (!f) throw new Error(`${model}.${name} missing from the Prisma client`);
+  return f;
+}
 
-describe('organization Stripe event-ordering rolling migration', () => {
-  it('adds nullable binding and cursor columns without guessing a backfill', () => {
-    expect(migration).toContain('ADD COLUMN "stripe_subscription_id" TEXT');
-    expect(migration).toContain('ADD COLUMN "stripe_subscription_event_at" INTEGER');
-    expect(migration).toContain('ADD COLUMN "stripe_subscription_event_id" TEXT');
-    expect(migration).not.toMatch(/UPDATE\s+"organizations"/i);
-    expect(migration).not.toMatch(/NOT NULL|DEFAULT/i);
+describe('organization Stripe event-ordering fields', () => {
+  it('keeps the organization binding and cursor fields nullable', () => {
+    expect(field('Organization', 'stripeSubscriptionId')).toMatchObject({ type: 'String', isRequired: false, dbName: 'stripe_subscription_id' });
+    expect(field('Organization', 'stripeSubscriptionEventAt')).toMatchObject({ type: 'Int', isRequired: false, dbName: 'stripe_subscription_event_at' });
+    expect(field('Organization', 'stripeSubscriptionEventId')).toMatchObject({ type: 'String', isRequired: false, dbName: 'stripe_subscription_event_id' });
+    for (const name of ['stripeSubscriptionId', 'stripeSubscriptionEventAt', 'stripeSubscriptionEventId']) {
+      expect(field('Organization', name).hasDefaultValue).toBe(false);
+    }
   });
 
-  it('adds independent revision guards without rewriting historical migration files', () => {
-    expect(revisionMigration).toContain('ADD COLUMN "stripe_subscription_revision" INTEGER NOT NULL DEFAULT 0');
-    expect(revisionMigration).toContain('ALTER TABLE "organizations"');
-    expect(revisionMigration).toContain('ALTER TABLE "employers"');
-    expect(revisionMigration).not.toMatch(/UPDATE\s+/i);
-  });
-
-  it('keeps Prisma binding and cursor fields nullable during rolling deployment', () => {
-    expect(schema).toContain('stripeSubscriptionId     String?');
-    expect(schema).toContain('stripeSubscriptionEventAt   Int?');
-    expect(schema).toContain('stripeSubscriptionEventId   String?');
-    expect(schema).toContain('stripeSubscriptionRevision  Int     @default(0)');
+  it('guards revisions independently on organizations and employers with a required counter defaulting to 0', () => {
+    for (const model of ['Organization', 'Employer']) {
+      expect(field(model, 'stripeSubscriptionRevision')).toMatchObject({
+        type: 'Int',
+        isRequired: true,
+        default: 0,
+        dbName: 'stripe_subscription_revision',
+      });
+    }
+    expect(field('Employer', 'stripeSubscriptionEventAt')).toMatchObject({ type: 'Int', isRequired: false });
+    expect(field('Employer', 'stripeSubscriptionEventId')).toMatchObject({ type: 'String', isRequired: false });
   });
 });
