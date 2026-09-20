@@ -11,7 +11,6 @@ const program = {
   borderColor: 'x',
   icon: 'book',
   duration: '1mo',
-  salary: '0',
   skills: [],
   courses: [
     { slug: 'a', name: 'A', estimatedHours: 1 },

@@ -26,6 +26,8 @@ import {
   getProgramBySlug,
   isCurriculumMigrationPending,
 } from '@/lib/content/programs';
+import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
+import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 
 /**
  * POST /api/admin/coursera/reconcile/add-to-wap
@@ -290,19 +292,23 @@ const bodySchema = z.object({
             // Multi-program: this is the user's first row, mark it primary
             // so /dashboard/training and the xAPI pipeline (via
             // User.enrolledProgram) credit progress against it.
-            const newEnrollment = await tx.courseEnrollment.create({
-              data: {
+            const newEnrollment = await upsertEquivalentCourseEnrollment(tx, {
+              userId: createdUser.id,
+              programSlug,
+              create: {
                 organizationId: actorOrgId,
-                userId: createdUser.id,
-                programSlug,
                 // Provider-discovered historical learners fail closed until
                 // their exact Coursera collection can prove a v2 assignment.
-                curriculumVersion: 'legacy-v1',
+                curriculumVersion: LEGACY_CURRICULUM_VERSION,
                 isPrimary: true,
                 enrolledAt,
                 enrolledByAdminId: user.id,
               },
-              select: { id: true },
+              update: {
+                isPrimary: true,
+                enrolledAt,
+                enrolledByAdminId: user.id,
+              },
             });
             enrollmentId = newEnrollment.id;
           }

@@ -20,6 +20,7 @@ import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
+import { persistEvent } from '@/lib/events/track';
 
 /**
  * Track A — Tenant Isolation Hardening (Sprint A.2 batch 5).
@@ -113,20 +114,18 @@ const VALID_TEMPLATE_IDS: NudgeTemplateId[] = ['check_in', 'stalled_step', 'mile
       select: { id: true, threadId: true, authorId: true, body: true, createdAt: true },
     });
 
-    await tx.memberEvent.create({
-      data: {
-        userId: memberId,
-        eventName: 'counselor_nudge_sent',
-        entityType: 'message',
-        entityId: created.id,
-        metadata: {
-          templateId,
-          counselorUserId: user.id,
-          threadId: thread.id,
-          edited: overrideBody !== null && overrideBody.trim() !== '',
-        },
+    await persistEvent({
+      userId: memberId,
+      eventName: 'counselor_nudge_sent',
+      entityType: 'message',
+      entityId: created.id,
+      metadata: {
+        templateId,
+        counselorUserId: user.id,
+        threadId: thread.id,
+        edited: overrideBody !== null && overrideBody.trim() !== '',
       },
-    });
+    }, tx);
 
     return created;
   });

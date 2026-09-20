@@ -155,6 +155,35 @@ describe('buildNextBestActions', () => {
     expect(actions.some((a) => a.id === 'see_training_plan')).toBe(true);
   });
 
+  test('renders path_to_cert for an assessed member with a program but no CourseEnrollment row (WAP-89)', () => {
+    // Real state: `enrolledProgram` pointer set, preassessment done, staff has
+    // not yet created the CourseEnrollment that unlocks Coursera access.
+    const ctx = {
+      state: 'C' as const,
+      noApplicationOnFile: false,
+      enrolledProgram: 'it-support',
+      assessmentCompleted: true,
+      courseEnrollmentActive: false,
+      hasResume: false,
+      profileCompletenessPct: 40,
+      jobApplicationCount: 0,
+      counselorUnreadCount: 0,
+      weeklyRecapUnopened: false,
+    };
+    const shown = buildNextBestActions(ctx);
+    const pathToCert = shown.find((a) => a.id === 'path_to_cert');
+    expect(pathToCert).toBeDefined();
+    expect(pathToCert?.href).toBe('/dashboard/program/start');
+    expect(pathToCert?.cta).toBe('Open enrollment guide');
+
+    // The guard is positive on the real fact, not inverted: an active
+    // CourseEnrollment row (or an unknown one) suppresses the prompt.
+    expect(buildNextBestActions({ ...ctx, courseEnrollmentActive: true }).some((a) => a.id === 'path_to_cert')).toBe(false);
+    expect(buildNextBestActions({ ...ctx, courseEnrollmentActive: undefined }).some((a) => a.id === 'path_to_cert')).toBe(false);
+    expect(buildNextBestActions({ ...ctx, assessmentCompleted: false }).some((a) => a.id === 'path_to_cert')).toBe(false);
+    expect(buildNextBestActions({ ...ctx, enrolledProgram: null }).some((a) => a.id === 'path_to_cert')).toBe(false);
+  });
+
   test('shows skills_assessment for getMemberState letter C while preassessment is open', () => {
     const actions = buildNextBestActions({
       state: 'C',

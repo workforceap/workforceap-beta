@@ -189,7 +189,7 @@
 | [prisma/schema.prisma](../../../prisma/schema.prisma) | 3175 | database |  |
 | [prisma/seed-automation-rules.ts](../../../prisma/seed-automation-rules.ts) | 46 | database |  |
 | [prisma/seed-blog.ts](../../../prisma/seed-blog.ts) | 377 | database | seedBlogPosts:350 |
-| [prisma/seed-demo.ts](../../../prisma/seed-demo.ts) | 697 | database |  |
+| [prisma/seed-demo.ts](../../../prisma/seed-demo.ts) | 702 | database |  |
 | [prisma/seed-email-templates.ts](../../../prisma/seed-email-templates.ts) | 225 | database |  |
 | [prisma/seed-onet-career.ts](../../../prisma/seed-onet-career.ts) | 710 | database | OBSOLETE_REVISED_PROGRAM_MAPPINGS:12, seedOnetCareerData:31 |
 | [prisma/seed.ts](../../../prisma/seed.ts) | 638 | database |  |

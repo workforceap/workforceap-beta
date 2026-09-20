@@ -12,6 +12,8 @@ import { isPayoutEligibleType } from '@/lib/partner/partnerType';
 import { getPlacementPayoutRejection } from '@/lib/partner/payoutEligibility';
 import { z } from 'zod';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { persistEvent } from '@/lib/events/track';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 const payoutSchema = z.object({
   partnerId: z.string().uuid(),
@@ -92,7 +94,8 @@ async function _POST(request: NextRequest) {
             select: {
               memberEvents: {
                 where: {
-                  eventName: 'PARTNER_PAYOUT_SENT',
+                  // Both spellings: rows written before WAP-39 kept 'PARTNER_PAYOUT_SENT'.
+                  eventName: { in: eventNameReadCandidates('partner_payout_sent') },
                   entityType: 'PlacementRecord',
                   entityId: placementId,
                 },
@@ -135,21 +138,19 @@ async function _POST(request: NextRequest) {
       triggeredBy: user.id,
     }, idempotencyKey);
 
-    await prisma.memberEvent.create({
-      data: {
-        userId: placement.userId,
-        eventName: 'PARTNER_PAYOUT_SENT',
-        entityType: 'PlacementRecord',
-        entityId: placementId,
-        metadata: {
-          partnerId,
-          transferId: transfer.id,
-          amountCents,
-          triggeredBy: user.id,
-        },
-        sourcePage: '/api/partner/payout',
+    await persistEvent({
+      userId: placement.userId,
+      eventName: 'partner_payout_sent',
+      entityType: 'PlacementRecord',
+      entityId: placementId,
+      metadata: {
+        partnerId,
+        transferId: transfer.id,
+        amountCents,
+        triggeredBy: user.id,
       },
-    });
+      sourcePage: '/api/partner/payout',
+    }, prisma);
 
     auditLog({ actorUserId: user.id, action: 'partner_payout_sent', targetType: 'PlacementRecord', targetId: placementId, metadata: { partnerId, transferId: transfer.id, amountCents } }).catch(() => {});
     logAuditEvent({ user: { id: user.id, role: 'admin' }, verb: 'created', object: { type: 'PartnerPayout', id: transfer.id }, result: { success: true, extensions: { partnerId, placementId, amountCents } } }).catch(() => {});

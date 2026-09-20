@@ -30,6 +30,7 @@ import {
   getSubjectOrganizationId,
 } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { persistEvent } from '@/lib/events/track';
 
 const MAX_BATCH = 50;
 
@@ -137,20 +138,18 @@ export const POST = withApiGuc(async (request: Request) => {
               data: { threadId: thread.id, authorId: user.id, body: normalized.body },
               select: { id: true },
             });
-            await tx.memberEvent.create({
-              data: {
-                userId: memberId,
-                eventName: 'counselor_inbox_zero_follow_up_sent',
-                entityType: 'message',
-                entityId: message.id,
-                metadata: {
-                  templateId: template.id,
-                  counselorUserId: user.id,
-                  threadId: thread.id,
-                  batchSize: memberIds.length,
-                },
+            await persistEvent({
+              userId: memberId,
+              eventName: 'counselor_inbox_zero_follow_up_sent',
+              entityType: 'message',
+              entityId: message.id,
+              metadata: {
+                templateId: template.id,
+                counselorUserId: user.id,
+                threadId: thread.id,
+                batchSize: memberIds.length,
               },
-            });
+            }, tx);
           });
 
           await auditLog({
@@ -196,14 +195,11 @@ export const POST = withApiGuc(async (request: Request) => {
             targetId: memberId,
             metadata: { memberId, contactedAt: new Date().toISOString() },
           });
-          await prisma.$transaction((tx) => tx.memberEvent
-            .create({
-              data: {
-                userId: memberId,
-                eventName: 'counselor_inbox_zero_contacted',
-                metadata: { markedBy: user.id },
-              },
-            }))
+          await prisma.$transaction((tx) => persistEvent({
+            userId: memberId,
+            eventName: 'counselor_inbox_zero_contacted',
+            metadata: { markedBy: user.id },
+          }, tx))
             .catch((e) => console.error('[bulk contacted] memberEvent:', e));
           await logInboxZeroBulkAuditEvent({
             actorUserId: user.id,
@@ -328,19 +324,16 @@ export const POST = withApiGuc(async (request: Request) => {
           },
         });
         const dismissFlags = parsed.data.flags ?? [];
-        await prisma.$transaction((tx) => tx.memberEvent
-          .create({
-            data: {
-              userId: memberId,
-              eventName: 'counselor_inbox_zero_dismissed',
-              metadata: {
-                dismissedBy: user.id,
-                reason: trimmedReason,
-                flags: dismissFlags,
-                bulk: true,
-              },
-            },
-          }))
+        await prisma.$transaction((tx) => persistEvent({
+          userId: memberId,
+          eventName: 'counselor_inbox_zero_dismissed',
+          metadata: {
+            dismissedBy: user.id,
+            reason: trimmedReason,
+            flags: dismissFlags,
+            bulk: true,
+          },
+        }, tx))
           .catch((e) => console.error('[bulk dismiss] memberEvent:', e));
         await logInboxZeroBulkAuditEvent({
           actorUserId: user.id,

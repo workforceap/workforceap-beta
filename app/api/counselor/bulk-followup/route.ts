@@ -17,6 +17,7 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { persistEvent } from '@/lib/events/track';
 
 /**
  * POST /api/counselor/bulk-followup
@@ -154,22 +155,20 @@ async function handle(request: Request) {
             select: { id: true },
           });
 
-          await tx.memberEvent.create({
-            data: {
-              userId: memberId,
-              eventName: 'counselor_bulk_followup_sent',
-              entityType: 'message',
-              entityId: created.id,
-              metadata: {
-                templateId: template.id,
-                templateName: template.name,
-                templateSubject: template.subject,
-                counselorUserId: user.id,
-                threadId: thread.id,
-                batchSize: uniqueIds.length,
-              },
+          await persistEvent({
+            userId: memberId,
+            eventName: 'counselor_bulk_followup_sent',
+            entityType: 'message',
+            entityId: created.id,
+            metadata: {
+              templateId: template.id,
+              templateName: template.name,
+              templateSubject: template.subject,
+              counselorUserId: user.id,
+              threadId: thread.id,
+              batchSize: uniqueIds.length,
             },
-          });
+          }, tx);
 
           return created;
         });
