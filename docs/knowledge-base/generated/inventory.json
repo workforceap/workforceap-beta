@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "d8f0bc039a0e1764debe27bf1498e9445253f481a1ef40ff2482e0bf71de303e",
+  "inputTreeSha256": "dbfcba0115340c23e15c4b794147ed0f57416ca67af6266318937953eae1aea9",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -9300,19 +9300,19 @@
       "path": "app/(portal)/dashboard/jobs/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 22783,
-      "lines": 615,
-      "sha256": "e59a47a889da195287b47f7d49faff9111b3807e999d05d2e2c4980a1c7ab9e9",
+      "bytes": 23810,
+      "lines": 644,
+      "sha256": "5fa499c778e9a29d90e9dc012e4dc16ae91c670626cea5bc9bc9dfe8c41dc051",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 18,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 27,
+          "line": 32,
           "kind": "FunctionDeclaration",
           "localName": "JobsPage"
         }
@@ -9320,12 +9320,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 18,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "JobsPage",
-          "line": 27,
+          "line": 32,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -10397,9 +10397,9 @@
       "path": "app/(portal)/dashboard/program/start/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7675,
+      "bytes": 7735,
       "lines": 181,
-      "sha256": "2f50e6923feb23264ea1ab818183ffdd2c985420ed6bd00de78beaff80659adc",
+      "sha256": "4e18814d9a8afb106ad58fe6ec5b1cab4127c070d499d1a15fbd131ea261b612",
       "binary": false,
       "exports": [
         {
@@ -60555,9 +60555,9 @@
       "path": "components/portal/MemberDoThisNextCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8445,
-      "lines": 246,
-      "sha256": "f181634c3155bc4c3ac2a1ec04532ec2aa85a126215b4a6e268264b543d40856",
+      "bytes": 8457,
+      "lines": 245,
+      "sha256": "2a396d5a4028593b650358937194e76268edbbad87f5a6b22ce0a171fd962cd8",
       "binary": false,
       "exports": [
         {
@@ -63362,9 +63362,9 @@
       "path": "components/portal/SignOutButton.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1756,
-      "lines": 62,
-      "sha256": "7fcb47a31a891a5c6acd525a1c2bf9aa1fde1b31a56694c28652748cb014da99",
+      "bytes": 1954,
+      "lines": 66,
+      "sha256": "6e27ebab934199616de3bb690385b7ae62c68d77c39a7916504b12eb44cf683f",
       "binary": false,
       "exports": [
         {
@@ -64822,9 +64822,9 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 33803,
-      "lines": 806,
-      "sha256": "9ef629a7e25e603be3ecee3c837cc565378faa8966d37f8e95ae7013f6211c15",
+      "bytes": 33914,
+      "lines": 809,
+      "sha256": "4e4c1fda3130266590d15cd91fa8c05df35d5f3f98a2d0517907ad080d0a952a",
       "binary": false,
       "exports": [
         {
@@ -72158,46 +72158,66 @@
       "path": "components/portal/kit/pages/member/MemberJobsKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 7149,
-      "lines": 194,
-      "sha256": "20ea23681cb2cbc65de40fbe9fe576f5c4b8026587db22e2c0d2323b387af184",
+      "bytes": 10572,
+      "lines": 270,
+      "sha256": "7f28a3b043417bc2c3485800d3505ba866271acb0e717828b800310562b701c7",
       "binary": false,
       "exports": [
         {
+          "name": "JOBS_OPEN_ROLES_ANCHOR",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "OpenRoleRow",
+          "line": 48,
+          "kind": "InterfaceDeclaration"
+        },
+        {
           "name": "MemberJobsKitProps",
-          "line": 38,
+          "line": 59,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberJobsKit",
-          "line": 72,
+          "line": 98,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
+          "name": "JOBS_OPEN_ROLES_ANCHOR",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
           "name": "ApplicationRow",
-          "line": 20,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "RecommendedJob",
-          "line": 30,
+          "line": 39,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "OpenRoleRow",
+          "line": 48,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberJobsKitProps",
-          "line": 38,
+          "line": 59,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "JobsCta",
-          "line": 52,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MemberJobsKit",
-          "line": 72,
+          "line": 98,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -73332,17 +73352,45 @@
       "directive": "use client"
     },
     {
+      "path": "components/portal/tools/ElevatorPitchClient.test.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 3729,
+      "lines": 100,
+      "sha256": "d364d56084a76430bdfc6b721e4d17bc39294333511b53b7b51a97bd69890da5",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "htmlResponse",
+          "line": 17,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fillAndSubmit",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "expectControlRestored",
+          "line": 31,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "components/portal/tools/ElevatorPitchClient.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 18808,
-      "lines": 510,
-      "sha256": "2df3632c16e132da106ddfc5f0a624115513742e5f635675d2f4c7e3dc5a5ce2",
+      "bytes": 19399,
+      "lines": 529,
+      "sha256": "3492b00dd132421c497f7354165cdb019e35babf7a6da56d8c4da132906494f2",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 71,
+          "line": 78,
           "kind": "FunctionDeclaration",
           "localName": "ElevatorPitchClient"
         }
@@ -73350,37 +73398,37 @@
       "declarations": [
         {
           "name": "Step",
-          "line": 20,
+          "line": 27,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "KIT_BTN",
-          "line": 22,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "kitBtnSolid",
-          "line": 25,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "kitBtnOutline",
-          "line": 41,
-          "kind": "Variable"
-        },
-        {
-          "name": "FIELD_CONTROL",
           "line": 48,
           "kind": "Variable"
         },
         {
+          "name": "FIELD_CONTROL",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
           "name": "FIELDS",
-          "line": 63,
+          "line": 70,
           "kind": "Variable"
         },
         {
           "name": "ElevatorPitchClient",
-          "line": 71,
+          "line": 78,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76088,9 +76136,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 272995,
-      "lines": 10083,
-      "sha256": "541b3cafae4685c86836e75efb98e2324bb070163a9ef0f1d591856dce2303e7",
+      "bytes": 272798,
+      "lines": 10067,
+      "sha256": "2d6087a5a1e5bc177cede45e3222f536c34813b1d033c4ca31c22421c905d454",
       "binary": false
     },
     {
@@ -76547,9 +76595,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 36646,
-      "lines": 509,
-      "sha256": "db67a0c4f5302739b7137ff24f20923db267a08fe68a02236f025b5d3a15d924",
+      "bytes": 37671,
+      "lines": 521,
+      "sha256": "7aea560b0c489ba842dcb255eed6e23d4a239d3cd0bf196b29914b6dafba5f60",
       "binary": false
     },
     {
@@ -133576,12 +133624,88 @@
       "directive": null
     },
     {
+      "path": "lib/portal/memberRequestFailure.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 2977,
+      "lines": 53,
+      "sha256": "a520419e062f5b494defeb0acd4b8e4636130495215edb260f71a72b38d9f7e1",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/portal/memberRequestFailure.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 3163,
+      "lines": 63,
+      "sha256": "72e3ac1ca3c92f7fd618d450bbc117ca4b2ca00603bb0cbb88e2f569c147a252",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MEMBER_REQUEST_TIMEOUT_MS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_REQUEST_FAILURE",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "describeMemberRequestFailure",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readMemberRequestFailure",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeMemberRequestException",
+          "line": 60,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MEMBER_REQUEST_TIMEOUT_MS",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_REQUEST_FAILURE",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "describeMemberRequestFailure",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readMemberRequestFailure",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeMemberRequestException",
+          "line": 60,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/portal/memberResumeUpload.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1598,
-      "lines": 44,
-      "sha256": "bcd0fc30ae755abcf666901661878a888322b2be48cb8cb2c9ef771db30f2bce",
+      "bytes": 3068,
+      "lines": 80,
+      "sha256": "8c968dadad1ff3f720ebd0c5e788d4a2d3dccaec61c1e2bae6a266dbc01ec4cb",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -133597,56 +133721,56 @@
       "path": "lib/portal/memberResumeUpload.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1693,
-      "lines": 56,
-      "sha256": "f2c4777648c6e151f716430bd4abfbd4fca3bf62979e6a7caf6a63729996eb8c",
+      "bytes": 2204,
+      "lines": 70,
+      "sha256": "a9654d411cf0ee80da47d967ba2b4de026f647e5f2062aa0451eb29d486da419",
       "binary": false,
       "exports": [
         {
           "name": "RESUME_UPLOAD_ACCEPT",
-          "line": 5,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "RESUME_UPLOAD_FORMAT_LABEL",
-          "line": 6,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "getResumeUploadFileError",
-          "line": 8,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "uploadMemberResumeFile",
-          "line": 24,
+          "line": 31,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MAX_SIZE",
-          "line": 3,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "RESUME_UPLOAD_ACCEPT",
-          "line": 5,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "RESUME_UPLOAD_FORMAT_LABEL",
-          "line": 6,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "getResumeUploadFileError",
-          "line": 8,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "uploadMemberResumeFile",
-          "line": 24,
+          "line": 31,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163345,6 +163469,24 @@
       "directive": null
     },
     {
+      "path": "tests/components/member-jobs-open-roles.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3087,
+      "lines": 57,
+      "sha256": "6ace30f83cceb4bf6d9df2329679c44f4f0d9a3893aacb11ca6c54a1bfdda0d8",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "openRoles",
+          "line": 20,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/member-lab-workspace.test.tsx",
       "area": "tests",
       "domain": "tests",
@@ -163444,6 +163586,39 @@
           "name": "COURSERA_PROGRAM",
           "line": 17,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/member-resume-upload-failure.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3522,
+      "lines": 98,
+      "sha256": "7c736b6398264c0e94c413562634150f2bb69940c2d66b1c9c224ee2efc69b6b",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "resumeStatus",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "stubFetch",
+          "line": 27,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "renderPage",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "chooseFile",
+          "line": 49,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -167028,9 +167203,9 @@
       "path": "tests/lib/member-status-text-token-contrast.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7585,
-      "lines": 145,
-      "sha256": "581f8a84748f8edb75acd2e09ecbdf200f7dbe1a94a246c19d13d790221b7396",
+      "bytes": 8253,
+      "lines": 154,
+      "sha256": "25f02c0c6a9ccaf5b8e6fc1a7fd8559ca07d5eb5fe4c2a2dd16f8772040b5874",
       "binary": false,
       "exports": [],
       "declarations": [

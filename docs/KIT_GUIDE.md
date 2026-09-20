@@ -281,7 +281,7 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 |---|---|
 | `StatTile`, `KpiStrip` | single stat / row of stats (never hand-roll stat blocks) |
 | `StatusTag` | semantic status pill (every table status column, risk tiers) |
-| `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics) |
+| `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics). `MemberJobsKit` lists the live openings itself under `#open-roles` (`openRoles`, each linking to `/dashboard/jobs/<id>`); "Browse openings" / "Browse jobs" jump to that list, never to `?ui=legacy`. An empty list is the honest `JOBS_BOARD_EMPTY` state. |
 | `KitEmptyState` | titled empty placeholder for listing and table shells (optional `action` = real next step). Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. |
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
@@ -303,6 +303,18 @@ for server-validated context such as a course feedback request. It never sends
 on mount. Async `onSend` handlers return `false` on failure so the draft stays
 available for retry; successful sends clear only the submitted revision and
 preserve text edited while the request was pending.
+
+**Member request failures (audit 7c):** browser requests from member tools
+(AI generation such as `ElevatorPitchClient`, `uploadMemberResumeFile`) go
+through `fetchWithTimeout` with `MEMBER_REQUEST_TIMEOUT_MS` and describe any
+failure with `lib/portal/memberRequestFailure.ts` (`readMemberRequestFailure`
+for a non-2xx `Response`, `describeMemberRequestException` for a thrown
+timeout/network error). A 5xx, a non-JSON error page or a hung request must
+end in a kit alert (`AiToolError` / `role="alert"`) with the control
+re-enabled and the spinner stopped — never an indefinite "Writing…" or an
+unchanged page. Keep 4xx validation sentences from the server; replace 5xx
+bodies with the plain "temporarily unavailable" copy so retry classifiers
+still recognise them.
 
 `SkillMissionChallenge` owns its focus trap and close guard. Callers must not
 wrap it in a second Escape handler. Escape, backdrop, and close buttons share
