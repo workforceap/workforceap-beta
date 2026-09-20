@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "e82a99495250ba78fd8a9b7a3be084cf03056e0f8aec508349b969fae1d93d3b",
+  "inputTreeSha256": "38bf96f8ec90b31d2797771b4308ab8fe1ca4664cedc83441d0a4ddc679c24e4",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4903,
-    "sourceModules": 3563,
-    "importReferences": 17343,
-    "resolvedLocalReferences": 11537,
+    "files": 4790,
+    "sourceModules": 3450,
+    "importReferences": 17101,
+    "resolvedLocalReferences": 11405,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -29,7 +29,7 @@
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 202
+    "environmentNames": 201
   },
   "areas": [
     {
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 686
+      "files": 603
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1053
+      "files": 1024
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 637
+      "files": 636
     },
     {
       "area": "root",
@@ -112,7 +112,7 @@
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 890
+      "references": 886
     },
     {
       "file": "lib/auth/server.ts",
@@ -128,11 +128,11 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 247
+      "references": 241
     },
     {
       "file": "lib/tenant/organization.ts",
-      "references": 242
+      "references": 239
     },
     {
       "file": "lib/audit.ts",
@@ -140,11 +140,11 @@
     },
     {
       "file": "app/seo.ts",
-      "references": 206
+      "references": 202
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 205
+      "references": 202
     },
     {
       "file": "lib/audit/log.ts",
@@ -152,7 +152,7 @@
     },
     {
       "file": "components/portal/PageHeader.tsx",
-      "references": 141
+      "references": 140
     },
     {
       "file": "components/portal/PortalRouteLoading.tsx",
@@ -168,7 +168,7 @@
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
-      "references": 101
+      "references": 100
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
@@ -180,7 +180,7 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 83
+      "references": 81
     },
     {
       "file": "lib/events/track.ts",
@@ -188,7 +188,7 @@
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
-      "references": 72
+      "references": 71
     },
     {
       "file": "lib/content/programSlug.ts",
@@ -203,31 +203,27 @@
       "references": 59
     },
     {
-      "file": "components/portal/ui/DataTable.tsx",
-      "references": 55
-    },
-    {
       "file": "lib/supabase-admin.ts",
       "references": 54
+    },
+    {
+      "file": "components/portal/ui/DataTable.tsx",
+      "references": 52
     },
     {
       "file": "lib/content/programCurriculumManifest.ts",
       "references": 52
     },
     {
-      "file": "lib/analytics/events.ts",
-      "references": 51
-    },
-    {
       "file": "lib/http/requestFailureCopy.ts",
-      "references": 50
+      "references": 49
     },
     {
       "file": "lib/member/curriculumAssignment.ts",
       "references": 49
     },
     {
-      "file": "components/LocalizedLink.tsx",
+      "file": "lib/analytics/events.ts",
       "references": 44
     },
     {
@@ -239,15 +235,19 @@
       "references": 40
     },
     {
+      "file": "components/LocalizedLink.tsx",
+      "references": 37
+    },
+    {
       "file": "lib/cron/cronExecution.ts",
       "references": 37
     },
     {
-      "file": "lib/i18n/config.ts",
-      "references": 36
+      "file": "lib/auth/ensureUser.ts",
+      "references": 35
     },
     {
-      "file": "lib/auth/ensureUser.ts",
+      "file": "lib/db/queryCaps.ts",
       "references": 35
     }
   ],

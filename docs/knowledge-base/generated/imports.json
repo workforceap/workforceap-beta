@@ -67136,30 +67136,6 @@
     "package": "@marsidev/react-turnstile"
   },
   {
-    "from": "app/employers/EmployerHiringPartnerCta.tsx",
-    "specifier": "@/lib/marketing/employerLanding",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/employerLanding.ts"
-  },
-  {
-    "from": "app/employers/EmployerHiringPartnerCta.tsx",
-    "specifier": "@/lib/marketing/buttonClasses",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/buttonClasses.ts"
-  },
-  {
-    "from": "app/employers/EmployerHiringPartnerCta.tsx",
-    "specifier": "lucide-react",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
     "from": "app/employers/signup/layout.tsx",
     "specifier": "next",
     "line": 1,
@@ -68504,22 +68480,6 @@
     "target": "components/portal/WioaQualificationClient.tsx"
   },
   {
-    "from": "components/ApplyFormStatusBar.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/ApplyFormStatusBar.tsx",
-    "specifier": "@/lib/a11y/scrollBehavior",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/a11y/scrollBehavior.ts"
-  },
-  {
     "from": "components/AsyncBoundary.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -68856,14 +68816,6 @@
     "target": "components/ScrollAnimationsWrapper.tsx"
   },
   {
-    "from": "components/ErrorBoundary.tsx",
-    "specifier": "./error/ErrorBoundary",
-    "line": 3,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/error/ErrorBoundary.tsx"
-  },
-  {
     "from": "components/Footer.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -68968,30 +68920,6 @@
     "target": "app/seo.ts"
   },
   {
-    "from": "components/JsonLdArticle.tsx",
-    "specifier": "@/app/seo",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "app/seo.ts"
-  },
-  {
-    "from": "components/JsonLdArticle.tsx",
-    "specifier": "@/lib/blog/defaultImages",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/blog/defaultImages.ts"
-  },
-  {
-    "from": "components/JsonLdBreadcrumb.tsx",
-    "specifier": "@/app/seo",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "app/seo.ts"
-  },
-  {
     "from": "components/JsonLdCourse.tsx",
     "specifier": "@/app/seo",
     "line": 1,
@@ -69008,14 +68936,6 @@
     "target": "lib/content/programs.ts"
   },
   {
-    "from": "components/JsonLdDataset.tsx",
-    "specifier": "@/app/seo",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "app/seo.ts"
-  },
-  {
     "from": "components/JsonLdEducationalOccupationalProgram.tsx",
     "specifier": "@/lib/content/programs",
     "line": 1,
@@ -69030,22 +68950,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "components/JsonLdFAQPage.tsx",
-    "specifier": "@/app/seo",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "app/seo.ts"
-  },
-  {
-    "from": "components/JsonLdFAQPage.tsx",
-    "specifier": "@/lib/content/faqData",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/faqData.ts"
   },
   {
     "from": "components/LocalizedLink.tsx",
@@ -69256,22 +69160,6 @@
     "target": "components/icons/LegacyGlyph.tsx"
   },
   {
-    "from": "components/PhotoHighlight.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/PhotoHighlight.tsx",
-    "specifier": "next/image",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/ProgramIcon.tsx",
     "specifier": "lucide-react",
     "line": 3,
@@ -69414,14 +69302,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/a11y/scrollBehavior.ts"
-  },
-  {
-    "from": "components/TopBanner.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
   },
   {
     "from": "components/admin/AdminAnalyticsCharts.tsx",
@@ -71608,54 +71488,6 @@
     "package": "next"
   },
   {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "next/navigation",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "@prisma/client",
-    "line": 5,
-    "kind": "type",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "@/lib/formatPhone",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/formatPhone.ts"
-  },
-  {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "@/components/portal/ui/DataTable",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/ui/DataTable.tsx"
-  },
-  {
-    "from": "components/admin/MemberReviewTable.tsx",
-    "specifier": "@/lib/wioa/denialReason",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/wioa/denialReason.ts"
-  },
-  {
     "from": "components/admin/MemberSubgroupSection.tsx",
     "specifier": "react",
     "line": 3,
@@ -71824,22 +71656,6 @@
     "target": "lib/formatDate.ts"
   },
   {
-    "from": "components/admin/MentorStatusButtons.tsx",
-    "specifier": "next/navigation",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/admin/MentorStatusButtons.tsx",
-    "specifier": "react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
     "from": "components/admin/MfaStatusBanner.tsx",
     "specifier": "react",
     "line": 3,
@@ -71854,46 +71670,6 @@
     "kind": "import",
     "external": true,
     "package": "lucide-react"
-  },
-  {
-    "from": "components/admin/OutcomesDashboard.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/admin/OutcomesDashboard.tsx",
-    "specifier": "@/components/portal/PortalPageFrame",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PortalPageFrame.tsx"
-  },
-  {
-    "from": "components/admin/OutcomesDashboard.tsx",
-    "specifier": "@/components/portal/PageHeader",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PageHeader.tsx"
-  },
-  {
-    "from": "components/admin/OutcomesDashboard.tsx",
-    "specifier": "@/components/portal/ui/DataTable",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/ui/DataTable.tsx"
-  },
-  {
-    "from": "components/admin/OutcomesDashboard.tsx",
-    "specifier": "@/lib/content/programTitle",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programTitle.ts"
   },
   {
     "from": "components/admin/OutcomesSnapshot.tsx",
@@ -72699,86 +72475,6 @@
     "from": "components/analytics/ConversionMetrics.tsx",
     "specifier": "@/lib/analytics/events",
     "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/analytics/CtaExperimentExposure.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/analytics/CtaExperimentExposure.tsx",
-    "specifier": "next/navigation",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/analytics/CtaExperimentExposure.tsx",
-    "specifier": "@/lib/analytics/ctaExperiment",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/ctaExperiment.ts"
-  },
-  {
-    "from": "components/analytics/CtaExperimentExposure.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "react",
-    "line": 4,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "react",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "next/navigation",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "@/components/analytics/CtaExperimentExposure",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "components/analytics/CtaExperimentExposure.tsx"
-  },
-  {
-    "from": "components/analytics/ExperimentedCtaLink.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/events.ts"
@@ -74040,22 +73736,6 @@
     "target": "lib/formatDate.ts"
   },
   {
-    "from": "components/employer/InterviewScheduler.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/employer/InterviewScheduler.tsx",
-    "specifier": "lucide-react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
     "from": "components/employer/JobApplicantsClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -74296,70 +73976,6 @@
     "package": "@sentry/nextjs"
   },
   {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "react-hook-form",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "react-hook-form"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@hookform/resolvers/zod",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "@hookform/resolvers"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@/lib/validation/member",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/validation/member.ts"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 13,
-    "kind": "import",
-    "external": false,
-    "target": "lib/apply/applyReferralCapture.ts"
-  },
-  {
-    "from": "components/forms/MemberSignupForm.tsx",
-    "specifier": "@/lib/marketing/buttonClasses",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/buttonClasses.ts"
-  },
-  {
     "from": "components/forms/ParentalConsentForm.tsx",
     "specifier": "@/lib/marketing/buttonClasses",
     "line": 3,
@@ -74510,14 +74126,6 @@
     "kind": "type",
     "external": false,
     "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/marketing/EmployerCaseStudyCard.tsx",
-    "specifier": "@/lib/content/employer-case-studies",
-    "line": 1,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/employer-case-studies.ts"
   },
   {
     "from": "components/marketing/EnrollRefCookie.tsx",
@@ -74688,118 +74296,6 @@
     "target": "components/marketing/EnrollRefCookie.tsx"
   },
   {
-    "from": "components/marketing/ProgramsMobileBrowseNav.tsx",
-    "specifier": "@/lib/content/programs",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "components/marketing/ProgramsMobileBrowseNav.tsx",
-    "specifier": "@/lib/content/programSubgroup",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programSubgroup.ts"
-  },
-  {
-    "from": "components/marketing/ProgramsMobileBrowseNav.tsx",
-    "specifier": "next-intl/server",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/marketing/TestimonialCard.tsx",
-    "specifier": "lucide-react",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "@/lib/db/prisma",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "@prisma/client",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "next/image",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "lucide-react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "next-intl/server",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "@/components/marketing/ui",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "components/marketing/ui/index.ts"
-  },
-  {
-    "from": "components/marketing/TestimonialsCarousel.tsx",
-    "specifier": "@/lib/content/programTitle",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programTitle.ts"
-  },
-  {
-    "from": "components/marketing/TestimonialsRow.tsx",
-    "specifier": "next-intl",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/marketing/TestimonialsRow.tsx",
-    "specifier": "@/content/testimonials",
-    "line": 2,
-    "kind": "type",
-    "external": false,
-    "target": "content/testimonials.ts"
-  },
-  {
-    "from": "components/marketing/TestimonialsRow.tsx",
-    "specifier": "./TestimonialCard",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "components/marketing/TestimonialCard.tsx"
-  },
-  {
     "from": "components/marketing/ThankYouViewTracker.tsx",
     "specifier": "react",
     "line": 3,
@@ -74928,38 +74424,6 @@
     "target": "lib/marketing/buttonClasses.ts"
   },
   {
-    "from": "components/marketing/ui/CTABand.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/CohortStatCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/ContactInfoCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/ContactInfoCard.tsx",
-    "specifier": "@/components/icons/LegacyGlyph",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "components/icons/LegacyGlyph.tsx"
-  },
-  {
     "from": "components/marketing/ui/HeroSection.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -75006,286 +74470,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/marketing/heroImage.ts"
-  },
-  {
-    "from": "components/marketing/ui/InfoCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/JourneyStep.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/JourneyStep.tsx",
-    "specifier": "@/components/icons/LegacyGlyph",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "components/icons/LegacyGlyph.tsx"
-  },
-  {
-    "from": "components/marketing/ui/PageSection.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/PartnershipCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/PartnershipCard.tsx",
-    "specifier": "lucide-react",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/marketing/ui/PartnershipCard.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/marketing/ui/PricingTierCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/PricingTierCard.tsx",
-    "specifier": "lucide-react",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/marketing/ui/PricingTierCard.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/marketing/ui/ProcessStep.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/ProcessStep.tsx",
-    "specifier": "@/components/icons/LegacyGlyph",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "components/icons/LegacyGlyph.tsx"
-  },
-  {
-    "from": "components/marketing/ui/ProcessStep.tsx",
-    "specifier": "@/lib/marketing/buttonClasses",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/buttonClasses.ts"
-  },
-  {
-    "from": "components/marketing/ui/QuoteCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/SectionHeader.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/SplitHero.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/StatBand.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/StatCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/ValueCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./ContactInfoCard",
-    "line": 1,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/ContactInfoCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./CTABand",
-    "line": 2,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/CTABand.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./CohortStatCard",
-    "line": 3,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/CohortStatCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./HeroSection",
-    "line": 4,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/HeroSection.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./InfoCard",
-    "line": 5,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/InfoCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./JourneyStep",
-    "line": 6,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/JourneyStep.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./PageSection",
-    "line": 7,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/PageSection.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./PartnershipCard",
-    "line": 8,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/PartnershipCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./PricingTierCard",
-    "line": 9,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/PricingTierCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./ProcessStep",
-    "line": 10,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/ProcessStep.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./SectionHeader",
-    "line": 11,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/SectionHeader.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./QuoteCard",
-    "line": 12,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/QuoteCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./SplitHero",
-    "line": 13,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/SplitHero.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./StatCard",
-    "line": 14,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/StatCard.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./StatBand",
-    "line": 15,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/StatBand.tsx"
-  },
-  {
-    "from": "components/marketing/ui/index.ts",
-    "specifier": "./ValueCard",
-    "line": 16,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/marketing/ui/ValueCard.tsx"
   },
   {
     "from": "components/observability/SentrySetUser.tsx",
@@ -75393,14 +74577,6 @@
   },
   {
     "from": "components/onboarding/OnboardingWizard.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/onboarding/PartnerOnboardingTour.tsx",
     "specifier": "react",
     "line": 3,
     "kind": "import",
@@ -75976,62 +75152,6 @@
     "package": "react"
   },
   {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "next/dynamic",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "next/navigation",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "@/components/apply/HearAboutSelect",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "components/apply/HearAboutSelect.tsx"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "@/lib/apply/eligibilityExtendedFields",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/apply/eligibilityExtendedFields.ts"
-  },
-  {
-    "from": "components/partner/PartnerSignupForm.tsx",
-    "specifier": "@marsidev/react-turnstile",
-    "line": 10,
-    "kind": "dynamic-import",
-    "external": true,
-    "package": "@marsidev/react-turnstile"
-  },
-  {
     "from": "components/partner/PartnerWorkflowTimeline.tsx",
     "specifier": "@/lib/formatDate",
     "line": 1,
@@ -76200,22 +75320,6 @@
     "target": "components/portal/tools/SkillMapperRadar.tsx"
   },
   {
-    "from": "components/portal/AiToolsHubSection.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/AiToolsHubSection.tsx",
-    "specifier": "@/lib/portal/aiToolsHub",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/portal/aiToolsHub.ts"
-  },
-  {
     "from": "components/portal/ApplicationAiFeedbackPrompt.tsx",
     "specifier": "react",
     "line": 3,
@@ -76254,62 +75358,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/applicationAiFeedback.ts"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "@/components/ui/Skeleton",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "components/ui/Skeleton.tsx"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "@/components/portal/ui/DataTable",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/ui/DataTable.tsx"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "./useScrollAffordance",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/useScrollAffordance.ts"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "@/hooks/useFocusTrap",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
-  },
-  {
-    "from": "components/portal/ApplicationTrackerTable.tsx",
-    "specifier": "@/lib/a11y/scrollBehavior",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/a11y/scrollBehavior.ts"
   },
   {
     "from": "components/portal/AssessmentForm.test.tsx",
@@ -76384,44 +75432,12 @@
     "target": "lib/member/assessmentConfirmMessage.ts"
   },
   {
-    "from": "components/portal/AssessmentRetakeButton.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
     "from": "components/portal/AwardPointsButton.tsx",
     "specifier": "react",
     "line": 3,
     "kind": "import",
     "external": true,
     "package": "react"
-  },
-  {
-    "from": "components/portal/BenefitAccessCard.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/BenefitAccessCard.tsx",
-    "specifier": "next/navigation",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/BenefitAccessCard.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
   },
   {
     "from": "components/portal/BenefitsCliffClient.tsx",
@@ -76470,46 +75486,6 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
-  },
-  {
-    "from": "components/portal/CareerBriefForYou.tsx",
-    "specifier": "next/link",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/CareerBriefForYou.tsx",
-    "specifier": "@/lib/content/careerBriefPersonalization",
-    "line": 2,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/careerBriefPersonalization.ts"
-  },
-  {
-    "from": "components/portal/CareerBriefList.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/CareerBriefList.tsx",
-    "specifier": "@/lib/content/careerBriefs",
-    "line": 4,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/careerBriefs.ts"
-  },
-  {
-    "from": "components/portal/CareerBriefList.tsx",
-    "specifier": "@/lib/analytics/events",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/analytics/events.ts"
   },
   {
     "from": "components/portal/CertificationAddForm.tsx",
@@ -77880,38 +76856,6 @@
     "target": "lib/member/jobApplicationsEmptyState.ts"
   },
   {
-    "from": "components/portal/JobReadinessScore.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/JobReadinessScore.tsx",
-    "specifier": "next/link",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/JobReadinessScore.tsx",
-    "specifier": "@/lib/readiness/score",
-    "line": 5,
-    "kind": "type",
-    "external": false,
-    "target": "lib/readiness/score.ts"
-  },
-  {
-    "from": "components/portal/JobReadinessScore.tsx",
-    "specifier": "@/lib/readiness/progressView",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/readiness/progressView.ts"
-  },
-  {
     "from": "components/portal/JobTailorPanel.tsx",
     "specifier": "react",
     "line": 3,
@@ -77934,46 +76878,6 @@
     "kind": "import",
     "external": true,
     "package": "lucide-react"
-  },
-  {
-    "from": "components/portal/JourneyStageGuide.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/JourneyStageGuide.tsx",
-    "specifier": "next/link",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/JourneyStageGuide.tsx",
-    "specifier": "next-intl",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/portal/JourneyStageGuide.tsx",
-    "specifier": "@/lib/portal/journeyStages",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/portal/journeyStages.ts"
-  },
-  {
-    "from": "components/portal/JourneyStageGuide.tsx",
-    "specifier": "@/lib/events/client",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "lib/events/client.ts"
   },
   {
     "from": "components/portal/LanguageToggle.test.tsx",
@@ -78054,14 +76958,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/i18n/client.ts"
-  },
-  {
-    "from": "components/portal/LearningCivicBotPanel.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "components/portal/LearningHubDestinationCards.tsx",
@@ -79128,22 +78024,6 @@
     "target": "hooks/useFocusTrap.ts"
   },
   {
-    "from": "components/portal/OtherProgramsList.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/OtherProgramsList.tsx",
-    "specifier": "next/navigation",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/portal/PageHeader.tsx",
     "specifier": "./PortalBreadcrumb",
     "line": 1,
@@ -79432,14 +78312,6 @@
     "package": "react"
   },
   {
-    "from": "components/portal/PortalFooter.tsx",
-    "specifier": "next/link",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/portal/PortalHeaderActions.tsx",
     "specifier": "next/link",
     "line": 3,
@@ -79534,14 +78406,6 @@
     "kind": "import",
     "external": false,
     "target": "components/onboarding/TourProviderWrapper.tsx"
-  },
-  {
-    "from": "components/portal/PortalLoadingState.tsx",
-    "specifier": "@astryxdesign/core/Spinner",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
   },
   {
     "from": "components/portal/PortalNav.tsx",
@@ -79896,54 +78760,6 @@
     "target": "components/portal/ProactiveInsightCard.module.css"
   },
   {
-    "from": "components/portal/ProfileForm.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ProfileForm.tsx",
-    "specifier": "next-intl",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestForm.tsx",
-    "specifier": "next/navigation",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestForm.tsx",
-    "specifier": "react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestForm.tsx",
-    "specifier": "@/lib/content/programs",
-    "line": 5,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestForm.tsx",
-    "specifier": "@/lib/fetchWithTimeout",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/fetchWithTimeout.ts"
-  },
-  {
     "from": "components/portal/ProgramChangeRequestModal.tsx",
     "specifier": "react",
     "line": 3,
@@ -79982,22 +78798,6 @@
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestPanel.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ProgramChangeRequestPanel.tsx",
-    "specifier": "@/lib/content/programs",
-    "line": 4,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/programs.ts"
   },
   {
     "from": "components/portal/ProgramCommitmentPanel.tsx",
@@ -80112,33 +78912,9 @@
     "target": "components/ProgramIcon.tsx"
   },
   {
-    "from": "components/portal/ProgressBanner.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/portal/PushNotificationsToggle.tsx",
     "specifier": "react",
     "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/QueryToast.tsx",
-    "specifier": "next/navigation",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/QueryToast.tsx",
-    "specifier": "react",
-    "line": 4,
     "kind": "import",
     "external": true,
     "package": "react"
@@ -80336,14 +79112,6 @@
     "package": "next"
   },
   {
-    "from": "components/portal/ResourceProgressSummary.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/portal/ResourceViewTracker.tsx",
     "specifier": "react",
     "line": 3,
@@ -80438,22 +79206,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/resume/pendingResumeDraft.ts"
-  },
-  {
-    "from": "components/portal/ResumeMobileQuickActions.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ResumeMobileQuickActions.tsx",
-    "specifier": "next/link",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "components/portal/ResumeMobileResumeTools.tsx",
@@ -80566,14 +79318,6 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/ResumeCoachWorkspace.tsx"
-  },
-  {
-    "from": "components/portal/SalaryTableWrapper.tsx",
-    "specifier": "@/components/portal/useScrollAffordance",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/useScrollAffordance.ts"
   },
   {
     "from": "components/portal/SettingsForm.tsx",
@@ -80864,22 +79608,6 @@
     "package": "react"
   },
   {
-    "from": "components/portal/StartHereCard.tsx",
-    "specifier": "next/link",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/StartHereCard.tsx",
-    "specifier": "lucide-react",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
     "from": "components/portal/StatusBadge.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -80942,30 +79670,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusToneAdapters.ts"
-  },
-  {
-    "from": "components/portal/StatusCard.tsx",
-    "specifier": "@prisma/client",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "components/portal/StatusCard.tsx",
-    "specifier": "@/lib/i18n/config",
-    "line": 2,
-    "kind": "type",
-    "external": false,
-    "target": "lib/i18n/config.ts"
-  },
-  {
-    "from": "components/portal/StatusCard.tsx",
-    "specifier": "@/lib/i18n/date",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/i18n/date.ts"
   },
   {
     "from": "components/portal/TodayHero.tsx",
@@ -81312,30 +80016,6 @@
     "target": "components/portal/kit/hooks/useAnnounce.ts"
   },
   {
-    "from": "components/portal/TrainingProgramTabs.tsx",
-    "specifier": "next/navigation",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/TrainingProgramTabs.tsx",
-    "specifier": "react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/TrainingProgramTabs.tsx",
-    "specifier": "@/lib/fetchWithTimeout",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/fetchWithTimeout.ts"
-  },
-  {
     "from": "components/portal/UnreviewedLocaleBanner.tsx",
     "specifier": "react",
     "line": 3,
@@ -81438,22 +80118,6 @@
     "kind": "import",
     "external": true,
     "package": "react"
-  },
-  {
-    "from": "components/portal/WeeklyRecapClient.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/WeeklyRecapPreview.tsx",
-    "specifier": "next/link",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
   },
   {
     "from": "components/portal/WioaQualificationClient.tsx",
@@ -86112,22 +84776,6 @@
     "target": "components/portal/kit/index.ts"
   },
   {
-    "from": "components/portal/kit/pages/admin/AdminSidebarNav.tsx",
-    "specifier": "lucide-react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/portal/kit/pages/admin/AdminSidebarNav.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 40,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
     "from": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
     "specifier": "react",
     "line": 3,
@@ -86744,38 +85392,6 @@
     "target": "components/portal/kit/index.ts"
   },
   {
-    "from": "components/portal/kit/pages/member/MemberCounselorSessionKit.tsx",
-    "specifier": "next/link",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberCounselorSessionKit.tsx",
-    "specifier": "lucide-react",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberCounselorSessionKit.tsx",
-    "specifier": "@astryxdesign/core/Card",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberCounselorSessionKit.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
     "from": "components/portal/kit/pages/member/MemberHomeKit.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -87328,38 +85944,6 @@
     "target": "lib/readiness/progressView.ts"
   },
   {
-    "from": "components/portal/kit/pages/member/MemberToolkitKit.tsx",
-    "specifier": "lucide-react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberToolkitKit.tsx",
-    "specifier": "next/link",
-    "line": 17,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberToolkitKit.tsx",
-    "specifier": "react",
-    "line": 18,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/kit/pages/member/MemberToolkitKit.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 19,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
     "from": "components/portal/kit/pages/member/MemberTrainingWorkspace.tsx",
     "specifier": "react",
     "line": 3,
@@ -87900,14 +86484,6 @@
     "specifier": "react",
     "line": 3,
     "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/tools/BrowserSpeechCaptions.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
     "external": true,
     "package": "react"
   },
@@ -89208,30 +87784,6 @@
     "target": "components/portal/tools/AiToolError.tsx"
   },
   {
-    "from": "components/portal/tools/SkillAssessmentForm.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/tools/SkillAssessmentForm.tsx",
-    "specifier": "next-intl",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
-    "from": "components/portal/tools/SkillAssessmentForm.tsx",
-    "specifier": "@/lib/http/requestFailureCopy",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/http/requestFailureCopy.ts"
-  },
-  {
     "from": "components/portal/tools/SkillMapperClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -89440,30 +87992,6 @@
     "package": "react"
   },
   {
-    "from": "components/portal/ui/FormField.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ui/PortalActionCard.tsx",
-    "specifier": "react",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/ui/PortalActionCard.tsx",
-    "specifier": "next/link",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
     "from": "components/portal/ui/PortalCard.tsx",
     "specifier": "react",
     "line": 1,
@@ -89558,38 +88086,6 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalInput.tsx"
-  },
-  {
-    "from": "components/portal/useScrollAffordance.ts",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/programs/ProgramOnetCareerSection.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/programs/ProgramRelatedSection.tsx",
-    "specifier": "@/components/LocalizedLink",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "components/LocalizedLink.tsx"
-  },
-  {
-    "from": "components/programs/ProgramRelatedSection.tsx",
-    "specifier": "@/lib/content/programs",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programs.ts"
   },
   {
     "from": "components/public/PublicCareerQuizClient.tsx",
@@ -89718,38 +88214,6 @@
     "kind": "import",
     "external": true,
     "package": "next-intl"
-  },
-  {
-    "from": "components/skeletons/index.ts",
-    "specifier": "./StatsCardSkeleton",
-    "line": 1,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/skeletons/StatsCardSkeleton.tsx"
-  },
-  {
-    "from": "components/skeletons/index.ts",
-    "specifier": "./ProgramListSkeleton",
-    "line": 2,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/skeletons/ProgramListSkeleton.tsx"
-  },
-  {
-    "from": "components/skeletons/index.ts",
-    "specifier": "./JobListSkeleton",
-    "line": 3,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/skeletons/JobListSkeleton.tsx"
-  },
-  {
-    "from": "components/skeletons/index.ts",
-    "specifier": "./ProfileSkeleton",
-    "line": 4,
-    "kind": "re-export",
-    "external": false,
-    "target": "components/skeletons/ProfileSkeleton.tsx"
   },
   {
     "from": "components/super-admin-view-switcher.tsx",
@@ -91585,14 +90049,6 @@
   },
   {
     "from": "hooks/useDraftAutosave.ts",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "hooks/useFeatureFlag.ts",
     "specifier": "react",
     "line": 3,
     "kind": "import",
@@ -94328,30 +92784,6 @@
     "target": "lib/agents/gateway/types.ts"
   },
   {
-    "from": "lib/agents/gateway/index.ts",
-    "specifier": "./core",
-    "line": 1,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/agents/gateway/core.ts"
-  },
-  {
-    "from": "lib/agents/gateway/index.ts",
-    "specifier": "./toolDefinitions",
-    "line": 2,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/agents/gateway/toolDefinitions.ts"
-  },
-  {
-    "from": "lib/agents/gateway/index.ts",
-    "specifier": "./types",
-    "line": 3,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/agents/gateway/types.ts"
-  },
-  {
     "from": "lib/agents/gateway/server.ts",
     "specifier": "server-only",
     "line": 1,
@@ -94774,38 +93206,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/ai/aiCoachContext.ts"
-  },
-  {
-    "from": "lib/ai/coachMemory.ts",
-    "specifier": "@/lib/coach/memory",
-    "line": 4,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/coach/memory.ts"
-  },
-  {
-    "from": "lib/ai/coachMemory.ts",
-    "specifier": "@/lib/coach/memory",
-    "line": 14,
-    "kind": "type",
-    "external": false,
-    "target": "lib/coach/memory.ts"
-  },
-  {
-    "from": "lib/ai/coachMemory.ts",
-    "specifier": "@/lib/coach/memory",
-    "line": 16,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coach/memory.ts"
-  },
-  {
-    "from": "lib/ai/coachMemory.ts",
-    "specifier": "@/lib/coach/memory",
-    "line": 26,
-    "kind": "type",
-    "external": false,
-    "target": "lib/coach/memory.ts"
   },
   {
     "from": "lib/ai/configured.test.ts",
@@ -98280,22 +96680,6 @@
     "target": "lib/blog/defaultImages.ts"
   },
   {
-    "from": "lib/blog/blogListingImage.ts",
-    "specifier": "@/lib/blog/defaultImages",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/blog/defaultImages.ts"
-  },
-  {
-    "from": "lib/blog/blogListingImage.ts",
-    "specifier": "@/lib/marketing/heroPhotos",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/heroPhotos.ts"
-  },
-  {
     "from": "lib/blog/formatPublishedDate.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -98630,22 +97014,6 @@
     "kind": "import",
     "external": true,
     "package": "path"
-  },
-  {
-    "from": "lib/content/certToSkills.ts",
-    "specifier": "./programs",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "lib/content/certToSkills.ts",
-    "specifier": "./certificationTracks",
-    "line": 89,
-    "kind": "type",
-    "external": false,
-    "target": "lib/content/certificationTracks.ts"
   },
   {
     "from": "lib/content/checkpoints/businessAndDesign.ts",
@@ -99024,46 +97392,6 @@
     "package": "node:path"
   },
   {
-    "from": "lib/content/employer-case-studies-real.ts",
-    "specifier": "server-only",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "server-only"
-  },
-  {
-    "from": "lib/content/employer-case-studies-real.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/content/employer-case-studies-real.ts",
-    "specifier": "@/lib/tenant/organization",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "lib/content/employer-case-studies-real.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/optionalBuildDb.ts"
-  },
-  {
-    "from": "lib/content/employer-case-studies-real.ts",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
-  },
-  {
     "from": "lib/content/itSupportLabs.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -99339,22 +97667,6 @@
     "from": "lib/content/programCurriculumManifest.ts",
     "specifier": "@/shared/programSyllabi",
     "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "shared/programSyllabi.ts"
-  },
-  {
-    "from": "lib/content/programDescriptions.ts",
-    "specifier": "../../shared/digitalLiteracyPathway",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "shared/digitalLiteracyPathway.ts"
-  },
-  {
-    "from": "lib/content/programDescriptions.ts",
-    "specifier": "../../shared/programSyllabi",
-    "line": 3,
     "kind": "import",
     "external": false,
     "target": "shared/programSyllabi.ts"
@@ -99668,14 +97980,6 @@
     "specifier": "./programs",
     "line": 7,
     "kind": "type",
-    "external": false,
-    "target": "lib/content/programs.ts"
-  },
-  {
-    "from": "lib/content/relatedPrograms.ts",
-    "specifier": "@/lib/content/programs",
-    "line": 1,
-    "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
   },
@@ -101310,46 +99614,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
-  },
-  {
-    "from": "lib/coursera/dashboardAutoSync.ts",
-    "specifier": "server-only",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "server-only"
-  },
-  {
-    "from": "lib/coursera/dashboardAutoSync.ts",
-    "specifier": "@/lib/xapi/mappings",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/xapi/mappings.ts"
-  },
-  {
-    "from": "lib/coursera/dashboardAutoSync.ts",
-    "specifier": "@/lib/tenant/organization",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "lib/coursera/dashboardAutoSync.ts",
-    "specifier": "@/lib/tenant/withTenantScope",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/withTenantScope.ts"
-  },
-  {
-    "from": "lib/coursera/dashboardAutoSync.ts",
-    "specifier": "./syncUserFromB4B",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coursera/syncUserFromB4B.ts"
   },
   {
     "from": "lib/coursera/enrollPort.ts",
@@ -104888,46 +103152,6 @@
     "target": "lib/experiments/shared.ts"
   },
   {
-    "from": "lib/experiments/index.ts",
-    "specifier": "./shared",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/experiments/shared.ts"
-  },
-  {
-    "from": "lib/experiments/index.ts",
-    "specifier": "./verify-override.server",
-    "line": 43,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "lib/experiments/verify-override.server.ts"
-  },
-  {
-    "from": "lib/experiments/index.ts",
-    "specifier": "./verify-override.server",
-    "line": 56,
-    "kind": "dynamic-import",
-    "external": false,
-    "target": "lib/experiments/verify-override.server.ts"
-  },
-  {
-    "from": "lib/experiments/verify-override.server.ts",
-    "specifier": "server-only",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "server-only"
-  },
-  {
-    "from": "lib/experiments/verify-override.server.ts",
-    "specifier": "node:crypto",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "node:crypto"
-  },
-  {
     "from": "lib/feature-flags/adminApi.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -105344,14 +103568,6 @@
     "package": "node:path"
   },
   {
-    "from": "lib/i18n/getT.ts",
-    "specifier": "next-intl/server",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next-intl"
-  },
-  {
     "from": "lib/i18n/localizeHref.ts",
     "specifier": "@/lib/i18n/config",
     "line": 1,
@@ -105449,30 +103665,6 @@
   },
   {
     "from": "lib/i18n/server.ts",
-    "specifier": "@/lib/i18n/config",
-    "line": 3,
-    "kind": "import",
-    "external": false,
-    "target": "lib/i18n/config.ts"
-  },
-  {
-    "from": "lib/i18n/serverLocale.ts",
-    "specifier": "next/headers",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "lib/i18n/serverLocale.ts",
-    "specifier": "@/lib/i18n/config",
-    "line": 2,
-    "kind": "type",
-    "external": false,
-    "target": "lib/i18n/config.ts"
-  },
-  {
-    "from": "lib/i18n/serverLocale.ts",
     "specifier": "@/lib/i18n/config",
     "line": 3,
     "kind": "import",
@@ -105686,70 +103878,6 @@
     "kind": "re-export",
     "external": false,
     "target": "lib/ui/buttonClasses.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "server-only",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "server-only"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@prisma/client",
-    "line": 3,
-    "kind": "type",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/marketing/publicImpactStats",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/marketing/publicImpactStats.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/tenant/organization",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/optionalBuildDb.ts"
-  },
-  {
-    "from": "lib/marketing/employerLanding.ts",
-    "specifier": "@/lib/storage/publicAssetUrl",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/storage/publicAssetUrl.ts"
   },
   {
     "from": "lib/marketing/googleItSupportLanding.test.ts",
@@ -106070,22 +104198,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "lib/marketing/wapJobs.ts",
-    "specifier": "@/lib/db/prisma",
-    "line": 1,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "lib/marketing/wapJobs.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/optionalBuildDb.ts"
   },
   {
     "from": "lib/member/aiToolFollowThrough.test.ts",
@@ -110496,38 +108608,6 @@
     "target": "lib/onet/client.ts"
   },
   {
-    "from": "lib/outcomes/placementPublicMetrics.ts",
-    "specifier": "@prisma/client",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "lib/outcomes/placementPublicMetrics.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/optionalBuildDb.ts"
-  },
-  {
-    "from": "lib/outcomes/publicPlacementOutcomes.ts",
-    "specifier": "@prisma/client",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "lib/outcomes/publicPlacementOutcomes.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/optionalBuildDb.ts"
-  },
-  {
     "from": "lib/outcomes/socialProof.ts",
     "specifier": "@prisma/client",
     "line": 1,
@@ -111662,14 +109742,6 @@
     "kind": "import",
     "external": true,
     "package": "node:url"
-  },
-  {
-    "from": "lib/readiness/index.ts",
-    "specifier": "@/lib/content/readinessChecklist",
-    "line": 5,
-    "kind": "re-export",
-    "external": false,
-    "target": "lib/content/readinessChecklist.ts"
   },
   {
     "from": "lib/readiness/memberReadinessSections.ts",
@@ -113590,14 +111662,6 @@
     "kind": "type",
     "external": false,
     "target": "lib/ui/statusColors.ts"
-  },
-  {
-    "from": "lib/validation/aiCoachResponses.ts",
-    "specifier": "zod",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "zod"
   },
   {
     "from": "lib/validation/aiInterview.ts",
