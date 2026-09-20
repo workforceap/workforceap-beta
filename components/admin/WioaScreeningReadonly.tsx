@@ -1,6 +1,7 @@
 import type { WioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssistanceLabel, publicAssistanceProgramsLabel } from '@/lib/wioa/wioaQualification';
 import { wioaReviewLabel } from '@/lib/wioa/wioaReview';
+import styles from './staffReadonly.module.css';
 
 const AGE_LABEL: Record<string, string> = {
   under18: 'Under 18',
@@ -17,15 +18,20 @@ type Props = {
   reviewNotes: string | null;
 };
 
+/**
+ * Staff read-only view of a member's WIOA self-screening (admin member detail,
+ * counselor student detail Profile tab). Kit `.wa-kit-card` with the section
+ * h2 + `.wa-kit-meta` captions from staffReadonly.module.css — no inline sizes.
+ */
 export default function WioaScreeningReadonly({ snapshot, reviewStatus, reviewedAt, reviewerName, reviewNotes }: Props) {
   const a = snapshot.answers;
   return (
-    <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>WIOA self-screening</h2>
-      <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+    <section className="wa-kit-card">
+      <h2 className={styles.title}>WIOA self-screening</h2>
+      <p className={`wa-kit-meta ${styles.lede}`}>
         Submitted {new Date(snapshot.submittedAt).toLocaleString()} · Portal signal: <strong>{snapshot.signal}</strong>
       </p>
-      <ul style={{ fontSize: '0.9rem', marginBottom: '0.75rem', paddingLeft: '1.25rem', lineHeight: 1.5 }}>
+      <ul className={`${styles.body} ${styles.facts}`}>
         <li>
           <strong>Age:</strong> {AGE_LABEL[a.ageBracket] ?? a.ageBracket}
         </li>
@@ -52,23 +58,23 @@ export default function WioaScreeningReadonly({ snapshot, reviewStatus, reviewed
           </>
         ) : null}
       </ul>
-      <details style={{ marginBottom: '0.75rem' }}>
-        <summary>Screening explanations (staff copy)</summary>
-        <ul>{formatWioaReasons(snapshot).map((reason, index) => <li key={index}>{reason}</li>)}</ul>
+      <details className={`${styles.body} ${styles.disclosure}`}>
+        <summary className={styles.summary}>Screening explanations (staff copy)</summary>
+        <ul className={styles.reasons}>{formatWioaReasons(snapshot).map((reason, index) => <li key={index}>{reason}</li>)}</ul>
       </details>
       {(reviewStatus || reviewNotes) && (
-        <div style={{ fontSize: '0.9rem', paddingTop: '0.5rem', borderTop: '1px solid var(--outline-variant)' }}>
-          <p style={{ marginBottom: '0.25rem' }}>
+        <div className={`${styles.body} ${styles.review}`}>
+          <p>
             <strong>Staff status:</strong> {wioaReviewLabel(reviewStatus)}
           </p>
           {reviewedAt && (
-            <p style={{ marginBottom: '0.25rem', color: 'var(--color-on-surface-variant)' }}>
+            <p className="wa-kit-meta">
               Reviewed {new Date(reviewedAt).toLocaleString()}
               {reviewerName ? ` · ${reviewerName}` : ''}
             </p>
           )}
           {reviewNotes ? (
-            <p style={{ whiteSpace: 'pre-wrap', marginTop: '0.5rem' }}>
+            <p className={styles.reviewNotes}>
               <strong>Notes:</strong> {reviewNotes}
             </p>
           ) : null}

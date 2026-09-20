@@ -110,10 +110,10 @@ export function PlacementsKit({
   );
 
   const kpis: KpiItem[] = [
-    { label: 'YTD', value: ytd, color: 'success' },
+    { label: 'YTD', value: ytd },
     { label: 'Avg Wage', value: avgWage },
-    { label: 'Retention 90d', value: retention90d, color: 'info' },
-    { label: 'To Confirm', value: toConfirm, color: 'accent' },
+    { label: 'Retention 90d', value: retention90d },
+    { label: 'To Confirm', value: toConfirm, tone: toConfirm > 0 ? 'alert' : undefined },
   ];
 
   const numStyle = { fontVariantNumeric: 'tabular-nums' as const };

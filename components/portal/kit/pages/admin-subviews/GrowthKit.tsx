@@ -75,10 +75,10 @@ export interface GrowthKitProps {
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
-  { label: 'Signups (7d)', value: 0, color: 'success' },
-  { label: 'Apply Events (24h)', value: 0, color: 'accent' },
-  { label: 'Logins (24h)', value: 0, color: 'info' },
-  { label: 'UTM Sources (7d)', value: 0, color: 'gold' },
+  { label: 'Signups (7d)', value: 0 },
+  { label: 'Apply Events (24h)', value: 0 },
+  { label: 'Logins (24h)', value: 0 },
+  { label: 'UTM Sources (7d)', value: 0 },
 ];
 
 const EMPTY_HINT = (

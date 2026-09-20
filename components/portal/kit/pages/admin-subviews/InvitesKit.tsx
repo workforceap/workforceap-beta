@@ -68,9 +68,9 @@ export function InvitesKit({
 }: InvitesKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Sent', value: sent },
-    { label: 'Accepted', value: accepted, color: 'success' },
-    { label: 'Pending', value: pending, color: 'gold' },
-    { label: 'Rate', value: `${rate}%`, color: 'info' },
+    { label: 'Accepted', value: accepted },
+    { label: 'Pending', value: pending, tone: pending > 0 ? 'warn' : undefined },
+    { label: 'Rate', value: `${rate}%` },
   ];
 
   const columns: Column<InviteRow>[] = [

@@ -39,8 +39,8 @@ export interface PartnerKpiTile {
   value: string | number;
   /** Muted meta line rendered under the tile card. Degrades gracefully when omitted. */
   subtitle?: string;
-  /** Icon chip + sparkline/value color. */
-  color?: KitColor;
+  /** Semantic state derived from the value (KitTone); paints the icon chip / edge accent, never the number. */
+  tone?: KitTone;
   /**
    * Rendered icon element, e.g. `<Users size={16} />` — not the bare component
    * reference (StatSparkTile is a Client Component; a raw component ref can't
@@ -60,13 +60,13 @@ export function PartnerKpiGrid({ items }: { items: PartnerKpiTile[] }) {
             icon={it.icon ?? <Users size={16} />}
             label={it.label}
             value={it.value}
-            color={it.color ?? 'text'}
+            tone={it.tone}
             spark={it.spark}
           />
           {it.subtitle ? (
             <p className={styles.caption}>{it.subtitle}</p>
           ) : null}
-        </div> : <StatTile key={it.label} label={it.label} value={it.value} color={it.color ?? 'text'} delta={it.subtitle} deltaColor="muted" className={styles.metric} />
+        </div> : <StatTile key={it.label} label={it.label} value={it.value} tone={it.tone} delta={it.subtitle} deltaTone="muted" className={styles.metric} />
       ))}
     </div>
   );

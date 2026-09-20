@@ -16,7 +16,6 @@ import {
   StatusTag,
   KitEmptyState,
   QueueRow,
-  type KitColor,
   type KitTone,
   type QueueTone,
 } from '@/components/portal/kit';
@@ -107,9 +106,9 @@ function TodayTile({
   label: string;
   value: number;
   caption: string;
-  tone?: KitColor;
+  tone?: KitTone;
 }) {
-  return <StatTile data-testid={`today-tile-${id}`} label={label} value={value} delta={caption} tone={tone} deltaColor="muted" />;
+  return <StatTile data-testid={`today-tile-${id}`} label={label} value={value} delta={caption} tone={tone} deltaTone="muted" />;
 }
 
 function TodayRowItem({ row, memberHrefBase }: { row: TodayRow; memberHrefBase: string }) {
@@ -235,16 +234,16 @@ export function CounselorTodayKit({
                 label="Needs attention"
                 value={totals.flagged}
                 caption="Urgent or watch, across every group below"
-                tone={totals.flagged > 0 ? 'accent' : undefined}
+                tone={totals.flagged > 0 ? 'alert' : undefined}
               />
               <TodayTile
                 id="reply-owed"
                 label="Reply owed"
                 value={totals.awaitingReply}
                 caption="Member message waiting 24h+ without a staff reply"
-                tone={totals.awaitingReply > 0 ? 'accent' : undefined}
+                tone={totals.awaitingReply > 0 ? 'alert' : undefined}
               />
-              <TodayTile id="on-track" label="On track" value={totals.onTrack} caption="No flags today" tone="success" />
+              <TodayTile id="on-track" label="On track" value={totals.onTrack} caption="No flags today" tone="ok" />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

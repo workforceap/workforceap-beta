@@ -80,12 +80,12 @@ export function MemberCertificatesKit({
   // The real next step for a member mid-course is the course, not a message.
   const continueIsPrimary = Boolean(continueHref) && inProgress.length > 0;
   const kpiItems = [
-    { label: 'Earned', value: earnedCount, color: 'text' as const },
-    { label: 'In progress', value: inProgressCount, color: 'text' as const },
+    { label: 'Earned', value: earnedCount },
+    { label: 'In progress', value: inProgressCount },
     ...(typeof learningHours === 'number' && learningHours > 0
-      ? [{ label: 'Hours', value: learningHours, color: 'text' as const }]
+      ? [{ label: 'Hours', value: learningHours }]
       : []),
-    { label: 'Verified', value: verifiedCount, color: 'text' as const },
+    { label: 'Verified', value: verifiedCount },
   ];
   return (
     <DesignSurface surface="warm">

@@ -20105,11 +20105,11 @@
       },
       {
         "file": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
-        "line": 106
+        "line": 109
       },
       {
         "file": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
-        "line": 114
+        "line": 117
       }
     ],
     "kind": "test-candidate",
@@ -20378,6 +20378,43 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/counselor-notes-panels-load.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 5
+      },
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
+        "line": 6
+      },
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
+        "line": 7
+      },
+      {
+        "file": "lib/portal/memberRequestFailure.ts",
+        "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/counselor-priority-queue-tones.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -20447,6 +20484,59 @@
       {
         "file": "lib/counselor/rosterStats.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/counselor-student-panels-kit.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 5
+      },
+      {
+        "file": "components/admin/WioaScreeningReadonly.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/admin/AssessmentAnswersReadonly.tsx",
+        "line": 7
+      },
+      {
+        "file": "components/counselor/CounselorIntakeReviewPanel.tsx",
+        "line": 8
+      },
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
+        "line": 9
+      },
+      {
+        "file": "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
+        "line": 10
+      },
+      {
+        "file": "lib/wioa/wioaQualification.ts",
+        "line": 11
+      },
+      {
+        "file": "lib/fetchWithTimeout.ts",
+        "line": 12
       }
     ],
     "kind": "test-candidate",
@@ -21959,6 +22049,31 @@
       {
         "file": "messages/en.json",
         "line": 7
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/stat-tile-tones.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",

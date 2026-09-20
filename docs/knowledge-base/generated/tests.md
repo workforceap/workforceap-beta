@@ -241,7 +241,7 @@
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
-| [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 149 | tests |  |
+| [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 152 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
 | [tests/components/auth-controls.spec.tsx](../../../tests/components/auth-controls.spec.tsx) | 61 | tests |  |
 | [tests/components/auth-invitation-copy.spec.tsx](../../../tests/components/auth-invitation-copy.spec.tsx) | 166 | tests |  |
@@ -249,9 +249,11 @@
 | [tests/components/board-completion-labels.test.tsx](../../../tests/components/board-completion-labels.test.tsx) | 50 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
+| [tests/components/counselor-notes-panels-load.spec.tsx](../../../tests/components/counselor-notes-panels-load.spec.tsx) | 115 | tests |  |
 | [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
-| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 35 | tests |  |
-| [tests/components/counselor-roster-stats.spec.tsx](../../../tests/components/counselor-roster-stats.spec.tsx) | 46 | tests |  |
+| [tests/components/counselor-roster-pagination.spec.tsx](../../../tests/components/counselor-roster-pagination.spec.tsx) | 38 | tests |  |
+| [tests/components/counselor-roster-stats.spec.tsx](../../../tests/components/counselor-roster-stats.spec.tsx) | 48 | tests |  |
+| [tests/components/counselor-student-panels-kit.spec.tsx](../../../tests/components/counselor-student-panels-kit.spec.tsx) | 133 | tests |  |
 | [tests/components/counselor-today.spec.tsx](../../../tests/components/counselor-today.spec.tsx) | 118 | tests |  |
 | [tests/components/coursera-diagnostics-evidence.spec.tsx](../../../tests/components/coursera-diagnostics-evidence.spec.tsx) | 50 | learning-coursera |  |
 | [tests/components/coursera-progress-coverage.spec.tsx](../../../tests/components/coursera-progress-coverage.spec.tsx) | 65 | learning-coursera |  |
@@ -276,7 +278,7 @@
 | [tests/components/member-resume-upload-failure.spec.tsx](../../../tests/components/member-resume-upload-failure.spec.tsx) | 98 | tests |  |
 | [tests/components/member-signup-form.spec.tsx](../../../tests/components/member-signup-form.spec.tsx) | 147 | tests |  |
 | [tests/components/member-training-workspace.test.tsx](../../../tests/components/member-training-workspace.test.tsx) | 338 | tests |  |
-| [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 91 | tests |  |
+| [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 93 | tests |  |
 | [tests/components/mfa-status-banner.spec.tsx](../../../tests/components/mfa-status-banner.spec.tsx) | 31 | tests |  |
 | [tests/components/notification-bell.spec.tsx](../../../tests/components/notification-bell.spec.tsx) | 201 | communications |  |
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
@@ -296,6 +298,7 @@
 | [tests/components/silent-failure-sweep-connection-failure.spec.tsx](../../../tests/components/silent-failure-sweep-connection-failure.spec.tsx) | 386 | tests |  |
 | [tests/components/skill-mission-close-guard.test.tsx](../../../tests/components/skill-mission-close-guard.test.tsx) | 103 | tests |  |
 | [tests/components/staff-shell-auth-reads.spec.tsx](../../../tests/components/staff-shell-auth-reads.spec.tsx) | 115 | tests |  |
+| [tests/components/stat-tile-tones.spec.tsx](../../../tests/components/stat-tile-tones.spec.tsx) | 111 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
 | [tests/components/students-roster-page.spec.tsx](../../../tests/components/students-roster-page.spec.tsx) | 84 | tests |  |

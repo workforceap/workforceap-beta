@@ -129,13 +129,12 @@ export default async function PipelinePage({
 
   // Small headline KpiStrip of the funnel endpoints + conversion.
   const kpis: KpiItem[] = [
-    { label: 'Started', value: funnel.started.toLocaleString('en-US'), color: 'text' },
-    { label: 'Enrolled', value: funnel.enrolled.toLocaleString('en-US'), color: 'success' },
-    { label: 'Active', value: funnel.active.toLocaleString('en-US'), color: 'success' },
+    { label: 'Started', value: funnel.started.toLocaleString('en-US') },
+    { label: 'Enrolled', value: funnel.enrolled.toLocaleString('en-US') },
+    { label: 'Active', value: funnel.active.toLocaleString('en-US') },
     {
       label: 'Started → Active',
       value: `${pct(funnel.active)}%`,
-      color: 'info',
     },
   ];
 

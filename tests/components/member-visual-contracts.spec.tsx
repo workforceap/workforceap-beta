@@ -22,7 +22,8 @@ describe('categorical totals retain their value without status-like colors', () 
     render(<MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} />);
     for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
       expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('var(--wa-text)');
+      expect(stat(label).style.color).toBe('');
+      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
     }
     expect(screen.getAllByText('Interview scheduled').length).toBeGreaterThan(0);
   });
@@ -31,7 +32,8 @@ describe('categorical totals retain their value without status-like colors', () 
     render(<MemberCertificatesKit earnedCount={value} inProgressCount={value} verifiedCount={value} />);
     for (const label of ['Earned', 'In progress', 'Verified']) {
       expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('var(--wa-text)');
+      expect(stat(label).style.color).toBe('');
+      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
     }
     expect(document.querySelectorAll('.wa-kit-stat-value')).toHaveLength(3);
     expect(screen.queryByText('Not verified')).not.toBeInTheDocument();

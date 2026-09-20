@@ -58,10 +58,10 @@ export interface BoardOutcomesKitProps {
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
-  { label: 'Placement Rate', value: '68%', color: 'success' },
-  { label: 'Avg Starting Wage', value: '$58k', color: 'text' },
-  { label: 'Credentials Earned', value: 541, color: 'gold' },
-  { label: '90-Day Retention', value: '84%', color: 'info' },
+  { label: 'Placement Rate', value: '68%' },
+  { label: 'Avg Starting Wage', value: '$58k' },
+  { label: 'Credentials Earned', value: 541 },
+  { label: '90-Day Retention', value: '84%' },
 ];
 
 const DEFAULT_EXPORTS: FunderExport[] = [

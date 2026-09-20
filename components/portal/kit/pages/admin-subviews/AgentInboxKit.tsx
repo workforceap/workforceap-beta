@@ -74,10 +74,10 @@ export function AgentInboxKit({
         } awaiting your review`;
 
   const kpis: KpiItem[] = [
-    { label: 'Needs review', value: awaitingReview, color: 'accent' },
-    { label: 'Pending Draft', value: pendingDraft, color: 'info' },
-    { label: 'Sent', value: sent, color: 'success' },
-    { label: 'Resolved', value: resolved, color: 'muted' },
+    { label: 'Needs review', value: awaitingReview, tone: awaitingReview > 0 ? 'alert' : undefined },
+    { label: 'Pending Draft', value: pendingDraft },
+    { label: 'Sent', value: sent },
+    { label: 'Resolved', value: resolved },
   ];
 
   const FromCell = ({ row }: { row: AgentInboxRow }) => (

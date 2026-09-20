@@ -15,7 +15,8 @@ import { Badge } from '@astryxdesign/core/Badge';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
 import { Sparkline } from './Charts';
-import { colorVar, type KitColor } from './tokens';
+import { cx } from './base';
+import { colorVar, toneClass, type KitColor, type KitTone } from './tokens';
 
 /** Trend series + optional delta chip for a stat tile. Omit any field to hide that piece. */
 export interface SparkStat {
@@ -59,14 +60,18 @@ export function DeltaChip({ delta, direction = 'up' }: { delta: string; directio
 
 /**
  * KPI tile: icon chip + optional delta chip, big tabular value, label, and an
- * optional inline sparkline. `color` is a KitColor token name (defaults to the
- * crimson accent). This is the richer counterpart to the text-only StatTile.
+ * optional inline sparkline. The richer counterpart to the text-only StatTile,
+ * and it gates on `tone` the same way: the value is always neutral
+ * `--wa-text`; a `tone` (a state derived from the value) declares
+ * `.wa-kit-tone--<tone>` so the icon chip (`.wa-kit-tone-icon`) and the trend
+ * line paint from `--wa-kit-tone`. Without a tone the chip is the neutral
+ * `--wa-surface-2` / `--wa-muted` pair — categorical hues never paint (WAP-99).
  */
 export function StatSparkTile({
   icon,
   label,
   value,
-  color = 'accent',
+  tone,
   spark,
 }: {
   /**
@@ -78,28 +83,15 @@ export function StatSparkTile({
   icon: ReactNode;
   label: string;
   value: string | number;
-  color?: KitColor;
+  /** Semantic state derived from the value; paints the icon chip and trend line only. */
+  tone?: KitTone;
   spark?: SparkStat;
 }) {
-  const c = colorVar(color);
   return (
     <Card>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div className="wa-flex wa-items-start wa-justify-between">
-        <div
-          aria-hidden
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 'var(--wa-radius-sm)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            background: `color-mix(in srgb, ${c} 12%, transparent)`,
-            color: c,
-          }}
-        >
+        <div aria-hidden className="wa-kit-tone-icon">
           {icon}
         </div>
         {spark?.delta ? <DeltaChip delta={spark.delta} direction={spark.direction} /> : null}
@@ -111,7 +103,7 @@ export function StatSparkTile({
             fontWeight: 800,
             letterSpacing: '-0.02em',
             lineHeight: 1,
-            color: color === 'text' || color === 'muted' ? 'var(--wa-text)' : c,
+            color: 'var(--wa-text)',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
@@ -121,7 +113,9 @@ export function StatSparkTile({
           {label}
         </div>
       </div>
-      {spark?.series && spark.series.length > 1 ? <Sparkline series={spark.series} color={color} /> : null}
+      {spark?.series && spark.series.length > 1 ? (
+        <Sparkline series={spark.series} stroke={tone ? 'var(--wa-kit-tone)' : undefined} />
+      ) : null}
       </div>
     </Card>
   );
