@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Award, BadgeCheck } from 'lucide-react';
 import { SITE_URL } from '@/app/seo';
 import { parseOgShareCardParams } from '@/lib/og/shareCards';
 
@@ -113,9 +114,7 @@ export default async function ShareAchievementPage({
             color: 'var(--color-accent)',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '2.25rem', '--ms-fill': 1 }} aria-hidden="true">
-            {isCertificate ? 'workspace_premium' : 'verified'}
-          </span>
+          {isCertificate ? <Award size={36} aria-hidden="true" /> : <BadgeCheck size={36} aria-hidden="true" />}
         </div>
         <p style={{ margin: '0 0 0.5rem', color: 'var(--color-on-surface-variant)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.8125rem' }}>
           {isCertificate ? 'Certificate earned' : 'Skill checkpoint complete'}

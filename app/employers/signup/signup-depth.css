@@ -26,31 +26,6 @@
   background: var(--sd-bg);
 }
 
-/* --- Nav chrome --- */
-.signup-depth nav {
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid var(--sd-border);
-  backdrop-filter: blur(8px);
-}
-.signup-depth nav .sd-logo-mark {
-  background: linear-gradient(135deg, var(--sd-crimson) 0%, var(--sd-accent-dark) 52%, var(--sd-plum) 100%);
-  box-shadow: 0 8px 20px -8px rgba(173, 44, 77, 0.5);
-}
-.signup-depth nav .sd-brand {
-  color: var(--sd-plum);
-}
-.signup-depth nav .sd-navlink {
-  color: var(--sd-muted);
-  font-weight: 600;
-  transition: color 0.15s ease;
-}
-.signup-depth nav .sd-navlink:hover {
-  color: var(--sd-crimson);
-}
-.signup-depth nav .sd-navlink--accent {
-  color: var(--sd-crimson);
-}
-
 /* --- Section copy --- */
 .signup-depth .sd-title {
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
@@ -108,18 +83,10 @@
   background: #ffffff;
 }
 
-/* --- Password reveal toggle --- */
+/* --- Password reveal toggle (skin only; geometry: .password-toggle in main.css) --- */
 .signup-depth .sd-pw-toggle {
-  position: absolute;
   right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
   color: #a89f99;
-  transition: color 0.15s ease;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
 }
 .signup-depth .sd-pw-toggle:hover {
   color: var(--sd-crimson);

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { preload } from 'react-dom';
 import { redirect } from 'next/navigation';
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { getUser } from '@/lib/auth/server';
@@ -35,6 +36,9 @@ export default async function AdminLayout({
 }) {
   const user = await getUser();
   if (!user) redirect('/login');
+  // Admin surfaces still use Material Symbols ligatures; preload here (WAP-110
+  // removed the root-layout preload so public routes never fetch the font).
+  preload('/fonts/material-symbols-outlined.woff2', { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });
   const messages = pickAdminClientMessages(await getMessages());
 
   try {

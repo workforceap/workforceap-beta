@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import LocalizedLink from '@/components/LocalizedLink';
 import {
@@ -83,13 +84,8 @@ export default function EmployersHeroCtaExperiment({
   const content = (
     <>
       <span className="employers-hero-cta__label">{label}</span>
-      <span
-        className="material-symbols-outlined employers-hero-cta__icon"
-        style={{ fontSize: '1.125rem' }}
-        aria-hidden="true"
-      >
-        arrow_forward
-      </span>
+      {/* Forward cue (not a calendar booking cue): tests/api/employers-page.spec.ts */}
+      <ArrowRight size={18} className="employers-hero-cta__icon" aria-hidden="true" />
     </>
   );
 

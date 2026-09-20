@@ -32,7 +32,7 @@ export default function NotFound() {
           <LocalizedLink href="/" className="btn btn-primary">
             Back to home
           </LocalizedLink>
-          <LocalizedLink href="/apply" className="btn btn-outline">
+          <LocalizedLink href="/apply" className="btn btn-secondary">
             Apply for training
           </LocalizedLink>
           <LocalizedLink href="/contact" className="btn btn-app-system-ghost">

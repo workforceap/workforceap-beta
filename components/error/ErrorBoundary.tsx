@@ -1,6 +1,7 @@
 'use client';
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { CircleAlert, RefreshCw, RotateCcw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -78,17 +79,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               margin: '0 auto 0.75rem',
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: '1.5rem',
-                color: 'var(--color-accent)',
-                fontVariationSettings: "'FILL' 1",
-              }}
-              aria-hidden="true"
-            >
-              error
-            </span>
+            <CircleAlert size={24} aria-hidden="true" style={{ color: 'var(--color-accent)' }} />
           </div>
           <h2
             style={{
@@ -125,13 +116,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleReset}
               style={{ minHeight: 44 }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}
-                aria-hidden="true"
-              >
-                refresh
-              </span>
+              <RefreshCw size={16} aria-hidden="true" style={{ marginRight: '0.25rem' }} />
               Try again
             </button>
             <button
@@ -140,13 +125,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleReload}
               style={{ minHeight: 44 }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: '1rem', fontVariationSettings: "'FILL' 1" }}
-                aria-hidden="true"
-              >
-                restart_alt
-              </span>
+              <RotateCcw size={16} aria-hidden="true" style={{ marginRight: '0.25rem' }} />
               Reload page
             </button>
             <a

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ArrowLeft, Clock } from 'lucide-react';
+import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import LocalizedLink from '@/components/LocalizedLink';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { PROGRAMS, getProgramBySlug } from '@/lib/content/programs';
@@ -346,7 +348,7 @@ function QuizResultsView({
                 <button type="button" className="btn btn-primary" onClick={handleShareResults}>
                   Share my career match
                 </button>
-                <LocalizedLink href={topApplyHref} className="btn btn-outline">
+                <LocalizedLink href={topApplyHref} className="btn btn-secondary">
                   Get matched / apply
                 </LocalizedLink>
                 {shareStatus && <span role="status" style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>{shareStatus}</span>}
@@ -426,7 +428,7 @@ function QuizResultsView({
                 <p className="quiz-result-ramp-note">{extra.rampNote}</p>
               )}
               <div style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }} aria-hidden="true">schedule</span>
+                <Clock size={18} aria-hidden="true" />
                 {program.duration}
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 600, marginBottom: '0.5rem' }}>
@@ -471,7 +473,7 @@ function QuizResultsView({
             <LocalizedLink href={topApplyHref} className="btn btn-primary btn-large">
               Start {topProgram.title} Application →
             </LocalizedLink>
-            <LocalizedLink href="/contact" className="btn btn-outline btn-large">
+            <LocalizedLink href="/contact" className="btn btn-secondary btn-large">
               Talk to an advisor first
             </LocalizedLink>
           </div>
@@ -534,7 +536,7 @@ function QuizResultsView({
         ) : (
           <>
             <p>Not seeing what you expected?</p>
-            <LocalizedLink href="/programs" className="btn btn-outline">
+            <LocalizedLink href="/programs" className="btn btn-secondary">
               Browse All 20 Programs →
             </LocalizedLink>
           </>
@@ -877,10 +879,11 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
                     style={{ display: 'none' }}
                   />
                   {icon && (
-                    <span className="material-symbols-outlined" style={{
-                      fontSize: '1.25rem',
-                      color: isSelected ? 'var(--color-accent)' : 'var(--color-on-surface-variant)',
-                    }} aria-hidden="true">{icon}</span>
+                    <LegacyGlyph
+                      name={icon}
+                      size={20}
+                      style={{ color: isSelected ? 'var(--color-accent)' : 'var(--color-on-surface-variant)', flexShrink: 0 }}
+                    />
                   )}
                   <span className="radio-dot" aria-hidden style={{ display: 'none' }} />
                   <span style={{ fontSize: '0.9rem' }}>{a.label}</span>
@@ -929,7 +932,7 @@ export default function FindYourPathClient({ idPrefix = 'fyp' }: { idPrefix?: st
                 onClick={handleBack}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">arrow_back</span>
+                <ArrowLeft size={16} aria-hidden="true" />
                 Back
               </button>
             ) : <span />}

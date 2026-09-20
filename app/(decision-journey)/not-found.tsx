@@ -47,7 +47,7 @@ export default function DecisionJourneyNotFound() {
         <LocalizedLink href="/programs" className="btn btn-primary">
           Browse programs
         </LocalizedLink>
-        <LocalizedLink href="/find-your-path" className="btn btn-outline">
+        <LocalizedLink href="/find-your-path" className="btn btn-secondary">
           Restart the quiz
         </LocalizedLink>
         <LocalizedLink href="/program-comparison" className="btn btn-ghost">
