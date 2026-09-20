@@ -3658,7 +3658,8 @@
     "help": {
       "label": "Help",
       "takeTour": "Take the tour",
-      "guide": "Portal guide"
+      "guide": "Portal guide",
+      "askAssistant": "Ask for help"
     },
     "offer": {
       "take": "Take the tour",
@@ -3698,6 +3699,30 @@
           "title": "Come back any time",
           "body": "Help reopens this tour whenever you want it and links to the portal guide."
         }
+      }
+    },
+    "assistant": {
+      "title": "Ask for help",
+      "intro": "Ask how to use this portal: where a page is, what it does, or the steps to get something done. I answer only about your own portal and never see your data.",
+      "placeholder": "Ask how to do something here…",
+      "send": "Send",
+      "thinking": "Looking that up…",
+      "error": "Something went wrong. Try again in a moment.",
+      "tooMany": "You have asked a lot of questions in a short time. Please try again in a little while.",
+      "links": "Related pages",
+      "close": "Close help",
+      "disclaimer": "Guidance about the portal only. Nothing you type here changes your account.",
+      "scope": {
+        "member": "How to use your member portal",
+        "counselor": "How to use the counselor portal",
+        "employer": "How to use the employer portal",
+        "partner": "How to use the partner portal",
+        "admin": "How to use the admin workspace"
+      },
+      "starters": {
+        "whereAmI": "What is this page for?",
+        "howToMessage": "How do I send a message?",
+        "whatCanIDo": "What can I do in this portal?"
       }
     }
   }

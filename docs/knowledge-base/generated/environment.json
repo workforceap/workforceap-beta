@@ -4689,7 +4689,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 168
+          "line": 174
         },
         {
           "file": "tests/api/auth-routes.spec.ts",
@@ -4736,7 +4736,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 172
+          "line": 178
         },
         {
           "file": "tests/api/auth-routes.spec.ts",
