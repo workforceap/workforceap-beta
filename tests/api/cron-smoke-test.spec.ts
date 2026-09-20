@@ -36,11 +36,18 @@ describe('GET /api/cron/smoke-test', () => {
 
   function successfulProbe(url: string) {
     const parsed = new URL(url);
-    if (parsed.pathname === '/api/health' || parsed.pathname === '/api/health/ready') {
+    if (parsed.pathname === '/api/health') {
       return {
         status: 200,
         url,
         text: vi.fn().mockResolvedValue(JSON.stringify({ status: 'ok' })),
+      };
+    }
+    if (parsed.pathname === '/api/health/ready') {
+      return {
+        status: 200,
+        url,
+        text: vi.fn().mockResolvedValue(JSON.stringify({ status: 'ok', rateLimiter: 'redis' })),
       };
     }
     if (parsed.pathname === '/login') {
@@ -114,6 +121,34 @@ describe('GET /api/cron/smoke-test', () => {
       expect.objectContaining({ route: '/api/cron/smoke-test' }),
     );
   });
+
+  it.each(['fail-open', 'fail-closed', undefined])(
+    'fails readiness when production rate limiting is not on Redis (mode %s) (WAP-13)',
+    async (mode) => {
+      global.fetch = vi.fn().mockImplementation((input: string | URL | Request) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        if (url.endsWith('/api/health/ready')) {
+          return Promise.resolve({
+            status: 200,
+            url,
+            text: () => Promise.resolve(JSON.stringify({ status: 'ok', ...(mode ? { rateLimiter: mode } : {}) })),
+          });
+        }
+        return Promise.resolve(successfulProbe(url));
+      });
+
+      const res = await smokeGET(new Request('http://localhost:3000/api/cron/smoke-test'));
+      expect(res.status).toBe(503);
+      const json = await res.json();
+      expect(json.failed).toEqual(['readiness']);
+      expect(json.results.readiness.reason).toBe(`rate limiter mode ${String(mode)} (expected redis)`);
+      expect(json.results.liveness.ok).toBe(true);
+      expect(captureApiError).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Production smoke failed: readiness' }),
+        expect.objectContaining({ route: '/api/cron/smoke-test' }),
+      );
+    },
+  );
 
   it('fails when a protected portal no longer redirects to its login target', async () => {
     global.fetch = vi.fn().mockImplementation((input: string | URL | Request) => {

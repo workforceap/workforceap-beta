@@ -1,0 +1,106 @@
+/* CounselorIntakeReviewPanel — layout and text roles for the application
+   review + WIOA intake verification card on the counselor student detail
+   page. The section is a kit `.wa-kit-card`; the h2 mirrors the page's section
+   title; the h3 is the kit `.wa-kit-stat-label` card head; captions are
+   `.wa-kit-meta`; status copy paints from the kit tone hooks. --wa-* tokens
+   only, 13px floor, no hex. */
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.subtitle {
+  margin: 0 0 0.5rem;
+}
+
+.help {
+  margin: 0 0 0.75rem;
+  line-height: 1.45;
+}
+
+.helpTight {
+  margin-bottom: 0.5rem;
+}
+
+.quiet {
+  margin: 0;
+}
+
+.applications {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.applicationHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.programTitle {
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+}
+
+.submitted {
+  margin: 0.15rem 0 0.75rem;
+}
+
+.spacer {
+  height: 0.5rem;
+}
+
+.label {
+  margin-bottom: 0.35rem;
+}
+
+.field {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  font-family: inherit;
+  font-size: var(--wa-type-body);
+  margin-bottom: 0.75rem;
+}
+
+.fieldNarrow {
+  max-width: 320px;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.outcome {
+  margin: 0.75rem 0 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-kit-tone, var(--wa-text));
+}
+
+.outcomeTight {
+  margin: 0 0 0.5rem;
+}
+
+.intake {
+  border-top: 1px solid var(--wa-border);
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.saved {
+  margin: 0.75rem 0 0;
+}

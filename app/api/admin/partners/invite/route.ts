@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Resend } from 'resend';
 import { getUser } from '@/lib/auth/server';
 import { requireAdmin } from '@/lib/auth/roles';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import { getResend } from '@/lib/email';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { auditLog } from '@/lib/audit';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -40,9 +41,9 @@ async function _POST(request: NextRequest) {
 
     const { email, name } = parsed.data;
 
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
-    if (!resendKey) {
+    if (!resend) {
       return NextResponse.json({ error: 'Email service not configured' }, { status: 503 });
     }
 
@@ -63,8 +64,7 @@ async function _POST(request: NextRequest) {
     });
 
     try {
-      const resend = new Resend(resendKey);
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: emailFrom,
         to: email,
         subject: '[WorkforceAP] Partner Portal Access Invitation',

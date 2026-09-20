@@ -53,16 +53,22 @@ async function handle(request: NextRequest) {
     // literal 'cron' used to violate the FK on every 10-minute run, and the
     // swallowed error meant the batch was never recorded (see lib/audit.ts,
     // which now also reports write failures to Sentry).
+    //
+    // The cron fires every 10 minutes and an empty queue is the steady state,
+    // so recording every run buried real admin actions under thousands of
+    // `processed: 0` rows. Only a batch that actually did work is an event.
     const actorId = user?.id ?? null;
     const triggeredBy = user ? 'admin' : 'cron';
-    void auditLog({
-      actorUserId: actorId,
-      action: 'admin_webhook_retries_processed',
-      targetType: 'WebhookRetryBatch',
-      targetId: triggeredBy,
-      metadata: { processed: results.length, triggeredBy, summary: byResult },
-    }).catch(() => {});
-    logAuditEvent({ user: { id: actorId ?? 'cron', role: user ? 'admin' : 'system' }, verb: 'created', object: { type: 'WebhookRetryBatch', id: triggeredBy }, result: { success: true } }).catch(() => {});
+    if (results.length > 0) {
+      void auditLog({
+        actorUserId: actorId,
+        action: 'admin_webhook_retries_processed',
+        targetType: 'WebhookRetryBatch',
+        targetId: triggeredBy,
+        metadata: { processed: results.length, triggeredBy, summary: byResult },
+      }).catch(() => {});
+      logAuditEvent({ user: { id: actorId ?? 'cron', role: user ? 'admin' : 'system' }, verb: 'created', object: { type: 'WebhookRetryBatch', id: triggeredBy }, result: { success: true } }).catch(() => {});
+    }
     return NextResponse.json({
       processed: results.length,
       summary: byResult,

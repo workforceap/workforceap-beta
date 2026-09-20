@@ -6,6 +6,7 @@ import {
   getProgramCurriculumManifest,
   normalizeCourseraCourseId,
 } from '@/lib/content/programCurriculumManifest';
+import { findLearningPathById } from '@/lib/content/coursera/learningPaths';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import {
@@ -196,6 +197,12 @@ export function legacyCandidatesForProviderCourse(args: {
   const providerId = normalizeCourseraCourseId(rawProviderId);
   const providerSlug = args.courseraCourseSlug?.trim() ?? '';
   if ((!providerId && !providerSlug) || rawProviderId.startsWith('TODO_')) return [];
+  // A Learning Path id is program-level progress, never a course. The
+  // canonical table once carried the IBM AI + Software Developer path as a
+  // "course-17" mapping, which wrote Coursera's path percentage onto the
+  // program's own "Lab, Project, and Test Preparation" slot. Refuse the id
+  // here so no stale row can do that again through any promotion path.
+  if (findLearningPathById(providerId)) return [];
 
   const canonicalIndex = args.canonicalIndex ?? emptyCanonicalMappingIndex();
   const dbHit = providerId

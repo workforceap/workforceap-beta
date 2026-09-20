@@ -116,9 +116,9 @@ export default async function AdminEmployerDetailPage({ params }: Props) {
       <DesignSurface surface="dense">
         {/* KPI row */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-3" style={{ marginBottom: 20 }}>
-          <StatSparkTile icon={<Briefcase size={16} />} label="Jobs Posted" value={employer._count.jobs} color="accent" />
-          <StatSparkTile icon={<Award size={16} />} label="Target Certifications" value={employer.targetCertifications.length} color="gold" />
-          <StatSparkTile icon={<Calendar size={16} />} label="Partner Since" value={partnerSince} color="info" />
+          <StatSparkTile icon={<Briefcase size={16} />} label="Jobs Posted" value={employer._count.jobs} />
+          <StatSparkTile icon={<Award size={16} />} label="Target Certifications" value={employer.targetCertifications.length} />
+          <StatSparkTile icon={<Calendar size={16} />} label="Partner Since" value={partnerSince} />
         </div>
 
         {/* Partnership Overview */}

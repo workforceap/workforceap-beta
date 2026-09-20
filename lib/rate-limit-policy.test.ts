@@ -7,6 +7,7 @@ import {
   decideMissingLimiter,
   isAllowMissingUpstashEnabled,
   isApplyFailClosedEnvEnabled,
+  resolveRateLimiterMode,
 } from './rate-limit-policy';
 
 test('spend mode fail-closes in production even when allow-missing Upstash is on', () => {
@@ -130,4 +131,33 @@ test('allow-missing helper reads its default from the environment', () => {
       process.env[ALLOW_MISSING_UPSTASH_ENV] = previous;
     }
   }
+});
+
+test('rate limiter mode is redis whenever Upstash is configured', () => {
+  assert.equal(
+    resolveRateLimiterMode({ upstashConfigured: true, isProduction: true, allowMissingUpstash: false }),
+    'redis',
+  );
+  assert.equal(
+    resolveRateLimiterMode({ upstashConfigured: true, isProduction: false, allowMissingUpstash: true }),
+    'redis',
+  );
+});
+
+test('rate limiter mode is fail-open outside production or with the allow-missing opt-out', () => {
+  assert.equal(
+    resolveRateLimiterMode({ upstashConfigured: false, isProduction: false, allowMissingUpstash: false }),
+    'fail-open',
+  );
+  assert.equal(
+    resolveRateLimiterMode({ upstashConfigured: false, isProduction: true, allowMissingUpstash: true }),
+    'fail-open',
+  );
+});
+
+test('rate limiter mode is fail-closed in production without Upstash and without the opt-out', () => {
+  assert.equal(
+    resolveRateLimiterMode({ upstashConfigured: false, isProduction: true, allowMissingUpstash: false }),
+    'fail-closed',
+  );
 });

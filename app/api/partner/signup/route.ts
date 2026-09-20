@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Resend } from 'resend';
 import { prisma } from '@/lib/db/prisma';
 import { checkPartnerSignupRateLimit, checkSignupEmailRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { getResend } from '@/lib/email';
+import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -291,14 +293,9 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       if (linkError || !verifyUrl) {
         console.error('Partner signup: verification link generation failed:', linkError);
       } else {
-        const resendKeyForVerify = process.env.RESEND_API_KEY;
-        if (resendKeyForVerify) {
-          const resendVerify = new Resend(resendKeyForVerify);
-          await resendVerify.emails.send({
-            from: process.env.EMAIL_FROM || 'noreply@workforceap.org',
-            to: d.contactEmail,
-            subject: sanitizeEmailSubjectLine('Verify your email — WorkforceAP Partner Portal'),
-            text: [
+        const resendVerify = getResend();
+        if (resendVerify) {
+          const verifyText = [
               `Hi ${d.contactName},`,
               '',
               'Thanks for signing up as a WorkforceAP partner. One quick step before you can log in: confirm this email address.',
@@ -310,7 +307,14 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               'Questions? Reply to this email or contact us at info@workforceap.org.',
               '',
               '— WorkforceAP Team',
-            ].join('\n'),
+            ].join('\n');
+          // One-time link: no `template` ref, so it can never be replayed from a stored row.
+          await sendBrandedEmailOrThrowOnSkip(resendVerify, {
+            from: process.env.EMAIL_FROM || 'noreply@workforceap.org',
+            to: d.contactEmail,
+            subject: sanitizeEmailSubjectLine('Verify your email — WorkforceAP Partner Portal'),
+            html: plainTextEmailHtml(verifyText),
+            text: verifyText,
           });
           verificationSent = true;
         } else {
@@ -329,18 +333,12 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     });
 
     // Send welcome email
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
-    if (resendKey) {
-      const resend = new Resend(resendKey);
-
+    if (resend) {
       // Welcome email to partner
       try {
-        await resend.emails.send({
-          from: emailFrom,
-          to: d.contactEmail,
-          subject: sanitizeEmailSubjectLine('Welcome to WorkforceAP Partner Portal'),
-          text: [
+        const welcomeText = [
             `Hi ${d.contactName},`,
             '',
             'Thank you for signing up as a WorkforceAP partner!',
@@ -354,7 +352,13 @@ export const POST = withApiGuc(async (request: NextRequest) => {
             'Questions? Reply to this email or contact us at info@workforceap.org.',
             '',
             '— WorkforceAP Team',
-          ].join('\n'),
+          ].join('\n');
+        await sendBrandedEmailOrThrowOnSkip(resend, {
+          from: emailFrom,
+          to: d.contactEmail,
+          subject: sanitizeEmailSubjectLine('Welcome to WorkforceAP Partner Portal'),
+          html: plainTextEmailHtml(welcomeText),
+          text: welcomeText,
         });
       } catch (e) {
         console.error('Partner welcome email failed:', e);
@@ -381,11 +385,12 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           .filter(Boolean)
           .join('\n');
 
-        await resend.emails.send({
+        await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: ADMIN_EMAIL,
           replyTo: d.contactEmail,
           subject: sanitizeEmailSubjectLine(`[Action needed] Partner signup: ${d.organizationName}`),
+          html: plainTextEmailHtml(adminText),
           text: adminText,
         });
       } catch (e) {

@@ -159,6 +159,7 @@ export default function InterviewPrepBundle({
       <div>
         <div className="wa-kit-card" style={{ marginBottom: 16 }}>
           <KitEmptyState
+            headingAs="h2"
             title="No prep materials yet"
             description="Create materials with a tool below, then return here to email or copy them."
             action={<Link href="/dashboard/ai-tools/resume-studio?view=rewrite" className={KIT_BTN}>Create a resume</Link>}

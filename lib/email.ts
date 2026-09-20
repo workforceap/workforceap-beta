@@ -12,6 +12,7 @@ import {
   sanitizeHeaders,
   sendBrandedEmailOrThrowOnSkip as sendBrandedEmail,
 } from '@/lib/email/send';
+import { EMAIL_TEMPLATE_KEYS } from '@/lib/email/templateKeys';
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import type { PlacementSurveyDeliveryPayload } from '@/lib/placement-survey/deliveryPayload';
 import { brandedEmailLayout } from '@/lib/email/template';
@@ -42,6 +43,12 @@ import {
   schoolEnrollmentParentAckHtml,
   schoolEnrollmentPartnerAckHtml,
   applicantFollowupHtml,
+  applicantChaseHtml,
+  APPLICANT_CHASE_SUBJECT,
+  APPLICANT_CHASE_TITLE,
+  type ApplicantChaseStage,
+  applicantAgingDigestHtml,
+  type ApplicantAgingDigestParams,
   adminPendingApplicantsHtml,
   adminWeeklyRecapHtml,
   enrollmentConfirmationHtml,
@@ -229,6 +236,7 @@ export async function sendVoiceCoachTranscriptEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_transcript,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} transcript — ${params.memberName}`),
       html,
@@ -297,6 +305,7 @@ export async function sendVoiceCoachArtifactEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_coach_artifact,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`${params.coachLabel} artifact — ${params.memberName}`),
       html,
@@ -371,6 +380,7 @@ export async function sendVoiceInterviewTranscriptEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.voice_interview_transcript,
       to: recipients,
       subject: sanitizeEmailSubjectLine(`Voice interview transcript — ${params.memberName} — ${params.role}`),
       html,
@@ -429,6 +439,7 @@ export async function sendElevatorSpeechEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.ai_elevator_speech,
       to,
       subject: sanitizeEmailSubjectLine(`Your AI elevator speech — ${params.targetRole}`),
       html,
@@ -480,6 +491,7 @@ export async function sendCounselorAssignedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.counselor_assigned,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${params.counselorFullName} is your counselor`),
       html,
@@ -532,6 +544,7 @@ export async function sendEnrollmentConfirmationEmail(params: {
       to: params.to,
       subject,
       html,
+      template: { name: 'enrollment_confirmation', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -657,6 +670,7 @@ export async function sendOnboardingStallsDigestEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.onboarding_stalls_digest,
       to: recipients,
       subject: sanitizeEmailSubjectLine(
         `Onboarding Stalls: ${params.interviewCount} interview, ${params.wioaCount} WIOA, ${params.noProgramCount} unassigned`
@@ -711,6 +725,7 @@ export async function sendApplicationAcceptedEmail(params: {
       to: params.to,
       subject,
       html,
+      template: { name: 'application_accepted', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -745,6 +760,7 @@ export async function sendApplicationRejectedEmail(params: {
       to: params.to,
       subject: 'WorkforceAP Application Update',
       html,
+      template: { name: 'application_rejected', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -789,6 +805,7 @@ export async function sendPreScreeningReadyEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.pre_screening_ready,
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`Interview ready: ${name}`),
       html,
@@ -826,6 +843,7 @@ export async function sendNewApplicationAdminEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.admin_new_application,
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`New Application: ${params.applicantName}`),
       html,
@@ -864,6 +882,7 @@ export async function sendCourseEnrolledEmail(params: {
       to: params.to,
       subject: sanitizeEmailSubjectLine(`Your ${params.programName} program selection is saved`),
       html,
+      template: { name: 'course_enrolled', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -905,6 +924,7 @@ export async function sendCourseKickoffEmail(params: {
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
+      template: { name: 'course_kickoff', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -940,6 +960,7 @@ export async function sendCourseAccountabilityEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.course_accountability,
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
@@ -996,6 +1017,7 @@ export async function sendCertCelebrationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.cert_celebration,
       to: params.to,
       subject: sanitizeEmailSubjectLine(subject),
       html,
@@ -1136,6 +1158,7 @@ export async function sendCourseCompletedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.course_completed,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`Congratulations! You Completed ${params.courseName}`),
       html,
@@ -1189,6 +1212,7 @@ export async function sendMilestoneCascadeEmail(params: {
   try {
     const result = await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.milestone_cascade,
       to: params.to,
       subject: sanitizeEmailSubjectLine(params.subject),
       html,
@@ -1229,6 +1253,7 @@ export async function sendWeeklyRecapEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.member_weekly_recap,
       to: params.to,
       subject: 'Your WorkforceAP Weekly Recap',
       html,
@@ -1298,6 +1323,7 @@ export async function sendInvitationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.invitation,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.inviterName} invited you to join ${branding.name}`),
       html,
@@ -1339,6 +1365,7 @@ export async function sendPartnerReferralInviteEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.partner_referral_invite,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.inviterName} invited you to WorkforceAP`),
       html,
@@ -1378,6 +1405,7 @@ export async function sendInvitationAcceptedEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.invitation_accepted,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.accepterName} accepted your WorkforceAP invitation`),
       html,
@@ -1412,6 +1440,7 @@ export async function sendInactiveNudgeEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.inactive_nudge,
       to: params.to,
       subject: 'We Miss You at WorkforceAP',
       html,
@@ -1450,6 +1479,7 @@ export async function sendJobAlertDigestEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.job_alert_digest,
       to: params.to,
       subject: sanitizeEmailSubjectLine(`${params.jobs.length} new job${params.jobs.length === 1 ? '' : 's'} match your program`),
       html,
@@ -1700,6 +1730,7 @@ export async function sendApplicationConfirmationEmail(params: {
   try {
     await sendBrandedEmail(resend, {
       from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.application_received,
       to: params.to,
       subject: sanitizeEmailSubjectLine(
         'Welcome to Workforce Advancement Project — Your Next Steps',
@@ -1850,6 +1881,8 @@ export async function sendEligibilityScreeningAdminEmail(params: {
   memberId?: string | null;
   source: 'dashboard' | 'token' | 'apply';
   eligibility?: EligibilityScreeningFields | null;
+  /** WAP-172: public_wioa_screenings row id when the submitter has no account. */
+  leadRecordId?: string | null;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
@@ -1904,6 +1937,7 @@ export async function sendApplicantFollowupEmail(params: {
       to: params.to,
       subject: 'Your WorkforceAP Application is Being Reviewed',
       html,
+      template: { name: 'applicant_followup', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -1936,6 +1970,7 @@ export async function sendAdminPendingApplicantsEmail(params: {
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`Action Needed: ${params.pendingCount} pending applications over 3 days old`),
       html,
+      template: { name: 'admin_pending_applicants', params: { ...params } },
     });
     return { ok: true };
   } catch (err) {
@@ -1943,6 +1978,88 @@ export async function sendAdminPendingApplicantsEmail(params: {
       return { ok: false, skipped: true, error: err.reason };
     }
     console.error('sendAdminPendingApplicantsEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/**
+ * Day-10 / Day-20 applicant chase (WAP-167). The cron owns idempotency (one
+ * send per application per stage, recorded as an `application_reminder_sent`
+ * MemberEvent); this wrapper only renders and sends.
+ */
+export async function sendApplicantChaseEmail(params: {
+  to: string;
+  fullName: string;
+  stage: ApplicantChaseStage;
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendApplicantChaseEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const first = params.fullName.trim().split(/\s+/)[0] || 'there';
+  const html = brandedEmailLayout({
+    title: APPLICANT_CHASE_TITLE[params.stage],
+    bodyHtml: applicantChaseHtml({ firstName: first, stage: params.stage, dashboardUrl: `${SITE_URL}/dashboard` }),
+    ctaText: 'Open my dashboard',
+    ctaUrl: `${SITE_URL}/dashboard`,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      to: params.to,
+      subject: APPLICANT_CHASE_SUBJECT[params.stage],
+      html,
+      template: { name: 'applicant_chase', params: { ...params } },
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendApplicantChaseEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/** Weekly staff digest: pending applications by age bucket, oldest first (WAP-167). */
+export async function sendApplicantAgingDigestEmail(params: ApplicantAgingDigestParams & {
+  to: string[];
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendApplicantAgingDigestEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const recipients = Array.from(
+    new Set(params.to.map((email) => email.trim().toLowerCase()).filter(Boolean))
+  );
+  if (recipients.length === 0) {
+    return { ok: false, error: 'No recipients configured' };
+  }
+  const { to: _to, ...digest } = params;
+  const html = brandedEmailLayout({
+    title: `${params.total} application${params.total === 1 ? '' : 's'} waiting for review`,
+    bodyHtml: applicantAgingDigestHtml(digest),
+    ctaText: 'Open the review queue',
+    ctaUrl: params.queueLink,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      to: recipients,
+      subject: sanitizeEmailSubjectLine(
+        `Aging applications: ${params.total} waiting, oldest ${params.oldest[0]?.daysWaiting ?? 0} days`
+      ),
+      html,
+      template: { name: 'applicant_aging_digest', params: { ...params } },
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendApplicantAgingDigestEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
   }
 }

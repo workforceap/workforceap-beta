@@ -114,7 +114,8 @@
 | [scripts/seed-partner-school.ts](../../../scripts/seed-partner-school.ts) | 188 | operations |  |
 | [scripts/seed-test-user.sql](../../../scripts/seed-test-user.sql) | 39 | operations |  |
 | [scripts/send-eligibility-campaign.ts](../../../scripts/send-eligibility-campaign.ts) | 96 | operations |  |
-| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 106 | operations |  |
+| [scripts/snapshot-email-failures.ts](../../../scripts/snapshot-email-failures.ts) | 116 | operations |  |
+| [scripts/source-text-tests-baseline.json](../../../scripts/source-text-tests-baseline.json) | 96 | operations |  |
 | [scripts/stamp-chs-funding.ts](../../../scripts/stamp-chs-funding.ts) | 92 | operations |  |
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |

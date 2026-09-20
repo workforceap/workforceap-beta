@@ -238,6 +238,16 @@ Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(st
 `.wa-kit-tone-edge`, `.wa-kit-tone-icon` and `.wa-kit-tone-text` then paint from `--wa-kit-tone` /
 `--wa-kit-tone-soft`. Use them (with `StatusTag`) instead of `colorVar('gold')`-style inline colours
 when the tone is a *state* (a triage bucket, a risk tier); numbers stay neutral `--wa-text`.
+`toneClass(tone)` (`components/portal/kit/tokens.ts`) returns the hook class for `cx()`.
+
+**Stat tiles speak KitTone, not `KitColor`.** `StatTile`, `KpiItem` (`KpiStrip`) and `StatSparkTile`
+take `tone?: KitTone` (plus `deltaTone` for the caption line) and paint only through the hooks: the
+number is always neutral `--wa-text`; a `StatTile` tone shows as the card's edge accent
+(`.wa-kit-tone-edge`), a `StatSparkTile` tone as its icon chip (`.wa-kit-tone-icon`) and trend line.
+The old categorical `color` prop is gone — omit `tone` for a total that is not a state
+("Signups (7d)", "Total referred"), and gate a state tone on the value
+(`tone: failing > 0 ? 'danger' : undefined`). Legacy names map by meaning: `success → ok`,
+`gold → warn`, `accent → alert` (`danger` for failed / rejected), `info → info`, `muted → muted`.
 
 Use `lib/ui/statusToneAdapters.ts` at these boundaries instead of copying color triples.
 `StatusBadge` reads the same palette as `statusColor`; its `error` and `accent` variants
@@ -279,12 +289,13 @@ Every kit primitive accepts `className`, `style`, `ref` (plain prop, React 19 st
 
 ## 6. Component index (`components/portal/kit/index.ts`)
 
-Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` types,
+Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` types, `toneClass`,
 `KitBaseProps` / `KitDataAttrs` / `cx` (§5).
 
 | Component | Use for |
 |---|---|
-| `StatTile`, `KpiStrip` | single stat / row of stats (never hand-roll stat blocks) |
+| `StatTile`, `KpiStrip` | single stat / row of stats (never hand-roll stat blocks); `tone?: KitTone` is a *state* painted on the edge accent via the §4 hooks, the number stays neutral; `deltaTone` for the caption |
+| `StatSparkTile` | icon-chip stat with optional delta chip + sparkline; same `tone` gate — the chip and trend line paint, the value never does |
 | `StatusTag` | semantic status pill (every table status column, risk tiers) |
 | `JobListingRow` | member open-role listing row (live `/dashboard/jobs` + board proof — not `.job-card` mosaics). `MemberJobsKit` lists the live openings itself under `#open-roles` (`openRoles`, each linking to `/dashboard/jobs/<id>`); "Browse openings" / "Browse jobs" jump to that list, never to `?ui=legacy`. An empty list is the honest `JOBS_BOARD_EMPTY` state. |
 | `KitEmptyState` | titled empty placeholder for listing and table shells (optional `action` = real next step). Admin directory empties (`MentorsDirectoryKit`, `PartnersDirectoryKit`, `EmployersDirectoryKit`, `SubgroupsDirectoryKit`) use this + sentence-case CTA copy from `lib/member/mentorsEmptyState.ts` / `lib/admin/directoryEmptyState.ts` — not Astryx `EmptyState`. |
@@ -292,7 +303,9 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
 | `Avatar` | people |
-| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). |
+| `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
+| `KitTableToolbar` (+ `KitTableViewChip`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`). |
+| `KitRowMenu` (+ `KitRowMenuItem`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
 | `QueueRow`, `WorkQueueItem` | staff work queues |
 | `KanbanBoard`, `KanbanColumnHeader` | pipeline boards |
@@ -302,6 +315,7 @@ Foundation: `DesignSurface` / `useSurface`, `colorVar` + `KitColor`/`KitTone` ty
 | `Tabs`, `TabPanel` | section tabs around server-rendered panels (WAI-ARIA tabs on `useListFocus`; `?tab=` mirrored with `history.replaceState`; an in-page `#anchor` inside a panel opens that panel). Counselor student detail is the reference. |
 | `AppShellSidebar`, `AppShellMember` | shell chrome (dense sidebar / member tabs) |
 | `UniversalSearch` | global search affordance |
+| `GuidedTour` | guided-tour engine: spotlight ring + step popover over `[data-tour]` anchors, steps from `lib/tours/registry.ts` through `TourContext`, copy from the `tours` i18n namespace, chrome on `--wa-*` and `--z-tour`. Not in the barrel (it depends on `components/onboarding/TourContext`) — import `@/components/portal/kit/GuidedTour` directly; `TourProviderWrapper` already mounts it for every portal. Reopen a tour from the header `PortalHelpMenu`; offer it once with `TourOfferStrip`. |
 | `MemberDashboardKit` | composed member dashboard |
 
 `ChatThread` accepts an optional editable `initialText` and `multiline` composer
@@ -410,6 +424,48 @@ helpers in `lib/admin/trainingProgressRoster.ts`. Last active is a relative capt
 timestamps sort last in both directions. Do not mix Astryx primitives inside the
 kit table cells beyond `Token` for Status / Pace. Legacy tables stay behind
 `?ui=legacy` only (`/admin/training-progress?ui=legacy`, `/admin/members/training?ui=legacy`).
+
+---
+
+## 6a. Table standard (admin tables, 2026-09-20)
+
+One primitive: kit `DataTable` + `KitTableShell` (`components/portal/kit/DataTable.tsx`,
+`KitTableShell.tsx`). Legacy `components/portal/ui/DataTable` stays only behind `?ui=legacy`
+twins and in diagnostics tables that have not been ported yet; do not add new callers.
+Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCatalogHealthTable.tsx`.
+
+- **Columns**: at most 8 on desktop, the identity column first and `stickyLeft`. A row menu
+  (`KitRowMenu`) replaces per-row button rows and `?ui=legacy` hand-offs; it carries the actions the
+  page already has server routes for (Users: change role, send password reset, delete — the same
+  `/api/admin/users/[id]` routes the legacy manager calls, with the self-row guard from
+  `lib/admin/usersSelfGuard.ts`: the signed-in admin's row keeps Delete and Change role visible but
+  inert, with the reason as the tooltip).
+- **State is `StatusTag`**, never Astryx `Token` colours and never coloured numbers. Counts of problems
+  collapse into one `StatusTag` ("5 issues") with the detail in a `renderSubRow` (Coursera catalog
+  health: Unmapped / Stale IDs / Wrong type / Additional in one sub-row).
+- **Density**: `DesignSurface surface="dense"` (8/12px cells) or `density="compact"`. Rows are at most
+  two text lines: `.wa-kit-table-cell--truncate` (with `title`) for names, emails and programs,
+  `.wa-kit-table-cell--nowrap` for phones and dates, `.wa-kit-table-cell--num` for numbers. Type never
+  goes below `--wa-type-meta` (13px).
+- **Toolbar**: `KitTableToolbar` above the table — search (`?search`), saved-view chips with counts
+  (`All · 8`, `At risk · 6`), other filters behind "Filters · n on", actions on the right. URL state is
+  `?search&sort&page` (`sort` = `key` / `-key`; changing search, sort or a filter drops `page`); page
+  size is `KIT_TABLE_PAGE_SIZE` (50). Tables under `ADMIN_SSR_LIST_CAP` sort on the client with
+  `useKitTableSort` + `KitSortHeader`; larger ones sort and page on the server from the URL.
+- **Wide tables**: `scrollCue` paints a right-edge fade and announces "Scroll for more" while columns
+  overflow; `stickyHeader` pins `th` inside a `stickyMaxHeight` (default `70vh`) body.
+- **Bulk**: `selectable` + `bulkBar={({ selectedKeys, clear }) => …}`. The bar renders above the table
+  with the count and a Clear button; dialogs mount inside the slot. Selection is keyed by `rowKey`,
+  optionally controlled through `selectedKeys`.
+- **Mobile**: `mobile="cards"` with one card template — identity, one `StatusTag`, two facts, the same
+  row menu — and the pager under the cards. Horizontal scroll only for diagnostic tables.
+- **Empty / loading / error**: empty = `KitEmptyState` with a real next step (`emptyTitle` /
+  `emptyDescription`); route loading = `app/admin/loading.tsx`, in-table refresh = `loading`
+  (`aria-busy` + skeleton rows while there are no rows yet); hard failure =
+  `components/admin/AdminDataLoadError.tsx` (kit card, single h1, Admin home / Jobs); soft failure =
+  `errorNotice` (an alert row above the data, the rows stay).
+- **Specs** are render-based: `tests/components/kit-data-table-primitive.spec.tsx`,
+  `kit-table-toolbar.spec.tsx`, `users-kit-row-menu.spec.tsx`, `coursera-catalog-health-table.spec.tsx`.
 
 ---
 
@@ -528,6 +584,7 @@ section here in the same PR.*
 - Sidebar preference controls keep their radio keyboard interaction. The rail scrolls its destinations, with language and appearance visible below. Narrow or collapsed navigation must never expose clipped focusable controls.
 - Counselor messages use one neutral inbox workspace. Member metadata appears once per roster row, catalog names resolve on the server, and selected conversations/filter controls expose their state accessibly. Recipient identity, request guards, and draft ownership remain unchanged.
 - Partner sharing keeps its primary Copy action visible; URL/code live in a native disclosure that opens on clipboard failure. Member sharing keeps the link/copy action visible and opens invitation preview for manual copying when needed. Privacy and aggregate-reward limits remain visible.
-- Partner metrics without supplied trend data use compact StatTile captions; supplied trends retain StatSparkTile. The referral funnel presents the same supplied counts/percentages as named progress bars across a desktop row and a mobile stack. The progress handoff retains its destination as a quiet direct link.
+- Partner metrics without supplied trend data use compact StatTile captions; supplied trends retain StatSparkTile. Partner KPI tiles carry no categorical colour (a `tone` only for a state such as pending reviews above zero). The referral funnel presents the same supplied counts/percentages as named progress bars across a desktop row and a mobile stack. The progress handoff retains its destination as a quiet direct link.
+- Counselor student detail record panels (`CounselorIntakeReviewPanel`, `WioaScreeningReadonly`, `AssessmentAnswersReadonly`, `CounselorNotesPanel`, `AdvisorSessionNotesPanel`) are `.wa-kit-card` sections: section h2 titles and `.wa-kit-stat-label` h3 card heads, `.wa-kit-meta` captions, `StatusTag` / tone hooks for status copy, colocated `*.module.css` for layout (`--wa-*` only, 13px floor, no inline `fontSize`). The page keeps the single h1; heading levels inside the tab panels are unchanged. The notes panels load through `fetchWithTimeout` with the effect's `AbortSignal` and `lib/portal/memberRequestFailure` copy (a cancelled request never reads as a failure).
 - Staff mobile navigation consumes portal surface tokens in both themes. Staff rails use their server-rendered role for initial styling; short landscape viewports scroll the whole rail so neither destinations nor preferences are clipped.
 - Student roster Last active exposes its learner-action source in desktop and mobile tooltips/accessibility labels. Displayed assignment comes from the shared enrollment policy; legacy-only assignment and unresolved assignment remain explicit. Missing grades must not suppress learning activity, and import/database-update timestamps must not be presented as learner activity.

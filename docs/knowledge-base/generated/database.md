@@ -186,8 +186,13 @@
 | [prisma/migrations/20260912203000_add_subscription_state_revisions/migration.sql](../../../prisma/migrations/20260912203000_add_subscription_state_revisions/migration.sql) | 7 | database |  |
 | [prisma/migrations/20260918160000_add_profile_photo_path/migration.sql](../../../prisma/migrations/20260918160000_add_profile_photo_path/migration.sql) | 2 | database |  |
 | [prisma/migrations/20260920120000_public_assistance_follow_up/migration.sql](../../../prisma/migrations/20260920120000_public_assistance_follow_up/migration.sql) | 7 | database |  |
+| [prisma/migrations/20260920141800_audit_events_actor_set_null/migration.sql](../../../prisma/migrations/20260920141800_audit_events_actor_set_null/migration.sql) | 11 | database |  |
+| [prisma/migrations/20260920141900_user_certifications_default_pending/migration.sql](../../../prisma/migrations/20260920141900_user_certifications_default_pending/migration.sql) | 5 | database |  |
+| [prisma/migrations/20260920141917_user_tour_state/migration.sql](../../../prisma/migrations/20260920141917_user_tour_state/migration.sql) | 29 | database |  |
+| [prisma/migrations/20260920193000_add_email_send_logs/migration.sql](../../../prisma/migrations/20260920193000_add_email_send_logs/migration.sql) | 57 | database |  |
+| [prisma/migrations/20260920200000_email_failure_snapshots/migration.sql](../../../prisma/migrations/20260920200000_email_failure_snapshots/migration.sql) | 41 | database |  |
 | [prisma/migrations/migration_lock.toml](../../../prisma/migrations/migration_lock.toml) | 3 | database |  |
-| [prisma/schema.prisma](../../../prisma/schema.prisma) | 3179 | database |  |
+| [prisma/schema.prisma](../../../prisma/schema.prisma) | 3295 | database |  |
 | [prisma/seed-automation-rules.ts](../../../prisma/seed-automation-rules.ts) | 46 | database |  |
 | [prisma/seed-blog.ts](../../../prisma/seed-blog.ts) | 377 | database | seedBlogPosts:350 |
 | [prisma/seed-demo.ts](../../../prisma/seed-demo.ts) | 702 | database |  |

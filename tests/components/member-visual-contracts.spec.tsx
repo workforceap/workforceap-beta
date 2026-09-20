@@ -7,6 +7,8 @@ import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/Memb
 import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
+import MemberDashboardVoiceSection from '@/components/portal/MemberDashboardVoiceSection';
+import VoiceCoachesPromo from '@/components/portal/VoiceCoachesPromo';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }), usePathname: () => '/dashboard', useSearchParams: () => new URLSearchParams() }));
 vi.mock('@/app/(portal)/dashboard/_actions/analyticsActions', () => ({ logCourseraLaunchFromPortal: vi.fn() }));
@@ -22,7 +24,8 @@ describe('categorical totals retain their value without status-like colors', () 
     render(<MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} />);
     for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
       expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('var(--wa-text)');
+      expect(stat(label).style.color).toBe('');
+      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
     }
     expect(screen.getAllByText('Interview scheduled').length).toBeGreaterThan(0);
   });
@@ -31,7 +34,8 @@ describe('categorical totals retain their value without status-like colors', () 
     render(<MemberCertificatesKit earnedCount={value} inProgressCount={value} verifiedCount={value} />);
     for (const label of ['Earned', 'In progress', 'Verified']) {
       expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('var(--wa-text)');
+      expect(stat(label).style.color).toBe('');
+      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
     }
     expect(document.querySelectorAll('.wa-kit-stat-value')).toHaveLength(3);
     expect(screen.queryByText('Not verified')).not.toBeInTheDocument();
@@ -74,6 +78,28 @@ describe('program and coach presentation preserves actions', () => {
     expect(resume.style.background).toContain('--wa-hero-crimson');
     expect(readiness.querySelector('button, a')).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('gold is a fill, not a text foreground (WAP-100)', () => {
+  it.each([
+    ['home AI coaches band', () => <MemberDashboardVoiceSection />],
+    ['toolkit voice promo', () => <VoiceCoachesPromo />],
+  ])('%s puts white CTA text on the hero-gold floor, never on brand gold', (_name, Surface) => {
+    render(<Surface />);
+    const ctas = screen.getAllByRole('link').filter((link) => (link as HTMLElement).style.color === 'rgb(255, 255, 255)');
+    expect(ctas.length).toBeGreaterThan(0);
+    for (const cta of ctas) {
+      const background = (cta as HTMLElement).style.background;
+      expect(background).not.toMatch(/#a47f38|#9b7834|#c79a45/i);
+      if (/gold/i.test(background)) expect(background).toContain('--wa-hero-gold');
+    }
+    // The Elevator Introduction and Readiness Coach CTAs are the gold surfaces on these bands.
+    const build = screen.getByRole('link', { name: /Build intro/ }) as HTMLElement;
+    expect(build.style.background).toContain('var(--wa-hero-gold)');
+    const goldSessions = screen.getAllByRole('link', { name: 'Start voice session' }).filter((link) => /gold/i.test((link as HTMLElement).style.background));
+    expect(goldSessions.length).toBeGreaterThanOrEqual(1);
+    for (const cta of goldSessions) expect((cta as HTMLElement).style.background).toContain('var(--wa-hero-gold)');
   });
 });
 

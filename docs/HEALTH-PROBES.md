@@ -6,8 +6,8 @@
 | Probe | Path | Cost | Meaning | HTTP |
 |---|---|---|---|---|
 | **Liveness** | `GET /api/health` | No Prisma / Redis / S3 | Next isolate is up | 200 if the process handles the request (429 if rate-limited) |
-| **Readiness** | `GET /api/health/ready` | One Prisma `$transaction` → default org `findUnique` (`slug=workforceap`) | Pages can resolve the org that `app/layout.tsx` needs on every request | 200 if org row is reachable; **503** if Prisma is down or the org is missing |
-| **Journey smoke** | `GET /api/cron/smoke-test` | Seven parallel HTTP probes; cron-authenticated | Liveness/readiness JSON, login/program page markers, and the `/dashboard`, `/admin`, `/counselor` login redirect contracts | 200 when every probe is healthy; **503** plus a sanitized Sentry exception when any probe fails or exceeds 8 seconds |
+| **Readiness** | `GET /api/health/ready` | One Prisma `$transaction` → default org `findUnique` (`slug=workforceap`) | Pages can resolve the org that `app/layout.tsx` needs on every request. Also reports `rateLimiter: redis \| fail-open \| fail-closed` (the security-limiter posture, WAP-13 / TODO-088) under the same key in `checks` | 200 if org row is reachable; **503** if Prisma is down or the org is missing. `rateLimiter` never changes the status here |
+| **Journey smoke** | `GET /api/cron/smoke-test` | Seven parallel HTTP probes; cron-authenticated | Liveness/readiness JSON (readiness must also report `rateLimiter: "redis"`), login/program page markers, and the `/dashboard`, `/admin`, `/counselor` login redirect contracts | 200 when every probe is healthy; **503** plus a sanitized Sentry exception when any probe fails, exceeds 8 seconds, or production rate limiting is not on Redis |
 | SLO snapshot | `GET /api/health/slo` | Admin-only | Internal SLO numbers | Auth-gated |
 
 ## Liveness payload

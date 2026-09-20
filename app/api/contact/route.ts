@@ -1,11 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import {
+  CONTACT_FORM_ERROR_PATH,
+  CONTACT_FORM_THANKS_PATH,
+  contactFormDataToBody,
+  isNativeFormPost,
+} from '@/lib/contact/nativeFormPost';
+import { getResend } from '@/lib/email';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 const CONTACT_EMAIL_TO = 'info@workforceap.org';
+
+/** JSON for fetch clients; a 303 to the confirmation or error anchor for native form posts. */
+function respond(nativeForm: boolean, body: Record<string, unknown>, status: number): NextResponse {
+  if (nativeForm) {
+    return new NextResponse(null, {
+      status: 303,
+      headers: { Location: status < 400 ? CONTACT_FORM_THANKS_PATH : CONTACT_FORM_ERROR_PATH },
+    });
+  }
+  return NextResponse.json(body, { status });
+}
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -16,26 +34,24 @@ function getClientIp(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
+  const nativeForm = isNativeFormPost(request);
   try {
     const ip = getClientIp(request);
     const { success: rateOk } = await checkContactRateLimit(ip);
     if (!rateOk) {
-      return NextResponse.json(
-        { error: 'Too many submissions. Please try again in an hour.' },
-        { status: 429 }
-      );
+      return respond(nativeForm, { error: 'Too many submissions. Please try again in an hour.' }, 429);
     }
   
     let body: unknown;
     try {
-      body = await request.json();
+      body = nativeForm ? contactFormDataToBody(await request.formData()) : await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+      return respond(nativeForm, { error: 'Invalid request' }, 400);
     }
   
     const parsed = parseBody(body);
     if (!parsed) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return respond(nativeForm, { error: 'Missing required fields' }, 400);
     }
   
     const { firstName, lastName, email, phone, topic, message, smsPreferred, turnstileToken } = parsed;
@@ -45,40 +61,31 @@ export async function POST(request: NextRequest) {
       const secret = process.env.TURNSTILE_SECRET_KEY;
       if (!secret?.trim()) {
         console.error('TURNSTILE_SECRET_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
-          { error: 'Contact form is temporarily unavailable. Please try again later.' },
-          { status: 503 }
-        );
+        return respond(nativeForm, { error: 'Contact form is temporarily unavailable. Please try again later.' }, 503);
       }
       // Clients only render the Turnstile widget when the SITE key is set, so
       // 'enabled + missing site key' means no request can ever carry a token —
       // fail closed as a config error, not an unpassable 400.
       if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
         console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
-          { error: 'Contact form is temporarily unavailable. Please try again later.' },
-          { status: 503 }
-        );
+        return respond(nativeForm, { error: 'Contact form is temporarily unavailable. Please try again later.' }, 503);
       }
       const tok = turnstileToken?.trim() ?? '';
       if (!tok) {
-        return NextResponse.json({ error: 'Please complete the security check.' }, { status: 400 });
+        return respond(nativeForm, { error: 'Please complete the security check.' }, 400);
       }
       const ok = await verifyTurnstileResponse(secret, tok, ip !== 'unknown' ? ip : undefined);
       if (!ok) {
-        return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 400 });
+        return respond(nativeForm, { error: 'Security check failed. Please try again.' }, 400);
       }
     }
   
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
   
-    if (!resendKey) {
+    if (!resend) {
       console.error('RESEND_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'Email service is not configured. Please try again later.' },
-        { status: 503 }
-      );
+      return respond(nativeForm, { error: 'Email service is not configured. Please try again later.' }, 503);
     }
   
     const subject = `Contact Form: ${topic} — ${firstName} ${lastName}`;
@@ -111,8 +118,7 @@ export async function POST(request: NextRequest) {
     });
   
     try {
-      const resend = new Resend(resendKey);
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: emailFrom,
         to: CONTACT_EMAIL_TO,
         replyTo: email,
@@ -122,16 +128,13 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       console.error('Contact form email failed:', err);
-      return NextResponse.json(
-        { error: 'Failed to send message. Please try again later.' },
-        { status: 500 }
-      );
+      return respond(nativeForm, { error: 'Failed to send message. Please try again later.' }, 500);
     }
   
-    return NextResponse.json({ ok: true });
+    return respond(nativeForm, { ok: true }, 200);
   } catch (error) {
     console.error('/contact:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return respond(nativeForm, { error: 'Internal server error' }, 500);
   }
 }
 

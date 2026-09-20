@@ -32,6 +32,8 @@ flowchart LR
   CourseraIdentityMapping["CourseraIdentityMapping"]
   CourseraSkillsetProgress["CourseraSkillsetProgress"]
   CronExecution["CronExecution"]
+  EmailFailureSnapshot["EmailFailureSnapshot"]
+  EmailSendLog["EmailSendLog"]
   EmailTemplate["EmailTemplate"]
   Employer["Employer"]
   EmployerHiringIntent["EmployerHiringIntent"]
@@ -104,6 +106,7 @@ flowchart LR
   User["User"]
   UserCertification["UserCertification"]
   UserRole["UserRole"]
+  UserTourState["UserTourState"]
   WapJob["WapJob"]
   WebhookEvent["WebhookEvent"]
   WeeklyRecap["WeeklyRecap"]
@@ -226,10 +229,12 @@ flowchart LR
   User -->|"reviewedTestimonials many"| Testimonial
   User -->|"memberFeedback many"| MemberFeedback
   User -->|"notifications many"| Notification
+  User -->|"emailSendLogs many"| EmailSendLog
   User -->|"pushSubscriptions many"| PushSubscription
   User -->|"savedJobs many"| SavedJob
   User -->|"chaptersLed many"| Chapter
   User -->|"chapterMemberships many"| ChapterMember
+  User -->|"tourStates many"| UserTourState
   Profile -->|"user one"| User
   ReadinessChecklist -->|"user one"| User
   Application -->|"user one"| User
@@ -257,6 +262,7 @@ flowchart LR
   ResourceProgress -->|"user one"| User
   MemberEvent -->|"user one"| User
   WorkflowDiagnostic -->|"actor optional"| User
+  EmailSendLog -->|"user optional"| User
   WeeklyRecap -->|"user one"| User
   PathwayStepProgress -->|"user one"| User
   TrainingAccessRequest -->|"user one"| User
@@ -318,7 +324,7 @@ flowchart LR
   AdvisorSessionNote -->|"member one"| User
   AdvisorSessionNote -->|"author one"| User
   AuditLog -->|"actor optional"| User
-  AuditEvent -->|"actor one"| User
+  AuditEvent -->|"actor optional"| User
   AuditEvent -->|"organization one"| Organization
   WioaReviewSnapshot -->|"organization one"| Organization
   WioaReviewSnapshot -->|"actor optional"| User
@@ -414,3 +420,4 @@ flowchart LR
   PushSubscription -->|"user one"| User
   SavedJob -->|"user one"| User
   SavedJob -->|"job one"| Job
+  UserTourState -->|"user one"| User

@@ -69,10 +69,10 @@ export function MentorsDirectoryKit({
   const avgMentees = mentors.length > 0 ? Math.round((totalMentees / mentors.length) * 10) / 10 : 0;
 
   const kpis: KpiItem[] = [
-    { label: 'Mentors', value: mentorTotal, color: 'accent' },
-    { label: 'Active', value: active, color: 'success' },
-    { label: 'Active pairings', value: totalMentees, color: 'info' },
-    { label: 'Avg mentees', value: avgMentees, color: 'gold' },
+    { label: 'Mentors', value: mentorTotal },
+    { label: 'Active', value: active },
+    { label: 'Active pairings', value: totalMentees },
+    { label: 'Avg mentees', value: avgMentees },
   ];
 
   return (

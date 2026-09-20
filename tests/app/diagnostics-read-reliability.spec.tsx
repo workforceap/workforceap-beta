@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiagnosticTile } from '@/components/portal/kit/pages/admin-subviews/DiagnosticsKit';
 
-const mocks = vi.hoisted(() => ({ ping: vi.fn(), read: vi.fn(), record: vi.fn() }));
+const mocks = vi.hoisted(() => ({ ping: vi.fn(), read: vi.fn(), count: vi.fn(), record: vi.fn() }));
 vi.mock('next/headers', () => ({ headers: async () => ({}) }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => ({ id: 'synthetic-admin' }) }));
 vi.mock('@/lib/tenant/adminPageScope', () => ({ resolveAdminPageTenant: async () => ({ ok: true }) }));
-vi.mock('@/lib/db/prisma', () => ({ prisma: { $queryRaw: mocks.ping, workflowDiagnostic: { findMany: mocks.read } } }));
+// `count` backs the failed-sends alert (workflowDiagnostic) and the send-log delivery tile (emailSendLog).
+vi.mock('@/lib/db/prisma', () => ({ prisma: { $queryRaw: mocks.ping, workflowDiagnostic: { findMany: mocks.read, count: mocks.count }, emailSendLog: { count: mocks.count } } }));
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: mocks.record }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => true }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
@@ -19,7 +20,7 @@ async function load() {
   const props = page.props as { tiles: DiagnosticTile[]; note: string };
   return { ...props, tile: (name: string) => props.tiles.find(t => t.name === name) };
 }
-beforeEach(() => { vi.resetAllMocks(); mocks.ping.mockResolvedValue([{ ok: 1 }]); mocks.read.mockResolvedValue([]); });
+beforeEach(() => { vi.resetAllMocks(); mocks.ping.mockResolvedValue([{ ok: 1 }]); mocks.read.mockResolvedValue([]); mocks.count.mockResolvedValue(0); });
 
 describe('diagnostic measurement availability', () => {
   it('distinguishes two rejected reads from successfully measured empty activity', async () => {
@@ -53,5 +54,6 @@ describe('diagnostic measurement availability', () => {
     expect(page.tile('Database')?.status).toBe('Unreachable');
     for (const name of ['Email Queue', 'Integrations']) expect(page.tile(name)?.status).toBe('Unavailable');
     expect(mocks.read).not.toHaveBeenCalled();
+    expect(mocks.count).not.toHaveBeenCalled();
   });
 });

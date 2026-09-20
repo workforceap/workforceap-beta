@@ -144,6 +144,7 @@ function makeMockTx() {
         return {};
       },
     },
+    emailSendLog: { updateMany: async () => ({ count: 0 }), count: async () => 0 },
     applicationMessage: { updateMany: async () => ({ count: 0 }) },
     message: { updateMany: async () => ({ count: 0 }) },
     memberEvent: { updateMany: async () => ({ count: 0 }) },

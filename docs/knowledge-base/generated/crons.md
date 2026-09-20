@@ -7,6 +7,7 @@ Schedules are UTC declarations; this index does not prove a deployed invocation,
 | Schedule (UTC) | Endpoint | Source | Declared duration |
 | --- | --- | --- | --- |
 | `7 11 */3 * *` | /api/cron/applicant-followup | [route](../../../app/api/cron/applicant-followup/route.ts) | 300 |
+| `37 14 * * 1` | /api/cron/applicant-aging-digest | [route](../../../app/api/cron/applicant-aging-digest/route.ts) | 300 |
 | `7 13 * * 1` | /api/cron/at-risk-alerts | [route](../../../app/api/cron/at-risk-alerts/route.ts) | 300 |
 | `11 6 * * *` | /api/cron/at-risk-check | [route](../../../app/api/cron/at-risk-check/route.ts) | 300 |
 | `15 * * * *` | /api/cron/coursera-auto-heal | [route](../../../app/api/cron/coursera-auto-heal/route.ts) | 300 |

@@ -14,6 +14,16 @@ import {
   DiagnosticsKit,
   type DiagnosticTile,
 } from '@/components/portal/kit/pages/admin-subviews/DiagnosticsKit';
+import {
+  EmailFailuresPanel,
+  type EmailFailureRow,
+} from '@/components/portal/kit/pages/admin-subviews/EmailFailuresPanel';
+import { EMAIL_SEND_WORKFLOW, parseEmailFailureMetadata } from '@/lib/email/failureRecord';
+import {
+  EMAIL_FAILURE_ALERT_THRESHOLD,
+  countRecentEmailFailures,
+} from '@/lib/email/failureAlert';
+import { getResendableTemplate } from '@/lib/email/resendRegistry';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -142,7 +152,39 @@ const INTEGRATION_WORKFLOWS = [
   'xapi_ingestion',
 ];
 
+/** Operator side channels the 2026-09-20 delivery audit found unmeasured (#15, #22). */
+const DISCORD_WORKFLOWS = ['discord_notification'];
+const WEB_PUSH_WORKFLOWS = ['web_push'];
+
 const ERROR_STATUSES = ['error', 'errored', 'failed'];
+
+/** Failed-send list window (days) on the default view; the alert window is 24h. */
+const EMAIL_FAILURE_LIST_DAYS = 7;
+const EMAIL_FAILURE_LIST_TAKE = 50;
+
+function toEmailFailureRow(row: DiagnosticRow): EmailFailureRow {
+  const failure = parseEmailFailureMetadata(row.metadata);
+  return {
+    id: row.id,
+    createdAt: row.createdAt.toISOString(),
+    template: failure.template,
+    templateLabel: getResendableTemplate(failure.template)?.label ?? null,
+    subject: failure.subject || row.summary,
+    // New rows store hash + domain, not the address; show the domain so the
+    // list still groups by where mail was going.
+    to: failure.to.length > 0
+      ? failure.to
+      : failure.recipientDomain
+        ? [`(recipient at ${failure.recipientDomain})`]
+        : [],
+    errorClass: failure.errorClass,
+    retryable: failure.retryable,
+    resendable: failure.resendable && getResendableTemplate(failure.template) !== null,
+    failureReason: row.failureReason,
+    resentAt: failure.resentAt ?? null,
+    resentOk: typeof failure.resentOk === 'boolean' ? failure.resentOk : null,
+  };
+}
 const WARN_STATUSES = ['warn', 'fallback', 'fallback_used'];
 
 /**
@@ -446,6 +488,14 @@ export default async function AdminDiagnosticsPage({
   let integrationRows: { status: string }[] = [];
   let emailReadFailed = false;
   let integrationReadFailed = false;
+  let failedSends: EmailFailureRow[] = [];
+  let failedSends24h: number | null = null;
+  let discordRows: { status: string }[] = [];
+  let pushRows: { status: string }[] = [];
+  let discordReadFailed = false;
+  let pushReadFailed = false;
+  let delivery: { sent: number; failed: number; bounced: number } | null = null;
+  const failedSendsSince = new Date(Date.now() - EMAIL_FAILURE_LIST_DAYS * 24 * 60 * 60 * 1000);
 
   try {
     // Cheap liveness ping — proves the pooler answers.
@@ -455,7 +505,17 @@ export default async function AdminDiagnosticsPage({
   }
 
   if (dbOk) {
-    const [emailResult, integrationResult] = await Promise.allSettled([
+    const [
+      emailResult,
+      integrationResult,
+      failedSendsResult,
+      failedSends24hResult,
+      discordResult,
+      pushResult,
+      sentResult,
+      sendFailedResult,
+      bouncedResult,
+    ] = await Promise.allSettled([
       prisma.workflowDiagnostic.findMany({
         where: { workflow: { in: EMAIL_WORKFLOWS }, createdAt: { gte: since } },
         select: { status: true },
@@ -466,14 +526,46 @@ export default async function AdminDiagnosticsPage({
         select: { status: true },
         take: 500,
       }),
+      // WAP-163: individual failed sends, newest first, with their typed record.
+      prisma.workflowDiagnostic.findMany({
+        where: { workflow: EMAIL_SEND_WORKFLOW, status: 'error', createdAt: { gte: failedSendsSince } },
+        orderBy: { createdAt: 'desc' },
+        take: EMAIL_FAILURE_LIST_TAKE,
+      }),
+      countRecentEmailFailures(prisma, new Date()),
+      prisma.workflowDiagnostic.findMany({
+        where: { workflow: { in: DISCORD_WORKFLOWS }, createdAt: { gte: since } },
+        select: { status: true },
+        take: 500,
+      }),
+      prisma.workflowDiagnostic.findMany({
+        where: { workflow: { in: WEB_PUSH_WORKFLOWS }, createdAt: { gte: since } },
+        select: { status: true },
+        take: 500,
+      }),
+      // Send log: accepted / failed sends and provider-reported hard outcomes (24h).
+      prisma.emailSendLog.count({ where: { status: 'sent', createdAt: { gte: since } } }),
+      prisma.emailSendLog.count({ where: { status: 'failed', createdAt: { gte: since } } }),
+      prisma.emailSendLog.count({ where: { lastEvent: { in: ['bounced', 'complained'] }, lastEventAt: { gte: since } } }),
     ]);
     if (emailResult.status === 'fulfilled') emailRows = emailResult.value;
     else emailReadFailed = true;
     if (integrationResult.status === 'fulfilled') integrationRows = integrationResult.value;
     else integrationReadFailed = true;
+    if (failedSendsResult.status === 'fulfilled') failedSends = failedSendsResult.value.map(toEmailFailureRow);
+    if (failedSends24hResult.status === 'fulfilled') failedSends24h = failedSends24hResult.value;
+    if (discordResult.status === 'fulfilled') discordRows = discordResult.value;
+    else discordReadFailed = true;
+    if (pushResult.status === 'fulfilled') pushRows = pushResult.value;
+    else pushReadFailed = true;
+    if (sentResult.status === 'fulfilled' && sendFailedResult.status === 'fulfilled' && bouncedResult.status === 'fulfilled') {
+      delivery = { sent: sentResult.value, failed: sendFailedResult.value, bounced: bouncedResult.value };
+    }
   } else {
     emailReadFailed = true;
     integrationReadFailed = true;
+    discordReadFailed = true;
+    pushReadFailed = true;
   }
 
   const tiles: DiagnosticTile[] = [
@@ -489,6 +581,35 @@ export default async function AdminDiagnosticsPage({
     integrationReadFailed
       ? { name: 'Integrations', iconKey: 'integrations', status: 'Unavailable', tone: 'alert' }
       : deriveSubsystemTile('Integrations', 'integrations', integrationRows),
+    // WAP-163: the same 24h count the verification cron alerts on.
+    failedSends24h === null
+      ? { name: 'Failed Sends (24h)', iconKey: 'email', status: 'Unavailable', tone: 'alert' }
+      : failedSends24h > EMAIL_FAILURE_ALERT_THRESHOLD
+      ? { name: 'Failed Sends (24h)', iconKey: 'email', status: `${failedSends24h} failed`, tone: 'alert' }
+      : { name: 'Failed Sends (24h)', iconKey: 'email', status: 'None', tone: 'ok' },
+    // Send log (email_send_logs): what the provider accepted and what it later
+    // bounced or flagged. Empty until the first deploy writes rows; the bounced
+    // count stays 0 until the Resend webhook is registered.
+    delivery === null
+      ? { name: 'Email Delivery (24h)', iconKey: 'email', status: 'Unavailable', tone: 'alert' }
+      : delivery.sent + delivery.failed + delivery.bounced === 0
+      ? { name: 'Email Delivery (24h)', iconKey: 'email', status: 'No sends logged', tone: 'muted' }
+      : {
+          name: 'Email Delivery (24h)',
+          iconKey: 'email',
+          status: `${delivery.sent} sent · ${delivery.failed} failed · ${delivery.bounced} bounced`,
+          tone: delivery.bounced > 0 || delivery.failed > EMAIL_FAILURE_ALERT_THRESHOLD ? 'alert' : delivery.failed > 0 ? 'warn' : 'ok',
+        },
+    discordReadFailed
+      ? { name: 'Discord Alerts', iconKey: 'discord', status: 'Unavailable', tone: 'alert' }
+      : !process.env.DISCORD_NOTIFICATIONS_WEBHOOK_URL
+      ? { name: 'Discord Alerts', iconKey: 'discord', status: 'Not configured', tone: 'muted' }
+      : deriveSubsystemTile('Discord Alerts', 'discord', discordRows),
+    pushReadFailed
+      ? { name: 'Web Push', iconKey: 'push', status: 'Unavailable', tone: 'alert' }
+      : !(process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY && process.env.WEB_PUSH_VAPID_PRIVATE_KEY)
+      ? { name: 'Web Push', iconKey: 'push', status: 'VAPID keys not set', tone: 'muted' }
+      : deriveSubsystemTile('Web Push', 'push', pushRows),
   ];
 
   const allHealthy = tiles.every((t) => t.tone === 'ok');
@@ -502,7 +623,14 @@ export default async function AdminDiagnosticsPage({
     <DiagnosticsKit
       tiles={tiles}
       note={note}
-      noteCaption="App + database measured live this request · email/integrations over the last 24h"
-    />
+      noteCaption="App + database measured live this request · email, delivery, Discord, push and integrations over the last 24h"
+    >
+      <EmailFailuresPanel
+        rows={failedSends}
+        failures24h={failedSends24h ?? 0}
+        windowDays={EMAIL_FAILURE_LIST_DAYS}
+        threshold={EMAIL_FAILURE_ALERT_THRESHOLD}
+      />
+    </DiagnosticsKit>
   );
 }

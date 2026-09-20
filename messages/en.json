@@ -3528,5 +3528,149 @@
       "legacy": "Saved explanation (original language): {text}",
       "unavailable": "No explanation was saved with this assessment."
     }
+  },
+  "tours": {
+    "chrome": {
+      "close": "Close tour",
+      "stepOf": "Step {current} of {total}",
+      "back": "Back",
+      "skip": "Skip tour",
+      "next": "Next",
+      "done": "Done",
+      "announceStep": "Tour step {current} of {total}: {title}"
+    },
+    "member": {
+      "home": {
+        "dashboard": {
+          "title": "Dashboard",
+          "body": "Your overview: applications, interviews, and shortcuts. Open My program in the menu for your course list, Coursera, and training progress."
+        },
+        "aiTools": {
+          "title": "AI Career Tools",
+          "body": "Power up your job search with AI — resume help, cover letters, interview practice, and more."
+        },
+        "learning": {
+          "title": "Learning",
+          "body": "Access your courses, training materials, and skill-building resources."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Stay connected with your counselor and the WorkforceAP team."
+        },
+        "profile": {
+          "title": "Profile",
+          "body": "Keep your profile up to date so we can match you with the best opportunities."
+        }
+      }
+    },
+    "employer": {
+      "home": {
+        "overview": {
+          "title": "Your dashboard",
+          "body": "See active job stats, pending work, and alerts at a glance."
+        },
+        "workQueue": {
+          "title": "Work queue",
+          "body": "Daily action items — candidates to review, interviews to schedule, stale postings."
+        },
+        "jobs": {
+          "title": "Job postings",
+          "body": "Post new roles, import from your job board or LinkedIn, and manage live postings."
+        },
+        "applicants": {
+          "title": "Applicants",
+          "body": "Review every candidate who applied. Filter by program, status, or match score."
+        },
+        "pipeline": {
+          "title": "Hiring pipeline",
+          "body": "Track candidates from reviewed → interviewed → offered on a visual board."
+        },
+        "matches": {
+          "title": "AI matches",
+          "body": "AI-suggested candidates for your open roles based on skills and program fit."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Chat with the WorkforceAP team about postings, applicants, and hiring."
+        },
+        "postJob": {
+          "title": "Post your first job",
+          "body": "Takes about 2 minutes. We'll match you with qualified candidates automatically."
+        }
+      }
+    },
+    "partner": {
+      "home": {
+        "overview": {
+          "title": "Partner dashboard",
+          "body": "Your referred members and their current status — all in one view."
+        },
+        "members": {
+          "title": "Your members",
+          "body": "Everyone you've referred. Click any member to see their full journey."
+        },
+        "attention": {
+          "title": "Needs attention",
+          "body": "Members who may need a nudge — stalled applications, inactive, at risk."
+        },
+        "outcomes": {
+          "title": "Outcomes",
+          "body": "Track placements and employment outcomes for your referrals."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Reach the WorkforceAP team about referrals, milestones, and partner support."
+        },
+        "referralLink": {
+          "title": "Your referral link",
+          "body": "Share this link with community members to track their journey back to you."
+        }
+      }
+    },
+    "help": {
+      "label": "Help",
+      "takeTour": "Take the tour",
+      "guide": "Portal guide"
+    },
+    "offer": {
+      "take": "Take the tour",
+      "dismiss": "Not now"
+    },
+    "counselor": {
+      "home": {
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See what needs attention today, how to open a member, how to message them and where notes live."
+        },
+        "attention": {
+          "title": "What needs attention today",
+          "body": "Three numbers, one rule each: members flagged urgent or watch, replies you owe after 24 hours, and everyone on track. Today only lists people who need you."
+        },
+        "queue": {
+          "title": "One list, each member once",
+          "body": "Members are grouped by the kind of contact they need — at risk, reply owed, gone quiet, follow-ups, new, celebrate — and every row says why. Urgent rows sort first."
+        },
+        "openMember": {
+          "title": "Open a member",
+          "body": "Use View member on any row, or All members for the full roster. The roster stat cards say why a member needs attention and each card links to the page that acts on it."
+        },
+        "memberRecord": {
+          "title": "The member record",
+          "body": "Each member opens on four tabs: Profile, Training, Notes and Messages. Notes live on the Notes tab — counselor notes and session notes — and the Message action sits at the top of the page."
+        },
+        "atRisk": {
+          "title": "At-risk members",
+          "body": "The risk model ranks your caseload by inactivity, stalled training and unanswered messages. Start here on a busy day."
+        },
+        "messages": {
+          "title": "Message a member",
+          "body": "Messages holds every conversation with your members. Open thread on a Today row takes you straight to the person who is waiting."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it and links to the portal guide."
+        }
+      }
+    }
   }
 }

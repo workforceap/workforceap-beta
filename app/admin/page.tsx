@@ -26,6 +26,7 @@ import {
 } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import type { ChartDatum } from '@/components/portal/kit';
 import { pluralCount } from '@/lib/i18n/pluralCount';
+import { buildCommandCenterSystemHealth, COMMAND_CENTER_CRON_ROWS, type CronRunSnapshot } from '@/lib/admin/commandCenterHealth';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -69,7 +70,7 @@ export default async function AdminTodayPage({
 
     const { data, headline } = await withAuthGuc(async () => {
       const orgId = await getActorOrganizationId(user.id);
-      const [center, attention, placementRows, recentCronErrors, slaBreaches48h] = await Promise.all([
+      const [center, attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns] = await Promise.all([
         getAdminCommandCenter(user.id, { perSectionLimit: 8 }).catch((error): AdminCommandCenter => {
           adminHomeLoadFailed = true;
           console.error('[admin/page] command center load failed', error);
@@ -127,8 +128,23 @@ export default async function AdminTodayPage({
           console.error('[admin/page] message SLA count failed', error);
           return 0;
         }),
+        // Cron freshness for the "System health" rows: one indexed
+        // findFirst per job on CronExecution (the table /admin/crons reads).
+        // Platform-wide, so loaded for platform admins only — tenant admins
+        // get an honest "Not checked here" pointer instead.
+        scope.superAdmin
+          ? Promise.all(COMMAND_CENTER_CRON_ROWS.map((def) => prisma.cronExecution.findFirst({
+              where: { jobName: def.jobName },
+              orderBy: { startedAt: 'desc' },
+              select: { jobName: true, status: true, startedAt: true, completedAt: true },
+            }))).then((rows): CronRunSnapshot[] => rows.filter((row): row is CronRunSnapshot => row != null))
+            .catch((error): CronRunSnapshot[] | null => {
+              console.error('[admin/page] cron freshness load failed', error);
+              return null;
+            })
+          : Promise.resolve<CronRunSnapshot[] | null>(null),
       ]);
-      return { data: center, headline: { attention, placementRows, recentCronErrors, slaBreaches48h } };
+      return { data: center, headline: { attention, placementRows, recentCronErrors, slaBreaches48h, cronRuns } };
     }).catch((error) => {
       adminHomeLoadFailed = true;
       console.error('[admin/page] scoped command center load failed', error);
@@ -153,6 +169,7 @@ export default async function AdminTodayPage({
           placementRows: [] as Array<{ placedAt: Date }>,
           recentCronErrors: 0,
           slaBreaches48h: 0,
+          cronRuns: null as CronRunSnapshot[] | null,
         },
       };
     });
@@ -189,26 +206,23 @@ export default async function AdminTodayPage({
       {
         label: 'Active Students',
         value: headline.attention.totals.enrolled,
-        color: 'text',
         delta: 'Members with an enrolled program',
-        deltaColor: 'muted',
+        deltaTone: 'muted',
       },
       {
         label: 'Placements YTD',
         value: placementsYtd,
-        color: 'success',
         spark: placementsSpark ? { series: placementsSpark } : undefined,
       },
-      { label: 'Interview prep', value: totals.interviewingCount, color: 'info' },
+      { label: 'Interview prep', value: totals.interviewingCount },
       ...attentionTiles
         .filter((tile) => tile.key !== 'new_no_counselor')
         .map((tile): CommandCenterKpiItem => ({
           label: tile.label,
           value: tile.value,
-          color: 'accent',
-          tone: tile.value > 0 ? 'accent' : 'muted',
+          tone: tile.value > 0 ? 'alert' : undefined,
           delta: tile.definition,
-          deltaColor: 'muted',
+          deltaTone: 'muted',
         })),
     ];
 
@@ -270,25 +284,18 @@ export default async function AdminTodayPage({
       },
     ];
 
-    // Unmeasured services are explicitly unknown; global workflow diagnostics
-    // are shown only to platform admins, never ordinary tenant admins.
-    const systemHealth: CommandCenterSystemHealthRow[] = [
-      { name: 'Coursera sync', status: 'unknown', meta: 'Latest run not verified here' },
-      { name: 'At-risk scoring', status: 'unknown', meta: 'Latest run not verified here' },
-      {
-        name: 'Member reply SLA',
-        status: headline.slaBreaches48h > 0 ? 'warn' : 'ok',
-        meta: headline.slaBreaches48h > 0 ? `${headline.slaBreaches48h} threads waiting >48h` : 'No replies overdue by 48h',
-      },
-      ...(scope.superAdmin ? [{
-        name: 'Platform workflow errors',
-        status: workflowHealthLoadFailed || headline.recentCronErrors == null ? 'unknown' as const
-          : headline.recentCronErrors > 0 ? 'warn' as const : 'ok' as const,
-        meta: workflowHealthLoadFailed || headline.recentCronErrors == null ? 'Could not check diagnostics'
-          : `${headline.recentCronErrors} errors recorded in 7 days`,
-      }] : []),
-      { name: 'Payouts', status: 'unknown', meta: 'No automated check available' },
-    ];
+    // Every row is a real state from data loaded above, or an honest
+    // "Not checked here" that links to where the check lives. Global workflow
+    // diagnostics (cron freshness, platform errors) are computed for platform
+    // admins only, never ordinary tenant admins (lib/admin/commandCenterHealth).
+    const systemHealth: CommandCenterSystemHealthRow[] = buildCommandCenterSystemHealth({
+      superAdmin: scope.superAdmin,
+      now: new Date(),
+      slaBreaches48h: headline.slaBreaches48h,
+      recentCronErrors: headline.recentCronErrors,
+      workflowHealthLoadFailed,
+      cronRuns: headline.cronRuns,
+    });
 
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,

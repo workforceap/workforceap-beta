@@ -36,7 +36,7 @@
 | [docs/DIGITAL-LITERACY-COURSE.md](../../../docs/DIGITAL-LITERACY-COURSE.md) | 78 | documentation |  |
 | [docs/EMAIL-PDF-VOICE-AUDIT.md](../../../docs/EMAIL-PDF-VOICE-AUDIT.md) | 136 | communications |  |
 | [docs/EMAIL_SETUP.md](../../../docs/EMAIL_SETUP.md) | 67 | communications |  |
-| [docs/ENVIRONMENT-VARIABLES.md](../../../docs/ENVIRONMENT-VARIABLES.md) | 481 | documentation |  |
+| [docs/ENVIRONMENT-VARIABLES.md](../../../docs/ENVIRONMENT-VARIABLES.md) | 476 | documentation |  |
 | [docs/FLAGS_ASSESSMENT_REVIEW.md](../../../docs/FLAGS_ASSESSMENT_REVIEW.md) | 15 | documentation |  |
 | [docs/FUNDING-COPY-MIGRATION.md](../../../docs/FUNDING-COPY-MIGRATION.md) | 133 | documentation |  |
 | [docs/GAMEPLAN.md](../../../docs/GAMEPLAN.md) | 45 | documentation |  |
@@ -47,7 +47,7 @@
 | [docs/I18N-LOCALE-ROUTING.md](../../../docs/I18N-LOCALE-ROUTING.md) | 520 | documentation |  |
 | [docs/INCIDENT-RESPONSE-PLAN.md](../../../docs/INCIDENT-RESPONSE-PLAN.md) | 340 | documentation |  |
 | [docs/JOB-CREATE-FIX.md](../../../docs/JOB-CREATE-FIX.md) | 33 | documentation |  |
-| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 533 | documentation |  |
+| [docs/KIT_GUIDE.md](../../../docs/KIT_GUIDE.md) | 590 | documentation |  |
 | [docs/LAUNCH-PREP-AUDIT.md](../../../docs/LAUNCH-PREP-AUDIT.md) | 146 | documentation |  |
 | [docs/LIVE-PORTAL-AUDIT-2026-04-26.md](../../../docs/LIVE-PORTAL-AUDIT-2026-04-26.md) | 707 | documentation |  |
 | [docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md](../../../docs/MEMBER-FUNNEL-BRIEF-2026-09-18.md) | 318 | documentation |  |
@@ -269,7 +269,7 @@
 | [docs/knowledge-base/audit-baseline.json](../../../docs/knowledge-base/audit-baseline.json) | 6 | documentation |  |
 | [docs/knowledge-base/audit-report.md](../../../docs/knowledge-base/audit-report.md) | 37 | documentation |  |
 | [docs/knowledge-base/data.md](../../../docs/knowledge-base/data.md) | 62 | documentation |  |
-| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 49 | documentation |  |
+| [docs/knowledge-base/features.md](../../../docs/knowledge-base/features.md) | 50 | documentation |  |
 | [docs/knowledge-base/integrations.md](../../../docs/knowledge-base/integrations.md) | 143 | documentation |  |
 | [docs/knowledge-base/maintenance.md](../../../docs/knowledge-base/maintenance.md) | 68 | documentation |  |
 | [docs/knowledge-base/operations.md](../../../docs/knowledge-base/operations.md) | 172 | documentation |  |

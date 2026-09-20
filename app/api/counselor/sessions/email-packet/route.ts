@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Resend } from 'resend';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getSubjectOrganizationId } from "@/lib/tenant/organization";
 import { brandedEmailLayout } from '@/lib/email/template';
+import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { getResend } from '@/lib/email';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { sessionPacketHtml, type SessionPacketSection } from '@/emails/session-packet';
 import { resolveActOnBehalf } from '@/lib/auth/actAsSubject';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
@@ -27,11 +29,6 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  */
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
-
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY;
-  return key ? new Resend(key) : null;
-}
 
 function getFrom(): string {
   return process.env.EMAIL_FROM || 'WorkforceAP <hello@workforceap.org>';
@@ -351,7 +348,7 @@ async function generatePdfBuffer(title: string, text: string): Promise<Buffer> {
     const counselorName = onBehalf.actorName ?? 'your WorkforceAP counselor';
     const portalUrl = `${SITE_URL}/dashboard`;
 
-    const subject = `Your session packet from ${counselorName}`;
+    const subject = sanitizeEmailSubjectLine(`Your session packet from ${counselorName}`);
     const innerHtml = sessionPacketHtml({ firstName, counselorName, sessionDate, sections, portalUrl });
     const html = brandedEmailLayout({ title: subject, bodyHtml: innerHtml, ctaText: 'Open my portal', ctaUrl: portalUrl });
 
@@ -362,7 +359,7 @@ async function generatePdfBuffer(title: string, text: string): Promise<Buffer> {
     }
 
     try {
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: getFrom(),
         to: member.email,
         subject,

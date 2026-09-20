@@ -128,6 +128,11 @@ export interface StudentsRosterKitProps {
   total?: number;
   /** Override the footer, e.g. with the loader's cap and coverage disclosure. */
   showingLabel?: string;
+  /**
+   * Chip selected on first render (an attention link's `?needs=` resolved by
+   * the page). Unknown for this view falls back to "All".
+   */
+  initialChip?: StudentFilter;
 }
 
 const DEFAULT_STUDENTS: StudentRow[] = [
@@ -235,6 +240,7 @@ export function StudentsRosterKit({
   students = DEFAULT_STUDENTS,
   total = 847,
   showingLabel,
+  initialChip,
 }: StudentsRosterKitProps) {
   const router = useRouter();
   const copy = STUDENTS_ROSTER_VIEW_COPY[view];
@@ -242,7 +248,9 @@ export function StudentsRosterKit({
   const hrefs = { ...STUDENTS_ROSTER_VIEW_HREFS, ...viewHrefs };
   const isTraining = view === 'training';
 
-  const [active, setActive] = useState<StudentFilter>('All');
+  const [active, setActive] = useState<StudentFilter>(() =>
+    initialChip && chips.includes(initialChip) ? initialChip : 'All',
+  );
   const [search, setSearch] = useState('');
   const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey | TrainingSortKey>(
     isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY,
@@ -483,10 +491,10 @@ export function StudentsRosterKit({
 
   const kpis: KpiItem[] | null = summary
     ? [
-        { label: 'On Track', value: summary.onTrack, tone: 'success' },
-        { label: 'Behind', value: summary.behind, tone: 'gold' },
-        { label: 'Stalled', value: summary.stalled, tone: 'accent' },
-        { label: 'Avg %', value: `${summary.avgPercent}%`, tone: 'info' },
+        { label: 'On Track', value: summary.onTrack, tone: 'ok' },
+        { label: 'Behind', value: summary.behind, tone: 'warn' },
+        { label: 'Stalled', value: summary.stalled, tone: 'alert' },
+        { label: 'Avg %', value: `${summary.avgPercent}%` },
       ]
     : null;
 

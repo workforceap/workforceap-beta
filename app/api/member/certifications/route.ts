@@ -1,12 +1,8 @@
-import { NextResponse, after } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { ensureUserInDb } from '@/lib/auth/ensureUser';
 import { prisma } from '@/lib/db/prisma';
 import { z } from 'zod';
-import { sendPartnerMilestoneEmail } from '@/lib/notifications/partner-notify';
-import { trackEvent } from '@/lib/events/track';
-import { awardPoints } from '@/lib/member/points';
-import { createNotification } from '@/lib/notifications/create';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -21,12 +17,12 @@ const toggleSchema = z.object({
 
   const certs = await prisma.$transaction((tx) => tx.userCertification.findMany({
     where: { userId: user.id },
-    select: { certName: true, earnedAt: true },
+    select: { certName: true, earnedAt: true, status: true },
     take: 100,
   }));
 
   return NextResponse.json({
-    certifications: certs.map((c) => ({ certName: c.certName, earnedAt: c.earnedAt })),
+    certifications: certs.map((c) => ({ certName: c.certName, earnedAt: c.earnedAt, status: c.status })),
   });
 
   } catch (error) {
@@ -58,10 +54,14 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
   const earnedAt = earnedAtStr ? new Date(earnedAtStr) : new Date();
 
   if (earned) {
-    const existing = await prisma.$transaction((tx) => tx.userCertification.findUnique({
-      where: { userId_certName: { userId: user.id, certName } },
-    }));
-    await prisma.$transaction((tx) => tx.userCertification.upsert({
+    // WAP-20: a member typing a certification name is a self-report, not a
+    // verified credential. The row is created `pending` and enters the admin
+    // review queue (/admin/certifications); the lifecycle event, points,
+    // notification and partner milestone fire from the review route on
+    // approval (lib/certifications/certificationApproved.ts), never here.
+    // Re-adding an existing cert only refreshes the date and leaves its
+    // review status alone.
+    const row = await prisma.$transaction((tx) => tx.userCertification.upsert({
       where: {
         userId_certName: { userId: user.id, certName },
       },
@@ -69,42 +69,16 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
         userId: user.id,
         certName,
         earnedAt,
+        status: 'pending',
+        submittedAt: new Date(),
       },
       update: {
         // Update earnedAt only when a specific date is provided (manual add)
         ...(earnedAtStr ? { earnedAt } : {}),
       },
+      select: { status: true },
     }));
-    if (!existing) {
-      // Lifecycle event: certification_earned
-      after(() =>
-        trackEvent({
-          userId: user.id,
-          eventName: 'certification_earned',
-          entityType: 'UserCertification',
-          metadata: { certName },
-        }).catch(() => {})
-      );
-
-      // Award points (idempotent per cert name)
-      after(() => awardPoints(user.id, 'certification_earned', certName).catch(() => {}));
-
-      after(() =>
-        createNotification({
-          userId: user.id,
-          type: 'certificate_earned',
-          title: `You earned ${certName}!`,
-          body: 'Add it to your resume and check out jobs matched to your new credential.',
-          data: { link: '/dashboard/jobs' },
-        }).catch(() => {})
-      );
-
-      after(() =>
-        sendPartnerMilestoneEmail(user.id, 'Certification earned', {
-          Certification: certName,
-        }).catch((err) => console.error('Partner milestone email failed:', err))
-      );
-    }
+    return NextResponse.json({ success: true, status: row?.status });
   } else {
     await prisma.$transaction((tx) => tx.userCertification.deleteMany({
       where: { userId: user.id, certName },

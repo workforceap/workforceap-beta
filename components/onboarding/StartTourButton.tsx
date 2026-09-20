@@ -1,7 +1,6 @@
 'use client';
 
 import { useTour } from './TourContext';
-import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 
 interface StartTourButtonProps {
   className?: string;
@@ -10,10 +9,10 @@ interface StartTourButtonProps {
 }
 
 export default function StartTourButton({ className, style, variant = 'outline' }: StartTourButtonProps) {
-  const { startTour } = useTour();
+  const { start } = useTour();
 
   const handleClick = () => {
-    startTour(MEMBER_PORTAL_TOUR_STEPS, 'member');
+    start('member.home');
   };
 
   const baseStyles: React.CSSProperties =

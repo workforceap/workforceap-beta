@@ -82,6 +82,16 @@ export interface CommandCenterSystemHealthRow {
   status: 'ok' | 'warn' | 'unknown';
   /** Small caption, e.g. "2 errors this week" or "Nightly at 2:00 AM". */
   meta?: string;
+  /**
+   * Chip text override. Default follows `status` (OK / Warn / Not verified);
+   * a check this page does not run says so honestly ("Not checked here").
+   */
+  statusLabel?: string;
+  /** Chip tone override; default follows `status`. */
+  tone?: KitTone;
+  /** Where the row is actually checked, rendered after `meta`. */
+  href?: string;
+  hrefLabel?: string;
 }
 
 /** One row in the optional "Members" roster table. */
@@ -135,11 +145,11 @@ export interface CommandCenterKitProps {
 /* ---- Defaults pulled straight from the mockup ---------------------------- */
 
 const DEFAULT_KPIS: CommandCenterKpiItem[] = [
-  { label: 'Active Students', value: '847', color: 'text', delta: '↑ 32 this month', deltaColor: 'success' },
-  { label: 'Placements YTD', value: '213', color: 'success', delta: '↑ 18 this month', deltaColor: 'success' },
-  { label: 'Completion Rate', value: '71%', color: 'info', delta: 'cohort avg', deltaColor: 'muted' },
-  { label: 'Job-Ready Now', value: '64', color: 'gold', delta: 'ready to place', deltaColor: 'muted' },
-  { label: 'At Risk', value: '19', color: 'accent', delta: 'need outreach', deltaColor: 'accent' },
+  { label: 'Active Students', value: '847', delta: '↑ 32 this month', deltaTone: 'ok' },
+  { label: 'Placements YTD', value: '213', delta: '↑ 18 this month', deltaTone: 'ok' },
+  { label: 'Completion Rate', value: '71%', delta: 'cohort avg', deltaTone: 'muted' },
+  { label: 'Job-Ready Now', value: '64', delta: 'ready to place', deltaTone: 'muted' },
+  { label: 'At Risk', value: '19', tone: 'alert', delta: 'need outreach', deltaTone: 'alert' },
 ];
 
 const DEFAULT_QUEUE: CommandCenterQueueItem[] = [
@@ -319,9 +329,9 @@ export function CommandCenterKit({
   const metricItems = kpis.map((item) => ({
     label: item.label,
     value: item.value,
-    color: item.color,
+    tone: item.tone,
     delta: item.spark?.delta ?? item.delta,
-    deltaColor: item.deltaColor,
+    deltaTone: item.deltaTone,
   }));
 
   return (
@@ -372,17 +382,35 @@ export function CommandCenterKit({
             <section aria-labelledby="admin-system-health-title" className={styles.section}>
               <header className={styles.sectionHeading}><h2 id="admin-system-health-title">System health</h2></header>
               <ul className={styles.healthList}>
-                {systemHealth.map((row) => (
-                  <li key={row.name} className={styles.healthRow}>
-                    <span className={styles.healthName}>
-                      <StatusDot variant={row.status === 'ok' ? 'success' : row.status === 'warn' ? 'warning' : 'neutral'}
-                        label={row.status === 'ok' ? `${row.name}: no issues detected by this check` : row.status === 'warn' ? `${row.name} needs attention` : `${row.name} not verified`} />
-                      {row.name}
-                    </span>
-                    <StatusTag tone={row.status === 'ok' ? 'ok' : row.status === 'warn' ? 'warn' : 'muted'}>{row.status === 'ok' ? 'OK' : row.status === 'warn' ? 'Warn' : 'Not verified'}</StatusTag>
-                    {row.meta ? <span className={styles.healthMeta}>{row.meta}</span> : null}
-                  </li>
-                ))}
+                {systemHealth.map((row) => {
+                  const chipLabel = row.statusLabel ?? (row.status === 'ok' ? 'OK' : row.status === 'warn' ? 'Warn' : 'Not verified');
+                  const chipTone: KitTone = row.tone ?? (row.status === 'ok' ? 'ok' : row.status === 'warn' ? 'warn' : 'muted');
+                  const dotLabel = row.statusLabel
+                    ? `${row.name}: ${row.statusLabel}`
+                    : row.status === 'ok' ? `${row.name}: no issues detected by this check` : row.status === 'warn' ? `${row.name} needs attention` : `${row.name} not verified`;
+                  return (
+                    <li key={row.name} className={styles.healthRow}>
+                      <span className={styles.healthName}>
+                        <StatusDot variant={row.status === 'ok' ? 'success' : row.status === 'warn' ? 'warning' : 'neutral'} label={dotLabel} />
+                        {row.name}
+                      </span>
+                      <StatusTag tone={chipTone}>{chipLabel}</StatusTag>
+                      {row.meta || row.href ? (
+                        <span className={styles.healthMeta}>
+                          {row.meta}
+                          {row.href ? (
+                            <>
+                              {row.meta ? ' · ' : ''}
+                              <NextLink href={row.href} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
+                                {row.hrefLabel ?? 'Where it is checked'}
+                              </NextLink>
+                            </>
+                          ) : null}
+                        </span>
+                      ) : null}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
           ) : null}

@@ -297,11 +297,13 @@ model User {
   reviewedTestimonials   Testimonial[] @relation("TestimonialReviewer")
   memberFeedback         MemberFeedback[]
   notifications          Notification[]
+  emailSendLogs          EmailSendLog[] @relation("EmailSendLogUser")
   pushSubscriptions      PushSubscription[]
   savedJobs              SavedJob[]
 
   chaptersLed            Chapter[]       @relation("ChapterLeader")
   chapterMemberships     ChapterMember[]
+  tourStates             UserTourState[]
 
   @@index([organizationId])
   @@index([wioaReviewStatus])
@@ -818,6 +820,94 @@ model WorkflowDiagnostic {
   @@map("workflow_diagnostics")
 }
 
+/// Preserved copy of `email_send` failure rows from `workflow_diagnostics`.
+/// That table is the only record of the 2026 failed outbound emails and its
+/// 90-day retention purge removes more of it every day; this table holds the
+/// evidence for a year. Rows are copied verbatim by
+/// `scripts/snapshot-email-failures.ts` (idempotent on `source_diagnostic_id`)
+/// with a few columns derived from the metadata for querying. No foreign keys:
+/// the evidence must outlive the actor and the source row. RLS is enabled
+/// with no policies; only the service role reads or writes it.
+model EmailFailureSnapshot {
+  id                  String   @id @default(uuid())
+  sourceDiagnosticId  String   @unique @map("source_diagnostic_id")
+  workflow            String
+  status              String
+  actorUserId         String?  @map("actor_user_id")
+  entityType          String?  @map("entity_type")
+  entityId            String?  @map("entity_id")
+  summary             String
+  provider            String?
+  method              String?
+  fallbackPath        String?  @map("fallback_path")
+  failureReason       String?  @map("failure_reason")
+  metadata            Json?
+  /// Derived from metadata at snapshot time (template id, e.g. `applicant_followup`).
+  templateKey         String?  @map("template_key")
+  errorClass          String   @map("error_class")
+  retryable           Boolean
+  recipientHash       String?  @map("recipient_hash")
+  recipientDomain     String?  @map("recipient_domain")
+  diagnosticCreatedAt DateTime @map("diagnostic_created_at")
+  snapshotRun         String   @map("snapshot_run")
+  snapshotAt          DateTime @default(now()) @map("snapshot_at")
+
+  @@index([diagnosticCreatedAt])
+  @@index([templateKey, diagnosticCreatedAt])
+  @@index([snapshotAt])
+  @@map("email_failure_snapshots")
+}
+
+/// One row per provider send attempt (email delivery audit 2026-09-20, PR3).
+/// Nothing recorded a successful send before this table: workflow_diagnostics
+/// only held failures and Resend's own history expires after ~28 days, so
+/// bounces, complaints and suppressions were invisible to the app.
+/// `dedupeKey` is the caller's idempotency key when it passes one, otherwise
+/// `<templateKey>/<sha256(recipients|subject|utc day)>`, so a provider retry
+/// inside one call and a same-day repeat both land on the same row. Written
+/// best-effort from lib/email/send.ts (a logging failure never blocks a send);
+/// `lastEvent` is updated by /api/webhooks/resend.
+model EmailSendLog {
+  id                String    @id @default(uuid())
+  dedupeKey         String    @unique @map("dedupe_key")
+  templateKey       String?   @map("template_key")
+  /// skipped | sending | sent | failed
+  status            String
+  provider          String    @default("resend")
+  providerMessageId String?   @unique @map("provider_message_id")
+  idempotencyKey    String?   @map("idempotency_key")
+  /// sha256 prefix of the first recipient (lib/email/failureRecord.ts recipientHash); never the raw address.
+  recipientHash     String?   @map("recipient_hash")
+  recipientDomain   String?   @map("recipient_domain")
+  recipientCount    Int       @default(1) @map("recipient_count")
+  subject           String?
+  userId            String?   @map("user_id")
+  entityType        String?   @map("entity_type")
+  entityId          String?   @map("entity_id")
+  attempts          Int       @default(0)
+  skipReason        String?   @map("skip_reason")
+  failureReason     String?   @map("failure_reason")
+  failureClass      String?   @map("failure_class")
+  /// Last provider webhook event: sent | delivered | delivery_delayed | bounced | complained | opened | clicked | failed
+  lastEvent         String?   @map("last_event")
+  lastEventAt       DateTime? @map("last_event_at")
+  /// Resend bounce classification on a bounced event: Permanent | Transient | Undetermined
+  bounceType        String?   @map("bounce_type")
+  sentAt            DateTime? @map("sent_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  user User? @relation("EmailSendLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([templateKey, createdAt])
+  @@index([userId])
+  @@index([recipientHash, createdAt])
+  @@index([lastEvent, lastEventAt])
+  @@index([createdAt])
+  @@map("email_send_logs")
+}
+
 model CronExecution {
   id               String   @id @default(uuid())
   jobName          String   @map("job_name")
@@ -1016,10 +1106,12 @@ model UserCertification {
   earnedAt  DateTime @map("earned_at")
   createdAt DateTime @default(now()) @map("created_at")
 
-  // Verification / review workflow (additive). Default `approved` so existing
-  // rows and self-attested adds keep counting toward outcomes; proof
-  // submissions flip to `pending` and surface in the admin review queue.
-  status       CertStatus @default(approved)
+  // Verification / review workflow. WAP-20: every new row starts `pending`
+  // (self-reports and proof submissions alike) and surfaces in the admin
+  // review queue; only an approved row is a verified credential. The two
+  // pre-existing `approved` rows were deliberately left as they are
+  // (migration 20260920141900).
+  status       CertStatus @default(pending)
   proofUrl     String?    @map("proof_url")
   submittedAt  DateTime?  @map("submitted_at")
   reviewedAt   DateTime?  @map("reviewed_at")
@@ -1508,7 +1600,9 @@ model AuditLog {
 /// xAPI 1.0.3-shaped admin action audit trail (org-scoped via RLS).
 model AuditEvent {
   id            String   @id @default(uuid())
-  actorUserId   String   @map("actor_user_id")
+  /// Nullable since 20260920141800: SET NULL on user purge (WAP-169) so a
+  /// deleted member's rows stay in the trail without holding the account.
+  actorUserId   String?  @map("actor_user_id")
   actorRole     String   @map("actor_role")
   verb          String
   objectType    String   @map("object_type")
@@ -1519,7 +1613,7 @@ model AuditEvent {
   ip            String?
   ua            String?  @db.Text
 
-  actor        User         @relation("ActorAuditEvents", fields: [actorUserId], references: [id], onDelete: Restrict)
+  actor        User?        @relation("ActorAuditEvents", fields: [actorUserId], references: [id], onDelete: SetNull)
   organization Organization @relation(fields: [orgId], references: [id], onDelete: Restrict)
 
   @@index([actorUserId])
@@ -3176,4 +3270,26 @@ model TokenizedLink {
   @@index([type])
   @@index([subjectUserId])
   @@map("tokenized_link")
+}
+
+// Guided tours (lib/tours/registry.ts): one row per user per tour key. Per
+// user, not per employer/partner org, so a second partner user still gets the
+// tour. `version` is the registry version the row was written against; the
+// client re-tours when it is behind. Legacy `tourCompletedAt` timestamps are
+// read as COMPLETED v1 by GET /api/tours/state until they are dropped.
+model UserTourState {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tourKey   String   @map("tour_key")
+  version   Int
+  status    String // STARTED | COMPLETED | DISMISSED
+  lastStep  Int      @default(0) @map("last_step")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tourKey])
+  @@index([userId])
+  @@map("user_tour_states")
 }

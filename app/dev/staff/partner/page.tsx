@@ -62,10 +62,10 @@ export default function DevStaffPartnerPage() {
 
       <PartnerKpiGrid
         items={[
-          { label: 'Members Referred', value: 62, subtitle: 'in your portal', color: 'accent' },
-          { label: 'Members Enrolled', value: 47, subtitle: 'started a program', color: 'info' },
-          { label: 'Members Placed', value: 29, subtitle: 'verified hires', color: 'success' },
-          { label: 'Placement Rate', value: '47%', subtitle: 'placements / referred', color: 'gold' },
+          { label: 'Members Referred', value: 62, subtitle: 'in your portal' },
+          { label: 'Members Enrolled', value: 47, subtitle: 'started a program' },
+          { label: 'Members Placed', value: 29, subtitle: 'verified hires' },
+          { label: 'Placement Rate', value: '47%', subtitle: 'placements / referred' },
         ]}
       />
 

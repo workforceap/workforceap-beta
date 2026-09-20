@@ -12,12 +12,13 @@ convention used by other top-level audit docs (e.g. `MOBILE_AUDIT.md`,
 | Provider | Usage | Config |
 |----------|-------|--------|
 | **Resend** | All app-triggered transactional emails | `RESEND_API_KEY`, `EMAIL_FROM` |
-| **Supabase Auth SMTP** | Auth emails (confirm, password reset, invite) | Configure in Supabase Dashboard → Auth → SMTP |
+| **Supabase Auth SMTP** | Signup confirmation and invites; **fallback only** for password resets | Configure in Supabase Dashboard → Auth → SMTP |
 
 **Environment variables:**
 - `RESEND_API_KEY` – Required for sending (optional in dev)
 - `EMAIL_FROM` – Sender address (default: `noreply@workforceap.org`)
 - `CRON_SECRET` – Required for cron endpoints that trigger digest/recap emails
+- `RESEND_WEBHOOK_SECRET` – Signing secret for `/api/webhooks/resend` (delivery, bounce and complaint events → `EmailSendLog.lastEvent`)
 
 ## Architecture
 
@@ -137,11 +138,17 @@ that they are currently unreferenced.
 
 Vercel Cron schedules for these are defined in `vercel.json`.
 
-## Auth Emails (Supabase, not Resend)
+## Auth Emails
 
 - **Confirm signup** – Supabase Auth (SMTP configured in dashboard)
-- **Reset password** – Supabase Auth
+- **Reset password** – Branded email through Resend (`lib/auth/passwordReset.ts` → `sendBrandedEmail`, template key `password_reset`) since 2026-09-02. If the branded send fails it falls back to `supabase.auth.resetPasswordForEmail` (unbranded, 30/h cap) and records a `password_reset` / `fallback` diagnostic.
 - **Invite user** – `supabase.auth.admin.inviteUserByEmail()` (partner invite, admin create member)
+
+## Send Log and Delivery Events
+
+- Every `sendBrandedEmail` call writes one `EmailSendLog` row (`email_send_logs`) keyed by a dedupe key: `skipped` (fixture recipient), `sending`, then `sent` (with the provider message id) or `failed`. Writes are best-effort and never block a send. Retention: 365 days.
+- `/api/webhooks/resend` (Svix-signed, `RESEND_WEBHOOK_SECRET`) records `delivered` / `delivery_delayed` / `bounced` / `complained` / `opened` / `clicked` on that row. A permanent bounce or complaint turns off `notificationsUpdates` for the recipient.
+- `/admin/diagnostics` shows Email Delivery (24h), Discord Alerts and Web Push tiles; `/api/admin/health` exposes `emailDelivery`, `discordNotifications` and `webPush`.
 
 ## Configuration Checklist
 
@@ -149,6 +156,7 @@ Vercel Cron schedules for these are defined in `vercel.json`.
 - [ ] `EMAIL_FROM` set (e.g. `noreply@workforceap.org`)
 - [ ] Domain verified in Resend (workforceap.org)
 - [ ] Supabase Auth SMTP configured (Resend SMTP: smtp.resend.com, port 465/587)
+- [ ] Resend webhook registered at `/api/webhooks/resend` and `RESEND_WEBHOOK_SECRET` set
 - [ ] Supabase email templates customized (confirm, reset)
 
 ## Dependencies

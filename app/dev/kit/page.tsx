@@ -75,10 +75,10 @@ function Showcase({ surface }: { surface: SurfaceMode }) {
         <div style={{ marginBottom: 20 }}>
           <KpiStrip
             items={[
-              { label: 'Active Students', value: 847, color: 'info', delta: '↑ 32 this month' },
-              { label: 'Placements YTD', value: 213, color: 'success' },
-              { label: 'Completion', value: '71%', color: 'gold' },
-              { label: 'At Risk', value: 19, color: 'accent' },
+              { label: 'Active Students', value: 847, delta: '↑ 32 this month' },
+              { label: 'Placements YTD', value: 213 },
+              { label: 'Completion', value: '71%' },
+              { label: 'At Risk', value: 19 },
             ]}
           />
         </div>

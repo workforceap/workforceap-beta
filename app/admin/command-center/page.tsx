@@ -157,15 +157,13 @@ export default async function AdminCommandCenterPage({
       {
         label: 'Active Students',
         value: headline.activeStudents,
-        color: 'text',
       },
       {
         label: 'Placements YTD',
         value: headline.placementsYtd,
-        color: 'success',
       },
-      { label: 'Interview prep', value: totals.interviewingCount, color: 'info' },
-      { label: 'At Risk', value: totals.atRiskCount, color: 'accent' },
+      { label: 'Interview prep', value: totals.interviewingCount },
+      { label: 'At Risk', value: totals.atRiskCount, tone: totals.atRiskCount > 0 ? 'alert' : undefined },
     ];
 
     const countLabel = (n: number) => `${n} ${n === 1 ? 'item' : 'items'}`;

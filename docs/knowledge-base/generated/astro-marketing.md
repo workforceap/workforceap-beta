@@ -83,7 +83,8 @@
 | [marketing/src/pages/career-quiz.astro](../../../marketing/src/pages/career-quiz.astro) | 127 | astro-marketing |  |
 | [marketing/src/pages/careers.astro](../../../marketing/src/pages/careers.astro) | 381 | astro-marketing |  |
 | [marketing/src/pages/careers/thank-you.astro](../../../marketing/src/pages/careers/thank-you.astro) | 177 | astro-marketing |  |
-| [marketing/src/pages/contact.astro](../../../marketing/src/pages/contact.astro) | 391 | astro-marketing |  |
+| [marketing/src/pages/contact.astro](../../../marketing/src/pages/contact.astro) | 399 | astro-marketing |  |
+| [marketing/src/pages/contact/thanks.astro](../../../marketing/src/pages/contact/thanks.astro) | 36 | astro-marketing |  |
 | [marketing/src/pages/donate.astro](../../../marketing/src/pages/donate.astro) | 522 | partners-funding |  |
 | [marketing/src/pages/employers.astro](../../../marketing/src/pages/employers.astro) | 583 | astro-marketing |  |
 | [marketing/src/pages/faq.astro](../../../marketing/src/pages/faq.astro) | 422 | astro-marketing |  |

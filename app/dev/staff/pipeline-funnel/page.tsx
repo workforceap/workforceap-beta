@@ -13,9 +13,9 @@ export const dynamic = 'force-dynamic';
 
 const KPIS: KpiItem[] = [
   { label: 'Started', value: 1204 },
-  { label: 'Enrolled', value: 724, color: 'success' },
-  { label: 'Placed', value: 213, color: 'gold' },
-  { label: 'Conversion', value: '17.7%', color: 'info' },
+  { label: 'Enrolled', value: 724 },
+  { label: 'Placed', value: 213 },
+  { label: 'Conversion', value: '17.7%' },
 ];
 
 const FUNNEL: RankDatum[] = [

@@ -1,5 +1,7 @@
-import { Resend } from 'resend';
 import { prisma } from '@/lib/db/prisma';
+import { getResend } from '@/lib/email';
+import { escapeHtml } from '@/lib/email/escapeHtml';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 export type MentorAdminAction = 'approve' | 'deactivate' | 'activate';
 
@@ -21,14 +23,13 @@ export async function runMentorStatusUpdate(
       where: { id: mentorId },
       data: { isActive: true, approvedAt: new Date() },
     });
-    const key = process.env.RESEND_API_KEY;
-    if (key) {
-      const resend = new Resend(key);
-      await resend.emails.send({
+    const resend = getResend();
+    if (resend) {
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: process.env.EMAIL_FROM || 'noreply@workforceap.org',
         to: mentor.user.email,
         subject: 'WorkforceAP — You are approved as a mentor',
-        html: `<p>Hi ${mentor.fullName},</p><p>You are approved as a WorkforceAP mentor. Thank you for volunteering your expertise.</p><p>Open your mentor dashboard: <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org'}/dashboard/mentor">Mentor Portal</a></p>`,
+        html: `<p>Hi ${escapeHtml(mentor.fullName)},</p><p>You are approved as a WorkforceAP mentor. Thank you for volunteering your expertise.</p><p>Open your mentor dashboard: <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org'}/dashboard/mentor">Mentor Portal</a></p>`,
       });
     }
     return { ok: true };

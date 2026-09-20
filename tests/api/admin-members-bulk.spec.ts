@@ -47,6 +47,10 @@ vi.mock('@/lib/audit', () => ({ auditLog: vi.fn() }));
 vi.mock('@/lib/email', () => ({
   getResend: vi.fn(),
 }));
+// bulk-email sends through lib/email/send.ts for real (retry, guards, key);
+// members use a non-reserved domain so the fixture guard lets them through.
+process.env.UNSUBSCRIBE_TOKEN_SECRET ??= 'test-unsubscribe-secret';
+vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
 vi.mock('@/lib/email/template', () => ({ brandedEmailLayout: vi.fn(() => '<html>email</html>') }));
 vi.mock('@/lib/email/escapeHtml', () => ({
   escapeHtml: vi.fn((s: string) => s),
@@ -194,8 +198,8 @@ describe('Bulk operations', () => {
       vi.mocked(isAdmin).mockResolvedValue(true);
       vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
       vi.mocked(prisma.user.findMany).mockResolvedValue([
-        { id: uid(1), email: 'alice@example.com', fullName: 'Alice Smith', enrolledProgram: 'data-analytics', organizationId: 'org-1' },
-        { id: uid(2), email: 'bob@example.com', fullName: 'Bob Jones', enrolledProgram: null, organizationId: 'org-1' },
+        { id: uid(1), email: 'alice@example.org', fullName: 'Alice Smith', enrolledProgram: 'data-analytics', organizationId: 'org-1' },
+        { id: uid(2), email: 'bob@example.org', fullName: 'Bob Jones', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
 
       const sendMock = vi.fn().mockResolvedValue({ data: { id: 'email-id' }, error: null });
@@ -217,6 +221,11 @@ describe('Bulk operations', () => {
       expect(body.messagesCreated).toBe(2);
       expect(body.total).toBe(2);
       expect(sendMock).toHaveBeenCalledTimes(2);
+      // Each member gets its own campaign-scoped idempotency key.
+      const keys = sendMock.mock.calls.map((call) => call[1]?.idempotencyKey as string);
+      expect(keys[0]).toMatch(new RegExp(`^bulk-email/[0-9a-f-]{36}/${uid(1)}$`));
+      expect(keys[1]).toMatch(new RegExp(`^bulk-email/[0-9a-f-]{36}/${uid(2)}$`));
+      expect(keys[0].split('/')[1]).toBe(keys[1].split('/')[1]);
 
       expect(createNotification).toHaveBeenCalledTimes(2);
       expect(createNotification).toHaveBeenCalledWith(
@@ -244,8 +253,8 @@ describe('Bulk operations', () => {
       vi.mocked(isAdmin).mockResolvedValue(true);
       vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
       vi.mocked(prisma.user.findMany).mockResolvedValue([
-        { id: uid(1), email: 'alice@example.com', fullName: 'Alice', enrolledProgram: null, organizationId: 'org-1' },
-        { id: uid(2), email: 'bob@example.com', fullName: 'Bob', enrolledProgram: null, organizationId: 'org-1' },
+        { id: uid(1), email: 'alice@example.org', fullName: 'Alice', enrolledProgram: null, organizationId: 'org-1' },
+        { id: uid(2), email: 'bob@example.org', fullName: 'Bob', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
       const sendMock = vi.fn()
         .mockResolvedValueOnce({ data: null, error: { name: 'validation_error', message: 'Recipient rejected' } })
@@ -253,7 +262,7 @@ describe('Bulk operations', () => {
       vi.mocked(getResend).mockReturnValue({ emails: { send: sendMock } } as any);
 
       const res = await bulkEmailPost(makeRequest({ memberIds: [uid(1), uid(2)], subject: 'Hi', body: 'Hello', sendAsEmail: true, createMessage: true }));
-      expect(await res.json()).toEqual({ sent: 1, messagesCreated: 1, total: 2, errors: ['Alice (alice@example.com): Recipient rejected'] });
+      expect(await res.json()).toEqual({ sent: 1, messagesCreated: 1, total: 2, errors: ['Alice (alice@example.org): Recipient rejected'] });
       expect(sendMock).toHaveBeenCalledTimes(2);
       expect(mockTx.message.create).toHaveBeenCalledTimes(1);
       expect(createNotification).toHaveBeenCalledTimes(1);
@@ -265,7 +274,7 @@ describe('Bulk operations', () => {
       vi.mocked(isAdmin).mockResolvedValue(true);
       vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
       vi.mocked(prisma.user.findMany).mockResolvedValue([
-        { id: uid(1), email: 'alice@example.com', fullName: 'Alice', enrolledProgram: null, organizationId: 'org-1' },
+        { id: uid(1), email: 'alice@example.org', fullName: 'Alice', enrolledProgram: null, organizationId: 'org-1' },
       ] as any);
       vi.mocked(getResend).mockReturnValue(null);
 

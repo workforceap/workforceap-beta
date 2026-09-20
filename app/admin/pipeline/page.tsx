@@ -7,7 +7,7 @@ import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemb
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { PipelineFunnelKit } from '@/components/portal/kit/pages/admin-subviews/PipelineFunnelKit';
-import type { KpiItem, RankDatum } from '@/components/portal/kit';
+import { buildPipelineFunnel, pipelineFunnelSubtitle } from '@/lib/admin/pipelineFunnel';
 import PipelineLegacyView from './PipelineLegacyView';
 import PlacementRecordedToast from './PlacementRecordedToast';
 
@@ -62,12 +62,13 @@ export default async function PipelinePage({
   const funnel = await withAdminPageScope(scope, async (db) => {
     // Stage 1 (top of funnel): every member in the cohort "started application".
     // Stage 2: intake/assessment complete.
-    // Stage 3 (approx): WIOA eligibility screened — `wioaReviewStatus` set.
-    //   This is a lean proxy for "eligibility cleared" (a precise "cleared"
-    //   determination would need to scan the qualification JSON per member,
-    //   a heavy row scan we deliberately avoid).
-    // Stage 4: enrolled in at least one course.
-    // Stage 5 (success): actively training — has course progress that is
+    // Side count: WIOA eligibility screened — `wioaReviewStatus` set. A lean
+    //   proxy for "reviewed" (a precise "cleared" determination would need to
+    //   scan the qualification JSON per member, a heavy row scan we avoid).
+    //   Screening runs alongside enrollment and is not a gate, so it is a
+    //   labelled KPI tile, not a funnel bar (`lib/admin/pipelineFunnel`).
+    // Stage 3: enrolled in at least one course.
+    // Stage 4 (success): actively training — has course progress that is
     //   in-progress or completed.
     // All five are lean tenant-scoped `user.count` calls (no findMany/$transaction).
     const [started, intake, eligibility, enrolled, active] = await Promise.all([
@@ -91,55 +92,10 @@ export default async function PipelinePage({
     return { started, intake, eligibility, enrolled, active };
   });
 
-  const total = funnel.started;
-  const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
-
-  const bars: RankDatum[] = [
-    {
-      label: 'Started application',
-      value: funnel.started.toLocaleString('en-US'),
-      pct: pct(funnel.started),
-      color: 'info',
-    },
-    {
-      label: 'Completed intake',
-      value: funnel.intake.toLocaleString('en-US'),
-      pct: pct(funnel.intake),
-      color: 'info',
-    },
-    {
-      label: 'Eligibility cleared',
-      value: funnel.eligibility.toLocaleString('en-US'),
-      pct: pct(funnel.eligibility),
-      color: 'info',
-    },
-    {
-      label: 'Enrolled',
-      value: funnel.enrolled.toLocaleString('en-US'),
-      pct: pct(funnel.enrolled),
-      color: 'success',
-    },
-    {
-      label: 'Active',
-      value: funnel.active.toLocaleString('en-US'),
-      pct: pct(funnel.active),
-      color: 'success',
-    },
-  ];
-
-  // Small headline KpiStrip of the funnel endpoints + conversion.
-  const kpis: KpiItem[] = [
-    { label: 'Started', value: funnel.started.toLocaleString('en-US'), color: 'text' },
-    { label: 'Enrolled', value: funnel.enrolled.toLocaleString('en-US'), color: 'success' },
-    { label: 'Active', value: funnel.active.toLocaleString('en-US'), color: 'success' },
-    {
-      label: 'Started → Active',
-      value: `${pct(funnel.active)}%`,
-      color: 'info',
-    },
-  ];
-
-  const hasAny = total > 0;
+  // Bars in funnel order (started → intake → enrolled → active) plus the
+  // WIOA screening tile with its caption; pure and specced in
+  // lib/admin/pipelineFunnel.test.ts.
+  const { bars, kpis, hasAny } = buildPipelineFunnel(funnel);
 
   return (
     <>
@@ -152,7 +108,7 @@ export default async function PipelinePage({
         kpis={hasAny ? kpis : undefined}
         funnel={hasAny ? bars : []}
         funnelTitle="Funnel"
-        funnelSubtitle="last 90 days"
+        funnelSubtitle={pipelineFunnelSubtitle(FUNNEL_WINDOW_DAYS)}
         headerAction={
           <a
             href="/admin/pipeline?ui=legacy"

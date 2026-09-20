@@ -10,6 +10,8 @@ import { counselorAffiliationDisplay } from '@/lib/counselor/counselorLabels';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
+import { getHomeTourForRole } from '@/lib/tours/registry';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('counselor');
@@ -33,11 +35,16 @@ export default async function CounselorLayout({ children }: { children: React.Re
     isSuperAdmin(user.id),
   ]);
   if (!allowedCounselor && !allowedAdmin) redirect('/dashboard');
-  const portalRoles = await getPortalSwitcherRoles(user.id, {
-    superAdmin,
-    hasCounselor: allowedCounselor,
-    hasAdmin: allowedAdmin,
-  });
+  const counselorTour = getHomeTourForRole('counselor');
+  const [portalRoles, tour] = await Promise.all([
+    getPortalSwitcherRoles(user.id, {
+      superAdmin,
+      hasCounselor: allowedCounselor,
+      hasAdmin: allowedAdmin,
+    }),
+    // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
+    counselorTour ? getTourOffer(user.id, counselorTour.key) : Promise.resolve(null),
+  ]);
 
   let subtitle = 'Counselor';
   let affiliationLoadFailed = false;
@@ -62,6 +69,7 @@ export default async function CounselorLayout({ children }: { children: React.Re
       superAdmin={superAdmin}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
+      tour={tour}
     >
       {affiliationLoadFailed ? <span hidden data-portal-error-state="counselor-affiliation-load" /> : null}
       {children}

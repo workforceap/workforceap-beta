@@ -166,7 +166,7 @@ export async function mapCourseraIdentityAndProgress(
         userId: normalized.userId,
         courseraEmail: normalized.courseraEmail,
       })
-    : { upserted: 0, unmapped: 0, rollupsRefreshed: 0, errors: 0 };
+    : { upserted: 0, unmapped: 0, learningPaths: 0, rollupsRefreshed: 0, errors: 0 };
 
   return {
     mapping: committed.mapping,

@@ -13,6 +13,12 @@ export interface ProgramSyllabusCourse {
   description: string;
   /** Official Coursera /learn slug from the approved syllabus, when present. */
   courseraSlug?: string;
+  /**
+   * Explicit Coursera course id when the syllabus title does not match the
+   * Coursera catalog title (the regulated wording must be preserved, so the
+   * fuzzy name match in `mkProgram` cannot be loosened to cover it).
+   */
+  courseraCourseId?: string;
 }
 
 export interface ProgramSyllabus {
@@ -819,7 +825,9 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Introduction to Artificial Intelligence",
         "hours": 11,
-        "description": "AI fundamentals, prompt engineering, automation, machine learning vs. deep learning, and the roles generative AI plays across industries."
+        "description": "AI fundamentals, prompt engineering, automation, machine learning vs. deep learning, and the roles generative AI plays across industries.",
+        "courseraSlug": "introduction-to-ai",
+        "courseraCourseId": "mR7MlUaTEemuHQ4HpHozrA"
       },
       {
         "name": "Generative AI: Introduction and Applications",
@@ -829,7 +837,9 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Generative AI: Prompt Engineering",
         "hours": 6,
-        "description": "Commonly used prompt patterns and where they apply. Techniques for producing meaningful, reliable outputs from AI models."
+        "description": "Commonly used prompt patterns and where they apply. Techniques for producing meaningful, reliable outputs from AI models.",
+        "courseraSlug": "generative-ai-prompt-engineering-for-everyone",
+        "courseraCourseId": "nI__WUzdEe64qQ7qqom4Rw"
       },
       {
         "name": "Introduction to HTML, CSS, and JavaScript",

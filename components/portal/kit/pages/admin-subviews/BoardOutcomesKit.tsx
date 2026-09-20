@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { FileSpreadsheet, Users, ArrowRight, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, Download } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import {
   DesignSurface,
   KpiStrip,
@@ -20,14 +20,9 @@ import {
  *
  * Pure read view — no interactivity, so no 'use client'.
  */
-export interface FunderExport {
-  /** Stable key + label, e.g. "Outcomes CSV". */
-  label: string;
-  /** Short description of what the export contains. */
-  description: string;
-  /** Where the export download is triggered (wire to a real endpoint later). */
-  href: string;
-}
+
+/** Every funder / board file lives on one page; this view links there. */
+export const ADMIN_EXPORTS_HREF = '/admin/exports';
 
 export interface BoardOutcomesKitProps {
   /** Headline KPI tiles. Defaults from the mockup. */
@@ -40,8 +35,6 @@ export interface BoardOutcomesKitProps {
   periodLabel?: string;
   /** "By program" ranked bars. */
   byProgram?: RankDatum[];
-  /** "Funder exports" list. */
-  exports?: FunderExport[];
   /** Page header title. Defaults to the outcomes-view title. */
   title?: string;
   /** Small uppercase eyebrow above the title. */
@@ -51,42 +44,19 @@ export interface BoardOutcomesKitProps {
   /** Right-aligned header action (e.g. a "Generate report" button). */
   headerAction?: ReactNode;
   /**
-   * Whether to render the "Funder exports" card. Defaults to `true` so the
-   * existing /admin/outcomes view is unchanged; the board view can hide it.
+   * Whether to render the "Funder exports" pointer (one link to
+   * `/admin/exports`, where every file is listed once). Defaults to `true`;
+   * the board view hides it.
    */
   showExports?: boolean;
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
-  { label: 'Placement Rate', value: '68%', color: 'success' },
-  { label: 'Avg Starting Wage', value: '$58k', color: 'text' },
-  { label: 'Credentials Earned', value: 541, color: 'gold' },
-  { label: '90-Day Retention', value: '84%', color: 'info' },
+  { label: 'Placement Rate', value: '68%' },
+  { label: 'Avg Starting Wage', value: '$58k' },
+  { label: 'Credentials Earned', value: 541 },
+  { label: '90-Day Retention', value: '84%' },
 ];
-
-const DEFAULT_EXPORTS: FunderExport[] = [
-  {
-    label: 'Outcomes CSV',
-    description: 'Placements, wages & retention by cohort — board-ready.',
-    href: '/api/admin/outcomes/snapshot?format=csv',
-  },
-  {
-    label: 'Board meeting PDF',
-    description: 'Printable board packet with KPIs, cohorts, and data notes.',
-    href: '/api/admin/outcomes/snapshot?format=pdf',
-  },
-  {
-    label: 'Demographics report',
-    description: 'Enrollment & outcomes broken out by demographic.',
-    href: '/api/admin/outcomes/snapshot?format=md',
-  },
-];
-
-function exportIcon(label: string) {
-  if (label === 'Demographics report') return <Users size={18} aria-hidden />;
-  if (label === 'Board meeting PDF') return <FileText size={18} aria-hidden />;
-  return <FileSpreadsheet size={18} aria-hidden />;
-}
 
 export function BoardOutcomesKit({
   kpis = DEFAULT_KPIS,
@@ -94,7 +64,6 @@ export function BoardOutcomesKit({
   placementsTotal = 0,
   periodLabel = 'This period',
   byProgram = [],
-  exports = DEFAULT_EXPORTS,
   title = 'Board Outcomes',
   kicker = 'Outcomes & Metrics',
   goal = 'Board-ready — everything in one place.',
@@ -145,48 +114,29 @@ export function BoardOutcomesKit({
         </Card>
       </div>
 
-      {/* Funder exports */}
+      {/* Funder exports live on /admin/exports (one list, one verb per row);
+          this page only points there instead of keeping its own copy
+          (admin audit 2026-09-20, Outcomes). */}
       {showExports && (
         <Card className="wa-mt-6">
-          <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', marginBottom: 4 }}>
-            Funder exports
-          </h3>
-          <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginBottom: 16 }}>
-            Download the files funders and the board ask for.
-          </p>
-          <div className="wa-space-y-2">
-            {exports.map((exp) => (
-              <ClickableCard key={exp.label} label={exp.label} href={exp.href} padding={3}>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 12,
-                      background: 'var(--wa-accent-soft)',
-                      color: 'var(--wa-accent)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {exportIcon(exp.label)}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{exp.label}</div>
-                    <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{exp.description}</div>
-                  </div>
-                  <ArrowRight size={16} aria-hidden style={{ color: 'var(--wa-muted)', flexShrink: 0 }} />
-                </div>
-              </ClickableCard>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span className="wa-kit-tone-icon" aria-hidden>
+              <Download size={18} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', margin: 0 }}>Funder exports</h3>
+              <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>
+                Outcomes CSV, the board packet and every other file funders ask for are on the Exports page.
+              </p>
+            </div>
+            <Link
+              href={ADMIN_EXPORTS_HREF}
+              className="wa-kit-focus"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
+            >
+              Open exports
+              <ArrowRight size={16} aria-hidden />
+            </Link>
           </div>
         </Card>
       )}

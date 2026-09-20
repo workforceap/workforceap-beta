@@ -1,4 +1,4 @@
-import { Activity, Database, Mail, RefreshCw } from 'lucide-react';
+import { Activity, BellRing, Database, Mail, MessageSquare, RefreshCw } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Token } from '@astryxdesign/core/Token';
@@ -21,7 +21,7 @@ export interface DiagnosticTile {
   name: string;
   /** Which built-in icon to render (kept as a string so no component ref
    *  crosses a server→client boundary). */
-  iconKey: 'app' | 'database' | 'email' | 'integrations';
+  iconKey: 'app' | 'database' | 'email' | 'integrations' | 'discord' | 'push';
   /** Short human status, e.g. "Healthy", "Degraded", "—". */
   status: string;
   /** Semantic tone driving the tile color. */
@@ -34,6 +34,8 @@ export interface DiagnosticsKitProps {
   note: string;
   /** Optional caption (e.g. measurement window) shown under the note. */
   noteCaption?: string;
+  /** Extra measured sections rendered between the tiles and the note (e.g. failed sends). */
+  children?: ReactNode;
 }
 
 const ICONS: Record<DiagnosticTile['iconKey'], ReactNode> = {
@@ -41,6 +43,8 @@ const ICONS: Record<DiagnosticTile['iconKey'], ReactNode> = {
   database: <Database size={18} aria-hidden />,
   email: <Mail size={18} aria-hidden />,
   integrations: <RefreshCw size={18} aria-hidden />,
+  discord: <MessageSquare size={18} aria-hidden />,
+  push: <BellRing size={18} aria-hidden />,
 };
 
 /** Tone → icon swatch (soft bg + solid fg) using kit tokens only. */
@@ -53,7 +57,7 @@ const TONE_SWATCH: Record<DiagnosticTone, { bg: string; fg: string }> = {
   muted: { bg: 'var(--wa-surface-2, rgba(0,0,0,0.05))', fg: 'var(--wa-muted)' },
 };
 
-export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps) {
+export function DiagnosticsKit({ tiles, note, noteCaption, children }: DiagnosticsKitProps) {
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5" title="Diagnostics" lede="Live system diagnostics" kicker="System" />
@@ -115,6 +119,8 @@ export function DiagnosticsKit({ tiles, note, noteCaption }: DiagnosticsKitProps
           );
         })}
       </div>
+
+      {children}
 
       <Card>
         <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--wa-text)', margin: 0 }}>{note}</p>

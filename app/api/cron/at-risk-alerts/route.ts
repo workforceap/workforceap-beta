@@ -45,7 +45,7 @@ async function handle(_request: Request) {
     nudgeResult.sentStuck;
   await setCronRecordsProcessed(recordsProcessed);
   // Pacing/fixture skips are healthy outcomes; only a real provider failure fails the run.
-  const SKIP_REASONS = new Set(['fixture_recipient', 'pacing_budget_exhausted', 'request_deadline_exhausted']);
+  const SKIP_REASONS = new Set(['fixture_recipient', 'suppressed_recipient', 'pacing_budget_exhausted', 'request_deadline_exhausted']);
   const failed = counselorResult.success === false ||
     counselorResult.results?.some((result) => Boolean(result.error) && !result.sent && !SKIP_REASONS.has(result.error ?? '')) ||
     nudgeResult.errors > 0;

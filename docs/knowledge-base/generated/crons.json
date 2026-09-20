@@ -12,17 +12,54 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 11,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 88,
+          "line": 182,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 89,
+          "line": 183,
+          "kind": "Variable"
+        }
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "configuration": {
+        "maxDuration": 300
+      },
+      "boundaryReferences": []
+    }
+  },
+  {
+    "path": "/api/cron/applicant-aging-digest",
+    "schedule": "37 14 * * 1",
+    "timezone": "UTC",
+    "route": {
+      "file": "app/api/cron/applicant-aging-digest/route.ts",
+      "kind": "route",
+      "path": "/api/cron/applicant-aging-digest",
+      "groups": [],
+      "routing": "filesystem",
+      "exports": [
+        {
+          "name": "maxDuration",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "GET",
+          "line": 96,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 97,
           "kind": "Variable"
         }
       ],
@@ -283,17 +320,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 153,
+          "line": 165,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 154,
+          "line": 166,
           "kind": "Variable"
         }
       ],
@@ -394,17 +431,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 103,
+          "line": 119,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 104,
+          "line": 120,
           "kind": "Variable"
         }
       ],
@@ -431,17 +468,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 95,
+          "line": 107,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 96,
+          "line": 108,
           "kind": "Variable"
         }
       ],
@@ -499,17 +536,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 192,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 193,
+          "line": 197,
           "kind": "Variable"
         }
       ],
@@ -647,17 +684,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 12,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 132,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 133,
+          "line": 145,
           "kind": "Variable"
         }
       ],
@@ -874,12 +911,12 @@
         },
         {
           "name": "GET",
-          "line": 182,
+          "line": 190,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 183,
+          "line": 191,
           "kind": "Variable"
         }
       ],
@@ -937,17 +974,17 @@
       "exports": [
         {
           "name": "maxDuration",
-          "line": 8,
+          "line": 9,
           "kind": "Variable"
         },
         {
           "name": "GET",
-          "line": 87,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 88,
+          "line": 97,
           "kind": "Variable"
         }
       ],
@@ -979,12 +1016,12 @@
         },
         {
           "name": "GET",
-          "line": 146,
+          "line": 147,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 147,
+          "line": 148,
           "kind": "Variable"
         }
       ],
@@ -1090,12 +1127,12 @@
         },
         {
           "name": "GET",
-          "line": 77,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 78,
+          "line": 84,
           "kind": "Variable"
         }
       ],

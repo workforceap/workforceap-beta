@@ -73,9 +73,38 @@ export const CENTRAL_TEXAS_REFERRAL_SOURCES = [
 // `CENTRAL_TEXAS_REFERRAL_SOURCES` is both the public/member intake option list
 // and the fallback when the referral-sources API cannot reach the database.
 
+/**
+ * Regional workforce board names requested on the 9/2/26 list (WAP-54). Each is
+ * an alternate or formal name of a board that is already a selectable row, so
+ * they are accepted and normalised onto that row rather than added as rows.
+ *
+ * Evidence (public records, 2026-09-20):
+ * - "Capital Area Workforce Development Board" is the Texas Workforce
+ *   Commission board-area name for the board operating as Workforce Solutions
+ *   Capital Area (TWC board directory: Workforce Solutions Capital Area serves
+ *   Travis County; legal entity on GuideStar EIN 74-2327454, formerly branded
+ *   WorkSource). One organisation, one row.
+ * - "Travis County Workforce Development Board" is not an incorporated board.
+ *   TWC assigns Travis County to the Capital Area board, and Travis County's
+ *   own "Workforce Development Task Force" is a county planning body, not a
+ *   referral partner. Treated as a descriptive alias of the Capital Area board.
+ * - "Rural Capital Area Workforce Development Board, Inc." (EIN 74-2487795) is
+ *   the legal name doing business as Workforce Solutions Rural Capital Area
+ *   (nine counties: Bastrop, Blanco, Burnet, Caldwell, Fayette, Hays, Lee,
+ *   Llano, Williamson).
+ */
+export const REGIONAL_BOARD_NAME_ALIASES = [
+  'Capital Area Workforce Development Board',
+  'Travis County Workforce Development Board',
+  'Rural Capital Area Workforce Development Board',
+] as const;
+
 /** Historical admin values remain accepted so stale tabs and older records keep working. */
 const LEGACY_ADMIN_REFERRAL_SOURCE_OPTIONS = [
   'Workforce Solutions',
+  // Requested regional board names: accepted for imports and stale clients,
+  // collapsed onto the canonical Workforce Solutions rows in every menu.
+  ...REGIONAL_BOARD_NAME_ALIASES,
   // Pre-9/2/26 spellings of rows that were renamed on the ops list.
   'Purpose Works / Job Seekers Network',
   'Launch Pad Job Club',
@@ -105,6 +134,18 @@ const REFERRAL_SOURCE_SEMANTIC_ALIASES: Readonly<Record<string, string>> = {
   'purpose works': 'purposeworks / job seekers network',
   'workforce capital area': 'workforce solutions capital area',
   'workforce rural capital area': 'workforce solutions rural capital area',
+  // Regional board names (WAP-54) — see REGIONAL_BOARD_NAME_ALIASES.
+  'capital area workforce development board': 'workforce solutions capital area',
+  'capital area workforce development board, inc.': 'workforce solutions capital area',
+  'capital area workforce board': 'workforce solutions capital area',
+  'workforce solutions capital area workforce board': 'workforce solutions capital area',
+  'wfs capital area': 'workforce solutions capital area',
+  'travis county workforce development board': 'workforce solutions capital area',
+  'travis county workforce board': 'workforce solutions capital area',
+  'rural capital area workforce development board': 'workforce solutions rural capital area',
+  'rural capital area workforce development board, inc.': 'workforce solutions rural capital area',
+  'rural capital area workforce board': 'workforce solutions rural capital area',
+  'wfs rural capital area': 'workforce solutions rural capital area',
   'workforce solutions': 'workforce solutions (other)',
   'community ambassador': 'community ambassador (write in)',
   'other partner': 'other partner (write in)',

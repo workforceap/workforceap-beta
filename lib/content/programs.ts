@@ -36,6 +36,7 @@ import {
 import {
   getProgramCurriculumManifest,
   isApprovedCurriculumReadyForAssignment,
+  normalizeCourseraCourseId,
 } from './programCurriculumManifest';
 
 export const FUNDING_SOURCES = [
@@ -310,13 +311,28 @@ function mkProgram(
       .trim();
   const courses: ProgramCourse[] = operationalCourses
     ? operationalCourses.map((course, index) => {
-        const discovered = catalogCourses.find(
-          (candidate) => normalizeCourseName(candidate.name) === normalizeCourseName(course.name),
-        );
         const officialCourseraSlug =
           'courseraSlug' in course && typeof course.courseraSlug === 'string'
             ? course.courseraSlug
             : undefined;
+        // An explicit id on the syllabus entry is authoritative: the regulated
+        // title may legitimately differ from Coursera's ("Introduction to
+        // Artificial Intelligence" vs "... (AI)"), and the name matcher must
+        // stay exact so it never credits a neighbouring course by accident.
+        const officialCourseraId =
+          'courseraCourseId' in course && typeof course.courseraCourseId === 'string'
+            ? normalizeCourseraCourseId(course.courseraCourseId)
+            : undefined;
+        const discovered =
+          (officialCourseraId
+            ? catalogCourses.find(
+                (candidate) =>
+                  normalizeCourseraCourseId(candidate.courseraCourseId) === officialCourseraId,
+              )
+            : undefined)
+          ?? catalogCourses.find(
+            (candidate) => normalizeCourseName(candidate.name) === normalizeCourseName(course.name),
+          );
         return {
           slug:
             discovered?.slug
@@ -325,7 +341,7 @@ function mkProgram(
           name: course.name,
           estimatedHours: course.hours,
           description: course.description,
-          courseraCourseId: discovered?.courseraCourseId,
+          courseraCourseId: discovered?.courseraCourseId ?? officialCourseraId,
           courseraSlug: discovered?.slug ?? officialCourseraSlug,
         };
       })

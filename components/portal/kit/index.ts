@@ -26,7 +26,19 @@ export { PageOpener } from './PageOpener';
 export { ProgressRing } from './ProgressRing';
 export { ProgressBar } from './ProgressBar';
 export { Avatar } from './Avatar';
-export { DataTable, type Column } from './DataTable';
+export { DataTable, type Column, type KitTablePagination, type KitTableBulkBarContext } from './DataTable';
+export { KitTableToolbar, type KitTableViewChip } from './KitTableToolbar';
+export { KitRowMenu, type KitRowMenuItem } from './KitRowMenu';
+export {
+  KIT_TABLE_PAGE_SIZE,
+  readKitTableUrlState,
+  writeKitTableUrlState,
+  kitTableHref,
+  parseKitTableSort,
+  serializeKitTableSort,
+  type KitTableSort,
+  type KitTableUrlState,
+} from './kitTableUrlState';
 export { FeatureTile } from './FeatureTile';
 export { QueueRow, type QueueTone } from './QueueRow';
 export { WorkQueueItem } from './WorkQueueItem';
@@ -47,4 +59,4 @@ export { AppShellSidebar, type NavItem, type NavGroup } from './AppShellSidebar'
 export { AppShellMember, type MemberTab } from './AppShellMember';
 export { UniversalSearch } from './UniversalSearch';
 export { MemberDashboardKit, type MemberDashboardKitProps } from './MemberDashboardKit';
-export { colorVar, type KitColor, type KitTone } from './tokens';
+export { colorVar, toneClass, type KitColor, type KitTone } from './tokens';

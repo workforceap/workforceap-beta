@@ -18,7 +18,7 @@ export function applicationConfirmationHtml(params: {
 }): string {
   const { firstName, eligibility, applicationId } = params;
   const eligibilityBlock = eligibilityScreeningSummaryHtml(eligibility, {
-    heading: 'Eligibility answers we received',
+    heading: 'Eligibility screening received',
   });
   const applicationRef = applicationId
     ? ` Your application id is <strong>${escapeHtml(applicationId)}</strong>.`

@@ -65,6 +65,7 @@ async function handle(_request: Request) {
     | 'pacing_budget_exhausted'
     | 'request_deadline_exhausted'
     | 'fixture_recipient'
+    | 'suppressed_recipient'
     | 'provider_rate_limited'
     | undefined;
 
@@ -102,7 +103,7 @@ async function handle(_request: Request) {
       if (result?.ok === false) {
         if (result.skipped) {
           skipped++;
-          skipReason = 'fixture_recipient';
+          skipReason = result.error === 'suppressed_recipient' ? 'suppressed_recipient' : 'fixture_recipient';
           continue;
         }
         // Resend 10 rps (and overlapping bulk crons) can still trip after

@@ -34,6 +34,8 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'wioa',
   // components/portal/MemberApprovalStatusCard — the /dashboard approval card.
   'memberApproval',
+  // components/portal/kit/GuidedTour — tour chrome + step copy (lib/tours/registry.ts).
+  'tours',
 ] as const;
 
 /**
@@ -142,7 +144,9 @@ export function pickClientMessageSlice(
       break;
     case 'admin':
       // AdminPortalShell uses the shared WorkspaceShell label namespaces too.
-      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'group']));
+      // `tours` ships the GuidedTour chrome + step copy so admin can mount the
+      // same TourProviderWrapper as (portal) (lib/tours/registry.ts).
+      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'group', 'tours']));
       {
         const dashboard = pickAdminDashboardClientSlice(m);
         if (dashboard) out.dashboard = dashboard;

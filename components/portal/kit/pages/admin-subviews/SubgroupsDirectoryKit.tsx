@@ -135,10 +135,10 @@ export function SubgroupsDirectoryKit({
   const largest = subgroups.reduce((max, s) => Math.max(max, s.members), 0);
 
   const kpis: KpiItem[] = [
-    { label: 'Subgroups', value: groups, color: 'text' },
-    { label: 'Total Members', value: members, color: 'info' },
-    { label: 'Avg Size', value: avgSize, color: 'success' },
-    { label: 'Largest', value: largest, color: 'accent' },
+    { label: 'Subgroups', value: groups },
+    { label: 'Total Members', value: members },
+    { label: 'Avg Size', value: avgSize },
+    { label: 'Largest', value: largest },
   ];
 
   return (

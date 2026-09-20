@@ -67,10 +67,10 @@ export function MemberDashboardKit({
         <div style={{ marginBottom: 20 }}>
           <KpiStrip
             items={[
-              { label: 'Course', value: `${pct}%`, color: 'accent' },
-              { label: 'Modules', value: `${completedCount}/${totalCourses}`, color: 'info' },
-              { label: 'AI Tools Used', value: aiToolsUsedCount, color: 'gold' },
-              { label: 'Next Steps', value: recommendedActions.length, color: 'success' },
+              { label: 'Course', value: `${pct}%` },
+              { label: 'Modules', value: `${completedCount}/${totalCourses}` },
+              { label: 'AI Tools Used', value: aiToolsUsedCount },
+              { label: 'Next Steps', value: recommendedActions.length },
             ]}
           />
         </div>

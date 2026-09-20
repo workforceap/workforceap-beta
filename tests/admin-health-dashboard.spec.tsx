@@ -59,6 +59,9 @@ const healthyPayload = {
     xapi: { status: 'ok' as const, pendingStatements: 150 },
     aiTools: { status: 'ok' as const, queueDepth: 0 },
     email: { status: 'ok' as const, backlog: 0 },
+    emailDelivery: { status: 'ok' as const, sent24h: 12, failed24h: 0, bounced24h: 0, webhookConfigured: true, lastWebhookAt: null },
+    discordNotifications: { status: 'ok' as const, configured: true, errors24h: 0, dropped24h: 0 },
+    webPush: { status: 'ok' as const, configured: false, subscriptions: 0, errors24h: 0 },
   },
   generatedAt: new Date().toISOString(),
 };
@@ -74,6 +77,9 @@ const degradedPayload = {
     xapi: { status: 'ok' as const, pendingStatements: 150 },
     aiTools: { status: 'ok' as const, queueDepth: 0 },
     email: { status: 'ok' as const, backlog: 0 },
+    emailDelivery: { status: 'ok' as const, sent24h: 12, failed24h: 0, bounced24h: 0, webhookConfigured: true, lastWebhookAt: null },
+    discordNotifications: { status: 'ok' as const, configured: true, errors24h: 0, dropped24h: 0 },
+    webPush: { status: 'ok' as const, configured: false, subscriptions: 0, errors24h: 0 },
   },
   generatedAt: new Date().toISOString(),
 };

@@ -4,7 +4,10 @@
  *
  * Keys by surface:
  * - Member (readiness, interview, resume): member_name, program_*, organization_*, interview_eligible, + resume_* for resume coach
- * - WIOA prequal: member fields above plus wioa_* screening snapshot fields when present
+ * - WIOA prequal: member fields above plus the static wioa_program_name / wioa_pronunciation.
+ *   WAP-173: the member's screening answers (barrier, dislocated worker, income,
+ *   public assistance, signal, age, county) are never sent to the voice vendor —
+ *   the privacy policy's ElevenLabs row does not disclose them.
  * - Counselor: staff_name, partner_name, partner_id
  * - Employer: staff_name, employer_company_name, employer_tier, employer_id
  * - Partner: staff_name, partner_org_name, partner_slug, partner_id
@@ -15,7 +18,6 @@ import { prisma } from '@/lib/db/prisma';
 import { getCoachMemoryDynamicVariables } from '@/lib/coach/memory';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser } from '@/lib/auth/roles';
-import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 
 /** Merged into every voice session for consistent nonprofit / site framing in ElevenLabs prompts. */
 const VOICE_DEFAULTS: Record<string, string> = {
@@ -77,6 +79,12 @@ export function buildPublicWioaPortalDynamicVariables(input?: {
   });
 }
 
+/**
+ * WIOA prequal voice context. Program framing only — the member's screening
+ * answers are read from the database by staff, never handed to the vendor
+ * (WAP-173). The prequal agent runs through the governed gateway where member
+ * context arrives via tools, so no prompt variable depends on the answers.
+ */
 export async function fetchWioaPortalDynamicVariables(userId: string): Promise<Record<string, string>> {
   try {
     const dbUser = await prisma.user.findUnique({
@@ -86,7 +94,6 @@ export async function fetchWioaPortalDynamicVariables(userId: string): Promise<R
     if (!dbUser) return {};
 
     const program = dbUser.enrolledProgram ? getProgramBySlug(dbUser.enrolledProgram) : null;
-    const snapshot = parseWioaQualificationSnapshot(dbUser.wioaQualificationJson);
 
     return withVoiceDefaults({
       member_name: dbUser.fullName ?? '',
@@ -96,20 +103,6 @@ export async function fetchWioaPortalDynamicVariables(userId: string): Promise<R
       organization_name: dbUser.organization?.name ?? '',
       organization_slug: dbUser.organization?.slug ?? '',
       interview_eligible: dbUser.interviewEligible ? 'true' : 'false',
-      wioa_age_bracket: snapshot?.answers.ageBracket ?? '',
-      wioa_county_or_zip: snapshot?.answers.countyOrZip ?? '',
-      wioa_primary_barrier: snapshot?.answers.primaryBarrier ?? '',
-      wioa_dislocated_worker: snapshot?.answers.dislocatedWorker ? 'true' : 'false',
-      wioa_low_income_self_report: snapshot?.answers.lowIncomeSelfReport ? 'true' : 'false',
-      wioa_training_interest: snapshot?.answers.trainingInterest ? 'true' : 'false',
-      wioa_completed_intake_self_report: snapshot?.answers.completedIntakeSelfReport ? 'true' : 'false',
-      wioa_public_assistance_self_report:
-        snapshot?.answers.publicAssistanceSelfReport === true
-          ? 'true'
-          : snapshot?.answers.publicAssistanceSelfReport === false
-            ? 'false'
-            : '',
-      wioa_signal: snapshot?.signal ?? '',
       wioa_program_name: 'Workforce Innovation and Opportunity Act (WIOA)',
       wioa_pronunciation: 'W. I. O. A.',
     });

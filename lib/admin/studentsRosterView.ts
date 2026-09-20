@@ -56,6 +56,40 @@ export function chipsForView(view: StudentsRosterView): readonly StudentsRosterC
 }
 
 /**
+ * `?needs=` values the attention model links carry (`lib/attention/adminViews`).
+ * The Command Center tiles, work-queue rows and the overview digest all land
+ * here, so an attention number always opens a filtered roster instead of the
+ * whole list.
+ */
+export const STUDENTS_NEEDS_PARAM = 'needs';
+export const STUDENTS_NEEDS_VALUES = ['at-risk', 'stalled', 'new-applicants'] as const;
+export type StudentsNeeds = (typeof STUDENTS_NEEDS_VALUES)[number];
+
+export function parseStudentsNeeds(value: string | string[] | undefined | null): StudentsNeeds | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return (STUDENTS_NEEDS_VALUES as readonly string[]).includes(raw ?? '') ? (raw as StudentsNeeds) : null;
+}
+
+/**
+ * Which chip a `?needs=` link opens on. The roster's "At Risk" chip (health
+ * yellow/red, quiet 7+ days) is the nearest filter today for both a saved
+ * risk alert and a 30-day quiet spell; the training preset has a real
+ * "Stalled" pace chip. New applicants without a counselor have no chip yet,
+ * so they open the full roster. Server-side `needs=` filters from the
+ * attention model replace this mapping when the roster consolidation lands.
+ */
+export function chipForStudentsNeeds(needs: StudentsNeeds | null, view: StudentsRosterView): StudentsRosterChip {
+  if (needs === 'at-risk') return 'At Risk';
+  if (needs === 'stalled') return view === 'training' ? 'Stalled' : 'At Risk';
+  return 'All';
+}
+
+/** `/admin/students?needs=<value>`: the roster URL an attention number opens. */
+export function studentsNeedsHref(needs: StudentsNeeds): string {
+  return `${STUDENTS_ROSTER_VIEW_HREFS.roster}?${STUDENTS_NEEDS_PARAM}=${needs}`;
+}
+
+/**
  * Chip semantics are the same in both views: "All" keeps everything,
  * "Unmatched" keeps Coursera identities with no WAP member, and every other
  * chip keeps WAP members whose status (roster) or pace (training) matches.

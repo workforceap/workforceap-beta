@@ -37,6 +37,29 @@ export type EmailHealth = SubsystemCheck & {
   backlog?: number;
 };
 
+/** email_send_logs + Resend webhook (delivery audit 2026-09-20 #4). */
+export type EmailDeliveryHealth = SubsystemCheck & {
+  sent24h?: number;
+  failed24h?: number;
+  bounced24h?: number;
+  webhookConfigured?: boolean;
+  lastWebhookAt?: string | null;
+};
+
+/** Discord operator bridge (delivery audit #15). */
+export type DiscordHealth = SubsystemCheck & {
+  configured?: boolean;
+  errors24h?: number;
+  dropped24h?: number;
+};
+
+/** Web push side channel (delivery audit #22). */
+export type WebPushHealth = SubsystemCheck & {
+  configured?: boolean;
+  subscriptions?: number;
+  errors24h?: number;
+};
+
 export type HealthChecks = {
   database: SubsystemCheck;
   redis: SubsystemCheck;
@@ -46,6 +69,9 @@ export type HealthChecks = {
   xapi: XapiHealth;
   aiTools: AIToolsHealth;
   email: EmailHealth;
+  emailDelivery: EmailDeliveryHealth;
+  discordNotifications: DiscordHealth;
+  webPush: WebPushHealth;
 };
 
 export type HealthResponse = {
@@ -267,6 +293,116 @@ async function checkEmail(): Promise<EmailHealth> {
   }
 }
 
+async function checkEmailDelivery(): Promise<EmailDeliveryHealth> {
+  const webhookConfigured = Boolean(process.env.RESEND_WEBHOOK_SECRET?.trim());
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [sent24h, failed24h, bounced24h, lastWebhook] = await Promise.all([
+      prisma.emailSendLog.count({ where: { status: 'sent', createdAt: { gte: since } } }),
+      prisma.emailSendLog.count({ where: { status: 'failed', createdAt: { gte: since } } }),
+      prisma.emailSendLog.count({
+        where: { lastEvent: { in: ['bounced', 'complained'] }, lastEventAt: { gte: since } },
+      }),
+      prisma.webhookEvent.findFirst({
+        where: { source: 'resend', status: 'success' },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      }),
+    ]);
+
+    const notes: string[] = [`${sent24h} sent, ${failed24h} failed, ${bounced24h} bounced/complained (24h)`];
+    let status: SubsystemCheck['status'] = 'ok';
+    if (!webhookConfigured) {
+      status = 'degraded';
+      notes.push('RESEND_WEBHOOK_SECRET missing — delivery, bounce and complaint events are not received');
+    } else if (!lastWebhook) {
+      notes.push('no webhook delivery received yet');
+    }
+    if (failed24h > 5 || bounced24h > 5) status = 'fail';
+    else if (failed24h > 0 || bounced24h > 0) status = 'degraded';
+
+    return {
+      status,
+      sent24h,
+      failed24h,
+      bounced24h,
+      webhookConfigured,
+      lastWebhookAt: lastWebhook?.createdAt.toISOString() ?? null,
+      note: notes.join(' · '),
+    };
+  } catch (err) {
+    return {
+      status: 'fail',
+      webhookConfigured,
+      note: err instanceof Error ? err.message : 'Email delivery check failed',
+    };
+  }
+}
+
+async function checkDiscordNotifications(): Promise<DiscordHealth> {
+  const configured = Boolean(process.env.DISCORD_NOTIFICATIONS_WEBHOOK_URL);
+  if (!configured) {
+    return { status: 'ok', configured, note: 'Discord bridge not configured (optional)' };
+  }
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [errors24h, dropped24h] = await Promise.all([
+      prisma.workflowDiagnostic.count({
+        where: { workflow: 'discord_notification', status: { in: ['error', 'errored', 'failed'] }, createdAt: { gte: since } },
+      }),
+      prisma.workflowDiagnostic.count({
+        where: { workflow: 'discord_notification', status: 'fallback', createdAt: { gte: since } },
+      }),
+    ]);
+    const status: SubsystemCheck['status'] = errors24h > 10 ? 'fail' : errors24h > 0 || dropped24h > 0 ? 'degraded' : 'ok';
+    return {
+      status,
+      configured,
+      errors24h,
+      dropped24h,
+      note: errors24h + dropped24h > 0
+        ? `${errors24h} failed posts, ${dropped24h} rate-limit drops (24h)`
+        : 'Posting normally',
+    };
+  } catch (err) {
+    return { status: 'fail', configured, note: err instanceof Error ? err.message : 'Discord check failed' };
+  }
+}
+
+async function checkWebPush(): Promise<WebPushHealth> {
+  const configured = Boolean(
+    process.env.NEXT_PUBLIC_WEB_PUSH_VAPID_PUBLIC_KEY && process.env.WEB_PUSH_VAPID_PRIVATE_KEY,
+  );
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [subscriptions, errors24h] = await Promise.all([
+      prisma.pushSubscription.count(),
+      prisma.workflowDiagnostic.count({
+        where: { workflow: 'web_push', status: { in: ['error', 'errored', 'failed'] }, createdAt: { gte: since } },
+      }),
+    ]);
+    if (!configured) {
+      return {
+        status: 'ok',
+        configured,
+        subscriptions,
+        errors24h,
+        note: 'VAPID keys not set — web push is inert (optional)',
+      };
+    }
+    const status: SubsystemCheck['status'] = errors24h > 10 ? 'fail' : errors24h > 0 ? 'degraded' : 'ok';
+    return {
+      status,
+      configured,
+      subscriptions,
+      errors24h,
+      note: `${subscriptions} subscriptions, ${errors24h} send errors (24h)`,
+    };
+  } catch (err) {
+    return { status: 'fail', configured, note: err instanceof Error ? err.message : 'Web push check failed' };
+  }
+}
+
 /* ─── Route handlers ─── */
 
 async function _GET(request: NextRequest) {
@@ -293,6 +429,9 @@ async function _GET(request: NextRequest) {
           xapi: suppressed,
           aiTools: suppressed,
           email: suppressed,
+          emailDelivery: suppressed,
+          discordNotifications: suppressed,
+          webPush: suppressed,
         },
         generatedAt: startedAt.toISOString(),
         auditSuppressed: true,
@@ -311,6 +450,9 @@ async function _GET(request: NextRequest) {
       xapi,
       aiTools,
       email,
+      emailDelivery,
+      discordNotifications,
+      webPush,
     ] = await Promise.all([
       checkDatabase(),
       checkRedis(),
@@ -320,6 +462,9 @@ async function _GET(request: NextRequest) {
       checkXapi(),
       checkAiTools(),
       checkEmail(),
+      checkEmailDelivery(),
+      checkDiscordNotifications(),
+      checkWebPush(),
     ]);
 
     const checks: HealthChecks = {
@@ -331,6 +476,9 @@ async function _GET(request: NextRequest) {
       xapi,
       aiTools,
       email,
+      emailDelivery,
+      discordNotifications,
+      webPush,
     };
 
     // Overall status: fail if any critical subsystem is fail; degraded if any is degraded.

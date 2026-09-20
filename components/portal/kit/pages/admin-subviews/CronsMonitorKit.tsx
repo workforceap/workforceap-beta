@@ -73,9 +73,9 @@ export function CronsMonitorKit({
 }: CronsMonitorKitProps) {
   const kpis: KpiItem[] = [
     { label: 'Total Jobs', value: totalJobs },
-    { label: 'Enabled', value: enabled, color: 'success' },
-    { label: 'Failing', value: failing, color: failing > 0 ? 'accent' : 'muted' },
-    { label: 'Last Run', value: lastRun, color: 'info' },
+    { label: 'Enabled', value: enabled },
+    { label: 'Failing', value: failing, tone: failing > 0 ? 'danger' : undefined },
+    { label: 'Last Run', value: lastRun },
   ];
 
   const numStyle = { fontVariantNumeric: 'tabular-nums' as const };

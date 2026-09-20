@@ -183,10 +183,10 @@ export function EmployersDirectoryKit({
   const subtitle = `${partners} partner${partners === 1 ? '' : 's'} · ${openRoles} open role${openRoles === 1 ? '' : 's'}`;
 
   const kpis: KpiItem[] = [
-    { label: 'Employers', value: partners, color: 'text' },
-    { label: 'Open Roles', value: openRoles, color: 'info' },
-    { label: 'Hires YTD', value: hires, color: 'success' },
-    { label: 'Active', value: active, color: 'accent' },
+    { label: 'Employers', value: partners },
+    { label: 'Open Roles', value: openRoles },
+    { label: 'Hires YTD', value: hires },
+    { label: 'Active', value: active },
   ];
 
   return (

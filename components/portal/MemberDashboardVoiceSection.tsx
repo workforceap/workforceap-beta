@@ -2,7 +2,7 @@
 
 import { Mic, Target, Sparkles, AudioLines } from 'lucide-react';
 import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
-import { mockInterviewVoiceSurface, readinessVoiceSurface, resumeCoachVoiceSurface } from '@/lib/portal/voice';
+import { GOLD_TEXT_GRADIENT, mockInterviewVoiceSurface, readinessVoiceSurface, resumeCoachVoiceSurface } from '@/lib/portal/voice';
 
 const AI_COACHES_BAND_STYLE = {
   padding: '1.25rem clamp(0.75rem, 3vw, 1.25rem) 1.5rem',
@@ -36,7 +36,7 @@ export default function MemberDashboardVoiceSection() {
             badge="Introduction"
             icon={<Mic size={22} aria-hidden="true" />}
             glowColor="#a47f38"
-            gradient="linear-gradient(135deg, #a47f38, #7d5f26)"
+            gradient={GOLD_TEXT_GRADIENT}
             title="Elevator Introduction"
             description="Generate a clean 10 to 20 second intro, save it, and email it to yourself right away."
             href="/dashboard/ai-tools/elevator-pitch"
