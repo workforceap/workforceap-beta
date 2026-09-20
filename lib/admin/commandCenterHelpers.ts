@@ -61,15 +61,55 @@ export type AdminCommandCenterTotals = {
 /**
  * One program's enrollment count for the "Program Health" breakdown.
  * `label` is the catalog title (falls back to the raw slug), `count` is the
- * number of enrolled members in that program (scoped to the org). `pct` is the
- * share relative to the top program's count (0–100), so bars render correctly.
+ * number of enrolled members in that program (scoped to the org). `pct` is
+ * that program's share of ALL enrolled students in the org (0–100), so the
+ * bars of every listed program add up to at most 100 and a lone program
+ * reads "8 enrolled · 100% of enrolled students", never as a completion
+ * rate. `shareLabel` names that meaning and `caption` is the ready-to-print
+ * value (admin audit 2026-09-20, Command Center: "Program health prints
+ * 2 · 100%, share-of-top-program that reads as completion").
  */
 export type AdminProgramHealthRow = {
   programSlug: string;
   label: string;
   count: number;
   pct: number;
+  /** Denominator of `pct`: every enrolled, non-deleted member in the org. */
+  enrolledTotal: number;
+  /** What `pct` measures, for captions and screen readers. */
+  shareLabel: typeof PROGRAM_HEALTH_SHARE_LABEL;
+  /** "8 enrolled · 100% of enrolled students". */
+  caption: string;
 };
+
+export const PROGRAM_HEALTH_SHARE_LABEL = 'share of enrolled students' as const;
+
+/**
+ * Pure projection of a per-program groupBy onto `AdminProgramHealthRow`s.
+ * Sorted by count desc, cut to `limit`; the share denominator is the total
+ * over EVERY group (not only the listed ones), so a long tail of small
+ * programs still counts against the leaders. Zero totals give 0%.
+ */
+export function buildProgramHealthRows(
+  grouped: ReadonlyArray<{ programSlug: string | null; count: number }>,
+  options: { limit: number; labelFor: (slug: string) => string },
+): AdminProgramHealthRow[] {
+  const rows = grouped
+    .flatMap((group) => (group.programSlug ? [{ programSlug: group.programSlug, count: group.count }] : []))
+    .sort((a, b) => b.count - a.count || a.programSlug.localeCompare(b.programSlug));
+  const enrolledTotal = rows.reduce((sum, row) => sum + row.count, 0);
+  return rows.slice(0, Math.max(0, options.limit)).map((row) => {
+    const pct = enrolledTotal > 0 ? Math.round((row.count / enrolledTotal) * 100) : 0;
+    return {
+      ...row,
+      label: options.labelFor(row.programSlug),
+      pct,
+      enrolledTotal,
+      shareLabel: PROGRAM_HEALTH_SHARE_LABEL,
+      caption: `${row.count} enrolled · ${pct}% of enrolled students`,
+    };
+  });
+}
 
 export const ADMIN_QUEUE_KEYS = ['needs-reply', 'at-risk', 'interviewing', 'applications'] as const;
 export type AdminQueueKey = typeof ADMIN_QUEUE_KEYS[number];

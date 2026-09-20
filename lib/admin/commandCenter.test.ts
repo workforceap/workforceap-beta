@@ -3,7 +3,9 @@ import { describe, it } from 'node:test';
 
 import {
   buildApplicationEmailPacket,
+  buildProgramHealthRows,
   bucketCommandCenterTotals,
+  PROGRAM_HEALTH_SHARE_LABEL,
   type AdminCommandCenter,
 } from './commandCenterHelpers';
 
@@ -126,5 +128,59 @@ describe('admin queue navigation', () => {
     const { adminQueueHref } = await import('./commandCenterHelpers');
     assert.equal(adminQueueHref('applications', 2), '/admin/command-center?queue=applications&page=2');
     assert.equal(adminQueueHref('needs-reply', -1), '/admin/command-center?queue=needs-reply&page=1');
+  });
+});
+
+describe('program health rows', () => {
+  const labelFor = (slug: string) => `Title of ${slug}`;
+
+  it('prints each program as its share of every enrolled student, never share of the leader', () => {
+    const rows = buildProgramHealthRows(
+      [
+        { programSlug: 'it-support', count: 2 },
+        { programSlug: 'cyber', count: 5 },
+        { programSlug: null, count: 40 },
+        { programSlug: 'data', count: 1 },
+      ],
+      { limit: 5, labelFor },
+    );
+
+    assert.deepEqual(rows.map((row) => [row.programSlug, row.count, row.pct]), [
+      ['cyber', 5, 63],
+      ['it-support', 2, 25],
+      ['data', 1, 13],
+    ]);
+    // The leader is not padded to 100%: 5 of 8 enrolled is 63%.
+    assert.notEqual(rows[0].pct, 100);
+    for (const row of rows) {
+      assert.equal(row.enrolledTotal, 8);
+      assert.equal(row.shareLabel, PROGRAM_HEALTH_SHARE_LABEL);
+      assert.equal(row.label, `Title of ${row.programSlug}`);
+      assert.equal(row.caption, `${row.count} enrolled · ${row.pct}% of enrolled students`);
+    }
+    assert.equal(PROGRAM_HEALTH_SHARE_LABEL, 'share of enrolled students');
+  });
+
+  it('keeps the long tail in the denominator when cutting to the top programs', () => {
+    const rows = buildProgramHealthRows(
+      [
+        { programSlug: 'a', count: 6 },
+        { programSlug: 'b', count: 2 },
+        { programSlug: 'c', count: 1 },
+        { programSlug: 'd', count: 1 },
+      ],
+      { limit: 2, labelFor },
+    );
+    assert.deepEqual(rows.map((row) => row.programSlug), ['a', 'b']);
+    assert.equal(rows[0].enrolledTotal, 10);
+    assert.deepEqual(rows.map((row) => row.pct), [60, 20]);
+  });
+
+  it('gives a lone program 100% and an empty roster no rows', () => {
+    const [only] = buildProgramHealthRows([{ programSlug: 'solo', count: 8 }], { limit: 5, labelFor });
+    assert.equal(only.pct, 100);
+    assert.equal(only.caption, '8 enrolled · 100% of enrolled students');
+    assert.deepEqual(buildProgramHealthRows([], { limit: 5, labelFor }), []);
+    assert.deepEqual(buildProgramHealthRows([{ programSlug: 'x', count: 0 }], { limit: 5, labelFor })[0].pct, 0);
   });
 });

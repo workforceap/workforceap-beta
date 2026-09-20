@@ -156,22 +156,25 @@ export default async function AdminUsersPage({
 
   // --- DEFAULT: real (lean) staff accounts roster (design kit) ---
   // Filter to staff/admin/counselor roles only — NOT all members.
-  const [staffResult, totalCount] = await withAdminPageScope(scope, (db) => Promise.all([
-    db.user.findMany({
-      take: pageSize,
-      skip: (currentPage - 1) * pageSize,
-      where,
-      orderBy: [{ lastLoginAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        lastLoginAt: true,
-        profile: { select: { role: true } },
-      },
-    }),
-    db.user.count({ where }),
-  ]));
+  const [[staffResult, totalCount], canManageRoles] = await Promise.all([
+    withAdminPageScope(scope, (db) => Promise.all([
+      db.user.findMany({
+        take: pageSize,
+        skip: (currentPage - 1) * pageSize,
+        where,
+        orderBy: [{ lastLoginAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          lastLoginAt: true,
+          profile: { select: { role: true } },
+        },
+      }),
+      db.user.count({ where }),
+    ])),
+    isSuperAdmin(user.id),
+  ]);
 
   const activeCutoff = new Date();
   activeCutoff.setDate(activeCutoff.getDate() - ACTIVE_IDLE_DAYS);
@@ -186,10 +189,22 @@ export default async function AdminUsersPage({
       initials: initialsFrom(name),
       email: row.email,
       role: roleLabel(role),
+      roleCode: role,
       lastLogin: lastLoginCaption(lastLoginAt),
       active: !!lastLoginAt && lastLoginAt >= activeCutoff,
     };
   });
 
-  return <UsersKit users={users} total={totalCount} currentPage={currentPage} pageSize={pageSize} searchQuery={searchQuery} roleFilter={roleFilter} />;
+  return (
+    <UsersKit
+      users={users}
+      total={totalCount}
+      currentPage={currentPage}
+      pageSize={pageSize}
+      searchQuery={searchQuery}
+      roleFilter={roleFilter}
+      currentUserId={user.id}
+      canManageRoles={canManageRoles}
+    />
+  );
 }

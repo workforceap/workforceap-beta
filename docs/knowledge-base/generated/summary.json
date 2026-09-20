@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "2aca84fb76065fdcac872cd68e7804da694cb793a9c37a512082274750e58772",
+  "inputTreeSha256": "4367c565457d7bf1c81782b0d03f3f2de25650313138d6a7d17cb97998c977bc",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4878,
-    "sourceModules": 3532,
-    "importReferences": 17566,
-    "resolvedLocalReferences": 11791,
+    "files": 4896,
+    "sourceModules": 3550,
+    "importReferences": 17648,
+    "resolvedLocalReferences": 11839,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1061,
     "nextRouteFiles": 1028,
@@ -22,10 +22,10 @@
     "prismaModels": 112,
     "prismaEnums": 33,
     "relationFields": 306,
-    "testFiles": 923,
-    "testCandidates": 915,
+    "testFiles": 934,
+    "testCandidates": 926,
     "testHelpers": 8,
-    "staticallySelectedTests": 913,
+    "staticallySelectedTests": 924,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 607
+      "files": 611
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1038
+      "files": 1043
     },
     {
       "area": "localization",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 538
+      "files": 547
     }
   ],
   "mostReferenced": [
@@ -140,7 +140,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 212
+      "references": 211
     },
     {
       "file": "app/seo.ts",
@@ -200,7 +200,7 @@
     },
     {
       "file": "lib/audit/readOnlyPortalAudit.ts",
-      "references": 60
+      "references": 61
     },
     {
       "file": "lib/supabase-admin.ts",
@@ -293,12 +293,12 @@
       "lines": 1637
     },
     {
-      "file": "app/admin/coursera/page.tsx",
-      "lines": 1636
-    },
-    {
       "file": "scripts/audit-portal-routes.mjs",
       "lines": 1552
+    },
+    {
+      "file": "app/admin/coursera/page.tsx",
+      "lines": 1478
     },
     {
       "file": "tests/api/placement-survey.spec.ts",
