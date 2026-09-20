@@ -83,16 +83,15 @@ export const POST = withApiGuc(async (
         entityId: failure.template,
         method: EMAIL_RESEND_METHOD,
         summary: result.ok
-          ? `Admin re-sent "${failure.subject}"`
-          : `Admin re-send failed: "${failure.subject}"`,
+          ? `Admin re-sent ${failure.template ?? 'email'}`
+          : `Admin re-send failed: ${failure.template ?? 'email'}`,
         provider: 'resend',
         failureReason: result.ok ? null : (result.error ?? 'Send failed'),
         metadata: {
           sourceDiagnosticId: row.id,
-          to: failure.to,
-          subject: failure.subject,
           template: failure.template,
           recipientHash: failure.recipientHash,
+          recipientDomain: failure.recipientDomain,
           skipped: result.skipped === true,
         },
       },

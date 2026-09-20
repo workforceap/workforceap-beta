@@ -103976,6 +103976,46 @@
     "target": "lib/email/rateLimitError.ts"
   },
   {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "./failureSnapshot",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "lib/email/failureSnapshot.test.ts",
+    "specifier": "./failureRecord",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/failureSnapshot.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
     "from": "lib/email/pacing.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -116854,6 +116894,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/eligibilityDatasheet.ts"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "@prisma/client",
+    "line": 18,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "../lib/email/failureSnapshot",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "scripts/snapshot-email-failures.ts",
+    "specifier": "../lib/email/failureRecord",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "scripts/stamp-chs-funding.ts",

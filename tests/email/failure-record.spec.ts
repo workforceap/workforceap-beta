@@ -17,6 +17,7 @@ import {
   buildEmailFailureMetadata,
   classifyEmailSendFailure,
   parseEmailFailureMetadata,
+  recipientDomain,
   recipientHash,
 } from '@/lib/email/failureRecord';
 
@@ -60,8 +61,9 @@ describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
       now,
     );
     expect(meta).toMatchObject({
-      to: ['Ada@Example.org'],
-      subject: 'Hello',
+      to: [],
+      subject: '',
+      recipientDomain: 'example.org',
       template: 'applicant_followup',
       templateParams: { to: 'Ada@Example.org', fullName: 'Ada' },
       errorClass: 'header_invalid',
@@ -72,6 +74,10 @@ describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
     expect(meta.recipientHash).toBe(recipientHash('ada@example.org'));
     expect(meta.recipientHash).toHaveLength(16);
     expect(meta.recipientHash).not.toContain('example');
+    // The raw address and subject are never written; templateParams is the
+    // resend payload and is the only place the address may remain.
+    expect(JSON.stringify({ ...meta, templateParams: undefined })).not.toContain('Ada@Example.org');
+    expect(JSON.stringify(meta)).not.toContain('Hello');
   });
 
   it('marks a send without a template as not resendable and stores no params', () => {
@@ -79,7 +85,18 @@ describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
     expect(meta.template).toBeNull();
     expect(meta.resendable).toBe(false);
     expect('templateParams' in meta).toBe(false);
-    expect(meta.to).toEqual(['a@example.org', 'b@example.org']);
+    expect(meta.to).toEqual([]);
+    expect(meta.recipientHash).toBe(recipientHash('a@example.org'));
+    expect(meta.recipientDomain).toBe('example.org');
+    expect(JSON.stringify(meta)).not.toContain('a@example.org');
+  });
+
+  it('derives the recipient domain for legacy rows and never from an empty address', () => {
+    expect(recipientDomain('Ada@Example.org')).toBe('example.org');
+    expect(recipientDomain(['first@one.org', 'second@two.org'])).toBe('one.org');
+    expect(recipientDomain('not-an-address')).toBeNull();
+    expect(recipientDomain(undefined)).toBeNull();
+    expect(parseEmailFailureMetadata({ to: ['x@example.org'], subject: 'We Miss You' }).recipientDomain).toBe('example.org');
   });
 
   it('round-trips through JSON and reads legacy rows as non-resendable unknown failures', () => {
@@ -92,7 +109,7 @@ describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
     expect(parsed).toEqual(meta);
 
     const legacy = parseEmailFailureMetadata({ to: ['x@example.org'], subject: 'We Miss You' });
-    expect(legacy).toMatchObject({ to: ['x@example.org'], subject: 'We Miss You', template: null, errorClass: 'unknown', retryable: true, resendable: false });
+    expect(legacy).toMatchObject({ to: ['x@example.org'], subject: 'We Miss You', template: null, errorClass: 'unknown', retryable: true, resendable: false, recipientDomain: 'example.org' });
     expect(parseEmailFailureMetadata(null).to).toEqual([]);
     expect(parseEmailFailureMetadata({ resentAt: '2026-09-21T00:00:00.000Z', resentOk: true, resentDiagnosticId: 'd2' }))
       .toMatchObject({ resentAt: '2026-09-21T00:00:00.000Z', resentOk: true, resentDiagnosticId: 'd2' });
@@ -125,8 +142,12 @@ describe('sendBrandedEmail failure diagnostic', () => {
       provider: 'resend',
       failureReason: CRLF,
     });
+    expect(row.summary).toBe('Email send failed: applicant_followup (header_invalid)');
+    expect(row.summary).not.toContain('Being Reviewed');
     expect(row.metadata).toMatchObject({
-      to: ['ada@example.org'],
+      to: [],
+      recipientHash: recipientHash('ada@example.org'),
+      recipientDomain: 'example.org',
       template: 'applicant_followup',
       templateParams: { to: 'ada@example.org', fullName: 'Ada Lovelace' },
       errorClass: 'header_invalid',

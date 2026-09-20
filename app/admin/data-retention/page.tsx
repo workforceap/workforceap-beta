@@ -34,6 +34,8 @@ async function fetchStorageStats() {
     memberEvent: 'member_events',
     workflowDiagnostic: 'workflow_diagnostics',
     portalWorkflowEvent: 'portal_workflow_events',
+    publicWioaScreening: 'public_wioa_screenings',
+    emailFailureSnapshot: 'email_failure_snapshots',
   };
   const tableNames = RETENTION_TABLES.map((t) => tableMap[t.model] ?? t.model);
 

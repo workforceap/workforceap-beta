@@ -819,6 +819,44 @@ model WorkflowDiagnostic {
   @@map("workflow_diagnostics")
 }
 
+/// Preserved copy of `email_send` failure rows from `workflow_diagnostics`.
+/// That table is the only record of the 2026 failed outbound emails and its
+/// 90-day retention purge removes more of it every day; this table holds the
+/// evidence for a year. Rows are copied verbatim by
+/// `scripts/snapshot-email-failures.ts` (idempotent on `source_diagnostic_id`)
+/// with a few columns derived from the metadata for querying. No foreign keys:
+/// the evidence must outlive the actor and the source row. RLS is enabled
+/// with no policies; only the service role reads or writes it.
+model EmailFailureSnapshot {
+  id                  String   @id @default(uuid())
+  sourceDiagnosticId  String   @unique @map("source_diagnostic_id")
+  workflow            String
+  status              String
+  actorUserId         String?  @map("actor_user_id")
+  entityType          String?  @map("entity_type")
+  entityId            String?  @map("entity_id")
+  summary             String
+  provider            String?
+  method              String?
+  fallbackPath        String?  @map("fallback_path")
+  failureReason       String?  @map("failure_reason")
+  metadata            Json?
+  /// Derived from metadata at snapshot time (template id, e.g. `applicant_followup`).
+  templateKey         String?  @map("template_key")
+  errorClass          String   @map("error_class")
+  retryable           Boolean
+  recipientHash       String?  @map("recipient_hash")
+  recipientDomain     String?  @map("recipient_domain")
+  diagnosticCreatedAt DateTime @map("diagnostic_created_at")
+  snapshotRun         String   @map("snapshot_run")
+  snapshotAt          DateTime @default(now()) @map("snapshot_at")
+
+  @@index([diagnosticCreatedAt])
+  @@index([templateKey, diagnosticCreatedAt])
+  @@index([snapshotAt])
+  @@map("email_failure_snapshots")
+}
+
 model CronExecution {
   id               String   @id @default(uuid())
   jobName          String   @map("job_name")

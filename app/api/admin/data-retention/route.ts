@@ -46,6 +46,7 @@ async function fetchStorageStats(): Promise<TableStorageInfo[]> {
       workflowDiagnostic: 'workflow_diagnostics',
       portalWorkflowEvent: 'portal_workflow_events',
       publicWioaScreening: 'public_wioa_screenings',
+      emailFailureSnapshot: 'email_failure_snapshots',
     };
     return map[t.model] ?? t.model;
   });

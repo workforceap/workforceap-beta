@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "c83f55337ccccc8450a59db0db2bf88cc6641de2a0d37ac3e1046d9f0547afcd",
+  "inputTreeSha256": "5ec36d835278bf772d34e9d36347a616a94a0e72f83f4387e1d73019b3323aa3",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -16207,9 +16207,9 @@
       "path": "app/admin/data-retention/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 4729,
-      "lines": 144,
-      "sha256": "6b33f022a149935b92883520c3c99c038b4c1d63232aa4285fd09cc0f4cc7b7d",
+      "bytes": 4833,
+      "lines": 146,
+      "sha256": "a60b15f88756d60fa7e86aa7f2e7cbfa7448cd2573d41d4786dfe7b3e5edc804",
       "binary": false,
       "exports": [
         {
@@ -16219,7 +16219,7 @@
         },
         {
           "name": "default",
-          "line": 82,
+          "line": 84,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataRetentionPage"
         }
@@ -16242,12 +16242,12 @@
         },
         {
           "name": "fetchPolicies",
-          "line": 63,
+          "line": 65,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDataRetentionPage",
-          "line": 82,
+          "line": 84,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -16282,9 +16282,9 @@
       "path": "app/admin/diagnostics/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 27651,
-      "lines": 565,
-      "sha256": "862cc11806a870885db0b814708daa5763744bd7a544de06cca761f5d7e78dd0",
+      "bytes": 27909,
+      "lines": 571,
+      "sha256": "e890af1f6c9189135626e7e69effe42423f6e345764c389ec41d50eb389bd1c5",
       "binary": false,
       "exports": [
         {
@@ -16294,7 +16294,7 @@
         },
         {
           "name": "default",
-          "line": 203,
+          "line": 209,
           "kind": "FunctionDeclaration",
           "localName": "AdminDiagnosticsPage"
         }
@@ -16362,17 +16362,17 @@
         },
         {
           "name": "WARN_STATUSES",
-          "line": 178,
+          "line": 184,
           "kind": "Variable"
         },
         {
           "name": "deriveSubsystemTile",
-          "line": 184,
+          "line": 190,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDiagnosticsPage",
-          "line": 203,
+          "line": 209,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -23472,9 +23472,9 @@
       "path": "app/api/admin/data-retention/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 5247,
-      "lines": 164,
-      "sha256": "6cb91ffa4b46a686e281e8bf6e0e72c84ea8bfffbad5c44cbc8f8b4d79cf0244",
+      "bytes": 5302,
+      "lines": 165,
+      "sha256": "f36aae8fec81fe61dbcb266c75db77bfd328ba3a20cc0347f0c63bf82b749fa9",
       "binary": false,
       "exports": [
         {
@@ -23494,12 +23494,12 @@
         },
         {
           "name": "GET",
-          "line": 96,
+          "line": 97,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 132,
+          "line": 133,
           "kind": "Variable"
         }
       ],
@@ -23531,17 +23531,17 @@
         },
         {
           "name": "fetchPolicyRows",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 96,
+          "line": 97,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 132,
+          "line": 133,
           "kind": "Variable"
         }
       ],
@@ -23769,9 +23769,9 @@
       "path": "app/api/admin/email-failures/[id]/resend/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 5541,
-      "lines": 149,
-      "sha256": "d8041c9a6e49eb178fcd170e83e4a75ee4566a065423148a4f33afbf15f52cb9",
+      "bytes": 5551,
+      "lines": 148,
+      "sha256": "ac7383c0855e4181433ac5282b99bb7d9b2b95faf552813bd49a1ac318f30019",
       "binary": false,
       "exports": [
         {
@@ -116062,9 +116062,9 @@
       "path": "lib/email/failureRecord.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 7618,
-      "lines": 176,
-      "sha256": "450cded450921bc30c2dbd81058ae760838b1b9c4d149950846a46bc86991cf7",
+      "bytes": 8938,
+      "lines": 201,
+      "sha256": "5f4c1578f626674457b151618f18234c0f0efb1196cb109ffbba5ad35a35ffad",
       "binary": false,
       "exports": [
         {
@@ -116099,22 +116099,27 @@
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 86,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 112,
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientDomain",
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 122,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 152,
+          "line": 174,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116151,47 +116156,149 @@
         },
         {
           "name": "asRecord",
-          "line": 60,
+          "line": 68,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "statusOf",
-          "line": 66,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "messageOf",
-          "line": 73,
+          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 86,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 112,
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "recipientDomain",
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "jsonSafe",
-          "line": 118,
+          "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 122,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FAILURE_CLASSES",
-          "line": 143,
+          "line": 165,
           "kind": "Variable"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 152,
+          "line": 174,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/email/failureSnapshot.test.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 3980,
+      "lines": 91,
+      "sha256": "30afc3ecc3bc66e1ed999914de9e6a48fef87cd5ef4846c1ef1cbfa7a338bb8d",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "CRLF",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "diagnostic",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/email/failureSnapshot.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 3679,
+      "lines": 106,
+      "sha256": "8f8c1a75023b2f6712e4ad01ccb9db7e0dd36ebf53423e1b3dfdbc1a10dcdd4f",
+      "binary": false,
+      "exports": [
+        {
+          "name": "EMAIL_FAILURE_STATUSES",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "EmailFailureDiagnosticSource",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotRow",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isEmailFailureDiagnostic",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotRow",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "snapshotRunLabel",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "EMAIL_FAILURE_STATUSES",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "EmailFailureDiagnosticSource",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFailureSnapshotRow",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "isEmailFailureDiagnostic",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "toEmailFailureSnapshotRow",
+          "line": 74,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "snapshotRunLabel",
+          "line": 104,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116487,9 +116594,9 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 14223,
-      "lines": 364,
-      "sha256": "ec7cffedfb491dd2718fcbae3ef247adfc22f6858554319903c57f811300fbae",
+      "bytes": 14355,
+      "lines": 365,
+      "sha256": "2e9b5b7b356261358d19c1b9d1078a7b36196d6edf988a4a902f6a98ff41d139",
       "binary": false,
       "exports": [
         {
@@ -116534,22 +116641,22 @@
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 223,
+          "line": 224,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 261,
+          "line": 262,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 271,
+          "line": 272,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 353,
+          "line": 354,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116616,57 +116723,57 @@
         },
         {
           "name": "asRecord",
-          "line": 179,
+          "line": 180,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readHeader",
-          "line": 183,
+          "line": 184,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRetryAfterMs",
-          "line": 191,
+          "line": 192,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRateLimitResetMs",
-          "line": 202,
+          "line": 203,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientDomain",
-          "line": 210,
+          "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fixtureDomains",
-          "line": 215,
+          "line": 216,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 223,
+          "line": 224,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 229,
+          "line": 230,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 261,
+          "line": 262,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 271,
+          "line": 272,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 353,
+          "line": 354,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -137470,9 +137577,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4737,
-      "lines": 143,
-      "sha256": "3cb2d796593871bf096dce2dd46796ab1bc548f9540328a4c18e19bae2865ef0",
+      "bytes": 5271,
+      "lines": 157,
+      "sha256": "cd7909e7e31b5ef447ddd6aeab54d971232fb0c157f38a1e445829871f7b68b6",
       "binary": false,
       "exports": [
         {
@@ -137501,18 +137608,23 @@
           "kind": "Variable"
         },
         {
+          "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
+          "line": 88,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 83,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 135,
+          "line": 149,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 138,
+          "line": 152,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -137543,18 +137655,23 @@
           "kind": "Variable"
         },
         {
+          "name": "EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS",
+          "line": 88,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 83,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 135,
+          "line": 149,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 138,
+          "line": 152,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -147480,6 +147597,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260920185000_email_failure_snapshots/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 1800,
+      "lines": 41,
+      "sha256": "90962345bf67fedfc067c411b6165fafd1aacfecbd364e20f07506d54164b331",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -147492,9 +147618,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 135750,
-      "lines": 3206,
-      "sha256": "2f71814d96c9f7f142e7c46676cb691cfd9ba882026229daed149e19ef790729",
+      "bytes": 137570,
+      "lines": 3244,
+      "sha256": "95e0fd743a776c8ea2cfd9397320204802529ba87c5e9a5d065162b0642e8c00",
       "binary": false
     },
     {
@@ -154963,6 +155089,34 @@
         {
           "name": "main",
           "line": 36,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/snapshot-email-failures.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 4826,
+      "lines": 116,
+      "sha256": "c5a5d91116abca550f3ec8bc3932062e50008fc2977df211128d8a2421d866a1",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "prisma",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "readFlag",
+          "line": 29,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167071,15 +167225,15 @@
       "path": "tests/email/failure-record.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 7782,
-      "lines": 157,
-      "sha256": "39f1a2ff9aa32f5686766aea16cf14849ed9534bb67471256d0c8aff3aa17829",
+      "bytes": 9013,
+      "lines": 178,
+      "sha256": "90406d45dc47aea98abe0f46cbe2861dc92f88a28b534c7af423b60b72c241bc",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "CRLF",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         }
       ],

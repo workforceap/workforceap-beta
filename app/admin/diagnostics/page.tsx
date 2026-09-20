@@ -166,7 +166,13 @@ function toEmailFailureRow(row: DiagnosticRow): EmailFailureRow {
     template: failure.template,
     templateLabel: getResendableTemplate(failure.template)?.label ?? null,
     subject: failure.subject || row.summary,
-    to: failure.to,
+    // New rows store hash + domain, not the address; show the domain so the
+    // list still groups by where mail was going.
+    to: failure.to.length > 0
+      ? failure.to
+      : failure.recipientDomain
+        ? [`(recipient at ${failure.recipientDomain})`]
+        : [],
     errorClass: failure.errorClass,
     retryable: failure.retryable,
     resendable: failure.resendable && getResendableTemplate(failure.template) !== null,

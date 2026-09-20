@@ -169,7 +169,8 @@ function recordEmailFailure(args: SendBrandedEmailArgs, error: unknown) {
     status: 'error',
     entityType: EMAIL_TEMPLATE_ENTITY_TYPE,
     entityId: metadata.template,
-    summary: `Email send failed: "${args.subject}"`,
+    // Template key and class, never the raw subject (it can carry a member's name).
+    summary: `Email send failed: ${metadata.template ?? 'untyped email'} (${metadata.errorClass})`,
     provider: 'resend',
     failureReason: error instanceof Error ? error.message : typeof error === 'string' ? error : 'Send threw',
     metadata: { ...metadata },

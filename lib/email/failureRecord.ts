@@ -41,7 +41,13 @@ export interface EmailTemplateRef {
 }
 
 export interface EmailFailureMetadata {
+  /**
+   * Raw recipients. Rows written before 2026-09-20 carry them; new rows do
+   * not (see `buildEmailFailureMetadata`), so this is empty for them and the
+   * recipient is identified by `recipientHash` + `recipientDomain`.
+   */
   to: string[];
+  /** Raw subject on historical rows only; new rows store the template key instead. */
   subject: string;
   template: string | null;
   templateParams?: Record<string, unknown>;
@@ -50,6 +56,8 @@ export interface EmailFailureMetadata {
   /** Whether the admin resend route can replay this row (template + params stored). */
   resendable: boolean;
   recipientHash: string | null;
+  /** Domain of the first recipient (lowercased), for grouping without the address. */
+  recipientDomain: string | null;
   failedAt: string;
   /** Set by the resend route once a replay has been attempted. */
   resentAt?: string;
@@ -115,6 +123,14 @@ export function recipientHash(to: string | string[] | undefined): string | null 
   return createHash('sha256').update(first).digest('hex').slice(0, 16);
 }
 
+/** Lowercased domain of the first recipient, or null when there is none. */
+export function recipientDomain(to: string | string[] | undefined): string | null {
+  const first = (Array.isArray(to) ? to[0] : to)?.trim().toLowerCase();
+  const at = first?.lastIndexOf('@') ?? -1;
+  if (!first || at <= 0 || at === first.length - 1) return null;
+  return first.slice(at + 1).replace(/>$/, '');
+}
+
 function jsonSafe(value: Record<string, unknown>): Record<string, unknown> {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
 }
@@ -127,15 +143,21 @@ export function buildEmailFailureMetadata(
   const { errorClass, retryable } = classifyEmailSendFailure(error);
   const template = args.template?.name?.trim() || null;
   const params = template && args.template ? jsonSafe(args.template.params ?? {}) : undefined;
+  // The raw address and subject are not stored: the recipient is identified
+  // by hash + domain and the message by its template key. `templateParams`
+  // is the one place an address may remain, because the admin resend route
+  // replays the wrapper with exactly those params; wrappers that must never
+  // be replayed do not pass `template` and so store none.
   return {
-    to: Array.isArray(args.to) ? args.to : [args.to],
-    subject: args.subject,
+    to: [],
+    subject: '',
     template,
     ...(params ? { templateParams: params } : {}),
     errorClass,
     retryable,
     resendable: Boolean(template && params),
     recipientHash: recipientHash(args.to),
+    recipientDomain: recipientDomain(args.to),
     failedAt: now.toISOString(),
   };
 }
@@ -168,6 +190,9 @@ export function parseEmailFailureMetadata(value: unknown): EmailFailureMetadata 
     retryable: typeof record.retryable === 'boolean' ? record.retryable : errorClass !== 'provider_rejected',
     resendable: Boolean(template && templateParams),
     recipientHash: typeof record.recipientHash === 'string' ? record.recipientHash : null,
+    recipientDomain: typeof record.recipientDomain === 'string'
+      ? record.recipientDomain
+      : recipientDomain(to),
     failedAt: typeof record.failedAt === 'string' ? record.failedAt : '',
     ...(typeof record.resentAt === 'string' ? { resentAt: record.resentAt } : {}),
     ...(typeof record.resentOk === 'boolean' ? { resentOk: record.resentOk } : {}),
