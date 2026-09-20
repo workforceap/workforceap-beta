@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "479f0c812921ba8186dc5512e6685a7bfc654ed9c90a66d4c451ab8b3e6a9ea9",
+  "inputTreeSha256": "904cd0ea3ea722e2c36b43445c5396c9aef5d0068a2ddc251c327a84fe5c07af",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -15267,9 +15267,9 @@
       "path": "app/admin/command-center/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 11706,
+      "bytes": 11710,
       "lines": 272,
-      "sha256": "a0d6edfc5ca4c251ae1db1a97952b3ba6cc2508a05edadc479372eece49dc2dc",
+      "sha256": "567baf3fba3d11bc21d977f6e4827c7160d46daf1032a59464b0d0a23ce6d41c",
       "binary": false,
       "exports": [
         {
@@ -27081,14 +27081,14 @@
       "path": "app/api/admin/metrics/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 11201,
-      "lines": 289,
-      "sha256": "19c36b0de3a0e38a643dbfc47100e11973020b2c95fe9a4085ad6d8b3e493744",
+      "bytes": 11244,
+      "lines": 290,
+      "sha256": "ee8f497804051c6f3a27e597011067d8c7da54935225e8fcbf16b63a063e04e2",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 263,
+          "line": 264,
           "kind": "Variable"
         }
       ],
@@ -27100,7 +27100,7 @@
         },
         {
           "name": "GET",
-          "line": 263,
+          "line": 264,
           "kind": "Variable"
         }
       ],
@@ -27481,9 +27481,9 @@
       "path": "app/api/admin/outcomes/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 12557,
+      "bytes": 12566,
       "lines": 316,
-      "sha256": "dc9855bf09f3b9851f8a1d5ee37456ff4e7fa75f1319e7260a70671244c421f0",
+      "sha256": "824030bb6743652f7df8057ab08892de0c1bd78889c8236455729a232950372d",
       "binary": false,
       "exports": [
         {
@@ -67171,9 +67171,9 @@
       "path": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 10956,
+      "bytes": 10982,
       "lines": 369,
-      "sha256": "47b3a0cf68ee6713c7b982174cc63783ca87415eca7560827fe9881539ae1259",
+      "sha256": "ccef0ac5351024b6a18227aa3b135212d71cc0a79e1ba30bd28ccbf25ad7e07a",
       "binary": false,
       "exports": [
         {
@@ -84322,9 +84322,9 @@
       "path": "lib/admin/counselorRosterAggregates.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2508,
-      "lines": 57,
-      "sha256": "90f05f8f04889e94b1b3cca36d41f991c71fd84b1cfa11e020fa43eacc432f0d",
+      "bytes": 4832,
+      "lines": 102,
+      "sha256": "3d30eff398e3f3361431bce9f1ff8dcbf57b09c951a6cc949b4b88d8cbf029ab",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -84345,9 +84345,9 @@
       "path": "lib/admin/counselorRosterAggregates.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2578,
-      "lines": 72,
-      "sha256": "8aca9cb410f5de51bff4509df268c485dfc21fdff73d0e8e6cd1cd2ca65eec00",
+      "bytes": 2701,
+      "lines": 73,
+      "sha256": "e909ebb818c11ff6414959479b906b1d5981e5bc90f63710510580b6e3d4f822",
       "binary": false,
       "exports": [
         {
@@ -84367,7 +84367,7 @@
         },
         {
           "name": "loadCounselorAssignmentAggregates",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -84379,7 +84379,7 @@
         },
         {
           "name": "loadCounselorAssignmentAggregates",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -84389,9 +84389,9 @@
       "path": "lib/admin/counselorRosterLabels.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 442,
+      "bytes": 455,
       "lines": 7,
-      "sha256": "5fb6e06e1a81cc28255c03b0ab081c19be6d88c3acbf9ddab2306269a1836f39",
+      "sha256": "b435c534adc7cb26b8b913b3369e4680a2d70a1ad34c633280391e8f6fdec9b5",
       "binary": false,
       "exports": [
         {
@@ -87112,9 +87112,9 @@
       "path": "lib/admin/studentStatus.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3527,
-      "lines": 122,
-      "sha256": "b51addf2fadc90a3e63a041d8c2d07fe7cc0212b53ecd0b1360660bfb05be95d",
+      "bytes": 3721,
+      "lines": 124,
+      "sha256": "5b0e1d919a6dc29483303f6c2ac3f81c9c26631d06956ee42b8ce3e173c6aca4",
       "binary": false,
       "exports": [
         {
@@ -126462,9 +126462,9 @@
       "path": "lib/member/persistedAtRisk.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 5264,
-      "lines": 91,
-      "sha256": "ac6c9fd127ceb1742701c35579639c72213ca4cbe9a8eeb0ad93081e8a5c149d",
+      "bytes": 5599,
+      "lines": 95,
+      "sha256": "0d318b48f0d4d1d4b0819f9e72747f3ba73c8e6e12ed4e9a5b7b2c6e8e090b11",
       "binary": false,
       "exports": [
         {
@@ -126484,12 +126484,12 @@
         },
         {
           "name": "loadPersistedAtRiskMembers",
-          "line": 34,
+          "line": 38,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistedRiskCommandRow",
-          "line": 83,
+          "line": 87,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -126506,12 +126506,12 @@
         },
         {
           "name": "loadPersistedAtRiskMembers",
-          "line": 34,
+          "line": 38,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "persistedRiskCommandRow",
-          "line": 83,
+          "line": 87,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -171374,9 +171374,9 @@
       "path": "tests/lib/persisted-risk-command-center.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8193,
-      "lines": 127,
-      "sha256": "56d5a1a0f505c7015c4f0863a1fe2fe52792f58780cb7209e259a9fad0b60e0c",
+      "bytes": 8356,
+      "lines": 130,
+      "sha256": "32f3bbc669dce0b8c8f21794521f777c0098968ac13acd62b18b6160c5d65e70",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171779,9 +171779,9 @@
       "path": "tests/lib/staff-reporting-efficiency.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7423,
+      "bytes": 7455,
       "lines": 97,
-      "sha256": "31ce86c047e5ed412db81409c0ac895c13aea4382a0b8a848d463ceee091d5ab",
+      "sha256": "7c294d496656f8dca61f25feaf6bff7bcae756138905358ae58797885d7d282f",
       "binary": false,
       "exports": [],
       "declarations": [

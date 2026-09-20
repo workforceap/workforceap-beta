@@ -154,7 +154,7 @@
 | [app/api/admin/messages/thread/\[threadId\]/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/route.ts) | 175 | communications | GET:11 |
 | [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | 107 | communications | POST:79, PATCH:106 |
 | [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | 345 | communications | GET:206, POST:345 |
-| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 289 | administration | GET:263 |
+| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 290 | administration | GET:264 |
 | [app/api/admin/milestone-cascades/\[id\]/approve/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/approve/route.ts) | 195 | member-counselor | POST:195 |
 | [app/api/admin/milestone-cascades/\[id\]/dismiss/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/dismiss/route.ts) | 116 | member-counselor | POST:116 |
 | [app/api/admin/milestone-cascades/synthetic/route.ts](../../../app/api/admin/milestone-cascades/synthetic/route.ts) | 97 | member-counselor | POST:97 |

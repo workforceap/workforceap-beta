@@ -143,6 +143,7 @@ async function computeAdminRouteMetricsPayload(
       INNER JOIN users u ON u.id = ara.user_id AND u.organization_id = ${orgId}
       ${memberJoin}
       WHERE ara.status = 'open' AND ara.score >= 80
+        AND u.enrolled_program IS NOT NULL
     `;
   } catch (error) {
     console.error('Failed to get critical at risk', error);

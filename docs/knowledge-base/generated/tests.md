@@ -484,7 +484,7 @@
 | [tests/lib/partner-saved-chip-contrast.spec.ts](../../../tests/lib/partner-saved-chip-contrast.spec.ts) | 65 | tests |  |
 | [tests/lib/partner-school-schema.spec.ts](../../../tests/lib/partner-school-schema.spec.ts) | 69 | tests |  |
 | [tests/lib/password-reset-self-heal.spec.ts](../../../tests/lib/password-reset-self-heal.spec.ts) | 210 | tests |  |
-| [tests/lib/persisted-risk-command-center.spec.ts](../../../tests/lib/persisted-risk-command-center.spec.ts) | 127 | tests |  |
+| [tests/lib/persisted-risk-command-center.spec.ts](../../../tests/lib/persisted-risk-command-center.spec.ts) | 130 | tests |  |
 | [tests/lib/placement-survey-email-provider.spec.ts](../../../tests/lib/placement-survey-email-provider.spec.ts) | 46 | tests |  |
 | [tests/lib/portal-responsive-single-mount.spec.tsx](../../../tests/lib/portal-responsive-single-mount.spec.tsx) | 75 | tests |  |
 | [tests/lib/proactive-resume-generator.spec.ts](../../../tests/lib/proactive-resume-generator.spec.ts) | 30 | tests |  |

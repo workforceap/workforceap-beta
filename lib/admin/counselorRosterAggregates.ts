@@ -13,9 +13,10 @@ export type CounselorAssignmentAgg = {
 /**
  * Caseload / at-risk / placement counts via `groupBy` — no 20k-row hydrate.
  *
- * "At risk" is the saved `at_risk_alerts` case in an active status — the same
- * rule as every other at-risk tile (Command Center, /admin attention, the
- * at-risk API). The roster used to apply its own 21-days-since-login rule
+ * "At risk" is the saved `at_risk_alerts` case in an active status on a
+ * member enrolled in a program — the same rule as every other at-risk tile
+ * (Command Center, /admin attention, the at-risk API; Needs Mike 8: "not
+ * active as of late and in program"). The roster used to apply its own 21-days-since-login rule
  * here and nowhere else, so it could disagree with the tile one click away.
  * "Placed" is a `placement_records` row, the source every outcome figure
  * reads, not the `memberStatus = 'placed'` pointer (number audit 2026-09-20,
@@ -44,7 +45,7 @@ export async function loadCounselorAssignmentAggregates(
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
       where: {
-        AND: [cohort, { member: { atRiskAlerts: { some: { status: { in: [...ACTIVE_AT_RISK_STATUSES] } } } } }],
+        AND: [cohort, { member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: [...ACTIVE_AT_RISK_STATUSES] } } } } }],
       },
       _count: { _all: true },
     }),

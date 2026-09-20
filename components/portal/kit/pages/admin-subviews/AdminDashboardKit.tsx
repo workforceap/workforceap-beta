@@ -171,7 +171,7 @@ export function AdminDashboardKit({
     {
       id: 'stale',
       label: 'Stale Training',
-      detail: 'No progress in 7 days',
+      detail: 'Members flagged: no course progress for 7+ days',
       value: summary.staleTraining ?? 0,
       href: '/admin/members?status=stale',
       tone: 'info',

@@ -69,7 +69,7 @@ describe('counselor grouped reports and pagination', () => {
     expect(db.counselorAssignment.groupBy.mock.calls[0][0].where).toEqual(cohort);
     expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[0]).toEqual(cohort);
     expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[0]).toEqual(cohort);
-    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[1]).toEqual({ member: { atRiskAlerts: { some: { status: { in: ['open', 'acknowledged', 'escalated'] } } } } });
+    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[1]).toEqual({ member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: ['open', 'acknowledged', 'escalated'] } } } } });
     expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[1]).toEqual({ member: { placementRecord: { isNot: null } } });
   });
   it('searches in the tenant query and clamps stale pages without changing cohort KPIs', async () => {

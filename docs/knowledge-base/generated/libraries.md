@@ -36,8 +36,8 @@
 | [lib/admin/commandCenterHealth.ts](../../../lib/admin/commandCenterHealth.ts) | 195 | administration | CommandCenterHealthStatus:15, CommandCenterHealthRow:17, CronRunSnapshot:32, CronHealthDefinition:39, CRON_RUNS_HREF:48, COMMAND_CENTER_CRON_ROWS:50, formatAgo:62, cronHealthRow:73, notCheckedHereRow:111, BuildSystemHealthInput:128, buildCommandCenterSystemHealth:152 |
 | [lib/admin/commandCenterHelpers.ts](../../../lib/admin/commandCenterHelpers.ts) | 201 | administration | AdminCommandCenterBaseRow:3, AdminNeedsReplyRow:9, AdminAtRiskRow:16, AdminInterviewingRow:25, ApplicationEmailPacket:32, AdminApplicationPendingRow:38, AdminCommandCenterTotals:52, AdminProgramHealthRow:72, PROGRAM_HEALTH_SHARE_LABEL:85, buildProgramHealthRows:93, ADMIN_QUEUE_KEYS:114, AdminQueueKey:115, normalizeAdminQueueRequest:116, adminQueueHref:123, AdminCommandCenter:127, buildApplicationEmailPacket:137, bucketCommandCenterTotals:186 |
 | [lib/admin/counselorRoster.ts](../../../lib/admin/counselorRoster.ts) | 51 | administration | COUNSELOR_PAGE_SIZE:5, parseCounselorRosterQuery:7, loadCounselorRoster:13 |
-| [lib/admin/counselorRosterAggregates.test.ts](../../../lib/admin/counselorRosterAggregates.test.ts) | 57 | administration |  |
-| [lib/admin/counselorRosterAggregates.ts](../../../lib/admin/counselorRosterAggregates.ts) | 72 | administration | COUNSELOR_AT_RISK_DEFINITION:5, COUNSELOR_PLACEMENTS_DEFINITION:5, CounselorAssignmentAgg:7, loadCounselorAssignmentAggregates:24 |
+| [lib/admin/counselorRosterAggregates.test.ts](../../../lib/admin/counselorRosterAggregates.test.ts) | 102 | administration |  |
+| [lib/admin/counselorRosterAggregates.ts](../../../lib/admin/counselorRosterAggregates.ts) | 73 | administration | COUNSELOR_AT_RISK_DEFINITION:5, COUNSELOR_PLACEMENTS_DEFINITION:5, CounselorAssignmentAgg:7, loadCounselorAssignmentAggregates:25 |
 | [lib/admin/counselorRosterLabels.ts](../../../lib/admin/counselorRosterLabels.ts) | 7 | administration | COUNSELOR_AT_RISK_DEFINITION:6, COUNSELOR_PLACEMENTS_DEFINITION:7 |
 | [lib/admin/counselorsRosterSort.ts](../../../lib/admin/counselorsRosterSort.ts) | 74 | administration | COUNSELOR_SORT_KEYS:3, CounselorSortKey:12, CounselorSortDirection:13, DEFAULT_COUNSELOR_SORT_KEY:15, DEFAULT_COUNSELOR_SORT_DIRECTION:16, sortCounselorRows:54 |
 | [lib/admin/courseraConsentGate.test.ts](../../../lib/admin/courseraConsentGate.test.ts) | 30 | learning-coursera |  |
@@ -93,7 +93,7 @@
 | [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 51 | administration | directoryRoleLabel:15, resolveDirectoryRole:40 |
 | [lib/admin/runAdminJobMatchesGet.test.ts](../../../lib/admin/runAdminJobMatchesGet.test.ts) | 135 | administration |  |
 | [lib/admin/runAdminJobMatchesGet.ts](../../../lib/admin/runAdminJobMatchesGet.ts) | 105 | administration | AdminJobMatchRow:5, RunAdminJobMatchesDeps:21, serializeAdminJobMatchRow:39, runAdminJobMatchesGet:52 |
-| [lib/admin/studentStatus.ts](../../../lib/admin/studentStatus.ts) | 122 | administration | StudentStatus:4, STUDENT_STATUS_LABELS:6, StudentStatusContext:14, getStudentStatus:35, buildStatusWhere:55 |
+| [lib/admin/studentStatus.ts](../../../lib/admin/studentStatus.ts) | 124 | administration | StudentStatus:4, STUDENT_STATUS_LABELS:6, StudentStatusContext:14, getStudentStatus:35, buildStatusWhere:55 |
 | [lib/admin/studentsRosterEnrichment.ts](../../../lib/admin/studentsRosterEnrichment.ts) | 99 | administration | StudentRosterEnrichmentRow:17, loadStudentRosterEnrichment:46 |
 | [lib/admin/studentsRosterEnrichmentQuery.ts](../../../lib/admin/studentsRosterEnrichmentQuery.ts) | 76 | administration | StudentRosterQueryScope:3, buildStudentRosterEnrichmentQuery:10 |
 | [lib/admin/studentsRosterFacts.ts](../../../lib/admin/studentsRosterFacts.ts) | 59 | administration | StudentRosterAssignmentSource:8, StudentRosterActivitySource:9, StudentRosterCourseFact:10, resolveStudentRosterAssignment:13, STUDENT_ROSTER_ACTIVITY_LABELS:34, resolveStudentRosterActivity:41 |
@@ -742,7 +742,7 @@
 | [lib/member/missionCourseUnlock.ts](../../../lib/member/missionCourseUnlock.ts) | 44 | member-counselor | MissionUnlockCourse:8, normalizeCourseName:13, resolveMissionUnlockSlugs:22, isMissionCourseComplete:37 |
 | [lib/member/nextBestActions.test.ts](../../../lib/member/nextBestActions.test.ts) | 240 | member-counselor |  |
 | [lib/member/nextBestActions.ts](../../../lib/member/nextBestActions.ts) | 326 | member-counselor | NextBestAction:6, NextBestActionsContext:17, buildNextBestActions:44 |
-| [lib/member/persistedAtRisk.ts](../../../lib/member/persistedAtRisk.ts) | 91 | member-counselor | ACTIVE_AT_RISK_STATUSES:9, PersistedRiskScope:11, PersistedAtRiskMember:15, loadPersistedAtRiskMembers:34, persistedRiskCommandRow:83 |
+| [lib/member/persistedAtRisk.ts](../../../lib/member/persistedAtRisk.ts) | 95 | member-counselor | ACTIVE_AT_RISK_STATUSES:9, PersistedRiskScope:11, PersistedAtRiskMember:15, loadPersistedAtRiskMembers:38, persistedRiskCommandRow:87 |
 | [lib/member/points.ts](../../../lib/member/points.ts) | 72 | member-counselor | LevelName:6, getLevelForPoints:7, getNextLevel:7, LEVELS:7, awardPoints:13, getMemberPoints:56, getStreak:72 |
 | [lib/member/pointsConfig.ts](../../../lib/member/pointsConfig.ts) | 59 | member-counselor | POINT_VALUES:3, LEVELS:26, LevelName:33, getLevelForPoints:35, getNextLevel:39, EVENT_LABELS:44 |
 | [lib/member/proactiveInsights.ts](../../../lib/member/proactiveInsights.ts) | 236 | member-counselor | ProactiveInsightTone:21, ProactiveInsight:23, ProactiveInsightsInput:39, buildProactiveInsights:70, buildInsightNotificationPayload:214 |

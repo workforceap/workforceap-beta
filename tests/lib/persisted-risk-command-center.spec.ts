@@ -60,8 +60,11 @@ describe('persisted risk selection contract', () => {
     expect(query.sql).not.toContain('COALESCE(last_event');
     expect(query.sql).not.toContain('stale_training');
     expect(query.sql).not.toContain('coursera_enrollment_approved');
-    // A saved old case remains visible: no synthetic expiry or enrollment filter.
-    expect(query.sql).not.toMatch(/created_at\s*[<>]|enrolled_program IS NOT NULL/);
+    // A saved old case remains visible: no synthetic expiry.
+    expect(query.sql).not.toMatch(/created_at\s*[<>]/);
+    // At risk = not active lately AND in a program (Mike, 2026-09-20): a saved
+    // alert on a member with no program is not a member at risk.
+    expect(query.sql).toContain('u.enrolled_program IS NOT NULL');
   });
 
   it('uses a current active assignment and same-organization actor for counselors', async () => {

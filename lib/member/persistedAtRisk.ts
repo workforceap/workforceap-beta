@@ -25,11 +25,15 @@ export type PersistedAtRiskMember = {
  * exist, show the highest score, then most recently updated case, then its ID.
  * No age cutoff is applied to an unresolved saved case.
  *
- * Population: member-role accounts only (`memberOnlySqlJoin`). Alerts saved
- * against staff, admin, counselor, partner or fixture accounts are never
- * "members at risk", so the Command Center KPI agrees with the /admin
- * attention tile that already reads the member-only roster (number audit
- * 2026-09-20, S2: 131 here vs 125 there).
+ * Population: member-role accounts only (`memberOnlySqlJoin`) who are
+ * enrolled in a program. Alerts saved against staff, admin, counselor,
+ * partner or fixture accounts are never "members at risk", so the Command
+ * Center KPI agrees with the /admin attention tile that already reads the
+ * member-only roster (number audit 2026-09-20, S2: 131 here vs 125 there).
+ * "At risk" means not active lately AND in a program (Mike, 2026-09-20,
+ * Needs Mike 8): the saved alert is the inactivity signal, and a member with
+ * no program has nothing to fall behind in, so the 96 of 131 alert holders
+ * without a program are not counted here.
  */
 export async function loadPersistedAtRiskMembers(
   scope: PersistedRiskScope,
@@ -57,7 +61,7 @@ export async function loadPersistedAtRiskMembers(
       FROM at_risk_alerts a JOIN users u ON u.id = a.user_id
       ${memberOnlySqlJoin('u')}
       WHERE a.status IN (${Prisma.join(statuses)}) AND a.score >= ${threshold}
-        AND u.deleted_at IS NULL ${organization} ${assignment}
+        AND u.deleted_at IS NULL AND u.enrolled_program IS NOT NULL ${organization} ${assignment}
     ), members AS (
       SELECT * FROM ranked_alerts WHERE member_rank = 1
     ), page AS (

@@ -268,7 +268,7 @@ async function computeOutcomesPayload(orgId: string) {
 /**
  * GET /api/admin/outcomes
  * Admin outcomes dashboard data — placement rates, salary data, program effectiveness,
- * retention rates (30/60/90-day), cohort comparison, and demographic breakdowns.
+ * decided 90-day retention, cohort comparison, and demographic breakdowns (members only).
  * Requires admin access. Returns aggregated metrics for the admin's organization.
  */
 async function _GET(request: NextRequest) {
