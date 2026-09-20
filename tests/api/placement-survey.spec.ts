@@ -104,6 +104,7 @@ import {
 } from '@/lib/security/placementSurveyToken';
 import { POST as submitSurvey, GET as checkSurvey } from '@/app/api/placement-survey/route';
 import { GET as listSurveys } from '@/app/api/admin/placement-surveys/route';
+import { GET as pipelineSurveys } from '@/app/api/admin/pipeline/surveys/route';
 import { POST as resendSurvey } from '@/app/api/admin/placement-surveys/resend/route';
 import { POST as runCron } from '@/app/api/cron/placement-survey/route';
 import { prisma } from '@/lib/db/prisma';
@@ -654,6 +655,13 @@ describe('GET /api/admin/placement-surveys', () => {
     }));
     expect(prisma.placementSurvey.count).toHaveBeenNthCalledWith(1, {
       where: expect.objectContaining({ sentAt: { not: null } }),
+    });
+    // Global completed / pending counters exclude pre-acceptance rows too.
+    expect(prisma.placementSurvey.count).toHaveBeenNthCalledWith(2, {
+      where: expect.objectContaining({ sentAt: { not: null }, completedAt: { not: null } }),
+    });
+    expect(prisma.placementSurvey.count).toHaveBeenNthCalledWith(3, {
+      where: expect.objectContaining({ sentAt: { not: null }, completedAt: null }),
     });
     expect(body.stats).toMatchObject({
       completed: 1,
@@ -1399,5 +1407,48 @@ describe('escalateStalePlacementSurveys', () => {
         data: { escalatedAt: expect.any(Date) },
       })
     );
+  });
+});
+
+describe('GET /api/admin/pipeline/surveys sent-state policy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(isCounselor).mockResolvedValue(false);
+    vi.mocked(prisma.placementSurvey.count).mockResolvedValue(0);
+    vi.mocked(prisma.placementSurvey.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
+    vi.mocked(prisma.placementRecord.findMany).mockResolvedValue([]);
+  });
+
+  it('counts totalSent and totalCompleted only over surveys with an accepted delivery', async () => {
+    vi.mocked(prisma.placementSurvey.count).mockResolvedValueOnce(4).mockResolvedValueOnce(1);
+
+    const res = await pipelineSurveys(new Request('http://localhost:3000/api/admin/pipeline/surveys') as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.stats).toMatchObject({ totalSent: 4, totalCompleted: 1, responseRate: 25 });
+
+    expect(prisma.placementSurvey.count).toHaveBeenNthCalledWith(1, {
+      where: expect.objectContaining({ sentAt: { not: null } }),
+    });
+    expect(prisma.placementSurvey.count).toHaveBeenNthCalledWith(2, {
+      where: expect.objectContaining({ sentAt: { not: null }, completedAt: { not: null } }),
+    });
+    expect(prisma.placementSurvey.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ wave: 'thirty_day', sentAt: expect.objectContaining({ not: null }) }),
+      }),
+    );
+  });
+
+  it('refuses non-staff before counting anything', async () => {
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(false);
+
+    const res = await pipelineSurveys(new Request('http://localhost:3000/api/admin/pipeline/surveys') as any);
+    expect(res.status).toBe(403);
+    expect(prisma.placementSurvey.count).not.toHaveBeenCalled();
   });
 });

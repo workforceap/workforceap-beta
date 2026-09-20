@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "72f9e4d5e863778ebec8b067f97d0d4c733c075d5fde5caefbe843463d541539",
+  "inputTreeSha256": "d19613cfde0071784e5d43985ebd8aede79682cf3488b52c6a55229111c56b18",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4825,
-    "sourceModules": 3482,
-    "importReferences": 17279,
-    "resolvedLocalReferences": 11548,
+    "files": 4834,
+    "sourceModules": 3491,
+    "importReferences": 17344,
+    "resolvedLocalReferences": 11614,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1057,
     "nextRouteFiles": 1024,
@@ -22,14 +22,14 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 897,
-    "testCandidates": 889,
+    "testFiles": 906,
+    "testCandidates": 898,
     "testHelpers": 8,
-    "staticallySelectedTests": 887,
+    "staticallySelectedTests": 896,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
-    "environmentNames": 201
+    "environmentNames": 197
   },
   "areas": [
     {
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1028
+      "files": 1025
     },
     {
       "area": "localization",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 510
+      "files": 522
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 890
+      "references": 901
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 735
+      "references": 741
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -124,19 +124,19 @@
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 430
+      "references": 432
+    },
+    {
+      "file": "lib/content/programs.ts",
+      "references": 244
     },
     {
       "file": "lib/tenant/organization.ts",
       "references": 242
     },
     {
-      "file": "lib/content/programs.ts",
-      "references": 241
-    },
-    {
       "file": "lib/audit.ts",
-      "references": 225
+      "references": 226
     },
     {
       "file": "components/portal/kit/index.ts",
@@ -148,7 +148,7 @@
     },
     {
       "file": "lib/audit/log.ts",
-      "references": 193
+      "references": 194
     },
     {
       "file": "components/portal/PageHeader.tsx",
@@ -164,15 +164,15 @@
     },
     {
       "file": "lib/rate-limit.ts",
-      "references": 108
-    },
-    {
-      "file": "lib/tenant/withTenantScope.ts",
-      "references": 100
+      "references": 109
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 99
+      "references": 103
+    },
+    {
+      "file": "lib/tenant/withTenantScope.ts",
+      "references": 102
     },
     {
       "file": "lib/email.ts",
@@ -236,7 +236,7 @@
     },
     {
       "file": "messages/en.json",
-      "references": 39
+      "references": 40
     },
     {
       "file": "components/LocalizedLink.tsx",
@@ -248,7 +248,7 @@
     },
     {
       "file": "lib/db/queryCaps.ts",
-      "references": 36
+      "references": 37
     }
   ],
   "largestSourceFiles": [
@@ -302,7 +302,7 @@
     },
     {
       "file": "tests/api/placement-survey.spec.ts",
-      "lines": 1403
+      "lines": 1454
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
@@ -311,6 +311,10 @@
     {
       "file": "app/(portal)/partner/page.tsx",
       "lines": 1382
+    },
+    {
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1353
     },
     {
       "file": "components/portal/sessions/SessionRunClient.tsx",
@@ -323,10 +327,6 @@
     {
       "file": "lib/content/checkpoints/businessAndDesign.ts",
       "lines": 1334
-    },
-    {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1327
     },
     {
       "file": "components/portal/PortalVoiceSession.tsx",
