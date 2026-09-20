@@ -81,9 +81,24 @@ export const RETENTION_AUDIT_DAYS = 365 * 3 + 1;
 export const PUBLIC_LEAD_RETENTION_DAYS = 180;
 
 /**
- * `email_failure_snapshots` outlives the 90-day diagnostics window it was
- * copied from. The source table's own window is unchanged here; shortening
- * or lengthening it is a separate decision.
+ * WAP-17: `workflow_diagnostics` is the largest table in production (13,558
+ * rows on 2026-09-18, oldest 2026-06-11) and it was the only log-like table
+ * without a window short enough to matter, while `cron_executions` next to it
+ * is trimmed at 30 days. The cron-enable lookup used to scan the whole
+ * workflow's rows on every tick (17,844 calls at 152 ms mean), so the table's
+ * size was directly competing with request traffic for the pool. The issue
+ * asks for a 30-60 day pass; 60 is the conservative end of that band and
+ * still leaves two full months of diagnostics for incident review.
+ *
+ * Preserved copies of anything needed for longer are taken explicitly —
+ * see `email_failure_snapshots` below and scripts/snapshot-email-failures.ts.
+ */
+export const WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = 60;
+
+/**
+ * `email_failure_snapshots` outlives the diagnostics window it was copied
+ * from (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS). Shortening or lengthening that
+ * source window is a separate decision from this one.
  */
 export const EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS = 365;
 
@@ -121,8 +136,9 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
   {
     model: 'workflowDiagnostic',
     dateColumn: 'createdAt',
-    days: 90,
-    description: 'Workflow/email/cron diagnostic logs',
+    days: WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
+    description:
+      'Workflow/email/cron diagnostic logs (60d — WAP-17; largest table in production and the one cron-time queries scan)',
   },
   {
     model: 'emailSendLog',

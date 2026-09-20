@@ -24,6 +24,43 @@ test('pool enforcement is opt-in and its CLI output never includes credentials',
   assert.equal((strict.stdout + strict.stderr).includes('DO_NOT_LOG'), false);
   assert.match(strict.stderr, /connection_limit=1/);
 });
+// WAP-17: the contract is no longer opt-in-only. A real Vercel preview or
+// development build fails on it; a production build reports the parameters and
+// warns loudly but does not block, because the fix is an operator-only env var.
+const runGuard = (extraEnv) => {
+  const script = resolve(__dirname, '../check-supabase-env.mjs');
+  const result = spawnSync(process.execPath, [script], {
+    env: { POSTGRES_PRISMA_URL: base, ...extraEnv },
+    encoding: 'utf8',
+  });
+  return { status: result.status, stdout: result.stdout, stderr: result.stderr, all: result.stdout + result.stderr };
+};
+
+test('a Vercel preview build fails on an off-runbook pool contract', () => {
+  const run = runGuard({ VERCEL: '1', VERCEL_ENV: 'preview' });
+  assert.equal(run.status, 1);
+  assert.match(run.stdout, /runtime pool parameters/);
+  assert.match(run.stderr, /connection_limit=1/);
+  assert.doesNotMatch(run.stderr, /WARNING — runtime pool contract/);
+  assert.equal(run.all.includes('DO_NOT_LOG'), false);
+});
+
+test('a Vercel production build reports the pool parameters and warns instead of blocking', () => {
+  const run = runGuard({ VERCEL: '1', VERCEL_ENV: 'production' });
+  // The parameters land in the build log — this is the evidence the
+  // enforcement flip is waiting on — without the URL, user or password.
+  assert.match(run.stdout, /runtime pool parameters/);
+  assert.match(run.stderr, /WARNING — runtime pool contract is off-runbook for VERCEL_ENV="production"/);
+  assert.match(run.stderr, /POOL_CONTRACT_ENFORCED_VERCEL_ENVS/);
+  assert.equal(run.all.includes('DO_NOT_LOG'), false);
+});
+
+test('a non-Vercel local build neither reports nor enforces the pool contract', () => {
+  const run = runGuard({ NODE_ENV: 'development' });
+  assert.doesNotMatch(run.stdout, /runtime pool parameters/);
+  assert.doesNotMatch(run.stderr, /WARNING — runtime pool contract/);
+});
+
 test('missing, malformed, duplicated, zero and off-contract params fail without reflecting their values', () => {
   for (const value of ['', 'not_a_url_DO_NOT_LOG', base, base + '?' + params.replace('connection_limit=1', 'connection_limit=5'),
     base + '?' + params.replace('pool_timeout=10', 'pool_timeout=0'), base + '?' + params + '&pool_timeout=11',

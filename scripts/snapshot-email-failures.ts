@@ -1,6 +1,8 @@
 /**
  * Copy every `email_send` failure row from `workflow_diagnostics` into
- * `email_failure_snapshots` before the 90-day retention purge removes it.
+ * `email_failure_snapshots` before the retention purge removes it
+ * (WORKFLOW_DIAGNOSTIC_RETENTION_DAYS, 60 days since WAP-17 — run this at
+ * least that often or failures older than the window are lost).
  *
  * Idempotent: rows are keyed by `source_diagnostic_id`, so re-running only
  * adds rows that appeared since the last run. Nothing is deleted or updated in
