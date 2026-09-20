@@ -30,7 +30,7 @@ const EMPLOYER_TABS = [
 ];
 
 const COUNSELOR_TABS = [
-  { href: '/counselor/today', labelKey: 'counselor.today', icon: 'calendar_today' },
+  { href: '/counselor/today', labelKey: 'counselor.today', icon: 'calendar_month' },
   { href: '/counselor/inbox', labelKey: 'counselor.inbox', icon: 'inbox' },
   { href: '/counselor/students', labelKey: 'counselor.members', icon: 'groups' },
   { href: '/counselor/messages', labelKey: 'counselor.messages', icon: 'chat' },

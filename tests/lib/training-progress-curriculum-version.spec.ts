@@ -32,7 +32,7 @@ describe('training progress curriculum-version propagation', () => {
     'app/api/subgroup/members/route.ts',
     'app/api/subgroup/dashboard/route.ts',
     'app/api/cron/partner-outcome-digest/route.ts',
-    'app/(portal)/counselor/page.tsx',
+    'app/(portal)/counselor/overview/page.tsx',
     'app/(portal)/counselor/students/page.tsx',
     'app/(portal)/dashboard/career-brief/page.tsx',
     'app/api/admin/export/members/_membersExportQuery.ts',

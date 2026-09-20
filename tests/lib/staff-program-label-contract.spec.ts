@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 const root = path.resolve(__dirname, '../..');
 
 const STAFF_PROGRAM_SURFACES = [
-  'app/(portal)/counselor/page.tsx',
+  'app/(portal)/counselor/overview/page.tsx',
   'components/portal/counselor/AtRiskDashboard.tsx',
   'components/portal/counselor/AtRiskMemberList.tsx',
   'components/portal/counselor/CounselorCommandCenter.tsx',
