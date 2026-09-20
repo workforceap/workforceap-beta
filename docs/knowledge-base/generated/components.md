@@ -41,7 +41,7 @@
 | [components/admin/AdminAnalyticsCharts.tsx](../../../components/admin/AdminAnalyticsCharts.tsx) | 267 | administration | default:102 |
 | [components/admin/AdminAnalyticsChartsLazy.tsx](../../../components/admin/AdminAnalyticsChartsLazy.tsx) | 14 | administration | default:14 |
 | [components/admin/AdminChartsLoading.tsx](../../../components/admin/AdminChartsLoading.tsx) | 13 | administration | default:6 |
-| [components/admin/AdminCommandCenterClient.tsx](../../../components/admin/AdminCommandCenterClient.tsx) | 490 | administration | default:36 |
+| [components/admin/AdminCommandCenterClient.tsx](../../../components/admin/AdminCommandCenterClient.tsx) | 549 | administration | default:37 |
 | [components/admin/AdminCounselorsClient.tsx](../../../components/admin/AdminCounselorsClient.tsx) | 186 | administration | default:27 |
 | [components/admin/AdminCronsClient.test.tsx](../../../components/admin/AdminCronsClient.test.tsx) | 113 | administration |  |
 | [components/admin/AdminCronsClient.tsx](../../../components/admin/AdminCronsClient.tsx) | 269 | administration | CronExecutionRow:7, default:41 |
@@ -65,7 +65,7 @@
 | [components/admin/AdminMemberResumeSection.tsx](../../../components/admin/AdminMemberResumeSection.tsx) | 15 | administration | default:7 |
 | [components/admin/AdminMemberSendLinks.tsx](../../../components/admin/AdminMemberSendLinks.tsx) | 160 | administration | default:21 |
 | [components/admin/AdminMemberSkillCheckpointPanel.tsx](../../../components/admin/AdminMemberSkillCheckpointPanel.tsx) | 460 | administration | default:381 |
-| [components/admin/AdminMemberWioaReviewPanel.tsx](../../../components/admin/AdminMemberWioaReviewPanel.tsx) | 230 | administration | default:35 |
+| [components/admin/AdminMemberWioaReviewPanel.tsx](../../../components/admin/AdminMemberWioaReviewPanel.tsx) | 239 | administration | default:36 |
 | [components/admin/AdminMemberWorkspaceEmail.tsx](../../../components/admin/AdminMemberWorkspaceEmail.tsx) | 122 | administration | default:16 |
 | [components/admin/AdminOrgSettingsForm.tsx](../../../components/admin/AdminOrgSettingsForm.tsx) | 218 | administration | default:17 |
 | [components/admin/AdminPipelineKanban.tsx](../../../components/admin/AdminPipelineKanban.tsx) | 262 | administration | PipelineKanbanMember:14, default:46 |
@@ -119,7 +119,7 @@
 | [components/admin/MemberMergeClient.test.tsx](../../../components/admin/MemberMergeClient.test.tsx) | 128 | administration |  |
 | [components/admin/MemberMergeClient.tsx](../../../components/admin/MemberMergeClient.tsx) | 346 | administration | default:18 |
 | [components/admin/MemberPartnerSection.tsx](../../../components/admin/MemberPartnerSection.tsx) | 87 | administration | default:8 |
-| [components/admin/MemberReviewTable.tsx](../../../components/admin/MemberReviewTable.tsx) | 271 | administration | MemberReviewTable:34 |
+| [components/admin/MemberReviewTable.tsx](../../../components/admin/MemberReviewTable.tsx) | 277 | administration | MemberReviewTable:35 |
 | [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:8 |
 | [components/admin/MembersListNav.tsx](../../../components/admin/MembersListNav.tsx) | 85 | administration | default:53 |
 | [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1205 | administration | default:276 |
@@ -171,7 +171,7 @@
 | [components/apply/ShareButtons.tsx](../../../components/apply/ShareButtons.tsx) | 90 | applications-enrollment | default:26 |
 | [components/auth/AuthActions.module.css](../../../components/auth/AuthActions.module.css) | 27 | identity-tenancy |  |
 | [components/billing/BillingPacketList.tsx](../../../components/billing/BillingPacketList.tsx) | 129 | partners-funding | default:32 |
-| [components/counselor/CounselorIntakeReviewPanel.tsx](../../../components/counselor/CounselorIntakeReviewPanel.tsx) | 365 | member-counselor | default:100 |
+| [components/counselor/CounselorIntakeReviewPanel.tsx](../../../components/counselor/CounselorIntakeReviewPanel.tsx) | 371 | member-counselor | default:101 |
 | [components/counselor/StaffMemberResumePanel.tsx](../../../components/counselor/StaffMemberResumePanel.tsx) | 367 | member-counselor | default:26 |
 | [components/dashboard/DashboardSkeleton.tsx](../../../components/dashboard/DashboardSkeleton.tsx) | 130 | member-counselor | default:6 |
 | [components/dashboard/JobsSkeleton.tsx](../../../components/dashboard/JobsSkeleton.tsx) | 82 | member-counselor | default:6 |
@@ -406,7 +406,7 @@
 | [components/portal/ProgramChangeRequestModal.tsx](../../../components/portal/ProgramChangeRequestModal.tsx) | 307 | components | default:24 |
 | [components/portal/ProgramChangeRequestPanel.tsx](../../../components/portal/ProgramChangeRequestPanel.tsx) | 204 | components | default:15 |
 | [components/portal/ProgramCommitmentPanel.tsx](../../../components/portal/ProgramCommitmentPanel.tsx) | 82 | components | default:18 |
-| [components/portal/ProgramPicker.test.tsx](../../../components/portal/ProgramPicker.test.tsx) | 102 | components |  |
+| [components/portal/ProgramPicker.test.tsx](../../../components/portal/ProgramPicker.test.tsx) | 101 | components |  |
 | [components/portal/ProgramPicker.tsx](../../../components/portal/ProgramPicker.tsx) | 349 | components | default:136 |
 | [components/portal/ProgressBanner.tsx](../../../components/portal/ProgressBanner.tsx) | 39 | components | default:11 |
 | [components/portal/PushNotificationsToggle.tsx](../../../components/portal/PushNotificationsToggle.tsx) | 124 | communications | default:20 |

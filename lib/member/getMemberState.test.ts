@@ -208,6 +208,17 @@ describe('member dashboard business facts', () => {
     expect(state.checklist.completeFirstCourse).toBe(false);
   });
 
+  it('renders path_to_cert from real state when the program pointer exists but no CourseEnrollment row does (WAP-89)', async () => {
+    findUser.mockResolvedValue({ ...userRecord, enrolledProgram: 'google-it-support', assessmentCompleted: true, courseEnrollments: [] });
+    const state = await getMemberState('member-1');
+    expect(state.enrolledProgram).toBe('google-it-support');
+    const ids = state.nextBestActions.map((action) => action.id);
+    expect(ids).toContain('path_to_cert');
+    // Once staff creates the assignment row the prompt disappears for the same member.
+    findUser.mockResolvedValue({ ...userRecord, enrolledProgram: 'google-it-support', assessmentCompleted: true, courseEnrollments: [enrollment('google-it-support')] });
+    expect((await getMemberState('member-1')).nextBestActions.map((action) => action.id)).not.toContain('path_to_cert');
+  });
+
   it('uses the primary assignment over a stale legacy pointer for actions, checklist and training', async () => {
     findUser.mockResolvedValue({ ...userRecord, enrolledProgram: 'old-program', courseEnrollments: [enrollment('current-program')] });
     const state = await getMemberState('member-1');

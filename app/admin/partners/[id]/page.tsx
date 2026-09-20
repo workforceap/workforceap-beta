@@ -30,6 +30,7 @@ import {
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
+import { eventNameReadCandidates } from '@/lib/events/names';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -125,7 +126,7 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
   const paidEvents = placementIds.length
     ? await withAdminPageScope(scope, (db) => db.memberEvent.findMany({
         where: {
-          eventName: 'PARTNER_PAYOUT_SENT',
+          eventName: { in: eventNameReadCandidates('partner_payout_sent') },
           entityType: 'PlacementRecord',
           entityId: { in: placementIds },
         },

@@ -62,8 +62,10 @@ describe('program metadata uses curriculum facts without unsupported wage promis
     expect(getTopProgramsFromQuiz(weights, answers).map((program) => program.slug)).toEqual(expected);
   });
 
-  it('does not advertise programs through salary-only search matches', () => {
-    const fixture = { ...PROGRAMS[0], salary: 'Unsupported unique wage marker' };
+  it('carries no salary field on the catalog record, so search cannot match one (WAP-23)', () => {
+    const fixture = PROGRAMS[0];
+    expect('salary' in fixture).toBe(false);
+    expect(JSON.stringify(PROGRAMS)).not.toMatch(/Starting salary|\$\d+K/);
     expect(programMatchesSearchQuery(fixture, 'unique wage marker')).toBe(false);
     expect(programMatchesSearchQuery(fixture, fixture.title)).toBe(true);
   });

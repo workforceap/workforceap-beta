@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
+import type { EventName } from '@/lib/events/names';
 import { getProgramBySlug } from '@/lib/content/programs';
 import {
   type SkillMissionDefinition,
@@ -11,12 +12,13 @@ import {
   getMissionDefinitionForEventKey,
   resolveSkillMissionsForCurriculum,
 } from '@/lib/member/skillMissionCurriculum';
+import { persistEvent } from '@/lib/events/track';
 
 export { type SkillMissionDefinition };
 
-export const MISSION_EVENT_SUBMITTED = 'skill_mission_submitted';
-export const MISSION_EVENT_PASSED = 'skill_mission_passed';
-export const MISSION_EVENT_RETRY = 'skill_mission_needs_retry';
+export const MISSION_EVENT_SUBMITTED = 'skill_mission_submitted' satisfies EventName;
+export const MISSION_EVENT_PASSED = 'skill_mission_passed' satisfies EventName;
+export const MISSION_EVENT_RETRY = 'skill_mission_needs_retry' satisfies EventName;
 
 export type MissionStatus = 'locked' | 'ready' | 'passed' | 'needs_retry';
 
@@ -241,24 +243,22 @@ export async function recordMissionResult(args: {
   const eventName =
     args.result.verdict === 'passed' ? MISSION_EVENT_PASSED : MISSION_EVENT_RETRY;
 
-  await prisma.memberEvent.create({
-    data: {
-      userId: args.userId,
-      eventName,
-      entityType: 'skill_checkpoint',
-      entityId: key,
-      sourcePage: '/member/missions',
-      metadata: {
-        ...args.result,
-        aiToolResultId: args.aiToolResultId,
-        courseSlug: args.courseSlug,
-        assignedCourseSlug: args.assignedCourseSlug,
-        programSlug: args.programSlug,
-        curriculumVersion: args.curriculumVersion,
-        recordedAt: new Date().toISOString(),
-      },
+  await persistEvent({
+    userId: args.userId,
+    eventName,
+    entityType: 'skill_checkpoint',
+    entityId: key,
+    sourcePage: '/member/missions',
+    metadata: {
+      ...args.result,
+      aiToolResultId: args.aiToolResultId,
+      courseSlug: args.courseSlug,
+      assignedCourseSlug: args.assignedCourseSlug,
+      programSlug: args.programSlug,
+      curriculumVersion: args.curriculumVersion,
+      recordedAt: new Date().toISOString(),
     },
-  });
+  }, prisma);
 }
 
 /** Record a submission attempt (counted toward the daily attempt cap even
@@ -275,21 +275,19 @@ export async function recordMissionSubmission(args: {
     curriculumVersion: args.curriculumVersion,
     missionCourseSlug: args.courseSlug,
   });
-  await prisma.memberEvent.create({
-    data: {
-      userId: args.userId,
-      eventName: MISSION_EVENT_SUBMITTED,
-      entityType: 'skill_checkpoint',
-      entityId: key,
-      sourcePage: '/member/missions',
-      metadata: {
-        courseSlug: args.courseSlug,
-        assignedCourseSlug: args.assignedCourseSlug,
-        programSlug: args.programSlug,
-        curriculumVersion: args.curriculumVersion,
-      },
+  await persistEvent({
+    userId: args.userId,
+    eventName: MISSION_EVENT_SUBMITTED,
+    entityType: 'skill_checkpoint',
+    entityId: key,
+    sourcePage: '/member/missions',
+    metadata: {
+      courseSlug: args.courseSlug,
+      assignedCourseSlug: args.assignedCourseSlug,
+      programSlug: args.programSlug,
+      curriculumVersion: args.curriculumVersion,
     },
-  });
+  }, prisma);
 }
 
 /** Count submissions for a mission within the trailing window — used for the

@@ -59,10 +59,15 @@ beforeEach(() => {
   mocks.referrals.mockResolvedValue([
     { id: 'ref-1', referredAt: INSTANT, member: { id: 'member-1', fullName: 'Fixture Member', enrolledAt: null } },
   ]);
-  mocks.events.mockImplementation(async (args: { where?: { eventName?: string } }) =>
-    args?.where?.eventName === 'PLACEMENT_CONFIRMATION_SUBMITTED'
+  // Readers query the canonical name plus historical aliases (WAP-39).
+  const reads = (args: { where?: { eventName?: string | { in?: string[] } } }, name: string) => {
+    const filter = args?.where?.eventName;
+    return typeof filter === 'string' ? filter === name : Boolean(filter?.in?.includes(name));
+  };
+  mocks.events.mockImplementation(async (args: { where?: { eventName?: string | { in?: string[] } } }) =>
+    reads(args, 'placement_confirmation_submitted')
       ? [{ id: 'ev-1', userId: 'member-1', metadata: { label: 'Fixture placement' }, createdAt: INSTANT }]
-      : args?.where?.eventName === 'PARTNER_PAYOUT_SENT'
+      : reads(args, 'partner_payout_sent')
         ? [{ id: 'pay-1', createdAt: INSTANT, metadata: { partnerId: 'partner-1', amountCents: 50000 }, user: { fullName: 'Fixture Member' } }]
         : []);
 });

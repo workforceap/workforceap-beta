@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { persistEvent } from '@/lib/events/track';
 async function _GET() {
   try {
   const user = await getUser();
@@ -46,20 +47,19 @@ export const GET = withApiGuc(_GET);async function _POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid outcome' }, { status: 400 });
   }
 
-  const event = await prisma.$transaction((tx) => tx.memberEvent.create({
-    data: {
-      userId: user.id,
-      eventName: 'pitch_deployed',
-      entityType: 'elevator_pitch',
-      sourcePage: '/dashboard/ai-tools/elevator-pitch',
-      metadata: {
-        employer: employer.trim().slice(0, 200),
-        usedAt: usedAt ?? new Date().toISOString(),
-        outcome: outcome ?? 'pending',
-      },
+  const created = await prisma.$transaction((tx) => persistEvent({
+    userId: user.id,
+    eventName: 'pitch_deployed',
+    entityType: 'elevator_pitch',
+    sourcePage: '/dashboard/ai-tools/elevator-pitch',
+    metadata: {
+      employer: employer.trim().slice(0, 200),
+      usedAt: usedAt ?? new Date().toISOString(),
+      outcome: outcome ?? 'pending',
     },
-    select: { id: true, metadata: true, createdAt: true },
-  }));
+  }, tx));
+  // Response shape is unchanged: only the fields the client renders.
+  const event = { id: created.id, metadata: created.metadata, createdAt: created.createdAt };
 
   auditLog({ actorUserId: user.id, action: 'member.pitchDeployment.create', targetType: 'PitchDeployment', targetId: event.id }).catch(() => {});
   logAuditEvent({ user: { id: user.id, role: 'member' }, verb: 'create', object: { type: 'PitchDeployment', id: event.id }, result: { success: true } }).catch(() => {});

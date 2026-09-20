@@ -61,6 +61,27 @@ beforeEach(() => {
 });
 
 describe('application decision transaction', () => {
+  it('refuses a denial without a written reason before any write (WAP-184 G-3)', async () => {
+    const result = await changeApplicationStatus({ ...args, status: 'DENIED' });
+    expect(result).toEqual({ ok: false, applicationId: 'app-a', error: expect.stringMatching(/written reason/i), status: 400 });
+    expect(fixture.state.application.status).toBe('PENDING');
+    expect(fixture.tx.application.updateMany).not.toHaveBeenCalled();
+    expect(fixture.state.snapshots).toHaveLength(0);
+    expect(auditLog).not.toHaveBeenCalled();
+    expect(sendApplicationRejectedEmail).not.toHaveBeenCalled();
+  });
+  it('accepts a denial whose reason is already stored on the application', async () => {
+    fixture.state.application.notes = 'Missing eligibility documents after two requests.';
+    const result = await changeApplicationStatus({ ...args, status: 'DENIED' });
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.status).toBe('DENIED');
+    expect(fixture.state.snapshots[0]).toMatchObject({ decision: 'DENIED', notes: 'Missing eligibility documents after two requests.' });
+  });
+  it('records the supplied reason with the denial evidence', async () => {
+    const result = await changeApplicationStatus({ ...args, status: 'DENIED', notes: 'Applicant relocated out of state.' });
+    expect(result.ok).toBe(true);
+    expect(fixture.state.snapshots[0]).toMatchObject({ decision: 'DENIED', notes: 'Applicant relocated out of state.' });
+  });
   it('commits evidence and audit with the tenant-scoped decision before sending', async () => {
     const result = await changeApplicationStatus(args);
     expect(result.ok).toBe(true);
@@ -134,12 +155,19 @@ it('does not let a former counselor review after a handoff between preflight and
   }, select: { id: true } });
 });
 
-it('allows the current counselor to deny without adding a new mandatory reason policy', async () => {
+it('allows the current counselor to deny once a written reason is supplied (WAP-184 G-3)', async () => {
+  // Before WAP-184 this asserted that a denial could commit with `notes: null`.
+  // A denial reason is now mandatory for every actor role, counselors included.
   fixture.tx.counselorAssignment.findFirst.mockResolvedValueOnce({ id: 'assignment' } as never);
-  const result = await changeApplicationStatus({ ...args, actorRole: 'counselor', status: 'DENIED' });
+  const refused = await changeApplicationStatus({ ...args, actorRole: 'counselor', status: 'DENIED' });
+  expect(refused).toMatchObject({ ok: false, status: 400 });
+  expect(fixture.state.application.status).toBe('PENDING');
+
+  fixture.tx.counselorAssignment.findFirst.mockResolvedValueOnce({ id: 'assignment' } as never);
+  const result = await changeApplicationStatus({ ...args, actorRole: 'counselor', status: 'DENIED', notes: 'Did not complete intake after two follow-ups.' });
   expect(result.ok).toBe(true);
   expect(fixture.state.application.status).toBe('DENIED');
-  expect(recordWioaReviewSnapshot).toHaveBeenCalledWith(expect.objectContaining({ notes: null }), fixture.tx);
+  expect(recordWioaReviewSnapshot).toHaveBeenCalledWith(expect.objectContaining({ decision: 'DENIED', notes: 'Did not complete intake after two follow-ups.' }), fixture.tx);
 });
 
 it('does not write if the subject leaves the tenant before the member lock', async () => {

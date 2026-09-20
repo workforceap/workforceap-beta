@@ -9,6 +9,7 @@ import { sendApplicantFollowupEmail } from '@/lib/email';
 import { logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withDbRetry } from '@/lib/db/withDbRetry';
+import { persistEvent } from '@/lib/events/track';
 
 export async function remindStaleApplication(applicationId: string, userId: string) {
   return withAuthGuc(async () => {
@@ -45,20 +46,18 @@ export async function remindStaleApplication(applicationId: string, userId: stri
       fullName: application.user.fullName ?? 'there',
     });
 
-    await prisma.memberEvent.create({
-      data: {
-        userId,
-        eventName: 'APPLICATION_REMINDER_SENT',
-        entityType: 'Application',
-        entityId: applicationId,
-        metadata: {
-          note: 'System sent a reminder for a stale application.',
-          emailOk: emailResult.ok,
-          emailError: emailResult.error ?? null,
-        },
-        sourcePage: '/admin/pipeline',
+    await persistEvent({
+      userId,
+      eventName: 'application_reminder_sent',
+      entityType: 'Application',
+      entityId: applicationId,
+      metadata: {
+        note: 'System sent a reminder for a stale application.',
+        emailOk: emailResult.ok,
+        emailError: emailResult.error ?? null,
       },
-    });
+      sourcePage: '/admin/pipeline',
+    }, prisma);
 
     const profileRole = await withDbRetry(() => getProfileRole(user.id)).catch((err) => {
       console.error('[admin:pipeline-remind] profileRole lookup failed; degrading to member', err);

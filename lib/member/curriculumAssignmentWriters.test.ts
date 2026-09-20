@@ -71,18 +71,33 @@ function courseEnrollmentCalls(source: string): Array<{ kind: 'create' | 'upsert
   return calls;
 }
 
+/**
+ * WAP-174: the one canonical program-enrollment writer. Every production
+ * `courseEnrollment.create` / `.upsert` must live here; every former direct
+ * writer must import it instead. This is a path allowlist, not a count, so
+ * adding a writer anywhere else fails with the offending file named.
+ */
+const CANONICAL_ENROLLMENT_WRITER = 'lib/member/courseEnrollmentAssignment.ts';
+
+/** Former direct writers that now delegate to the canonical helper. */
+const FORMER_DIRECT_WRITERS = [
+  'app/api/admin/members/create/route.ts',
+  'app/api/admin/coursera/reconcile/add-to-wap/route.ts',
+  'lib/coursera/syncUserFromB4B.ts',
+];
+
 test('every production CourseEnrollment create pins a curriculum version and retries preserve it', () => {
   const files = [
     ...productionTypeScriptFiles(join(REPO, 'app')),
     ...productionTypeScriptFiles(join(REPO, 'lib')),
   ];
-  let writerCount = 0;
+  const writerFiles = new Set<string>();
 
   for (const file of files) {
     const source = readFileSync(file, 'utf8');
     for (const { kind, call } of courseEnrollmentCalls(source)) {
-      writerCount += 1;
-      const displayPath = relative(REPO, file);
+      const displayPath = relative(REPO, file).split('\\').join('/');
+      writerFiles.add(displayPath);
       const createData = propertyObject(call, kind === 'upsert' ? 'create' : 'data');
       assert.ok(createData, `${displayPath} ${kind} is missing its create payload`);
       assert.match(
@@ -103,9 +118,27 @@ test('every production CourseEnrollment create pins a curriculum version and ret
     }
   }
 
-  // Request-driven upserts are centralized in courseEnrollmentAssignment.ts;
-  // only that helper plus three trusted direct-create paths remain.
-  assert.equal(writerCount, 4, 'review every added or removed CourseEnrollment create writer');
+  assert.deepEqual(
+    [...writerFiles].sort(),
+    [CANONICAL_ENROLLMENT_WRITER],
+    'CourseEnrollment rows may only be created by upsertEquivalentCourseEnrollment; route new writers through it',
+  );
+});
+
+test('former direct CourseEnrollment writers delegate to the canonical helper', () => {
+  for (const path of FORMER_DIRECT_WRITERS) {
+    const source = readFileSync(join(REPO, ...path.split('/')), 'utf8');
+    assert.match(
+      source,
+      /upsertEquivalentCourseEnrollment\(/,
+      `${path} must call upsertEquivalentCourseEnrollment instead of a direct create`,
+    );
+    assert.doesNotMatch(
+      source,
+      /courseEnrollment\s*\.\s*(?:create|createMany|upsert)\s*\(/,
+      `${path} must not create CourseEnrollment rows directly`,
+    );
+  }
 });
 
 test('request-driven enrollment writers persist canonical program slugs', () => {
