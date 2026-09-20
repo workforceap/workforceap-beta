@@ -47,6 +47,9 @@
     "lib/resume/resumeUiConcurrencyAndWarnings.test.ts",
     "lib/resume/resumeUploadUiContract.test.ts",
     "lib/super-admin-switcher-structure.test.ts",
+    "lib/ui/adminSemanticTokens.test.ts",
+    "lib/ui/brandTokens.test.ts",
+    "lib/ui/portalCanvas.test.ts",
     "lib/ui/statusColors.test.ts",
     "lib/wioa/wioaAvailability.test.ts",
     "lib/wioa/wioaNotification.test.ts",
@@ -93,9 +96,11 @@
     "tests/lib/training-progress-curriculum-version.spec.ts",
     "tests/lib/twc-syllabus-accuracy.spec.ts",
     "tests/lib/voice-studio-card-contrast.spec.ts",
+    "tests/next-config-redirect-destinations.spec.ts",
     "tests/scripts/preview-approved-curriculum-schema.test.ts",
     "tests/scripts/preview-member-lab-schema.test.ts",
     "tests/scripts/preview-training-workspace-schema.test.ts",
-    "tests/test-runner-coverage.test.ts"
+    "tests/test-runner-coverage.test.ts",
+    "tests/well-known-icon-paths.spec.ts"
   ]
 }

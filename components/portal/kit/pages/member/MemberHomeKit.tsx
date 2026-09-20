@@ -47,7 +47,7 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  *      and a points ledger.
  *   5. The application pipeline table + a Next Badge tile with segmented
  *      progress.
- * A quiet "quick links" row (Learning Hub / Career Toolkit) closes out the
+ * A quiet "quick links" row (Learning Hub / AI Career Tools) closes out the
  * page — those destinations also live in the primary portal nav, so they get
  * a low-key footer instead of competing bento tiles.
  *
@@ -600,7 +600,7 @@ export function MemberHomeKit({
         <PageOpener
           kicker="Home"
           title={greeting && firstName ? `${greeting}, ${firstName}` : firstName || 'Home'}
-          lede={nextLesson ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}` : 'Pick up your program, jobs, or Career Studio.'}
+          lede={nextLesson ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}` : 'Pick up your program, jobs, or AI Career Tools.'}
           icon={<Home size={13} aria-hidden="true" />}
           action={
             currentStreak > 0 ? (
@@ -896,7 +896,7 @@ export function MemberHomeKit({
           </div>
         </div>
 
-        {/* Quiet quick links — Learning Hub + Career Toolkit are also reachable
+        {/* Quiet quick links — Learning Hub + AI Career Tools are also reachable
             from the primary portal nav, so this stays a low-key footer rather
             than competing bento tiles. */}
         <div className="wa-flex wa-items-center wa-gap-5 wa-flex-wrap">
@@ -912,7 +912,7 @@ export function MemberHomeKit({
             className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
             style={HOME_TEXT_LINK}
           >
-            <Wand2 size={14} aria-hidden /> Career Studio <ArrowRight size={14} aria-hidden />
+            <Wand2 size={14} aria-hidden /> AI Career Tools <ArrowRight size={14} aria-hidden />
           </a>
         </div>
       </div>

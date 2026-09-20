@@ -82,12 +82,12 @@ export default async function TrainingBridgePage() {
         ) : null}
         <PortalBreadcrumb
           items={[
-            { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+            { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
             { label: t('title') },
           ]}
         />
         <PageOpener
-          kicker="AI Career Toolkit"
+          kicker="AI Career Tools"
           title={t('title')}
           lede={t('subtitle')}
           action={<StatusTag tone="info">{t('betaTag')}</StatusTag>}

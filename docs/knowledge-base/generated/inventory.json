@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e8d53ed84ada0011d72311ca542ec3af36cbaefe7bef1d6eb37cd15d23900235",
+  "inputTreeSha256": "fd4417da28245fed2764fb88919901e0a435ba22b97a4208f4c1831a7ea06c43",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -6992,9 +6992,9 @@
       "path": "app/(portal)/dashboard/ai-tools/history/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5788,
+      "bytes": 5786,
       "lines": 149,
-      "sha256": "ff55c0a0b9209c73b64810423cab07bdcc554b15663018ea594db3720c412afb",
+      "sha256": "1b33104f86408eee6c1a31f3bd47aebc56eb068b1122e85c93ae2a7cd75588d8",
       "binary": false,
       "exports": [
         {
@@ -7432,9 +7432,9 @@
       "path": "app/(portal)/dashboard/ai-tools/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4252,
+      "bytes": 4254,
       "lines": 109,
-      "sha256": "bd69f1d2fa92ea835a2758ab7e3296a2df8fac8cde8c9a57cb8f2803e10a3195",
+      "sha256": "d9255c58f835b662cfe51c08d32f79338bfcb4b538fff7824716ff296186d90c",
       "binary": false,
       "exports": [
         {
@@ -7837,9 +7837,9 @@
       "path": "app/(portal)/dashboard/ai-tools/skill-checkpoints/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 1524,
+      "bytes": 1523,
       "lines": 41,
-      "sha256": "8ef198784d872a28a0ea05507d8efc6d69e943654615b64121e63371d06f3ea8",
+      "sha256": "51445363029bb8d07c9ffe350b53c9ceeec8f493c26861875df258c74381cc31",
       "binary": false,
       "exports": [
         {
@@ -7897,9 +7897,9 @@
       "path": "app/(portal)/dashboard/ai-tools/skill-mapper/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2278,
+      "bytes": 2277,
       "lines": 70,
-      "sha256": "d0660b779e59cb76f4f3318fedb58195086913ddad5296608a49792afbeb71af",
+      "sha256": "2a66b1e05b102caf11fbd21a61fdca8461203f6bc1462492f877981f495b7d9c",
       "binary": false,
       "exports": [
         {
@@ -7987,9 +7987,9 @@
       "path": "app/(portal)/dashboard/ai-tools/training-bridge/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3544,
+      "bytes": 3543,
       "lines": 99,
-      "sha256": "bfe493232b811d3686850cd3f387ef25fa7003b858d5152886027cbcce185b79",
+      "sha256": "a2d8c401e3cf34b20dcff2c2ecc8c40d2938433f7d46b7f9e9cfd3ddb84f2888",
       "binary": false,
       "exports": [
         {
@@ -8052,9 +8052,9 @@
       "path": "app/(portal)/dashboard/ai-tools/voice-interview/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3498,
+      "bytes": 3494,
       "lines": 92,
-      "sha256": "0b6ca88d18c0344b1d95739a6a0d5b0979dae9f059ee6a05b06dca38b0e58e66",
+      "sha256": "35cd23806eac85e17206541397237c718b7e0d67e95b826d2528db95a6c9ecff",
       "binary": false,
       "exports": [
         {
@@ -8257,9 +8257,9 @@
       "path": "app/(portal)/dashboard/career-brief/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 18953,
+      "bytes": 18952,
       "lines": 472,
-      "sha256": "1f333a0d3c76812c5f76bc304a6a1aeb0585c9a07c9bb7b5301496a22b05e8f4",
+      "sha256": "30440fd1c31cd0b07e5558948824922170ffed2c815916e74d51266d93214d85",
       "binary": false,
       "exports": [
         {
@@ -8846,9 +8846,9 @@
       "path": "app/(portal)/dashboard/guide/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 15341,
+      "bytes": 15348,
       "lines": 354,
-      "sha256": "6a3cca42dfb12af525793e099f3fcc247a361d3f8efd51f2acafd0ab106d3e13",
+      "sha256": "4e6d0086bbcd4a0a9f833eaaacf733cd3355ac5acf941e08db4ba000a016770e",
       "binary": false,
       "exports": [
         {
@@ -8921,9 +8921,9 @@
       "path": "app/(portal)/dashboard/help/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7284,
+      "bytes": 7286,
       "lines": 170,
-      "sha256": "64fa2cd5fa414660aaca2fecdb1f6b73a37465a7f7033c08ce816020f10412ec",
+      "sha256": "05db2957d76c14d34863767a223bef22a1661ad6aeb32feb509f2fa85c1cca70",
       "binary": false,
       "exports": [
         {
@@ -9335,19 +9335,19 @@
       "path": "app/(portal)/dashboard/layout.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 2987,
-      "lines": 91,
-      "sha256": "414cbe9f126115f1391e5bcfbe99b5869930cb594881066891f7b7dac62bf173",
+      "bytes": 3896,
+      "lines": 115,
+      "sha256": "f67610448775a39fe7cb964ceb6954380e74475c35026d0db1d4faef0c213456",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 18,
+          "line": 20,
           "kind": "FunctionDeclaration",
           "localName": "DashboardLayout"
         }
@@ -9355,12 +9355,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 13,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DashboardLayout",
-          "line": 18,
+          "line": 20,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -9395,9 +9395,9 @@
       "path": "app/(portal)/dashboard/learning/find-your-career/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 6231,
+      "bytes": 6238,
       "lines": 149,
-      "sha256": "2cab22638002a371596eb422cb76b3fe535c0028316d91b13c63e7e2b81373b7",
+      "sha256": "733ac10c70ee2197aca9eb48bdc706ebf166e048cc74a1f5a80b070f80d817ae",
       "binary": false,
       "exports": [
         {
@@ -10732,9 +10732,9 @@
       "path": "app/(portal)/dashboard/resume/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 4994,
+      "bytes": 4996,
       "lines": 146,
-      "sha256": "195e1e3ee5b5bae52e8fab2f6fce11c85c02bb42d1eeec3447f394a6aa93953e",
+      "sha256": "b938c936372de2d4cac18434b5e091c635f9556dd104b8ff1e57c9d4d1b51822",
       "binary": false,
       "exports": [
         {
@@ -10992,9 +10992,9 @@
       "path": "app/(portal)/dashboard/toolkit/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 223,
+      "bytes": 225,
       "lines": 6,
-      "sha256": "67bf461d55182bbb641485e73605b38f6be9acdd59054b21e6649ed9a1980674",
+      "sha256": "9ac202b572c4220d663ec8057cf0b42558fa04e584e10095e212c626950c113e",
       "binary": false,
       "exports": [
         {
@@ -45592,9 +45592,9 @@
       "path": "app/layout.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 17055,
-      "lines": 319,
-      "sha256": "df64363db7b27c2bb8a14a77c77cc31465419b8c7a7b3500bfd41a63be70af8a",
+      "bytes": 17174,
+      "lines": 320,
+      "sha256": "2656a9d075b76d55c9cdbd6075c572a4bb208fe16d899a8a3a1012b6439aa6ff",
       "binary": false,
       "exports": [
         {
@@ -47885,14 +47885,14 @@
       "path": "components/MainNav.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 24461,
-      "lines": 576,
-      "sha256": "05bd02c7a3e892907c02d0ccf72e9a43a7dda1e68b5f0480ba88ff291eaca1a8",
+      "bytes": 24372,
+      "lines": 571,
+      "sha256": "0dbcd36164b23455e914e830d68805e4e1fb440b61113b20ac4f9433e3561001",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration",
           "localName": "MainNav"
         }
@@ -47900,67 +47900,67 @@
       "declarations": [
         {
           "name": "lastAuthCheckAt",
-          "line": 14,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "navItems",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "dropdownMenuId",
-          "line": 44,
+          "line": 45,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PREFETCH_HIGH_PRIORITY",
-          "line": 49,
+          "line": 50,
           "kind": "Variable"
         },
         {
           "name": "marketingNavPrefetch",
-          "line": 50,
+          "line": 51,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isOnApplyFunnel",
-          "line": 60,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GuestSignInCTAKey",
-          "line": 65,
+          "line": 66,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "GuestLoginSubmenuItem",
-          "line": 72,
+          "line": 73,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PortalLinkSubmenuItem",
-          "line": 78,
+          "line": 79,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "GUEST_LOGIN_SUBMENU",
-          "line": 81,
+          "line": 82,
           "kind": "Variable"
         },
         {
           "name": "PortalSubmenuItem",
-          "line": 89,
+          "line": 90,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PARTNER_EXCLUSIVE_LOGIN_SUBMENU",
-          "line": 92,
+          "line": 93,
           "kind": "Variable"
         },
         {
           "name": "MainNav",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -58415,9 +58415,9 @@
       "path": "components/portal/CareerBriefForYou.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5885,
+      "bytes": 5883,
       "lines": 146,
-      "sha256": "2a3c7a49b18b0e6a0becc6ef278898a909fc0074fbb9cef3cdaf8b4027c6a574",
+      "sha256": "27fe1ad1141cb3493a4e64c1a9b03530cd94dba47d78df188ff44517363d6e22",
       "binary": false,
       "exports": [
         {
@@ -59321,14 +59321,14 @@
       "path": "components/portal/DevViewToggle.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2524,
-      "lines": 82,
-      "sha256": "32f8c39bc87b6d7a3f84f5e95616e3afb8bb18d62b95a75b22278654824042d7",
+      "bytes": 2655,
+      "lines": 84,
+      "sha256": "cd93a19bd68f0dfb378f6fef14674939db54d3026512946b91122b912248c33a",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration",
           "localName": "DevViewToggle"
         }
@@ -59336,12 +59336,12 @@
       "declarations": [
         {
           "name": "STORAGE_KEY",
-          "line": 6,
+          "line": 7,
           "kind": "Variable"
         },
         {
           "name": "DevViewToggle",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60373,22 +60373,27 @@
       "path": "components/portal/MemberApprovalStatusCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2274,
-      "lines": 44,
-      "sha256": "5ac24bbe6c5fdc0790aa23fe09e981682e96cdb748c7af28a7bcc764aff8715c",
+      "bytes": 4617,
+      "lines": 110,
+      "sha256": "b3137668734175b47b05a5c4152056a9957fcc8e92f59d95ab90ac00402adb3e",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 11,
+          "line": 24,
           "kind": "FunctionDeclaration",
           "localName": "MemberApprovalStatusCard"
         }
       ],
       "declarations": [
         {
+          "name": "STAGE_ORDER",
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
           "name": "MemberApprovalStatusCard",
-          "line": 11,
+          "line": 24,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -61087,14 +61092,14 @@
       "path": "components/portal/MemberWorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2165,
-      "lines": 62,
-      "sha256": "9931602c5edffd14ec5c413a4e66fd26544b1b6afb9dfca4cb8a08732a556911",
+      "bytes": 2399,
+      "lines": 67,
+      "sha256": "8077cc0181ba5e7ab8841fcb6db0e525efdfbe1e2eadd1b943584d55fe30d910",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration",
           "localName": "MemberWorkspaceShell"
         }
@@ -61102,7 +61107,7 @@
       "declarations": [
         {
           "name": "MemberWorkspaceShell",
-          "line": 13,
+          "line": 14,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -61997,14 +62002,14 @@
       "path": "components/portal/PortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4675,
-      "lines": 138,
-      "sha256": "16d4c600a777dee4593391aa25402038d2c18a476aedd1e9b0331b6fafc6db88",
+      "bytes": 4288,
+      "lines": 121,
+      "sha256": "9ca0f04cd97cdfb0eecb651021386f3ae5919df2795018c14a8388a2e3338470",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration",
           "localName": "PortalShell"
         }
@@ -62012,32 +62017,32 @@
       "declarations": [
         {
           "name": "MEMBER_PORTAL_PREFIXES",
-          "line": 9,
-          "kind": "Variable"
-        },
-        {
-          "name": "DEDICATED_SHELL_PREFIXES",
           "line": 10,
           "kind": "Variable"
         },
         {
+          "name": "DEDICATED_SHELL_PREFIXES",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
           "name": "isMemberPortalPath",
-          "line": 12,
+          "line": 13,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hasDedicatedShell",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "stripLocale",
-          "line": 21,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PortalShell",
-          "line": 25,
+          "line": 26,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63335,26 +63340,26 @@
       "path": "components/portal/SignOutButton.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1568,
-      "lines": 59,
-      "sha256": "2e12311000f64fa5abf783c1576f1a1421eca49e492255fff073499af824ee92",
+      "bytes": 1756,
+      "lines": 62,
+      "sha256": "7fcb47a31a891a5c6acd525a1c2bf9aa1fde1b31a56694c28652748cb014da99",
       "binary": false,
       "exports": [
         {
           "name": "SignOutButton",
-          "line": 14,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "SignOutButtonProps",
-          "line": 7,
+          "line": 8,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SignOutButton",
-          "line": 14,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64795,14 +64800,14 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 31769,
-      "lines": 750,
-      "sha256": "9f660d4227323570e0f5bd2ec52f57d377db615efe9edca1ef6576ad04c1c08b",
+      "bytes": 33493,
+      "lines": 802,
+      "sha256": "1517d344c7de3e67b4870c9d4b32246f04aa4cabe76adf401d72ee554b75fbfe",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 49,
+          "line": 91,
           "kind": "FunctionDeclaration",
           "localName": "WorkspaceShell"
         }
@@ -64810,12 +64815,17 @@
       "declarations": [
         {
           "name": "ROLE_TO_NAV_VARIANT",
-          "line": 42,
+          "line": 44,
           "kind": "Variable"
         },
         {
+          "name": "ShellIdentity",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "WorkspaceShell",
-          "line": 49,
+          "line": 91,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -66702,9 +66712,9 @@
       "path": "components/portal/kit/MemberDashboardKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5882,
+      "bytes": 5883,
       "lines": 119,
-      "sha256": "2b97d657f56e8b3da8dac55e004517247077ee9403bd0fc790c81d5fb75c377c",
+      "sha256": "478d0327e356d2385c58c63003dd3b3d15041e43e57a688964824b050d0c704e",
       "binary": false,
       "exports": [
         {
@@ -67961,9 +67971,9 @@
       "path": "components/portal/kit/pages/VoiceStudioKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 67211,
+      "bytes": 67219,
       "lines": 1637,
-      "sha256": "5a3a3403772d6cb7d9c4d004bf1b8431785ef72ffbce38944d17cf33f58df90f",
+      "sha256": "cc2aa7227e523e5a40a793a099acae65e97a28ff87a98d9c5882563ea7f12c77",
       "binary": false,
       "exports": [
         {
@@ -71865,9 +71875,9 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 36107,
+      "bytes": 36113,
       "lines": 921,
-      "sha256": "fd9cb2286b3ed64bcd45f914a2770e0c574aa1aca2078ccc2f4b813e05ae42d5",
+      "sha256": "d5b84e8d160502ca6471d09d5fd8ea6006977de8a3359ad58ef8e328134722cd",
       "binary": false,
       "exports": [
         {
@@ -72117,9 +72127,9 @@
       "path": "components/portal/kit/pages/member/MemberJobsKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 7138,
+      "bytes": 7149,
       "lines": 194,
-      "sha256": "c784e16200a3a5cbd4b38bff980281052a1576e221aa5c7b65f8901cf4725e76",
+      "sha256": "20ea23681cb2cbc65de40fbe9fe576f5c4b8026587db22e2c0d2323b387af184",
       "binary": false,
       "exports": [
         {
@@ -72529,9 +72539,9 @@
       "path": "components/portal/kit/pages/member/MemberToolkitKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 11354,
+      "bytes": 11362,
       "lines": 331,
-      "sha256": "e557590554c50475112e4d959ec51fe878a11bc00a25548bac42ece3e71cda48",
+      "sha256": "69bc706e1fdd00d13c50a15bc5e3607442ad4fc485e881f843039abd065094a9",
       "binary": false,
       "exports": [
         {
@@ -72743,9 +72753,9 @@
       "path": "components/portal/kit/pages/member/ToolkitToolChrome.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 1269,
+      "bytes": 1275,
       "lines": 48,
-      "sha256": "937d192558c15a26d8f3318f4f7a7e90adb9aacc54f10e3342afde9bd8df4ed4",
+      "sha256": "5a14791fda30795016a3c9ef103fe22109e0c406fc358cba147a18bf1dd4fc0d",
       "binary": false,
       "exports": [
         {
@@ -75384,19 +75394,19 @@
       "path": "components/super-admin-view-switcher.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4397,
-      "lines": 135,
-      "sha256": "c068dda7b6ad5c51ed316dd08b6508399b000f06a86bb30a64b628e3dd458f3a",
+      "bytes": 4532,
+      "lines": 132,
+      "sha256": "06b697d732b89dd94d68418210568f4b30299378f0ed1158ac0d029e992d7a31",
       "binary": false,
       "exports": [
         {
           "name": "useIsSuperAdmin",
-          "line": 25,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 38,
+          "line": 36,
           "kind": "FunctionDeclaration",
           "localName": "SuperAdminViewSwitcher"
         }
@@ -75404,27 +75414,27 @@
       "declarations": [
         {
           "name": "VIEWS",
-          "line": 7,
+          "line": 8,
           "kind": "Variable"
         },
         {
           "name": "ViewId",
-          "line": 15,
+          "line": 16,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getCurrentView",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "useIsSuperAdmin",
-          "line": 25,
+          "line": 31,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SuperAdminViewSwitcher",
-          "line": 38,
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -76052,9 +76062,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 270141,
-      "lines": 9993,
-      "sha256": "d4867131e6d295b7392b5d8b89c0604e20971a661d7af63df572cf8345673450",
+      "bytes": 272455,
+      "lines": 10081,
+      "sha256": "4c131de0da454345461ba85d25d8d0a8638bf177a68b35abab034e7d2a19bca1",
       "binary": false
     },
     {
@@ -76511,9 +76521,9 @@
       "path": "docs/KIT_GUIDE.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 31765,
-      "lines": 446,
-      "sha256": "ed73d81285c2ea462d6823370b7a039091f0885597b48f09d81f7c4e511e40f8",
+      "bytes": 34181,
+      "lines": 481,
+      "sha256": "2fb5c868e1f931abd5f381ac7f818bb11d524b0336d0398dae53929e90ebf1b3",
       "binary": false
     },
     {
@@ -82873,6 +82883,30 @@
         {
           "name": "useCopyToClipboard",
           "line": 6,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "hooks/useCurrentUser.ts",
+      "area": "components",
+      "domain": "components",
+      "bytes": 1671,
+      "lines": 57,
+      "sha256": "8381e1192dc18afe5972f8e873fb8c73d34271a623f741fcf5e398a970127da8",
+      "binary": false,
+      "exports": [
+        {
+          "name": "useCurrentUser",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "useCurrentUser",
+          "line": 18,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96964,6 +96998,158 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "lib/auth/currentUserClient.test.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 3103,
+      "lines": 84,
+      "sha256": "18715d89a18985747c40810614dfefa543402352173a54bf68599cf556ad6085",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "FetchMock",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "installFetch",
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/auth/currentUserClient.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 4230,
+      "lines": 115,
+      "sha256": "0fa802db2db87b4925c14e3a67b25d8998c68d0e27feba3798fb3ccb5ddc61a9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CurrentUserPortal",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CurrentUserSnapshot",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CURRENT_USER_ENDPOINT",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "CURRENT_USER_MAX_AGE_MS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SIGNED_OUT_SNAPSHOT",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "peekCurrentUser",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchCurrentUser",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "subscribeCurrentUser",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetCurrentUserCache",
+          "line": 110,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CurrentUserPortal",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CurrentUserSnapshot",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CURRENT_USER_ENDPOINT",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "CURRENT_USER_MAX_AGE_MS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SIGNED_OUT_SNAPSHOT",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "Listener",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CacheState",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "state",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "normalize",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "publish",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "peekCurrentUser",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchCurrentUser",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "subscribeCurrentUser",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetCurrentUserCache",
+          "line": 110,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "lib/auth/ensureUser.test.ts",
@@ -123087,9 +123273,9 @@
       "path": "lib/member/loadMemberDashboardHome.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 24338,
-      "lines": 718,
-      "sha256": "192bd0dbbd430b90e3daea8840e09141167f254c11380800fb3a2ddab85a3044",
+      "bytes": 24631,
+      "lines": 725,
+      "sha256": "47eb5961b61dd205213cdf65caac9a3a99ec51e76b67915b48f9c84e0f42c9a6",
       "binary": false,
       "exports": [
         {
@@ -123149,7 +123335,7 @@
         },
         {
           "name": "loadMemberDashboardHome",
-          "line": 696,
+          "line": 703,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -123276,12 +123462,12 @@
         },
         {
           "name": "fetchHomeRow",
-          "line": 665,
+          "line": 672,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadMemberDashboardHome",
-          "line": 696,
+          "line": 703,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -123473,54 +123659,142 @@
       "directive": null
     },
     {
+      "path": "lib/member/memberApprovalStatus.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 5142,
+      "lines": 116,
+      "sha256": "3f8e89be848d20f7cdf14d56974451ac1526e1315185494c360f8de8f6291016",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "submitted",
+          "line": 5,
+          "kind": "Variable"
+        },
+        {
+          "name": "reviewed",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "approved",
+          "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/memberApprovalStatus.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 1915,
-      "lines": 39,
-      "sha256": "4aa3db9a3e792c098efd13001f10e359b7e1ebc2b3b0ef25c89cb68a5c54d456",
+      "bytes": 7165,
+      "lines": 177,
+      "sha256": "efe5bb105d1e3222ec2dc9833a00efa77ced9ef484a8845c95383fb6af786e04",
       "binary": false,
       "exports": [
         {
           "name": "MemberApprovalFacts",
-          "line": 2,
+          "line": 9,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalStageKey",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalStageState",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalOwner",
+          "line": 24,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberApprovalStage",
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberApprovalStatus",
-          "line": 10,
+          "line": 37,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "buildMemberApprovalStatus",
-          "line": 23,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MemberApprovalFacts",
-          "line": 2,
+          "line": 9,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalStageKey",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalStageState",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ApprovalOwner",
+          "line": 24,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberApprovalStage",
+          "line": 26,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberApprovalStatus",
-          "line": 10,
+          "line": 37,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "applicationStates",
-          "line": 20,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "intakeStates",
-          "line": 21,
+          "line": 53,
           "kind": "Variable"
         },
         {
+          "name": "INTAKE_PENDING_STATES",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "INTAKE_DECIDED_STATES",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "iso",
+          "line": 57,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "staffOwner",
+          "line": 61,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildMemberApprovalStatus",
-          "line": 23,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -123555,6 +123829,72 @@
         {
           "name": "getMemberEngagementSignals",
           "line": 14,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberIdentity.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 1714,
+      "lines": 43,
+      "sha256": "296679be7c8cc749088620c42ed4b9b420234f57cbac4f1c514c316376cc6e19",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberIdentity.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 2142,
+      "lines": 58,
+      "sha256": "1b7e3b36c6fe0fd62b748e7e4f1d2987dc2bad88c8f9ea06578e5d6ed3e29561",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MemberShellIdentity",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_IDENTITY_HREF",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "memberInitials",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberShellIdentity",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MemberShellIdentity",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_IDENTITY_HREF",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "memberInitials",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberShellIdentity",
+          "line": 43,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -127454,9 +127794,9 @@
       "path": "lib/nav/memberToolRoutes.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 5304,
+      "bytes": 5308,
       "lines": 122,
-      "sha256": "44f6c60c3f6cad4b5737df8824d1fbbc81b733f7cddac24b20d749a27696e0fd",
+      "sha256": "843816edae4606dd1125278eb516ad3e771d6696bbf3f50d6b7d4f29a5ba1660",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -127477,9 +127817,9 @@
       "path": "lib/nav/memberToolRoutes.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 4889,
+      "bytes": 4903,
       "lines": 125,
-      "sha256": "a297c4fe11d85a368b041c9ef5f2d7438d4d5fffb0bdb500783fe7e6542275b4",
+      "sha256": "630965e580c72e1d007b9cc3e2b690ab4b127b34bf426539c3f25a8bb1d75952",
       "binary": false,
       "exports": [
         {
@@ -127634,9 +127974,9 @@
       "path": "lib/nav/portalNav.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 4222,
+      "bytes": 4228,
       "lines": 81,
-      "sha256": "42215a8e2459cbcb13a34c00de5b1ac66db22c6986c96552cd7df22346bf863a",
+      "sha256": "5e146378b544777305e20bd58885db395235af06cf20b87744a821ac0122c7f9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -127657,9 +127997,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 20877,
+      "bytes": 20885,
       "lines": 504,
-      "sha256": "8290ea6c69ec147ce874d42da01b087fd55cc515176ed52bed15e20d3ddd1fbc",
+      "sha256": "8ab910c34540b0f43ea2aa46537365377aa6b834f64365c288b1d181669eea41",
       "binary": false,
       "exports": [
         {
@@ -132341,14 +132681,19 @@
       "path": "lib/portal/memberProfilePhotoUrl.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 978,
-      "lines": 31,
-      "sha256": "5e6cacabaf4ba063d950b0c86aced9d138d31981ee5157ef5cee9e38b455fc3f",
+      "bytes": 1472,
+      "lines": 43,
+      "sha256": "5924c441d9cc919e49ae4e6a18716427ee3daae8de5b5a4a42f15e9a04f0816c",
       "binary": false,
       "exports": [
         {
           "name": "getMemberProfilePhotoSignedUrl",
           "line": 7,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getMemberProfilePhotoSignedUrlForPath",
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -132361,6 +132706,11 @@
         {
           "name": "getMemberProfilePhotoSignedUrl",
           "line": 7,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getMemberProfilePhotoSignedUrlForPath",
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -137166,9 +137516,9 @@
       "path": "lib/super-admin-switcher-structure.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1585,
-      "lines": 27,
-      "sha256": "d9d2661cdd25f3416f051da95510a0a24c8a8e96536fe32d9656acbc13a7dfad",
+      "bytes": 1879,
+      "lines": 31,
+      "sha256": "95116dff32bf7ee00dc6cc15c5cbd9b3f45be35cf4e88deef1793f3a4b334eb1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -144063,27 +144413,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 212821,
-      "lines": 3492,
-      "sha256": "83347e529916f94e5f46c93f8cadeff3426a440b38c4cde49efc79c64692b487",
+      "bytes": 214718,
+      "lines": 3526,
+      "sha256": "e5820c265e19c7786e83c555325bf765af39d70338d6495f20680513657f39f7",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 235987,
-      "lines": 3492,
-      "sha256": "4ed5a3a6b61f53e4f26cb21c20a4b6e23f32aa39d542ba2d2f407d6bb456cae6",
+      "bytes": 238110,
+      "lines": 3526,
+      "sha256": "aae076f323ebf0a6519a1e687e44827d17f052303627568bfe29ccbbff60f397",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 236239,
-      "lines": 3432,
-      "sha256": "d6c3d1a3a305a5239426736bf12c138057cf405ecdc71574b22de7ff39b3b6ce",
+      "bytes": 238548,
+      "lines": 3466,
+      "sha256": "434946e8d41cf5a1540402514e5358f3d8ec526827d36f7d53afc76d461cc107",
       "binary": false
     },
     {
@@ -144099,9 +144449,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 226708,
-      "lines": 3432,
-      "sha256": "d6b98de24cb501c260d1c9163a2d186b5a5d48e7edc4189b6ed705e37b9165f3",
+      "bytes": 228817,
+      "lines": 3466,
+      "sha256": "d8c9cb803fa070d1bde64873bcc2683cc31c4354d3e870de1afa375972461f4a",
       "binary": false
     },
     {
@@ -146389,18 +146739,18 @@
       "path": "public/apple-touch-icon-precomposed.png",
       "area": "assets",
       "domain": "assets",
-      "bytes": 16524,
+      "bytes": 11302,
       "lines": null,
-      "sha256": "31e9df24c2a306ea5a6874ff88edf707acef0a0315d08ebcc7be04fea8d553b5",
+      "sha256": "daf0ce67a6475d96969b89174c3c14fec981e0426e9b6f6924c68ebf0913e182",
       "binary": true
     },
     {
       "path": "public/apple-touch-icon.png",
       "area": "assets",
       "domain": "assets",
-      "bytes": 16524,
+      "bytes": 11302,
       "lines": null,
-      "sha256": "31e9df24c2a306ea5a6874ff88edf707acef0a0315d08ebcc7be04fea8d553b5",
+      "sha256": "daf0ce67a6475d96969b89174c3c14fec981e0426e9b6f6924c68ebf0913e182",
       "binary": true
     },
     {
@@ -161689,12 +162039,23 @@
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2239,
-      "lines": 33,
-      "sha256": "c27da054c9ba6cea3f084543c75978d51cf210ecbd89a31c3ae150f5470a49ae",
+      "bytes": 6093,
+      "lines": 98,
+      "sha256": "712aecb0df1de3845342a2d6afebb2cfb23b92a9a5ae23fc9a2f879d56696df9",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "show",
+          "line": 10,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "stage",
+          "line": 16,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -162641,9 +163002,9 @@
       "path": "tests/components/workspace-sidebar.test.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 24467,
-      "lines": 490,
-      "sha256": "deb7e259f328601d5be620092744ef202d9ff166e6c4514fe79c8be70366e95a",
+      "bytes": 27421,
+      "lines": 548,
+      "sha256": "cfd43a9ca5b9fe6ce35757e094a6206800727fc9f878029d2cd4dc235529cc61",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163983,9 +164344,9 @@
       "path": "tests/lib/career-studio-consolidation.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6461,
+      "bytes": 6465,
       "lines": 134,
-      "sha256": "af8da1821396227ea95baf57fdb899f319c6a2cb649bc4ac0af844d723835dd0",
+      "sha256": "11a8a27c0bf00c19fcc335de1715d41c089ae59ca901951a2e52e6dd3f5053f9",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -165071,9 +165432,9 @@
       "path": "tests/lib/member-approval-status.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1706,
-      "lines": 27,
-      "sha256": "22f7ee726b29111d822c65f1ccf82dfdb700061402e266e2e311d4af69a8dbdf",
+      "bytes": 2293,
+      "lines": 33,
+      "sha256": "00f3912740c6adfa99d4e1e4789015d8b9c38bcbec696a681615b0d9fc8f1723",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -166926,31 +167287,46 @@
       "path": "tests/next-config-redirect-destinations.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2835,
-      "lines": 64,
-      "sha256": "8c4426d9f2f40b823a904a733d76c0769c3e1a33f89dbcd10b4b68f107316bee",
+      "bytes": 8366,
+      "lines": 168,
+      "sha256": "df07c6353ac3693eec385d1cc1ccca1e013dad1f6c863e7c1b56939b82ccf1b5",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "Redirect",
-          "line": 8,
+          "line": 9,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "root",
-          "line": 10,
+          "line": 11,
           "kind": "Variable"
         },
         {
           "name": "publishedBlogSlugs",
-          "line": 13,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "marketingPageExists",
-          "line": 15,
+          "line": 16,
           "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "LOCALE_PREFIX",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "appRouteExists",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "STALE_ROUTES",
+          "line": 73,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -167572,6 +167948,34 @@
         {
           "name": "nodeOwned",
           "line": 78,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/well-known-icon-paths.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3481,
+      "lines": 77,
+      "sha256": "883413a0018115d6fa69bb30bc2249d1de90c0f93054a7d2ee60d402c891a5f4",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "pub",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "pngSize",
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],

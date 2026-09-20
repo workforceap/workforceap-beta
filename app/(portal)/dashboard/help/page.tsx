@@ -33,10 +33,10 @@ const HELP_ITEMS: Array<{ icon: LucideIcon; title: string; body: string; href?: 
   },
   {
     icon: Sparkles,
-    title: 'Career Toolkit',
+    title: 'AI Career Tools',
     body: 'Use our suite of tools to build your resume, prep for interviews, and match to jobs.',
     href: '/dashboard/ai-tools',
-    cta: 'Open Career Toolkit',
+    cta: 'Open AI Career Tools',
   },
 ];
 

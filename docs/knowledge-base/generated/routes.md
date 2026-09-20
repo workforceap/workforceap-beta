@@ -157,7 +157,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/jobs/\[id\] | page |  | [app/(portal)/dashboard/jobs/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/page.tsx) | @/lib/auth/server:4 |
 | /dashboard/jobs | loading |  | [app/(portal)/dashboard/jobs/loading.tsx](../../../app/%28portal%29/dashboard/jobs/loading.tsx) |  |
 | /dashboard/jobs | page |  | [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | @/lib/auth/server:4 |
-| /dashboard | layout |  | [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/auth/portalRoleSwitcher:9 |
+| /dashboard | layout |  | [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/auth/portalRoleSwitcher:11 |
 | /dashboard/learning/find-your-career | loading |  | [app/(portal)/dashboard/learning/find-your-career/loading.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/loading.tsx) |  |
 | /dashboard/learning/find-your-career | page |  | [app/(portal)/dashboard/learning/find-your-career/page.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/page.tsx) | @/lib/auth/server:5 |
 | /dashboard/learning/interest-profiler | loading |  | [app/(portal)/dashboard/learning/interest-profiler/loading.tsx](../../../app/%28portal%29/dashboard/learning/interest-profiler/loading.tsx) |  |
