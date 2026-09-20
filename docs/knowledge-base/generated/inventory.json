@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "80189a202b95ca950a4891c7e20dc22f975402d7d4686300b5181f2ebf005015",
+  "inputTreeSha256": "a65174c45e1c433823ceffc704a748f584bcb1bdac0f855c5063c22b92cc860b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -75935,9 +75935,9 @@
       "path": "css/main.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 239660,
-      "lines": 8789,
-      "sha256": "429b8adec5a108094c5e2a963f35e1b785528bccb594fd37bc1bc6b0f6def199",
+      "bytes": 239690,
+      "lines": 8790,
+      "sha256": "11fb166fa640f4fcf24e13d1742bdfae1c399e5152fdb4158ae9d28125a3fc7a",
       "binary": false
     },
     {
@@ -75989,9 +75989,9 @@
       "path": "css/portal-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 45158,
+      "bytes": 45169,
       "lines": 1352,
-      "sha256": "fa031ce90d8faf1d845a5776b36a8f705b9f7236351e5c27290226aba3c0f7c4",
+      "sha256": "712bed58b531a663bec5c2c53cedbbe25fb4154e5baa92c2d58a998a1cc03da3",
       "binary": false
     },
     {

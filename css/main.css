@@ -5556,8 +5556,9 @@ fieldset.apply-fieldset {
     color: var(--color-accent);
 }
 .password-toggle:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid transparent;
     outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
     color: var(--color-accent);
 }
 .form-disclaimer {

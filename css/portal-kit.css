@@ -1101,9 +1101,9 @@ html.dark [data-surface] .wa-kit-card,
   font-weight: 800;
 }
 .workspace-shell-root[data-workspace-role='member'] .btn:focus-visible {
-  outline: 2px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: none;
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* Card heads: the dashboard section header used a 0.7rem/0.1em kicker beside the
