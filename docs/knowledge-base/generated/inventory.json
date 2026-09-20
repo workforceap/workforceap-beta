@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "afab8cee6838e12428e3760bd46cf35feed5f3e0c7d1cad84044ae1cf7852650",
+  "inputTreeSha256": "63373a8905064455bc2d6622f750c3373229e0d639b2145e3d6a12087e49e4b7",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -23467,9 +23467,9 @@
       "path": "app/api/admin/data-retention/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 5194,
-      "lines": 163,
-      "sha256": "ccfcd33c322e352ca980f6f1782b7646174f9640223c28b270593a5d747ffa7d",
+      "bytes": 5247,
+      "lines": 164,
+      "sha256": "6cb91ffa4b46a686e281e8bf6e0e72c84ea8bfffbad5c44cbc8f8b4d79cf0244",
       "binary": false,
       "exports": [
         {
@@ -23489,12 +23489,12 @@
         },
         {
           "name": "GET",
-          "line": 95,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 131,
+          "line": 132,
           "kind": "Variable"
         }
       ],
@@ -23526,17 +23526,17 @@
         },
         {
           "name": "fetchPolicyRows",
-          "line": 73,
+          "line": 74,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 95,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 131,
+          "line": 132,
           "kind": "Variable"
         }
       ],
@@ -39401,9 +39401,9 @@
       "path": "app/api/partner/export/referrals/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 5927,
-      "lines": 146,
-      "sha256": "1f3a4044ab144bf97bb2c8f717b320c42164311df1f24f5326909c48a4a7ff1f",
+      "bytes": 6012,
+      "lines": 145,
+      "sha256": "b206b4263df16373c89dd20c8c0b43225b55071189458da655f8801a2bc699bb",
       "binary": false,
       "exports": [
         {
@@ -40278,36 +40278,36 @@
       "path": "app/api/q/[token]/submit/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 15345,
-      "lines": 347,
-      "sha256": "dfed3b9172d4fe92c211baf54f9072ab1ac0a9c5bcebcd12d798c9b0afa8c8f3",
+      "bytes": 16123,
+      "lines": 361,
+      "sha256": "e92b6ab3c30a7169e4e269f4c73f944ea4c64d4e9dbe71d2af3cd723b0d622f9",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 82,
+          "line": 89,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "AGE_GROUP_VALUES",
-          "line": 47,
+          "line": 54,
           "kind": "Variable"
         },
         {
           "name": "submitSchema",
-          "line": 49,
+          "line": 56,
           "kind": "Variable"
         },
         {
           "name": "getClientIp",
-          "line": 74,
+          "line": 81,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 82,
+          "line": 89,
           "kind": "Variable"
         }
       ],
@@ -78210,9 +78210,9 @@
       "path": "emails/application-confirmation.ts",
       "area": "communications",
       "domain": "communications",
-      "bytes": 1575,
+      "bytes": 1574,
       "lines": 33,
-      "sha256": "b9f3a38edada27898677aac19387bf188cca2dc266e5b2577c23f22bf4cad73e",
+      "sha256": "67521b1fa60304fd9036a84751baf8bc024ebcf580df7392457b26d7fcf73629",
       "binary": false,
       "exports": [
         {
@@ -78528,21 +78528,21 @@
       "path": "emails/eligibility-screening-admin-alert.ts",
       "area": "communications",
       "domain": "communications",
-      "bytes": 1434,
-      "lines": 36,
-      "sha256": "028a7a5ae95219dc6006a42c9741dab57ab55891f6c5fb0ac51217ec1c30dcb0",
+      "bytes": 2092,
+      "lines": 46,
+      "sha256": "24eb1b7d9aa00f8e8e2c41fe1d8d905b86d3de24449342fa3f0148589fa70fae",
       "binary": false,
       "exports": [
         {
           "name": "eligibilityScreeningAdminAlertHtml",
-          "line": 10,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "eligibilityScreeningAdminAlertHtml",
-          "line": 10,
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -78552,21 +78552,21 @@
       "path": "emails/eligibility-screening-confirmation.ts",
       "area": "communications",
       "domain": "communications",
-      "bytes": 1185,
-      "lines": 25,
-      "sha256": "6cf4fa51f25fbd366f9b99f486a4bac4fd9069d7a142f523ceb6a9beaf2cfd74",
+      "bytes": 1497,
+      "lines": 32,
+      "sha256": "8b4e21201f1fa9482e7dd9179bddb762678cca693e6d4620c24b18f53d6aa564",
       "binary": false,
       "exports": [
         {
           "name": "eligibilityScreeningConfirmationHtml",
-          "line": 10,
+          "line": 16,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "eligibilityScreeningConfirmationHtml",
-          "line": 10,
+          "line": 16,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -78576,26 +78576,26 @@
       "path": "emails/eligibility-screening-summary.ts",
       "area": "communications",
       "domain": "communications",
-      "bytes": 2051,
-      "lines": 59,
-      "sha256": "188b96278b6b001bfdc5c2312f389abaa093159dcced6e3a8d816c12e1ef1c54",
+      "bytes": 1641,
+      "lines": 50,
+      "sha256": "2967440dcfdcb6b958c44f9d2f903d7fc690bb51b4ce115dcdaebc743455dda6",
       "binary": false,
       "exports": [
         {
           "name": "eligibilityScreeningSummaryHtml",
-          "line": 21,
+          "line": 27,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "row",
-          "line": 13,
+          "line": 18,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "eligibilityScreeningSummaryHtml",
-          "line": 21,
+          "line": 27,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -78605,16 +78605,26 @@
       "path": "emails/eligibility-screening-ws5.test.ts",
       "area": "communications",
       "domain": "communications",
-      "bytes": 4345,
-      "lines": 119,
-      "sha256": "9113d037dfc1c21a8915a2654331bf57752353311279c3be8ded3767bc25d6e7",
+      "bytes": 6586,
+      "lines": 178,
+      "sha256": "ff1e506098fbcb26e49ae1799a12e64392d72d5d982b75f18dd6944bb153f10e",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "SAMPLE",
-          "line": 12,
+          "line": 15,
           "kind": "Variable"
+        },
+        {
+          "name": "ANSWER_MARKERS",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "assertNoAnswers",
+          "line": 49,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -89034,81 +89044,81 @@
       "path": "lib/ai/elevenlabsPortalContext.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 7575,
-      "lines": 196,
-      "sha256": "4ebbda21cac9e56aad5c2a9b482d926195ee526b70db0029ed799b7541ace022",
+      "bytes": 7134,
+      "lines": 189,
+      "sha256": "efa81f9c5438e097425ea38395b7a313cfa22a640001cddd1fe296bb9ce3dbc9",
       "binary": false,
       "exports": [
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 63,
+          "line": 65,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 80,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 123,
+          "line": 116,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 145,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 172,
+          "line": 165,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "VOICE_DEFAULTS",
-          "line": 21,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "withVoiceDefaults",
-          "line": 27,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 63,
+          "line": 65,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 80,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 123,
+          "line": 116,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 145,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 172,
+          "line": 165,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -93856,9 +93866,9 @@
       "path": "lib/apply/eligibilityScreeningFields.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 4662,
-      "lines": 125,
-      "sha256": "b4cffdba8901e998c5f07d4664957ab4281765af1cb41bf4784e0928594ff8da",
+      "bytes": 5495,
+      "lines": 150,
+      "sha256": "db3193db420ccc4746c8a498ce40d6f572051553abc9a14da83528c78eac4994",
       "binary": false,
       "exports": [
         {
@@ -93882,13 +93892,18 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "eligibilityScreeningAnswerCount",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "eligibilityDatasheetCells",
-          "line": 72,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "eligibilityFieldsPlainLines",
-          "line": 95,
+          "line": 120,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -93914,13 +93929,18 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "eligibilityScreeningAnswerCount",
+          "line": 76,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "eligibilityDatasheetCells",
-          "line": 72,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "eligibilityFieldsPlainLines",
-          "line": 95,
+          "line": 120,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -94316,6 +94336,65 @@
         {
           "name": "formatPublicAssistancePrograms",
           "line": 121,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/apply/publicEligibilityLead.ts",
+      "area": "libraries",
+      "domain": "applications-enrollment",
+      "bytes": 3632,
+      "lines": 112,
+      "sha256": "14ee305d7b8f5efdd67935125238db740827e93930a9f48498f74160e1afe426",
+      "binary": false,
+      "exports": [
+        {
+          "name": "PublicEligibilityLeadInput",
+          "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "savePublicEligibilityLead",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "publicEligibilityLeadAuditMetadata",
+          "line": 96,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PUBLIC_ELIGIBILITY_LEAD_SNAPSHOT_VERSION",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "PublicEligibilityLeadInput",
+          "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "PublicEligibilityLeadSnapshot",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "buildPublicEligibilityLeadSnapshot",
+          "line": 52,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "savePublicEligibilityLead",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "publicEligibilityLeadAuditMetadata",
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -113589,9 +113668,9 @@
       "path": "lib/email.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 101132,
-      "lines": 2830,
-      "sha256": "f3b6e02fcd5959307e65747c8f377b4d3abbfa3eb21bdb994cba24e04953c7c5",
+      "bytes": 101247,
+      "lines": 2832,
+      "sha256": "179c2a99e16bacabc4ec21089bbc33e03091a4080b517a6639588d718a78b27a",
       "binary": false,
       "exports": [
         {
@@ -113821,122 +113900,122 @@
         },
         {
           "name": "sendApplicantFollowupEmail",
-          "line": 1885,
+          "line": 1887,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminPendingApplicantsEmail",
-          "line": 1919,
+          "line": 1921,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerPendingApplicantsEmail",
-          "line": 1951,
+          "line": 1953,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminStaleApplicantsDigestEmail",
-          "line": 1986,
+          "line": 1988,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerJobExpiryEmail",
-          "line": 2018,
+          "line": 2020,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminWeeklyRecapEmail",
-          "line": 2051,
+          "line": 2053,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendWioaReportEmail",
-          "line": 2088,
+          "line": 2090,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendPartnerWeeklyDigestEmail",
-          "line": 2138,
+          "line": 2140,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerWelcomeEmail",
-          "line": 2179,
+          "line": 2181,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerVerificationEmail",
-          "line": 2217,
+          "line": 2219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerSignupAdminAlertEmail",
-          "line": 2254,
+          "line": 2256,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerApprovedEmail",
-          "line": 2289,
+          "line": 2291,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerRejectedEmail",
-          "line": 2323,
+          "line": 2325,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAssessmentResetNotificationEmail",
-          "line": 2358,
+          "line": 2360,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepBundleEmail",
-          "line": 2397,
+          "line": 2399,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepReminderEmail",
-          "line": 2461,
+          "line": 2463,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewDebriefPromptEmail",
-          "line": 2499,
+          "line": 2501,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendCounselorAtRiskAlertEmail",
-          "line": 2539,
+          "line": 2541,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberCheckInEmail",
-          "line": 2600,
+          "line": 2602,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberComeBackEmail",
-          "line": 2639,
+          "line": 2641,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberStuckEmail",
-          "line": 2682,
+          "line": 2684,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepLink",
-          "line": 2723,
+          "line": 2725,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ELIGIBILITY_SOFT_DEADLINE_COPY",
-          "line": 2770,
+          "line": 2772,
           "kind": "Variable"
         },
         {
           "name": "sendEligibilityLink",
-          "line": 2778,
+          "line": 2780,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -114203,122 +114282,122 @@
         },
         {
           "name": "sendApplicantFollowupEmail",
-          "line": 1885,
+          "line": 1887,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminPendingApplicantsEmail",
-          "line": 1919,
+          "line": 1921,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerPendingApplicantsEmail",
-          "line": 1951,
+          "line": 1953,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminStaleApplicantsDigestEmail",
-          "line": 1986,
+          "line": 1988,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerJobExpiryEmail",
-          "line": 2018,
+          "line": 2020,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAdminWeeklyRecapEmail",
-          "line": 2051,
+          "line": 2053,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendWioaReportEmail",
-          "line": 2088,
+          "line": 2090,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendPartnerWeeklyDigestEmail",
-          "line": 2138,
+          "line": 2140,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerWelcomeEmail",
-          "line": 2179,
+          "line": 2181,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerVerificationEmail",
-          "line": 2217,
+          "line": 2219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerSignupAdminAlertEmail",
-          "line": 2254,
+          "line": 2256,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerApprovedEmail",
-          "line": 2289,
+          "line": 2291,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendEmployerRejectedEmail",
-          "line": 2323,
+          "line": 2325,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendAssessmentResetNotificationEmail",
-          "line": 2358,
+          "line": 2360,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepBundleEmail",
-          "line": 2397,
+          "line": 2399,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepReminderEmail",
-          "line": 2461,
+          "line": 2463,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewDebriefPromptEmail",
-          "line": 2499,
+          "line": 2501,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendCounselorAtRiskAlertEmail",
-          "line": 2539,
+          "line": 2541,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberCheckInEmail",
-          "line": 2600,
+          "line": 2602,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberComeBackEmail",
-          "line": 2639,
+          "line": 2641,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberStuckEmail",
-          "line": 2682,
+          "line": 2684,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendInterviewPrepLink",
-          "line": 2723,
+          "line": 2725,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ELIGIBILITY_SOFT_DEADLINE_COPY",
-          "line": 2770,
+          "line": 2772,
           "kind": "Variable"
         },
         {
           "name": "sendEligibilityLink",
-          "line": 2778,
+          "line": 2780,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130049,29 +130128,29 @@
       "path": "lib/partner/referralBundle.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 10031,
-      "lines": 280,
-      "sha256": "d209f3928705c0b59c3959ca33cd7fa9942e505c1217675f2b57c7f7aa2bbc54",
+      "bytes": 10140,
+      "lines": 279,
+      "sha256": "4214ae9da54b2fa09a82129b8202749972b440be9fb3ef37b8bda7a4617163c1",
       "binary": false,
       "exports": [
         {
           "name": "ReferralMember",
-          "line": 61,
+          "line": 62,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PipelineRow",
-          "line": 99,
+          "line": 98,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadPartnerReferralBundle",
-          "line": 119,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toPartnerMembersListRows",
-          "line": 243,
+          "line": 242,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130083,22 +130162,22 @@
         },
         {
           "name": "ReferralMember",
-          "line": 61,
+          "line": 62,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PipelineRow",
-          "line": 99,
+          "line": 98,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadPartnerReferralBundle",
-          "line": 119,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toPartnerMembersListRows",
-          "line": 243,
+          "line": 242,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135275,35 +135354,35 @@
       "path": "lib/retention/cleanup.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 12440,
-      "lines": 334,
-      "sha256": "d2ca2e8b902b6527ac3f7b5615a7eb2aaab53c60e2e91612a3c7168fc2957059",
+      "bytes": 13122,
+      "lines": 349,
+      "sha256": "64d3ab359e717a89a99fe01cd25f961f04a7d8bcfca0d99df4d5fd68ec9c24a8",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "mockDeleteMany",
-          "line": 10,
-          "kind": "Variable"
-        },
-        {
-          "name": "mockFindMany",
           "line": 11,
           "kind": "Variable"
         },
         {
-          "name": "mockCount",
+          "name": "mockFindMany",
           "line": 12,
           "kind": "Variable"
         },
         {
-          "name": "mockAuditEventDeleteMany",
+          "name": "mockCount",
           "line": 13,
           "kind": "Variable"
         },
         {
+          "name": "mockAuditEventDeleteMany",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
           "name": "foreignKeyError",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135412,9 +135491,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4056,
-      "lines": 128,
-      "sha256": "e3de325de55c7ea126e5e572b17562177584e18e4685c9255c63ee7820359c30",
+      "bytes": 4737,
+      "lines": 143,
+      "sha256": "3cb2d796593871bf096dce2dd46796ab1bc548f9540328a4c18e19bae2865ef0",
       "binary": false,
       "exports": [
         {
@@ -135438,18 +135517,23 @@
           "kind": "Variable"
         },
         {
+          "name": "PUBLIC_LEAD_RETENTION_DAYS",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 74,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 120,
+          "line": 135,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 123,
+          "line": 138,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -135475,18 +135559,23 @@
           "kind": "Variable"
         },
         {
+          "name": "PUBLIC_LEAD_RETENTION_DAYS",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 74,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 120,
+          "line": 135,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 123,
+          "line": 138,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -157321,9 +157410,9 @@
       "path": "tests/api/eligibility-writers.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 16642,
-      "lines": 281,
-      "sha256": "068237ba00a6ae777cd5a75f83ca1c2423ddd9cee9177519404d3f1f91dbc79a",
+      "bytes": 16780,
+      "lines": 282,
+      "sha256": "4dc97ac898a2754b49c91a75eefb23b1e7bbe8ac299e1c11bcccbad572b6af98",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -168745,6 +168834,118 @@
         {
           "name": "HUB_SMOKE_ROLES",
           "line": 10,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/privacy/partner-export-columns.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3544,
+      "lines": 64,
+      "sha256": "54ff9a3a8bc073dd1707e03183893b7f8499aa6352d9a3f9874fe5fec69febed",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "exportCsv",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "BASE",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "OUTCOMES",
+          "line": 46,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/privacy/partner-referral-bundle-select.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 1170,
+      "lines": 27,
+      "sha256": "183d3a68f2279bee772203c8f7f67576dad320a9190a2a3797506ccbdafe0c73",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "h",
+          "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/privacy/public-eligibility-lead.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7068,
+      "lines": 129,
+      "sha256": "9c12c6df707584aed61a85ae38a472b90b0e77c4d2e0ec2668c05fbee6c3fa8a",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "h",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "token",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "body",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "submit",
+          "line": 61,
+          "kind": "Variable"
+        },
+        {
+          "name": "SENSITIVE_VALUES",
+          "line": 68,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/privacy/voice-context-minimisation.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3328,
+      "lines": 75,
+      "sha256": "8f878221f0b0a81c61679a74fbb1271553963cb723e0532ee040353d8109e343",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "h",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANSWER_KEY",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "ANSWER_VALUES",
+          "line": 47,
           "kind": "Variable"
         }
       ],

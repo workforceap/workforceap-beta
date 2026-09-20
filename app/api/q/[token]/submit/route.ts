@@ -27,6 +27,12 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { logger } from '@/lib/observability/logger';
 import { autoAssignAmbassadorFromReferral } from '@/lib/counselor/ambassadorAutoAssign';
 import { hasEligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningFields';
+import {
+  publicEligibilityLeadAuditMetadata,
+  savePublicEligibilityLead,
+  type PublicEligibilityLeadInput,
+} from '@/lib/apply/publicEligibilityLead';
+import { getDefaultOrganizationId } from '@/lib/tenant/organization';
 
 /**
  * POST /api/q/[token]/submit
@@ -41,8 +47,9 @@ import { hasEligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningF
  *  - Per-IP rate limited (5/min) to cap abuse on the public path.
  *  - Expiry is enforced by validateTokenizedLink.
  *  - A bound link only ever writes its own subjectUserId — no cross-member
- *    access. A no-account lead is recorded to the audit log (no auth account
- *    is created).
+ *    access. A no-account lead's answers go to the purgeable
+ *    public_wioa_screenings store (WAP-172); the audit log keeps ids and
+ *    counts only. No auth account is created.
  */
 const AGE_GROUP_VALUES = ['18_24', '25_50', '50_plus'] as const;
 
@@ -268,15 +275,33 @@ export const POST = withApiGuc(
           );
         }
       } else {
-        // No-account lead: do NOT create a Supabase auth account or a User
-        // FK row. Record the submission to the audit log so an admin can see
-        // it (audit_logs.actorUserId is nullable). Keyed to the token's id +
-        // email, with the full eligibility answers in metadata.
+        // No-account lead (WAP-172): do NOT create a Supabase auth account or
+        // a User FK row. The answers are written to public_wioa_screenings, a
+        // purgeable store the retention cron clears after
+        // PUBLIC_LEAD_RETENTION_DAYS. The audit row is the durable event and
+        // carries ids and counts only — the 3-year audit trail must never hold
+        // the answers or the lead's contact details.
         const leadEmail = data.email?.trim() || link.email || null;
         const leadName =
           [data.firstName, data.lastName].filter(Boolean).join(' ').trim() || leadEmail || 'Lead';
-        await prisma.$transaction(async (tx) => {
+        const leadInput: PublicEligibilityLeadInput = {
+          linkId: link.id,
+          organizationId: link.orgId ?? (await getDefaultOrganizationId()),
+          firstName: data.firstName?.trim() || null,
+          lastName: data.lastName?.trim() || null,
+          email: leadEmail,
+          phone: data.phone?.trim() || null,
+          ageGroup: data.ageGroup ?? null,
+          city: data.city?.trim() || null,
+          state: data.state?.trim() || null,
+          zip: data.zip?.trim() || null,
+          county: data.county?.trim() || null,
+          primaryBarriers: barrierTypes,
+          answers: extendedMeta,
+        };
+        const { id: leadRecordId } = await prisma.$transaction(async (tx) => {
           if (!(await consumeTokenizedLink(link.id, { tx, expected: link }))) throw new Error('ELIGIBILITY_TOKEN_CONFLICT');
+          const lead = await savePublicEligibilityLead(tx, leadInput);
           await auditLog({
             actorUserId: null,
             action: 'public_eligibility_lead_submitted',
@@ -284,21 +309,9 @@ export const POST = withApiGuc(
             targetId: link.id,
             actorEmailSnapshot: null,
             actorRoleSnapshot: null,
-            metadata: {
-              orgId: link.orgId,
-              email: leadEmail,
-              firstName: data.firstName?.trim() || null,
-              lastName: data.lastName?.trim() || null,
-              phone: data.phone?.trim() || null,
-              ageGroup: data.ageGroup ?? null,
-              city: data.city?.trim() || null,
-              state: data.state?.trim() || null,
-              zip: data.zip?.trim() || null,
-              county: data.county?.trim() || null,
-              primaryBarriers: barrierTypes,
-              ...extendedMeta,
-            },
+            metadata: publicEligibilityLeadAuditMetadata({ orgId: link.orgId, leadRecordId: lead.id, input: leadInput }),
           }, tx);
+          return lead;
         }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
         if (leadEmail && hasEligibilityScreeningFields(extendedMeta)) {
@@ -322,6 +335,7 @@ export const POST = withApiGuc(
               memberId: null,
               source: 'token',
               eligibility: extendedMeta,
+              leadRecordId,
             }).catch((err) => {
               logger.error('Public lead eligibility admin alert failed', { err });
               captureApiError(err, {
