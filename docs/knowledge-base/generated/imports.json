@@ -1528,6 +1528,14 @@
     "target": "lib/db/prisma.ts"
   },
   {
+    "from": "app/(portal)/counselor/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/(portal)/counselor/inactive-members/error.tsx",
     "specifier": "@/components/error/RouteErrorFallback",
     "line": 3,
@@ -5888,6 +5896,14 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/(portal)/dashboard/career-brief/[slug]/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/career-brief/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -6089,16 +6105,8 @@
   },
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
-    "specifier": "@/components/portal/PortalBreadcrumb",
-    "line": 12,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PortalBreadcrumb.tsx"
-  },
-  {
-    "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceViewTracker",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceViewTracker.tsx"
@@ -6106,7 +6114,7 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceProgressActions",
-    "line": 14,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceProgressActions.tsx"
@@ -6114,7 +6122,7 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/components/portal/ResourceDownloadButton",
-    "line": 15,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/ResourceDownloadButton.tsx"
@@ -6122,10 +6130,18 @@
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 16,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/(portal)/dashboard/career-library/[id]/page.tsx",
@@ -6742,6 +6758,14 @@
     "kind": "import",
     "external": false,
     "target": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx"
+  },
+  {
+    "from": "app/(portal)/dashboard/eligibility/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/(portal)/dashboard/error.tsx",
@@ -7664,6 +7688,14 @@
     "target": "components/portal/InterestProfilerClient.tsx"
   },
   {
+    "from": "app/(portal)/dashboard/learning/interest-profiler/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/learning/labs/[labId]/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -8137,8 +8169,16 @@
   },
   {
     "from": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
     "specifier": "@/components/portal/WioaQualificationClient",
-    "line": 13,
+    "line": 14,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/WioaQualificationClient.tsx"
@@ -10665,16 +10705,8 @@
   },
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
-    "specifier": "lucide-react",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/app/seo",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -10682,7 +10714,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -10690,7 +10722,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -10698,7 +10730,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -10706,7 +10738,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/member/ensureAppUser",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/member/ensureAppUser.ts"
@@ -10714,23 +10746,15 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PageHeader.tsx"
-  },
-  {
-    "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "next-intl/server",
-    "line": 15,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -10738,7 +10762,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 16,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -10746,7 +10770,7 @@
   {
     "from": "app/(portal)/dashboard/resume/page.tsx",
     "specifier": "./ResumeClient",
-    "line": 18,
+    "line": 16,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/resume/ResumeClient.tsx"
@@ -11760,6 +11784,14 @@
     "target": "lib/auth/roles.ts"
   },
   {
+    "from": "app/(portal)/employer/guide/page.tsx",
+    "specifier": "@/components/employer/EmployerPageOpener",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/employer/EmployerPageOpener.tsx"
+  },
+  {
     "from": "app/(portal)/employer/jobs/[id]/applicants/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -12329,8 +12361,24 @@
   },
   {
     "from": "app/(portal)/employer/jobs/import/page.tsx",
-    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "specifier": "@/components/employer/EmployerPageOpener",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/employer/EmployerPageOpener.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/import/page.tsx",
+    "specifier": "@/components/portal/PortalPageFrame",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalPageFrame.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/import/page.tsx",
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -12553,8 +12601,16 @@
   },
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
-    "specifier": "@/lib/employer/jobReadiness",
+    "specifier": "@/components/portal/PortalEmptyState",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalEmptyState.tsx"
+  },
+  {
+    "from": "app/(portal)/employer/jobs/page.tsx",
+    "specifier": "@/lib/employer/jobReadiness",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/employer/jobReadiness.ts"
@@ -12562,7 +12618,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -12570,7 +12626,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "next-intl/server",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -12578,7 +12634,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/components/portal/StatusBadge",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
@@ -12586,7 +12642,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/employer/employerJobsListQuery",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/employer/employerJobsListQuery.ts"
@@ -12594,7 +12650,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -12602,7 +12658,7 @@
   {
     "from": "app/(portal)/employer/jobs/page.tsx",
     "specifier": "@/lib/employer/jobStatusDisplay",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/employer/jobStatusDisplay.ts"
@@ -13129,11 +13185,11 @@
   },
   {
     "from": "app/(portal)/employer/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/components/employer/EmployerPageOpener",
     "line": 11,
     "kind": "import",
     "external": false,
-    "target": "components/portal/PageHeader.tsx"
+    "target": "components/employer/EmployerPageOpener.tsx"
   },
   {
     "from": "app/(portal)/employer/page.tsx",
@@ -13422,6 +13478,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
+  },
+  {
+    "from": "app/(portal)/employer/pipeline/page.tsx",
+    "specifier": "@/components/portal/PortalEmptyState",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalEmptyState.tsx"
   },
   {
     "from": "app/(portal)/employer/settings/loading.tsx",
@@ -14158,6 +14222,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/partner/referralLink.ts"
+  },
+  {
+    "from": "app/(portal)/partner/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/(portal)/partner/layout.tsx",
@@ -15002,7 +15074,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/components/portal/kit/pages/PartnerOverviewKit",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/PartnerOverviewKit.tsx"
@@ -15010,7 +15082,7 @@
   {
     "from": "app/(portal)/partner/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 58,
+    "line": 59,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -17040,6 +17112,14 @@
     "target": "lib/content/programTitle.ts"
   },
   {
+    "from": "app/admin/career-mappings/CareerMappingsClient.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/admin/career-mappings/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -18638,6 +18718,14 @@
     "kind": "import",
     "external": false,
     "target": "components/error/ErrorBoundary.tsx"
+  },
+  {
+    "from": "app/admin/dashboard/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 81,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/admin/data-retention/page.tsx",
@@ -21568,6 +21656,14 @@
     "target": "app/admin/members/[id]/readiness/ReadinessCounselorClient.tsx"
   },
   {
+    "from": "app/admin/members/[id]/readiness/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/admin/members/[id]/stakeholder/page.tsx",
     "specifier": "next",
     "line": 1,
@@ -23974,6 +24070,14 @@
     "kind": "import",
     "external": false,
     "target": "app/admin/pipeline/StaleApplicationsBanner.tsx"
+  },
+  {
+    "from": "app/admin/pipeline/PipelineLegacyView.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/admin/pipeline/PlacementRecordedToast.tsx",
@@ -70088,6 +70192,14 @@
     "target": "components/portal/kit/hooks/useFocusTrap.ts"
   },
   {
+    "from": "components/admin/EmailTemplatesClient.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/admin/EmployersTableClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -70249,11 +70361,11 @@
   },
   {
     "from": "components/admin/InvitesTable.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@/components/admin/ConfirmDialog",
     "line": 7,
     "kind": "import",
     "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "target": "components/admin/ConfirmDialog.tsx"
   },
   {
     "from": "components/admin/InvitesTable.tsx",
@@ -70841,11 +70953,35 @@
   },
   {
     "from": "components/admin/PartnerDeactivateDialog.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 6,
     "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerDeactivateDialog.tsx",
+    "specifier": "@astryxdesign/core/Text",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerDetailActions.tsx",
@@ -70905,24 +71041,32 @@
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
-    "specifier": "lucide-react",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 5,
     "kind": "import",
     "external": true,
-    "package": "lucide-react"
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Layout",
     "line": 6,
     "kind": "import",
-    "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/PartnerEditModal.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/PartnerEditModal.tsx",
     "specifier": "@/components/admin/PartnerSchoolEnrollmentFields",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/admin/PartnerSchoolEnrollmentFields.tsx"
@@ -71273,11 +71417,27 @@
   },
   {
     "from": "components/admin/SubgroupMembersTable.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "@/components/admin/ConfirmDialog",
     "line": 8,
     "kind": "import",
     "external": false,
-    "target": "hooks/useFocusTrap.ts"
+    "target": "components/admin/ConfirmDialog.tsx"
+  },
+  {
+    "from": "components/admin/SubgroupMembersTable.tsx",
+    "specifier": "@astryxdesign/core/Dialog",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/admin/SubgroupMembersTable.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/TestimonialsAdminClient.tsx",
@@ -72352,6 +72512,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/employer/EmployerJobsBoard.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/employer/EmployerKanban.tsx",
     "specifier": "react",
     "line": 3,
@@ -72390,6 +72558,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/employer/EmployerKanban.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
   },
   {
     "from": "components/employer/EmployerLoiForm.tsx",
@@ -72512,6 +72688,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/employer/EmployerMatchHistoryClient.tsx",
+    "specifier": "@/components/portal/kit/KitEmptyState",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/KitEmptyState.tsx"
+  },
+  {
     "from": "components/employer/EmployerMatchStatusSelect.tsx",
     "specifier": "react",
     "line": 3,
@@ -72585,16 +72769,8 @@
   },
   {
     "from": "components/employer/EmployerPageOpener.tsx",
-    "specifier": "@/components/portal/PortalBreadcrumb",
-    "line": 2,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PortalBreadcrumb.tsx"
-  },
-  {
-    "from": "components/employer/EmployerPageOpener.tsx",
     "specifier": "@/components/portal/kit/PageOpener",
-    "line": 3,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/PageOpener.tsx"
@@ -72602,7 +72778,7 @@
   {
     "from": "components/employer/EmployerPageOpener.tsx",
     "specifier": "./EmployerPageOpener.module.css",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "components/employer/EmployerPageOpener.module.css"
@@ -82682,14 +82858,6 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 16,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/Button",
     "line": 17,
     "kind": "import",
     "external": true,
@@ -82697,7 +82865,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/Token",
+    "specifier": "@astryxdesign/core/Button",
     "line": 18,
     "kind": "import",
     "external": true,
@@ -82705,7 +82873,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/ClickableCard",
+    "specifier": "@astryxdesign/core/Token",
     "line": 19,
     "kind": "import",
     "external": true,
@@ -82713,7 +82881,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@astryxdesign/core/EmptyState",
+    "specifier": "@astryxdesign/core/ClickableCard",
     "line": 20,
     "kind": "import",
     "external": true,
@@ -82721,8 +82889,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
-    "specifier": "@/components/admin/MfaStatusBanner",
+    "specifier": "@astryxdesign/core/EmptyState",
     "line": 21,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
+    "specifier": "@/components/admin/MfaStatusBanner",
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/admin/MfaStatusBanner.tsx"
@@ -82730,7 +82906,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@/components/error/ErrorBoundary",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/error/ErrorBoundary.tsx"
@@ -82738,7 +82914,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx",
     "specifier": "@/components/admin/ExecutiveTrendCharts",
-    "line": 37,
+    "line": 38,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/admin/ExecutiveTrendCharts.tsx"
@@ -126650,7 +126826,7 @@
   {
     "from": "tests/app/partner-dashboard-dates.spec.tsx",
     "specifier": "@/app/(portal)/partner/page",
-    "line": 45,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/page.tsx"
@@ -126746,7 +126922,7 @@
   {
     "from": "tests/app/partner-referral-pages.spec.tsx",
     "specifier": "@/app/(portal)/partner/page",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/page.tsx"
@@ -126754,7 +126930,7 @@
   {
     "from": "tests/app/partner-referral-pages.spec.tsx",
     "specifier": "@/app/(portal)/partner/guide/page",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "app/(portal)/partner/guide/page.tsx"
@@ -127290,7 +127466,7 @@
   {
     "from": "tests/components/admin-subgroup-members-table.test.tsx",
     "specifier": "@/components/admin/SubgroupMembersTable",
-    "line": 7,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "components/admin/SubgroupMembersTable.tsx"
@@ -129305,8 +129481,32 @@
   },
   {
     "from": "tests/components/portal-semantics.spec.tsx",
-    "specifier": "@/lib/ui/statusToneAdapters",
+    "specifier": "@/components/admin/PlacementsTableClient",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/PlacementsTableClient.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/components/admin/InvitesTable",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/InvitesTable.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/components/admin/EmployersTableClient",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/EmployersTableClient.tsx"
+  },
+  {
+    "from": "tests/components/portal-semantics.spec.tsx",
+    "specifier": "@/lib/ui/statusToneAdapters",
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusToneAdapters.ts"
@@ -129314,7 +129514,7 @@
   {
     "from": "tests/components/portal-semantics.spec.tsx",
     "specifier": "@/components/portal/kit/astryxMap",
-    "line": 16,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/astryxMap.ts"
@@ -129322,7 +129522,7 @@
   {
     "from": "tests/components/portal-semantics.spec.tsx",
     "specifier": "@/lib/ui/statusColors",
-    "line": 17,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusColors.ts"
