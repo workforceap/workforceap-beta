@@ -92,6 +92,98 @@ type AdminMemberProgramProgressRow = {
   lastUpdatedAt: Date;
 };
 
+export type UnassignedTrainingEvidence = {
+  programSlug: string;
+  coursesCompleted: number;
+  coursesWithProgress: number;
+  averagePercent: number;
+  lastActivityAt: Date | null;
+};
+
+/**
+ * Best evidence of training for a member with no program assignment.
+ *
+ * Returns null unless some row actually shows activity, so a member with only
+ * empty 0% rollups still reads "No program enrolled". Rollup and
+ * course-progress evidence for the same slug are merged by taking the larger
+ * completion count and preferring a non-zero rollup percentage; the strongest
+ * slug wins (completions, then percentage, then recency). This never implies
+ * an enrollment — the caller labels it as unassigned activity.
+ */
+export function summarizeUnassignedTrainingEvidence(
+  rollups: readonly AdminMemberProgramProgressRow[],
+  courseRows: readonly AdminCourseProgressRow[],
+): UnassignedTrainingEvidence | null {
+  const bySlug = new Map<string, UnassignedTrainingEvidence>();
+  const percentSums = new Map<string, { sum: number; count: number }>();
+
+  const entryFor = (programSlug: string): UnassignedTrainingEvidence => {
+    const existing = bySlug.get(programSlug);
+    if (existing) return existing;
+    const created: UnassignedTrainingEvidence = {
+      programSlug,
+      coursesCompleted: 0,
+      coursesWithProgress: 0,
+      averagePercent: 0,
+      lastActivityAt: null,
+    };
+    bySlug.set(programSlug, created);
+    return created;
+  };
+
+  for (const row of courseRows) {
+    if (!row.programSlug) continue;
+    // A Learning Path id is Coursera's program-level percentage, never a
+    // course; it is excluded from the assigned-program view above and must
+    // not become evidence of a course here either.
+    if (findLearningPathById(row.courseId)) continue;
+    const completed = row.status === 'COMPLETED';
+    const percent = completed ? 100 : Math.max(0, Math.min(100, row.percentComplete ?? 0));
+    if (!completed && percent <= 0 && row.status !== 'IN_PROGRESS') continue;
+    const entry = entryFor(row.programSlug);
+    if (completed) entry.coursesCompleted += 1;
+    entry.coursesWithProgress += 1;
+    const sums = percentSums.get(row.programSlug) ?? { sum: 0, count: 0 };
+    sums.sum += percent;
+    sums.count += 1;
+    percentSums.set(row.programSlug, sums);
+    if (row.lastUpdatedAt && (!entry.lastActivityAt || row.lastUpdatedAt > entry.lastActivityAt)) {
+      entry.lastActivityAt = row.lastUpdatedAt;
+    }
+  }
+
+  for (const [programSlug, sums] of percentSums) {
+    const entry = bySlug.get(programSlug);
+    if (entry && sums.count > 0) entry.averagePercent = Math.round(sums.sum / sums.count);
+  }
+
+  for (const rollup of rollups) {
+    if (!rollup.programSlug) continue;
+    const rollupCompleted = rollup.coursesCompleted ?? 0;
+    const rollupPercent = Math.max(0, Math.min(100, Math.round(rollup.averagePercent ?? 0)));
+    if (rollupCompleted <= 0 && rollupPercent <= 0) continue;
+    const entry = entryFor(rollup.programSlug);
+    entry.coursesCompleted = Math.max(entry.coursesCompleted, rollupCompleted);
+    entry.coursesWithProgress = Math.max(entry.coursesWithProgress, rollupCompleted);
+    if (rollupPercent > entry.averagePercent) entry.averagePercent = rollupPercent;
+    if (rollup.lastUpdatedAt && (!entry.lastActivityAt || rollup.lastUpdatedAt > entry.lastActivityAt)) {
+      entry.lastActivityAt = rollup.lastUpdatedAt;
+    }
+  }
+
+  const candidates = [...bySlug.values()].filter(
+    (entry) => entry.coursesCompleted > 0 || entry.averagePercent > 0,
+  );
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a, b) => {
+    if (b.coursesCompleted !== a.coursesCompleted) return b.coursesCompleted - a.coursesCompleted;
+    if (b.averagePercent !== a.averagePercent) return b.averagePercent - a.averagePercent;
+    return (b.lastActivityAt?.getTime() ?? 0) - (a.lastActivityAt?.getTime() ?? 0);
+  });
+  return candidates[0];
+}
+
 const CAREER_PLAN_EVENT_NAMES = [
   'career_quiz_result_viewed',
   'career_plan_saved',
@@ -325,6 +417,11 @@ export default async function AdminMemberDetailPage({
       select: {
         programSlug: true,
         curriculumVersion: true,
+        // The Program tab's "Enrolled date" describes the enrollment shown
+        // beside it, which comes from this row. User.enrolledAt is the older
+        // single-program pointer and is null for members enrolled through
+        // CourseEnrollment only, which printed "—" next to a real program.
+        enrolledAt: true,
         enrolledByAdminId: true,
         fundingSource: true,
         fundingNotes: true,
@@ -472,6 +569,39 @@ export default async function AdminMemberDetailPage({
       })
     : null;
   const completedCount = programReconciliation?.completedCount ?? 0;
+
+  // Members with real training but no enrollment pointer.
+  //
+  // `activeProgramSlug` is null when there is no CourseEnrollment row and
+  // User.enrolledProgram is null; every filter above then drops every
+  // course-progress row and the page printed "No program enrolled" and
+  // "Course progress: —" beside genuine completions (10 of 17 users with
+  // course_progress rows are in this state — e.g. it-support 2 of 3 done,
+  // ai-practitioner 2 done, cyber 67%).
+  //
+  // The evidence is surfaced, not converted into an assignment.
+  // `memberProgramProgress[0]` is not a safe fallback (the relation has no
+  // orderBy and 7 of the 10 carry a 0% legacy comptia rollup that is
+  // rewritten nightly), and back-filling course_enrollments would invent an
+  // enrollment intake never made. Only rows that actually show activity
+  // count, and the strongest one is labelled as unassigned activity.
+  const unassignedTrainingEvidence = activeProgramSlug
+    ? null
+    : summarizeUnassignedTrainingEvidence(
+        (member.memberProgramProgress ?? []) as AdminMemberProgramProgressRow[],
+        (member.courseProgress ?? []) as AdminCourseProgressRow[],
+      );
+
+  const formatUnassignedTrainingEvidence = (evidence: UnassignedTrainingEvidence): string => {
+    const parts = [
+      evidence.coursesCompleted > 0
+        ? `${evidence.coursesCompleted} course${evidence.coursesCompleted === 1 ? '' : 's'} complete`
+        : null,
+      evidence.averagePercent > 0 ? `${evidence.averagePercent}% avg` : null,
+    ].filter(Boolean);
+    return `${programDisplayTitle(evidence.programSlug)}${parts.length > 0 ? ` · ${parts.join(' · ')}` : ''}`;
+  };
+
   const careerPlanSignal = deriveCareerPlanSignal({
     careerRecommendationJson: member.careerRecommendationJson,
     applications: member.applications ?? [],
@@ -729,8 +859,12 @@ export default async function AdminMemberDetailPage({
                 </div>
               </div>
               <div className={styles.chips}>
-                <StatusTag tone={activeProgramSlug ? 'ok' : 'muted'}>
-                  {activeProgramSlug ? `Enrolled · ${programDisplayTitle(activeProgramSlug)}` : 'No program enrolled'}
+                <StatusTag tone={activeProgramSlug ? 'ok' : unassignedTrainingEvidence ? 'warn' : 'muted'}>
+                  {activeProgramSlug
+                    ? `Enrolled · ${programDisplayTitle(activeProgramSlug)}`
+                    : unassignedTrainingEvidence
+                      ? 'Training activity · no enrollment on file'
+                      : 'No program enrolled'}
                 </StatusTag>
                 <StatusTag tone={wioaTone}>
                   {member.wioaReviewStatus ? `WIOA · ${String(member.wioaReviewStatus).replace(/_/g, ' ').toLowerCase()}` : 'WIOA · not reviewed'}
@@ -751,8 +885,15 @@ export default async function AdminMemberDetailPage({
                   <p className={styles.statNote}>
                     {program
                       ? `complete · ${formatProgramCoursesNote(programCourseSummary)}`
-                      : 'No program enrolled'}
+                      : unassignedTrainingEvidence
+                        ? 'No enrollment on file — training activity below'
+                        : 'No program enrolled'}
                   </p>
+                  {!program && unassignedTrainingEvidence ? (
+                    <p className={styles.statNote} data-progress-source="unassigned-training-activity">
+                      {formatUnassignedTrainingEvidence(unassignedTrainingEvidence)}
+                    </p>
+                  ) : null}
                   {program ? (
                     <p className={styles.statNote} data-progress-source="coursera-learning-path">
                       {formatLearningPathLine(courseraPathPercent)}
@@ -938,14 +1079,26 @@ export default async function AdminMemberDetailPage({
                 Source: WorkforceAP course-progress rows for the assigned curriculum (progress feed 1 of 2).
               </p>
               <div className={styles.facts}>
-                <p><strong>Enrolled:</strong> {activeProgramSlug ? programDisplayTitle(activeProgramSlug) : '—'}</p>
-                <p><strong>Enrolled date:</strong> {member.enrolledAt?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
+                <p>
+                  <strong>Enrolled:</strong>{' '}
+                  {activeProgramSlug
+                    ? programDisplayTitle(activeProgramSlug)
+                    : unassignedTrainingEvidence
+                      ? '— (no enrollment on file)'
+                      : '—'}
+                </p>
+                <p><strong>Enrolled date:</strong> {(courseEnrollment?.enrolledAt ?? member.enrolledAt)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
                 {program ? (
                   <p>
                     <strong>Course progress:</strong>{' '}
                     {programReconciliation
                       ? `${programReconciliation.programPercent}% overall · ${completedCount} of ${curriculumCourses.length} complete`
                       : `${completedCount} of ${curriculumCourses.length} complete`}
+                  </p>
+                ) : unassignedTrainingEvidence ? (
+                  <p data-progress-source="unassigned-training-activity">
+                    <strong>Course progress:</strong>{' '}
+                    {`Training activity with no enrollment on file — ${formatUnassignedTrainingEvidence(unassignedTrainingEvidence)}`}
                   </p>
                 ) : (
                   <p><strong>Course progress:</strong> No program enrolled</p>

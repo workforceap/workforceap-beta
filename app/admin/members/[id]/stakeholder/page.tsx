@@ -83,7 +83,7 @@ export default async function AdminMemberStakeholderPage({
         where: { isPrimary: true },
         orderBy: { enrolledAt: 'desc' },
         take: 1,
-        select: { programSlug: true, curriculumVersion: true },
+        select: { programSlug: true, curriculumVersion: true, enrolledAt: true },
       },
       assessmentCompleted: true,
       onboardingCompletedAt: true,
@@ -308,8 +308,8 @@ export default async function AdminMemberStakeholderPage({
                 Enrolled
               </p>
               <p style={{ margin: 0, fontWeight: 600 }}>
-                {member.enrolledAt
-                  ? member.enrolledAt.toLocaleDateString('en-US', {
+                {(primaryEnrollment?.enrolledAt ?? member.enrolledAt)
+                  ? (primaryEnrollment?.enrolledAt ?? member.enrolledAt)!.toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
                       year: 'numeric',
