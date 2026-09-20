@@ -113,7 +113,6 @@ export const STATIC_PATHS = {
     '/admin/members/job-ready',
     '/admin/members/merge',
     '/admin/members/new',
-    '/admin/members/training',
     '/admin/mentors',
     '/admin/messages',
     '/admin/metrics',
@@ -450,7 +449,17 @@ export const REDIRECT_ONLY_PATHS = {
       reason: 'consolidated_experience',
     },
   ],
-  admin: [],
+  admin: [
+    {
+      // Members → Training progress listed the same members a fourth time.
+      // The training preset of the one admin roster owns that view now
+      // (admin audit 2026-09-20, §7 item 2); the legacy dashboard table stays
+      // behind /admin/members/training?ui=legacy.
+      path: '/admin/members/training',
+      target: '/admin/training-progress',
+      reason: 'consolidated_experience',
+    },
+  ],
   employer: [],
   partner: [
     {

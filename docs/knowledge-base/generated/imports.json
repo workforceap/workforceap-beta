@@ -25641,8 +25641,16 @@
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/app/seo",
+    "specifier": "next/headers",
     "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/students/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -25650,7 +25658,7 @@
   {
     "from": "app/admin/students/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 4,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -25658,7 +25666,7 @@
   {
     "from": "app/admin/students/page.tsx",
     "specifier": "next-intl/server",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -25666,90 +25674,50 @@
   {
     "from": "app/admin/students/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/content/programTitle",
-    "line": 12,
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "line": 8,
     "kind": "import",
     "external": false,
-    "target": "lib/content/programTitle.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/healthScore",
-    "line": 13,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/healthScore.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
+    "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
     "from": "app/admin/students/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
-    "line": 15,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/coursera/progressQueries",
-    "line": 20,
+    "specifier": "@/lib/admin/studentsRosterLoad",
+    "line": 10,
     "kind": "import",
     "external": false,
-    "target": "lib/coursera/progressQueries.ts"
+    "target": "lib/admin/studentsRosterLoad.ts"
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/coursera/courseGradeDisplay",
-    "line": 24,
+    "specifier": "@/lib/admin/trainingRosterLoad",
+    "line": 14,
     "kind": "import",
     "external": false,
-    "target": "lib/coursera/courseGradeDisplay.ts"
+    "target": "lib/admin/trainingRosterLoad.ts"
   },
   {
     "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/studentsRosterEnrichment",
-    "line": 25,
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 15,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/studentsRosterEnrichment.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/studentsUnmatchedCoursera",
-    "line": 26,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/studentsUnmatchedCoursera.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/withSoftTimeout",
-    "line": 27,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/withSoftTimeout.ts"
-  },
-  {
-    "from": "app/admin/students/page.tsx",
-    "specifier": "@/lib/admin/studentsRosterFacts",
-    "line": 32,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/studentsRosterFacts.ts"
+    "target": "lib/admin/studentsRosterView.ts"
   },
   {
     "from": "app/admin/subgroups/[id]/edit/page.tsx",
@@ -26313,40 +26281,16 @@
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/coursera/programCourseList",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coursera/programCourseList.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/coursera/progressReconciliation",
-    "line": 15,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coursera/progressReconciliation.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/coursera/courseTitle",
-    "line": 16,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/courseTitle.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/coursera/progressQueries",
-    "line": 17,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coursera/progressQueries.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 18,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -26354,39 +26298,39 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 19,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/trainingProgressGrades",
-    "line": 20,
+    "specifier": "@/lib/admin/studentsRosterLoad",
+    "line": 17,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/trainingProgressGrades.ts"
+    "target": "lib/admin/studentsRosterLoad.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/trainingProgressPrograms",
-    "line": 21,
+    "specifier": "@/lib/admin/trainingRosterLoad",
+    "line": 18,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/trainingProgressPrograms.ts"
+    "target": "lib/admin/trainingRosterLoad.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/trainingProgressRoster",
-    "line": 26,
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 19,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/trainingProgressRoster.ts"
+    "target": "lib/admin/studentsRosterView.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 27,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -26394,7 +26338,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 28,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -26402,31 +26346,23 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/admin/TrainingProgressClient",
-    "line": 29,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/admin/TrainingProgressClient.tsx"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/components/admin/TrainingProgressRoster",
-    "line": 33,
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 26,
     "kind": "import",
     "external": false,
-    "target": "components/admin/TrainingProgressRoster.tsx"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/TrainingProgressKit",
-    "line": 34,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx"
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 400,
+    "line": 86,
     "kind": "type",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -66881,19 +66817,27 @@
   },
   {
     "from": "app/dev/staff/training-progress/page.tsx",
-    "specifier": "@/components/admin/TrainingProgressRoster",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
     "line": 2,
     "kind": "import",
     "external": false,
-    "target": "components/admin/TrainingProgressRoster.tsx"
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
   },
   {
     "from": "app/dev/staff/training-progress/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/TrainingProgressKit",
-    "line": 3,
+    "specifier": "@/lib/admin/trainingProgressPrograms",
+    "line": 6,
     "kind": "type",
     "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx"
+    "target": "lib/admin/trainingProgressPrograms.ts"
+  },
+  {
+    "from": "app/dev/staff/training-progress/page.tsx",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
   },
   {
     "from": "app/dev/voice-studio/layout.tsx",
@@ -72478,46 +72422,6 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/StatusBadge.tsx"
-  },
-  {
-    "from": "components/admin/TrainingProgressRoster.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/admin/TrainingProgressRoster.tsx",
-    "specifier": "@astryxdesign/core/Button",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/admin/TrainingProgressRoster.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
-    "from": "components/admin/TrainingProgressRoster.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/TrainingProgressKit",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx"
-  },
-  {
-    "from": "components/admin/TrainingProgressRoster.tsx",
-    "specifier": "@/lib/admin/trainingProgressRoster",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/trainingProgressRoster.ts"
   },
   {
     "from": "components/admin/TriageDigestSection.tsx",
@@ -85649,7 +85553,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "next/navigation",
+    "specifier": "next/link",
     "line": 4,
     "kind": "import",
     "external": true,
@@ -85657,15 +85561,15 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "@astryxdesign/core/Card",
+    "specifier": "next/navigation",
     "line": 5,
     "kind": "import",
     "external": true,
-    "package": "@astryxdesign/core"
+    "package": "next"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "@astryxdesign/core/SegmentedControl",
+    "specifier": "@astryxdesign/core/Card",
     "line": 6,
     "kind": "import",
     "external": true,
@@ -85673,7 +85577,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "@astryxdesign/core/Token",
+    "specifier": "@astryxdesign/core/Button",
     "line": 7,
     "kind": "import",
     "external": true,
@@ -85681,7 +85585,7 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "@astryxdesign/core/ProgressBar",
+    "specifier": "@astryxdesign/core/Link",
     "line": 8,
     "kind": "import",
     "external": true,
@@ -85689,8 +85593,32 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@astryxdesign/core/SegmentedControl",
     "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@astryxdesign/core/Token",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@astryxdesign/core/ProgressBar",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -85698,7 +85626,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/components/portal/kit/kitTableSort",
-    "line": 18,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/kitTableSort.tsx"
@@ -85706,10 +85634,34 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/studentsRosterSort",
-    "line": 19,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterSort.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@/lib/admin/trainingProgressRoster",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressRoster.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@/lib/admin/trainingProgressPrograms",
+    "line": 38,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/trainingProgressPrograms.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx",
@@ -85806,86 +85758,6 @@
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "react",
-    "line": 3,
-    "kind": "type",
-    "external": true,
-    "package": "react"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "next/link",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@astryxdesign/core/Card",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@astryxdesign/core/Button",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@astryxdesign/core/Token",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@astryxdesign/core/Link",
-    "line": 8,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@/components/portal/kit/KitSortHeader",
-    "line": 17,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/KitSortHeader.tsx"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@/components/portal/kit/kitTableSort",
-    "line": 18,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/kitTableSort.tsx"
-  },
-  {
-    "from": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx",
-    "specifier": "@/lib/admin/trainingProgressRoster",
-    "line": 19,
-    "kind": "type",
-    "external": false,
-    "target": "lib/admin/trainingProgressRoster.ts"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/UsersKit.tsx",
@@ -93944,12 +93816,140 @@
     "target": "lib/coursera/progressReconciliation.ts"
   },
   {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "server-only",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "server-only"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/content/programTitle",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programTitle.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/healthScore",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/healthScore.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 6,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/coursera/progressQueries",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressQueries.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/coursera/courseGradeDisplay",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/courseGradeDisplay.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/studentsRosterEnrichment",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterEnrichment.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/studentsUnmatchedCoursera",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsUnmatchedCoursera.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/withSoftTimeout",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/withSoftTimeout.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/studentsRosterFacts",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterFacts.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/trainingProgressRoster",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressRoster.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "lib/admin/studentsRosterLoad.ts",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
     "from": "lib/admin/studentsRosterSort.ts",
     "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
     "line": 5,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "lib/admin/studentsRosterView.ts",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 18,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "lib/admin/studentsRosterView.ts",
+    "specifier": "@/lib/admin/trainingProgressRoster",
+    "line": 19,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/trainingProgressRoster.ts"
   },
   {
     "from": "lib/admin/studentsUnmatchedCoursera.test.ts",
@@ -94078,6 +94078,134 @@
     "kind": "import",
     "external": false,
     "target": "lib/coursera/courseGradeDisplay.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "server-only",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "server-only"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/db/queryCaps",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/queryCaps.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/coursera/programCourseList",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/programCourseList.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/coursera/progressReconciliation",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressReconciliation.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/coursera/progressQueries",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressQueries.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/member/curriculumAssignment",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/curriculumAssignment.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/admin/trainingProgressGrades",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressGrades.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/admin/trainingProgressPrograms",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressPrograms.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/admin/trainingProgressRoster",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressRoster.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 24,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "lib/admin/trainingRosterLoad.ts",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
   },
   {
     "from": "lib/admin/triageDigest.ts",
@@ -130336,6 +130464,54 @@
     "target": "messages/en.json"
   },
   {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "@/lib/admin/studentsRosterLoad",
+    "line": 39,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/studentsRosterLoad.ts"
+  },
+  {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "@/app/admin/students/page",
+    "line": 57,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/students/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "@/app/admin/training-progress/page",
+    "line": 58,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/training-progress/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-roster-routes.spec.tsx",
+    "specifier": "@/app/admin/members/training/page",
+    "line": 59,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/training/page.tsx"
+  },
+  {
     "from": "tests/components/admin-subgroup-members-table.test.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -130358,38 +130534,6 @@
     "kind": "import",
     "external": false,
     "target": "components/admin/SubgroupMembersTable.tsx"
-  },
-  {
-    "from": "tests/components/admin-training-progress-roster.test.tsx",
-    "specifier": "@testing-library/react",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "@testing-library/react"
-  },
-  {
-    "from": "tests/components/admin-training-progress-roster.test.tsx",
-    "specifier": "vitest",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "vitest"
-  },
-  {
-    "from": "tests/components/admin-training-progress-roster.test.tsx",
-    "specifier": "@/components/admin/TrainingProgressRoster",
-    "line": 21,
-    "kind": "import",
-    "external": false,
-    "target": "components/admin/TrainingProgressRoster.tsx"
-  },
-  {
-    "from": "tests/components/admin-training-progress-roster.test.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/TrainingProgressKit",
-    "line": 22,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/TrainingProgressKit.tsx"
   },
   {
     "from": "tests/components/agent-inbox-retry.spec.tsx",
@@ -133171,6 +133315,30 @@
     "from": "tests/components/students-roster-identity.spec.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/components/students-roster-kit-views.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/students-roster-kit-views.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/students-roster-kit-views.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
@@ -137334,6 +137502,46 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/lib/students-roster-view.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/students-roster-view.spec.ts",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 2,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "tests/lib/students-roster-view.spec.ts",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "tests/lib/students-roster-view.spec.ts",
+    "specifier": "@/lib/admin/studentsRosterSort",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterSort.ts"
+  },
+  {
+    "from": "tests/lib/students-roster-view.spec.ts",
+    "specifier": "@/lib/admin/trainingProgressRoster",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingProgressRoster.ts"
   },
   {
     "from": "tests/lib/success-chip-text-token-sweep.spec.ts",

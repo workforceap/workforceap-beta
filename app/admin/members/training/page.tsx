@@ -16,6 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
+/** Where this legacy dashboard's readers now land: the training preset of the one admin roster. */
+const MEMBERS_TRAINING_REDIRECT_TARGET = '/admin/training-progress';
+
 function MetricCard({ label, value, accent }: { label: string; value: string | number; accent: string }) {
   return (
     <div className="portal-kpi-card" style={{ padding: '1rem' }}>
@@ -25,7 +28,20 @@ function MetricCard({ label, value, accent }: { label: string; value: string | n
   );
 }
 
-export default async function AdminTrainingProgressPage() {
+/**
+ * Members → Training progress was the fourth surface listing the same members
+ * (admin audit 2026-09-20, §7 item 2). It now forwards to the training preset
+ * of the one admin roster; the original metric cards + dashboard table stay
+ * reachable behind `?ui=legacy` only.
+ */
+export default async function AdminTrainingProgressPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = (await searchParams) ?? {};
+  if (params.ui !== 'legacy') redirect(MEMBERS_TRAINING_REDIRECT_TARGET);
+
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/members/training');
   const scope = await resolveAdminPageTenant(user.id);
