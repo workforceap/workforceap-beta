@@ -1934,30 +1934,6 @@
       ]
     },
     {
-      "name": "NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
-      "name": "NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID",
-      "publicPrefix": true,
-      "declaredInRootExample": true,
-      "references": []
-    },
-    {
       "name": "NEXT_PUBLIC_EMPLOYER_CALENDLY_URL",
       "publicPrefix": true,
       "declaredInRootExample": false,
@@ -4989,10 +4965,6 @@
     "GEMINI_API_KEY",
     "GROQ_API_KEY",
     "NEXT_PUBLIC_CAPTCHA_ENABLED",
-    "NEXT_PUBLIC_ELEVENLABS_COUNSELOR_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_FEMALE_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_INTERVIEWER_MALE_VOICE_ID",
-    "NEXT_PUBLIC_ELEVENLABS_WIOA_VOICE_ID",
     "NEXT_PUBLIC_GTM_ID",
     "NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD",
     "NEXT_PUBLIC_SENTRY_DSN",

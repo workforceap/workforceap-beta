@@ -16661,87 +16661,87 @@
       {
         "level": 2,
         "title": "Coursera / Learning Integration",
-        "line": 175
+        "line": 173
       },
       {
         "level": 2,
         "title": "Stripe / Payments",
-        "line": 209
+        "line": 207
       },
       {
         "level": 2,
         "title": "Analytics & Monitoring",
-        "line": 223
+        "line": 221
       },
       {
         "level": 2,
         "title": "WIOA",
-        "line": 241
+        "line": 239
       },
       {
         "level": 2,
         "title": "Partner & Org",
-        "line": 250
+        "line": 248
       },
       {
         "level": 2,
         "title": "Admin & Cron",
-        "line": 259
+        "line": 257
       },
       {
         "level": 2,
         "title": "Testing & QA",
-        "line": 269
+        "line": 267
       },
       {
         "level": 2,
         "title": "Build & Internal",
-        "line": 308
+        "line": 306
       },
       {
         "level": 2,
         "title": "Deprecated / Legacy",
-        "line": 322
+        "line": 320
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 338
+        "line": 336
       },
       {
         "level": 3,
         "title": "🔒 Server-Only Variables",
-        "line": 340
+        "line": 338
       },
       {
         "level": 3,
         "title": "👁️ Client-Safe Variables",
-        "line": 354
+        "line": 352
       },
       {
         "level": 3,
         "title": ".gitignore",
-        "line": 369
+        "line": 366
       },
       {
         "level": 2,
         "title": "Drift Report",
-        "line": 375
+        "line": 372
       },
       {
         "level": 3,
         "title": "Variables in CODE but NOT in `.env.example` (Missing from template)",
-        "line": 377
+        "line": 374
       },
       {
         "level": 3,
         "title": "Variables in `.env.example` but NOT in CODE (Potentially stale)",
-        "line": 464
+        "line": 457
       },
       {
         "level": 2,
         "title": "Changelog",
-        "line": 473
+        "line": 466
       }
     ],
     "datedFilename": false,

@@ -24,11 +24,14 @@ vi.mock('@/lib/db/prisma', () => ({
   },
 }));
 vi.mock('@/lib/member/getActiveProgramForDashboard', () => ({ getActiveProgramForDashboard: vi.fn() }));
+vi.mock('@/lib/member/memberProgramTrainingView', () => ({ loadMemberProgramTrainingView: vi.fn() }));
 
 import ProgramStartPage from '@/app/(portal)/dashboard/program/start/page';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
+import { getProgramEnrollmentSteps } from '@/lib/content/programEnrollmentSteps';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
+import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 
 const view = (overrides: Partial<Awaited<ReturnType<typeof getActiveProgramForDashboard>>> = {}) => ({
   activeProgramSlug: null,
@@ -54,7 +57,13 @@ describe('/dashboard/program/start page', () => {
     } as never);
     vi.mocked(prisma.courseEnrollment.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.employerScreeningPack.findFirst).mockResolvedValue(null);
+    vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(null);
   });
+
+  const enrolledView = () =>
+    view({ activeProgramSlug: DIGITAL_LITERACY_PROGRAM_SLUG, primaryProgramSlug: DIGITAL_LITERACY_PROGRAM_SLUG });
+  const trainingView = (overrides: { allCoursesComplete: boolean; totalCourses: number; completedCount: number }) =>
+    ({ ...overrides }) as Awaited<ReturnType<typeof loadMemberProgramTrainingView>>;
 
   it('bounces to My Program when the dashboard view has no active program, whatever User.enrolledProgram says', async () => {
     vi.mocked(getActiveProgramForDashboard).mockResolvedValue(view());
@@ -81,6 +90,69 @@ describe('/dashboard/program/start page', () => {
     );
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Back to My Program' })).toHaveAttribute('href', '/dashboard/program');
+  });
+
+  describe('completed state', () => {
+    it('renders a done summary instead of the next-step guidance once every course is complete', async () => {
+      vi.mocked(getActiveProgramForDashboard).mockResolvedValue(enrolledView());
+      vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(
+        trainingView({ allCoursesComplete: true, totalCourses: 5, completedCount: 5 }),
+      );
+
+      render(await ProgramStartPage());
+
+      expect(loadMemberProgramTrainingView).toHaveBeenCalledWith({
+        userId: 'user-1',
+        programSlug: DIGITAL_LITERACY_PROGRAM_SLUG,
+      });
+      expect(screen.getByRole('status')).toHaveTextContent(/finished every course/i);
+      expect(screen.getByRole('status')).toHaveTextContent('All 5 courses are complete');
+      expect(screen.queryByText('What happens next')).toBeNull();
+      expect(screen.queryByText('You are on file for training access')).toBeNull();
+      expect(screen.getByRole('link', { name: 'Open Job Board' })).toHaveAttribute('href', '/dashboard/jobs');
+      expect(screen.queryByRole('link', { name: 'Open My Classes' })).toBeNull();
+      // Every enrollment step is marked done rather than numbered as pending.
+      const stepCount = getProgramEnrollmentSteps(DIGITAL_LITERACY_PROGRAM_SLUG).length;
+      expect(screen.getAllByText('Done')).toHaveLength(stepCount);
+      expect(screen.queryByText('1')).toBeNull();
+    });
+
+    it('keeps the next-step guidance while any course is still open', async () => {
+      vi.mocked(getActiveProgramForDashboard).mockResolvedValue(enrolledView());
+      vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(
+        trainingView({ allCoursesComplete: false, totalCourses: 5, completedCount: 4 }),
+      );
+
+      render(await ProgramStartPage());
+
+      expect(screen.getByText('What happens next')).toBeInTheDocument();
+      expect(screen.queryByText(/finished every course/i)).toBeNull();
+      expect(screen.queryByText('Done')).toBeNull();
+      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Open My Classes' })).toHaveAttribute('href', '/dashboard');
+    });
+
+    it('never treats an empty curriculum as complete', async () => {
+      vi.mocked(getActiveProgramForDashboard).mockResolvedValue(enrolledView());
+      vi.mocked(loadMemberProgramTrainingView).mockResolvedValue(
+        trainingView({ allCoursesComplete: true, totalCourses: 0, completedCount: 0 }),
+      );
+
+      render(await ProgramStartPage());
+
+      expect(screen.getByText('What happens next')).toBeInTheDocument();
+      expect(screen.queryByText(/finished every course/i)).toBeNull();
+    });
+
+    it('falls back to the in-progress narrative when the progress read fails', async () => {
+      vi.mocked(getActiveProgramForDashboard).mockResolvedValue(enrolledView());
+      vi.mocked(loadMemberProgramTrainingView).mockRejectedValue(new Error('progress store unavailable'));
+
+      render(await ProgramStartPage());
+
+      expect(screen.getByText('What happens next')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Back to My Program' })).toHaveAttribute('href', '/dashboard/program');
+    });
   });
 
   it('redirects signed-out visitors to login before touching the database', async () => {

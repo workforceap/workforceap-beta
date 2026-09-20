@@ -211,7 +211,7 @@
 | [app/api/admin/webhook-events/export/route.ts](../../../app/api/admin/webhook-events/export/route.ts) | 91 | administration | GET:91 |
 | [app/api/admin/webhooks/process-retries/_processRetries.ts](../../../app/api/admin/webhooks/process-retries/_processRetries.ts) | 78 | administration | RetryResult:7, processRetryEvent:43 |
 | [app/api/admin/webhooks/process-retries/route.test.ts](../../../app/api/admin/webhooks/process-retries/route.test.ts) | 100 | administration |  |
-| [app/api/admin/webhooks/process-retries/route.ts](../../../app/api/admin/webhooks/process-retries/route.ts) | 78 | administration | maxDuration:12, GET:77, POST:78 |
+| [app/api/admin/webhooks/process-retries/route.ts](../../../app/api/admin/webhooks/process-retries/route.ts) | 84 | administration | maxDuration:12, GET:83, POST:84 |
 | [app/api/agent-tools/v1/\[tool\]/route.ts](../../../app/api/agent-tools/v1/%5Btool%5D/route.ts) | 114 | api | runtime:15, dynamic:16, POST:67 |
 | [app/api/ai/cover-letter/route.ts](../../../app/api/ai/cover-letter/route.ts) | 162 | ai-voice | POST:15 |
 | [app/api/ai/elevator-pitch/route.ts](../../../app/api/ai/elevator-pitch/route.ts) | 228 | ai-voice | POST:28 |

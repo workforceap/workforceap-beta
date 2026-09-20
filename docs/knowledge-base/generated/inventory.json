@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "8aa6e24928079734988f22b9603bf3e59507b78627473c292b9a04b4554dbb08",
+  "inputTreeSha256": "2c88fe08fab407d4c4291a13837830eb97b90feb838b3abd9c0bce22d8a191d5",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -1409,9 +1409,9 @@
       "path": ".env.example",
       "area": "root",
       "domain": "root",
-      "bytes": 14795,
-      "lines": 382,
-      "sha256": "8399ec2ac6e5a2f34a43cfdd5e7e5e4cae431d90b46e132f1fc9b447e8d835d8",
+      "bytes": 14488,
+      "lines": 377,
+      "sha256": "6912e47e7bd14d33bb5a6706d55619795c50a7a20b4424e1fd2609dc52f4a4d1",
       "binary": false
     },
     {
@@ -10550,19 +10550,19 @@
       "path": "app/(portal)/dashboard/program/start/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 7735,
-      "lines": 181,
-      "sha256": "4e18814d9a8afb106ad58fe6ec5b1cab4127c070d499d1a15fbd131ea261b612",
+      "bytes": 10913,
+      "lines": 242,
+      "sha256": "71574729799be852bcc01bfc708acf34d790cd2a24667a6a6b9a0590b95964b8",
       "binary": false,
       "exports": [
         {
           "name": "metadata",
-          "line": 15,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 21,
+          "line": 23,
           "kind": "FunctionDeclaration",
           "localName": "ProgramStartPage"
         }
@@ -10570,12 +10570,12 @@
       "declarations": [
         {
           "name": "metadata",
-          "line": 15,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "ProgramStartPage",
-          "line": 21,
+          "line": 23,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -29055,9 +29055,9 @@
       "path": "app/api/admin/webhooks/process-retries/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 3337,
-      "lines": 78,
-      "sha256": "cca5813c37cfe7e56d0288068536b690abf9e49b89be4fe19ab14c6ff9ec2dad",
+      "bytes": 3627,
+      "lines": 84,
+      "sha256": "2a75060e259b2bd63c4befb276462ecd93f11488702e6de582fd83475ea073fd",
       "binary": false,
       "exports": [
         {
@@ -29067,12 +29067,12 @@
         },
         {
           "name": "GET",
-          "line": 77,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 78,
+          "line": 84,
           "kind": "Variable"
         }
       ],
@@ -29089,12 +29089,12 @@
         },
         {
           "name": "GET",
-          "line": 77,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 78,
+          "line": 84,
           "kind": "Variable"
         }
       ],
@@ -73543,9 +73543,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 272798,
-      "lines": 10067,
-      "sha256": "2d6087a5a1e5bc177cede45e3222f536c34813b1d033c4ca31c22421c905d454",
+      "bytes": 272950,
+      "lines": 10069,
+      "sha256": "8d2bd847aa8daf95312b571dda2a92c944f114fbe1368f3f80a17388438c5a44",
       "binary": false
     },
     {
@@ -73903,9 +73903,9 @@
       "path": "docs/ENVIRONMENT-VARIABLES.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 31858,
-      "lines": 481,
-      "sha256": "aec4ad7bbd306325d75a01f0dc23833e3377f6c6ebc58846564d11ed7f10bdeb",
+      "bytes": 31906,
+      "lines": 475,
+      "sha256": "2eb338e82f09a400ab5790df80285d1d063b4b04eeddf89f386b89af38bebf07",
       "binary": false
     },
     {
@@ -159905,15 +159905,15 @@
       "path": "tests/app/program-start-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4250,
-      "lines": 91,
-      "sha256": "b9b0498f9546568a3d0271167035e94322bc46e6e9a1e3917f70c40b21f395f6",
+      "bytes": 8121,
+      "lines": 163,
+      "sha256": "a9a852252428aab6414d972df9433718d5c239fd7975321ff2a375938409899f",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "view",
-          "line": 33,
+          "line": 36,
           "kind": "Variable"
         }
       ],
@@ -167858,6 +167858,29 @@
         {
           "name": "nodeOwned",
           "line": 78,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/webhook-retries-audit-noise.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4654,
+      "lines": 108,
+      "sha256": "8b987b51b1a1d08e768e5f5570daae616cd775e0707c5ed0c0f278ab8dfbe936",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "pendingEvent",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "cronRequest",
+          "line": 30,
           "kind": "FunctionDeclaration"
         }
       ],
