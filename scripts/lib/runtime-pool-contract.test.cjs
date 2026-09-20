@@ -34,3 +34,31 @@ test('missing, malformed, duplicated, zero and off-contract params fail without 
     assert.equal(JSON.stringify(result).includes('DO_NOT_LOG'), false);
   }
 });
+test('Vercel builds report pool parameters without enforcing them', () => {
+  const script = resolve(__dirname, '../check-supabase-env.mjs');
+  // `base` is on 6543 but sets none of the required Prisma pool params.
+  const env = { VERCEL: '1', VERCEL_ENV: 'production', POSTGRES_PRISMA_URL: base };
+  const poolErrors = [
+    'Runtime URL must explicitly set connection_limit=1.',
+    'Runtime URL must explicitly set a positive integer pool_timeout.',
+    'Runtime URL must explicitly set pgbouncer=true.',
+  ];
+  const run = (args) => {
+    const r = spawnSync(process.execPath, [script, ...args], { env, encoding: 'utf8' });
+    return r.stdout + r.stderr;
+  };
+
+  // Reported either way, so a deploy is verifiable from its build log...
+  const reported = run([]);
+  const enforced = run(['--check-pool-contract']);
+  assert.match(reported, /runtime pool parameters/);
+  assert.match(enforced, /runtime pool parameters/);
+
+  // ...but only --check-pool-contract turns the contract into blocking errors.
+  for (const message of poolErrors) {
+    assert.equal(reported.includes(message), false);
+    assert.ok(enforced.includes(message));
+  }
+  assert.equal(reported.includes('DO_NOT_LOG'), false);
+  assert.equal(enforced.includes('DO_NOT_LOG'), false);
+});

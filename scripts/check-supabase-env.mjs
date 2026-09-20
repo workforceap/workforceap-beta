@@ -9,9 +9,12 @@
  * NEXT_PUBLIC_SUPABASE_ANON_KEY, and the connection URLs and fails loud if a
  * scope is wired to the wrong project or auth is missing the public anon key.
  *
- * Optional --check-pool-contract also checks explicit runtime port/Prisma pool
- * params without printing the URL. This is not enabled by the default build:
- * verify the deployed parameters before enforcing this additional contract.
+ * Vercel builds always report the runtime port/Prisma pool params (never the
+ * URL) so a deploy can be verified from its build log. Optional
+ * --check-pool-contract additionally *enforces* them. Enforcement is not in
+ * the default build: verify the reported parameters first. Note that the flag
+ * also disables the CI short-circuit below, so it must never be added to a
+ * build command that GitHub Actions runs against stub URLs.
  * Exit 0 = ok, 1 = misconfigured (block the deploy).
  */
 
@@ -75,10 +78,12 @@ if (process.env.VERCEL === '1') {
   errors.push(...strict.errors.map((message) => `  ✗ ${message}`));
 }
 
-if (checkPoolContract) {
+// Report on every Vercel build so a deploy's actual parameters are visible
+// before enforcement is turned on; only --check-pool-contract can block.
+if (checkPoolContract || process.env.VERCEL === '1') {
   const pool = poolContract.inspectRuntimePoolContract(process.env.POSTGRES_PRISMA_URL);
   console.log('[supabase-env-guard] runtime pool parameters:', pool.parameters);
-  errors.push(...pool.errors.map((message) => `  - ${message}`));
+  if (checkPoolContract) errors.push(...pool.errors.map((message) => `  - ${message}`));
 }
 
 console.log(`[supabase-env-guard] env=${env} expected=${expected} →`, seen);
