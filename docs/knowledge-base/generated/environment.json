@@ -1582,7 +1582,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 105
+          "line": 84
         },
         {
           "file": "app/api/counselor/sessions/email-packet/route.ts",
@@ -2011,7 +2011,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 80
+          "line": 59
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2047,11 +2047,11 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 74
+          "line": 75
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 163
+          "line": 164
         }
       ]
     },
@@ -2589,7 +2589,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 90
+          "line": 69
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2625,7 +2625,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 165
+          "line": 166
         }
       ]
     },
@@ -3496,7 +3496,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 72
+          "line": 73
         },
         {
           "file": "tests/api/partner-signup.spec.ts",
@@ -3919,7 +3919,7 @@
         },
         {
           "file": "app/api/contact/route.ts",
-          "line": 82
+          "line": 61
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -3939,7 +3939,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 164
+          "line": 165
         }
       ]
     },
@@ -4057,7 +4057,7 @@
         },
         {
           "file": "tests/api/contact-route.spec.ts",
-          "line": 73
+          "line": 74
         },
         {
           "file": "tests/api/partner-signup.spec.ts",

@@ -23,7 +23,8 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({
 // signs List-Unsubscribe tokens; keep both inert here.
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
 
-import { CONTACT_FORM_ERROR_PATH, CONTACT_FORM_THANKS_PATH, POST } from '@/app/api/contact/route';
+import { POST } from '@/app/api/contact/route';
+import { CONTACT_FORM_ERROR_PATH, CONTACT_FORM_THANKS_PATH } from '@/lib/contact/nativeFormPost';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 
 function makeRequest(body: Record<string, unknown> = {}) {

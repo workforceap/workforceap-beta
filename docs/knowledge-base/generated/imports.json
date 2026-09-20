@@ -45441,8 +45441,16 @@
   },
   {
     "from": "app/api/contact/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/contact/nativeFormPost",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/contact/nativeFormPost.ts"
+  },
+  {
+    "from": "app/api/contact/route.ts",
+    "specifier": "@/lib/email",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -45450,7 +45458,7 @@
   {
     "from": "app/api/contact/route.ts",
     "specifier": "@/lib/email/send",
-    "line": 7,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/send.ts"
@@ -121729,8 +121737,16 @@
   },
   {
     "from": "tests/api/contact-route.spec.ts",
-    "specifier": "@/lib/rate-limit",
+    "specifier": "@/lib/contact/nativeFormPost",
     "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/contact/nativeFormPost.ts"
+  },
+  {
+    "from": "tests/api/contact-route.spec.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -121738,7 +121754,7 @@
   {
     "from": "tests/api/contact-route.spec.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 166,
+    "line": 167,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"

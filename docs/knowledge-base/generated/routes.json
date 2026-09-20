@@ -21306,23 +21306,8 @@
     "routing": "filesystem",
     "exports": [
       {
-        "name": "CONTACT_FORM_THANKS_PATH",
-        "line": 18,
-        "kind": "Variable"
-      },
-      {
-        "name": "CONTACT_FORM_ERROR_PATH",
-        "line": 19,
-        "kind": "Variable"
-      },
-      {
-        "name": "isNativeFormPost",
-        "line": 22,
-        "kind": "FunctionDeclaration"
-      },
-      {
         "name": "POST",
-        "line": 57,
+        "line": 36,
         "kind": "FunctionDeclaration"
       }
     ],

@@ -13040,12 +13040,16 @@
         "line": 26
       },
       {
-        "file": "lib/rate-limit.ts",
+        "file": "lib/contact/nativeFormPost.ts",
         "line": 27
       },
       {
+        "file": "lib/rate-limit.ts",
+        "line": 28
+      },
+      {
         "file": "lib/turnstile/verifyTurnstile.ts",
-        "line": 166
+        "line": 167
       }
     ],
     "kind": "test-candidate",

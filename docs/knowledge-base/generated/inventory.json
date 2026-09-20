@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "0ea92fab23b78a97cc41016c7c6d787e380197f86132881c2c2094b8894ff37c",
+  "inputTreeSha256": "1f3bad1f4a0820432c93fc87a32fa214939e64eab0aaf291f0a684b86d692633",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -30575,81 +30575,41 @@
       "path": "app/api/contact/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 7756,
-      "lines": 185,
-      "sha256": "58a67f1ba8f393323324100073dffc1b8c1f4b68cb3bbc67255c707d3e543a8f",
+      "bytes": 6618,
+      "lines": 164,
+      "sha256": "835035648ad4576b478ddf9af78fc819db477e57035255d31d9cf7b359c5ffc1",
       "binary": false,
       "exports": [
         {
-          "name": "CONTACT_FORM_THANKS_PATH",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "CONTACT_FORM_ERROR_PATH",
-          "line": 19,
-          "kind": "Variable"
-        },
-        {
-          "name": "isNativeFormPost",
-          "line": 22,
-          "kind": "FunctionDeclaration"
-        },
-        {
           "name": "POST",
-          "line": 57,
+          "line": 36,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CONTACT_EMAIL_TO",
-          "line": 9,
+          "line": 15,
           "kind": "Variable"
-        },
-        {
-          "name": "CONTACT_FORM_THANKS_PATH",
-          "line": 18,
-          "kind": "Variable"
-        },
-        {
-          "name": "CONTACT_FORM_ERROR_PATH",
-          "line": 19,
-          "kind": "Variable"
-        },
-        {
-          "name": "NATIVE_FORM_CONTENT_TYPES",
-          "line": 20,
-          "kind": "Variable"
-        },
-        {
-          "name": "isNativeFormPost",
-          "line": 22,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "formDataToBody",
-          "line": 27,
-          "kind": "FunctionDeclaration"
         },
         {
           "name": "respond",
-          "line": 39,
+          "line": 18,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getClientIp",
-          "line": 49,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 57,
+          "line": 36,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseBody",
-          "line": 162,
+          "line": 141,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -101482,6 +101442,65 @@
       "directive": null
     },
     {
+      "path": "lib/contact/nativeFormPost.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1543,
+      "lines": 31,
+      "sha256": "b9437175fdadef2acc0faffd87dfe2a04a39b3b109bb7808dc0565e60c0c7e66",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CONTACT_FORM_THANKS_PATH",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONTACT_FORM_ERROR_PATH",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "isNativeFormPost",
+          "line": 16,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contactFormDataToBody",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CONTACT_FORM_THANKS_PATH",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONTACT_FORM_ERROR_PATH",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "NATIVE_FORM_CONTENT_TYPES",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "isNativeFormPost",
+          "line": 16,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "contactFormDataToBody",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/content/benefitsCliff.test.ts",
       "area": "libraries",
       "domain": "public-experience",
@@ -160106,9 +160125,9 @@
       "path": "tests/api/contact-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7279,
-      "lines": 182,
-      "sha256": "fb3b9b21bca5b605bcaa46649728d2f8cd6f013a4bff2e8334c72cff9dfc7ca0",
+      "bytes": 7326,
+      "lines": 183,
+      "sha256": "19d42ccfda51f81ec17c9a19a181d700d4a877fae30b2898c8b93aec28fd2d46",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -160119,12 +160138,12 @@
         },
         {
           "name": "makeRequest",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "makeNativeFormRequest",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration"
         }
       ],

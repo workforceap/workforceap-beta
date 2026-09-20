@@ -251,7 +251,7 @@
 | [app/api/careers/program-matches/\[programSlug\]/route.ts](../../../app/api/careers/program-matches/%5BprogramSlug%5D/route.ts) | 68 | api | GET:10 |
 | [app/api/careers/recommend/route.ts](../../../app/api/careers/recommend/route.ts) | 46 | api | POST:14 |
 | [app/api/consent/\[token\]/route.ts](../../../app/api/consent/%5Btoken%5D/route.ts) | 116 | learning-coursera | POST:35 |
-| [app/api/contact/route.ts](../../../app/api/contact/route.ts) | 185 | api | CONTACT_FORM_THANKS_PATH:18, CONTACT_FORM_ERROR_PATH:19, isNativeFormPost:22, POST:57 |
+| [app/api/contact/route.ts](../../../app/api/contact/route.ts) | 164 | api | POST:36 |
 | [app/api/counselor/analytics/route.ts](../../../app/api/counselor/analytics/route.ts) | 219 | member-counselor | GET:8 |
 | [app/api/counselor/bulk-followup/route.ts](../../../app/api/counselor/bulk-followup/route.ts) | 214 | member-counselor | POST:214 |
 | [app/api/counselor/counselors/route.ts](../../../app/api/counselor/counselors/route.ts) | 49 | member-counselor | GET:12 |

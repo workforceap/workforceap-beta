@@ -61,7 +61,7 @@
 | [tests/api/bulk-email-fixture-accounting.spec.ts](../../../tests/api/bulk-email-fixture-accounting.spec.ts) | 89 | tests |  |
 | [tests/api/careers-occupation-program-title.spec.ts](../../../tests/api/careers-occupation-program-title.spec.ts) | 86 | tests |  |
 | [tests/api/concordia-enroll-page.spec.ts](../../../tests/api/concordia-enroll-page.spec.ts) | 86 | tests |  |
-| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 182 | tests |  |
+| [tests/api/contact-route.spec.ts](../../../tests/api/contact-route.spec.ts) | 183 | tests |  |
 | [tests/api/counselor-analytics.spec.ts](../../../tests/api/counselor-analytics.spec.ts) | 232 | tests |  |
 | [tests/api/counselor-application-review.spec.ts](../../../tests/api/counselor-application-review.spec.ts) | 289 | tests |  |
 | [tests/api/counselor-dashboard.spec.ts](../../../tests/api/counselor-dashboard.spec.ts) | 609 | tests |  |
