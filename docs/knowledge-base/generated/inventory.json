@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "dc88c34a603ab1259852ff9075393dd749e4c214aed8a32482521cc66894b809",
+  "inputTreeSha256": "33d3cf1bb3b3bb9189edb3508ff09cbb71b56845f943635103e1c34142819a6d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -64685,9 +64685,9 @@
       "path": "components/portal/kit/KitTableShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 14403,
-      "lines": 367,
-      "sha256": "0f095de2bea6e5b8bb90589fec55c9d92502e64205a9e6b17001e445a59b8427",
+      "bytes": 14669,
+      "lines": 370,
+      "sha256": "639b5c43fbe48b4ccdbffda2a0de3926d255ccf7ca0d66c3b423c5ce620bc77c",
       "binary": false,
       "exports": [
         {
@@ -64717,7 +64717,7 @@
         },
         {
           "name": "KitTablePager",
-          "line": 352,
+          "line": 355,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64759,7 +64759,7 @@
         },
         {
           "name": "KitTablePager",
-          "line": 352,
+          "line": 355,
           "kind": "FunctionDeclaration"
         }
       ],

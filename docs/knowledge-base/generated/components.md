@@ -441,7 +441,7 @@
 | [components/portal/kit/KitEmptyState.tsx](../../../components/portal/kit/KitEmptyState.tsx) | 30 | components | KitEmptyState:4 |
 | [components/portal/kit/KitRowMenu.tsx](../../../components/portal/kit/KitRowMenu.tsx) | 146 | components | KitRowMenuItem:7, KitRowMenu:31 |
 | [components/portal/kit/KitSortHeader.tsx](../../../components/portal/kit/KitSortHeader.tsx) | 37 | components | KitSortDirection:3, KitSortHeader:17 |
-| [components/portal/kit/KitTableShell.tsx](../../../components/portal/kit/KitTableShell.tsx) | 367 | components | KitTableShellColumn:9, KitTableShellRow:20, KitTablePagination:29, KitTableBulkBarContext:38, KitTableShell:91, KitTablePager:352 |
+| [components/portal/kit/KitTableShell.tsx](../../../components/portal/kit/KitTableShell.tsx) | 370 | components | KitTableShellColumn:9, KitTableShellRow:20, KitTablePagination:29, KitTableBulkBarContext:38, KitTableShell:91, KitTablePager:355 |
 | [components/portal/kit/KitTableToolbar.tsx](../../../components/portal/kit/KitTableToolbar.tsx) | 150 | components | KitTableViewChip:8, KitTableToolbar:45 |
 | [components/portal/kit/KpiStrip.tsx](../../../components/portal/kit/KpiStrip.tsx) | 40 | components | KpiItem:5, KpiStrip:32 |
 | [components/portal/kit/MemberDashboardKit.tsx](../../../components/portal/kit/MemberDashboardKit.tsx) | 119 | components | MemberDashboardKitProps:16, MemberDashboardKit:28 |

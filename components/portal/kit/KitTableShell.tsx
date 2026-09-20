@@ -292,7 +292,10 @@ export function KitTableShell({
                     role={clickable ? 'button' : undefined}
                     tabIndex={clickable ? 0 : undefined}
                     className={cx(clickable && 'wa-kit-focus', isSelected && 'wa-kit-table-row--selected')}
-                    aria-selected={selectable ? isSelected : undefined}
+                    // `aria-selected` is not permitted on role="button"; clickable rows
+                    // keep the selected state on the class and the checkbox only.
+                    aria-selected={selectable && !clickable ? isSelected : undefined}
+                    data-selected={selectable ? String(isSelected) : undefined}
                   >
                     {selectable ? (
                       <td className="wa-kit-table-select" onClick={(e) => e.stopPropagation()}>
