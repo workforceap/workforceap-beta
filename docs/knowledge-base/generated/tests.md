@@ -105,6 +105,7 @@
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 257 | tests |  |
+| [tests/api/help-chat.spec.ts](../../../tests/api/help-chat.spec.ts) | 219 | tests |  |
 | [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 485 | tests |  |
 | [tests/api/invite-validate.spec.ts](../../../tests/api/invite-validate.spec.ts) | 138 | tests |  |
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
@@ -284,6 +285,7 @@
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/heading-outline-wap123.spec.tsx](../../../tests/components/heading-outline-wap123.spec.tsx) | 47 | tests |  |
+| [tests/components/help-assistant-menu.spec.tsx](../../../tests/components/help-assistant-menu.spec.tsx) | 133 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |

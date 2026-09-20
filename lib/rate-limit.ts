@@ -76,6 +76,12 @@ let authIpRateLimiter: Ratelimit | null = null;
 // real owners, which is an email-bombing surface for a known address).
 let signupEmailRateLimiter: Ratelimit | null = null;
 let aiToolRateLimiter: Ratelimit | null = null;
+// Per-user limiter for the in-portal help assistant (/api/help/chat,
+// `help_assistant_v1`). Each question is one LLM completion; 30/h covers a
+// real conversation while capping a stuck retry loop or a scripted client.
+// Security-mode (fail-closed) unlike the general AI-tool limiter: the endpoint
+// is a free-text prompt surface and must not run unmetered in production.
+let helpAssistantRateLimiter: Ratelimit | null = null;
 let resumeUploadRateLimiter: Ratelimit | null = null;
 let resumeDraftSaveRateLimiter: Ratelimit | null = null;
 let contactRateLimiter: Ratelimit | null = null;
@@ -272,6 +278,11 @@ if (redisUrl && redisToken) {
     // Launch softening: members can hit several AI tools in one session.
     limiter: Ratelimit.slidingWindow(25, '1 h'),
     prefix: 'ratelimit:ai-tool',
+  });
+  helpAssistantRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(30, '1 h'),
+    prefix: 'ratelimit:help-assistant',
   });
   resumeUploadRateLimiter = new Ratelimit({
     redis,
@@ -512,6 +523,11 @@ export async function checkAIToolRateLimit(userId: string): Promise<{ success: b
   if (!aiToolRateLimiter) return { success: true };
   const result = await aiToolRateLimiter.limit(userId);
   return { success: result.success, remaining: result.remaining };
+}
+
+/** Help assistant questions: fail-closed when the limiter is unavailable in production. */
+export async function checkHelpAssistantRateLimit(userId: string, request?: Request): Promise<{ success: boolean; remaining?: number }> {
+  return failClosedLimit(helpAssistantRateLimiter, 'help-assistant', `help-assistant:${userId}`, request);
 }
 
 export async function checkResumeUploadRateLimit(userId: string): Promise<{ success: boolean; remaining?: number }> {

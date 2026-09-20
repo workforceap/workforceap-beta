@@ -3630,7 +3630,8 @@
     "help": {
       "label": "Ayuda",
       "takeTour": "Hacer el recorrido",
-      "guide": "Guía del portal"
+      "guide": "Guía del portal",
+      "askAssistant": "Pedir ayuda"
     },
     "offer": {
       "take": "Hacer el recorrido",
@@ -3670,6 +3671,30 @@
           "title": "Vuelve cuando quieras",
           "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a la guía del portal."
         }
+      }
+    },
+    "assistant": {
+      "title": "Pedir ayuda",
+      "intro": "Pregunta cómo usar este portal: dónde está una página, para qué sirve o los pasos para hacer algo. Solo respondo sobre tu propio portal y nunca veo tus datos.",
+      "placeholder": "Pregunta cómo hacer algo aquí…",
+      "send": "Enviar",
+      "thinking": "Buscando…",
+      "error": "Algo salió mal. Inténtalo de nuevo en un momento.",
+      "tooMany": "Has hecho muchas preguntas en poco tiempo. Inténtalo de nuevo más tarde.",
+      "links": "Páginas relacionadas",
+      "close": "Cerrar ayuda",
+      "disclaimer": "Solo orientación sobre el portal. Nada de lo que escribas aquí cambia tu cuenta.",
+      "scope": {
+        "member": "Cómo usar tu portal de miembro",
+        "counselor": "Cómo usar el portal de consejeros",
+        "employer": "Cómo usar el portal de empleadores",
+        "partner": "Cómo usar el portal de socios",
+        "admin": "Cómo usar el espacio de administración"
+      },
+      "starters": {
+        "whereAmI": "¿Para qué sirve esta página?",
+        "howToMessage": "¿Cómo envío un mensaje?",
+        "whatCanIDo": "¿Qué puedo hacer en este portal?"
       }
     }
   }

@@ -24691,6 +24691,47 @@
     ]
   },
   {
+    "file": "app/api/help/chat/route.ts",
+    "kind": "route",
+    "path": "/api/help/chat",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "GET",
+        "line": 52,
+        "kind": "Variable"
+      },
+      {
+        "name": "POST",
+        "line": 87,
+        "kind": "Variable"
+      }
+    ],
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 2,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/rate-limit",
+        "line": 7,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/api/interview/history/route.ts",
     "kind": "route",
     "path": "/api/interview/history",
