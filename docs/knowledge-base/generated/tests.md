@@ -379,7 +379,7 @@
 | [tests/lib/marketing-hero-image.spec.ts](../../../tests/lib/marketing-hero-image.spec.ts) | 90 | tests |  |
 | [tests/lib/marketing-mobile-touch-targets.spec.ts](../../../tests/lib/marketing-mobile-touch-targets.spec.ts) | 25 | tests |  |
 | [tests/lib/match-students-tenant-scope.spec.ts](../../../tests/lib/match-students-tenant-scope.spec.ts) | 25 | tests |  |
-| [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 27 | tests |  |
+| [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 33 | tests |  |
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |
 | [tests/lib/member-resume-plain-text-missing-admin-env.spec.ts](../../../tests/lib/member-resume-plain-text-missing-admin-env.spec.ts) | 87 | tests |  |
@@ -461,3 +461,4 @@
 | [tests/server-only-stub.cjs](../../../tests/server-only-stub.cjs) | 8 | tests |  |
 | [tests/setup.ts](../../../tests/setup.ts) | 1 | tests |  |
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
+| [tests/well-known-icon-paths.spec.ts](../../../tests/well-known-icon-paths.spec.ts) | 77 | tests |  |

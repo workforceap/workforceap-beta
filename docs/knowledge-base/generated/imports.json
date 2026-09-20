@@ -7509,7 +7509,7 @@
     "line": 9,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "app/(portal)/dashboard/layout.tsx",
@@ -68189,7 +68189,7 @@
     "line": 11,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "components/MainNav.tsx",
@@ -75941,7 +75941,7 @@
     "line": 5,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "hooks/useCurrentUser.ts"
   },
   {
     "from": "components/portal/DownloadMyDataButton.test.tsx",
@@ -77709,7 +77709,7 @@
     "line": 12,
     "kind": "type",
     "external": false,
-    "target": null
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "components/portal/MentorSessionForm.tsx",
@@ -78381,7 +78381,7 @@
     "line": 8,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "hooks/useCurrentUser.ts"
   },
   {
     "from": "components/portal/PortalTeamChatClient.test.tsx",
@@ -79301,7 +79301,7 @@
     "line": 6,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "components/portal/SkillCheckpointsClient.test.tsx",
@@ -80445,7 +80445,7 @@
     "line": 33,
     "kind": "type",
     "external": false,
-    "target": null
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
@@ -88341,7 +88341,7 @@
     "line": 6,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "hooks/useCurrentUser.ts"
   },
   {
     "from": "components/theme/ThemeSelector.tsx",
@@ -90134,6 +90134,22 @@
     "kind": "import",
     "external": true,
     "package": "react"
+  },
+  {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "hooks/useCurrentUser.ts",
+    "specifier": "@/lib/auth/currentUserClient",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "hooks/useDraftAutosave.ts",
@@ -95094,6 +95110,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/supabase/env.ts"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/auth/currentUserClient.test.ts",
+    "specifier": "./currentUserClient",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/currentUserClient.ts"
   },
   {
     "from": "lib/auth/ensureUser.test.ts",
@@ -105504,6 +105544,30 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberApprovalStatus.test.ts",
+    "specifier": "./memberApprovalStatus",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
     "from": "lib/member/memberEngagementSignals.ts",
     "specifier": "@/lib/db/prisma",
     "line": 1,
@@ -105518,6 +105582,30 @@
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/recap/generate.ts"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberIdentity.test.ts",
+    "specifier": "./memberIdentity",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "lib/member/memberProgramHref.test.ts",
@@ -134966,6 +135054,38 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:fs",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/well-known-icon-paths.spec.ts",
+    "specifier": "../next.config",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
   },
   {
     "from": "types/job-application.ts",

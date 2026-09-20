@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "4ba54e23184cfde70a8d80ffcd2bd02120e2a121368b442972f6dedb99775d5a",
+  "inputTreeSha256": "75b09be3db7f0e287b43b92a5b05fddc53401d00f6c0b54dd7443627c19bcd2d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -82715,6 +82715,30 @@
       "directive": "use client"
     },
     {
+      "path": "hooks/useCurrentUser.ts",
+      "area": "components",
+      "domain": "components",
+      "bytes": 1671,
+      "lines": 57,
+      "sha256": "8381e1192dc18afe5972f8e873fb8c73d34271a623f741fcf5e398a970127da8",
+      "binary": false,
+      "exports": [
+        {
+          "name": "useCurrentUser",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "useCurrentUser",
+          "line": 18,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
       "path": "hooks/useDraftAutosave.ts",
       "area": "components",
       "domain": "components",
@@ -96644,6 +96668,158 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "lib/auth/currentUserClient.test.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 3103,
+      "lines": 84,
+      "sha256": "18715d89a18985747c40810614dfefa543402352173a54bf68599cf556ad6085",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "FetchMock",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "installFetch",
+          "line": 13,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/auth/currentUserClient.ts",
+      "area": "libraries",
+      "domain": "identity-tenancy",
+      "bytes": 4230,
+      "lines": 115,
+      "sha256": "0fa802db2db87b4925c14e3a67b25d8998c68d0e27feba3798fb3ccb5ddc61a9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CurrentUserPortal",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CurrentUserSnapshot",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CURRENT_USER_ENDPOINT",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "CURRENT_USER_MAX_AGE_MS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SIGNED_OUT_SNAPSHOT",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "peekCurrentUser",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchCurrentUser",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "subscribeCurrentUser",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetCurrentUserCache",
+          "line": 110,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CurrentUserPortal",
+          "line": 14,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CurrentUserSnapshot",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CURRENT_USER_ENDPOINT",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "CURRENT_USER_MAX_AGE_MS",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "SIGNED_OUT_SNAPSHOT",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "Listener",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CacheState",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "state",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "normalize",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "publish",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "peekCurrentUser",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fetchCurrentUser",
+          "line": 81,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "subscribeCurrentUser",
+          "line": 104,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "resetCurrentUserCache",
+          "line": 110,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
     },
     {
       "path": "lib/auth/ensureUser.test.ts",
@@ -122965,6 +123141,34 @@
       "directive": null
     },
     {
+      "path": "lib/member/memberApprovalStatus.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 5142,
+      "lines": 116,
+      "sha256": "3f8e89be848d20f7cdf14d56974451ac1526e1315185494c360f8de8f6291016",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "submitted",
+          "line": 5,
+          "kind": "Variable"
+        },
+        {
+          "name": "reviewed",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "approved",
+          "line": 7,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/memberApprovalStatus.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -123107,6 +123311,72 @@
         {
           "name": "getMemberEngagementSignals",
           "line": 14,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberIdentity.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 1714,
+      "lines": 43,
+      "sha256": "296679be7c8cc749088620c42ed4b9b420234f57cbac4f1c514c316376cc6e19",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberIdentity.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 2142,
+      "lines": 58,
+      "sha256": "1b7e3b36c6fe0fd62b748e7e4f1d2987dc2bad88c8f9ea06578e5d6ed3e29561",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MemberShellIdentity",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_IDENTITY_HREF",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "memberInitials",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberShellIdentity",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MemberShellIdentity",
+          "line": 11,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_IDENTITY_HREF",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "memberInitials",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberShellIdentity",
+          "line": 43,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -136591,9 +136861,9 @@
       "path": "lib/super-admin-switcher-structure.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1585,
-      "lines": 27,
-      "sha256": "d9d2661cdd25f3416f051da95510a0a24c8a8e96536fe32d9656acbc13a7dfad",
+      "bytes": 1879,
+      "lines": 31,
+      "sha256": "95116dff32bf7ee00dc6cc15c5cbd9b3f45be35cf4e88deef1793f3a4b334eb1",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163835,9 +164105,9 @@
       "path": "tests/lib/member-approval-status.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1706,
-      "lines": 27,
-      "sha256": "22f7ee726b29111d822c65f1ccf82dfdb700061402e266e2e311d4af69a8dbdf",
+      "bytes": 2293,
+      "lines": 33,
+      "sha256": "00f3912740c6adfa99d4e1e4789015d8b9c38bcbec696a681615b0d9fc8f1723",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -166351,6 +166621,34 @@
         {
           "name": "nodeOwned",
           "line": 78,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/well-known-icon-paths.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3481,
+      "lines": 77,
+      "sha256": "883413a0018115d6fa69bb30bc2249d1de90c0f93054a7d2ee60d402c891a5f4",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "root",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "pub",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "pngSize",
+          "line": 15,
           "kind": "FunctionDeclaration"
         }
       ],

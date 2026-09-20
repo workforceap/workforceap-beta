@@ -679,6 +679,7 @@
 | [components/ui/ShareButton.tsx](../../../components/ui/ShareButton.tsx) | 133 | components | ShareButtonProps:7, ShareButton:25, default:133 |
 | [components/ui/Skeleton.tsx](../../../components/ui/Skeleton.tsx) | 80 | components | Skeleton:11, TableSkeleton:31, CardSkeleton:50, ReadinessSkeleton:61 |
 | [hooks/useCopyToClipboard.ts](../../../hooks/useCopyToClipboard.ts) | 22 | components | useCopyToClipboard:6 |
+| [hooks/useCurrentUser.ts](../../../hooks/useCurrentUser.ts) | 57 | components | useCurrentUser:18 |
 | [hooks/useDraftAutosave.ts](../../../hooks/useDraftAutosave.ts) | 80 | components | useDraftAutosave:20 |
 | [hooks/useFeatureFlag.ts](../../../hooks/useFeatureFlag.ts) | 72 | components | useFeatureFlags:39, useFeatureFlag:69 |
 | [hooks/useFocusTrap.ts](../../../hooks/useFocusTrap.ts) | 17 | components | useFocusTrap:15 |

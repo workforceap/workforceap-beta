@@ -223,6 +223,8 @@
 | [lib/auth/actAsSubject.ts](../../../lib/auth/actAsSubject.ts) | 109 | identity-tenancy | ActOnBehalfResolution:25, resolveActOnBehalf:30 |
 | [lib/auth/authRead.ts](../../../lib/auth/authRead.ts) | 55 | identity-tenancy | AuthReadFailure:2, AUTH_READ_RETRY_DELAY_MS:8, classifyAuthReadFailure:10, readAuthWithRetry:35, reportAuthReadFailure:50 |
 | [lib/auth/client.ts](../../../lib/auth/client.ts) | 23 | identity-tenancy | createSupabaseBrowserClient:10 |
+| [lib/auth/currentUserClient.test.ts](../../../lib/auth/currentUserClient.test.ts) | 84 | identity-tenancy |  |
+| [lib/auth/currentUserClient.ts](../../../lib/auth/currentUserClient.ts) | 115 | identity-tenancy | CurrentUserPortal:14, CurrentUserSnapshot:16, CURRENT_USER_ENDPOINT:26, CURRENT_USER_MAX_AGE_MS:28, SIGNED_OUT_SNAPSHOT:30, peekCurrentUser:71, fetchCurrentUser:81, subscribeCurrentUser:104, resetCurrentUserCache:110 |
 | [lib/auth/ensureUser.test.ts](../../../lib/auth/ensureUser.test.ts) | 163 | identity-tenancy |  |
 | [lib/auth/ensureUser.ts](../../../lib/auth/ensureUser.ts) | 68 | identity-tenancy | EnsureUserOptions:12, ensureUserInDb:28 |
 | [lib/auth/layoutUserId.test.ts](../../../lib/auth/layoutUserId.test.ts) | 17 | identity-tenancy |  |
@@ -679,8 +681,11 @@
 | [lib/member/loadTrainingWorkspace.ts](../../../lib/member/loadTrainingWorkspace.ts) | 112 | member-counselor | TrainingWorkspaceError:14, loadTrainingWorkspace:81, saveTrainingWorkspace:85 |
 | [lib/member/memberApplicationStatus.test.ts](../../../lib/member/memberApplicationStatus.test.ts) | 98 | member-counselor |  |
 | [lib/member/memberApplicationStatus.ts](../../../lib/member/memberApplicationStatus.ts) | 165 | member-counselor | MemberApplicationStage:3, MEMBER_APPLICATION_PROGRESS_STEPS:11, MemberApplicationStatusView:19, buildMemberApplicationStatusView:47, applicationStatusForPublicLookup:160 |
+| [lib/member/memberApprovalStatus.test.ts](../../../lib/member/memberApprovalStatus.test.ts) | 116 | member-counselor |  |
 | [lib/member/memberApprovalStatus.ts](../../../lib/member/memberApprovalStatus.ts) | 177 | member-counselor | MemberApprovalFacts:9, ApprovalStageKey:22, ApprovalStageState:23, ApprovalOwner:24, MemberApprovalStage:26, MemberApprovalStatus:37, buildMemberApprovalStatus:65 |
 | [lib/member/memberEngagementSignals.ts](../../../lib/member/memberEngagementSignals.ts) | 60 | member-counselor | MemberEngagementSignals:3, getMemberEngagementSignals:14 |
+| [lib/member/memberIdentity.test.ts](../../../lib/member/memberIdentity.test.ts) | 43 | member-counselor |  |
+| [lib/member/memberIdentity.ts](../../../lib/member/memberIdentity.ts) | 58 | member-counselor | MemberShellIdentity:11, MEMBER_IDENTITY_HREF:24, memberInitials:30, buildMemberShellIdentity:43 |
 | [lib/member/memberProgramHref.test.ts](../../../lib/member/memberProgramHref.test.ts) | 58 | member-counselor |  |
 | [lib/member/memberProgramHref.ts](../../../lib/member/memberProgramHref.ts) | 22 | member-counselor | MEMBER_PROGRAM_HREF:8, LEGACY_TRAINING_STUB_HREF:9, resolveMemberProgramHref:15 |
 | [lib/member/memberProgramTrainingView.ts](../../../lib/member/memberProgramTrainingView.ts) | 226 | member-counselor | STALE_TRAINING_ACTIVITY_DAYS:15, MemberProgramTrainingView:17, loadMemberProgramTrainingView:52, isTrainingStaleForCounselorEscalation:210 |
@@ -918,7 +923,7 @@
 | [lib/supabase/browser.ts](../../../lib/supabase/browser.ts) | 10 | identity-tenancy | createSupabaseBrowserClient:3 |
 | [lib/supabase/env.ts](../../../lib/supabase/env.ts) | 13 | identity-tenancy | getSupabaseEnv:6 |
 | [lib/supabaseCookieOptions.ts](../../../lib/supabaseCookieOptions.ts) | 18 | libraries | SESSION_ONLY_COOKIE:8, SESSION_ONLY_MAX_AGE:9, getSupabaseCookieOptions:11 |
-| [lib/super-admin-switcher-structure.test.ts](../../../lib/super-admin-switcher-structure.test.ts) | 27 | libraries |  |
+| [lib/super-admin-switcher-structure.test.ts](../../../lib/super-admin-switcher-structure.test.ts) | 31 | libraries |  |
 | [lib/tenant/adminPageScope.test.ts](../../../lib/tenant/adminPageScope.test.ts) | 38 | identity-tenancy |  |
 | [lib/tenant/adminPageScope.ts](../../../lib/tenant/adminPageScope.ts) | 67 | identity-tenancy | inheritInvitedByOrg:11, inheritJobOrg:12, inheritLeaderOrg:13, inheritMemberOrg:14, inheritUserOrg:15, AdminPageTenantOk:17, AdminPageTenant:31, resolveAdminPageTenant:36, withAdminPageScope:59 |
 | [lib/tenant/adminPageScopeFilters.ts](../../../lib/tenant/adminPageScopeFilters.ts) | 44 | identity-tenancy | AdminPageTenantOk:9, inheritUserOrg:12, inheritMemberOrg:19, inheritJobOrg:26, inheritLeaderOrg:33, inheritInvitedByOrg:40 |
