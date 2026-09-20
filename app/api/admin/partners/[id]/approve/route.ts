@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
-import { Resend } from 'resend';
+import { getResend } from '@/lib/email';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 
@@ -74,20 +76,15 @@ export const POST = withApiGuc(async (request: NextRequest, { params }: { params
     auditLog({ actorUserId: user.id, action: 'admin_partner_approved', targetType: 'User', targetId: id, metadata: { orgId } }).catch(() => {});
 
     // Send approval email
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
-    if (resendKey && partner.contactEmail) {
+    if (resend && partner.contactEmail) {
       try {
-        const resend = new Resend(resendKey);
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
         const refParam = partner.referralCode ?? partner.slug;
         const referralApplyUrl = `${siteUrl}/apply?ref=${encodeURIComponent(refParam)}`;
 
-        await resend.emails.send({
-          from: emailFrom,
-          to: partner.contactEmail,
-          subject: sanitizeEmailSubjectLine('Your WorkforceAP partner account has been approved'),
-          text: [
+        const text = [
             `Hi ${partner.contactName || 'there'},`,
             '',
             `Great news — ${partner.name} has been approved as a WorkforceAP referral partner!`,
@@ -102,7 +99,13 @@ export const POST = withApiGuc(async (request: NextRequest, { params }: { params
             'Questions? Reply to this email or contact us at info@workforceap.org.',
             '',
             '— WorkforceAP Team',
-          ].join('\n'),
+          ].join('\n');
+        await sendBrandedEmailOrThrowOnSkip(resend, {
+          from: emailFrom,
+          to: partner.contactEmail,
+          subject: sanitizeEmailSubjectLine('Your WorkforceAP partner account has been approved'),
+          html: plainTextEmailHtml(text),
+          text,
         });
       } catch (e) {
         console.error('Partner approval email failed:', e);

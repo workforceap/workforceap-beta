@@ -30,6 +30,13 @@ export interface CreateNotificationInput {
   title: string;
   body: string;
   data?: Record<string, unknown> | null;
+  /**
+   * Post the per-row Discord embed (default true). Crons that create one
+   * notification per member pass false and post a single end-of-run summary
+   * instead — Discord's webhook limit is 30/min and the 2026-09-14 inactive-
+   * nudge run lost 51 of 93 embeds to HTTP 429.
+   */
+  notifyOperator?: boolean;
 }
 
 function retainRequestWork(operation: Promise<void>): Promise<void> {
@@ -90,12 +97,14 @@ export function createNotification(
   }
   // Await the operator-visibility bridge so the returned promise preserves
   // existing completion semantics while the same operation is retained below.
-  await notifyDiscord({
-    title: input.title,
-    body: input.body,
-    category: input.type,
-    fields: [{ name: 'userId', value: input.userId }],
-  });
+  if (input.notifyOperator !== false) {
+    await notifyDiscord({
+      title: input.title,
+      body: input.body,
+      category: input.type,
+      fields: [{ name: 'userId', value: input.userId }],
+    });
+  }
   })();
 
   // Register before returning or reaching the first DB await. A caller may

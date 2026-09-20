@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import { getResend } from '@/lib/email';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 
 const CONTACT_EMAIL_TO = 'info@workforceap.org';
 
@@ -70,10 +71,10 @@ export async function POST(request: NextRequest) {
       }
     }
   
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
   
-    if (!resendKey) {
+    if (!resend) {
       console.error('RESEND_API_KEY not configured');
       return NextResponse.json(
         { error: 'Email service is not configured. Please try again later.' },
@@ -111,8 +112,7 @@ export async function POST(request: NextRequest) {
     });
   
     try {
-      const resend = new Resend(resendKey);
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from: emailFrom,
         to: CONTACT_EMAIL_TO,
         replyTo: email,

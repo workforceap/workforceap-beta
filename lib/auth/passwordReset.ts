@@ -6,6 +6,8 @@ import { prisma } from '@/lib/db/prisma';
 import { getResend } from '@/lib/email';
 import { sendBrandedEmailOrThrowOnSkip as sendBrandedEmail } from '@/lib/email/send';
 import { brandedEmailLayout } from '@/lib/email/template';
+import { EMAIL_TEMPLATE_KEYS } from '@/lib/email/templateKeys';
+import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
 import { logger } from '@/lib/observability/logger';
 
 export type PasswordResetSendResult = {
@@ -202,6 +204,7 @@ export async function sendPasswordResetEmail(
 
       await sendBrandedEmail(resend, {
         from,
+        templateKey: EMAIL_TEMPLATE_KEYS.password_reset,
         to: normalizedEmail,
         subject: `Reset your ${branding.name} password`,
         html,
@@ -213,6 +216,17 @@ export async function sendPasswordResetEmail(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Password reset email could not be sent.';
       logger.warn('passwordReset: branded delivery failed; trying Supabase mailer', { err: message });
+      // Recorded, not just logged: the Supabase mailer is unbranded and capped at
+      // 30/h, so every fallback is a delivery-quality event operators should see.
+      void recordWorkflowDiagnostic({
+        workflow: 'password_reset',
+        status: 'fallback',
+        provider: 'resend',
+        method: 'branded_email',
+        fallbackPath: 'supabase_auth_mailer',
+        summary: 'Branded password reset failed; fell back to the Supabase mailer',
+        failureReason: message,
+      });
     }
   }
 

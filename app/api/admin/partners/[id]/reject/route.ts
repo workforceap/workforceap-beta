@@ -4,8 +4,10 @@ import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
-import { Resend } from 'resend';
+import { getResend } from '@/lib/email';
 import { sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
@@ -63,11 +65,10 @@ export const POST = withApiGuc(async (request: NextRequest, { params }: { params
     );
 
     // Send rejection email
-    const resendKey = process.env.RESEND_API_KEY;
+    const resend = getResend();
     const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
-    if (resendKey && partner.contactEmail) {
+    if (resend && partner.contactEmail) {
       try {
-        const resend = new Resend(resendKey);
         const lines = [
           `Hi ${partner.contactName || 'there'},`,
           '',
@@ -85,11 +86,13 @@ export const POST = withApiGuc(async (request: NextRequest, { params }: { params
           '— WorkforceAP Team'
         );
 
-        await resend.emails.send({
+        const text = lines.join('\n');
+        await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: partner.contactEmail,
           subject: sanitizeEmailSubjectLine('Update on your WorkforceAP partner application'),
-          text: lines.join('\n'),
+          html: plainTextEmailHtml(text),
+          text,
         });
       } catch (e) {
         console.error('Partner rejection email failed:', e);

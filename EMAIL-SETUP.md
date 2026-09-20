@@ -1,7 +1,7 @@
 # WorkforceAP Email Configuration Guide
 
 ## Overview
-WorkforceAP uses **Resend** for transactional email delivery (contact forms, notifications, alerts).
+WorkforceAP uses **Resend** for transactional email delivery (contact forms, notifications, alerts, digests, branded password resets). Supabase Auth's own mailer is only the fallback for password resets and still sends signup confirmations and invites.
 
 ---
 
@@ -9,8 +9,11 @@ WorkforceAP uses **Resend** for transactional email delivery (contact forms, not
 
 | Environment | Status | Notes |
 |-------------|--------|-------|
-| **Vercel Production** | ❌ NOT CONFIGURED | Missing RESEND_API_KEY |
+| **Vercel Production** | ✅ Configured | `RESEND_API_KEY` set; domain `workforceap.org` verified (DKIM + return-path); ~513 accepted sends 2026-08-23..09-19 |
+| **Delivery webhook** | ⏳ Register after deploy | `/api/webhooks/resend` needs `RESEND_WEBHOOK_SECRET` (see below) |
 | **Local Development** | ⚠️ UNVERIFIED | Requires .env.local setup |
+
+The historical failures (768 CRLF-header rejections 2026-07-02..09-01, 40 rate-limit 429s) are fixed at HEAD by header sanitising, a 150 ms send pacer and Retry-After retries; see `lib/email/send.ts` and `lib/email/pacing.ts`.
 
 ---
 
@@ -21,6 +24,7 @@ WorkforceAP uses **Resend** for transactional email delivery (contact forms, not
 | `RESEND_API_KEY` | `re_1234567890abcdef` | [Resend Dashboard](https://resend.com/api-keys) |
 | `EMAIL_FROM` | `info@workforceap.org` | Your domain (any valid email) |
 | `EMAIL_TO_ADMIN` | `info@workforceap.org` | Where admin alerts go |
+| `RESEND_WEBHOOK_SECRET` | `whsec_...` | Resend Dashboard → Webhooks → your endpoint → Signing secret |
 
 ---
 
@@ -56,6 +60,21 @@ WorkforceAP uses **Resend** for transactional email delivery (contact forms, not
 1. Go to https://www.workforceap.org/contact
 2. Submit test form with your email
 3. Check inbox (and spam folder) for email
+
+---
+
+## Delivery Webhook (bounces, complaints, delivered)
+
+Every send is written to `email_send_logs` (`EmailSendLog`) with the provider's message id. Resend reports what happened next only through webhooks, so without this step bounced and complained deliveries stay invisible and the app keeps emailing dead addresses.
+
+1. Deploy a build that includes `app/api/webhooks/resend/route.ts`.
+2. Resend dashboard → **Webhooks** → **Add Endpoint**
+   - URL: `https://www.workforceap.org/api/webhooks/resend`
+   - Events: `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained` (optionally `email.opened`, `email.clicked`)
+3. Copy the endpoint's **Signing secret** (`whsec_...`) into Vercel as `RESEND_WEBHOOK_SECRET` (Production + Preview) and redeploy.
+4. Send yourself a test from **Webhooks → Send test event**; `/admin/webhook-events` shows the receipt (source `resend`) and `/admin/health` → "Email Delivery" shows the last webhook time.
+
+Behaviour: each event updates `EmailSendLog.lastEvent`; a **permanent bounce** or a **spam complaint** sets the recipient's `notificationsUpdates` to false (the same switch as one-click unsubscribe) and records an `email_delivery` diagnostic. Transient bounces are recorded but do not mute anyone. Until the secret is set the route answers 503 and logs the miss.
 
 ---
 
@@ -147,4 +166,4 @@ Value: v=DMARC1; p=quarantine; rua=mailto:dmarc@workforceap.org
 
 ---
 
-*Last updated: 2026-03-20*
+*Last updated: 2026-09-20 (delivery audit; send log + webhook)*

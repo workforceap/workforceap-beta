@@ -6551,6 +6551,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/email/resendWebhook.test.ts",
+    "area": "libraries",
+    "domain": "communications",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/email/resendWebhook.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/email/webhookSignature.ts",
+        "line": 11
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/email/send.test.ts",
     "area": "libraries",
     "domain": "communications",
@@ -6564,7 +6592,11 @@
       },
       {
         "file": "lib/email/pacing.ts",
-        "line": 5
+        "line": 13
+      },
+      {
+        "file": "lib/email/sendLog.ts",
+        "line": 14
       }
     ],
     "kind": "test-candidate",
@@ -8485,6 +8517,30 @@
       {
         "file": "lib/nav/resumeUploadHint.ts",
         "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/notify/discordRateLimit.test.ts",
+    "area": "libraries",
+    "domain": "communications",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/notify/discordRateLimit.ts",
+        "line": 4
       }
     ],
     "kind": "test-candidate",
@@ -10868,19 +10924,19 @@
       },
       {
         "file": "app/api/admin/health/route.ts",
-        "line": 41
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 42
-      },
-      {
-        "file": "lib/auth/roles.ts",
         "line": 43
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/server.ts",
         "line": 44
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 45
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 46
       }
     ],
     "kind": "test-candidate",
@@ -10904,23 +10960,23 @@
     "localReferences": [
       {
         "file": "lib/db/prisma.ts",
-        "line": 52
+        "line": 60
       },
       {
         "file": "app/api/admin/health/route.ts",
-        "line": 73
+        "line": 83
       },
       {
         "file": "lib/auth/server.ts",
-        "line": 74
+        "line": 84
       },
       {
         "file": "lib/auth/roles.ts",
-        "line": 75
+        "line": 85
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 76
+        "line": 86
       }
     ],
     "kind": "test-candidate",
@@ -11232,43 +11288,43 @@
       },
       {
         "file": "app/api/admin/members/bulk-email/route.ts",
-        "line": 133
-      },
-      {
-        "file": "app/api/admin/members/bulk-update/route.ts",
-        "line": 134
-      },
-      {
-        "file": "app/api/admin/members/bulk-export/route.ts",
-        "line": 135
-      },
-      {
-        "file": "lib/auth/server.ts",
         "line": 137
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "app/api/admin/members/bulk-update/route.ts",
         "line": 138
       },
       {
-        "file": "lib/tenant/organization.ts",
+        "file": "app/api/admin/members/bulk-export/route.ts",
         "line": 139
       },
       {
-        "file": "lib/email.ts",
-        "line": 140
-      },
-      {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/server.ts",
         "line": 141
       },
       {
-        "file": "lib/notifications/create.ts",
+        "file": "lib/auth/roles.ts",
         "line": 142
       },
       {
-        "file": "lib/member/getMemberState.ts",
+        "file": "lib/tenant/organization.ts",
         "line": 143
+      },
+      {
+        "file": "lib/email.ts",
+        "line": 144
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 145
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 146
+      },
+      {
+        "file": "lib/member/getMemberState.ts",
+        "line": 147
       }
     ],
     "kind": "test-candidate",
@@ -12457,43 +12513,43 @@
     "localReferences": [
       {
         "file": "app/api/member/assessment/submit/route.ts",
-        "line": 109
+        "line": 115
       },
       {
         "file": "app/api/member/assessment/reset/route.ts",
-        "line": 110
+        "line": 116
       },
       {
         "file": "app/api/member/skill-profile/route.ts",
-        "line": 111
+        "line": 117
       },
       {
         "file": "app/api/member/skill-assessment/route.ts",
-        "line": 112
-      },
-      {
-        "file": "lib/assessment/answer-key.ts",
-        "line": 113
-      },
-      {
-        "file": "lib/db/prisma.ts",
         "line": 118
       },
       {
-        "file": "lib/auth/server.ts",
+        "file": "lib/assessment/answer-key.ts",
         "line": 119
       },
       {
+        "file": "lib/db/prisma.ts",
+        "line": 124
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 125
+      },
+      {
         "file": "lib/member/starterProfileReview.ts",
-        "line": 120
+        "line": 126
       },
       {
         "file": "lib/member/points.ts",
-        "line": 121
+        "line": 127
       },
       {
         "file": "lib/events/track.ts",
-        "line": 122
+        "line": 128
       }
     ],
     "kind": "test-candidate",
@@ -12925,11 +12981,11 @@
     "localReferences": [
       {
         "file": "app/api/contact/route.ts",
-        "line": 22
+        "line": 26
       },
       {
         "file": "lib/rate-limit.ts",
-        "line": 23
+        "line": 27
       }
     ],
     "kind": "test-candidate",
@@ -16585,47 +16641,47 @@
       },
       {
         "file": "app/api/partner/signup/route.ts",
-        "line": 131
-      },
-      {
-        "file": "app/api/admin/partners/[id]/approve/route.ts",
-        "line": 132
-      },
-      {
-        "file": "app/api/admin/partners/[id]/reject/route.ts",
-        "line": 133
-      },
-      {
-        "file": "app/api/partner/settings/contact/route.ts",
-        "line": 134
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 135
-      },
-      {
-        "file": "lib/db/prisma.ts",
-        "line": 136
-      },
-      {
-        "file": "lib/supabase-admin.ts",
         "line": 137
       },
       {
-        "file": "lib/auth/roles.ts",
+        "file": "app/api/admin/partners/[id]/approve/route.ts",
+        "line": 138
+      },
+      {
+        "file": "app/api/admin/partners/[id]/reject/route.ts",
         "line": 139
       },
       {
+        "file": "app/api/partner/settings/contact/route.ts",
+        "line": 140
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 141
+      },
+      {
         "file": "lib/db/prisma.ts",
-        "line": 151
+        "line": 142
+      },
+      {
+        "file": "lib/supabase-admin.ts",
+        "line": 143
       },
       {
         "file": "lib/auth/roles.ts",
-        "line": 487
+        "line": 145
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 157
       },
       {
         "file": "lib/auth/roles.ts",
-        "line": 502
+        "line": 493
+      },
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 508
       }
     ],
     "kind": "test-candidate",
@@ -19126,7 +19182,7 @@
       },
       {
         "file": "app/admin/diagnostics/page.tsx",
-        "line": 15
+        "line": 16
       }
     ],
     "kind": "test-candidate",
@@ -24470,6 +24526,46 @@
       {
         "file": "lib/email/resendRegistry.ts",
         "line": 40
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/email/send-hardening.spec.ts",
+    "area": "tests",
+    "domain": "communications",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/diagnostics.ts",
+        "line": 12
+      },
+      {
+        "file": "lib/email/failureRecord.ts",
+        "line": 13
+      },
+      {
+        "file": "lib/email/pacing.ts",
+        "line": 14
+      },
+      {
+        "file": "lib/email/send.ts",
+        "line": 15
+      },
+      {
+        "file": "lib/email/suppressions.ts",
+        "line": 16
       }
     ],
     "kind": "test-candidate",

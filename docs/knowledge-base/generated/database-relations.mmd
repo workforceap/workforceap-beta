@@ -33,6 +33,7 @@ flowchart LR
   CourseraSkillsetProgress["CourseraSkillsetProgress"]
   CronExecution["CronExecution"]
   EmailFailureSnapshot["EmailFailureSnapshot"]
+  EmailSendLog["EmailSendLog"]
   EmailTemplate["EmailTemplate"]
   Employer["Employer"]
   EmployerHiringIntent["EmployerHiringIntent"]
@@ -228,6 +229,7 @@ flowchart LR
   User -->|"reviewedTestimonials many"| Testimonial
   User -->|"memberFeedback many"| MemberFeedback
   User -->|"notifications many"| Notification
+  User -->|"emailSendLogs many"| EmailSendLog
   User -->|"pushSubscriptions many"| PushSubscription
   User -->|"savedJobs many"| SavedJob
   User -->|"chaptersLed many"| Chapter
@@ -260,6 +262,7 @@ flowchart LR
   ResourceProgress -->|"user one"| User
   MemberEvent -->|"user one"| User
   WorkflowDiagnostic -->|"actor optional"| User
+  EmailSendLog -->|"user optional"| User
   WeeklyRecap -->|"user one"| User
   PathwayStepProgress -->|"user one"| User
   TrainingAccessRequest -->|"user one"| User

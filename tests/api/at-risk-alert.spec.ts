@@ -79,7 +79,7 @@ import { GET as runAtRiskAlerts } from '@/app/api/cron/at-risk-alerts/route';
 import { GET as runAtRiskCheck } from '@/app/api/cron/at-risk-check/route';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { calculateAllAtRiskScores, classifyMember, getRiskLevel, loadPersistedAtRiskScores, persistAtRiskAlert } from '@/lib/member/atRiskScoring';
-import { getAtRiskDigestRecipients, sendCounselorAtRiskAlertEmail, sendMemberCheckInEmail } from '@/lib/email';
+import { getAtRiskDigestRecipients, sendCounselorAtRiskAlertEmail, sendMemberCheckInEmail, sendMemberStuckEmail } from '@/lib/email';
 import { prisma } from '@/lib/db/prisma';
 import { counselorAtRiskBatchHtml } from '@/emails/counselor-at-risk-alert';
 
@@ -367,6 +367,51 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
       expect(body.memberNudges.skippedFixture).toBe(1);
       expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
       expect(prisma.memberNudgeLog.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('re-engagement cooldown', () => {
+    it('does not send "Let\'s get unstuck" to a member nudged by any cron in the last 7 days', async () => {
+      vi.mocked(loadPersistedAtRiskScores).mockResolvedValue([]);
+      // No CRITICAL scores → the counselor path sends nothing; the retention
+      // loop is the only consumer of the user query in these two tests.
+      vi.mocked(prisma.user.findMany).mockResolvedValue(mockMembers([{ id: 'user-2', fullName: 'Bob Jones', email: 'bob@example.org', counselorAssignments: [] }]));
+      vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([]);
+      // Red + stalled → the "stuck" nudge. The member already got "We Miss
+      // You" (inactive-nudge writes tier yellow / kind inactive) this week.
+      vi.mocked(classifyMember).mockReturnValue({ tier: 'red', reasons: ['Coursera progress stalled for 21 days'], daysSinceLogin: 3 } as any);
+      vi.mocked(prisma.memberNudgeLog.findFirst).mockResolvedValueOnce({ id: 'log-inactive' } as any);
+
+      const response = await runAtRiskAlerts(makeRequest({ 'x-cron-secret': 'super-secret-cron-key' }));
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.memberNudges.skippedCooldown).toBe(1);
+      expect(body.memberNudges.sentStuck).toBe(0);
+      expect(sendMemberStuckEmail).not.toHaveBeenCalled();
+      expect(prisma.memberNudgeLog.create).not.toHaveBeenCalled();
+      // The cooldown query must not be narrowed to the same tier/kind.
+      expect(prisma.memberNudgeLog.findFirst).toHaveBeenCalledWith(expect.objectContaining({
+        where: { userId: 'user-2', sentAt: { gte: expect.any(Date) } },
+      }));
+    });
+
+    it('sends the stuck nudge once the shared window has passed', async () => {
+      vi.mocked(loadPersistedAtRiskScores).mockResolvedValue([]);
+      // No CRITICAL scores → the counselor path sends nothing; the retention
+      // loop is the only consumer of the user query in these two tests.
+      vi.mocked(prisma.user.findMany).mockResolvedValue(mockMembers([{ id: 'user-2', fullName: 'Bob Jones', email: 'bob@example.org', counselorAssignments: [] }]));
+      vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([]);
+      vi.mocked(classifyMember).mockReturnValue({ tier: 'red', reasons: ['Coursera progress stalled for 21 days'], daysSinceLogin: 3 } as any);
+      vi.mocked(prisma.memberNudgeLog.findFirst).mockResolvedValueOnce(null);
+
+      const response = await runAtRiskAlerts(makeRequest({ 'x-cron-secret': 'super-secret-cron-key' }));
+      const body = await response.json();
+      expect(body.memberNudges.sentStuck).toBe(1);
+      expect(body.memberNudges.skippedCooldown).toBe(0);
+      expect(sendMemberStuckEmail).toHaveBeenCalledOnce();
+      expect(prisma.memberNudgeLog.create).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({ userId: 'user-2', tier: 'red', kind: 'stuck' }),
+      }));
     });
   });
 

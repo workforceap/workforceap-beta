@@ -8,6 +8,7 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
 import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThrottle';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyDiscord } from '@/lib/notify/discord';
 
 import { createBulkEmailCronPacer } from '@/lib/email/pacing';
 import { persistEvent } from '@/lib/events/track';
@@ -111,6 +112,8 @@ async function handle(_request: Request) {
         await createNotification({
           userId: enrollment.userId,
           type: 'nudge',
+          // One summary embed per run below; per-member posts hit Discord's 30/min limit.
+          notifyOperator: false,
           title: `Your ${programName} training seat is reserved`,
           body: "We are working on funding and enrollment next steps. You will be notified when funding is approved and you can begin classes.",
           data: { link: '/dashboard/program' },
@@ -137,6 +140,15 @@ async function handle(_request: Request) {
         extra: { enrollmentId: enrollment.id, userId: enrollment.userId },
       });
     }
+  }
+
+  if (sent > 0) {
+    await notifyDiscord({
+      title: 'Course accountability nudges sent',
+      body: `${sent} member${sent === 1 ? '' : 's'} reminded about a reserved seat (${counselorFollowups} counselor follow-ups queued).`,
+      category: 'nudge',
+      fields: [{ name: 'cron', value: 'course-accountability' }],
+    });
   }
 
   const runResult = {

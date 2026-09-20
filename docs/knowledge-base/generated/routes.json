@@ -8552,7 +8552,7 @@
       },
       {
         "name": "default",
-        "line": 84,
+        "line": 85,
         "kind": "FunctionDeclaration",
         "localName": "AdminDataRetentionPage"
       }
@@ -8604,7 +8604,7 @@
       },
       {
         "name": "default",
-        "line": 209,
+        "line": 213,
         "kind": "FunctionDeclaration",
         "localName": "AdminDiagnosticsPage"
       }
@@ -9078,7 +9078,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 634,
+        "line": 660,
         "kind": "FunctionDeclaration",
         "localName": "AdminHealthPage"
       }
@@ -13599,12 +13599,12 @@
       },
       {
         "name": "GET",
-        "line": 97,
+        "line": 98,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 133,
+        "line": 134,
         "kind": "Variable"
       }
     ],
@@ -14040,7 +14040,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 23,
+        "line": 18,
         "kind": "Variable"
       }
     ],
@@ -14061,7 +14061,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -14900,28 +14900,43 @@
         "kind": "TypeAliasDeclaration"
       },
       {
+        "name": "EmailDeliveryHealth",
+        "line": 41,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "DiscordHealth",
+        "line": 50,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "WebPushHealth",
+        "line": 57,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
         "name": "HealthChecks",
-        "line": 40,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthResponse",
-        "line": 51,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthHistoryPoint",
-        "line": 58,
-        "kind": "TypeAliasDeclaration"
-      },
-      {
-        "name": "HealthHistoryResponse",
         "line": 63,
         "kind": "TypeAliasDeclaration"
       },
       {
+        "name": "HealthResponse",
+        "line": 77,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "HealthHistoryPoint",
+        "line": 84,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
+        "name": "HealthHistoryResponse",
+        "line": 89,
+        "kind": "TypeAliasDeclaration"
+      },
+      {
         "name": "GET",
-        "line": 363,
+        "line": 511,
         "kind": "Variable"
       }
     ],
@@ -16817,7 +16832,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 199,
+        "line": 211,
         "kind": "Variable"
       }
     ],
@@ -16828,37 +16843,37 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 3,
+        "line": 5,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/roles",
-        "line": 4,
+        "line": 6,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 13,
+        "line": 17,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/withTenantScope",
-        "line": 14,
+        "line": 18,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/organizationBranding",
-        "line": 15,
+        "line": 19,
         "kind": "import"
       },
       {
         "specifier": "@/lib/rate-limit",
-        "line": 16,
+        "line": 20,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 17,
+        "line": 21,
         "kind": "import"
       }
     ]
@@ -18048,7 +18063,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 16,
+        "line": 18,
         "kind": "Variable"
       }
     ],
@@ -18069,22 +18084,22 @@
       },
       {
         "specifier": "@/lib/tenant/withTenantScope",
-        "line": 7,
+        "line": 9,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 8,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/db/withRequestGuc",
         "line": 10,
         "kind": "import"
       },
       {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 12,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/auth/roles",
-        "line": 13,
+        "line": 15,
         "kind": "import"
       }
     ]
@@ -18288,7 +18303,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 14,
+        "line": 16,
         "kind": "Variable"
       }
     ],
@@ -18319,7 +18334,7 @@
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 12,
+        "line": 14,
         "kind": "import"
       }
     ]
@@ -18434,17 +18449,17 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 4,
+        "line": 3,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/roles",
-        "line": 5,
+        "line": 4,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]
@@ -21292,7 +21307,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 18,
+        "line": 19,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -21303,7 +21318,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/rate-limit",
-        "line": 3,
+        "line": 2,
         "kind": "import"
       }
     ]
@@ -22275,7 +22290,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 161,
+        "line": 158,
         "kind": "Variable"
       }
     ],
@@ -22286,27 +22301,27 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 4,
+        "line": 3,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/withTenantScope",
-        "line": 6,
+        "line": 5,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 7,
+        "line": 6,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/actAsSubject",
-        "line": 10,
+        "line": 12,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 15,
+        "line": 17,
         "kind": "import"
       }
     ]
@@ -22616,17 +22631,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 15,
+        "line": 16,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 153,
+        "line": 165,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 154,
+        "line": 166,
         "kind": "Variable"
       }
     ],
@@ -22866,17 +22881,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 15,
+        "line": 16,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 103,
+        "line": 119,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 104,
+        "line": 120,
         "kind": "Variable"
       }
     ],
@@ -22898,17 +22913,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 14,
+        "line": 15,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 95,
+        "line": 107,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 96,
+        "line": 108,
         "kind": "Variable"
       }
     ],
@@ -22956,17 +22971,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 12,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 132,
+        "line": 144,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 133,
+        "line": 145,
         "kind": "Variable"
       }
     ],
@@ -23116,17 +23131,17 @@
     "exports": [
       {
         "name": "maxDuration",
-        "line": 12,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "GET",
-        "line": 192,
+        "line": 196,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 193,
+        "line": 197,
         "kind": "Variable"
       }
     ],
@@ -23371,12 +23386,12 @@
       },
       {
         "name": "GET",
-        "line": 146,
+        "line": 147,
         "kind": "Variable"
       },
       {
         "name": "POST",
-        "line": 147,
+        "line": 148,
         "kind": "Variable"
       }
     ],
@@ -24920,7 +24935,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 19,
+        "line": 20,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -24931,7 +24946,7 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/rate-limit",
-        "line": 3,
+        "line": 2,
         "kind": "import"
       }
     ]
@@ -25202,7 +25217,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 16,
+        "line": 18,
         "kind": "Variable"
       }
     ],
@@ -25213,12 +25228,12 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 3,
+        "line": 2,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 14,
+        "line": 16,
         "kind": "import"
       }
     ]
@@ -27285,7 +27300,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 14,
+        "line": 15,
         "kind": "Variable"
       }
     ],
@@ -27301,12 +27316,12 @@
       },
       {
         "specifier": "@/lib/rate-limit",
-        "line": 7,
+        "line": 8,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       }
     ]
@@ -29322,7 +29337,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 72,
+        "line": 74,
         "kind": "Variable"
       }
     ],
@@ -29333,17 +29348,17 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/rate-limit",
-        "line": 5,
+        "line": 4,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/resolveProvisionOrg",
-        "line": 9,
+        "line": 11,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 10,
+        "line": 12,
         "kind": "import"
       }
     ]
@@ -30214,6 +30229,43 @@
       {
         "specifier": "@/lib/db/withRequestGuc",
         "line": 10,
+        "kind": "import"
+      }
+    ]
+  },
+  {
+    "file": "app/api/webhooks/resend/route.ts",
+    "kind": "route",
+    "path": "/api/webhooks/resend",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 30,
+        "kind": "Variable"
+      },
+      {
+        "name": "POST",
+        "line": 84,
+        "kind": "FunctionDeclaration"
+      }
+    ],
+    "methods": [
+      "POST"
+    ],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 17,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/rate-limit",
+        "line": 27,
         "kind": "import"
       }
     ]

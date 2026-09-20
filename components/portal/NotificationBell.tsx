@@ -134,25 +134,33 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
   const hasExternalBadges = externalBadges != null;
 
   const refresh = useCallback(async () => {
-    if (readOnlyAudit || (role !== 'member' && hasExternalBadges) || requestRef.current) return;
+    if (readOnlyAudit || requestRef.current) return;
     const controller = new AbortController();
     requestRef.current = controller;
-    const isMember = role === 'member';
+    // Every role reads its own Notification rows (task_assigned for admins,
+    // application_update for employers, ...). Before 2026-09 only members did,
+    // so 56 unread admin task notifications were never displayed. Nav badges
+    // stay a non-member add-on, fetched only when the shell passed none in.
+    const needBadges = role !== 'member' && !hasExternalBadges;
     const timeout = setTimeout(() => controller.abort('notification-timeout'), 10_000);
     controller.signal.addEventListener('abort', () => clearTimeout(timeout), { once: true });
     try {
       setLoading(true);
       setFetchError(null);
-      const url = isMember ? '/api/member/notifications?limit=5'
-        : `/api/portal/nav-badges?role=${encodeURIComponent(role)}`;
-      const response = await fetch(url, { credentials: 'include', signal: controller.signal });
-      if (!response.ok) throw new Error(await getErrorMessageFromResponse(response));
-      const data = await response.json();
+      const [notificationsResponse, badgesResponse] = await Promise.all([
+        fetch('/api/member/notifications?limit=5', { credentials: 'include', signal: controller.signal }),
+        needBadges
+          ? fetch(`/api/portal/nav-badges?role=${encodeURIComponent(role)}`, { credentials: 'include', signal: controller.signal })
+          : Promise.resolve(null),
+      ]);
+      if (!notificationsResponse.ok) throw new Error(await getErrorMessageFromResponse(notificationsResponse));
+      if (badgesResponse && !badgesResponse.ok) throw new Error(await getErrorMessageFromResponse(badgesResponse));
+      const data = await notificationsResponse.json();
+      const badgeData = badgesResponse ? await badgesResponse.json() : null;
       if (controller.signal.aborted) return;
-      if (isMember) {
-        setDbNotifications(data.notifications);
-        setDbUnreadCount(data.unreadCount);
-      } else setSelfBadges(data);
+      setDbNotifications(Array.isArray(data?.notifications) ? data.notifications : []);
+      setDbUnreadCount(Number.isFinite(Number(data?.unreadCount)) ? Number(data.unreadCount) : 0);
+      if (badgeData && typeof badgeData === 'object') setSelfBadges(badgeData);
       setLastFetch(Date.now());
     } catch (error) {
       if (controller.signal.reason === 'notification-timeout') setFetchError('Notifications are temporarily unavailable.');
@@ -216,7 +224,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
   // Visible active tabs poll every 45s; idle tabs back off to five minutes.
   // Hidden tabs stop entirely. Explicit refresh/open remains immediate.
   useEffect(() => {
-    if (readOnlyAudit || (role !== 'member' && hasExternalBadges)) return;
+    if (readOnlyAudit) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let lastActivity = Date.now();
     let disposed = false;
@@ -269,8 +277,54 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
 
   const badgeNotifications = buildBadgeNotifications(badges, role);
   const badgeTotal = badgeNotifications.reduce((s, n) => s + n.count, 0);
-  const totalUnread = role === 'member' ? dbUnreadCount : badgeTotal;
-  const isDbMode = role === 'member';
+  // Non-member roles show nav-badge shortcuts above their Notification rows;
+  // members keep the notification-only panel they had.
+  const shownBadges = role === 'member' ? [] : badgeNotifications;
+  const shownBadgeTotal = role === 'member' ? 0 : badgeTotal;
+  const totalUnread = dbUnreadCount + shownBadgeTotal;
+
+  const dbList = dbNotifications.length === 0 ? null : (
+        <div style={{ maxHeight: '24rem', overflowY: 'auto' }}>
+          {dbNotifications.map((n) => (
+            <div
+              key={n.id}
+              className="portal-notification-item"
+              style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 1rem', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: n.readAt ? 0.7 : 1, background: n.readAt ? 'transparent' : 'color-mix(in srgb, var(--color-accent) 4%, transparent)' }}
+            >
+              <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '0.125rem' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                  {n.type === 'message' ? 'forum' : n.type === 'course_complete' ? 'school' : n.type === 'job_match' ? 'work' : n.type === 'survey_due' ? 'assignment' : n.type === 'broadcast' ? 'campaign' : 'notifications'}
+                </span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <a href={getNotificationLink(n)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{n.title}</p>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.body}</p>
+                </a>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.375rem' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>{formatTimeAgo(n.createdAt)}</span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {!n.readAt && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); void markRead(n.id); }}
+                        style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        Mark read
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); void dismiss(n.id); }}
+                      style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+  );
 
   return (
     <div
@@ -311,7 +365,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
         <div ref={panelTrapRef as React.RefObject<HTMLDivElement>} style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, width: '22rem', maxWidth: '90vw', zIndex: 200, borderRadius: '0.875rem', background: 'var(--surface-container-low)', border: '1px solid var(--outline-variant)', boxShadow: '0 8px 32px rgba(0,0,0,0.22)', overflow: 'hidden' }}>
           <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ fontWeight: 800, fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0 }}>Notifications</p>
-            {isDbMode && dbUnreadCount > 0 && (
+            {dbUnreadCount > 0 && (
               <button
                 onClick={markAllRead}
                 style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem 0.5rem', borderRadius: '0.375rem' }}
@@ -319,9 +373,9 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                 Mark all read
               </button>
             )}
-            {!isDbMode && badgeTotal > 0 && (
+            {shownBadgeTotal > 0 && (
               <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.1rem 0.4rem', borderRadius: '9999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {badgeTotal} new
+                {shownBadgeTotal} new
               </span>
             )}
           </div>
@@ -333,7 +387,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
             </div>
           )}
 
-          {isDbMode ? (
+          {shownBadges.length === 0 ? (
             loading && dbNotifications.length === 0 ? (
               <div style={{ padding: '1.5rem 1rem', textAlign: 'center' }}>
                 <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>Loading…</p>
@@ -344,56 +398,17 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                 <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>All caught up</p>
               </div>
             ) : (
-              <div style={{ maxHeight: '24rem', overflowY: 'auto' }}>
-                {dbNotifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="portal-notification-item"
-                    style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem 1rem', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: n.readAt ? 0.7 : 1, background: n.readAt ? 'transparent' : 'color-mix(in srgb, var(--color-accent) 4%, transparent)' }}
-                  >
-                    <div style={{ width: '2rem', height: '2rem', borderRadius: '0.5rem', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '0.125rem' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
-                        {n.type === 'message' ? 'forum' : n.type === 'course_complete' ? 'school' : n.type === 'job_match' ? 'work' : n.type === 'survey_due' ? 'assignment' : n.type === 'broadcast' ? 'campaign' : 'notifications'}
-                      </span>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <a href={getNotificationLink(n)} onClick={() => { if (!n.readAt) void markRead(n.id); setOpen(false); }} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <p style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0, lineHeight: 1.3 }}>{n.title}</p>
-                        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.35, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{n.body}</p>
-                      </a>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.375rem' }}>
-                        <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.7 }}>{formatTimeAgo(n.createdAt)}</span>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {!n.readAt && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); void markRead(n.id); }}
-                              style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                            >
-                              Mark read
-                            </button>
-                          )}
-                          <button
-                            onClick={(e) => { e.stopPropagation(); void dismiss(n.id); }}
-                            style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                          >
-                            Dismiss
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              dbList
             )
           ) : (
-            badgeNotifications.length === 0 ? (
+            shownBadges.length === 0 ? (
               <div style={{ padding: '1.5rem 1rem', textAlign: 'center' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1.75rem', color: 'var(--color-on-surface-variant)', display: 'block', marginBottom: '0.5rem', fontVariationSettings: "'FILL' 1" }}>notifications_none</span>
                 <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>All caught up</p>
               </div>
             ) : (
               <div>
-                {badgeNotifications.map((n) => (
+                {shownBadges.map((n) => (
                   <a
                     key={n.key}
                     href={n.href}
@@ -412,6 +427,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
                     )}
                   </a>
                 ))}
+                {dbList}
               </div>
             )
           )}

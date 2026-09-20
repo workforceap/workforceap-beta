@@ -31577,11 +31577,11 @@
   },
   {
     "from": "app/api/admin/email-templates/[id]/test/route.ts",
-    "specifier": "resend",
+    "specifier": "@/lib/email",
     "line": 6,
     "kind": "import",
-    "external": true,
-    "package": "resend"
+    "external": false,
+    "target": "lib/email.ts"
   },
   {
     "from": "app/api/admin/email-templates/[id]/test/route.ts",
@@ -31593,8 +31593,16 @@
   },
   {
     "from": "app/api/admin/email-templates/[id]/test/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/admin/email-templates/[id]/test/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -31602,7 +31610,7 @@
   {
     "from": "app/api/admin/email-templates/[id]/test/route.ts",
     "specifier": "@/lib/audit",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -31610,7 +31618,7 @@
   {
     "from": "app/api/admin/email-templates/[id]/test/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -36569,8 +36577,16 @@
   },
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
-    "specifier": "next/server",
+    "specifier": "node:crypto",
     "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "app/api/admin/members/bulk-email/route.ts",
+    "specifier": "next/server",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -36578,7 +36594,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "zod",
-    "line": 2,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "zod"
@@ -36586,7 +36602,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/auth/server",
-    "line": 3,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -36594,7 +36610,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 4,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -36602,7 +36618,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -36610,7 +36626,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/audit",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -36618,7 +36634,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -36626,7 +36642,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/email",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -36634,7 +36650,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 9,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -36642,15 +36658,31 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
   },
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-email/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/messages/counselorThread",
-    "line": 11,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/messages/counselorThread.ts"
@@ -36658,7 +36690,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/notifications/create",
-    "line": 12,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/notifications/create.ts"
@@ -36666,7 +36698,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 13,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -36674,7 +36706,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/tenant/withTenantScope",
-    "line": 14,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/withTenantScope.ts"
@@ -36682,7 +36714,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/tenant/organizationBranding",
-    "line": 15,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organizationBranding.ts"
@@ -36690,7 +36722,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 16,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -36698,7 +36730,7 @@
   {
     "from": "app/api/admin/members/bulk-email/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 17,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -38961,11 +38993,11 @@
   },
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
-    "specifier": "resend",
+    "specifier": "@/lib/email",
     "line": 5,
     "kind": "import",
-    "external": true,
-    "package": "resend"
+    "external": false,
+    "target": "lib/email.ts"
   },
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
@@ -38977,8 +39009,24 @@
   },
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
-    "specifier": "@/lib/tenant/withTenantScope",
+    "specifier": "@/lib/email/plainTextEmail",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/plainTextEmail.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/approve/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/approve/route.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/withTenantScope.ts"
@@ -38986,7 +39034,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -38994,7 +39042,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -39002,7 +39050,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -39010,7 +39058,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/audit",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -39018,7 +39066,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 13,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -39026,7 +39074,7 @@
   {
     "from": "app/api/admin/partners/[id]/approve/route.ts",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 14,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -39401,11 +39449,11 @@
   },
   {
     "from": "app/api/admin/partners/[id]/reject/route.ts",
-    "specifier": "resend",
+    "specifier": "@/lib/email",
     "line": 7,
     "kind": "import",
-    "external": true,
-    "package": "resend"
+    "external": false,
+    "target": "lib/email.ts"
   },
   {
     "from": "app/api/admin/partners/[id]/reject/route.ts",
@@ -39417,8 +39465,24 @@
   },
   {
     "from": "app/api/admin/partners/[id]/reject/route.ts",
-    "specifier": "@/lib/audit",
+    "specifier": "@/lib/email/plainTextEmail",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/plainTextEmail.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/reject/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/admin/partners/[id]/reject/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -39426,7 +39490,7 @@
   {
     "from": "app/api/admin/partners/[id]/reject/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -39434,7 +39498,7 @@
   {
     "from": "app/api/admin/partners/[id]/reject/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -39633,16 +39697,8 @@
   },
   {
     "from": "app/api/admin/partners/invite/route.ts",
-    "specifier": "resend",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/admin/partners/invite/route.ts",
     "specifier": "@/lib/auth/server",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -39650,7 +39706,7 @@
   {
     "from": "app/api/admin/partners/invite/route.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -39658,7 +39714,7 @@
   {
     "from": "app/api/admin/partners/invite/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -39666,15 +39722,31 @@
   {
     "from": "app/api/admin/partners/invite/route.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
   },
   {
     "from": "app/api/admin/partners/invite/route.ts",
-    "specifier": "@/lib/audit",
+    "specifier": "@/lib/email",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/admin/partners/invite/route.ts",
+    "specifier": "@/lib/email/send",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/admin/partners/invite/route.ts",
+    "specifier": "@/lib/audit",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -39682,7 +39754,7 @@
   {
     "from": "app/api/admin/partners/invite/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -45321,16 +45393,8 @@
   },
   {
     "from": "app/api/contact/route.ts",
-    "specifier": "resend",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/contact/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 3,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -45338,7 +45402,7 @@
   {
     "from": "app/api/contact/route.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"
@@ -45346,7 +45410,7 @@
   {
     "from": "app/api/contact/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -45354,10 +45418,26 @@
   {
     "from": "app/api/contact/route.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "app/api/contact/route.ts",
+    "specifier": "@/lib/email",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/contact/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
   },
   {
     "from": "app/api/counselor/analytics/route.ts",
@@ -47273,16 +47353,8 @@
   },
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
-    "specifier": "resend",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/auth/server",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -47290,7 +47362,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -47298,7 +47370,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/tenant/withTenantScope",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/withTenantScope.ts"
@@ -47306,7 +47378,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -47314,15 +47386,39 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
   },
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
-    "specifier": "@/emails/session-packet",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "app/api/counselor/sessions/email-packet/route.ts",
+    "specifier": "@/lib/email",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/counselor/sessions/email-packet/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/counselor/sessions/email-packet/route.ts",
+    "specifier": "@/emails/session-packet",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "emails/session-packet.ts"
@@ -47330,7 +47426,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/auth/actAsSubject",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/auth/actAsSubject.ts"
@@ -47338,7 +47434,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "pdf-lib",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "pdf-lib"
@@ -47346,7 +47442,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "node:fs/promises",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": true,
     "package": "node:fs"
@@ -47354,7 +47450,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "node:path",
-    "line": 13,
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "node:path"
@@ -47362,7 +47458,7 @@
   {
     "from": "app/api/counselor/sessions/email-packet/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 15,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -48065,8 +48161,16 @@
   },
   {
     "from": "app/api/cron/course-accountability/route.ts",
+    "specifier": "@/lib/notify/discord",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/course-accountability/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48074,7 +48178,7 @@
   {
     "from": "app/api/cron/course-accountability/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -48593,8 +48697,16 @@
   },
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
-    "specifier": "@/lib/cron/cronCaps",
+    "specifier": "@/lib/notify/discord",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/inactive-nudge/route.ts",
+    "specifier": "@/lib/cron/cronCaps",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronCaps.ts"
@@ -48602,7 +48714,7 @@
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48610,7 +48722,7 @@
   {
     "from": "app/api/cron/inactive-nudge/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -48689,8 +48801,16 @@
   },
   {
     "from": "app/api/cron/inactivity-nudge/route.ts",
-    "specifier": "@/lib/cron/cronCaps",
+    "specifier": "@/lib/notify/discord",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/inactivity-nudge/route.ts",
+    "specifier": "@/lib/cron/cronCaps",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronCaps.ts"
@@ -48698,7 +48818,7 @@
   {
     "from": "app/api/cron/inactivity-nudge/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -48793,8 +48913,16 @@
   },
   {
     "from": "app/api/cron/job-alerts/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/notify/discord",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discord.ts"
+  },
+  {
+    "from": "app/api/cron/job-alerts/route.ts",
+    "specifier": "@/lib/email",
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -48802,7 +48930,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -48810,7 +48938,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -48818,7 +48946,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -48826,7 +48954,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -48834,7 +48962,7 @@
   {
     "from": "app/api/cron/job-alerts/route.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -49137,8 +49265,16 @@
   },
   {
     "from": "app/api/cron/onboarding-stalls/route.ts",
-    "specifier": "@/lib/observability/captureApiError",
+    "specifier": "@/lib/email/send",
     "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -49146,7 +49282,7 @@
   {
     "from": "app/api/cron/onboarding-stalls/route.ts",
     "specifier": "@/lib/admin/logCronRun",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/admin/logCronRun.ts"
@@ -49154,7 +49290,7 @@
   {
     "from": "app/api/cron/onboarding-stalls/route.ts",
     "specifier": "@/lib/cron/withCronLogging",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
@@ -49162,7 +49298,7 @@
   {
     "from": "app/api/cron/onboarding-stalls/route.ts",
     "specifier": "@/lib/cron/cronExecution",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
@@ -52681,16 +52817,8 @@
   },
   {
     "from": "app/api/leads/careers/route.ts",
-    "specifier": "resend",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/leads/careers/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 3,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -52698,7 +52826,7 @@
   {
     "from": "app/api/leads/careers/route.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"
@@ -52706,7 +52834,7 @@
   {
     "from": "app/api/leads/careers/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -52714,15 +52842,31 @@
   {
     "from": "app/api/leads/careers/route.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
   },
   {
     "from": "app/api/leads/careers/route.ts",
-    "specifier": "@/lib/validation/careersLead",
+    "specifier": "@/lib/email",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/leads/careers/route.ts",
+    "specifier": "@/lib/email/send",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/leads/careers/route.ts",
+    "specifier": "@/lib/validation/careersLead",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/validation/careersLead.ts"
@@ -53169,16 +53313,8 @@
   },
   {
     "from": "app/api/member/assessment/submit/route.ts",
-    "specifier": "resend",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/auth/server",
-    "line": 3,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -53186,7 +53322,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -53194,7 +53330,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/assessment/answer-key",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/assessment/answer-key.ts"
@@ -53202,7 +53338,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/assessment/answer-key",
-    "line": 6,
+    "line": 5,
     "kind": "type",
     "external": false,
     "target": "lib/assessment/answer-key.ts"
@@ -53210,15 +53346,39 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/email/template",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
   },
   {
     "from": "app/api/member/assessment/submit/route.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "app/api/member/assessment/submit/route.ts",
+    "specifier": "@/lib/email/plainTextEmail",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/plainTextEmail.ts"
+  },
+  {
+    "from": "app/api/member/assessment/submit/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/member/assessment/submit/route.ts",
+    "specifier": "@/lib/email",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -53226,7 +53386,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/assessment/reviewRows",
-    "line": 9,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/assessment/reviewRows.ts"
@@ -53234,7 +53394,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -53242,7 +53402,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/member/points",
-    "line": 11,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/member/points.ts"
@@ -53250,7 +53410,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/member/starterProfileReview",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/member/starterProfileReview.ts"
@@ -53258,7 +53418,7 @@
   {
     "from": "app/api/member/assessment/submit/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 14,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -57289,16 +57449,24 @@
   },
   {
     "from": "app/api/member/request-help/route.ts",
-    "specifier": "resend",
+    "specifier": "@/lib/email",
     "line": 6,
     "kind": "import",
-    "external": true,
-    "package": "resend"
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/member/request-help/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
   },
   {
     "from": "app/api/member/request-help/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -57306,7 +57474,7 @@
   {
     "from": "app/api/member/request-help/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -60905,16 +61073,8 @@
   },
   {
     "from": "app/api/partner/signup/route.ts",
-    "specifier": "resend",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -60922,7 +61082,7 @@
   {
     "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -60930,7 +61090,7 @@
   {
     "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"
@@ -60938,15 +61098,39 @@
   {
     "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
   },
   {
     "from": "app/api/partner/signup/route.ts",
-    "specifier": "@/lib/supabase-admin",
+    "specifier": "@/lib/email",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "app/api/partner/signup/route.ts",
+    "specifier": "@/lib/email/plainTextEmail",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/plainTextEmail.ts"
+  },
+  {
+    "from": "app/api/partner/signup/route.ts",
+    "specifier": "@/lib/email/send",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "app/api/partner/signup/route.ts",
+    "specifier": "@/lib/supabase-admin",
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/supabase-admin.ts"
@@ -60954,7 +61138,7 @@
   {
     "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/tenant/resolveProvisionOrg",
-    "line": 9,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/resolveProvisionOrg.ts"
@@ -60962,7 +61146,7 @@
   {
     "from": "app/api/partner/signup/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 10,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -62846,6 +63030,78 @@
     "kind": "import",
     "external": false,
     "target": "app/api/webhooks/learning-completion/_webhook.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "next/server",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/email/resendWebhook",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendWebhook.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/http/clientIp",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/http/clientIp.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
+  },
+  {
+    "from": "app/api/webhooks/resend/route.ts",
+    "specifier": "@/lib/webhooks/logEvent",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
   },
   {
     "from": "app/api/xapi/about/route.ts",
@@ -93209,19 +93465,35 @@
   },
   {
     "from": "lib/admin/mentorStatusUpdate.ts",
-    "specifier": "resend",
-    "line": 1,
-    "kind": "import",
-    "external": true,
-    "package": "resend"
-  },
-  {
-    "from": "lib/admin/mentorStatusUpdate.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 2,
+    "line": 1,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/admin/mentorStatusUpdate.ts",
+    "specifier": "@/lib/email",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "lib/admin/mentorStatusUpdate.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "lib/admin/mentorStatusUpdate.ts",
+    "specifier": "@/lib/email/send",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
   },
   {
     "from": "lib/admin/metrics.test.ts",
@@ -97153,8 +97425,24 @@
   },
   {
     "from": "lib/auth/passwordReset.ts",
-    "specifier": "@/lib/observability/logger",
+    "specifier": "@/lib/email/templateKeys",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/auth/passwordReset.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "lib/auth/passwordReset.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/observability/logger.ts"
@@ -102592,6 +102880,14 @@
     "target": "lib/email/pacing.ts"
   },
   {
+    "from": "lib/cron/at-risk-alerts.ts",
+    "specifier": "@/lib/email/send",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
     "from": "lib/cron/authorizeCronRequest.ts",
     "specifier": "next/server",
     "line": 1,
@@ -103785,8 +104081,16 @@
   },
   {
     "from": "lib/email.ts",
-    "specifier": "@/lib/email/unsubscribeToken",
+    "specifier": "@/lib/email/templateKeys",
     "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/email.ts",
+    "specifier": "@/lib/email/unsubscribeToken",
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/email/unsubscribeToken.ts"
@@ -103794,7 +104098,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/placement-survey/deliveryPayload",
-    "line": 16,
+    "line": 17,
     "kind": "type",
     "external": false,
     "target": "lib/placement-survey/deliveryPayload.ts"
@@ -103802,7 +104106,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/email/template",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/email/template.ts"
@@ -103810,7 +104114,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/email/escapeHtml",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
@@ -103818,7 +104122,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/tenant/organizationBranding",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organizationBranding.ts"
@@ -103826,7 +104130,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/apply/eligibilityScreeningFields",
-    "line": 20,
+    "line": 21,
     "kind": "type",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
@@ -103834,7 +104138,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/emails",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "emails/index.ts"
@@ -103842,7 +104146,7 @@
   {
     "from": "lib/email.ts",
     "specifier": "@/lib/invitations/loginCode",
-    "line": 78,
+    "line": 79,
     "kind": "import",
     "external": false,
     "target": "lib/invitations/loginCode.ts"
@@ -104064,12 +104368,68 @@
     "package": "node:async_hooks"
   },
   {
+    "from": "lib/email/plainTextEmail.ts",
+    "specifier": "@/lib/email/escapeHtml",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/escapeHtml.ts"
+  },
+  {
     "from": "lib/email/resendRegistry.ts",
     "specifier": "@/lib/email",
     "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "@/lib/email/resendWebhook",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/resendWebhook.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.test.ts",
+    "specifier": "@/lib/email/webhookSignature",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/webhookSignature.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.ts",
+    "specifier": "@/lib/webhooks/logEvent",
+    "line": 16,
+    "kind": "type",
+    "external": false,
+    "target": "lib/webhooks/logEvent.ts"
+  },
+  {
+    "from": "lib/email/resendWebhook.ts",
+    "specifier": "@/lib/email/webhookSignature",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/webhookSignature.ts"
   },
   {
     "from": "lib/email/send.test.ts",
@@ -104098,15 +104458,23 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 5,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
   },
   {
     "from": "lib/email/send.test.ts",
+    "specifier": "@/lib/email/sendLog",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/sendLog.ts"
+  },
+  {
+    "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 20,
+    "line": 31,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104114,7 +104482,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 68,
+    "line": 91,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104122,7 +104490,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 99,
+    "line": 138,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104130,7 +104498,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 136,
+    "line": 182,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104138,7 +104506,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 178,
+    "line": 219,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104146,7 +104514,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 209,
+    "line": 294,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104154,7 +104522,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 237,
+    "line": 313,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104162,7 +104530,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 276,
+    "line": 344,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104170,7 +104538,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 314,
+    "line": 381,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104178,7 +104546,7 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 361,
+    "line": 423,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104186,15 +104554,95 @@
   {
     "from": "lib/email/send.test.ts",
     "specifier": "resend",
-    "line": 390,
+    "line": 454,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 482,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 521,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 559,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 606,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 635,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 688,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 732,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 742,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "lib/email/send.test.ts",
+    "specifier": "resend",
+    "line": 759,
     "kind": "type",
     "external": true,
     "package": "resend"
   },
   {
     "from": "lib/email/send.ts",
+    "specifier": "node:crypto",
+    "line": 28,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/email/send.ts",
     "specifier": "resend",
-    "line": 24,
+    "line": 30,
     "kind": "type",
     "external": true,
     "package": "resend"
@@ -104202,7 +104650,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/diagnostics",
-    "line": 26,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "lib/diagnostics.ts"
@@ -104210,7 +104658,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/failureRecord",
-    "line": 27,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -104218,7 +104666,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/unsubscribeToken",
-    "line": 33,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/email/unsubscribeToken.ts"
@@ -104226,26 +104674,98 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 34,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
   },
   {
     "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/sendLog",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/sendLog.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 35,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
   },
   {
     "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/suppressions",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/suppressions.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/templateKeys",
+    "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 37,
+    "line": 50,
     "kind": "re-export",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "node:crypto",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "lib/email/sendLog.ts",
+    "specifier": "@/lib/email/templateKeys",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/templateKeys.ts"
+  },
+  {
+    "from": "lib/email/suppressions.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "lib/email/suppressions.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "lib/email/template.ts",
@@ -104270,6 +104790,14 @@
     "kind": "import",
     "external": true,
     "package": "crypto"
+  },
+  {
+    "from": "lib/email/webhookSignature.ts",
+    "specifier": "node:crypto",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
   },
   {
     "from": "lib/employer/aiMatchPipelineLabels.ts",
@@ -109784,6 +110312,38 @@
     "target": "lib/diagnostics.ts"
   },
   {
+    "from": "lib/notify/discord.ts",
+    "specifier": "@/lib/notify/discordRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discordRateLimit.ts"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "node:test",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/notify/discordRateLimit.test.ts",
+    "specifier": "@/lib/notify/discordRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notify/discordRateLimit.ts"
+  },
+  {
     "from": "lib/observability/apiErrorScope.ts",
     "specifier": "node:async_hooks",
     "line": 1,
@@ -111182,6 +111742,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/push/sendWebPush.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
   },
   {
     "from": "lib/rate-limit-policy.test.ts",
@@ -113755,22 +114323,38 @@
     "from": "lib/wioa/wioaNotification.ts",
     "specifier": "resend",
     "line": 1,
-    "kind": "import",
+    "kind": "type",
     "external": true,
     "package": "resend"
   },
   {
     "from": "lib/wioa/wioaNotification.ts",
     "specifier": "@/lib/email",
-    "line": 6,
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
   },
   {
     "from": "lib/wioa/wioaNotification.ts",
+    "specifier": "@/lib/email/plainTextEmail",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/plainTextEmail.ts"
+  },
+  {
+    "from": "lib/wioa/wioaNotification.ts",
+    "specifier": "@/lib/email/send",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "lib/wioa/wioaNotification.ts",
     "specifier": "@/lib/wioa/wioaQualification",
-    "line": 7,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaQualification.ts"
@@ -118050,7 +118634,7 @@
   {
     "from": "tests/api/admin-health-debug.spec.ts",
     "specifier": "@/app/api/admin/health/route",
-    "line": 41,
+    "line": 43,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/health/route.ts"
@@ -118058,7 +118642,7 @@
   {
     "from": "tests/api/admin-health-debug.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 42,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -118066,7 +118650,7 @@
   {
     "from": "tests/api/admin-health-debug.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 43,
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -118074,7 +118658,7 @@
   {
     "from": "tests/api/admin-health-debug.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 44,
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118090,7 +118674,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 52,
+    "line": 60,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118098,7 +118682,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@/app/api/admin/health/route",
-    "line": 73,
+    "line": 83,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/health/route.ts"
@@ -118106,7 +118690,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 74,
+    "line": 84,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -118114,7 +118698,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 75,
+    "line": 85,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -118122,7 +118706,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 76,
+    "line": 86,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118130,7 +118714,7 @@
   {
     "from": "tests/api/admin-health.spec.ts",
     "specifier": "@upstash/redis",
-    "line": 77,
+    "line": 87,
     "kind": "import",
     "external": true,
     "package": "@upstash/redis"
@@ -118538,7 +119122,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-email/route",
-    "line": 133,
+    "line": 137,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-email/route.ts"
@@ -118546,7 +119130,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-update/route",
-    "line": 134,
+    "line": 138,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-update/route.ts"
@@ -118554,7 +119138,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/app/api/admin/members/bulk-export/route",
-    "line": 135,
+    "line": 139,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/members/bulk-export/route.ts"
@@ -118562,7 +119146,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "next/server",
-    "line": 136,
+    "line": 140,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -118570,7 +119154,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 137,
+    "line": 141,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -118578,7 +119162,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 138,
+    "line": 142,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -118586,7 +119170,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/tenant/organization",
-    "line": 139,
+    "line": 143,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -118594,7 +119178,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/email",
-    "line": 140,
+    "line": 144,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -118602,7 +119186,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 141,
+    "line": 145,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -118610,7 +119194,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/notifications/create",
-    "line": 142,
+    "line": 146,
     "kind": "import",
     "external": false,
     "target": "lib/notifications/create.ts"
@@ -118618,7 +119202,7 @@
   {
     "from": "tests/api/admin-members-bulk.spec.ts",
     "specifier": "@/lib/member/getMemberState",
-    "line": 143,
+    "line": 147,
     "kind": "import",
     "external": false,
     "target": "lib/member/getMemberState.ts"
@@ -120186,7 +120770,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/app/api/member/assessment/submit/route",
-    "line": 109,
+    "line": 115,
     "kind": "import",
     "external": false,
     "target": "app/api/member/assessment/submit/route.ts"
@@ -120194,7 +120778,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/app/api/member/assessment/reset/route",
-    "line": 110,
+    "line": 116,
     "kind": "import",
     "external": false,
     "target": "app/api/member/assessment/reset/route.ts"
@@ -120202,7 +120786,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/app/api/member/skill-profile/route",
-    "line": 111,
+    "line": 117,
     "kind": "import",
     "external": false,
     "target": "app/api/member/skill-profile/route.ts"
@@ -120210,7 +120794,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/app/api/member/skill-assessment/route",
-    "line": 112,
+    "line": 118,
     "kind": "import",
     "external": false,
     "target": "app/api/member/skill-assessment/route.ts"
@@ -120218,7 +120802,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/assessment/answer-key",
-    "line": 113,
+    "line": 119,
     "kind": "import",
     "external": false,
     "target": "lib/assessment/answer-key.ts"
@@ -120226,7 +120810,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 118,
+    "line": 124,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -120234,7 +120818,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 119,
+    "line": 125,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -120242,7 +120826,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/member/starterProfileReview",
-    "line": 120,
+    "line": 126,
     "kind": "import",
     "external": false,
     "target": "lib/member/starterProfileReview.ts"
@@ -120250,7 +120834,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/member/points",
-    "line": 121,
+    "line": 127,
     "kind": "import",
     "external": false,
     "target": "lib/member/points.ts"
@@ -120258,7 +120842,7 @@
   {
     "from": "tests/api/assessment.spec.ts",
     "specifier": "@/lib/events/track",
-    "line": 122,
+    "line": 128,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -120850,7 +121434,7 @@
   {
     "from": "tests/api/contact-route.spec.ts",
     "specifier": "@/app/api/contact/route",
-    "line": 22,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "app/api/contact/route.ts"
@@ -120858,7 +121442,7 @@
   {
     "from": "tests/api/contact-route.spec.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 23,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -125794,7 +126378,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/app/api/partner/signup/route",
-    "line": 131,
+    "line": 137,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/signup/route.ts"
@@ -125802,7 +126386,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/app/api/admin/partners/[id]/approve/route",
-    "line": 132,
+    "line": 138,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/partners/[id]/approve/route.ts"
@@ -125810,7 +126394,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/app/api/admin/partners/[id]/reject/route",
-    "line": 133,
+    "line": 139,
     "kind": "import",
     "external": false,
     "target": "app/api/admin/partners/[id]/reject/route.ts"
@@ -125818,7 +126402,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/app/api/partner/settings/contact/route",
-    "line": 134,
+    "line": 140,
     "kind": "import",
     "external": false,
     "target": "app/api/partner/settings/contact/route.ts"
@@ -125826,7 +126410,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/auth/server",
-    "line": 135,
+    "line": 141,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -125834,7 +126418,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 136,
+    "line": 142,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -125842,7 +126426,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/supabase-admin",
-    "line": 137,
+    "line": 143,
     "kind": "import",
     "external": false,
     "target": "lib/supabase-admin.ts"
@@ -125850,7 +126434,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 139,
+    "line": 145,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -125858,7 +126442,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "next/server",
-    "line": 140,
+    "line": 146,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -125866,7 +126450,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 151,
+    "line": 157,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -125874,7 +126458,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 487,
+    "line": 493,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -125882,7 +126466,7 @@
   {
     "from": "tests/api/partner-signup.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 502,
+    "line": 508,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -129458,7 +130042,7 @@
   {
     "from": "tests/app/diagnostics-read-reliability.spec.tsx",
     "specifier": "@/app/admin/diagnostics/page",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "app/admin/diagnostics/page.tsx"
@@ -136160,6 +136744,62 @@
     "target": "lib/email/resendRegistry.ts"
   },
   {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "resend",
+    "line": 7,
+    "kind": "type",
+    "external": true,
+    "package": "resend"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "@/lib/email/send",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "tests/email/send-hardening.spec.ts",
+    "specifier": "@/lib/email/suppressions",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/suppressions.ts"
+  },
+  {
     "from": "tests/find-your-path-recommendations.test.ts",
     "specifier": "vitest",
     "line": 1,
@@ -138594,7 +139234,7 @@
   {
     "from": "tests/lib/milestone-email-provider.spec.ts",
     "specifier": "resend",
-    "line": 35,
+    "line": 39,
     "kind": "type",
     "external": true,
     "package": "resend"

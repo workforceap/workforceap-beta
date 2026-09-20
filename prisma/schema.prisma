@@ -297,6 +297,7 @@ model User {
   reviewedTestimonials   Testimonial[] @relation("TestimonialReviewer")
   memberFeedback         MemberFeedback[]
   notifications          Notification[]
+  emailSendLogs          EmailSendLog[] @relation("EmailSendLogUser")
   pushSubscriptions      PushSubscription[]
   savedJobs              SavedJob[]
 
@@ -855,6 +856,56 @@ model EmailFailureSnapshot {
   @@index([templateKey, diagnosticCreatedAt])
   @@index([snapshotAt])
   @@map("email_failure_snapshots")
+}
+
+/// One row per provider send attempt (email delivery audit 2026-09-20, PR3).
+/// Nothing recorded a successful send before this table: workflow_diagnostics
+/// only held failures and Resend's own history expires after ~28 days, so
+/// bounces, complaints and suppressions were invisible to the app.
+/// `dedupeKey` is the caller's idempotency key when it passes one, otherwise
+/// `<templateKey>/<sha256(recipients|subject|utc day)>`, so a provider retry
+/// inside one call and a same-day repeat both land on the same row. Written
+/// best-effort from lib/email/send.ts (a logging failure never blocks a send);
+/// `lastEvent` is updated by /api/webhooks/resend.
+model EmailSendLog {
+  id                String    @id @default(uuid())
+  dedupeKey         String    @unique @map("dedupe_key")
+  templateKey       String?   @map("template_key")
+  /// skipped | sending | sent | failed
+  status            String
+  provider          String    @default("resend")
+  providerMessageId String?   @unique @map("provider_message_id")
+  idempotencyKey    String?   @map("idempotency_key")
+  /// sha256 prefix of the first recipient (lib/email/failureRecord.ts recipientHash); never the raw address.
+  recipientHash     String?   @map("recipient_hash")
+  recipientDomain   String?   @map("recipient_domain")
+  recipientCount    Int       @default(1) @map("recipient_count")
+  subject           String?
+  userId            String?   @map("user_id")
+  entityType        String?   @map("entity_type")
+  entityId          String?   @map("entity_id")
+  attempts          Int       @default(0)
+  skipReason        String?   @map("skip_reason")
+  failureReason     String?   @map("failure_reason")
+  failureClass      String?   @map("failure_class")
+  /// Last provider webhook event: sent | delivered | delivery_delayed | bounced | complained | opened | clicked | failed
+  lastEvent         String?   @map("last_event")
+  lastEventAt       DateTime? @map("last_event_at")
+  /// Resend bounce classification on a bounced event: Permanent | Transient | Undetermined
+  bounceType        String?   @map("bounce_type")
+  sentAt            DateTime? @map("sent_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  user User? @relation("EmailSendLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([templateKey, createdAt])
+  @@index([userId])
+  @@index([recipientHash, createdAt])
+  @@index([lastEvent, lastEventAt])
+  @@index([createdAt])
+  @@map("email_send_logs")
 }
 
 model CronExecution {

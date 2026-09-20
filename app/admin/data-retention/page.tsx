@@ -33,6 +33,7 @@ async function fetchStorageStats() {
     webhookEvent: 'webhook_events',
     memberEvent: 'member_events',
     workflowDiagnostic: 'workflow_diagnostics',
+    emailSendLog: 'email_send_logs',
     portalWorkflowEvent: 'portal_workflow_events',
     publicWioaScreening: 'public_wioa_screenings',
     emailFailureSnapshot: 'email_failure_snapshots',

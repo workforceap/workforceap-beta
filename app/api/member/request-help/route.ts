@@ -3,7 +3,8 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
-import { Resend } from 'resend';
+import { getResend } from '@/lib/email';
+import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -51,11 +52,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     const counselorEmail = assignment?.counselor?.user?.email ?? FALLBACK_EMAIL;
     const counselorName = assignment?.counselor?.user?.fullName ?? 'Counselor';
   
-    const key = process.env.RESEND_API_KEY;
-    if (!key) {
+    const resend = getResend();
+    if (!resend) {
       return NextResponse.json({ error: 'Email not configured' }, { status: 500 });
     }
-    const resend = new Resend(key);
   
     const from = process.env.EMAIL_FROM || 'WorkforceAP <hello@workforceap.org>';
     const memberName = dbUser.fullName ?? 'A member';
@@ -75,7 +75,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     });
   
     try {
-      await resend.emails.send({
+      await sendBrandedEmailOrThrowOnSkip(resend, {
         from,
         to: counselorEmail,
         subject: sanitizeEmailSubjectLine(`Help request from ${memberName}`),

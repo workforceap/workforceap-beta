@@ -374,9 +374,9 @@
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
 | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 509 | member-counselor | default:191 |
-| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 146 | administration | generateMetadata:12, default:84 |
+| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 147 | administration | generateMetadata:12, default:85 |
 | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) | 6 | administration | default:3 |
-| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 571 | administration | generateMetadata:28, default:209 |
+| [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 636 | administration | generateMetadata:28, default:213 |
 | [app/admin/email-crons/page.tsx](../../../app/admin/email-crons/page.tsx) | 195 | communications | generateMetadata:18, default:40 |
 | [app/admin/email-templates/loading.tsx](../../../app/admin/email-templates/loading.tsx) | 5 | communications | default:3 |
 | [app/admin/email-templates/page.tsx](../../../app/admin/email-templates/page.tsx) | 115 | communications | generateMetadata:16, default:32 |
@@ -399,7 +399,7 @@
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
 | [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
-| [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 677 | administration | default:634 |
+| [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 703 | administration | default:660 |
 | [app/admin/invites/InvitesLegacyClient.tsx](../../../app/admin/invites/InvitesLegacyClient.tsx) | 202 | administration | default:196 |
 | [app/admin/invites/layout.tsx](../../../app/admin/invites/layout.tsx) | 14 | administration | generateMetadata:4, default:12 |
 | [app/admin/invites/loading.tsx](../../../app/admin/invites/loading.tsx) | 6 | administration | default:3 |

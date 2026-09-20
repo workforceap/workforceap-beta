@@ -2,6 +2,10 @@ import 'server-only';
 
 import webpush from 'web-push';
 import { prisma } from '@/lib/db/prisma';
+import { recordWorkflowDiagnostic } from '@/lib/diagnostics';
+
+/** `WorkflowDiagnostic.workflow` for push delivery problems (surfaced on /admin/diagnostics). */
+export const WEB_PUSH_WORKFLOW = 'web_push';
 
 /**
  * Web Push sender. Gracefully no-ops when VAPID keys are unconfigured so
@@ -57,7 +61,14 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
       select: { id: true, endpoint: true, p256dh: true, auth: true },
     });
   } catch (err) {
-    console.error('[webpush] subscription lookup failed', err);
+    void recordWorkflowDiagnostic({
+      workflow: WEB_PUSH_WORKFLOW,
+      status: 'error',
+      actorUserId: userId,
+      provider: 'web-push',
+      summary: 'Web push subscription lookup failed',
+      failureReason: err instanceof Error ? err.message : String(err),
+    });
     return 0;
   }
   if (subs.length === 0) return 0;
@@ -78,7 +89,22 @@ export async function sendWebPushToUser(userId: string, payload: WebPushPayload)
           // Subscription expired or was revoked — prune it.
           await prisma.pushSubscription.delete({ where: { id: sub.id } }).catch(() => {});
         } else {
-          console.error('[webpush] send failed', { endpoint: sub.endpoint.slice(0, 48), statusCode });
+          // Recorded rather than console-only (delivery audit 2026-09-20 #22):
+          // a dead VAPID key or a rejecting push service must show up on
+          // /admin/diagnostics, not only in function logs.
+          void recordWorkflowDiagnostic({
+            workflow: WEB_PUSH_WORKFLOW,
+            status: 'error',
+            actorUserId: userId,
+            provider: 'web-push',
+            summary: 'Web push send failed',
+            failureReason: err instanceof Error ? err.message : String(err),
+            metadata: {
+              statusCode: statusCode ?? null,
+              endpointHost: (() => { try { return new URL(sub.endpoint).host; } catch { return null; } })(),
+              tag: payload.tag ?? null,
+            },
+          });
         }
       }
     }),

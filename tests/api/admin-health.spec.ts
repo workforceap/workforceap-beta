@@ -37,6 +37,7 @@ vi.mock('@/lib/db/prisma', () => {
   };
   const webhookEvent = {
     count: vi.fn(),
+    findFirst: vi.fn(),
   };
   const xapiStatement = {
     count: vi.fn(),
@@ -45,6 +46,13 @@ vi.mock('@/lib/db/prisma', () => {
     count: vi.fn(),
   };
   const workflowDiagnostic = {
+    count: vi.fn(),
+  };
+  // Delivery-audit checks (emailDelivery / webPush) read these models.
+  const emailSendLog = {
+    count: vi.fn(),
+  };
+  const pushSubscription = {
     count: vi.fn(),
   };
   return {
@@ -56,6 +64,8 @@ vi.mock('@/lib/db/prisma', () => {
       xapiStatement,
       aIToolResult,
       workflowDiagnostic,
+      emailSendLog,
+      pushSubscription,
     },
   };
 });
@@ -82,6 +92,8 @@ describe('GET /api/admin/health', () => {
     process.env.UPSTASH_REDIS_REST_URL = 'https://redis.test';
     process.env.UPSTASH_REDIS_REST_TOKEN = 'token';
     process.env.RESEND_API_KEY = 'resend-key';
+    // emailDelivery reports degraded until the Resend webhook secret is set.
+    process.env.RESEND_WEBHOOK_SECRET = 'whsec_test';
   });
 
   it('returns 401 when user is not authenticated', async () => {
@@ -116,6 +128,9 @@ describe('GET /api/admin/health', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health'));
     expect(res.status).toBe(200);
@@ -130,6 +145,9 @@ describe('GET /api/admin/health', () => {
     expect(body.checks.xapi.status).toBe('ok');
     expect(body.checks.aiTools.status).toBe('ok');
     expect(body.checks.email.status).toBe('ok');
+    expect(body.checks.emailDelivery.status).toBe('ok');
+    expect(body.checks.discordNotifications.status).toBe('ok');
+    expect(body.checks.webPush.status).toBe('ok');
     expect(body.generatedAt).toBeDefined();
   });
 
@@ -164,6 +182,9 @@ describe('GET /api/admin/health', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health'));
     expect(res.status).toBe(200);
@@ -185,6 +206,9 @@ describe('GET /api/admin/health', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health'));
     expect(res.status).toBe(200);
@@ -208,6 +232,9 @@ describe('GET /api/admin/health', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health'));
     const body = await res.json();
@@ -228,6 +255,9 @@ describe('GET /api/admin/health', () => {
     vi.mocked(prisma.xapiStatement.count).mockResolvedValue(0);
     vi.mocked(prisma.aIToolResult.count).mockResolvedValue(100);
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.emailSendLog.count).mockResolvedValue(0);
+    vi.mocked(prisma.pushSubscription.count).mockResolvedValue(0);
+    vi.mocked(prisma.webhookEvent.findFirst).mockResolvedValue(null);
 
     const res = await GET(new Request('http://localhost:3000/api/admin/health'));
     const body = await res.json();
