@@ -70,6 +70,18 @@ const roster: SeededUser[] = [
     profile: { role: 'member', veteranStatus: null },
     placement: { placedAt, salaryOffered: 52000 },
   },
+  // A seeded referral fixture (role = member, pattern-matched email, in a program).
+  // Mike, 2026-09-20: "make sure test members get cut out".
+  {
+    id: 'seeded-referral',
+    email: 'referral-member-a@workforceap.org',
+    organizationId: ORG,
+    deletedAt: null,
+    enrolledProgram: 'it-support',
+    enrolledAt,
+    profile: { role: 'member', veteranStatus: 'Veteran' },
+    placement: null,
+  },
 ];
 
 // ── Minimal evaluator for the where shapes the loaders use ──
@@ -83,6 +95,8 @@ function matchScalar(filter: unknown, value: unknown): boolean {
     if ('not' in f) return !matchScalar(f.not, value);
     if ('notIn' in f) return !(f.notIn as unknown[]).includes(value);
     if ('in' in f) return (f.in as unknown[]).includes(value);
+    if ('startsWith' in f) return typeof value === 'string' && value.startsWith(f.startsWith as string);
+    if ('endsWith' in f) return typeof value === 'string' && value.endsWith(f.endsWith as string);
     if ('gte' in f || 'lte' in f) {
       const v = value instanceof Date ? value.getTime() : Number(value);
       if (f.gte !== undefined && v < (f.gte as Date).getTime()) return false;
@@ -109,6 +123,12 @@ function matchesUser(where: UserWhere, u: SeededUser): boolean {
         break;
       }
       case 'courseEnrollments': break; // `none: {}` — the seeded roster has no course_enrollments rows
+      case 'NOT': {
+        // Prisma `NOT: [...]`: the row is out when any listed condition matches.
+        const clauses = Array.isArray(filter) ? (filter as UserWhere[]) : [filter as UserWhere];
+        if (clauses.some((clause) => matchesUser(clause, u))) return false;
+        break;
+      }
       default: throw new Error(`unsupported user filter ${key}`);
     }
   }
@@ -200,8 +220,8 @@ describe('funder-facing outcome figures count members only', () => {
   it('a staff dogfood placement is not the organisation placement rate, and staff are not members served', async () => {
     const outcomes = await getBoardOutcomes('all-time', ORG);
 
-    // 38 enrolled accounts in the org: 35 members + 2 super_admins + 1 fixture.
-    expect(roster.filter((u) => u.enrolledProgram).length).toBe(38);
+    // 39 enrolled accounts in the org: 35 members + 2 super_admins + 1 fixture + 1 seeded referral member.
+    expect(roster.filter((u) => u.enrolledProgram).length).toBe(39);
     expect(outcomes.totals.membersServed).toBe(35);
     expect(outcomes.totals.membersEnrolled).toBe(35);
 
@@ -218,7 +238,8 @@ describe('funder-facing outcome figures count members only', () => {
 
   it('board demographics are member profiles, not staff profiles', async () => {
     const outcomes = await getBoardOutcomes('all-time', ORG);
-    // Staff profiles hold two of the three veteran statuses in the org; only the member one may print.
+    // Staff profiles hold two of the three veteran statuses in the org, and the seeded
+    // referral member is a "Veteran" too; only the real member one may print.
     expect(outcomes.demographics.veteranBreakdown).toEqual([
       { label: 'Veteran', count: 1 },
       { label: 'Not reported', count: 34 },
@@ -232,7 +253,10 @@ describe('funder-facing outcome figures count members only', () => {
 
   it('would count the staff placement if the member-only predicate were dropped (the evaluator is not vacuous)', () => {
     const naiveUserWhere = { deletedAt: null, enrolledProgram: { not: null }, organizationId: ORG };
-    expect(roster.filter((u) => matchesUser(naiveUserWhere, u)).length).toBe(38);
+    expect(roster.filter((u) => matchesUser(naiveUserWhere, u)).length).toBe(39);
+    // Role alone is not enough either: the seeded referral member has role = member.
+    const roleOnlyWhere = { ...naiveUserWhere, profile: { role: 'member' } };
+    expect(roster.filter((u) => matchesUser(roleOnlyWhere, u)).length).toBe(37);
     expect(roster.filter((u) => matchesPlacement({ user: { organizationId: ORG } }, u)).length).toBe(2);
   });
 });

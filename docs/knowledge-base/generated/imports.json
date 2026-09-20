@@ -32616,6 +32616,14 @@
     "target": "app/api/admin/export/members/_membersExportQuery.ts"
   },
   {
+    "from": "app/api/admin/export/members/route.test.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
     "from": "app/api/admin/export/members/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -93665,16 +93673,8 @@
   },
   {
     "from": "lib/admin/funderProgramMetrics.ts",
-    "specifier": "@prisma/client",
-    "line": 6,
-    "kind": "import",
-    "external": true,
-    "package": "@prisma/client"
-  },
-  {
-    "from": "lib/admin/funderProgramMetrics.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -93682,7 +93682,7 @@
   {
     "from": "lib/admin/funderProgramMetrics.ts",
     "specifier": "@/lib/tenant/withTenantScope",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/withTenantScope.ts"
@@ -93690,7 +93690,7 @@
   {
     "from": "lib/admin/funderProgramMetrics.ts",
     "specifier": "@/lib/member/atRiskScoring",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
@@ -93698,7 +93698,7 @@
   {
     "from": "lib/admin/funderProgramMetrics.ts",
     "specifier": "@/lib/reporting/programCompletion",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/reporting/programCompletion.ts"
@@ -93706,7 +93706,7 @@
   {
     "from": "lib/admin/funderProgramMetrics.ts",
     "specifier": "@/lib/admin/funderProgramSummaryCsv",
-    "line": 15,
+    "line": 14,
     "kind": "re-export",
     "external": false,
     "target": "lib/admin/funderProgramSummaryCsv.ts"
@@ -93950,6 +93950,14 @@
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/admin/memberOnlyWhere.ts",
+    "specifier": "@/lib/email/fixtureEmailPatterns",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/fixtureEmailPatterns.ts"
   },
   {
     "from": "lib/admin/memberOutcomesSummary.ts",
@@ -104017,8 +104025,16 @@
   },
   {
     "from": "lib/data/applications.ts",
-    "specifier": "@/lib/db/scanCaps",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/data/applications.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "lib/db/scanCaps.ts"
@@ -105289,8 +105305,16 @@
   },
   {
     "from": "lib/email/send.ts",
-    "specifier": "@/lib/email/sendLog",
+    "specifier": "@/lib/email/fixtureEmailPatterns",
     "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/fixtureEmailPatterns.ts"
+  },
+  {
+    "from": "lib/email/send.ts",
+    "specifier": "@/lib/email/sendLog",
+    "line": 46,
     "kind": "import",
     "external": false,
     "target": "lib/email/sendLog.ts"
@@ -105298,7 +105322,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 46,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
@@ -105306,7 +105330,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/suppressions",
-    "line": 47,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "lib/email/suppressions.ts"
@@ -105314,7 +105338,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/templateKeys",
-    "line": 48,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "lib/email/templateKeys.ts"
@@ -105322,7 +105346,7 @@
   {
     "from": "lib/email/send.ts",
     "specifier": "@/lib/email/rateLimitError",
-    "line": 50,
+    "line": 55,
     "kind": "re-export",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
@@ -124841,8 +124865,16 @@
   },
   {
     "from": "tests/api/impact-page.spec.ts",
-    "specifier": "@/lib/db/optionalBuildDb",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/impact-page.spec.ts",
+    "specifier": "@/lib/db/optionalBuildDb",
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "lib/db/optionalBuildDb.ts"
@@ -124850,7 +124882,7 @@
   {
     "from": "tests/api/impact-page.spec.ts",
     "specifier": "@/lib/content/programs",
-    "line": 51,
+    "line": 52,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -140146,7 +140178,7 @@
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/admin/boardOutcomes",
-    "line": 183,
+    "line": 203,
     "kind": "import",
     "external": false,
     "target": "lib/admin/boardOutcomes.ts"
@@ -140154,7 +140186,7 @@
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/admin/memberOutcomesSummary",
-    "line": 184,
+    "line": 204,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOutcomesSummary.ts"
@@ -140162,7 +140194,7 @@
   {
     "from": "tests/lib/member-only-outcomes-population.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 185,
+    "line": 205,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"

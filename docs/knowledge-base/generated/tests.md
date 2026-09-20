@@ -106,7 +106,7 @@
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 257 | tests |  |
-| [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 485 | tests |  |
+| [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 487 | tests |  |
 | [tests/api/invite-validate.spec.ts](../../../tests/api/invite-validate.spec.ts) | 138 | tests |  |
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
 | [tests/api/job-match.spec.ts](../../../tests/api/job-match.spec.ts) | 477 | tests |  |
@@ -405,7 +405,7 @@
 | [tests/lib/at-risk-curriculum-assignment.spec.ts](../../../tests/lib/at-risk-curriculum-assignment.spec.ts) | 89 | tests |  |
 | [tests/lib/auth-server.test.ts](../../../tests/lib/auth-server.test.ts) | 292 | tests |  |
 | [tests/lib/auth-user-lifecycle.spec.ts](../../../tests/lib/auth-user-lifecycle.spec.ts) | 99 | tests |  |
-| [tests/lib/board-outcomes-official-totals.spec.ts](../../../tests/lib/board-outcomes-official-totals.spec.ts) | 161 | tests |  |
+| [tests/lib/board-outcomes-official-totals.spec.ts](../../../tests/lib/board-outcomes-official-totals.spec.ts) | 163 | tests |  |
 | [tests/lib/boardOutcomes.snapshot.test.ts](../../../tests/lib/boardOutcomes.snapshot.test.ts) | 17 | tests |  |
 | [tests/lib/career-mapping.spec.ts](../../../tests/lib/career-mapping.spec.ts) | 189 | tests |  |
 | [tests/lib/career-studio-consolidation.spec.ts](../../../tests/lib/career-studio-consolidation.spec.ts) | 134 | tests |  |
@@ -453,7 +453,7 @@
 | [tests/lib/hydration-telemetry.spec.ts](../../../tests/lib/hydration-telemetry.spec.ts) | 107 | tests |  |
 | [tests/lib/i18n-page-message-keys.spec.ts](../../../tests/lib/i18n-page-message-keys.spec.ts) | 45 | tests |  |
 | [tests/lib/job-expiry-instant.spec.ts](../../../tests/lib/job-expiry-instant.spec.ts) | 43 | tests |  |
-| [tests/lib/job-ready-candidates.spec.ts](../../../tests/lib/job-ready-candidates.spec.ts) | 84 | tests |  |
+| [tests/lib/job-ready-candidates.spec.ts](../../../tests/lib/job-ready-candidates.spec.ts) | 87 | tests |  |
 | [tests/lib/lab-workspace-access.spec.ts](../../../tests/lib/lab-workspace-access.spec.ts) | 220 | tests |  |
 | [tests/lib/live-smoke-regressions.spec.ts](../../../tests/lib/live-smoke-regressions.spec.ts) | 37 | tests |  |
 | [tests/lib/localized-link-rsc-prefetch.regression-1.test.tsx](../../../tests/lib/localized-link-rsc-prefetch.regression-1.test.tsx) | 76 | tests |  |
@@ -464,7 +464,7 @@
 | [tests/lib/match-students-tenant-scope.spec.ts](../../../tests/lib/match-students-tenant-scope.spec.ts) | 25 | tests |  |
 | [tests/lib/member-approval-status.spec.ts](../../../tests/lib/member-approval-status.spec.ts) | 33 | tests |  |
 | [tests/lib/member-export-placement-survey.spec.ts](../../../tests/lib/member-export-placement-survey.spec.ts) | 88 | tests |  |
-| [tests/lib/member-only-outcomes-population.spec.ts](../../../tests/lib/member-only-outcomes-population.spec.ts) | 238 | tests |  |
+| [tests/lib/member-only-outcomes-population.spec.ts](../../../tests/lib/member-only-outcomes-population.spec.ts) | 262 | tests |  |
 | [tests/lib/member-program-training-view.spec.ts](../../../tests/lib/member-program-training-view.spec.ts) | 195 | tests |  |
 | [tests/lib/member-progress-parity.spec.ts](../../../tests/lib/member-progress-parity.spec.ts) | 299 | tests |  |
 | [tests/lib/member-resources.spec.ts](../../../tests/lib/member-resources.spec.ts) | 50 | tests |  |

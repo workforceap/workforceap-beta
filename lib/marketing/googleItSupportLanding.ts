@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { Prisma, type PrismaClient } from '@prisma/client';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
 import { prisma } from '@/lib/db/prisma';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
 import { sqlCount } from '@/lib/db/scanCaps';
@@ -154,7 +154,7 @@ export async function getGoogleItLandingMetrics(
             ON p.user_id = u.id AND p.role = 'member'
           WHERE u.organization_id = ${orgId}
             AND u.deleted_at IS NULL
-            AND u.email NOT IN (${Prisma.join([...MEMBER_ONLY_EXCLUDED_EMAILS])})
+            AND ${memberOnlyEmailSql('u')}
             AND progress_program.canonical_slug IN (${Prisma.join(GOOGLE_IT_VALIDATED_CANONICAL_SLUGS)})
             AND mpp.courses_completed = progress_program.total_courses
         `

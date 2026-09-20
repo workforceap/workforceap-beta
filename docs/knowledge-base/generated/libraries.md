@@ -65,7 +65,7 @@
 | [lib/admin/emailTemplate.ts](../../../lib/admin/emailTemplate.ts) | 125 | communications | EmailTemplateVariable:3, EMAIL_TEMPLATE_VARIABLES:9, getDefaultSampleData:95, renderTemplate:106 |
 | [lib/admin/fitScore.ts](../../../lib/admin/fitScore.ts) | 90 | administration | FitScoreInput:8, calculateFitScore:25, getFitScoreColor:80, getFitScoreLabel:86 |
 | [lib/admin/funderProgramMetrics.test.ts](../../../lib/admin/funderProgramMetrics.test.ts) | 75 | partners-funding |  |
-| [lib/admin/funderProgramMetrics.ts](../../../lib/admin/funderProgramMetrics.ts) | 155 | partners-funding | FunderProgramSummaryRow:15, getFunderProgramSummaryRows:22 |
+| [lib/admin/funderProgramMetrics.ts](../../../lib/admin/funderProgramMetrics.ts) | 154 | partners-funding | FunderProgramSummaryRow:14, getFunderProgramSummaryRows:21 |
 | [lib/admin/funderProgramSummaryCsv.test.ts](../../../lib/admin/funderProgramSummaryCsv.test.ts) | 37 | partners-funding |  |
 | [lib/admin/funderProgramSummaryCsv.ts](../../../lib/admin/funderProgramSummaryCsv.ts) | 41 | partners-funding | FunderProgramSummaryRow:4, FUNDER_PROGRAM_SUMMARY_CSV_HEADERS:16, buildFunderProgramSummaryCsv:28 |
 | [lib/admin/globalSearch.test.ts](../../../lib/admin/globalSearch.test.ts) | 89 | administration |  |
@@ -79,8 +79,8 @@
 | [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 91 | administration | MemberActivityKind:11, MemberActivityAuditInput:13, MemberActivityEventInput:22, MemberActivityRow:28, MEMBER_ACTIVITY_CAP:38, humanizeActivityName:45, buildMemberActivityRows:68 |
 | [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 289 | administration |  |
 | [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 613 | administration | MergeConflict:5, MergePreview:12, MergeResult:20, assertNoCourseraOwnershipForMemberMerge:40, checkMergeConflicts:103, buildMergePreview:168, executeMemberMerge:326 |
-| [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 105 | administration |  |
-| [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 87 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:4, STAFF_PROFILE_ROLES:15, MEMBER_ONLY_WHERE:30, MEMBER_OR_DOGFOOD_WHERE:45, memberOnlyProfileWhere:56, memberOnlySqlJoin:83 |
+| [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 198 | administration |  |
+| [lib/admin/memberOnlyWhere.ts](../../../lib/admin/memberOnlyWhere.ts) | 150 | administration | MEMBER_ONLY_EXCLUDED_EMAILS:16, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS:35, MEMBER_ONLY_EXCLUDED_EMAIL_NOT:42, MEMBER_ONLY_EMAIL_WHERE:53, STAFF_PROFILE_ROLES:64, MEMBER_ONLY_WHERE:79, MEMBER_OR_DOGFOOD_WHERE:94, memberOnlyProfileWhere:105, memberOnlyEmailSql:126, memberOnlySqlJoin:146 |
 | [lib/admin/memberOutcomesSummary.ts](../../../lib/admin/memberOutcomesSummary.ts) | 40 | administration | getMemberOutcomesSummary:11 |
 | [lib/admin/mentorStatusUpdate.ts](../../../lib/admin/mentorStatusUpdate.ts) | 49 | administration | MentorAdminAction:6, runMentorStatusUpdate:11 |
 | [lib/admin/metrics.test.ts](../../../lib/admin/metrics.test.ts) | 96 | administration |  |
@@ -520,7 +520,7 @@
 | [lib/csv/admin-export.test.ts](../../../lib/csv/admin-export.test.ts) | 204 | libraries |  |
 | [lib/csv/export.test.ts](../../../lib/csv/export.test.ts) | 85 | libraries |  |
 | [lib/csv/export.ts](../../../lib/csv/export.ts) | 60 | libraries | CsvValue:11, CsvColumn:13, dataToCsv:21, csvDownloadResponse:39, exportFilename:57 |
-| [lib/data/applications.ts](../../../lib/data/applications.ts) | 30 | libraries | getStaleApplications:4 |
+| [lib/data/applications.ts](../../../lib/data/applications.ts) | 31 | libraries | getStaleApplications:5 |
 | [lib/date/todayInPortalTimezone.ts](../../../lib/date/todayInPortalTimezone.ts) | 21 | libraries | todayInPortalTimezone:12 |
 | [lib/db/advisoryLockRawQuery.test.ts](../../../lib/db/advisoryLockRawQuery.test.ts) | 48 | libraries |  |
 | [lib/db/exactEmailMatch.ts](../../../lib/db/exactEmailMatch.ts) | 41 | libraries | normalizeEmail:20, pickExactEmailMatch:28, EXACT_EMAIL_CANDIDATE_LIMIT:41 |
@@ -558,6 +558,7 @@
 | [lib/email/failureRecord.ts](../../../lib/email/failureRecord.ts) | 201 | communications | EMAIL_SEND_WORKFLOW:22, EMAIL_TEMPLATE_ENTITY_TYPE:24, EMAIL_RESEND_METHOD:26, EmailFailureClass:28, EmailTemplateRef:36, EmailFailureMetadata:43, classifyEmailSendFailure:94, recipientHash:120, recipientDomain:127, buildEmailFailureMetadata:138, parseEmailFailureMetadata:174 |
 | [lib/email/failureSnapshot.test.ts](../../../lib/email/failureSnapshot.test.ts) | 91 | communications |  |
 | [lib/email/failureSnapshot.ts](../../../lib/email/failureSnapshot.ts) | 106 | communications | EMAIL_FAILURE_STATUSES:24, EmailFailureDiagnosticSource:26, EmailFailureSnapshotRow:42, isEmailFailureDiagnostic:65, toEmailFailureSnapshotRow:74, snapshotRunLabel:104 |
+| [lib/email/fixtureEmailPatterns.ts](../../../lib/email/fixtureEmailPatterns.ts) | 29 | communications | FIXTURE_EMAIL_DOMAINS:14, FIXTURE_LOCAL_PART_PREFIXES:17, FIXTURE_LOCAL_PART_SUFFIX:20, WORKFORCEAP_SENDING_DOMAIN:23, hasFixtureLocalPart:26 |
 | [lib/email/pacing.test.ts](../../../lib/email/pacing.test.ts) | 196 | communications |  |
 | [lib/email/pacing.ts](../../../lib/email/pacing.ts) | 160 | communications | BoundedPacerOptions:5, PaceResult:14, boundedPacingCapacity:22, createBoundedPacer:39, BULK_EMAIL_CRON_INTERVAL_MS:86, BULK_EMAIL_CRON_ACCOUNTING_RESERVE_MS:87, BulkEmailCronPacerOptions:89, BulkEmailPacingSkipped:98, createBulkEmailCronPacer:105, withBulkEmailCronPacer:144, runBulkEmailOperation:152, currentBulkEmailDeadlineAtMs:158 |
 | [lib/email/plainTextEmail.ts](../../../lib/email/plainTextEmail.ts) | 11 | communications | plainTextEmailHtml:9 |
@@ -566,7 +567,7 @@
 | [lib/email/resendWebhook.test.ts](../../../lib/email/resendWebhook.test.ts) | 211 | communications |  |
 | [lib/email/resendWebhook.ts](../../../lib/email/resendWebhook.ts) | 218 | communications | RESEND_WEBHOOK_SOURCE:19, EMAIL_DELIVERY_WORKFLOW:21, ResendEmailEvent:23, ResendWebhookApplyInput:37, ResendWebhookStore:44, HandleResendWebhookInput:60, HandleResendWebhookResult:68, ParsedResendEvent:85, parseResendEvent:96, isHardDeliveryFailure:119, handleResendWebhook:128 |
 | [lib/email/send.test.ts](../../../lib/email/send.test.ts) | 776 | communications |  |
-| [lib/email/send.ts](../../../lib/email/send.ts) | 602 | communications | isEmailProviderRateLimitError:50, SendBrandedEmailRetryOptions:59, UNSUBSCRIBE_ADDRESS:81, htmlToPlainText:91, sanitizeHeaders:121, buildDeliverabilityHeaders:130, SkippedEmailReason:151, isRecipientSkipReason:153, FixtureSkippedEmailResult:157, SendBrandedEmailArgs:165, sendingDomain:279, isFixtureEmailRecipient:303, isTransientProviderError:326, attachmentsFingerprint:354, defaultIdempotencyKey:365, FixtureRecipientSkippedError:435, sendBrandedEmail:446, sendBrandedEmailOrThrowOnSkip:591 |
+| [lib/email/send.ts](../../../lib/email/send.ts) | 601 | communications | isEmailProviderRateLimitError:55, SendBrandedEmailRetryOptions:64, UNSUBSCRIBE_ADDRESS:86, htmlToPlainText:96, sanitizeHeaders:126, buildDeliverabilityHeaders:135, SkippedEmailReason:156, isRecipientSkipReason:158, FixtureSkippedEmailResult:162, SendBrandedEmailArgs:170, sendingDomain:284, isFixtureEmailRecipient:302, isTransientProviderError:325, attachmentsFingerprint:353, defaultIdempotencyKey:364, FixtureRecipientSkippedError:434, sendBrandedEmail:445, sendBrandedEmailOrThrowOnSkip:590 |
 | [lib/email/sendLog.ts](../../../lib/email/sendLog.ts) | 256 | communications | EmailSendLogStatus:26, EMAIL_SEND_LOG_WRITE_BUDGET_MS:29, EmailSendLogEntry:31, EmailSendLogStore:53, EmailSendLogSubject:58, utcDayBucket:70, buildEmailDedupeKey:89, buildEmailSendLogBase:101, EmailSendLogPatch:124, EmailSendLogWriter:129, createEmailSendLogWriter:158, prismaEmailSendLogStore:215 |
 | [lib/email/suppressions.ts](../../../lib/email/suppressions.ts) | 191 | communications | SUPPRESSION_CACHE_TTL_MS:25, SUPPRESSION_FETCH_TIMEOUT_MS:26, SUPPRESSED_SKIP_METHOD:28, SuppressionLookupOptions:40, bareEmailAddress:55, loadProviderSuppressions:102, SuppressionPartition:130, partitionSuppressedRecipients:138, resetProviderSuppressionCache:153, recordSuppressedRecipientSkip:169 |
 | [lib/email/template.ts](../../../lib/email/template.ts) | 135 | communications | safeEmailCtaHref:35, brandedEmailLayout:58 |

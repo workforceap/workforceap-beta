@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "050d12dd9a8ddacfab672a76f378321c96c7aa92e9bd011c9caea472baeabd54",
+  "inputTreeSha256": "fc27f3e7f0a67fe38eab8d6d6963f1fc5ab9aa69e976986458e9254919fde0a6",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -24460,15 +24460,15 @@
       "path": "app/api/admin/export/members/route.test.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 2442,
-      "lines": 94,
-      "sha256": "c46110f277a10b8abf0189781577e06f5946a796e17e7531d0b3620f4d847327",
+      "bytes": 2377,
+      "lines": 90,
+      "sha256": "88ccab432866a1457c99d3bb5fec54c108b8c6122a4e830e38d816b9136ce6c9",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "member",
-          "line": 6,
+          "line": 7,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85704,31 +85704,31 @@
       "path": "lib/admin/funderProgramMetrics.ts",
       "area": "libraries",
       "domain": "partners-funding",
-      "bytes": 5366,
-      "lines": 155,
-      "sha256": "dcb48793fc782ac3373a28bb630f0fc6de3a906e5f278c6a2d056941a30681cf",
+      "bytes": 5277,
+      "lines": 154,
+      "sha256": "977d8482aee0427d74892eebc37bb0aa5b57e54c35664bfe31676bfe9e950c51",
       "binary": false,
       "exports": [
         {
           "name": "FunderProgramSummaryRow",
-          "line": 15,
+          "line": 14,
           "kind": "ReExport"
         },
         {
           "name": "getFunderProgramSummaryRows",
-          "line": 22,
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EXPORT_LIMIT",
-          "line": 13,
+          "line": 12,
           "kind": "Variable"
         },
         {
           "name": "getFunderProgramSummaryRows",
-          "line": 22,
+          "line": 21,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85999,9 +85999,9 @@
       "path": "lib/admin/jobReadyCandidates.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2864,
+      "bytes": 2779,
       "lines": 76,
-      "sha256": "339ae179a6f7d489166f466d6cd2746671cd569f6f99edc58a85b681a71a9cd6",
+      "sha256": "d9a0692c2befc15b3b08779f8ce01cb761b8d04b0f909f9e32d68ecf5b20f1b0",
       "binary": false,
       "exports": [
         {
@@ -86391,45 +86391,65 @@
       "path": "lib/admin/memberOnlyWhere.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 4713,
-      "lines": 105,
-      "sha256": "83c29e6fd7db6219cc094440433c08a92487c957d28bdfe80840b344aae78dbb",
+      "bytes": 9457,
+      "lines": 198,
+      "sha256": "5b3feb83bd625721598dda8520371be37ee809ed8e8b2dd6c9f8ffb813ba597b",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "SeededUser",
-          "line": 16,
+          "line": 21,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "member",
-          "line": 18,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "staff",
-          "line": 19,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "RoleFilter",
-          "line": 27,
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "EmailFilter",
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "UserWhere",
-          "line": 28,
+          "line": 34,
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "matches",
-          "line": 35,
+          "name": "emailMatches",
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "matches",
+          "line": 49,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "seededTestMembers",
+          "line": 72,
+          "kind": "Variable"
+        },
+        {
+          "name": "lookalikeRealMembers",
+          "line": 86,
+          "kind": "Variable"
+        },
+        {
           "name": "count",
-          "line": 51,
+          "line": 98,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86439,81 +86459,126 @@
       "path": "lib/admin/memberOnlyWhere.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3669,
-      "lines": 87,
-      "sha256": "3fd4bba50709bd02468c6142ded43e87e1506c3d68fc92423c954a91106bd44f",
+      "bytes": 6599,
+      "lines": 150,
+      "sha256": "c7041a1f1701a91ce8ab21df0e7e17ea6205ff2bab57acdd52ee3578c6ae7333",
       "binary": false,
       "exports": [
         {
           "name": "MEMBER_ONLY_EXCLUDED_EMAILS",
-          "line": 4,
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EXCLUDED_EMAIL_NOT",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EMAIL_WHERE",
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "STAFF_PROFILE_ROLES",
-          "line": 15,
+          "line": 64,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 30,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 45,
+          "line": 94,
           "kind": "Variable"
         },
         {
           "name": "memberOnlyProfileWhere",
-          "line": 56,
+          "line": 105,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlyEmailSql",
+          "line": 126,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlySqlJoin",
-          "line": 83,
+          "line": 146,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_ONLY_EXCLUDED_EMAILS",
-          "line": 4,
+          "line": 16,
+          "kind": "Variable"
+        },
+        {
+          "name": "SEEDED_FIXTURE_DOMAIN",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EXCLUDED_EMAIL_NOT",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ONLY_EMAIL_WHERE",
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "STAFF_PROFILE_ROLES",
-          "line": 15,
+          "line": 64,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_ONLY_WHERE",
-          "line": 30,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_OR_DOGFOOD_WHERE",
-          "line": 45,
+          "line": 94,
           "kind": "Variable"
         },
         {
           "name": "memberOnlyProfileWhere",
-          "line": 56,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SQL_IDENTIFIER",
-          "line": 63,
+          "line": 112,
           "kind": "Variable"
         },
         {
           "name": "sqlIdentifier",
-          "line": 65,
+          "line": 114,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberOnlyEmailSql",
+          "line": 126,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberOnlySqlJoin",
-          "line": 83,
+          "line": 146,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -114086,21 +114151,21 @@
       "path": "lib/data/applications.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 708,
-      "lines": 30,
-      "sha256": "64920738a35f60045c6f41a528332d9eea5914203f856e990280838c0bdcb385",
+      "bytes": 723,
+      "lines": 31,
+      "sha256": "02cbb52f8f048fde3c4547320879b44cf625720f3b3fb5a685f0c81cc3df6b9f",
       "binary": false,
       "exports": [
         {
           "name": "getStaleApplications",
-          "line": 4,
+          "line": 5,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "getStaleApplications",
-          "line": 4,
+          "line": 5,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116805,6 +116870,70 @@
       "directive": null
     },
     {
+      "path": "lib/email/fixtureEmailPatterns.ts",
+      "area": "libraries",
+      "domain": "communications",
+      "bytes": 1493,
+      "lines": 29,
+      "sha256": "7016d6496010f5e5f98dd7a4d69deae549d71df21d112db097dabd20646120b3",
+      "binary": false,
+      "exports": [
+        {
+          "name": "FIXTURE_EMAIL_DOMAINS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "FIXTURE_LOCAL_PART_PREFIXES",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "FIXTURE_LOCAL_PART_SUFFIX",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "WORKFORCEAP_SENDING_DOMAIN",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "hasFixtureLocalPart",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "FIXTURE_EMAIL_DOMAINS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "FIXTURE_LOCAL_PART_PREFIXES",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "FIXTURE_LOCAL_PART_SUFFIX",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "WORKFORCEAP_SENDING_DOMAIN",
+          "line": 23,
+          "kind": "Variable"
+        },
+        {
+          "name": "hasFixtureLocalPart",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/email/pacing.test.ts",
       "area": "libraries",
       "domain": "communications",
@@ -117295,286 +117424,281 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 25415,
-      "lines": 602,
-      "sha256": "335e3003fe8ba31c733500f226d2138623673118bea98a113a10c6b78c8c9105",
+      "bytes": 25377,
+      "lines": 601,
+      "sha256": "b9ff24635c3fea36590273064a529f359ce847a60037722a9adb8ad754d4e006",
       "binary": false,
       "exports": [
         {
           "name": "isEmailProviderRateLimitError",
-          "line": 50,
+          "line": 55,
           "kind": "ReExport"
         },
         {
           "name": "SendBrandedEmailRetryOptions",
-          "line": 59,
+          "line": 64,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UNSUBSCRIBE_ADDRESS",
-          "line": 81,
+          "line": 86,
           "kind": "Variable"
         },
         {
           "name": "htmlToPlainText",
-          "line": 91,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sanitizeHeaders",
-          "line": 121,
+          "line": 126,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildDeliverabilityHeaders",
-          "line": 130,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SkippedEmailReason",
-          "line": 151,
+          "line": 156,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isRecipientSkipReason",
-          "line": 153,
+          "line": 158,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureSkippedEmailResult",
-          "line": 157,
+          "line": 162,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailArgs",
-          "line": 165,
+          "line": 170,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "sendingDomain",
-          "line": 279,
+          "line": 284,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 303,
+          "line": 302,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTransientProviderError",
-          "line": 326,
+          "line": 325,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 354,
+          "line": 353,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 365,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 435,
+          "line": 434,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 446,
+          "line": 445,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 591,
+          "line": 590,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "RESEND_MAX_ATTEMPTS",
-          "line": 52,
+          "line": 57,
           "kind": "Variable"
         },
         {
           "name": "RESEND_RETRY_BASE_DELAY_MS",
-          "line": 53,
+          "line": 58,
           "kind": "Variable"
         },
         {
           "name": "RESEND_RETRY_MAX_TOTAL_WAIT_MS",
-          "line": 55,
+          "line": 60,
           "kind": "Variable"
         },
         {
           "name": "Sleep",
-          "line": 57,
+          "line": 62,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailRetryOptions",
-          "line": 59,
+          "line": 64,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "UNSUBSCRIBE_ADDRESS",
-          "line": 81,
+          "line": 86,
           "kind": "Variable"
         },
         {
           "name": "htmlToPlainText",
-          "line": 91,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sanitizeHeaders",
-          "line": 121,
+          "line": 126,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildDeliverabilityHeaders",
-          "line": 130,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SkippedEmailReason",
-          "line": 151,
+          "line": 156,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "isRecipientSkipReason",
-          "line": 153,
+          "line": 158,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureSkippedEmailResult",
-          "line": 157,
+          "line": 162,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SendBrandedEmailArgs",
-          "line": 165,
+          "line": 170,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "recordEmailFailure",
-          "line": 207,
+          "line": 212,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "asRecord",
-          "line": 222,
+          "line": 227,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readHeader",
-          "line": 226,
+          "line": 231,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRetryAfterMs",
-          "line": 234,
+          "line": 239,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRateLimitResetMs",
-          "line": 245,
+          "line": 250,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientDomain",
-          "line": 253,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "fixtureDomains",
           "line": 258,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "fixtureDomains",
+          "line": 263,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "normalizedRecipientAddress",
-          "line": 266,
+          "line": 271,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientLocalPart",
-          "line": 272,
+          "line": 277,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendingDomain",
-          "line": 279,
+          "line": 284,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "FIXTURE_LOCAL_PART_PATTERNS",
-          "line": 288,
-          "kind": "Variable"
-        },
-        {
           "name": "fixtureAddresses",
-          "line": 294,
+          "line": 293,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 303,
+          "line": 302,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TRANSIENT_NETWORK_CODES",
-          "line": 314,
+          "line": 313,
           "kind": "Variable"
         },
         {
           "name": "TRANSIENT_PROVIDER_ERROR_NAMES",
-          "line": 318,
+          "line": 317,
           "kind": "Variable"
         },
         {
           "name": "isTransientProviderError",
-          "line": 326,
+          "line": 325,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 354,
+          "line": 353,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 365,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecipientField",
-          "line": 388,
+          "line": 387,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "withoutRecipients",
-          "line": 391,
+          "line": 390,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 400,
+          "line": 399,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 435,
+          "line": 434,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 446,
+          "line": 445,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 591,
+          "line": 590,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -122344,9 +122468,9 @@
       "path": "lib/marketing/googleItSupportLanding.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 7079,
+      "bytes": 7031,
       "lines": 199,
-      "sha256": "a78a82406e6f0af1f9e3c3dd3e23c8bdc06d0d82708349ec1a8ddf828bd6ca7b",
+      "sha256": "f43cb98f28a77433c69702cb60048da6d289fd589ceec1219949fae8ec657983",
       "binary": false,
       "exports": [
         {
@@ -122642,9 +122766,9 @@
       "path": "lib/marketing/publicImpactStats.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 13746,
+      "bytes": 13645,
       "lines": 400,
-      "sha256": "fb6211e46ff0ac15fd8e8d5dcbd88cc6406944fe729651d870f707d86324a9d1",
+      "sha256": "535651a94708fb31ab6b86aa2b4d338f6f5b791690233a328cb26387e42a8c28",
       "binary": false,
       "exports": [
         {
@@ -133302,9 +133426,9 @@
       "path": "lib/partner/attentionPagination.ts",
       "area": "libraries",
       "domain": "partners-funding",
-      "bytes": 6196,
+      "bytes": 6148,
       "lines": 97,
-      "sha256": "e883d2f1a0a2291298f9de507d4efc4862ed52664643a2650c10c3c0c9afcfe0",
+      "sha256": "46ea57af27428f5729dfb05c0632f9dbe955e00c869434d0ce54091eb7fc227f",
       "binary": false,
       "exports": [
         {
@@ -161883,30 +162007,30 @@
       "path": "tests/api/impact-page.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 17678,
-      "lines": 485,
-      "sha256": "9eb6684db2b7bb820e6bd52aab3aba6f8bf72c37fd8378c8cc279287103f5162",
+      "bytes": 17798,
+      "lines": 487,
+      "sha256": "e2846be319af305daef1b49d7f0b3ab57ddefa3cd78764d2ee884422a8dd4962",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "ORG_ID",
-          "line": 53,
+          "line": 54,
           "kind": "Variable"
         },
         {
           "name": "makeEnrolledUser",
-          "line": 55,
+          "line": 56,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EnrolledUser",
-          "line": 84,
+          "line": 85,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "mockImpactQueries",
-          "line": 86,
+          "line": 87,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -169977,9 +170101,9 @@
       "path": "tests/lib/board-outcomes-official-totals.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7839,
-      "lines": 161,
-      "sha256": "4f224775077b65bd545209655fb26eeefdb23b9a4a10d5421519346c21e9f8d8",
+      "bytes": 8179,
+      "lines": 163,
+      "sha256": "735bcbf21fab5628edc0e3b3d4fbafa81dfe72c67e2d499b18c089d10ec6de35",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171050,9 +171174,9 @@
       "path": "tests/lib/job-ready-candidates.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3554,
-      "lines": 84,
-      "sha256": "2efeb62babecd19a77cd34ad7a301373e836bb34aaf3236f6eaac93ea680da94",
+      "bytes": 3879,
+      "lines": 87,
+      "sha256": "47ca4461efbcc8b9e18e93b5e0871ddaf371b9a2c6f65f6c7ad5bd96ddff4c05",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171321,9 +171445,9 @@
       "path": "tests/lib/member-only-outcomes-population.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 10538,
-      "lines": 238,
-      "sha256": "e34e602b690dd53d85e346ae48ae7bd4997c3a36fe8371cbb33ff9a7c23e89b4",
+      "bytes": 11782,
+      "lines": 262,
+      "sha256": "8a8739838a08f763b1fdedeb08d89a1636389a3680912c428c2870a3d07fb979",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -171354,32 +171478,32 @@
         },
         {
           "name": "UserWhere",
-          "line": 77,
+          "line": 89,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "matchScalar",
-          "line": 79,
+          "line": 91,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesUser",
-          "line": 97,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesPlacement",
-          "line": 118,
+          "line": 138,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesProfile",
-          "line": 132,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "rawIsMemberOnly",
-          "line": 140,
+          "line": 160,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -172220,9 +172344,9 @@
       "path": "tests/lib/persisted-risk-command-center.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8356,
+      "bytes": 8592,
       "lines": 130,
-      "sha256": "32f3bbc669dce0b8c8f21794521f777c0098968ac13acd62b18b6160c5d65e70",
+      "sha256": "63394aec7ba32a1e4ea2655b3ce037f52125ef79d6d4c7283130d75a4d117d8f",
       "binary": false,
       "exports": [],
       "declarations": [

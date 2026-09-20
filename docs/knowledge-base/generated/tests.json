@@ -170,6 +170,10 @@
       {
         "file": "app/api/admin/export/members/_membersExportQuery.ts",
         "line": 4
+      },
+      {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -15064,12 +15068,16 @@
         "line": 49
       },
       {
-        "file": "lib/db/optionalBuildDb.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 50
       },
       {
-        "file": "lib/content/programs.ts",
+        "file": "lib/db/optionalBuildDb.ts",
         "line": 51
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 52
       }
     ],
     "kind": "test-candidate",
@@ -27167,15 +27175,15 @@
     "localReferences": [
       {
         "file": "lib/admin/boardOutcomes.ts",
-        "line": 183
+        "line": 203
       },
       {
         "file": "lib/admin/memberOutcomesSummary.ts",
-        "line": 184
+        "line": 204
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 185
+        "line": 205
       }
     ],
     "kind": "test-candidate",

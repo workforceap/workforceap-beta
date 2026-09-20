@@ -24,11 +24,11 @@ vi.mock('@/lib/db/prisma', () => ({
 }));
 
 import { getBoardOutcomes } from '@/lib/admin/boardOutcomes';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { REPORT_SAMPLE_CAP, UNBOUNDED_SCAN_TAKE_FLOOR } from '@/lib/db/scanCaps';
 import { prisma } from '@/lib/db/prisma';
 
-const MEMBER_JOIN = "INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?)";
+const MEMBER_JOIN = "INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?,?,?) AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ?";
 
 function flatten(call: unknown[]): { sql: string; values: unknown[] } {
   const [strings, ...values] = call as [TemplateStringsArray, ...unknown[]];
@@ -136,14 +136,16 @@ describe('getBoardOutcomes official totals', () => {
     for (const q of raw) {
       expect(q.sql).toContain(MEMBER_JOIN);
       for (const email of MEMBER_ONLY_EXCLUDED_EMAILS) expect(q.values).toContain(email);
+      for (const pattern of MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS) expect(q.values).toContain(pattern);
     }
 
     // Demographics run on prisma.profile with the role predicate on the profile row itself.
     expect(prisma.profile.groupBy).toHaveBeenCalledTimes(5);
     for (const call of vi.mocked(prisma.profile.groupBy).mock.calls) {
-      const [args] = call as unknown as [{ where: { role?: string; user?: { email?: unknown; enrolledProgram?: unknown } } }];
+      const [args] = call as unknown as [{ where: { role?: string; user?: { email?: unknown; NOT?: unknown; enrolledProgram?: unknown } } }];
       expect(args.where.role).toBe('member');
       expect(args.where.user?.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
+      expect(args.where.user?.NOT).toEqual(MEMBER_ONLY_WHERE.NOT);
       expect(args.where.user?.enrolledProgram).toEqual({ not: null });
     }
 

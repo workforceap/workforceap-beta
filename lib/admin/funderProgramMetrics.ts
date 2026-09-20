@@ -1,9 +1,8 @@
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
 import type { FunderProgramSummaryRow } from '@/lib/admin/funderProgramSummaryCsv';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
-import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
@@ -64,7 +63,7 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
         AND a.score >= ${THRESHOLDS.HIGH}
         AND u.deleted_at IS NULL
         AND u.enrolled_program IS NOT NULL
-        AND u.email NOT IN (${Prisma.join([...MEMBER_ONLY_EXCLUDED_EMAILS])})
+        AND ${memberOnlyEmailSql('u')}
       GROUP BY u.enrolled_program
     `,
   ]);

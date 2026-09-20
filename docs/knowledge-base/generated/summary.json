@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "050d12dd9a8ddacfab672a76f378321c96c7aa92e9bd011c9caea472baeabd54",
+  "inputTreeSha256": "fc27f3e7f0a67fe38eab8d6d6963f1fc5ab9aa69e976986458e9254919fde0a6",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4950,
-    "sourceModules": 3599,
-    "importReferences": 17954,
-    "resolvedLocalReferences": 12071,
+    "files": 4951,
+    "sourceModules": 3600,
+    "importReferences": 17958,
+    "resolvedLocalReferences": 12076,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1071
+      "files": 1072
     },
     {
       "area": "localization",
@@ -203,16 +203,16 @@
       "references": 61
     },
     {
+      "file": "lib/admin/memberOnlyWhere.ts",
+      "references": 56
+    },
+    {
       "file": "lib/content/programCurriculumManifest.ts",
       "references": 54
     },
     {
       "file": "lib/supabase-admin.ts",
       "references": 54
-    },
-    {
-      "file": "lib/admin/memberOnlyWhere.ts",
-      "references": 53
     },
     {
       "file": "components/portal/ui/DataTable.tsx",
