@@ -97,7 +97,7 @@ export type PortalNavItem = {
   badgeKeys?: NavBadgeKey[];
   requiresSuperAdminContext?: boolean;
   /**
-   * Set on a contextual child row (the Career Studio tool the member is
+   * Set on a contextual child row (the AI Career Tools tool the member is
    * currently inside). Carries the parent's href so the rail can nest and
    * indent the row under it. Never present on a permanent rail entry.
    */
@@ -108,7 +108,7 @@ export const NAV_TAB_META: Record<NavTab, { label: string; icon: string }> = {
   journey: { label: 'Home', icon: 'home' },
   program: { label: 'My program', icon: 'school' },
   jobs: { label: 'Jobs', icon: 'work' },
-  me: { label: 'Career Studio', icon: 'auto_awesome' },
+  me: { label: 'AI Career Tools', icon: 'auto_awesome' },
 };
 
 export const NAV_TAB_ORDER: NavTab[] = ['journey', 'program', 'jobs', 'me'];
@@ -165,7 +165,7 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     tourTarget: 'tour-jobs',
   },
   { href: '/dashboard/readiness', label: 'My progress', group: 'primary', tab: 'jobs', Icon: CheckCircle },
-  { href: '/dashboard/ai-tools', label: 'Career Studio', group: 'primary', tab: 'me', Icon: Sparkles, aliases: ['/dashboard/toolkit', '/dashboard/ai-tools/studio'], tourTarget: 'tour-ai-tools' },
+  { href: '/dashboard/ai-tools', label: 'AI Career Tools', group: 'primary', tab: 'me', Icon: Sparkles, aliases: ['/dashboard/toolkit', '/dashboard/ai-tools/studio'], tourTarget: 'tour-ai-tools' },
   { href: '/dashboard/missions', label: 'Skill missions', group: 'primary', tab: 'program', Icon: Target },
   {
     href: '/dashboard/program/start',
@@ -199,7 +199,7 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     badgeKey: 'applications_new',
   },
   { href: '/dashboard/resume', label: 'Resume', group: 'workflows', tab: 'jobs', Icon: FileText },
-  // ── Tools tab (Career Studio sits in primary; advisor/hub stay grouped) ──
+  // ── Tools tab (AI Career Tools sits in primary; advisor/hub stay grouped) ──
   { href: '/dashboard/counselor', label: 'AI Advisor', group: 'workflows', tab: 'me', Icon: Mic },
   {
     href: '/dashboard/learning',

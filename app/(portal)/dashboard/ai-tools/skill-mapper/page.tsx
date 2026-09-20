@@ -46,12 +46,12 @@ export default async function SkillMapperPage() {
         <div className="wa-space-y-5" style={{ marginBottom: 20 }}>
           <PortalBreadcrumb
             items={[
-              { label: 'Career Toolkit', href: '/dashboard/ai-tools' },
+              { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
               { label: 'Skill Mapper' },
             ]}
           />
           <PageOpener
-            kicker="AI Career Toolkit"
+            kicker="AI Career Tools"
             title="Skill Mapper"
             lede="Search any occupation to see its top skills and competency radar chart."
           />

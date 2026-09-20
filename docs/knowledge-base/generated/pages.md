@@ -186,7 +186,7 @@
 | [app/(portal)/dashboard/jobs/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/page.tsx) | 206 | jobs-employers | generateMetadata:68, default:120 |
 | [app/(portal)/dashboard/jobs/loading.tsx](../../../app/%28portal%29/dashboard/jobs/loading.tsx) | 5 | jobs-employers | default:3 |
 | [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | 615 | jobs-employers | generateMetadata:18, default:27 |
-| [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | 91 | member-counselor | generateMetadata:13, default:18 |
+| [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | 115 | member-counselor | generateMetadata:15, default:20 |
 | [app/(portal)/dashboard/learning/find-your-career/loading.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/loading.tsx) | 6 | learning-coursera | default:3 |
 | [app/(portal)/dashboard/learning/find-your-career/page.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/page.tsx) | 149 | learning-coursera | generateMetadata:9, default:34 |
 | [app/(portal)/dashboard/learning/interest-profiler/loading.tsx](../../../app/%28portal%29/dashboard/learning/interest-profiler/loading.tsx) | 6 | learning-coursera | default:3 |
@@ -617,7 +617,7 @@
 | [app/global-error.tsx](../../../app/global-error.tsx) | 56 | pages | default:7 |
 | [app/invite/layout.tsx](../../../app/invite/layout.tsx) | 20 | pages | generateMetadata:7, default:17 |
 | [app/invite/page.tsx](../../../app/invite/page.tsx) | 415 | pages | default:408 |
-| [app/layout.tsx](../../../app/layout.tsx) | 319 | pages | viewport:60, metadata:66, default:91 |
+| [app/layout.tsx](../../../app/layout.tsx) | 320 | pages | viewport:60, metadata:66, default:91 |
 | [app/mentor/apply/MentorApplyForm.tsx](../../../app/mentor/apply/MentorApplyForm.tsx) | 187 | applications-enrollment | default:25 |
 | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) | 13 | applications-enrollment | metadata:4, default:11 |
 | [app/mentor/apply/mentor-apply.module.css](../../../app/mentor/apply/mentor-apply.module.css) | 119 | applications-enrollment |  |
