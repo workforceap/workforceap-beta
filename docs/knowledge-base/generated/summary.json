@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "1b2f89311916a5fe3eb7231d3419d5ffa5ed27fc3dc96ccd50b7698e3ab1cb8b",
+  "inputTreeSha256": "98a420e3322125ab1f491c549dee180f3533cd307e493e52b1dd83cda1dfa5a2",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -9,9 +9,9 @@
   },
   "counts": {
     "files": 4785,
-    "sourceModules": 3445,
-    "importReferences": 17101,
-    "resolvedLocalReferences": 11412,
+    "sourceModules": 3444,
+    "importReferences": 17103,
+    "resolvedLocalReferences": 11415,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1055,
     "nextRouteFiles": 1022,
@@ -22,10 +22,10 @@
     "prismaModels": 111,
     "prismaEnums": 33,
     "relationFields": 304,
-    "testFiles": 869,
-    "testCandidates": 861,
+    "testFiles": 871,
+    "testCandidates": 863,
     "testHelpers": 8,
-    "staticallySelectedTests": 859,
+    "staticallySelectedTests": 861,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 601
+      "files": 596
     },
     {
       "area": "content",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1023
+      "files": 1024
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 636
+      "files": 637
     },
     {
       "area": "root",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 482
+      "files": 485
     }
   ],
   "mostReferenced": [
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 242
+      "references": 241
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -144,7 +144,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 200
+      "references": 201
     },
     {
       "file": "lib/audit/log.ts",
@@ -180,7 +180,7 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 81
+      "references": 80
     },
     {
       "file": "lib/events/track.ts",
@@ -302,7 +302,7 @@
     },
     {
       "file": "app/(portal)/counselor/students/[memberId]/page.tsx",
-      "lines": 1459
+      "lines": 1475
     },
     {
       "file": "tests/api/placement-survey.spec.ts",

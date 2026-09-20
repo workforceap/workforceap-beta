@@ -10,7 +10,7 @@ import { getTranslations } from 'next-intl/server';
 import CounselorStudentsRosterClient from '@/components/portal/counselor/CounselorStudentsRosterClient';
 import { loadCounselorRosterRiskAndActivity } from '@/lib/counselor/counselorStudentsRoster';
 import CounselorRosterStats from '@/components/portal/counselor/CounselorRosterStats';
-import { buildAttentionQueue, selectByReason, type AttentionQueue } from '@/lib/attention';
+import { buildAttentionQueue, selectByReason, type AttentionQueue } from '@/lib/attention/evaluate';
 import { loadAttentionFacts } from '@/lib/attention/loadFacts';
 import { buildCounselorRosterStats, ROSTER_STAT_LOOKBACK_DAYS } from '@/lib/counselor/rosterStats';
 import styles from './students.module.css';

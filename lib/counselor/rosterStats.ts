@@ -12,11 +12,8 @@
  * view data. No Prisma, no React.
  */
 
-import {
-  ATTENTION_REASON_META,
-  ATTENTION_THRESHOLDS as T,
-  type AttentionQueue,
-} from '@/lib/attention';
+import { ATTENTION_REASON_META, ATTENTION_THRESHOLDS as T } from '@/lib/attention/reasons';
+import type { AttentionQueue } from '@/lib/attention/evaluate';
 
 export const ROSTER_STAT_LOOKBACK_DAYS = 30;
 

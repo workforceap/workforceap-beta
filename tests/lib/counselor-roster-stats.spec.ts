@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { buildAttentionQueue, type MemberAttentionInput } from '@/lib/attention';
+import { buildAttentionQueue, type MemberAttentionInput } from '@/lib/attention/evaluate';
 import { buildCounselorRosterStats } from '@/lib/counselor/rosterStats';
 
 /**

@@ -3513,11 +3513,11 @@
   },
   {
     "from": "app/(portal)/counselor/students/page.tsx",
-    "specifier": "@/lib/attention",
+    "specifier": "@/lib/attention/evaluate",
     "line": 13,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/index.ts"
+    "target": "lib/attention/evaluate.ts"
   },
   {
     "from": "app/(portal)/counselor/students/page.tsx",
@@ -98617,11 +98617,19 @@
   },
   {
     "from": "lib/counselor/rosterStats.ts",
-    "specifier": "@/lib/attention",
+    "specifier": "@/lib/attention/reasons",
     "line": 15,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/index.ts"
+    "target": "lib/attention/reasons.ts"
+  },
+  {
+    "from": "lib/counselor/rosterStats.ts",
+    "specifier": "@/lib/attention/evaluate",
+    "line": 16,
+    "kind": "type",
+    "external": false,
+    "target": "lib/attention/evaluate.ts"
   },
   {
     "from": "lib/counselor/staffMemberAccess.ts",
@@ -132993,11 +133001,11 @@
   },
   {
     "from": "tests/lib/counselor-roster-stats.spec.ts",
-    "specifier": "@/lib/attention",
+    "specifier": "@/lib/attention/evaluate",
     "line": 3,
     "kind": "import",
     "external": false,
-    "target": "lib/attention/index.ts"
+    "target": "lib/attention/evaluate.ts"
   },
   {
     "from": "tests/lib/counselor-roster-stats.spec.ts",
