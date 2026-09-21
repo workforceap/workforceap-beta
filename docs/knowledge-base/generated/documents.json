@@ -6773,24 +6773,29 @@
         "line": 94
       },
       {
+        "level": 3,
+        "title": "Optional: Data retention windows (`lib/retention/config.ts`)",
+        "line": 100
+      },
+      {
         "level": 2,
         "title": "Historical Vercel Production Status Snapshot",
-        "line": 102
+        "line": 110
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 118
+        "line": 126
       },
       {
         "level": 2,
         "title": "Launch Checklist (May 1)",
-        "line": 131
+        "line": 139
       },
       {
         "level": 2,
         "title": "Related Files",
-        "line": 148
+        "line": 156
       }
     ],
     "datedFilename": false,
@@ -20277,7 +20282,7 @@
       {
         "level": 2,
         "title": "Bottom line for leadership",
-        "line": 98
+        "line": 115
       }
     ],
     "datedFilename": false,
@@ -21197,78 +21202,83 @@
       },
       {
         "level": 2,
-        "title": "Burn-rate alert policy",
+        "title": "External readiness monitor (GitHub Actions)",
         "line": 73
       },
       {
         "level": 2,
+        "title": "Burn-rate alert policy",
+        "line": 92
+      },
+      {
+        "level": 2,
         "title": "Status page approach",
-        "line": 90
+        "line": 109
       },
       {
         "level": 3,
         "title": "Option (a): Statuspage.io / Better Uptime hosted",
-        "line": 94
-      },
-      {
-        "level": 3,
-        "title": "Option (b): Self-hosted `/status` route",
-        "line": 102
-      },
-      {
-        "level": 3,
-        "title": "What the public `/status` page shows",
         "line": 113
       },
       {
         "level": 3,
+        "title": "Option (b): Self-hosted `/status` route",
+        "line": 121
+      },
+      {
+        "level": 3,
+        "title": "What the public `/status` page shows",
+        "line": 132
+      },
+      {
+        "level": 3,
         "title": "What the `/status` page does NOT show",
-        "line": 122
+        "line": 141
       },
       {
         "level": 2,
         "title": "The internal SLO endpoint: `GET /api/health/slo`",
-        "line": 129
+        "line": 148
       },
       {
         "level": 3,
         "title": "Why admin-only (not public)",
-        "line": 133
+        "line": 152
       },
       {
         "level": 3,
         "title": "Response shape",
-        "line": 139
+        "line": 158
       },
       {
         "level": 3,
         "title": "Why stub now",
-        "line": 167
+        "line": 186
       },
       {
         "level": 2,
         "title": "Quarterly SLO report",
-        "line": 177
+        "line": 196
       },
       {
         "level": 2,
         "title": "What happens when an SLO breaches",
-        "line": 199
+        "line": 218
       },
       {
         "level": 2,
         "title": "Honest limits and known gaps",
-        "line": 213
+        "line": 232
       },
       {
         "level": 2,
         "title": "Summary table — what a buyer should walk away knowing",
-        "line": 227
+        "line": 247
       },
       {
         "level": 2,
         "title": "Document history",
-        "line": 241
+        "line": 261
       }
     ],
     "datedFilename": false,
@@ -21500,62 +21510,62 @@
       {
         "level": 2,
         "title": "Migration approach (Sprint A.2)",
-        "line": 170
+        "line": 171
       },
       {
         "level": 2,
         "title": "What this PR (Sprint A.1) ships",
-        "line": 182
+        "line": 183
       },
       {
         "level": 2,
         "title": "How to review this PR",
-        "line": 198
+        "line": 199
       },
       {
         "level": 2,
         "title": "Document history",
-        "line": 208
+        "line": 209
       },
       {
         "level": 2,
         "title": "Track E.1 — Custom-domain → organization resolution",
-        "line": 223
+        "line": 224
       },
       {
         "level": 3,
         "title": "Resolution pipeline",
-        "line": 230
+        "line": 231
       },
       {
         "level": 3,
         "title": "Files",
-        "line": 254
+        "line": 255
       },
       {
         "level": 3,
         "title": "Canonical hosts (no override)",
-        "line": 264
+        "line": 265
       },
       {
         "level": 3,
         "title": "How to read the active org in your code",
-        "line": 278
+        "line": 279
       },
       {
         "level": 3,
         "title": "Edge runtime constraint",
-        "line": 307
+        "line": 308
       },
       {
         "level": 3,
         "title": "What is NOT yet implemented (next PRs)",
-        "line": 323
+        "line": 324
       },
       {
         "level": 2,
         "title": "Default organization fallback",
-        "line": 336
+        "line": 337
       }
     ],
     "datedFilename": false,
@@ -32366,6 +32376,39 @@
     "note": "Filename dates and headings are navigation metadata, not authority or freshness proof."
   },
   {
+    "file": "docs/runbooks/force-rls-shadow-ledger.md",
+    "title": "FORCE RLS shadow rehearsal — run ledger",
+    "headings": [
+      {
+        "level": 1,
+        "title": "FORCE RLS shadow rehearsal — run ledger",
+        "line": 1
+      },
+      {
+        "level": 2,
+        "title": "Where the rows live",
+        "line": 10
+      },
+      {
+        "level": 2,
+        "title": "Counting the streak",
+        "line": 22
+      },
+      {
+        "level": 2,
+        "title": "Columns",
+        "line": 37
+      },
+      {
+        "level": 2,
+        "title": "Ledger",
+        "line": 47
+      }
+    ],
+    "datedFilename": false,
+    "note": "Filename dates and headings are navigation metadata, not authority or freshness proof."
+  },
+  {
     "file": "docs/runbooks/force-rls-staging-rehearsal.md",
     "title": "FORCE RLS Staging Rehearsal Runbook",
     "headings": [
@@ -32457,7 +32500,7 @@
       {
         "level": 2,
         "title": "See also",
-        "line": 269
+        "line": 278
       }
     ],
     "datedFilename": false,

@@ -644,6 +644,8 @@ export async function sendOnboardingStallsDigestEmail(params: {
   interviewMembers: OnboardingStallNamedMember[];
   wioaMembers: OnboardingStallNamedMember[];
   noProgramMembers: OnboardingStallNamedMember[];
+  /** WAP-166: age of the oldest screening still awaiting staff review, in whole days (null = none / unknown). */
+  wioaOldestPendingDays?: number | null;
   interviewQueueLink: string;
   wioaQueueLink: string;
   membersQueueLink: string;

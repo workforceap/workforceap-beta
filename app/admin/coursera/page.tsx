@@ -38,6 +38,7 @@ import {
   listXapiStatementsNeedingAttention,
   loadMemberProgressAuditByEmail,
 } from '@/lib/admin/courseraOps';
+import { countUnresolvedXapiOrganizations } from '@/lib/coursera/replayPendingXapi';
 import {
   getCourseraSkillsetProgressSummary,
   getCourseraUnmatchedActorAlertStats,
@@ -414,7 +415,7 @@ export default async function AdminCourseraPage({
       console.error('[admin/coursera] kit sync status failed:', error);
     }
 
-    const [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult] = await Promise.allSettled([
+    const [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult, unresolvedOrgResult] = await Promise.allSettled([
       loadUnmatchedLearners(organizationId, 500, { includeTestAccounts: false, strict: true }),
       countHiddenTestAccountUnmatchedLearners(organizationId, { strict: true }),
       countUnmatchedLearners(organizationId, { includeTestAccounts: false, strict: true }),
@@ -429,6 +430,9 @@ export default async function AdminCourseraPage({
           AND cxe.organization_id = ${organizationId}
           AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
       `,
+      // WAP-33: statements still carrying an 'unresolved-%' sentinel org. They
+      // belong to no tenant yet, so this is a platform-wide count by definition.
+      countUnresolvedXapiOrganizations(),
     ]);
     const kitUnmatched = unmatchedResult.status === 'fulfilled' ? unmatchedResult.value : [];
     const kitHiddenTest = hiddenTestResult.status === 'fulfilled' ? hiddenTestResult.value : null;
@@ -436,7 +440,8 @@ export default async function AdminCourseraPage({
     const kitUnmatchedLoaded = unmatchedResult.status === 'fulfilled' && unmatchedCountResult.status === 'fulfilled';
     const kitApprovedForEnrollment = approvedResult.status === 'fulfilled' ? String(approvedResult.value) : '—';
     const kitActiveLast30Days = activityResult.status === 'fulfilled' ? String(activityResult.value[0]?.count ?? 0) : '—';
-    for (const result of [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult]) {
+    const kitUnresolvedOrgSentinels = unresolvedOrgResult.status === 'fulfilled' ? String(unresolvedOrgResult.value) : '—';
+    for (const result of [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult, unresolvedOrgResult]) {
       if (result.status === 'rejected') console.error('[admin/coursera] overview evidence unavailable:', result.reason);
     }
 
@@ -502,6 +507,7 @@ export default async function AdminCourseraPage({
           hiddenTestCount={kitHiddenTest}
           approvedForEnrollment={kitApprovedForEnrollment}
           activeLast30Days={kitActiveLast30Days}
+          unresolvedOrgSentinels={kitUnresolvedOrgSentinels}
           forceSyncHref="/admin/coursera?ui=legacy"
           headerAction={
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>

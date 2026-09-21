@@ -79,6 +79,9 @@ model Chapter {
   meetings         ChapterMeeting[]
   curriculumItems  ChapterCurriculumItem[]
 
+  // WAP-33: cover the two FKs the Supabase performance advisor flagged.
+  @@index([organizationId])
+  @@index([leaderId])
   @@map("chapters")
 }
 
@@ -94,6 +97,8 @@ model ChapterMember {
   user       User     @relation(fields: [userId], references: [id])
 
   @@unique([chapterId, userId])
+  // WAP-33: the unique index above covers chapter_id only; user_id needs its own.
+  @@index([userId])
   @@map("chapter_members")
 }
 
@@ -109,6 +114,7 @@ model ChapterMeeting {
 
   chapter     Chapter  @relation(fields: [chapterId], references: [id])
 
+  @@index([chapterId]) // WAP-33
   @@map("chapter_meetings")
 }
 
@@ -124,6 +130,8 @@ model ChapterCurriculumItem {
   course      Course   @relation(fields: [courseId], references: [id])
 
   @@unique([chapterId, courseId])
+  // WAP-33: the unique index above covers chapter_id only; course_id needs its own.
+  @@index([courseId])
   @@map("chapter_curriculum_items")
 }
 
@@ -455,6 +463,9 @@ model UserRole {
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
+  // WAP-33: the composite PK covers user_id only; role_id lookups (who holds
+  // role X) and the FK cascade from roles need their own index.
+  @@index([roleId])
   @@map("user_roles")
 }
 

@@ -1,0 +1,90 @@
+name: Uptime Ping
+
+# WAP-164 item 1: the external readiness monitor.
+#
+# Every other alarm in this repo runs *inside* the deployment it is checking
+# (the hourly `/api/cron/smoke-test` raises a Sentry issue on failure — but
+# when the deployment is down, so is the monitor). This workflow runs on
+# GitHub's infrastructure and probes production from outside.
+#
+# It calls `GET /api/health/ready` (public, anonymous, rate-limited; see
+# app/api/health/ready/route.ts and docs/HEALTH-PROBES.md). The route answers
+# 200 when Prisma can read the default organization row — the same lookup
+# every public page needs — and 503 when it cannot. No secret is required:
+# the probe carries no credentials and reads no member data.
+#
+# The run FAILS when the response is not HTTP 200 or takes longer than
+# 5 seconds (curl `--max-time`). A failed scheduled run notifies the
+# repository owner through GitHub's default workflow-failure email; that is
+# the alert channel until the Vercel log drain and Sentry alert rule
+# (WAP-164 items 3 and 4) exist. See docs/SLO-AND-STATUS.md, "External
+# readiness monitor".
+#
+# Schedule: every 15 minutes. GitHub may delay or skip scheduled runs under
+# load, so this is a ~15-30 minute detection window, not a second-level SLA.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime-ping
+  cancel-in-progress: false
+
+jobs:
+  ready:
+    name: GET /api/health/ready (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    env:
+      READY_URL: "https://www.workforceap.org/api/health/ready"
+      # Whole-request budget, in seconds. The route's own DB check reports
+      # `responseTimeMs`; a healthy production answer is well under 1s.
+      MAX_SECONDS: "5"
+
+    steps:
+      - name: Probe readiness
+        shell: bash
+        run: |
+          set -u
+          body="$(mktemp)"
+          # `--max-time` bounds DNS + connect + TLS + body; curl exits 28 when
+          # it is exceeded. `-w` prints the status code and total time so the
+          # log shows both even on a non-200 answer.
+          if ! out="$(curl -sS -o "$body" \
+                -w '%{http_code} %{time_total}' \
+                --max-time "$MAX_SECONDS" \
+                -H 'Accept: application/json' \
+                -H 'User-Agent: workforceap-uptime-ping (github-actions)' \
+                "$READY_URL")"; then
+            rc=$?
+            echo "::error::readiness probe did not complete (curl exit ${rc}; budget ${MAX_SECONDS}s) — ${READY_URL}"
+            exit 1
+          fi
+
+          status="${out%% *}"
+          seconds="${out##* }"
+          echo "HTTP ${status} in ${seconds}s from ${READY_URL}"
+          # The body is the route's public JSON (status/version/checks). Its
+          # failure reasons are already sanitized server-side.
+          cat "$body"; echo
+
+          {
+            echo "### Readiness probe"
+            echo ""
+            echo "| Field | Value |"
+            echo "| -- | -- |"
+            echo "| URL | ${READY_URL} |"
+            echo "| HTTP status | ${status} |"
+            echo "| Total time | ${seconds}s (budget ${MAX_SECONDS}s) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$status" != "200" ]; then
+            echo "::error::readiness probe returned HTTP ${status} (expected 200) — ${READY_URL}"
+            exit 1
+          fi

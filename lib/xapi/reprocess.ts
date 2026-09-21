@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db/prisma';
+import { withSystemGuc } from '@/lib/db/withRequestGuc';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { EXACT_EMAIL_CANDIDATE_LIMIT, pickExactEmailMatch } from '@/lib/db/exactEmailMatch';
 import { handleInboundParsedStatement } from '@/lib/xapi/inboundStatementPipeline';
 import { parseXapiStatement } from '@/lib/xapi/statements';
@@ -180,15 +182,25 @@ export async function autoHealUnmatchedXapiEvents(limit = 50): Promise<Reprocess
         // cron calls it unattended. Collect the ILIKE candidates, then link
         // only a genuine case-insensitive equality. See
         // lib/db/exactEmailMatch.ts.
-        const directCandidates = await prisma.user.findMany({
-          where: {
-            organizationId,
-            deletedAt: null,
-            email: { equals: actorEmail, mode: 'insensitive' },
-          },
-          select: { id: true, email: true, organizationId: true },
-          take: EXACT_EMAIL_CANDIDATE_LIMIT,
-        });
+        // WAP-24: identity resolution is cross-tenant by nature, so the read
+        // runs under the system GUC inside $transaction and is marked for
+        // scripts/audit-tenant-scoping.cjs (see lib/xapi/mappings.ts). The
+        // persisted event's organization still narrows the candidates.
+        const directCandidates = await crossTenantOK(() =>
+          withSystemGuc(() =>
+            prisma.$transaction((tx) =>
+              tx.user.findMany({
+                where: {
+                  organizationId,
+                  deletedAt: null,
+                  email: { equals: actorEmail, mode: 'insensitive' },
+                },
+                select: { id: true, email: true, organizationId: true },
+                take: EXACT_EMAIL_CANDIDATE_LIMIT,
+              }),
+            ),
+          ),
+        );
         const directUser = pickExactEmailMatch(directCandidates, actorEmail);
         if (directUser) {
           await mapCourseraIdentityAndProgress({

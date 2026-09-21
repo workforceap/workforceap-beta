@@ -347,6 +347,7 @@
 | [tests/coursera/learner-detail-learning-paths.spec.ts](../../../tests/coursera/learner-detail-learning-paths.spec.ts) | 39 | learning-coursera |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
+| [tests/cron/onboarding-stalls-digest.spec.ts](../../../tests/cron/onboarding-stalls-digest.spec.ts) | 151 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -444,7 +445,7 @@
 | [tests/lib/coursera-raw-progress-keys.spec.ts](../../../tests/lib/coursera-raw-progress-keys.spec.ts) | 40 | learning-coursera |  |
 | [tests/lib/coursera-resolve-email-mapping-tenant-ownership.spec.ts](../../../tests/lib/coursera-resolve-email-mapping-tenant-ownership.spec.ts) | 76 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-attachment.spec.ts](../../../tests/lib/coursera-stage-a-attachment.spec.ts) | 103 | learning-coursera |  |
-| [tests/lib/coursera-stage-a-direct-email-resolution.spec.ts](../../../tests/lib/coursera-stage-a-direct-email-resolution.spec.ts) | 220 | learning-coursera |  |
+| [tests/lib/coursera-stage-a-direct-email-resolution.spec.ts](../../../tests/lib/coursera-stage-a-direct-email-resolution.spec.ts) | 224 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-legacy-writer.spec.ts](../../../tests/lib/coursera-stage-a-legacy-writer.spec.ts) | 206 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-mapping-ownership.spec.ts](../../../tests/lib/coursera-stage-a-mapping-ownership.spec.ts) | 102 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-mapping-transaction.spec.ts](../../../tests/lib/coursera-stage-a-mapping-transaction.spec.ts) | 147 | learning-coursera |  |
@@ -535,12 +536,13 @@
 | [tests/lib/unassigned-notify.spec.ts](../../../tests/lib/unassigned-notify.spec.ts) | 99 | tests |  |
 | [tests/lib/voice-studio-card-contrast.spec.ts](../../../tests/lib/voice-studio-card-contrast.spec.ts) | 52 | tests |  |
 | [tests/lib/weekly-recap-label.spec.ts](../../../tests/lib/weekly-recap-label.spec.ts) | 28 | tests |  |
+| [tests/lib/wioa-queue-age.spec.ts](../../../tests/lib/wioa-queue-age.spec.ts) | 115 | partners-funding |  |
 | [tests/lib/wioa-review-snapshot.spec.ts](../../../tests/lib/wioa-review-snapshot.spec.ts) | 86 | partners-funding |  |
 | [tests/lib/with-cron-logging.spec.ts](../../../tests/lib/with-cron-logging.spec.ts) | 61 | tests |  |
-| [tests/lib/xapi-exact-email-match.spec.ts](../../../tests/lib/xapi-exact-email-match.spec.ts) | 318 | tests |  |
+| [tests/lib/xapi-exact-email-match.spec.ts](../../../tests/lib/xapi-exact-email-match.spec.ts) | 322 | tests |  |
 | [tests/lib/xapi-first-completion-side-effects.spec.ts](../../../tests/lib/xapi-first-completion-side-effects.spec.ts) | 274 | tests |  |
-| [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 121 | tests |  |
-| [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
+| [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 185 | tests |  |
+| [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 125 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 86 | tests |  |
 | [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |

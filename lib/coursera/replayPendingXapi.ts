@@ -134,6 +134,11 @@ export async function replayUnresolvedXapiStatementsForIdentity(args: {
  * until repaired. Returns the number of rows fixed.
  */
 export async function reconcileUnresolvedXapiOrganizations(): Promise<number> {
+  // WAP-33: in production this UPDATE had run 2,803 times at 97 ms mean and
+  // repaired 0 rows — the three-way join costs the same whether or not any
+  // sentinel row exists. One indexed probe first; no sentinel, no scan.
+  if (!(await hasUnresolvedXapiOrganizations())) return 0;
+
   const repaired = await prisma.$executeRaw`
     UPDATE xapi_statements xs
     SET organization_id = u.organization_id
@@ -177,6 +182,36 @@ export async function reconcileUnresolvedXapiOrganizations(): Promise<number> {
       )
   `;
   return repaired;
+}
+
+/** The `organization_id LIKE 'unresolved-%'` filter shared by the probe, the count and the UPDATE. */
+const UNRESOLVED_ORGANIZATION_WHERE = { organizationId: { startsWith: 'unresolved-' } } as const;
+
+/**
+ * Cheap existence probe for sentinel rows. A probe failure answers `true`
+ * so the reconciliation UPDATE still runs: skipping is an optimisation and
+ * must never hide a repair.
+ */
+async function hasUnresolvedXapiOrganizations(): Promise<boolean> {
+  try {
+    const row = await prisma.$transaction((tx) =>
+      tx.xapiStatement.findFirst({ where: UNRESOLVED_ORGANIZATION_WHERE, select: { id: true } }),
+    );
+    return row !== null;
+  } catch (err) {
+    console.error('[replayPendingXapi] sentinel org probe failed; running reconciliation anyway', err);
+    return true;
+  }
+}
+
+/**
+ * How many `xapi_statements` still carry an 'unresolved-%' sentinel
+ * organization — rows invisible to every tenant under org-scoped RLS until a
+ * mapping resolves them or staff triage the actor. Surfaced on
+ * /admin/coursera (WAP-33) so the backlog gets worked, not just repaired.
+ */
+export async function countUnresolvedXapiOrganizations(): Promise<number> {
+  return prisma.$transaction((tx) => tx.xapiStatement.count({ where: UNRESOLVED_ORGANIZATION_WHERE }));
 }
 
 async function reconcileBeforeReplay(): Promise<number> {

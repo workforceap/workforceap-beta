@@ -12,6 +12,7 @@ import {
   type Column,
   type KpiItem,
 } from '@/components/portal/kit';
+import { WIOA_QUEUE_AGE_ALERT_DAYS } from '@/lib/wioa/wioaQueueAge';
 
 /**
  * WIOA funding eligibility — screening & compliance (dense).
@@ -22,6 +23,11 @@ import {
  * aggregation (groupBy on review status + a capped findMany for the table) and
  * lands plain data here. DataTable mobile="cards" so the wide compliance table
  * stacks on phones instead of squishing.
+ *
+ * Rows arrive already ordered by `lib/wioa/wioaQueueAge.ts`
+ * (`sortWioaQueueOldestFirst`): screenings awaiting review first, longest wait
+ * first, then reviewed rows. The "Days waiting" column carries `aria-sort` for
+ * that default order.
  */
 
 /** Determination drives the Token color + label in the table. */
@@ -42,6 +48,16 @@ export interface WioaScreeningRow {
   determination: WioaDetermination;
   /** Reviewing staff name or "—". */
   reviewer: string;
+  /** Still waiting on a staff decision (`pending` / `in_review`). */
+  awaitingReview: boolean;
+  /**
+   * Whole days since the member submitted the screening, for rows still
+   * awaiting review (WAP-166 item 2); null for reviewed rows or an unusable
+   * timestamp. Drives the default oldest-first order.
+   */
+  daysWaiting: number | null;
+  /** Staff decision time (orders reviewed rows); null while awaiting review. */
+  reviewedAt?: Date | null;
 }
 
 export interface WioaScreeningKitProps {
@@ -56,6 +72,12 @@ export interface WioaScreeningKitProps {
   needDocs: number;
   /** KPI: determined not eligible (staff). */
   notEligible: number;
+}
+
+/** "117" for a waiting row; "—" once staff have decided or when no timestamp is usable. */
+function daysWaitingLabel(row: Pick<WioaScreeningRow, 'awaitingReview' | 'daysWaiting'>): string {
+  if (!row.awaitingReview || row.daysWaiting === null) return '—';
+  return String(row.daysWaiting);
 }
 
 const DETERMINATION_COLOR: Record<WioaDetermination, TokenColor> = {
@@ -127,6 +149,23 @@ export function WioaScreeningKit({
       ),
     },
     {
+      key: 'daysWaiting',
+      header: 'Days waiting',
+      align: 'right',
+      ariaSort: 'descending',
+      render: (row) => (
+        <span
+          className="wa-kit-table-cell--num"
+          style={{
+            color: row.daysWaiting !== null && row.daysWaiting >= WIOA_QUEUE_AGE_ALERT_DAYS ? 'var(--wa-accent)' : 'var(--wa-muted)',
+            fontWeight: row.daysWaiting !== null && row.daysWaiting >= WIOA_QUEUE_AGE_ALERT_DAYS ? 700 : 400,
+          }}
+        >
+          {daysWaitingLabel(row)}
+        </span>
+      ),
+    },
+    {
       key: 'reviewer',
       header: 'Reviewer',
       render: (row) => <span style={{ color: 'var(--wa-muted)' }}>{row.reviewer}</span>,
@@ -164,7 +203,7 @@ export function WioaScreeningKit({
         columns={columns}
         rows={rows}
         rowKey={(row) => row.id}
-        minWidth={680}
+        minWidth={760}
         mobile="cards"
         cardRender={(row) => (
           <Card>
@@ -210,6 +249,14 @@ export function WioaScreeningKit({
               <span>
                 Reviewer <b style={{ color: 'var(--wa-text)' }}>{row.reviewer}</b>
               </span>
+              {row.awaitingReview ? (
+                <span>
+                  Waiting{' '}
+                  <b style={{ color: row.daysWaiting !== null && row.daysWaiting >= WIOA_QUEUE_AGE_ALERT_DAYS ? 'var(--wa-accent)' : 'var(--wa-text)' }}>
+                    {row.daysWaiting === null ? '—' : `${row.daysWaiting} day${row.daysWaiting === 1 ? '' : 's'}`}
+                  </b>
+                </span>
+              ) : null}
             </div>
           </Card>
         )}
