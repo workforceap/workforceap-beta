@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [.crabbox.yaml](../../../.crabbox.yaml) | 31 | root |  |
-| [.env.example](../../../.env.example) | 377 | root |  |
+| [.env.example](../../../.env.example) | 381 | root |  |
 | [.gitattributes](../../../.gitattributes) | 1 | root |  |
 | [.gitignore](../../../.gitignore) | 121 | root |  |
 | [.nvmrc](../../../.nvmrc) | 1 | root |  |

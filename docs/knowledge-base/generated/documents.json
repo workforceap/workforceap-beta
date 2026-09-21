@@ -16701,57 +16701,57 @@
       {
         "level": 2,
         "title": "Testing & QA",
-        "line": 268
+        "line": 269
       },
       {
         "level": 2,
         "title": "Build & Internal",
-        "line": 307
+        "line": 308
       },
       {
         "level": 2,
         "title": "Deprecated / Legacy",
-        "line": 321
+        "line": 322
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 337
+        "line": 338
       },
       {
         "level": 3,
         "title": "🔒 Server-Only Variables",
-        "line": 339
+        "line": 340
       },
       {
         "level": 3,
         "title": "👁️ Client-Safe Variables",
-        "line": 353
+        "line": 354
       },
       {
         "level": 3,
         "title": ".gitignore",
-        "line": 367
+        "line": 368
       },
       {
         "level": 2,
         "title": "Drift Report",
-        "line": 373
+        "line": 374
       },
       {
         "level": 3,
         "title": "Variables in CODE but NOT in `.env.example` (Missing from template)",
-        "line": 375
+        "line": 376
       },
       {
         "level": 3,
         "title": "Variables in `.env.example` but NOT in CODE (Potentially stale)",
-        "line": 458
+        "line": 459
       },
       {
         "level": 2,
         "title": "Changelog",
-        "line": 467
+        "line": 468
       }
     ],
     "datedFilename": false,

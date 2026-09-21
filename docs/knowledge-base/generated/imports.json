@@ -49328,6 +49328,22 @@
     "target": "lib/cron/cronExecution.ts"
   },
   {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/cron/onboardingStallNudges",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/onboardingStallNudges.ts"
+  },
+  {
     "from": "app/api/cron/partner-outcome-digest/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -103296,6 +103312,62 @@
     "target": "lib/db/scanCaps.ts"
   },
   {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email/send",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/cron/nudgeThrottle",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/nudgeThrottle.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
     "from": "lib/cron/placement-surveys.ts",
     "specifier": "node:crypto",
     "line": 8,
@@ -123182,6 +123254,46 @@
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/app/api/cron/onboarding-stalls/route",
+    "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/onboarding-stalls/route.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/cron/onboardingStallNudges",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/onboardingStallNudges.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 61,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 62,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
   },
   {
     "from": "tests/api/cron-settings-namespace.spec.ts",

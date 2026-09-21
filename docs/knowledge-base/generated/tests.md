@@ -84,6 +84,7 @@
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
 | [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 207 | tests |  |
 | [tests/api/cron-interview-reminders.spec.ts](../../../tests/api/cron-interview-reminders.spec.ts) | 124 | tests |  |
+| [tests/api/cron-onboarding-stalls.spec.ts](../../../tests/api/cron-onboarding-stalls.spec.ts) | 346 | tests |  |
 | [tests/api/cron-settings-namespace.spec.ts](../../../tests/api/cron-settings-namespace.spec.ts) | 53 | tests |  |
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |

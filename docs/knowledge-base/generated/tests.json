@@ -14112,6 +14112,42 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/api/cron-onboarding-stalls.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/cron/onboarding-stalls/route.ts",
+        "line": 49
+      },
+      {
+        "file": "lib/cron/onboardingStallNudges.ts",
+        "line": 50
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 61
+      },
+      {
+        "file": "lib/email.ts",
+        "line": 62
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/api/cron-settings-namespace.spec.ts",
     "area": "tests",
     "domain": "tests",

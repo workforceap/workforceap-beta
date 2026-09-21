@@ -385,7 +385,7 @@ export const CRON_REGISTRY: CronDef[] = [
   {
     id: 'onboarding-stalls',
     name: 'Onboarding Stalls Digest',
-    description: 'Weekly staff digest of members stuck between applying and starting training: interviews requested but not completed, WIOA screening stuck in review, and members with no program or counselor 5-7+ days on.',
+    description: 'Weekly staff digest of members stuck between applying and starting training: interviews requested but not completed, WIOA screening stuck in review, and members with no program or counselor 5-7+ days on. With MEMBER_STALL_NUDGES_ENABLED the stalled member also gets one nudge per bucket.',
     schedule: '30 15 * * 2',
     scheduleLabel: 'Tuesday 3:30PM UTC',
     apiPath: '/api/cron/onboarding-stalls',
