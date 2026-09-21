@@ -22,7 +22,10 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {
 vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
 vi.mock('@/lib/platform/programCatalog', () => ({ getActivePrograms: async () => [] }));
 vi.mock('@/lib/admin/fitScore', () => ({ calculateFitScore: () => 0 }));
-vi.mock('@/lib/admin/healthScore', () => ({ calculateHealthStatus: () => 'healthy' }));
+vi.mock('@/lib/admin/healthScore', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/admin/healthScore')>()),
+  calculateHealthStatus: () => 'healthy',
+}));
 vi.mock('@/components/admin/MembersTable', () => ({ default: () => null }));
 vi.mock('@/components/admin/MembersListNav', () => ({ default: () => null }));
 vi.mock('@/components/admin/AdminUsersManager', () => ({ default: () => null }));

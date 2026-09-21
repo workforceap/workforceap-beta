@@ -160,7 +160,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   // below references it. The full `applications` array is still fetched
   // below for the actual UI display — this is just the 1-bit
   // "has the member applied yet?" signal that the timeline needs early.
-  const [memberEvents, programAvg, applicationCount] = await Promise.all([
+  const [memberEvents, applicationCount] = await Promise.all([
     prisma.memberEvent.findMany({
       // Only the 5 milestone events below are ever read from this array, and
       // `metadata` is never inspected — narrowing both keeps this to a few
@@ -181,13 +181,6 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       orderBy: { createdAt: 'asc' },
       select: { eventName: true, createdAt: true },
     }),
-    member.enrolledProgram
-      ? prisma.memberProgramProgress.groupBy({
-          by: ['programSlug'],
-          where: { programSlug: member.enrolledProgram },
-          _avg: { averagePercent: true },
-        })
-      : Promise.resolve([]),
     prisma.jobPostingApplication.count({ where: { studentId: memberId } }),
   ]);
 
@@ -255,9 +248,11 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     },
   ];
 
-  const programAvgDays = programAvg[0]?._avg.averagePercent
-    ? Math.round(100 / (programAvg[0]._avg.averagePercent || 1) * 30)
-    : null;
+  // "Avg program: Nd" used to be computed as 100 / mean(rollup average_percent)
+  // * 30 — a completion percentage inverted into a made-up day count (375d for
+  // software-dev, 1143d for ai-practitioner), with no org, time-window or
+  // completion filter, and it drove the per-stage "On track / Slower than avg"
+  // verdict. Removed until a real cohort duration exists to compare against.
 
   let counselor360LoadFailed = false;
   const markCounselor360LoadFailure = <T,>(fallback: T) => (error: unknown): T => {
@@ -428,6 +423,12 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       })
     : null;
   const completedSlugs = new Set(trainingView?.completedSlugsAuthoritative ?? []);
+  // Per-course reconciliation rows behind the header percentage. Rendering the
+  // course list from `completedSlugs` alone printed "Not started" beside
+  // courses the same reconciliation already credits at 31-93%.
+  const courseProgressBySlug = new Map(
+    (trainingView?.courseRows ?? []).map((row) => [row.courseSlug, row]),
+  );
   const progressPct = trainingView?.progressPercentDisplay ?? 0;
   const skillsetProgress = await loadMemberSkillsetProgress(member.id);
 
@@ -628,7 +629,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
             </section>
 
             <section className={styles.narrow} aria-label="Progress timeline">
-              <MemberProgressTimeline events={timelineEvents} programAvgDays={programAvgDays} />
+              <MemberProgressTimeline events={timelineEvents} />
             </section>
 
             {memberPts ? (
@@ -772,12 +773,16 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                   ) : null}
                   <div className={styles.courses}>
                     {programCourses.map((course) => {
-                      const done = completedSlugs.has(course.slug);
+                      const reconciled = courseProgressBySlug.get(course.slug);
+                      const done = reconciled?.displayCompleted ?? completedSlugs.has(course.slug);
+                      const coursePct = done ? 100 : Math.round(reconciled?.displayPercent ?? 0);
                       return (
-                        <div key={course.slug} className={styles.courseRow} data-done={done ? 'true' : 'false'}>
+                        <div key={course.slug} className={styles.courseRow} data-done={done ? 'true' : 'false'} data-course-percent={coursePct}>
                           <span>{course.name}</span>
                           {done ? (
                             <span className={`material-symbols-outlined ${styles.doneIcon}`} aria-label="Completed" role="img">check_circle</span>
+                          ) : coursePct > 0 ? (
+                            <span>{coursePct}%</span>
                           ) : (
                             <span>Not started</span>
                           )}

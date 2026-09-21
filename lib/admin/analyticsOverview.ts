@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/scanCaps';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { loadTrainingDashboardData } from '@/lib/admin/trainingDashboard';
-import { calculateHealthStatus, type HealthStatus } from '@/lib/admin/healthScore';
+import { calculateHealthStatus, MEMBER_ACTIVITY_EVENT_WHERE, type HealthStatus } from '@/lib/admin/healthScore';
 import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import type { AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
 
@@ -96,6 +96,7 @@ export async function loadAnalyticsOverview(
     totalMembersResult,
     lastEventsResult,
     recentEventsResult,
+    courseActivityResult,
     membersForHealthResult,
     placementsResult,
     pendingPlacementsResult,
@@ -109,21 +110,27 @@ export async function loadAnalyticsOverview(
   ] = await Promise.allSettled([
     loadTrainingDashboardData(scope),
     prisma.user.count({ where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE } }),
+    // Same Health inputs as the /admin/members roster: system-sent mail is
+    // not activity, and logins + Coursera/course work are (Mike, 2026-09-20).
     prisma.memberEvent.groupBy({
       by: ['userId'],
-      where: { createdAt: { gte: thirtyDaysAgo } },
+      where: { createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
       _max: { createdAt: true },
     }),
     prisma.memberEvent.groupBy({
       by: ['userId'],
-      where: { createdAt: { gte: thirtyDaysAgo } },
+      where: { createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
       _count: { _all: true },
+    }),
+    prisma.courseProgress.groupBy({
+      by: ['userId'],
+      _max: { lastActivityAt: true },
     }),
     prisma.user.findMany({
       where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE, enrolledProgram: { not: null } },
       take: ANALYTICS_SAMPLE_CAP,
       orderBy: { enrolledAt: 'desc' },
-      select: { id: true, enrolledAt: true },
+      select: { id: true, enrolledAt: true, lastLoginAt: true },
     }),
     prisma.placementRecord.count({
       where: { user: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE } },
@@ -184,6 +191,12 @@ export async function loadAnalyticsOverview(
   if (recentEventsResult.status === 'fulfilled') {
     for (const row of recentEventsResult.value) recentEventMap.set(row.userId, row._count._all);
   }
+  const courseActivityMap = new Map<string, Date>();
+  if (courseActivityResult.status === 'fulfilled') {
+    for (const row of courseActivityResult.value) {
+      if (row._max.lastActivityAt) courseActivityMap.set(row.userId, row._max.lastActivityAt);
+    }
+  }
 
   const healthCounts: Record<HealthStatus, number> = { green: 0, yellow: 0, red: 0 };
   if (membersForHealthResult.status === 'fulfilled') {
@@ -192,6 +205,8 @@ export async function loadAnalyticsOverview(
         lastEventAt: lastEventMap.get(m.id) ?? null,
         recentEventCount: recentEventMap.get(m.id) ?? 0,
         enrolledAt: m.enrolledAt,
+        lastLoginAt: m.lastLoginAt,
+        lastCourseActivityAt: courseActivityMap.get(m.id) ?? null,
       });
       healthCounts[status] += 1;
     }

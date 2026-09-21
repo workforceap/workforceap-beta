@@ -5,6 +5,7 @@ import { CourseProgressStatus } from '@prisma/client';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugReadCandidates } from '@/lib/content/programSlug';
 import type { LearnerProgressByContent } from '@/lib/coursera/learnerProgress';
+import type { CourseProgressReconcileRow } from '@/lib/coursera/progressReconciliation';
 import { loadValidatedProgramCourses } from '@/lib/coursera/programCourseList';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { scoreScaledToDisplayPercent } from '@/lib/coursera/courseGradeDisplay';
@@ -35,6 +36,14 @@ export type MemberProgramTrainingView = {
   averageGradePercentDisplay: number | null;
   /** Catalog slugs that count as fully complete for UI (CourseProgress wins over stale JSON). */
   completedSlugsAuthoritative: string[];
+  /**
+   * Per-course reconciliation rows behind `progressPercentDisplay`, in syllabus
+   * order. Surfaces that list courses must render `displayPercent` /
+   * `displayCompleted` from these rows: a binary completed/not-started list
+   * built from `completedSlugsAuthoritative` alone labels a 69%-complete course
+   * "Not started" while the header percentage already credits it.
+   */
+  courseRows: CourseProgressReconcileRow[];
   /** Ordered syllabus slugs used as the validated denominator. */
   validatedCourseSlugs: string[];
 };
@@ -203,6 +212,7 @@ export async function loadMemberProgramTrainingView(args: {
     lastTrainingActivityAt,
     averageGradePercentDisplay,
     completedSlugsAuthoritative,
+    courseRows: reconciliation.rows,
     validatedCourseSlugs: courseList.map((course) => course.slug),
   };
 }
