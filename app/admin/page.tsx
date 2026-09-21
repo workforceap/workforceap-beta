@@ -28,6 +28,7 @@ import {
 import type { ChartDatum } from '@/components/portal/kit';
 import { pluralCount } from '@/lib/i18n/pluralCount';
 import { buildCommandCenterSystemHealth, COMMAND_CENTER_CRON_ROWS, type CronRunSnapshot } from '@/lib/admin/commandCenterHealth';
+import { PROGRAM_HEALTH_CAPTION } from '@/lib/admin/commandCenterHelpers';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -325,6 +326,7 @@ export default async function AdminTodayPage({
           kpis={kpis}
           queueItems={queueItems}
           programHealth={programHealth}
+          programHealthCaption={PROGRAM_HEALTH_CAPTION}
           placementsByMonth={placementsByMonth}
           placementsSubtitle={`${new Date().getUTCFullYear()} YTD · ${placementsYtd} total`}
           addStudentHref="/admin/members/new"

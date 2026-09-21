@@ -360,7 +360,7 @@
 | [app/admin/career-mappings/page.tsx](../../../app/admin/career-mappings/page.tsx) | 172 | administration | generateMetadata:16, default:30 |
 | [app/admin/certifications/loading.tsx](../../../app/admin/certifications/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/certifications/page.tsx](../../../app/admin/certifications/page.tsx) | 237 | administration | generateMetadata:17, default:25 |
-| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 272 | administration | dynamic:24, generateMetadata:26, default:34 |
+| [app/admin/command-center/page.tsx](../../../app/admin/command-center/page.tsx) | 273 | administration | dynamic:24, generateMetadata:26, default:34 |
 | [app/admin/counselors/loading.tsx](../../../app/admin/counselors/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/counselors/page.tsx](../../../app/admin/counselors/page.tsx) | 154 | administration | generateMetadata:17, default:48 |
 | [app/admin/coursera/csv-import/page.tsx](../../../app/admin/coursera/csv-import/page.tsx) | 60 | learning-coursera | metadata:11, dynamic:17, default:19 |
@@ -452,7 +452,7 @@
 | [app/admin/outcomes/page.tsx](../../../app/admin/outcomes/page.tsx) | 49 | administration | generateMetadata:12, default:26 |
 | [app/admin/overview/loading.tsx](../../../app/admin/overview/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/overview/page.tsx](../../../app/admin/overview/page.tsx) | 655 | administration | generateMetadata:46, default:111 |
-| [app/admin/page.tsx](../../../app/admin/page.tsx) | 485 | administration | generateMetadata:32, default:47 |
+| [app/admin/page.tsx](../../../app/admin/page.tsx) | 487 | administration | generateMetadata:33, default:48 |
 | [app/admin/partners/OpenPartnerPortalButton.tsx](../../../app/admin/partners/OpenPartnerPortalButton.tsx) | 62 | partners-funding | default:6 |
 | [app/admin/partners/\[id\]/page.tsx](../../../app/admin/partners/%5Bid%5D/page.tsx) | 391 | partners-funding | default:56 |
 | [app/admin/partners/\[id\]/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx](../../../app/admin/partners/%5Bid%5D/quarterly-outcomes/PartnerQuarterlyOutcomesClient.tsx) | 476 | partners-funding | default:158 |
@@ -594,7 +594,7 @@
 | [app/dev/member/salary-negotiation/page.tsx](../../../app/dev/member/salary-negotiation/page.tsx) | 43 | member-counselor | dynamic:10, default:26 |
 | [app/dev/member/toolkit/page.tsx](../../../app/dev/member/toolkit/page.tsx) | 39 | member-counselor | dynamic:13, default:19 |
 | [app/dev/member/wioa-qualification/page.tsx](../../../app/dev/member/wioa-qualification/page.tsx) | 14 | partners-funding | dynamic:9, default:11 |
-| [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) | 165 | pages | dynamic:20, default:149 |
+| [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) | 175 | pages | dynamic:21, default:158 |
 | [app/dev/staff/admin-shell/layout.tsx](../../../app/dev/staff/admin-shell/layout.tsx) | 18 | pages | metadata:13, default:15 |
 | [app/dev/staff/admin-shell/page.tsx](../../../app/dev/staff/admin-shell/page.tsx) | 22 | pages | dynamic:13, default:15 |
 | [app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx](../../../app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx) | 37 | pages | default:12 |

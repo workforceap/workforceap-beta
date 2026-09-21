@@ -24280,6 +24280,14 @@
     "target": "lib/admin/commandCenterHealth.ts"
   },
   {
+    "from": "app/admin/page.tsx",
+    "specifier": "@/lib/admin/commandCenterHelpers",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHelpers.ts"
+  },
+  {
     "from": "app/admin/partners/OpenPartnerPortalButton.tsx",
     "specifier": "next/navigation",
     "line": 3,
@@ -68112,6 +68120,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/dev/staff/admin-command/page.tsx",
+    "specifier": "@/lib/admin/commandCenterHelpers",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHelpers.ts"
+  },
+  {
     "from": "app/dev/staff/admin-shell/layout.tsx",
     "specifier": "react",
     "line": 1,
@@ -88610,7 +88626,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/MemberDoThisNextCard",
-    "line": 32,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberDoThisNextCard.tsx"
@@ -88618,7 +88634,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 33,
+    "line": 36,
     "kind": "type",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -88626,7 +88642,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 34,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -138542,6 +138558,86 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/NotificationBell.tsx"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/lib/admin/commandCenterHelpers",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHelpers.ts"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+  },
+  {
+    "from": "tests/components/number-audit-followon-captions.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "tests/components/partner-attention-pagination.spec.tsx",

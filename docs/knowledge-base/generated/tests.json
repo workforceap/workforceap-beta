@@ -23715,6 +23715,55 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/number-audit-followon-captions.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
+        "line": 6
+      },
+      {
+        "file": "lib/admin/analyticsTabs.ts",
+        "line": 7
+      },
+      {
+        "file": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
+        "line": 8
+      },
+      {
+        "file": "lib/admin/commandCenterHelpers.ts",
+        "line": 9
+      },
+      {
+        "file": "components/portal/kit/pages/member/MemberHomeKit.tsx",
+        "line": 10
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 11
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/partner-attention-pagination.spec.tsx",
     "area": "tests",
     "domain": "tests",
