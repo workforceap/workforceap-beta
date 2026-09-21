@@ -163,6 +163,51 @@ describe('approval card placement and dismissal', () => {
     expect(disclosure.contains(stage(container, 'application'))).toBe(true);
   });
 
+  // The demote must not hide what the member still has to do: two of the three
+  // demoted shapes leave the next move with the member.
+  it('names the member-owned next step on the collapsed line', () => {
+    const { container: closedLine } = show(closed, 'demoted');
+    expect(closedLine.querySelector('[data-approval-summary]')?.textContent)
+      .toBe(messages.memberApproval.applicationStatus.denied);
+    expect(closedLine.querySelector('[data-approval-summary-action]')?.textContent)
+      .toBe(`Next: ${messages.memberApproval.next.application.denied}`);
+    // Visible without expanding the disclosure.
+    expect((closedLine.querySelector('details') as HTMLDetailsElement).open).toBe(false);
+    expect(closedLine.querySelector('summary')?.textContent)
+      .toContain(messages.memberApproval.next.application.denied);
+
+    const allApproved = buildMemberApprovalStatus({
+      applications: [{ status: 'APPROVED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+      wioaReviewStatus: 'verified',
+      wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
+      courseraEnrollmentApproved: true,
+      courseraEnrollmentApprovedAt: new Date('2026-09-05T12:00:00Z'),
+    });
+    expect(memberApprovalCardPlacement(allApproved)).toBe('demoted');
+    const { container: doneLine } = show(allApproved, 'demoted');
+    // The status half does not claim the member is finished…
+    expect(doneLine.querySelector('[data-approval-summary]')?.textContent)
+      .toBe(messages.memberApproval.summaryAllApproved);
+    expect(messages.memberApproval.summaryAllApproved).toMatch(/not confirmed here/i);
+    // …and the outstanding invitation step is on the line.
+    expect(doneLine.querySelector('[data-approval-summary-action]')?.textContent)
+      .toBe(`Next: ${messages.memberApproval.next.training.approved}`);
+  });
+
+  it('adds no action line when a demoted step is owned by staff', () => {
+    const notEligible = buildMemberApprovalStatus({
+      applications: [{ status: 'APPROVED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+      wioaReviewStatus: 'not_eligible',
+      wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
+      courseraEnrollmentApproved: false,
+    });
+    expect(memberApprovalCardPlacement(notEligible)).toBe('demoted');
+    const { container } = show(notEligible, 'demoted');
+    expect(container.querySelector('[data-approval-summary]')?.textContent)
+      .toBe(messages.memberApproval.intakeStatus.not_eligible);
+    expect(container.querySelector('[data-approval-summary-action]')).toBeNull();
+  });
+
   it('leaves an actionable card at full prominence', () => {
     expect(memberApprovalCardPlacement(live)).toBe('primary');
     const { container } = show(live, 'primary');

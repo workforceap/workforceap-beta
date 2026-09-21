@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "883c988fac884dfe395985e1b5873fbe13d855b9cb26ff9c7c820e26fb5103a1",
+  "inputTreeSha256": "72f5e36ee6d806f93e66dc4b4bce64f6a533be3ef47facebdec725b77014a7a5",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -60181,9 +60181,9 @@
       "path": "components/portal/MemberApprovalStatusCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8906,
-      "lines": 240,
-      "sha256": "04061d3dfc38e4aab1659be01f25aedc955890b248e2baa64e13b2f2fbdc35c6",
+      "bytes": 9732,
+      "lines": 256,
+      "sha256": "71c45f94abdcc5bb2d459ec201f8700338a9c301dacdfee617089cc009eeeccd",
       "binary": false,
       "exports": [
         {
@@ -151001,27 +151001,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227363,
+      "bytes": 227410,
       "lines": 3771,
-      "sha256": "cf9caba4c3e15cec648934c99be66a42cb4037bcf496082c2215554dac9e233f",
+      "sha256": "79720d3d29577517d98055e625e686e300f526a6187c729a8a27cfdce0539dda",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 252194,
+      "bytes": 252243,
       "lines": 3771,
-      "sha256": "e8145a6f5e883d82f51f1eaad4085ec5c1b431678b212e0e14de4a602ef7971d",
+      "sha256": "8e36c0938c82025da66443cf1bb02825a9eed657325c37db141227d8bcf569ca",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 253371,
+      "bytes": 253420,
       "lines": 3711,
-      "sha256": "d1e0a71c6e1f580c6e90e95545a9f2565fbafd129c850a5bcf447efef6c7c99e",
+      "sha256": "2f30d9105c1e3cdc936c1cd8b5a6b4803f67a1b2eafcf3facabcfac0d19ca253",
       "binary": false
     },
     {
@@ -151037,9 +151037,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 242739,
+      "bytes": 242786,
       "lines": 3711,
-      "sha256": "a5feb9cc3f3ab9941a502311de46632bb378bd6d2c8ea2e0c771d2c41f0d0afd",
+      "sha256": "b24d2f2dcbc57ce694f1de02ea30efc8d61eb8cb330d9964ef26e12bdcbc863b",
       "binary": false
     },
     {
@@ -171634,9 +171634,9 @@
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 12307,
-      "lines": 217,
-      "sha256": "b02495d34f8f1500fa14d24b22c6422eda4a6ba5d686477dc693d5171e0852c8",
+      "bytes": 14859,
+      "lines": 262,
+      "sha256": "e4048ba38838bf2b6e00a76ccc24ede2624ea5ff9a87b7d2d7af010bdf23fe6e",
       "binary": false,
       "exports": [],
       "declarations": [

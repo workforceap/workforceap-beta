@@ -115,11 +115,21 @@ export default function MemberApprovalStatusCard({
     }
   };
 
-  /** One line naming where the pathway stopped — the saved state, nothing new. */
-  const summaryLine = () => {
-    const blocked = STAGE_ORDER.find((stage) => status.stages[stage].state === 'blocked');
-    return blocked ? statusText(blocked) : t('summaryAllApproved');
-  };
+  // ── Collapsed summary ──
+  // The stage that ended the pathway: the blocked one, or the last step once
+  // every step is resolved. Its saved state is the summary line, and when the
+  // member still owns the next move (a closed application they can reapply
+  // for, an invitation they have to accept) that next step is named on the
+  // line too — demoting the card must not hide the one thing left to do.
+  const summaryStage: ApprovalStageKey = STAGE_ORDER.find(
+    (stage) => status.stages[stage].state === 'blocked',
+  ) ?? 'training';
+  const summaryStatus = status.stages[summaryStage].state === 'blocked'
+    ? statusText(summaryStage)
+    : t('summaryAllApproved');
+  const summaryAction = status.stages[summaryStage].owner === 'member'
+    ? t('whatsNext', { text: t(`next.${summaryStage}.${status.stages[summaryStage].nextKey}`) })
+    : null;
 
   const dismissButton = (
     <button
@@ -205,8 +215,14 @@ export default function MemberApprovalStatusCard({
                 <h2 id="member-approval-title" className="wa-kit-stat-label wa-m-0 wa-inline">{t('title')}</h2>
                 {' '}
                 <span className="wa-text-sm wa-text-[var(--wa-muted)]" data-approval-summary="">
-                  {summaryLine()}
+                  {summaryStatus}
                 </span>
+                {summaryAction ? (
+                  <>
+                    {' '}
+                    <span className="wa-text-sm" data-approval-summary-action="">{summaryAction}</span>
+                  </>
+                ) : null}
               </summary>
               <VStack gap={3}>
                 <p className="wa-text-sm wa-text-[var(--wa-muted)] wa-mt-3">

@@ -302,7 +302,7 @@
 | [components/portal/LearningPathCard.tsx](../../../components/portal/LearningPathCard.tsx) | 134 | components | default:9 |
 | [components/portal/LegacyViewNotice.tsx](../../../components/portal/LegacyViewNotice.tsx) | 38 | components | default:13 |
 | [components/portal/MatchedRoles.tsx](../../../components/portal/MatchedRoles.tsx) | 156 | components | default:16 |
-| [components/portal/MemberApprovalStatusCard.tsx](../../../components/portal/MemberApprovalStatusCard.tsx) | 240 | components | default:38 |
+| [components/portal/MemberApprovalStatusCard.tsx](../../../components/portal/MemberApprovalStatusCard.tsx) | 256 | components | default:38 |
 | [components/portal/MemberCareerPathSection.tsx](../../../components/portal/MemberCareerPathSection.tsx) | 88 | components | default:4 |
 | [components/portal/MemberCounselorChatClient.tsx](../../../components/portal/MemberCounselorChatClient.tsx) | 241 | components | default:41 |
 | [components/portal/MemberDashboardVoiceSection.tsx](../../../components/portal/MemberDashboardVoiceSection.tsx) | 75 | components | default:17 |

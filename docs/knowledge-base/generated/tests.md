@@ -311,7 +311,7 @@
 | [tests/components/kit-data-table-primitive.spec.tsx](../../../tests/components/kit-data-table-primitive.spec.tsx) | 245 | tests |  |
 | [tests/components/kit-table-toolbar.spec.tsx](../../../tests/components/kit-table-toolbar.spec.tsx) | 138 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
-| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 217 | tests |  |
+| [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 262 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
 | [tests/components/member-jobs-open-roles.spec.tsx](../../../tests/components/member-jobs-open-roles.spec.tsx) | 57 | tests |  |
 | [tests/components/member-lab-workspace.test.tsx](../../../tests/components/member-lab-workspace.test.tsx) | 154 | tests |  |
