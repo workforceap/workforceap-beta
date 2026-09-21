@@ -5,6 +5,8 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import HelpAssistantPanel from '@/components/portal/help/HelpAssistantPanel';
+import { useHelpAssistantAvailability } from '@/components/portal/help/useHelpAssistantAvailability';
 import type { TourKey } from '@/lib/tours/registry';
 
 /**
@@ -14,11 +16,17 @@ import type { TourKey } from '@/lib/tours/registry';
  * `guided_tours_v2` is on for the viewer, so nothing changes until the flag row
  * exists. Copy comes from `tours.help.*`; the trigger is the `tour-help` anchor
  * of the `counselor.home` tour.
+ *
+ * "Ask for help" (phase 3, `help_assistant_v1`) opens the grounded AI help
+ * drawer. Its entry appears only when `GET /api/help/chat` says the flag is on
+ * for this viewer, so the menu is unchanged until that flag row exists.
  */
 export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKey; guideHref?: string }) {
   const t = useTranslations('tours');
   const { start, isOpen: tourOpen } = useTour();
   const [open, setOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  const assistant = useHelpAssistantAvailability();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
@@ -42,10 +50,21 @@ export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKe
 
   const takeTour = () => {
     setOpen(false);
+    setAssistantOpen(false);
     // Focus the trigger first so the engine's focus trap restores focus here on close.
     triggerRef.current?.focus();
     start(tourKey);
   };
+
+  const askForHelp = () => {
+    setOpen(false);
+    setAssistantOpen(true);
+  };
+
+  const closeAssistant = useCallback(() => {
+    setAssistantOpen(false);
+    triggerRef.current?.focus();
+  }, []);
 
   return (
     <div ref={rootRef} style={{ position: 'relative', flexShrink: 0 }} data-testid="portal-help-menu">
@@ -97,6 +116,18 @@ export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKe
           >
             {t('help.takeTour')}
           </button>
+          {assistant.status === 'on' ? (
+            <button
+              type="button"
+              role="menuitem"
+              className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+              style={{ justifyContent: 'flex-start', width: '100%' }}
+              onClick={askForHelp}
+              data-testid="portal-help-ask-assistant"
+            >
+              {t('help.askAssistant')}
+            </button>
+          ) : null}
           {guideHref ? (
             <Link
               href={guideHref}
@@ -110,6 +141,9 @@ export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKe
             </Link>
           ) : null}
         </div>
+      ) : null}
+      {assistantOpen && assistant.status === 'on' ? (
+        <HelpAssistantPanel info={assistant.info} onClose={closeAssistant} onTakeTour={takeTour} />
       ) : null}
     </div>
   );
