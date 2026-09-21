@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "d993c627999bdb144591d65172b80918e83431db0d8c707b7eec2d8252edde00",
+  "inputTreeSha256": "e2b7e59fd933936fb94016cd6197a4c2131146a57a5b21d0748b4e399dbbb820",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5049,
-    "sourceModules": 3690,
-    "importReferences": 18453,
-    "resolvedLocalReferences": 12407,
+    "files": 5057,
+    "sourceModules": 3696,
+    "importReferences": 18475,
+    "resolvedLocalReferences": 12419,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,14 +22,14 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1012,
-    "testCandidates": 1001,
-    "testHelpers": 11,
-    "staticallySelectedTests": 999,
+    "testFiles": 1015,
+    "testCandidates": 1003,
+    "testHelpers": 12,
+    "staticallySelectedTests": 1001,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
-    "environmentNames": 204
+    "environmentNames": 205
   },
   "areas": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 212
+      "files": 214
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1094
+      "files": 1098
     },
     {
       "area": "localization",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 145
+      "files": 146
     },
     {
       "area": "pages",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 603
+      "files": 604
     }
   ],
   "mostReferenced": [
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 248
+      "references": 250
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -188,7 +188,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 73
+      "references": 77
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
