@@ -6,39 +6,36 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent, auditRequestMeta } from '@/lib/audit/log';
+import { MEMBER_ONLY_WHERE, memberOnlyProfileWhere, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { summarizeRetentionGroups } from '@/lib/analytics/retentionOutcome';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { sqlCount } from '@/lib/db/scanCaps';
+import {
+  validatedProgramAssignmentRowsSql,
+  validatedProgramCompletionValuesSql,
+} from '@/lib/reporting/programCompletion';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 // ── Helpers ──
-
-function calculateRetention(
-  members: Array<{ enrolledAt: Date | null; placementRecord: { startDate: Date | null } | null }>,
-  days: number,
-  now: Date,
-): number {
-  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  const eligible = members.filter((m) => m.enrolledAt && m.enrolledAt <= cutoff);
-  if (eligible.length === 0) return 0;
-  const retained = eligible.filter((m) => {
-    // Retained = still active (no placement yet, or placed after cutoff)
-    if (!m.placementRecord) return true;
-    if (!m.placementRecord.startDate) return true;
-    return m.placementRecord.startDate > cutoff;
-  });
-  return Math.round((retained.length / eligible.length) * 100);
-}
+//
+// Number audit 2026-09-20, F9. This route has no screen consumer; whether it
+// stays is Mike's call (Needs Mike 10). While it exists its numbers follow
+// the same rules as the board snapshot: member-role accounts only, program
+// completion = the validated curriculum rollup (not a non-empty
+// `courses_completed` JSON list), and "retention" = the decided 90-day
+// retention outcome on placement records, never "not yet placed".
 
 function buildCohorts(
   members: Array<{ enrolledAt: Date | null; placementRecord: { startDate: Date | null } | null }>,
-  now: Date,
 ) {
-  const cohorts: Record<string, { month: string; enrolled: number; placed: number; retentionRate: number }> = {};
+  const cohorts: Record<string, { month: string; enrolled: number; placed: number; placementRate: number }> = {};
 
   for (const m of members) {
     if (!m.enrolledAt) continue;
     const monthKey = m.enrolledAt.toISOString().slice(0, 7); // YYYY-MM
     if (!cohorts[monthKey]) {
-      cohorts[monthKey] = { month: monthKey, enrolled: 0, placed: 0, retentionRate: 0 };
+      cohorts[monthKey] = { month: monthKey, enrolled: 0, placed: 0, placementRate: 0 };
     }
     cohorts[monthKey].enrolled++;
     if (m.placementRecord?.startDate) {
@@ -49,10 +46,45 @@ function buildCohorts(
   return Object.values(cohorts)
     .map((c) => ({
       ...c,
-      retentionRate: c.enrolled > 0 ? Math.round((c.placed / c.enrolled) * 100) : 0,
+      // Placed ÷ enrolled for the cohort month. This used to be exported as
+      // `retentionRate`, which it never was.
+      placementRate: c.enrolled > 0 ? Math.round((c.placed / c.enrolled) * 100) : 0,
     }))
     .sort((a, b) => b.month.localeCompare(a.month))
     .slice(0, 12); // Last 12 months
+}
+
+/** Members who completed their assigned, validated program, by canonical program slug. */
+async function loadCompletedTrainingByProgram(orgId: string): Promise<Map<string, number>> {
+  const rows = await prisma.$queryRaw<Array<{ program_slug: string; count: bigint | number }>>`
+    WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
+      VALUES ${validatedProgramCompletionValuesSql()}
+    ), learner_program_assignments(user_id, program_slug, curriculum_version) AS (
+      ${validatedProgramAssignmentRowsSql()}
+    )
+    SELECT
+      enrolled_program.canonical_slug AS program_slug,
+      COUNT(DISTINCT u.id)::bigint AS count
+    FROM users u
+    ${memberOnlySqlJoin()}
+    INNER JOIN learner_program_assignments ce
+      ON ce.user_id = u.id
+    INNER JOIN validated_programs enrolled_program
+      ON enrolled_program.storage_value = ce.program_slug
+      AND enrolled_program.curriculum_version = ce.curriculum_version
+    INNER JOIN member_program_progress mpp
+      ON mpp.user_id = u.id
+    INNER JOIN validated_programs progress_program
+      ON progress_program.canonical_slug = enrolled_program.canonical_slug
+      AND progress_program.storage_value = mpp.program_slug
+      AND progress_program.curriculum_version = ce.curriculum_version
+    WHERE u.deleted_at IS NULL
+      AND u.enrolled_program IS NOT NULL
+      AND u.organization_id = ${orgId}
+      AND mpp.courses_completed = progress_program.total_courses
+    GROUP BY enrolled_program.canonical_slug
+  `;
+  return new Map(rows.map((row) => [row.program_slug, sqlCount(row.count)]));
 }
 
 /** A field this route buckets into a categorical breakdown, e.g. `veteranStatus`. */
@@ -67,8 +99,8 @@ function toBreakdown(rows: GroupByRow[], field: DemographicField): Array<{ label
 
 async function getDemographics(orgId: string) {
   // PERF: 5 cheap indexed aggregates instead of materializing every org
-  // profile just to bucket 5 categorical columns in JS.
-  const profileWhere = { user: { organizationId: orgId, deletedAt: null } };
+  // profile just to bucket 5 categorical columns in JS. Member profiles only.
+  const profileWhere = memberOnlyProfileWhere({ organizationId: orgId, deletedAt: null });
   const [veteranStatus, employmentStatus, householdIncome, educationLevel, ethnicity] = await Promise.all([
     prisma.profile.groupBy({ by: ['veteranStatus'], where: profileWhere, _count: { _all: true } }),
     prisma.profile.groupBy({ by: ['employmentStatus'], where: profileWhere, _count: { _all: true } }),
@@ -97,13 +129,10 @@ async function getDemographics(orgId: string) {
 async function computeOutcomesPayload(orgId: string) {
   // Placement data, member data, and demographics are independent reads —
   // run them together instead of one round trip at a time.
-  const [placements, members, demographics] = await Promise.all([
+  const memberUser = { organizationId: orgId, ...MEMBER_ONLY_WHERE };
+  const [placements, members, demographics, completedByProgram, retentionGroups] = await Promise.all([
     prisma.placementRecord.findMany({
-      where: {
-        user: {
-          organizationId: orgId,
-        },
-      },
+      where: { user: memberUser },
       select: {
         salaryOffered: true,
         userId: true,
@@ -112,14 +141,13 @@ async function computeOutcomesPayload(orgId: string) {
     }),
     prisma.user.findMany({
       where: {
-        organizationId: orgId,
+        ...memberUser,
         deletedAt: null,
       },
       select: {
         id: true,
         enrolledProgram: true,
         enrolledAt: true,
-        coursesCompleted: true,
         placementRecord: {
           select: {
             salaryOffered: true,
@@ -129,15 +157,18 @@ async function computeOutcomesPayload(orgId: string) {
       },
     }),
     getDemographics(orgId),
+    loadCompletedTrainingByProgram(orgId),
+    prisma.placementRecord.groupBy({
+      by: ['retentionStatus', 'retentionDecision'],
+      where: { user: memberUser },
+      _count: { _all: true },
+    }),
   ]);
 
   // Calculate metrics
   const totalMembers = members.length;
   const enrolledMembers = members.filter((m) => m.enrolledProgram !== null).length;
-  const completedMembers = members.filter((m) => {
-    const completed = m.coursesCompleted as string[] | null;
-    return completed && completed.length > 0;
-  }).length;
+  const completedMembers = [...completedByProgram.values()].reduce((sum, n) => sum + n, 0);
   const placedMembers = members.filter((m) => m.placementRecord !== null).length;
 
   const placementRate = enrolledMembers > 0
@@ -153,50 +184,54 @@ async function computeOutcomesPayload(orgId: string) {
     .map((p) => p.salaryOffered)
     .filter((s): s is number => s !== null && s !== undefined);
 
+  // null (not $0) when no placement carries a salary (F6).
   const avgSalary = salaries.length > 0
     ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
-    : 0;
+    : null;
 
   const salaryRange = salaries.length > 0
     ? { min: Math.min(...salaries), max: Math.max(...salaries) }
-    : { min: 0, max: 0 };
+    : null;
 
-  // Program effectiveness
+  // Program effectiveness, keyed by canonical program slug so alias slugs
+  // fold onto one program and match the completion rollup keys.
   const programStats: Record<string, { title: string; enrollments: number; completions: number; placements: number }> = {};
 
   for (const member of members) {
-    const slug = member.enrolledProgram;
-    if (!slug) continue;
+    if (!member.enrolledProgram) continue;
+    const slug = canonicalizeProgramSlug(member.enrolledProgram);
 
     if (!programStats[slug]) {
       programStats[slug] = {
         title: slug,
         enrollments: 0,
-        completions: 0,
+        completions: completedByProgram.get(slug) ?? 0,
         placements: 0,
       };
     }
     programStats[slug].enrollments++;
-
-    const completed = member.coursesCompleted as string[] | null;
-    if (completed && completed.length > 0) {
-      programStats[slug].completions++;
-    }
 
     if (member.placementRecord) {
       programStats[slug].placements++;
     }
   }
 
-  // ── Retention rates (30/60/90-day) ──
-  const now = new Date();
-  const enrolledMembersWithDate = members.filter((m) => m.enrolledAt !== null);
-  const retention30 = calculateRetention(enrolledMembersWithDate, 30, now);
-  const retention60 = calculateRetention(enrolledMembersWithDate, 60, now);
-  const retention90 = calculateRetention(enrolledMembersWithDate, 90, now);
+  // ── 90-day retention: decided placement outcomes only (retained vs
+  // not-retained/separated); null when no placement has a decision yet. ──
+  const retention = summarizeRetentionGroups(
+    retentionGroups.map((g) => ({
+      retentionStatus: g.retentionStatus,
+      retentionDecision: g.retentionDecision,
+      count: g._count._all,
+    })),
+  );
+  const retentionDenominator = retention.retained + retention.notRetainedOrSeparated;
+  const retention90 = retentionDenominator > 0
+    ? Math.round((retention.retained / retentionDenominator) * 100)
+    : null;
 
   // ── Cohort comparison (month-over-month) ──
-  const cohorts = buildCohorts(members, now);
+  const cohorts = buildCohorts(members);
 
   return {
     metrics: {
@@ -209,9 +244,10 @@ async function computeOutcomesPayload(orgId: string) {
       avgSalary,
       salaryRange,
       retention: {
-        d30: retention30,
-        d60: retention60,
+        /** 90-day retention over placements with a decided outcome; null when none is decided. */
         d90: retention90,
+        decidedPlacements: retentionDenominator,
+        pendingPlacements: retention.pendingDecision,
       },
     },
     programStats: Object.entries(programStats).map(([slug, stats]) => ({
@@ -232,7 +268,7 @@ async function computeOutcomesPayload(orgId: string) {
 /**
  * GET /api/admin/outcomes
  * Admin outcomes dashboard data — placement rates, salary data, program effectiveness,
- * retention rates (30/60/90-day), cohort comparison, and demographic breakdowns.
+ * decided 90-day retention, cohort comparison, and demographic breakdowns (members only).
  * Requires admin access. Returns aggregated metrics for the admin's organization.
  */
 async function _GET(request: NextRequest) {

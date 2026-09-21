@@ -12,7 +12,7 @@ const db = vi.hoisted(() => ({
   counselorAssignmentFindMany: vi.fn(),
   messageThreadFindMany: vi.fn(),
   notificationCount: vi.fn(),
-  queryRawUnsafe: vi.fn(),
+  queryRaw: vi.fn(),
 }));
 
 vi.mock('next/server', () => {
@@ -40,7 +40,7 @@ vi.mock('@/lib/db/prisma', () => ({
     messageThread: { findMany: db.messageThreadFindMany, findUnique: vi.fn(async () => null) },
     jobPostingApplication: { count: vi.fn(async () => 0) },
     notification: { count: db.notificationCount },
-    $queryRawUnsafe: db.queryRawUnsafe,
+    $queryRaw: db.queryRaw,
   },
 }));
 vi.mock('@/lib/auth/roles', () => ({
@@ -73,7 +73,7 @@ describe('counselor Notifications rail badge', () => {
     vi.clearAllMocks();
     db.counselorAssignmentFindMany.mockResolvedValue([]);
     db.messageThreadFindMany.mockResolvedValue([]);
-    db.queryRawUnsafe.mockResolvedValue([]);
+    db.queryRaw.mockResolvedValue([]);
     db.notificationCount.mockResolvedValue(3);
   });
 
@@ -97,12 +97,14 @@ describe('counselor Notifications rail badge', () => {
   it('keeps the count next to the message badges when the caseload has threads', async () => {
     db.counselorAssignmentFindMany.mockResolvedValue([{ memberId: 'member-1' }]);
     db.messageThreadFindMany.mockResolvedValue([{ id: 'thread-1', memberId: 'member-1', counselorLastReadAt: new Date() }]);
-    db.queryRawUnsafe.mockResolvedValue([{ threadId: 'thread-1', count: BigInt(2) }]);
+    // Shared with the counselor inbox (countUnreadMemberMessagesByThread);
+    // the badge counts threads, so two unread messages in one thread read 1.
+    db.queryRaw.mockResolvedValue([{ threadId: 'thread-1', unread: 2 }]);
     db.notificationCount.mockResolvedValue(5);
 
     const counts = await getNavBadgeCountsForUser('counselor', 'counselor-user-1');
     expect(counts).toEqual({
-      counselor_messages_unread: 2,
+      counselor_messages_unread: 1,
       counselor_notifications_unread: 5,
       counselor_sla_breach_48h: 0,
     });

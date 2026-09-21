@@ -87,7 +87,7 @@ function OverviewShowcase() {
           kpis={[
             { label: 'WAU', value: '41', delta: 'members with any portal event, 7 days', deltaTone: 'muted' },
             { label: 'Avg Session', value: '14m' },
-            { label: 'AI Tool Uses', value: '612', delta: 'saved AI tool results, all time', deltaTone: 'muted' },
+            { label: 'AI Tool Uses', value: '612', delta: 'saved results + voice sessions, members only, all time (same definition as "AI tool runs")', deltaTone: 'muted' },
             { label: 'Voice Sessions', value: '87' },
           ]}
           topTools={[

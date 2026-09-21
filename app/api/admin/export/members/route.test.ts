@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { buildMemberExportWhere, fetchMembersForExport } from './_membersExportQuery';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 function member(overrides: Record<string, unknown>) {
   return {
@@ -47,12 +48,7 @@ test('buildMemberExportWhere pushes state and Coursera filters into Prisma where
   });
 
   assert.deepEqual(where.AND, [
-    {
-      profile: { role: 'member' },
-      email: {
-        notIn: ['member.success@workforceap.org', 'mbrown@hsconglomerates.com'],
-      },
-    },
+    MEMBER_ONLY_WHERE,
     { profile: { state: 'TX' } },
     {
       trainingAccessRequests: {

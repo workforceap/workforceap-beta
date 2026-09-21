@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
+import { countMemberAiToolRuns } from '@/lib/admin/metrics';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/queryCaps';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import type { RankDatum } from '@/components/portal/kit/Charts';
@@ -53,10 +55,11 @@ export type EngagementData = {
   activeByProgram: RankDatum[];
 };
 
-/** Build a `user: { organizationId }` scope for FK-scoped models, or {} for
- *  all orgs (super-admin / no org), matching the legacy analytics behaviour. */
+/** Build a member-only `user: { ... }` scope for FK-scoped models, org-scoped
+ *  or platform-wide (super-admin / no org). Staff and fixture accounts never
+ *  count as engagement (number audit 2026-09-20, S22). */
 function memberScope(orgId?: string) {
-  return orgId ? { user: { organizationId: orgId } } : {};
+  return { user: orgId ? { organizationId: orgId, ...MEMBER_ONLY_WHERE } : { ...MEMBER_ONLY_WHERE } };
 }
 
 export async function getEngagementData(orgId?: string): Promise<EngagementData> {
@@ -91,9 +94,10 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
       select: { sessionId: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     }),
-    // AI Tool Uses — total saved AIToolResult rows (all time), grouped so we
-    // also get the per-tool breakdown for the "Most-used tools" panel.
-    prisma.aIToolResult.count({ where: scope }),
+    // AI Tool Uses — the shared all-time definition every admin surface
+    // prints (saved results + event-only voice sessions, members only), so
+    // this KPI equals /admin/metrics "AI tool runs" (S22).
+    countMemberAiToolRuns(orgId, { start: new Date(0), end: now }),
     // Most-used tools (last 30 days) — per-tool counts from saved results.
     prisma.aIToolResult.groupBy({
       by: ['toolType'],

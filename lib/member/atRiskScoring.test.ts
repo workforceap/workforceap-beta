@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
-    user: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
     message: { findFirst: vi.fn().mockResolvedValue(null) },
   },
 }));
@@ -31,7 +31,28 @@ vi.mock('@/lib/member/memberProgramTrainingView', () => ({
 }));
 
 import { prisma } from '@/lib/db/prisma';
-import { calculateAtRiskScore } from './atRiskScoring';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { AT_RISK_SCORING_POPULATION_WHERE, calculateAllAtRiskScores, calculateAtRiskScore } from './atRiskScoring';
+
+describe('nightly scoring population', () => {
+  it('scores only enrolled member-role accounts that are not yet placed', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValueOnce([]);
+    const scores = await calculateAllAtRiskScores();
+    expect(scores).toEqual([]);
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: AT_RISK_SCORING_POPULATION_WHERE, select: { id: true } }),
+    );
+    // At risk = not active lately AND in a program, members only: the table
+    // must not fill with alerts the read side ignores (Mike, 2026-09-20).
+    expect(AT_RISK_SCORING_POPULATION_WHERE).toMatchObject({
+      deletedAt: null,
+      enrolledProgram: { not: null },
+      placementRecord: null,
+      ...MEMBER_ONLY_WHERE,
+    });
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+});
 
 function baseUser() {
   return {

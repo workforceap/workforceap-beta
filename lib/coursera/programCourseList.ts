@@ -9,18 +9,13 @@ import { LOOKUP_LIST_CAP } from '@/lib/db/queryCaps';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { isWorkforceApCourse } from '@/lib/content/courseDelivery';
 import { getProgramCurriculumManifest } from '@/lib/content/programCurriculumManifest';
+import {
+  COURSERA_UMBRELLA_PROGRAM_ID,
+  isProgramLevelCourseraId,
+  isUmbrellaB4BProgramId,
+} from '@/lib/content/coursera/learningPaths';
 
-export const COURSERA_UMBRELLA_PROGRAM_ID = 'TpIlAogTQ8-SJQKIE8PP9w';
-
-export function isUmbrellaB4BProgramId(id: string | null | undefined): boolean {
-  const normalized = id?.trim() ?? '';
-  if (!normalized) return false;
-  const configuredUmbrellaId = process.env.COURSERA_ORG_PROGRAM_ID?.trim() ?? '';
-  return (
-    normalized === COURSERA_UMBRELLA_PROGRAM_ID ||
-    (configuredUmbrellaId.length > 0 && normalized === configuredUmbrellaId)
-  );
-}
+export { COURSERA_UMBRELLA_PROGRAM_ID, isProgramLevelCourseraId, isUmbrellaB4BProgramId };
 
 type CourseDbRow = {
   programSlug?: string;
@@ -231,6 +226,9 @@ function buildValidatedProgramCourseList(args: {
       .filter(
         (row) => canonicalizeProgramSlug(row.canonicalProgramSlug) === canonicalProgramSlug,
       )
+      // Stale rows that map a Learning Path / umbrella id onto a course slot
+      // are refused here so every reader of the validated list agrees.
+      .filter((row) => !isProgramLevelCourseraId(row.courseraCourseId))
       .map((row) => [row.canonicalCourseSlug, row.courseraCourseId]),
   );
   const dbByCourseSlug = new Map(courseDbRows.map((row) => [row.courseSlug, row]));

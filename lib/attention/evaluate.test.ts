@@ -60,14 +60,25 @@ test('buildAttentionQueue: every member lands in exactly one of rows / celebrate
   const queue = buildAttentionQueue(fixtureRoster(), FIXTURE_NOW);
   assert.deepEqual([...flaggedMemberIds(queue)].sort(), [...FIXTURE_FLAGGED_IDS].sort());
   assert.deepEqual(queue.celebrate.map((r) => r.memberId), ['m-celebrate']);
-  assert.deepEqual(queue.onTrack.map((r) => r.memberId), ['m-ok', 'm-ok2']);
-  assert.equal(queue.totals.roster, 10);
+  assert.deepEqual(queue.onTrack.map((r) => r.memberId).sort(), ['m-alert-noprog', 'm-ok', 'm-ok2']);
+  assert.equal(queue.totals.roster, 11);
   assert.equal(queue.totals.enrolled, 8);
   assert.equal(queue.totals.critical, 3);
   assert.equal(queue.totals.warning, 4);
   assert.equal(queue.totals.flagged, 7);
   assert.equal(queue.totals.celebrate, 1);
-  assert.equal(queue.totals.onTrack, 2);
+  assert.equal(queue.totals.onTrack, 3);
+});
+
+test('evaluateMemberAttention: a saved alert on a member with no program is not a risk alert', () => {
+  const noProgram = fixtureRoster().find((m) => m.memberId === 'm-alert-noprog')!;
+  assert.equal(noProgram.enrolledProgram, null);
+  assert.ok(noProgram.riskAlert, 'fixture carries an active saved alert');
+  assert.equal(evaluateMemberAttention(noProgram, FIXTURE_NOW), null);
+  // The same alert on an enrolled member is one.
+  const enrolled = evaluateMemberAttention({ ...noProgram, enrolledProgram: 'it-support', enrolledAt: noProgram.createdAt }, FIXTURE_NOW);
+  assert.deepEqual(enrolled?.reasons, ['risk_alert']);
+  assert.equal(buildAttentionQueue(fixtureRoster(), FIXTURE_NOW).totals.byReason.risk_alert, 1, 'only m-risk');
 });
 
 test('buildAttentionQueue: rows sort critical first, then by reason rank, then most urgent', () => {
@@ -83,7 +94,7 @@ test('buildAttentionQueue: rows sort critical first, then by reason rank, then m
 test('buildAttentionQueue: byReason counts additional reasons too and ignores duplicate ids', () => {
   const roster = fixtureRoster();
   const queue = buildAttentionQueue([...roster, roster[0]], FIXTURE_NOW);
-  assert.equal(queue.totals.roster, 10);
+  assert.equal(queue.totals.roster, 11);
   assert.equal(queue.totals.byReason.risk_alert, 1);
   assert.equal(queue.totals.byReason.no_activity_30d, 1);
   assert.equal(queue.totals.byReason.resume_missing_3d, 2, 'm-warn and m-app');

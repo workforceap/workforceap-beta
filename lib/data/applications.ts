@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_EMAIL_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { WORK_QUEUE_CAP } from '@/lib/db/scanCaps';
 
 export async function getStaleApplications(daysOld: number = 3) {
@@ -9,7 +10,7 @@ export async function getStaleApplications(daysOld: number = 3) {
     take: WORK_QUEUE_CAP,
     where: {
       status: 'PENDING',
-      user: { email: { notIn: ['member.success@workforceap.org', 'mbrown@hsconglomerates.com'] } },
+      user: { ...MEMBER_ONLY_EMAIL_WHERE },
       createdAt: {
         lt: cutoffDate,
       },

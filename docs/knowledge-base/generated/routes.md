@@ -140,7 +140,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/career-library | loading |  | [app/(portal)/dashboard/career-library/loading.tsx](../../../app/%28portal%29/dashboard/career-library/loading.tsx) |  |
 | /dashboard/career-library | page |  | [app/(portal)/dashboard/career-library/page.tsx](../../../app/%28portal%29/dashboard/career-library/page.tsx) | @/lib/auth/server:7 |
 | /dashboard/certifications | loading |  | [app/(portal)/dashboard/certifications/loading.tsx](../../../app/%28portal%29/dashboard/certifications/loading.tsx) |  |
-| /dashboard/certifications | page |  | [app/(portal)/dashboard/certifications/page.tsx](../../../app/%28portal%29/dashboard/certifications/page.tsx) | @/lib/auth/server:5 |
+| /dashboard/certifications | page |  | [app/(portal)/dashboard/certifications/page.tsx](../../../app/%28portal%29/dashboard/certifications/page.tsx) | @/lib/auth/server:7 |
 | /dashboard/counselor/\[id\] | page |  | [app/(portal)/dashboard/counselor/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/counselor/%5Bid%5D/page.tsx) | @/lib/auth/server:7 |
 | /dashboard/counselor | loading |  | [app/(portal)/dashboard/counselor/loading.tsx](../../../app/%28portal%29/dashboard/counselor/loading.tsx) |  |
 | /dashboard/counselor | page |  | [app/(portal)/dashboard/counselor/page.tsx](../../../app/%28portal%29/dashboard/counselor/page.tsx) | @/lib/auth/server:7 |
@@ -183,7 +183,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dashboard/points | loading |  | [app/(portal)/dashboard/points/loading.tsx](../../../app/%28portal%29/dashboard/points/loading.tsx) |  |
 | /dashboard/points | page |  | [app/(portal)/dashboard/points/page.tsx](../../../app/%28portal%29/dashboard/points/page.tsx) | @/lib/auth/server:8 |
 | /dashboard/profile | loading |  | [app/(portal)/dashboard/profile/loading.tsx](../../../app/%28portal%29/dashboard/profile/loading.tsx) |  |
-| /dashboard/profile | page |  | [app/(portal)/dashboard/profile/page.tsx](../../../app/%28portal%29/dashboard/profile/page.tsx) | @/lib/auth/server:9 |
+| /dashboard/profile | page |  | [app/(portal)/dashboard/profile/page.tsx](../../../app/%28portal%29/dashboard/profile/page.tsx) | @/lib/auth/server:10 |
 | /dashboard/program/change | page |  | [app/(portal)/dashboard/program/change/page.tsx](../../../app/%28portal%29/dashboard/program/change/page.tsx) |  |
 | /dashboard/program/employer-screening | page |  | [app/(portal)/dashboard/program/employer-screening/page.tsx](../../../app/%28portal%29/dashboard/program/employer-screening/page.tsx) | @/lib/auth/server:5 |
 | /dashboard/program | loading |  | [app/(portal)/dashboard/program/loading.tsx](../../../app/%28portal%29/dashboard/program/loading.tsx) |  |
@@ -433,7 +433,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/dashboard/jobs/\[id\] | route | GET | [app/api/(portal)/dashboard/jobs/\[id\]/route.ts](../../../app/api/%28portal%29/dashboard/jobs/%5Bid%5D/route.ts) | @/lib/db/withRequestGuc:4 |
 | /api/dashboard/jobs | route | GET | [app/api/(portal)/dashboard/jobs/route.ts](../../../app/api/%28portal%29/dashboard/jobs/route.ts) | @/lib/db/withRequestGuc:2 |
 | /api/admin/analytics/ai-efficacy | route | GET | [app/api/admin/analytics/ai-efficacy/route.ts](../../../app/api/admin/analytics/ai-efficacy/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/db/withRequestGuc:5, @/lib/tenant/organization:6 |
-| /api/admin/analytics/dashboard | route | GET | [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:12 |
+| /api/admin/analytics/dashboard | route | GET | [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:13 |
 | /api/admin/analytics/members | route | GET | [app/api/admin/analytics/members/route.ts](../../../app/api/admin/analytics/members/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:6 |
 | /api/admin/analytics/placements | route | GET | [app/api/admin/analytics/placements/route.ts](../../../app/api/admin/analytics/placements/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:7 |
 | /api/admin/analytics/programs | route | GET | [app/api/admin/analytics/programs/route.ts](../../../app/api/admin/analytics/programs/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:4, @/lib/db/withRequestGuc:7 |
@@ -564,9 +564,9 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/admin/mentors/\[id\] | route | PATCH | [app/api/admin/mentors/\[id\]/route.ts](../../../app/api/admin/mentors/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:7 |
 | /api/admin/messages/stats | route | GET | [app/api/admin/messages/stats/route.ts](../../../app/api/admin/messages/stats/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:5 |
 | /api/admin/messages/thread/\[threadId\] | route | GET | [app/api/admin/messages/thread/\[threadId\]/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:9 |
-| /api/admin/messages/thread/\[threadId\]/staff | route | POST, PATCH | [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:9 |
+| /api/admin/messages/thread/\[threadId\]/staff | route | POST, PATCH | [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:11 |
 | /api/admin/messages/threads | route | GET, POST | [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:10 |
-| /api/admin/metrics | route | GET | [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:7, @/lib/db/withRequestGuc:10 |
+| /api/admin/metrics | route | GET | [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:7, @/lib/db/withRequestGuc:12 |
 | /api/admin/milestone-cascades/\[id\]/approve | route | POST | [app/api/admin/milestone-cascades/\[id\]/approve/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/approve/route.ts) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:17 |
 | /api/admin/milestone-cascades/\[id\]/dismiss | route | POST | [app/api/admin/milestone-cascades/\[id\]/dismiss/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/dismiss/route.ts) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:11 |
 | /api/admin/milestone-cascades/synthetic | route | POST | [app/api/admin/milestone-cascades/synthetic/route.ts](../../../app/api/admin/milestone-cascades/synthetic/route.ts) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:10 |
@@ -576,7 +576,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/admin/onet/sync | route | POST | [app/api/admin/onet/sync/route.ts](../../../app/api/admin/onet/sync/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4 |
 | /api/admin/organization/logo | route | POST | [app/api/admin/organization/logo/route.ts](../../../app/api/admin/organization/logo/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:7, @/lib/db/withRequestGuc:9 |
 | /api/admin/outcomes/pdf | route | GET | [app/api/admin/outcomes/pdf/route.ts](../../../app/api/admin/outcomes/pdf/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/organization:5, @/lib/db/withRequestGuc:8 |
-| /api/admin/outcomes | route | GET | [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:10 |
+| /api/admin/outcomes | route | GET | [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/tenant/organization:6, @/lib/db/withRequestGuc:18 |
 | /api/admin/outcomes/snapshot | route | GET | [app/api/admin/outcomes/snapshot/route.ts](../../../app/api/admin/outcomes/snapshot/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:4, @/lib/tenant/organization:6 |
 | /api/admin/partner-context | route | GET, POST | [app/api/admin/partner-context/route.ts](../../../app/api/admin/partner-context/route.ts) | @/lib/auth/server:3, @/lib/auth/roles:4, @/lib/db/withRequestGuc:8 |
 | /api/admin/partner-payouts | route | GET | [app/api/admin/partner-payouts/route.ts](../../../app/api/admin/partner-payouts/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/tenant/withTenantScope:4, @/lib/tenant/organization:5, @/lib/db/withRequestGuc:8 |

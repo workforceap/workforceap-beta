@@ -79,6 +79,9 @@ async function handle(_req: NextRequest) {
         type: 'nudge',
         // One summary embed per run below; per-member posts hit Discord's 30/min limit.
         notifyOperator: false,
+        // Fortnightly cadence: refresh the unread nudge instead of stacking
+        // an identical row every run.
+        dedupeUnread: true,
         title: "We haven't seen you in a while",
         body: "It's been two weeks — let's get you back on track with your training.",
         data: { link: '/dashboard' },

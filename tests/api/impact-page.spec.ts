@@ -47,6 +47,7 @@ import {
   type PublicImpactStats,
 } from '@/lib/marketing/publicImpactStats';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_NOT } from '@/lib/admin/memberOnlyWhere';
 import { shouldSkipOptionalDbQueriesAtBuild } from '@/lib/db/optionalBuildDb';
 import { getProgramBySlug } from '@/lib/content/programs';
 
@@ -304,7 +305,8 @@ describe('Impact Page — getPublicImpactStats', () => {
         organizationId: ORG_ID,
         deletedAt: null,
         profile: { role: 'member' },
-        email: { notIn: ['member.success@workforceap.org', 'mbrown@hsconglomerates.com'] },
+        email: { notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] },
+        NOT: MEMBER_ONLY_EXCLUDED_EMAIL_NOT,
       });
     });
 

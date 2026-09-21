@@ -15,7 +15,7 @@ import type { RankDatum } from '@/components/portal/kit/Charts';
 export type PipelineFunnelCounts = {
   started: number;
   intake: number;
-  /** Members with a WIOA review status set: screened, not necessarily cleared. */
+  /** Members whose WIOA review status is 'verified' (eligibility confirmed). */
   eligibility: number;
   enrolled: number;
   active: number;
@@ -29,8 +29,8 @@ export const PIPELINE_FUNNEL_STAGES = [
   { key: 'active', label: 'Active', color: 'success' },
 ] as const satisfies ReadonlyArray<{ key: keyof PipelineFunnelCounts; label: string; color: RankDatum['color'] }>;
 
-export const WIOA_SCREENED_LABEL = 'WIOA screened';
-export const WIOA_SCREENED_CAPTION = 'eligibility reviewed; runs alongside enrollment, not a gate';
+export const WIOA_SCREENED_LABEL = 'WIOA verified';
+export const WIOA_SCREENED_CAPTION = 'eligibility confirmed (review status verified); runs alongside enrollment, not a gate';
 
 export function pipelineFunnelSubtitle(windowDays: number): string {
   return `last ${windowDays} days · members who started an application in this window; each stage counts the ones who reached it`;
