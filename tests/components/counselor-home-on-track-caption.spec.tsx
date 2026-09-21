@@ -5,13 +5,16 @@ import { CounselorHomeKit } from '@/components/portal/kit/pages/counselor/Counse
 
 /**
  * Counselor audit gap map, item 1: the Overview "On track" tile says what it
- * counts — members without an open risk alert — instead of standing alone as
- * a bare number next to three tiles that do explain themselves.
+ * counts — members with neither a critical alert nor a warning flag, the
+ * `evaluateMemberAttention` null case in lib/attention/evaluate.ts — instead
+ * of standing alone as a bare number next to three tiles that do explain
+ * themselves. "No risk alert" was wrong: a member in the Warning bucket (no
+ * counselor contact 7+ days) has no risk alert yet is not counted on track.
  */
 describe('StatSparkTile caption', () => {
   it('renders an optional muted definition line under the label', () => {
-    render(<StatSparkTile icon={<span data-icon />} label="On track" value={8} tone="ok" caption="No risk alert" />);
-    const caption = screen.getByText('No risk alert');
+    render(<StatSparkTile icon={<span data-icon />} label="On track" value={8} tone="ok" caption="No alert or warning" />);
+    const caption = screen.getByText('No alert or warning');
     expect(caption.className).toContain('wa-kit-meta');
     expect(caption.previousElementSibling).toHaveTextContent('On track');
   });
@@ -23,9 +26,9 @@ describe('StatSparkTile caption', () => {
 });
 
 describe('CounselorHomeKit On track tile', () => {
-  it('captions the On track count with "No risk alert"', () => {
+  it('captions the On track count with "No alert or warning"', () => {
     render(<CounselorHomeKit firstName="Dana" assignedCount={8} onTrackCount={8} queueRows={[]} queueTotal={0} />);
-    const caption = screen.getByText('No risk alert');
+    const caption = screen.getByText('No alert or warning');
     expect(caption.previousElementSibling).toHaveTextContent('On track');
   });
 
