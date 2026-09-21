@@ -86,14 +86,57 @@ function routedMarketingAstroFiles(): string[] {
   return out.sort();
 }
 
-test('the Astro layout loads the canonical brand tokens ahead of blend.css', () => {
-  const layout = source('marketing/src/layouts/Layout.astro');
-  const tokensAt = layout.indexOf('wa-brand-tokens.css');
-  const blendAt = layout.indexOf('blend.css');
+/**
+ * The specifiers of an Astro component's frontmatter imports, in source order.
+ *
+ * Comments are stripped first. Matching the raw file text would let a comment
+ * that merely *names* these stylesheets satisfy the ordering assertion below,
+ * so the guard would pass with both imports deleted — which is exactly what it
+ * exists to catch.
+ */
+function astroImportSpecifiers(astroSource: string): string[] {
+  const open = astroSource.indexOf('---');
+  const close = open === 0 ? astroSource.indexOf('\n---', 3) : -1;
+  const frontmatter = close > 0 ? astroSource.slice(0, close) : astroSource;
+  const code = frontmatter
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    // keep the `:` guard so a `https://` inside a string is not treated as a comment
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
 
-  assert.ok(tokensAt >= 0, 'Layout.astro must import the canonical brand tokens (WAP-106)');
-  assert.ok(blendAt >= 0, 'Layout.astro must import blend.css');
-  assert.ok(tokensAt < blendAt, 'the token layer must load before blend.css, which reads it');
+  return [...code.matchAll(/^\s*import\s+(?:[^'"]*?\sfrom\s+)?['"]([^'"]+)['"]/gm)].map((m) => m[1]!);
+}
+
+test('the Astro layout loads the canonical brand tokens ahead of blend.css', () => {
+  const imports = astroImportSpecifiers(source('marketing/src/layouts/Layout.astro'));
+  const tokensAt = imports.findIndex((specifier) => specifier.endsWith('/css/wa-brand-tokens.css'));
+  const blendAt = imports.findIndex((specifier) => specifier.endsWith('/blend.css'));
+
+  assert.ok(
+    tokensAt >= 0,
+    `Layout.astro must import css/wa-brand-tokens.css (WAP-106); its imports are: ${imports.join(', ')}`,
+  );
+  assert.ok(blendAt >= 0, `Layout.astro must import blend.css; its imports are: ${imports.join(', ')}`);
+  assert.ok(
+    tokensAt < blendAt,
+    'the token layer must be imported before blend.css, which reads those tokens',
+  );
+});
+
+test('the layout import guard reads imports, not comment prose', () => {
+  // A file whose comments name both stylesheets but imports neither must not
+  // satisfy the guard above. This is the failure mode the raw-text version had.
+  const decoy = [
+    '---',
+    '// css/wa-brand-tokens.css is loaded ahead of blend.css by the root layout.',
+    "import Icon from '../components/Icon.astro';",
+    '---',
+  ].join('\n');
+
+  assert.deepEqual(astroImportSpecifiers(decoy), ['../components/Icon.astro']);
+
+  const real = astroImportSpecifiers(source('marketing/src/layouts/Layout.astro'));
+  assert.ok(real.includes('../../../css/wa-brand-tokens.css'));
+  assert.ok(real.includes('../styles/blend.css'));
 });
 
 test('marketing brand aliases resolve through the --wa-* design tokens', () => {
@@ -126,6 +169,50 @@ test('the marketing gold ramp and its gradients are declared once, in blend.css'
   }
 });
 
+/**
+ * Drop the fallback argument of every `var(--token, <fallback>)`, keeping the
+ * token reference.
+ *
+ * A literal in the fallback position is not a hardcoded colour — it is the
+ * documented belt-and-braces idiom (css/astryx-brand-bridge.css uses it
+ * throughout, and blend.css now does too). Only a literal used as the actual
+ * value re-forks the palette, so the guard below scans the stripped text.
+ * Handles nesting, e.g. `var(--shadow-lg, var(--shadow))`.
+ */
+export function stripVarFallbacks(css: string): string {
+  const stack: Array<{ isVar: boolean; afterComma: boolean }> = [];
+  const skipping = () => stack.some((frame) => frame.afterComma);
+  let out = '';
+
+  for (let i = 0; i < css.length; i += 1) {
+    const char = css[i]!;
+
+    if (char === '(') {
+      const wasSkipping = skipping();
+      stack.push({ isVar: /var\s*$/i.test(css.slice(Math.max(0, i - 8), i)), afterComma: false });
+      if (!wasSkipping) out += char;
+      continue;
+    }
+
+    if (char === ')') {
+      stack.pop();
+      // emit the closer only for a paren whose opener we emitted
+      if (!skipping()) out += char;
+      continue;
+    }
+
+    const top = stack[stack.length - 1];
+    if (char === ',' && top?.isVar && !skipping()) {
+      top.afterComma = true;
+      continue;
+    }
+
+    if (!skipping()) out += char;
+  }
+
+  return out;
+}
+
 test('no routed marketing page re-hardcodes a brand colour that has a token', () => {
   const offenders: string[] = [];
   const files = routedMarketingAstroFiles();
@@ -133,11 +220,23 @@ test('no routed marketing page re-hardcodes a brand colour that has a token', ()
   assert.ok(files.length > 0, 'no routed marketing .astro files were found');
 
   for (const file of files) {
-    const text = source(file).toLowerCase();
+    const text = stripVarFallbacks(source(file).toLowerCase());
     for (const [literal, replacement] of Object.entries(RETIRED_MARKETING_LITERALS)) {
       if (text.includes(literal)) offenders.push(`${file}: ${literal} -> use ${replacement}`);
     }
   }
 
   assert.deepEqual(offenders, [], `hardcoded brand colours on public pages:\n${offenders.join('\n')}`);
+});
+
+test('the colour guard reads values, not var() fallbacks', () => {
+  // A literal as the value is an offence; the same literal as a documented
+  // fallback behind its own token is not.
+  assert.match(stripVarFallbacks('color:#ad2c4d'), /#ad2c4d/);
+  assert.doesNotMatch(stripVarFallbacks('color:var(--crimson, #ad2c4d)'), /#ad2c4d/);
+  assert.match(stripVarFallbacks('color:var(--crimson, #ad2c4d)'), /var\(--crimson\)/);
+  // nesting, as in the pre-existing var(--shadow-lg, var(--shadow))
+  assert.doesNotMatch(stripVarFallbacks('box-shadow:var(--shadow-lg, var(--shadow))'), /--shadow\b(?!-lg)/);
+  // a literal after a var() on the same declaration is still caught
+  assert.match(stripVarFallbacks('border:1px solid var(--border, #ece5e0) #ad2c4d'), /#ad2c4d/);
 });

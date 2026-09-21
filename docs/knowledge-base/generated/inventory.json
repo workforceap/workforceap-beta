@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "24f30372bee36e4b1085c10c1fb897090863519a65b24a5fbe5df0b55aa2e1c2",
+  "inputTreeSha256": "8eee77f33154e3277c5a0d64fafe3251b79bbe64cea80f48db2a6ce0f2de46d2",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -125104,11 +125104,17 @@
       "path": "lib/marketing/publicUiRouteContract.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 6018,
-      "lines": 143,
-      "sha256": "8e89993fc1d37df2fcdbfa551ce059543c23d811d363ea0aff38e4e72156c43b",
+      "bytes": 9989,
+      "lines": 242,
+      "sha256": "06cc34254b20b050ce653ba3b0fc8fb87cb796faa7bac0bcf48b6f52e6656e6c",
       "binary": false,
-      "exports": [],
+      "exports": [
+        {
+          "name": "stripVarFallbacks",
+          "line": 182,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "declarations": [
         {
           "name": "source",
@@ -125128,6 +125134,16 @@
         {
           "name": "routedMarketingAstroFiles",
           "line": 75,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "astroImportSpecifiers",
+          "line": 97,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "stripVarFallbacks",
+          "line": 182,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -150605,9 +150621,9 @@
       "path": "marketing/src/pages/contact/thanks.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 1945,
+      "bytes": 1924,
       "lines": 36,
-      "sha256": "9110e6548e8779ac037c3c9b18819bf5aef6fd04b27be8a3feebd113b42b66aa",
+      "sha256": "f7c2d7f77978c2818a4b5beb12009dc47e64d6a9d40335a59d714e23b0de2288",
       "binary": false
     },
     {
@@ -150830,9 +150846,9 @@
       "path": "marketing/src/styles/blend.css",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 31004,
-      "lines": 418,
-      "sha256": "0518182b0283c4eb9cb1972cdc99085625cf74328b7883fc7c840d18fcd71e3c",
+      "bytes": 31347,
+      "lines": 422,
+      "sha256": "20dc6702d35f41fc044f605e9d61382437be7d0483036e1f4290139e5fd2ef67",
       "binary": false
     },
     {

@@ -109,5 +109,5 @@
 | [marketing/src/pages/salary-guide.astro](../../../marketing/src/pages/salary-guide.astro) | 61 | astro-marketing |  |
 | [marketing/src/pages/terms.astro](../../../marketing/src/pages/terms.astro) | 386 | astro-marketing |  |
 | [marketing/src/pages/what-we-do.astro](../../../marketing/src/pages/what-we-do.astro) | 281 | astro-marketing |  |
-| [marketing/src/styles/blend.css](../../../marketing/src/styles/blend.css) | 418 | astro-marketing |  |
+| [marketing/src/styles/blend.css](../../../marketing/src/styles/blend.css) | 422 | astro-marketing |  |
 | [marketing/src/styles/hero-media.css](../../../marketing/src/styles/hero-media.css) | 31 | astro-marketing |  |

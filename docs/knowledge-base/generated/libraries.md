@@ -680,7 +680,7 @@
 | [lib/marketing/heroPhotos.test.ts](../../../lib/marketing/heroPhotos.test.ts) | 76 | public-experience |  |
 | [lib/marketing/heroPhotos.ts](../../../lib/marketing/heroPhotos.ts) | 98 | public-experience | MARKETING_HERO_PHOTO_POOL:9, MarketingHeroPhotoPath:21, DEFAULT_MARKETING_HERO_PHOTO:24, heroPhotoForKey:65, heroPhotoSequenceForKey:80, heroPhotoCssUrl:96 |
 | [lib/marketing/publicImpactStats.ts](../../../lib/marketing/publicImpactStats.ts) | 400 | public-experience | ImpactProgramRow:18, PublicImpactStats:26, EMPTY_PUBLIC_IMPACT_STATS:39, hasPublicImpactLiveData:53, hasPublicImpactEnrolledCohort:64, PublishedImpactStatRow:68, buildPublishedImpactJsonLdStats:84, getPublicImpactStats:165 |
-| [lib/marketing/publicUiRouteContract.test.ts](../../../lib/marketing/publicUiRouteContract.test.ts) | 143 | public-experience |  |
+| [lib/marketing/publicUiRouteContract.test.ts](../../../lib/marketing/publicUiRouteContract.test.ts) | 242 | public-experience | stripVarFallbacks:182 |
 | [lib/marketing/trustStripMetrics.test.ts](../../../lib/marketing/trustStripMetrics.test.ts) | 38 | public-experience |  |
 | [lib/marketing/trustStripMetrics.ts](../../../lib/marketing/trustStripMetrics.ts) | 111 | public-experience | TrustStripMetrics:9, TRUST_STRIP_PLACEHOLDER_LINE:16, formatTrustStripLine:27, getTrustStripMetrics:45, loadTrustStripMetrics:95 |
 | [lib/marketing/utmCapture.ts](../../../lib/marketing/utmCapture.ts) | 66 | public-experience | UTM_SESSION_KEYS:17, MarketingAttribution:26, readMarketingAttribution:36, clearMarketingAttribution:57 |

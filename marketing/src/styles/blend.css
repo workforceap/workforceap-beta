@@ -8,7 +8,11 @@
      with no `--wa-*` reference at all, so the brand existed twice: once as tokens
      and once as these hex literals. The literal stays as the `var()` fallback —
      the idiom css/astryx-brand-bridge.css already uses — so a page still renders
-     correctly if the token layer is ever absent.
+     correctly if the token file never loads at all. That fallback covers an
+     *undefined* token only: a browser that does not support `light-dark()`
+     leaves --wa-accent defined-but-invalid, and the declaration is then invalid
+     at computed-value time rather than falling back to the hex. That exposure
+     is not new — it is the same one every other --wa-* consumer already has.
      lib/marketing/publicUiRouteContract.test.ts guards this wiring;
      lib/ui/brandTokens.test.ts owns the css/wa-brand-tokens.css side.
 
