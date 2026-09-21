@@ -66,6 +66,22 @@ describe('WAP-36 phase 1: middleware Content-Security-Policy-Report-Only', () =>
     expect(reportOnly(response)).not.toContain('attacker-chosen-nonce-value');
   });
 
+  it('drops a client-supplied Content-Security-Policy request header, which Next prefers when picking its script nonce', async () => {
+    const response = await middleware(documentRequest('/en', {
+      'content-security-policy': "script-src 'nonce-EVIL'",
+      'content-security-policy-report-only': "script-src 'nonce-EVIL2'",
+    }));
+    expect(response.headers.get('x-middleware-request-content-security-policy')).toBeNull();
+    const forwarded = response.headers.get('x-middleware-override-headers') ?? '';
+    expect(forwarded.split(',')).not.toContain('content-security-policy');
+    const ours = reportOnly(response)!.match(NEXT_NONCE_SOURCE)![1];
+    expect(ours).not.toBe('EVIL');
+    expect(ours).not.toBe('EVIL2');
+    expect(response.headers.get('x-middleware-request-x-nonce')).toBe(ours);
+    expect(response.headers.get('x-middleware-request-content-security-policy-report-only')).toContain(`'nonce-${ours}'`);
+    expect(response.headers.get('x-middleware-request-content-security-policy-report-only')).not.toContain('EVIL');
+  });
+
   it('skips API calls, RSC payloads and static files', async () => {
     const api = await middleware(new NextRequest('https://www.workforceap.org/api/health', { headers: { host: 'www.workforceap.org' } }));
     expect(reportOnly(api)).toBeNull();

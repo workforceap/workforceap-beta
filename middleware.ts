@@ -175,10 +175,13 @@ export async function middleware(request: NextRequest) {
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_HEADER);
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER);
   // Same rule for the CSP nonce: Next.js reads the nonce back out of the
-  // forwarded CSP header to stamp its own bootstrap scripts, so a client must
-  // never be able to smuggle either header through to the app.
+  // forwarded `content-security-policy` (preferred) or
+  // `content-security-policy-report-only` request header to stamp its own
+  // bootstrap scripts, so a client must never be able to smuggle any of the
+  // three through to the app.
   requestHeaders.delete(CSP_NONCE_HEADER);
   requestHeaders.delete(CSP_REPORT_ONLY_HEADER);
+  requestHeaders.delete('content-security-policy');
 
   // Mint or forward an `x-request-id` for end-to-end correlation. We set
   // this on BOTH the forwarded request headers (so server components, API

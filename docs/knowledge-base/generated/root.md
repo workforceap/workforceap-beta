@@ -43,7 +43,7 @@
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 270 | root | onRouterTransitionStart:239, setSentryUser:258 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [knip.json](../../../knip.json) | 61 | root |  |
-| [middleware.ts](../../../middleware.ts) | 501 | identity-tenancy | middleware:158, config:497 |
+| [middleware.ts](../../../middleware.ts) | 504 | identity-tenancy | middleware:158, config:500 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
 | [package.json](../../../package.json) | 149 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "62842500c9359a8e5524356db039463db1ca23e6bd3e4a2f845e2dafe815c168",
+  "inputTreeSha256": "7fa33eeb10088ac94bd2d471824cbbef7749df10a56e23a1e0c87bfe02a28a2a",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -147355,9 +147355,9 @@
       "path": "middleware.ts",
       "area": "root",
       "domain": "identity-tenancy",
-      "bytes": 21525,
-      "lines": 501,
-      "sha256": "107e55a994da5e7fd2278724e9e32ff1efbe524eae128862eb4952fd019c3a7f",
+      "bytes": 21673,
+      "lines": 504,
+      "sha256": "45d35ccd2faa4ce707acd7968a326dbfbdbe676bc0ac4df0d6d9f1c44cf4d77f",
       "binary": false,
       "exports": [
         {
@@ -147367,7 +147367,7 @@
         },
         {
           "name": "config",
-          "line": 497,
+          "line": 500,
           "kind": "Variable"
         }
       ],
@@ -147469,7 +147469,7 @@
         },
         {
           "name": "config",
-          "line": 497,
+          "line": 500,
           "kind": "Variable"
         }
       ],
@@ -162983,9 +162983,9 @@
       "path": "tests/api/middleware-csp-report-only.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4380,
-      "lines": 86,
-      "sha256": "a183457650d39d67b2026a13d3e4678680f550eb959da5b0f9d54c18a9906179",
+      "bytes": 5434,
+      "lines": 102,
+      "sha256": "190107ec85971c6b834b8e025924e09ca7e56ca74af585d304bf70d61989b06e",
       "binary": false,
       "exports": [],
       "declarations": [

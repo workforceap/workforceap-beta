@@ -2447,7 +2447,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 318
+          "line": 321
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -2530,7 +2530,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 317
+          "line": 320
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -2812,7 +2812,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 298
+          "line": 301
         },
         {
           "file": "scripts/check-supabase-env.mjs",

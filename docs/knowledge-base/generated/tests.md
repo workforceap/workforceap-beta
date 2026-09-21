@@ -138,7 +138,7 @@
 | [tests/api/member-wioa-voice-session.spec.ts](../../../tests/api/member-wioa-voice-session.spec.ts) | 89 | tests |  |
 | [tests/api/mentor-letter-route.spec.ts](../../../tests/api/mentor-letter-route.spec.ts) | 80 | tests |  |
 | [tests/api/mentor-session-topic.spec.ts](../../../tests/api/mentor-session-topic.spec.ts) | 109 | tests |  |
-| [tests/api/middleware-csp-report-only.spec.ts](../../../tests/api/middleware-csp-report-only.spec.ts) | 86 | tests |  |
+| [tests/api/middleware-csp-report-only.spec.ts](../../../tests/api/middleware-csp-report-only.spec.ts) | 102 | tests |  |
 | [tests/api/milestone-approve-reliability.spec.ts](../../../tests/api/milestone-approve-reliability.spec.ts) | 65 | member-counselor |  |
 | [tests/api/notifications.spec.ts](../../../tests/api/notifications.spec.ts) | 510 | communications |  |
 | [tests/api/onboarding-complete.spec.ts](../../../tests/api/onboarding-complete.spec.ts) | 117 | tests |  |
