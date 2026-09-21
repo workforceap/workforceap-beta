@@ -1,17 +1,62 @@
 import { notFound } from 'next/navigation';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
+import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
+import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
+import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/member/memberApprovalStatus';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
  * every new optional prop wired). Preview-only, no auth/DB. See
  * app/dev/dashboard/page.tsx for the pattern.
+ *
+ * `?approval=live|closed|complete|off` swaps the approval-status card fixture
+ * so both placements can be reviewed in the real chrome: `live` (a pending
+ * application) keeps the full card above the dashboard, `closed` and
+ * `complete` collapse it below the content. Same composition as
+ * app/(portal)/dashboard/page.tsx.
  */
 export const dynamic = 'force-dynamic';
 
-export default function DevMemberHomePage() {
+const APPROVAL_FIXTURES: Record<string, MemberApprovalFacts> = {
+  live: {
+    applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-10T15:00:00Z') }],
+    wioaReviewStatus: null,
+    courseraEnrollmentApproved: false,
+  },
+  closed: {
+    applications: [{ status: 'DENIED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
+    wioaReviewStatus: 'verified',
+    wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
+    courseraEnrollmentApproved: true,
+    courseraEnrollmentApprovedAt: new Date('2026-09-02T15:00:00Z'),
+  },
+  complete: {
+    applications: [{ status: 'APPROVED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
+    wioaReviewStatus: 'verified',
+    wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
+    courseraEnrollmentApproved: true,
+    courseraEnrollmentApprovedAt: new Date('2026-09-02T15:00:00Z'),
+  },
+};
+
+export default async function DevMemberHomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ approval?: string }>;
+}) {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
+  const requested = (await searchParams)?.approval ?? 'live';
+  const fixture = APPROVAL_FIXTURES[requested];
+  const status = fixture ? buildMemberApprovalStatus(fixture) : null;
+  const placement = status ? memberApprovalCardPlacement(status) : null;
+  const approvalCard = status ? (
+    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} />
+  ) : null;
+
   return (
+    <>
+    {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       firstName="Mike"
       coursePercent={78}
@@ -106,5 +151,7 @@ export default function DevMemberHomePage() {
         },
       ]}
     />
+    {placement === 'demoted' ? approvalCard : null}
+    </>
   );
 }

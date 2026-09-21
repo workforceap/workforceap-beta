@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b7a70e3430741dcfe9cb23d789064609bced942487dbf702291fb3014fa88ac1",
+  "inputTreeSha256": "002ce0ebf087f91455928189d5be3e3469dcef7e08b064768a1c5ee482ed24cd",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -10161,24 +10161,24 @@
       "path": "app/(portal)/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 50719,
-      "lines": 1210,
-      "sha256": "413e193c115cc1514e8bf8ad89c88ad2b85633c485a9e171d7e5d5c204a4d181",
+      "bytes": 51353,
+      "lines": 1223,
+      "sha256": "254e2ec82e169517d65d6e7a2781efbe2ba91d4937203c3700c679c3e129c823",
       "binary": false,
       "exports": [
         {
           "name": "maxDuration",
-          "line": 99,
+          "line": 100,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 101,
+          "line": 102,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 110,
+          "line": 111,
           "kind": "FunctionDeclaration",
           "localName": "DashboardPage"
         }
@@ -10186,42 +10186,42 @@
       "declarations": [
         {
           "name": "MemberCareerPathSection",
-          "line": 82,
+          "line": 83,
           "kind": "Variable"
         },
         {
           "name": "LogCertificationModal",
-          "line": 86,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "PlacementConfirmationStrip",
-          "line": 89,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "PWAInstallPrompt",
-          "line": 92,
+          "line": 93,
           "kind": "Variable"
         },
         {
           "name": "maxDuration",
-          "line": 99,
+          "line": 100,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 101,
+          "line": 102,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DashboardPage",
-          "line": 110,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "renderMemberDashboard",
-          "line": 159,
+          "line": 160,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -44065,19 +44065,19 @@
       "path": "app/dev/member/home/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3690,
-      "lines": 110,
-      "sha256": "b3d44fe7c64ab262fe50090a231ef6f7c8ac856d649f6facb784e909228aff9b",
+      "bytes": 5751,
+      "lines": 157,
+      "sha256": "6f7bf7edd141ea98b0d2dc37e8449abbd02cc303c3dfc4957860cc259b16ecdc",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 9,
+          "line": 18,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 11,
+          "line": 42,
           "kind": "FunctionDeclaration",
           "localName": "DevMemberHomePage"
         }
@@ -44085,12 +44085,17 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 9,
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "APPROVAL_FIXTURES",
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "DevMemberHomePage",
-          "line": 11,
+          "line": 42,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60176,14 +60181,14 @@
       "path": "components/portal/MemberApprovalStatusCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4617,
-      "lines": 110,
-      "sha256": "b3137668734175b47b05a5c4152056a9957fcc8e92f59d95ab90ac00402adb3e",
+      "bytes": 9893,
+      "lines": 255,
+      "sha256": "ea6eb7998e4082d47ff94a4b24ce3f07db43beed38c23945b9db9a601e4cf4dc",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 24,
+          "line": 38,
           "kind": "FunctionDeclaration",
           "localName": "MemberApprovalStatusCard"
         }
@@ -60191,12 +60196,12 @@
       "declarations": [
         {
           "name": "STAGE_ORDER",
-          "line": 16,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "MemberApprovalStatusCard",
-          "line": 24,
+          "line": 38,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65432,9 +65437,9 @@
       "path": "components/portal/kit/Charts.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 8826,
-      "lines": 246,
-      "sha256": "5247f0abe546543eabe1a8839be6f08b6ad6bc420941c882faf43cec97694ac7",
+      "bytes": 9115,
+      "lines": 250,
+      "sha256": "932deef2b41b3c323793bf764cea376d96476fa6d36cfececacd37fd5ff96b2f",
       "binary": false,
       "exports": [
         {
@@ -65453,28 +65458,23 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "NO_TREND_LABEL",
-          "line": 97,
-          "kind": "Variable"
-        },
-        {
           "name": "TrendPlaceholder",
-          "line": 114,
+          "line": 117,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AreaChartMini",
-          "line": 141,
+          "line": 145,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RankDatum",
-          "line": 213,
+          "line": 217,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "RankBars",
-          "line": 227,
+          "line": 231,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65500,28 +65500,23 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "NO_TREND_LABEL",
-          "line": 97,
-          "kind": "Variable"
-        },
-        {
           "name": "TrendPlaceholder",
-          "line": 114,
+          "line": 117,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AreaChartMini",
-          "line": 141,
+          "line": 145,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RankDatum",
-          "line": 213,
+          "line": 217,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "RankBars",
-          "line": 227,
+          "line": 231,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65575,9 +65570,9 @@
       "path": "components/portal/kit/CommandCenter.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 6638,
-      "lines": 195,
-      "sha256": "be0eb43eb492818f30aa45738f8983cd20cd5df769ce2f5cd17986071be951e2",
+      "bytes": 7204,
+      "lines": 205,
+      "sha256": "c668a92d286ed7f9b79eeec1899fff92fb1eaeac2c33a4bed16710932b083f8e",
       "binary": false,
       "exports": [
         {
@@ -65602,12 +65597,12 @@
         },
         {
           "name": "StageTrack",
-          "line": 140,
+          "line": 150,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 167,
+          "line": 177,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -65639,12 +65634,12 @@
         },
         {
           "name": "StageTrack",
-          "line": 140,
+          "line": 150,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 167,
+          "line": 177,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -67114,9 +67109,9 @@
       "path": "components/portal/kit/index.ts",
       "area": "components",
       "domain": "components",
-      "bytes": 3093,
+      "bytes": 3077,
       "lines": 62,
-      "sha256": "3e55872ce5f6f4bbd567685bdc85e0c9936915c8a7b13abb28d056ee2fdde794",
+      "sha256": "aec59d215b55c07378286c5d69101d3c3c38a73aabea75f21f52b2de6299ca51",
       "binary": false,
       "exports": [
         {
@@ -67386,11 +67381,6 @@
         },
         {
           "name": "TrendPlaceholder",
-          "line": 46,
-          "kind": "ReExport"
-        },
-        {
-          "name": "NO_TREND_LABEL",
           "line": 46,
           "kind": "ReExport"
         },
@@ -71888,146 +71878,146 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 39459,
-      "lines": 997,
-      "sha256": "c5dfb0b5ac92aef9b1fa5ae51221c1b261597fc3242b6762fd07930f7f9fd1a7",
+      "bytes": 39578,
+      "lines": 999,
+      "sha256": "3a5fe20e38be7941da578d5b77d38ab47288e60a8ad2800f5767ee62cc20c467",
       "binary": false,
       "exports": [
         {
           "name": "StatSpark",
-          "line": 95,
+          "line": 96,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "WeeklyActivityPoint",
-          "line": 105,
+          "line": 106,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PointsLedgerEntry",
-          "line": 111,
+          "line": 112,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKitProps",
-          "line": 117,
+          "line": 118,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKit",
-          "line": 577,
+          "line": 579,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "JobStageTone",
-          "line": 73,
+          "line": 74,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PipelineRow",
-          "line": 75,
+          "line": 76,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "GoalSummary",
-          "line": 88,
+          "line": 89,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StatSpark",
-          "line": 95,
+          "line": 96,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "WeeklyActivityPoint",
-          "line": 105,
+          "line": 106,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PointsLedgerEntry",
-          "line": 111,
+          "line": 112,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKitProps",
-          "line": 117,
+          "line": 118,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "clampPct",
-          "line": 186,
+          "line": 187,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultStageIndex",
-          "line": 190,
+          "line": 191,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LOGO_COLORS",
-          "line": 197,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "logoColorFor",
-          "line": 198,
+          "line": 199,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sparklinePoints",
-          "line": 204,
+          "line": 205,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HOME_TEXT_LINK",
-          "line": 225,
+          "line": 226,
           "kind": "Variable"
         },
         {
           "name": "KitCardHead",
-          "line": 238,
+          "line": 239,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DeltaChip",
-          "line": 260,
+          "line": 261,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StatSparkTile",
-          "line": 292,
+          "line": 293,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PipelineStageTrack",
-          "line": 351,
+          "line": 353,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 375,
+          "line": 377,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WeeklyActivityChart",
-          "line": 415,
+          "line": 417,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pipelineColumns",
-          "line": 472,
+          "line": 474,
           "kind": "Variable"
         },
         {
           "name": "pipelineCard",
-          "line": 528,
+          "line": 530,
           "kind": "Variable"
         },
         {
           "name": "MemberHomeKit",
-          "line": 577,
+          "line": 579,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128644,6 +128634,103 @@
       "directive": null
     },
     {
+      "path": "lib/member/memberApprovalCardPlacement.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 4426,
+      "lines": 105,
+      "sha256": "841f1d6ded8f3c44a9471046dd1a31b44a55f2fdb59485746aa5b81368d60492",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "submitted",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "reviewed",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "approved",
+          "line": 13,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/memberApprovalCardPlacement.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 2446,
+      "lines": 50,
+      "sha256": "299b6b7196f313f8f7d8a018c7673961fc6f87fca5a0284b5fd5ea18ebd3944e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "MemberApprovalCardPlacement",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "hasLiveApprovalNextStep",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberApprovalCardPlacement",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "approvalStatusSignature",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "approvalDismissStorageKey",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "STAGE_KEYS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "MemberApprovalCardPlacement",
+          "line": 16,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "hasLiveApprovalNextStep",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "memberApprovalCardPlacement",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "approvalStatusSignature",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "approvalDismissStorageKey",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/memberApprovalStatus.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -150929,27 +151016,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227183,
-      "lines": 3767,
-      "sha256": "8d28be9898cfeb69e95bcdb275c1a7f94018308bc680fcdfd5ba05b92972a25f",
+      "bytes": 227444,
+      "lines": 3772,
+      "sha256": "58837ced9897081d1009073e2046332784fea124a731ebe4b4cc4407a21f408f",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 251982,
-      "lines": 3767,
-      "sha256": "163e8a56cf0c4da1fb648c200b3053b3eb75c9e2a29aeaa91683cfda01345b43",
+      "bytes": 252283,
+      "lines": 3772,
+      "sha256": "5711836e0984f2c41584590fc8b39fe82a65ad173b2e3c091e0fd90e1cabbf54",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 253149,
-      "lines": 3707,
-      "sha256": "5e66a65fab179fc5a5c9bde0a58046a09a381b3e53a8c6136f19aa27746bc817",
+      "bytes": 253464,
+      "lines": 3712,
+      "sha256": "fa006ff7d4231fa617a1b81722b4c419e41f5c4146ed4f0179dd36eb3c25b479",
       "binary": false
     },
     {
@@ -150965,9 +151052,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 242530,
-      "lines": 3707,
-      "sha256": "e7f13175ec9ccac39d1774bbbf3a3ba956d48045ce5a20a62d923a3585ba2486",
+      "bytes": 242828,
+      "lines": 3712,
+      "sha256": "1e0cf8c62cde94c56151dc72747d1eb387afeac92fbabf8c3ad4308ef22e0251",
       "binary": false
     },
     {
@@ -170804,9 +170891,9 @@
       "path": "tests/components/counselor-home-on-track-caption.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2435,
-      "lines": 45,
-      "sha256": "5acadf59ec0fdce77ccf4c94179fde000c57b40d1e55dfe0c233232fe7ef1a49",
+      "bytes": 2207,
+      "lines": 42,
+      "sha256": "ebb1456c280944296ff7514f296a806aeb185e7334473e1ae843a8f3cb520a07",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -171562,20 +171649,25 @@
       "path": "tests/components/member-approval-status.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7249,
-      "lines": 115,
-      "sha256": "5c4b54cfc104cff3dfb65a256becd4749d4e345d786649a897dba02690127d8a",
+      "bytes": 14859,
+      "lines": 262,
+      "sha256": "e4048ba38838bf2b6e00a76ccc24ede2624ea5ff9a87b7d2d7af010bdf23fe6e",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "MEMBER_ID",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
           "name": "show",
-          "line": 12,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "stage",
-          "line": 18,
+          "line": 29,
           "kind": "Variable"
         }
       ],
@@ -172545,30 +172637,35 @@
       "path": "tests/components/stat-tile-trend-slot.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5566,
-      "lines": 148,
-      "sha256": "02ce4762c1071a63898d2ee5e126ea5538e1f970d7ab87b21264d72e591b2d5a",
+      "bytes": 6855,
+      "lines": 178,
+      "sha256": "b2f7fe8b4fc6712fb2504b26933a309f3dfd2800337edb4b8ec2a2301fa81031",
       "binary": false,
       "exports": [],
       "declarations": [
         {
+          "name": "NO_TREND_LABEL",
+          "line": 36,
+          "kind": "Variable"
+        },
+        {
           "name": "renderKit",
-          "line": 38,
+          "line": 44,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "liveProps",
-          "line": 47,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "sparklines",
-          "line": 72,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "placeholders",
-          "line": 76,
+          "line": 82,
           "kind": "FunctionDeclaration"
         }
       ],

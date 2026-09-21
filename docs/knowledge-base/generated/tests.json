@@ -8044,6 +8044,34 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/member/memberApprovalCardPlacement.test.ts",
+    "area": "libraries",
+    "domain": "member-counselor",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/memberApprovalStatus.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/member/memberApprovalCardPlacement.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/member/memberApprovalStatus.test.ts",
     "area": "libraries",
     "domain": "member-counselor",
@@ -23227,36 +23255,41 @@
     "domain": "tests",
     "frameworkImports": [
       "@testing-library/react",
+      "@testing-library/user-event",
       "vitest"
     ],
     "localReferences": [
       {
         "file": "messages/en.json",
-        "line": 4
-      },
-      {
-        "file": "components/portal/MemberApprovalStatusCard.tsx",
         "line": 5
       },
       {
-        "file": "components/portal/MemberFirstCertProgressBar.tsx",
+        "file": "components/portal/MemberApprovalStatusCard.tsx",
         "line": 6
       },
       {
-        "file": "lib/member/memberApprovalStatus.ts",
+        "file": "components/portal/MemberFirstCertProgressBar.tsx",
         "line": 7
       },
       {
-        "file": "lib/formatDate.ts",
+        "file": "lib/member/memberApprovalStatus.ts",
         "line": 8
       },
       {
-        "file": "lib/i18n/pickRootClientMessages.ts",
+        "file": "lib/member/memberApprovalCardPlacement.ts",
         "line": 9
       },
       {
+        "file": "lib/formatDate.ts",
+        "line": 14
+      },
+      {
+        "file": "lib/i18n/pickRootClientMessages.ts",
+        "line": 15
+      },
+      {
         "file": "messages/es.json",
-        "line": 10
+        "line": 16
       }
     ],
     "kind": "test-candidate",
@@ -24374,19 +24407,15 @@
     "localReferences": [
       {
         "file": "messages/en.json",
-        "line": 27
+        "line": 31
       },
       {
         "file": "components/portal/kit/pages/member/MemberHomeKit.tsx",
-        "line": 28
+        "line": 32
       },
       {
         "file": "components/portal/kit/CommandCenter.tsx",
-        "line": 29
-      },
-      {
-        "file": "components/portal/kit/index.ts",
-        "line": 30
+        "line": 33
       }
     ],
     "kind": "test-candidate",

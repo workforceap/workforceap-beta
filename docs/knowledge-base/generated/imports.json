@@ -9513,8 +9513,16 @@
   },
   {
     "from": "app/(portal)/dashboard/page.tsx",
-    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "specifier": "@/lib/member/memberApprovalCardPlacement",
     "line": 75,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalCardPlacement.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/page.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 76,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
@@ -9522,7 +9530,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/SkillMissionTeaserCard",
-    "line": 76,
+    "line": 77,
     "kind": "import",
     "external": false,
     "target": "components/portal/SkillMissionTeaserCard.tsx"
@@ -9530,7 +9538,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/skillMissions",
-    "line": 79,
+    "line": 80,
     "kind": "import",
     "external": false,
     "target": "lib/member/skillMissions.ts"
@@ -9538,7 +9546,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 80,
+    "line": 81,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -9546,7 +9554,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/portal/MemberCareerPathSection",
-    "line": 83,
+    "line": 84,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/MemberCareerPathSection.tsx"
@@ -9554,7 +9562,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./LogCertificationModal",
-    "line": 86,
+    "line": 87,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/LogCertificationModal.tsx"
@@ -9562,7 +9570,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "./PlacementConfirmationStrip",
-    "line": 89,
+    "line": 90,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/PlacementConfirmationStrip.tsx"
@@ -9570,7 +9578,7 @@
   {
     "from": "app/(portal)/dashboard/page.tsx",
     "specifier": "@/components/pwa/PWAInstallPrompt",
-    "line": 92,
+    "line": 93,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/pwa/PWAInstallPrompt.tsx"
@@ -67432,6 +67440,30 @@
     "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
   },
   {
+    "from": "app/dev/member/home/page.tsx",
+    "specifier": "@/components/portal/MemberApprovalStatusCard",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/MemberApprovalStatusCard.tsx"
+  },
+  {
+    "from": "app/dev/member/home/page.tsx",
+    "specifier": "@/lib/member/memberApprovalCardPlacement",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalCardPlacement.ts"
+  },
+  {
+    "from": "app/dev/member/home/page.tsx",
+    "specifier": "@/lib/member/memberApprovalStatus",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
     "from": "app/dev/member/interview-coach/page.tsx",
     "specifier": "next/navigation",
     "line": 1,
@@ -79313,8 +79345,16 @@
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "next-intl",
+    "specifier": "react",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "next-intl",
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -79322,14 +79362,6 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 5,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "@astryxdesign/core/VStack",
     "line": 6,
     "kind": "import",
     "external": true,
@@ -79337,8 +79369,16 @@
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
-    "specifier": "@/components/portal/kit/StatusTag",
+    "specifier": "@astryxdesign/core/VStack",
     "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "@/components/portal/kit/StatusTag",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/StatusTag.tsx"
@@ -79346,7 +79386,7 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/i18n/date",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/date.ts"
@@ -79354,15 +79394,23 @@
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
   },
   {
     "from": "components/portal/MemberApprovalStatusCard.tsx",
+    "specifier": "@/lib/member/memberApprovalCardPlacement",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalCardPlacement.ts"
+  },
+  {
+    "from": "components/portal/MemberApprovalStatusCard.tsx",
     "specifier": "@/lib/member/memberApprovalStatus",
-    "line": 10,
+    "line": 16,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
@@ -88545,8 +88593,16 @@
   },
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
-    "specifier": "lucide-react",
+    "specifier": "next-intl",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -88554,7 +88610,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "lucide-react",
-    "line": 19,
+    "line": 20,
     "kind": "type",
     "external": true,
     "package": "lucide-react"
@@ -88562,7 +88618,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "next/link",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -88570,7 +88626,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -88578,7 +88634,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/MemberDoThisNextCard",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberDoThisNextCard.tsx"
@@ -88586,7 +88642,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 37,
+    "line": 38,
     "kind": "type",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -88594,7 +88650,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 38,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -110422,6 +110478,46 @@
     "kind": "type",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/member/memberApprovalCardPlacement.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberApprovalCardPlacement.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberApprovalCardPlacement.test.ts",
+    "specifier": "./memberApprovalStatus",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
+  },
+  {
+    "from": "lib/member/memberApprovalCardPlacement.test.ts",
+    "specifier": "./memberApprovalCardPlacement",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalCardPlacement.ts"
+  },
+  {
+    "from": "lib/member/memberApprovalCardPlacement.ts",
+    "specifier": "./memberApprovalStatus",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "lib/member/memberApprovalStatus.ts"
   },
   {
     "from": "lib/member/memberApprovalStatus.test.ts",
@@ -137833,8 +137929,16 @@
   },
   {
     "from": "tests/components/member-approval-status.spec.tsx",
-    "specifier": "next-intl",
+    "specifier": "@testing-library/user-event",
     "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/user-event"
+  },
+  {
+    "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "next-intl",
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -137842,7 +137946,7 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/messages/en.json",
-    "line": 4,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
@@ -137850,7 +137954,7 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/components/portal/MemberApprovalStatusCard",
-    "line": 5,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberApprovalStatusCard.tsx"
@@ -137858,7 +137962,7 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/components/portal/MemberFirstCertProgressBar",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberFirstCertProgressBar.tsx"
@@ -137866,15 +137970,23 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/lib/member/memberApprovalStatus",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberApprovalStatus.ts"
   },
   {
     "from": "tests/components/member-approval-status.spec.tsx",
+    "specifier": "@/lib/member/memberApprovalCardPlacement",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberApprovalCardPlacement.ts"
+  },
+  {
+    "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/lib/formatDate",
-    "line": 8,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/formatDate.ts"
@@ -137882,7 +137994,7 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/lib/i18n/pickRootClientMessages",
-    "line": 9,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/pickRootClientMessages.ts"
@@ -137890,7 +138002,7 @@
   {
     "from": "tests/components/member-approval-status.spec.tsx",
     "specifier": "@/messages/es.json",
-    "line": 10,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "messages/es.json"
@@ -139466,7 +139578,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "vitest",
-    "line": 22,
+    "line": 26,
     "kind": "import",
     "external": true,
     "package": "vitest"
@@ -139474,7 +139586,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "@testing-library/react",
-    "line": 23,
+    "line": 27,
     "kind": "import",
     "external": true,
     "package": "@testing-library/react"
@@ -139482,7 +139594,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "next-intl",
-    "line": 24,
+    "line": 28,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -139490,7 +139602,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "react",
-    "line": 25,
+    "line": 29,
     "kind": "type",
     "external": true,
     "package": "react"
@@ -139498,7 +139610,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "lucide-react",
-    "line": 26,
+    "line": 30,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -139506,7 +139618,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "@/messages/en.json",
-    "line": 27,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "messages/en.json"
@@ -139514,7 +139626,7 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
-    "line": 28,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
@@ -139522,18 +139634,10 @@
   {
     "from": "tests/components/stat-tile-trend-slot.spec.tsx",
     "specifier": "@/components/portal/kit/CommandCenter",
-    "line": 29,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/CommandCenter.tsx"
-  },
-  {
-    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 30,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "tests/components/students-roster-identity.spec.tsx",

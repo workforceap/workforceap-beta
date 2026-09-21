@@ -3346,6 +3346,10 @@
     }
   },
   "memberApproval": {
+    "dismiss": "Hide this",
+    "dismissLabel": "Hide your approval status",
+    "restore": "Show your approval status",
+    "summaryAllApproved": "Every saved step is approved; the Coursera invitation is not confirmed here.",
     "title": "Your approval status",
     "intro": "Review the latest saved steps. Your team can explain what is still needed.",
     "application": "Application",
