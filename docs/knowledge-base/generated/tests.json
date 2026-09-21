@@ -2652,6 +2652,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/admin/reportingHub.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/reportingHub.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/admin/runAdminJobMatchesGet.test.ts",
     "area": "libraries",
     "domain": "administration",
@@ -19007,6 +19031,10 @@
       {
         "file": "app/admin/exports/page.tsx",
         "line": 43
+      },
+      {
+        "file": "app/admin/reporting/sections/ExportsSection.tsx",
+        "line": 44
       }
     ],
     "kind": "test-candidate",
@@ -21385,6 +21413,63 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/admin-reporting-hub.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/admin/reporting/page.tsx",
+        "line": 95
+      },
+      {
+        "file": "app/admin/analytics/page.tsx",
+        "line": 96
+      },
+      {
+        "file": "app/admin/metrics/page.tsx",
+        "line": 97
+      },
+      {
+        "file": "app/admin/board/page.tsx",
+        "line": 98
+      },
+      {
+        "file": "app/admin/outcomes/page.tsx",
+        "line": 99
+      },
+      {
+        "file": "app/admin/training-progress/page.tsx",
+        "line": 100
+      },
+      {
+        "file": "app/admin/exports/page.tsx",
+        "line": 101
+      },
+      {
+        "file": "lib/admin/reportingHub.ts",
+        "line": 102
+      },
+      {
+        "file": "lib/admin/analytics.ts",
+        "line": 235
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/admin-roster-routes.spec.tsx",
     "area": "tests",
     "domain": "tests",
@@ -21395,19 +21480,19 @@
     "localReferences": [
       {
         "file": "lib/admin/studentsRosterLoad.ts",
-        "line": 39
+        "line": 51
       },
       {
         "file": "app/admin/students/page.tsx",
-        "line": 57
+        "line": 69
       },
       {
         "file": "app/admin/training-progress/page.tsx",
-        "line": 58
+        "line": 70
       },
       {
         "file": "app/admin/members/training/page.tsx",
-        "line": 59
+        "line": 71
       }
     ],
     "kind": "test-candidate",

@@ -150,6 +150,12 @@ const TARGETS = [
   { name: 'staff-pipeline-funnel', path: '/dev/staff/pipeline-funnel' },
   { name: 'staff-crons-monitor', path: '/dev/staff/crons-monitor' },
   { name: 'staff-counselors', path: '/dev/staff/counselors' },
+  // Admin reporting hub (app/dev/staff/reporting showcase, one tab per URL)
+  { name: 'staff-reporting-overview', path: '/dev/staff/reporting' },
+  { name: 'staff-reporting-outcomes', path: '/dev/staff/reporting?tab=outcomes' },
+  { name: 'staff-reporting-training', path: '/dev/staff/reporting?tab=training' },
+  { name: 'staff-reporting-coursera', path: '/dev/staff/reporting?tab=coursera' },
+  { name: 'staff-reporting-exports', path: '/dev/staff/reporting?tab=exports' },
 ].filter((t) => !ONLY || t.name === ONLY || t.name.startsWith(`${ONLY}-`) || t.path.includes(ONLY));
 
 const DEV_ENV = {

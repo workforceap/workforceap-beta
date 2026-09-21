@@ -10,9 +10,8 @@ import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/Segme
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import {
-  DesignSurface,
-  PageOpener,
   DataTable,
+  PageOpener,
   Avatar,
   FormField,
   KpiStrip,
@@ -48,6 +47,7 @@ import {
   type StudentsRosterChip,
   type StudentsRosterView,
 } from '@/lib/admin/studentsRosterView';
+import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
  * Students roster — the one admin roster, rendered with a view preset
@@ -133,6 +133,8 @@ export interface StudentsRosterKitProps {
    * the page). Unknown for this view falls back to "All".
    */
   initialChip?: StudentFilter;
+  /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1); the view nav stays. */
+  embedded?: boolean;
 }
 
 const DEFAULT_STUDENTS: StudentRow[] = [
@@ -241,6 +243,7 @@ export function StudentsRosterKit({
   total = 847,
   showingLabel,
   initialChip,
+  embedded = false,
 }: StudentsRosterKitProps) {
   const router = useRouter();
   const copy = STUDENTS_ROSTER_VIEW_COPY[view];
@@ -507,30 +510,28 @@ export function StudentsRosterKit({
         ? <Token label={row.status} size="sm" color={STATUS_TOKEN_COLOR[row.status]} />
         : null;
 
-  return (
-    <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener
-        className="wa-mb-5"
-        title={copy.title}
-        kicker={copy.kicker}
-        lede={copy.lede}
-        action={
-          <nav aria-label="Roster views" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {isTraining ? (
-              <>
-                <NavButton href={hrefs.roster} label="Roster" />
-                <NavButton href={TRAINING_PROGRESS_LEGACY_HREF} label="Detailed view" />
-              </>
-            ) : (
-              <>
-                <NavButton href={hrefs.training} label="Training progress" />
-                <NavButton href={MEMBERS_MANAGEMENT_HREF} label="Management hub" />
-              </>
-            )}
-          </nav>
-        }
-      />
+  const viewNav = (
+    <nav aria-label="Roster views" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {isTraining ? (
+        <>
+          <NavButton href={hrefs.roster} label="Roster" />
+          <NavButton href={TRAINING_PROGRESS_LEGACY_HREF} label="Detailed view" />
+        </>
+      ) : (
+        <>
+          <NavButton href={hrefs.training} label="Training progress" />
+          <NavButton href={MEMBERS_MANAGEMENT_HREF} label="Management hub" />
+        </>
+      )}
+    </nav>
+  );
 
+  return (
+    <EmbeddableFrame
+      embedded={embedded}
+      action={viewNav}
+      opener={<PageOpener className="wa-mb-5" title={copy.title} kicker={copy.kicker} lede={copy.lede} action={viewNav} />}
+    >
       {notice ? (
         <p role="status" className="wa-kit-training-notice" data-testid="students-roster-notice">
           {notice}
@@ -634,6 +635,6 @@ export function StudentsRosterKit({
       >
         {showingLabel ?? `Showing ${visible.length} of ${total}`}
       </p>
-    </DesignSurface>
+    </EmbeddableFrame>
   );
 }
