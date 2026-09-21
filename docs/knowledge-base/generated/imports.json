@@ -20442,7 +20442,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "next",
-    "line": 23,
+    "line": 24,
     "kind": "type",
     "external": true,
     "package": "next"
@@ -20450,14 +20450,6 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "next/link",
-    "line": 24,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "app/admin/growth/page.tsx",
-    "specifier": "next/navigation",
     "line": 25,
     "kind": "import",
     "external": true,
@@ -20465,8 +20457,16 @@
   },
   {
     "from": "app/admin/growth/page.tsx",
-    "specifier": "@/app/seo",
+    "specifier": "next/navigation",
     "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/growth/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -20474,7 +20474,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 27,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -20482,7 +20482,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -20490,7 +20490,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -20498,7 +20498,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 30,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -20506,7 +20506,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/tenant/organization",
-    "line": 32,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -20514,7 +20514,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 33,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -20522,7 +20522,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/components/portal/ui/PortalCard",
-    "line": 34,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/PortalCard.tsx"
@@ -20530,7 +20530,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/lib/analytics/conversionValue",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/conversionValue.ts"
@@ -20538,7 +20538,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/GrowthKit",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/GrowthKit.tsx"
@@ -20546,7 +20546,7 @@
   {
     "from": "app/admin/growth/page.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 37,
+    "line": 38,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -88634,7 +88634,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/MemberDoThisNextCard",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberDoThisNextCard.tsx"
@@ -88642,7 +88642,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 38,
+    "line": 39,
     "kind": "type",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -88650,7 +88650,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 39,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -93722,7 +93722,7 @@
   {
     "from": "lib/admin/analyticsTabs.ts",
     "specifier": "@/components/portal/kit/Tabs",
-    "line": 11,
+    "line": 14,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/Tabs.tsx"
@@ -93730,7 +93730,7 @@
   {
     "from": "lib/admin/analyticsTabs.ts",
     "specifier": "@/components/portal/kit/KpiStrip",
-    "line": 12,
+    "line": 15,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/KpiStrip.tsx"
@@ -93738,7 +93738,7 @@
   {
     "from": "lib/admin/analyticsTabs.ts",
     "specifier": "@/components/portal/kit/Charts",
-    "line": 13,
+    "line": 16,
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/Charts.tsx"
@@ -139286,6 +139286,46 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalTeamChatClient.tsx"
+  },
+  {
+    "from": "tests/components/program-health-tone.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/program-health-tone.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/program-health-tone.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
+    "from": "tests/components/program-health-tone.spec.tsx",
+    "specifier": "@/lib/admin/commandCenterHelpers",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenterHelpers.ts"
+  },
+  {
+    "from": "tests/components/program-health-tone.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "tests/components/program-outcome-claims.spec.tsx",

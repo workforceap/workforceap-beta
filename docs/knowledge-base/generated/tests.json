@@ -24178,6 +24178,39 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/program-health-tone.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
+        "line": 4
+      },
+      {
+        "file": "lib/admin/commandCenterHelpers.ts",
+        "line": 5
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 6
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/program-outcome-claims.spec.tsx",
     "area": "tests",
     "domain": "tests",

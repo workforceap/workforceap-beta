@@ -30,6 +30,7 @@ import {
   colorVar,
   cx,
   toneClass,
+  tonePaint,
   type Column,
   type KitColor,
   type KitTone,
@@ -112,6 +113,19 @@ export interface WeeklyActivityPoint {
 export interface PointsLedgerEntry {
   label: string;
   amount: number;
+  /**
+   * Semantic state of the entry; paints the dot through the tone hook, the
+   * same contract `RankDatum` takes. Omit for a plain accent dot.
+   *
+   * Note that the live member home does NOT set this, and should not: today's
+   * dot colour comes from `pointsLedgerColor()`, which sorts an event into
+   * job / study / other. That is a category, not a state — "you applied for a
+   * job" is not `ok` and "you studied today" is not `warn` — so those callers
+   * stay on `color` until someone decides what, if anything, a points entry
+   * could be in a good or bad state about.
+   */
+  tone?: KitTone;
+  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
   color?: KitColor;
 }
 
@@ -194,7 +208,16 @@ function defaultStageIndex(tone: JobStageTone): number {
   return 1;
 }
 
-/** Deterministic brand-safe color for a company-initial avatar (no arbitrary hex). */
+/**
+ * Deterministic brand-safe color for a company-initial avatar (no arbitrary hex).
+ *
+ * Already on the design tokens — every entry is a `--wa-*` custom property, so
+ * light/dark and rebrands follow for free. Deliberately NOT moved onto the
+ * `KitTone` palette: the hue here identifies an employer, it does not rate one.
+ * A tone would make "Acme" green and "Globex" amber and invite the reader to
+ * see a judgement about the company that nothing in the data supports. The
+ * list is ordered for adjacent-swatch contrast, not by severity.
+ */
 const LOGO_COLORS = ['var(--wa-accent)', 'var(--wa-info)', 'var(--wa-gold)', 'var(--wa-success)', 'var(--wa-accent-dark)'];
 function logoColorFor(name: string): string {
   let hash = 0;
@@ -668,22 +691,10 @@ export function MemberHomeKit({
           icon={<Home size={13} aria-hidden="true" />}
           action={
             currentStreak > 0 ? (
-              <span
-                className="wa-flex wa-items-center wa-gap-2"
-                style={{
-                  padding: '7px 13px 7px 10px',
-                  borderRadius: 999,
-                  background: 'color-mix(in srgb, var(--wa-gold) 12%, transparent)',
-                  border: '1px solid color-mix(in srgb, var(--wa-gold) 35%, transparent)',
-                  fontSize: 'var(--wa-type-meta)',
-                  fontWeight: 700,
-                  color: 'var(--wa-gold-dark)',
-                  flexShrink: 0,
-                }}
-              >
+              <span className="wa-kit-streak-chip">
                 <Flame size={15} aria-hidden />
                 <span>
-                  <b style={{ color: 'var(--wa-text)', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{currentStreak}</b>
+                  <b>{currentStreak}</b>
                   -day streak{longestStreak > currentStreak ? ` · best ${longestStreak}` : ''}
                 </span>
               </span>
@@ -873,9 +884,21 @@ export function MemberHomeKit({
             {pointsLedger.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 4 }}>
                 {pointsLedger.map((entry, i) => (
-                  <div key={`${entry.label}-${i}`} className="wa-flex wa-items-center wa-justify-between" style={{ fontSize: 'var(--wa-type-meta)' }}>
+                  <div
+                    key={`${entry.label}-${i}`}
+                    className={cx('wa-flex wa-items-center wa-justify-between', toneClass(entry.tone))}
+                    style={{ fontSize: 'var(--wa-type-meta)' }}
+                  >
                     <span className="wa-flex wa-items-center wa-gap-2" style={{ color: 'var(--wa-muted)', fontWeight: 600 }}>
-                      <span aria-hidden style={{ width: 6, height: 6, borderRadius: 999, background: colorVar(entry.color ?? 'accent') }} />
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: 999,
+                          background: tonePaint(entry.tone, entry.color) ?? colorVar('accent'),
+                        }}
+                      />
                       {entry.label}
                     </span>
                     <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>+{entry.amount}</span>
