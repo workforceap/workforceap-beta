@@ -58,7 +58,15 @@ export async function refreshMemberCounselorThread(tx: Prisma.TransactionClient,
     if (existing.counselorUserId === counselorUserId) return existing;
     return tx.messageThread.update({ where: { id: existing.id }, data: { counselorUserId } });
   }
-  return tx.messageThread.create({ data: { kind: 'member', memberId, counselorUserId } });
+  // `MessageThread.memberId` is unique: a concurrent first open (member inbox
+  // and staff record at once) must converge on one row instead of one side
+  // failing with a unique violation, so the create is an upsert keyed on the
+  // member — the same shape `lib/counselor/assignment.ts` uses on handoff.
+  return tx.messageThread.upsert({
+    where: { memberId },
+    create: { kind: 'member', memberId, counselorUserId },
+    update: { counselorUserId },
+  });
 }
 
 export async function getOrCreateMemberCounselorThread(

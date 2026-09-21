@@ -4,7 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { Dialog } from '@astryxdesign/core/Dialog';
+import { Layout, LayoutContent, LayoutFooter, LayoutHeader, HStack } from '@astryxdesign/core/Layout';
+import { Button } from '@astryxdesign/core/Button';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
 import {
   X,
   ShieldAlert,
@@ -63,6 +67,8 @@ interface CounselorNote {
   createdAt: string;
 }
 
+const TITLE_ID = 'at-risk-detail-title';
+
 interface Props {
   member: AtRiskMember | null;
   onClose: () => void;
@@ -79,9 +85,6 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
   const [savingNote, setSavingNote] = useState(false);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Kit trap: Tab containment + Escape (shared stack) + focus restore to the
-  // triggering roster row when the modal closes.
-  const dialogRef = useFocusTrap<HTMLDivElement>(!!member, { onEscape: onClose });
 
   const fetchTimeline = useCallback(async (userId: string) => {
     setLoadingTimeline(true);
@@ -162,98 +165,68 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
         ? 'var(--color-gold)'
         : 'var(--color-blue)';
 
-  return (
-    <div
-      ref={dialogRef}
-      className="at-risk-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`At-risk detail: ${member.name}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.45)',
-        zIndex: 2000,
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        padding: '1rem',
-        overflowY: 'auto'}}
-    >
-      <div
-        className="at-risk-modal"
-        style={{
-          background: 'var(--surface-container-lowest)',
-          borderRadius: '1rem',
-          width: '100%',
-          maxWidth: '640px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          border: '1px solid var(--outline-variant)',
-          boxShadow: '0 24px 48px rgba(0,0,0,0.25)',
-          display: 'flex',
-          flexDirection: 'column'}}
-      >
-        {/* Header */}
-        <div
-          style={{
-            padding: '1.25rem 1.5rem',
-            borderBottom: '1px solid var(--outline-variant)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            position: 'sticky',
-            top: 0,
-            background: 'var(--surface-container-lowest)',
-            zIndex: 10,
-            borderRadius: '1rem 1rem 0 0'}}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
-            <div
-              style={{
-                width: '2.75rem',
-                height: '2.75rem',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: `color-mix(in srgb, ${riskColor} 12%, transparent)`,
-                border: `2px solid ${riskColor}40`,
-                flexShrink: 0}}
-            >
-              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: riskColor }}>{member.score}</span>
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.2 }}>{member.name}</h2>
-              <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                {member.email}
-                {member.phone ? ` · ${member.phone}` : ''}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.35rem',
-              borderRadius: '0.5rem',
-              color: 'var(--color-on-surface-variant)',
-              flexShrink: 0}}
-            aria-label="Close"
-          >
-            <X size={20} />
-          </button>
-        </div>
+  const handleOpenChange = (open: boolean) => {
+    if (!open) onClose();
+  };
 
-        {/* Body */}
-        <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+  // Kit dialog primitive (Astryx `Dialog`, native <dialog>.showModal()): focus
+  // trap, Escape (shared kit stack), backdrop dismiss and focus restore to the
+  // roster row come from the primitive; `aria-labelledby` names the dialog
+  // after the member heading, which `data-autofocus` puts focus on at open.
+  return (
+    <Dialog
+      isOpen
+      onOpenChange={handleOpenChange}
+      purpose="info"
+      width={640}
+      maxHeight="90vh"
+      aria-labelledby={TITLE_ID}
+      className="at-risk-modal"
+      data-testid="at-risk-detail-dialog"
+    >
+      <Layout
+        header={
+          <LayoutHeader hasDivider>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                <div
+                  aria-hidden
+                  style={{
+                    width: '2.75rem',
+                    height: '2.75rem',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `color-mix(in srgb, ${riskColor} 12%, transparent)`,
+                    border: `2px solid ${riskColor}40`,
+                    flexShrink: 0}}
+                >
+                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: riskColor }}>{member.score}</span>
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <Heading level={2} id={TITLE_ID} tabIndex={-1} data-autofocus="true" style={{ outline: 'none' }}>
+                    {member.name}
+                  </Heading>
+                  <Text type="body" size="sm" color="secondary">
+                    {member.email}
+                    {member.phone ? ` · ${member.phone}` : ''}
+                  </Text>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                label="Close"
+                icon={<X size={18} aria-hidden />}
+                isIconOnly
+                onClick={onClose}
+              />
+            </div>
+          </LayoutHeader>
+        }
+        content={
+          <LayoutContent isScrollable>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Risk level + status */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
             <span
@@ -496,55 +469,45 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
           </div>
         </div>
 
-        {/* Footer actions */}
-        <div
-          style={{
-            padding: '1rem 1.5rem',
-            borderTop: '1px solid var(--outline-variant)',
-            display: 'flex',
-            gap: '0.5rem',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            position: 'sticky',
-            bottom: 0,
-            background: 'var(--surface-container-lowest)',
-            borderRadius: '0 0 1rem 1rem'}}
-        >
-          {member.status === 'open' && (
-            <button
-              type="button"
-              className="btn btn-muted btn-sm"
-              disabled={acting}
-              onClick={() => handleStatusChange('acknowledged')}
-            >
-              {acting ? <PortalInlineSpinner size={14} /> : <Check size={14} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />}
-              Acknowledge
-            </button>
-          )}
-          {member.status !== 'resolved' && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              disabled={acting}
-              onClick={() => handleStatusChange('resolved')}
-            >
-              {acting ? <PortalInlineSpinner size={14} /> : 'Resolve'}
-            </button>
-          )}
-          {member.status !== 'escalated' && (
-            <button
-              type="button"
-              className="btn btn-accent btn-sm"
-              disabled={acting}
-              onClick={() => handleStatusChange('escalated')}
-              title="Escalate to admin for additional support"
-            >
-              {acting ? <PortalInlineSpinner size={14} /> : <AlertTriangle size={14} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />}
-              Escalate
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+          </LayoutContent>
+        }
+        footer={
+          <LayoutFooter hasDivider>
+            <HStack gap={2} justify="end" wrap="wrap">
+              {member.status === 'open' && (
+                <Button
+                  label="Acknowledge"
+                  variant="secondary"
+                  icon={<Check size={14} aria-hidden />}
+                  isDisabled={acting}
+                  isLoading={acting}
+                  onClick={() => void handleStatusChange('acknowledged')}
+                />
+              )}
+              {member.status !== 'resolved' && (
+                <Button
+                  label="Resolve"
+                  variant="primary"
+                  isDisabled={acting}
+                  isLoading={acting}
+                  onClick={() => void handleStatusChange('resolved')}
+                />
+              )}
+              {member.status !== 'escalated' && (
+                <Button
+                  label="Escalate"
+                  variant="secondary"
+                  icon={<AlertTriangle size={14} aria-hidden />}
+                  tooltip="Escalate to admin for additional support"
+                  isDisabled={acting}
+                  isLoading={acting}
+                  onClick={() => void handleStatusChange('escalated')}
+                />
+              )}
+            </HStack>
+          </LayoutFooter>
+        }
+      />
+    </Dialog>
   );
 }

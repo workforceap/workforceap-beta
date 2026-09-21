@@ -9070,6 +9070,40 @@
     ]
   },
   {
+    "file": "app/admin/guide/page.tsx",
+    "kind": "page",
+    "path": "/admin/guide",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "generateMetadata",
+        "line": 22,
+        "kind": "FunctionDeclaration"
+      },
+      {
+        "name": "default",
+        "line": 114,
+        "kind": "FunctionDeclaration",
+        "localName": "AdminGuidePage"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/tenant/adminPageScope",
+        "line": 6,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/admin/health/page.tsx",
     "kind": "page",
     "path": "/admin/health",

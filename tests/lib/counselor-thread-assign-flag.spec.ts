@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   findUniqueThread,
-  createThread,
+  upsertThread,
   updateThread,
   findFirstUser,
   findFirstAssignment,
@@ -11,7 +11,7 @@ const {
 } = vi.hoisted(() => ({
   lockMember: vi.fn(),
   findUniqueThread: vi.fn(),
-  createThread: vi.fn(),
+  upsertThread: vi.fn(),
   updateThread: vi.fn(),
   findFirstUser: vi.fn(),
   findFirstAssignment: vi.fn(),
@@ -20,7 +20,9 @@ const {
 
 vi.mock('@/lib/db/prisma', () => {
   const prisma = {
-    messageThread: { findUnique: findUniqueThread, create: createThread, update: updateThread },
+    // No `create`: the first open goes through `upsert` on the unique memberId
+    // (a stray create would throw "not a function" and fail the spec).
+    messageThread: { findUnique: findUniqueThread, upsert: upsertThread, update: updateThread },
     user: { findFirst: findFirstUser },
     counselorAssignment: { findFirst: findFirstAssignment },
     $queryRaw: lockMember,
@@ -39,7 +41,7 @@ describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
     vi.clearAllMocks();
     lockMember.mockResolvedValue([{ organizationId: 'org-1' }]);
     findUniqueThread.mockResolvedValue(null);
-    createThread.mockResolvedValue({ id: 'thread-1', memberId: 'member-1', counselorUserId: null });
+    upsertThread.mockImplementation(async ({ create }) => ({ id: 'thread-1', ...create }));
     findFirstAssignment.mockResolvedValue(null);
     findFirstUser.mockResolvedValue({ organizationId: 'org-1' });
     ensureSelfServeCounselorAssigned.mockResolvedValue({
@@ -53,7 +55,30 @@ describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
     await getOrCreateMemberCounselorThread('member-1');
     expect(ensureSelfServeCounselorAssigned).not.toHaveBeenCalled();
     expect(findFirstUser).not.toHaveBeenCalled();
-    expect(createThread).toHaveBeenCalled();
+    expect(upsertThread).toHaveBeenCalledWith({
+      where: { memberId: 'member-1' },
+      create: { kind: 'member', memberId: 'member-1', counselorUserId: null },
+      update: { counselorUserId: null },
+    });
+  });
+
+  it('first open upserts on the unique memberId so a concurrent first open converges on one thread', async () => {
+    // Between findUnique (null) and the write, another request created the
+    // row: upsert takes the update branch and hands back that row with the
+    // current routing instead of throwing a unique violation.
+    findFirstAssignment.mockResolvedValue({ counselor: { userId: 'counselor-1', active: true } });
+    upsertThread.mockImplementation(async ({ where, update }) => ({ id: 'thread-raced', memberId: where.memberId, ...update }));
+
+    const thread = await getOrCreateMemberCounselorThread('member-1');
+
+    expect(upsertThread).toHaveBeenCalledTimes(1);
+    expect(upsertThread).toHaveBeenCalledWith({
+      where: { memberId: 'member-1' },
+      create: { kind: 'member', memberId: 'member-1', counselorUserId: 'counselor-1' },
+      update: { counselorUserId: 'counselor-1' },
+    });
+    expect(thread).toEqual({ id: 'thread-raced', memberId: 'member-1', counselorUserId: 'counselor-1' });
+    expect(updateThread).not.toHaveBeenCalled();
   });
 
   it('assigns only when the member-initiated flag is set', async () => {
@@ -84,7 +109,7 @@ describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
       data: { counselorUserId: 'counselor-1' },
     });
     expect(thread.counselorUserId).toBe('counselor-1');
-    expect(createThread).not.toHaveBeenCalled();
+    expect(upsertThread).not.toHaveBeenCalled();
   });
 
   it('partner-referred member thread open stays unowned when auto-assign declines', async () => {
@@ -99,7 +124,7 @@ describe('getOrCreateMemberCounselorThread assignIfUnassigned', () => {
     const thread = await getOrCreateMemberCounselorThread('member-1', { assignIfUnassigned: true });
 
     expect(updateThread).not.toHaveBeenCalled();
-    expect(createThread).not.toHaveBeenCalled();
+    expect(upsertThread).not.toHaveBeenCalled();
     expect(thread.counselorUserId).toBeNull();
   });
 });

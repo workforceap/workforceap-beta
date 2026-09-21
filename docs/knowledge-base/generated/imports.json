@@ -20456,6 +20456,70 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next/link",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next/navigation",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "app/seo.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/components/portal/PortalPageFrame",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalPageFrame.tsx"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
+  },
+  {
     "from": "app/admin/health/page.tsx",
     "specifier": "react",
     "line": 3,
@@ -72416,6 +72480,14 @@
     "package": "next"
   },
   {
+    "from": "components/admin/MemberPartnerSection.tsx",
+    "specifier": "./memberAssignmentSection.module.css",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/memberAssignmentSection.module.css"
+  },
+  {
     "from": "components/admin/MemberSubgroupSection.tsx",
     "specifier": "react",
     "line": 3,
@@ -72430,6 +72502,14 @@
     "kind": "import",
     "external": true,
     "package": "next"
+  },
+  {
+    "from": "components/admin/MemberSubgroupSection.tsx",
+    "specifier": "./memberAssignmentSection.module.css",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/memberAssignmentSection.module.css"
   },
   {
     "from": "components/admin/MembersListNav.tsx",
@@ -81873,16 +81953,48 @@
   },
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
-    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 7,
     "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Heading",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Text",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
     "specifier": "lucide-react",
-    "line": 8,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -81890,7 +82002,7 @@
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
     "specifier": "@/components/portal/PortalInlineSpinner",
-    "line": 21,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalInlineSpinner.tsx"
@@ -129528,6 +129640,54 @@
     "target": "app/admin/exports/page.tsx"
   },
   {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/app/admin/guide/page",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/guide/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
     "from": "tests/app/admin-job-ready-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -132304,6 +132464,38 @@
     "target": "tests/helpers/nativeDialogStub.ts"
   },
   {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@/components/admin/MemberPartnerSection",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/MemberPartnerSection.tsx"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@/components/admin/MemberSubgroupSection",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/MemberSubgroupSection.tsx"
+  },
+  {
     "from": "tests/components/admin-member-notes-panel.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -132694,6 +132886,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "@/components/portal/counselor/AtRiskDetailModal",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/counselor/AtRiskDetailModal.tsx"
   },
   {
     "from": "tests/components/at-risk-search-label.spec.tsx",
@@ -133214,6 +133430,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/commandCenterHealth.ts"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
   },
   {
     "from": "tests/components/counselor-note-saves.spec.tsx",
@@ -138290,7 +138538,7 @@
   {
     "from": "tests/lib/counselor-thread-assign-flag.spec.ts",
     "specifier": "@/lib/messages/counselorThread",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/messages/counselorThread.ts"

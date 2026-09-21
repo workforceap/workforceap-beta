@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "bdd0a5e1acf37f9af9b9e513eccc2e99d1c62b75b5ec02834f8958278ee58007",
+  "inputTreeSha256": "101b5e124dfb033968a28b23f4cfedd4eb03b0bd95c76e2b4acea8d9af2d761e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -17313,6 +17313,61 @@
         {
           "name": "AdminGrowthPage",
           "line": 142,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/admin/guide/page.tsx",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 12429,
+      "lines": 252,
+      "sha256": "d9d516b661bdb300d0d7d20467f4e1b66ce2aaae7278f3e182efdb2b9bcfe08a",
+      "binary": false,
+      "exports": [
+        {
+          "name": "generateMetadata",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "default",
+          "line": 114,
+          "kind": "FunctionDeclaration",
+          "localName": "AdminGuidePage"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "generateMetadata",
+          "line": 22,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CAPABILITIES",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "WORKSPACE",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "QUICK_ACTIONS",
+          "line": 84,
+          "kind": "Variable"
+        },
+        {
+          "name": "FAQS",
+          "line": 91,
+          "kind": "Variable"
+        },
+        {
+          "name": "AdminGuidePage",
+          "line": 114,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -52335,14 +52390,14 @@
       "path": "components/admin/MemberPartnerSection.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 3072,
-      "lines": 87,
-      "sha256": "473aa1ae7d307cc34183a8789b26c441c7e6200de75d8b844f5b997b6a87e012",
+      "bytes": 2901,
+      "lines": 88,
+      "sha256": "ed09c0bda44b7bca91b7ebd3c6231bd94ae3c947f54f0ace766e0589da85d3f1",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration",
           "localName": "MemberPartnerSection"
         }
@@ -52350,12 +52405,12 @@
       "declarations": [
         {
           "name": "PartnerOpt",
-          "line": 6,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberPartnerSection",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -52365,14 +52420,14 @@
       "path": "components/admin/MemberSubgroupSection.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 5017,
+      "bytes": 4618,
       "lines": 143,
-      "sha256": "fbea2e58b62c147449a211dc9cc22df790811d0e1d503f88e9af3400dd103aa7",
+      "sha256": "08466eb86ede5fb7a5f1ed1b1da6ba18717f3735e0558172ef702a700461132d",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration",
           "localName": "MemberSubgroupSection"
         }
@@ -52380,12 +52435,12 @@
       "declarations": [
         {
           "name": "SubgroupOpt",
-          "line": 6,
+          "line": 7,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberSubgroupSection",
-          "line": 8,
+          "line": 9,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -53698,6 +53753,15 @@
         }
       ],
       "directive": "use client"
+    },
+    {
+      "path": "components/admin/memberAssignmentSection.module.css",
+      "area": "components",
+      "domain": "administration",
+      "bytes": 1400,
+      "lines": 72,
+      "sha256": "98e3c231bbb7ae26e18bb9e628c75c52c23ae78a5241a711c5a2a1dff9a76654",
+      "binary": false
     },
     {
       "path": "components/admin/staffReadonly.module.css",
@@ -63663,14 +63727,14 @@
       "path": "components/portal/counselor/AtRiskDetailModal.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 19763,
-      "lines": 550,
-      "sha256": "9860b5d577596f06bb0628baf256e5f8de786c6b3ac5b8932387dc2207e6bbdd",
+      "bytes": 18730,
+      "lines": 513,
+      "sha256": "82151678d3f8b7fa210e8d8ac3498005a00f8fe8153aae4254ce4f36ec15b216",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 72,
+          "line": 78,
           "kind": "FunctionDeclaration",
           "localName": "AtRiskDetailModal"
         }
@@ -63678,32 +63742,37 @@
       "declarations": [
         {
           "name": "AtRiskFactor",
-          "line": 23,
+          "line": 27,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskMember",
-          "line": 29,
+          "line": 33,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "TimelineEvent",
-          "line": 51,
+          "line": 55,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CounselorNote",
-          "line": 59,
+          "line": 63,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "TITLE_ID",
+          "line": 70,
+          "kind": "Variable"
+        },
+        {
           "name": "Props",
-          "line": 66,
+          "line": 72,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AtRiskDetailModal",
-          "line": 72,
+          "line": 78,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64714,9 +64783,9 @@
       "path": "components/portal/kit/CommandCenter.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5897,
-      "lines": 180,
-      "sha256": "7216062604fa54a1835917fd8ceae1cd9e318c2add232a31698ca5dbb1b2239b",
+      "bytes": 6170,
+      "lines": 188,
+      "sha256": "a3475e623c950ecbb897991f4ed6a7daf13411ec9eff9d4a60e85ad10d92cf41",
       "binary": false,
       "exports": [
         {
@@ -64741,12 +64810,12 @@
         },
         {
           "name": "StageTrack",
-          "line": 129,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 152,
+          "line": 160,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64778,12 +64847,12 @@
         },
         {
           "name": "StageTrack",
-          "line": 129,
+          "line": 137,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 152,
+          "line": 160,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -70247,9 +70316,9 @@
       "path": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 16554,
-      "lines": 420,
-      "sha256": "3c0997379979027cb375c5480fdc26f0a1a455c464741f8aebf6d7b10084b4bf",
+      "bytes": 16819,
+      "lines": 430,
+      "sha256": "25e5b62c16633ebed0d026851e16e186af53ea505a127794542fea4818728468",
       "binary": false,
       "exports": [
         {
@@ -128385,9 +128454,9 @@
       "path": "lib/messages/counselorThread.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 5813,
-      "lines": 155,
-      "sha256": "c957b3f2b9788feda407392f63feaec83f87a008029d0471379c05b16b6c78da",
+      "bytes": 6191,
+      "lines": 163,
+      "sha256": "c8ff19b4c1f93f0751d97d804bc03c9eb1142f1f87e92acabe0c716d598fa94a",
       "binary": false,
       "exports": [
         {
@@ -128422,37 +128491,37 @@
         },
         {
           "name": "getOrCreateMemberCounselorThread",
-          "line": 64,
+          "line": 72,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertMemberCanAccessThread",
-          "line": 84,
+          "line": 92,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertStaffCanAccessThread",
-          "line": 91,
+          "line": 99,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertMemberCanPost",
-          "line": 132,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "assertStaffCanPost",
-          "line": 136,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "normalizeMessageBody",
           "line": 140,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "assertStaffCanPost",
+          "line": 144,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeMessageBody",
+          "line": 148,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "serializeMessage",
-          "line": 147,
+          "line": 155,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -128499,37 +128568,37 @@
         },
         {
           "name": "getOrCreateMemberCounselorThread",
-          "line": 64,
+          "line": 72,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertMemberCanAccessThread",
-          "line": 84,
+          "line": 92,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertStaffCanAccessThread",
-          "line": 91,
+          "line": 99,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "assertMemberCanPost",
-          "line": 132,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "assertStaffCanPost",
-          "line": 136,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "normalizeMessageBody",
           "line": 140,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "assertStaffCanPost",
+          "line": 144,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeMessageBody",
+          "line": 148,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "serializeMessage",
-          "line": 147,
+          "line": 155,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163814,6 +163883,24 @@
       "directive": null
     },
     {
+      "path": "tests/app/admin-guide-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3704,
+      "lines": 72,
+      "sha256": "8c91e2123a65b29bcdaade97937d087ab9f83db947485af090bb622d4202e29c",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "WORKSPACE_HREFS",
+          "line": 24,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/app/admin-job-ready-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -165306,6 +165393,24 @@
       "directive": null
     },
     {
+      "path": "tests/components/admin-member-assignment-sections.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3235,
+      "lines": 59,
+      "sha256": "4bc4e8b01e4d43ff46425866ff6e73ebf202177440fb3860084307df7ab849d2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "router",
+          "line": 4,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/admin-member-notes-panel.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -165669,6 +165774,39 @@
       "directive": null
     },
     {
+      "path": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4498,
+      "lines": 96,
+      "sha256": "babc991194712106653d9499aa4902a6f37f6cae442533e85ab04d3c08a9a5bc",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "dialogMethods",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "originalMethods",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "member",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "fetchMock",
+          "line": 48,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/components/at-risk-search-label.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -165978,6 +166116,18 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/components/counselor-home-on-track-caption.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 1946,
+      "lines": 39,
+      "sha256": "7ef1aa960e93dba3dada35120a754b7b5a545492f94a8e3fb417840195123963",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -169967,9 +170117,9 @@
       "path": "tests/lib/counselor-thread-assign-flag.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6850,
-      "lines": 153,
-      "sha256": "c196e0d48f44dd4063243b354a6b97a87f02af118aece423ed4a07ef0d715ccb",
+      "bytes": 8240,
+      "lines": 178,
+      "sha256": "5cc7bc0e18def3cde638ad98601d52236f8fcea0403128fe1102074efba202cd",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -169979,7 +170129,7 @@
           "kind": "Variable"
         },
         {
-          "name": "createThread",
+          "name": "upsertThread",
           "line": 3,
           "kind": "Variable"
         },

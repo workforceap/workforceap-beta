@@ -110,8 +110,8 @@
 | [components/admin/MemberDuplicatesClient.tsx](../../../components/admin/MemberDuplicatesClient.tsx) | 256 | administration | default:46 |
 | [components/admin/MemberMergeClient.test.tsx](../../../components/admin/MemberMergeClient.test.tsx) | 128 | administration |  |
 | [components/admin/MemberMergeClient.tsx](../../../components/admin/MemberMergeClient.tsx) | 346 | administration | default:18 |
-| [components/admin/MemberPartnerSection.tsx](../../../components/admin/MemberPartnerSection.tsx) | 87 | administration | default:8 |
-| [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:8 |
+| [components/admin/MemberPartnerSection.tsx](../../../components/admin/MemberPartnerSection.tsx) | 88 | administration | default:9 |
+| [components/admin/MemberSubgroupSection.tsx](../../../components/admin/MemberSubgroupSection.tsx) | 143 | administration | default:9 |
 | [components/admin/MembersListNav.tsx](../../../components/admin/MembersListNav.tsx) | 85 | administration | default:53 |
 | [components/admin/MembersTable.tsx](../../../components/admin/MembersTable.tsx) | 1208 | administration | default:278 |
 | [components/admin/MfaStatusBanner.tsx](../../../components/admin/MfaStatusBanner.tsx) | 67 | administration | default:5 |
@@ -141,6 +141,7 @@
 | [components/admin/WioaReviewFilterBar.tsx](../../../components/admin/WioaReviewFilterBar.tsx) | 28 | partners-funding | default:4 |
 | [components/admin/WioaScreeningReadonly.tsx](../../../components/admin/WioaScreeningReadonly.tsx) | 85 | partners-funding | default:26 |
 | [components/admin/coursera/MapToUserActions.tsx](../../../components/admin/coursera/MapToUserActions.tsx) | 266 | learning-coursera | default:67 |
+| [components/admin/memberAssignmentSection.module.css](../../../components/admin/memberAssignmentSection.module.css) | 72 | administration |  |
 | [components/admin/staffReadonly.module.css](../../../components/admin/staffReadonly.module.css) | 69 | administration |  |
 | [components/admin/useDirectoryNavigation.ts](../../../components/admin/useDirectoryNavigation.ts) | 86 | administration | useDirectoryNavigation:8 |
 | [components/analytics/ConversionMetrics.tsx](../../../components/analytics/ConversionMetrics.tsx) | 41 | administration | default:26 |
@@ -411,7 +412,7 @@
 | [components/portal/WorkspaceShell.tsx](../../../components/portal/WorkspaceShell.tsx) | 818 | components | default:94 |
 | [components/portal/YouthDashboardNotice.tsx](../../../components/portal/YouthDashboardNotice.tsx) | 123 | components | default:4 |
 | [components/portal/counselor/AtRiskDashboard.tsx](../../../components/portal/counselor/AtRiskDashboard.tsx) | 1120 | member-counselor | AtRiskFactor:57, AtRiskMember:57, AtRiskDashboardViewProps:178, AtRiskDashboardView:195, AtRiskDashboardProps:758, default:777 |
-| [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 550 | member-counselor | default:72 |
+| [components/portal/counselor/AtRiskDetailModal.tsx](../../../components/portal/counselor/AtRiskDetailModal.tsx) | 513 | member-counselor | default:78 |
 | [components/portal/counselor/AtRiskSummaryWidget.tsx](../../../components/portal/counselor/AtRiskSummaryWidget.tsx) | 185 | member-counselor | default:23 |
 | [components/portal/counselor/CounselorCommandCenter.tsx](../../../components/portal/counselor/CounselorCommandCenter.tsx) | 243 | member-counselor | default:20 |
 | [components/portal/counselor/CounselorNotificationCenter.tsx](../../../components/portal/counselor/CounselorNotificationCenter.tsx) | 333 | communications | default:103 |
@@ -433,7 +434,7 @@
 | [components/portal/kit/Avatar.tsx](../../../components/portal/kit/Avatar.tsx) | 66 | components | Avatar:16 |
 | [components/portal/kit/Charts.tsx](../../../components/portal/kit/Charts.tsx) | 203 | components | ChartDatum:3, BarChartMini:19, Sparkline:54, AreaChartMini:104, RankDatum:176, RankBars:187 |
 | [components/portal/kit/ChatThread.tsx](../../../components/portal/kit/ChatThread.tsx) | 179 | components | ChatMessage:7, ChatThread:36 |
-| [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 180 | components | SparkStat:22, CardHead:36, DeltaChip:50, StatSparkTile:70, StageTrack:129, SegmentedProgress:152 |
+| [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 188 | components | SparkStat:22, CardHead:36, DeltaChip:50, StatSparkTile:70, StageTrack:137, SegmentedProgress:160 |
 | [components/portal/kit/DataTable.tsx](../../../components/portal/kit/DataTable.tsx) | 199 | components | KitTableBulkBarContext:11, KitTablePagination:11, Column:13, DataTable:73 |
 | [components/portal/kit/DesignSurface.tsx](../../../components/portal/kit/DesignSurface.tsx) | 40 | components | SurfaceMode:17, useSurface:21, DesignSurface:32 |
 | [components/portal/kit/FeatureTile.tsx](../../../components/portal/kit/FeatureTile.tsx) | 70 | components | FeatureTile:28 |
@@ -524,7 +525,7 @@
 | [components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx](../../../components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx) | 232 | partners-funding | WioaDetermination:28, WioaScreeningRow:30, WioaScreeningKitProps:47, WioaScreeningKit:69 |
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 432 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:98, CommandCenterKitProps:111, CommandCenterKit:314 |
-| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 420 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
+| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 430 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
 | [components/portal/kit/pages/counselor/CounselorTodayKit.tsx](../../../components/portal/kit/pages/counselor/CounselorTodayKit.tsx) | 263 | member-counselor | CounselorTodayKitProps:50, CounselorTodayKit:191 |
 | [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 387 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |
