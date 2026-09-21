@@ -28,13 +28,25 @@ vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader:
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => ({ id: 'admin-1' }) }));
 vi.mock('@/lib/tenant/adminPageScope', () => ({
   resolveAdminPageTenant: async () => ({ ok: true, orgId: 'org-1', superAdmin: false }),
-  withAdminPageScope: vi.fn(),
+  // The legacy training-progress dual-table reads its own (empty here) population.
+  withAdminPageScope: vi.fn(async (_scope: unknown, run: (db: unknown) => unknown) =>
+    run({
+      user: { findMany: async () => [], count: async () => 0 },
+      courseEnrollment: { findMany: async () => [] },
+    }),
+  ),
   inheritUserOrg: () => ({}),
   inheritMemberOrg: () => ({}),
   inheritLeaderOrg: () => ({}),
   inheritInvitedByOrg: () => ({}),
 }));
-vi.mock('@/lib/db/prisma', () => ({ prisma: {} }));
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: {
+    courseProgress: { findMany: async () => [] },
+    courseraCourseProgress: { findMany: async () => [], count: async () => 0 },
+    courseraCanonicalCourseMapping: { findMany: async () => [] },
+  },
+}));
 vi.mock('@/lib/admin/studentsRosterLoad', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/admin/studentsRosterLoad')>()),
   loadStudentsRoster: mocks.loadStudentsRoster,
@@ -130,25 +142,20 @@ describe('/admin/students', () => {
 });
 
 describe('/admin/training-progress', () => {
-  it('renders the shared kit with the training preset and its own audit marker', async () => {
-    const { container } = render(await AdminTrainingProgressPage({ searchParams: search({}) }));
-    expect(mocks.loadTrainingRoster).toHaveBeenCalledWith(
-      expect.objectContaining({ orgId: 'org-1' }),
-      { readOnlyAudit: false },
-    );
-    expect(mocks.kit).toHaveBeenLastCalledWith(expect.objectContaining({
-      view: 'training',
-      students: trainingLoad.students,
-      showingLabel: trainingLoad.showingLabel,
-      viewHrefs: { roster: '/admin/students', training: '/admin/training-progress' },
-    }));
-    expect(container.querySelector('[data-portal-error-state="admin-training-progress-secondary-load"]')).not.toBeNull();
+  // The training preset now renders on the reporting hub's Training tab
+  // (tests/components/admin-reporting-hub.spec.tsx pins the kit props there).
+  it('forwards to the reporting hub Training tab by default without loading the roster', async () => {
+    await expect(AdminTrainingProgressPage({ searchParams: search({}) }))
+      .rejects.toThrow('redirect:/admin/reporting?tab=training');
+    await expect(AdminTrainingProgressPage({ searchParams: search({ ui: 'kit' }) }))
+      .rejects.toThrow('redirect:/admin/reporting?tab=training');
+    expect(mocks.loadTrainingRoster).not.toHaveBeenCalled();
   });
 
-  it('falls back to the legacy dual-table when the roster load fails', async () => {
-    mocks.loadTrainingRoster.mockResolvedValue({ ok: false });
-    await expect(AdminTrainingProgressPage({ searchParams: search({}) }))
-      .rejects.toThrow('redirect:/admin/training-progress?ui=legacy');
+  it('keeps the legacy dual-table (the roster loaders\' fallback) behind ?ui=legacy only', async () => {
+    const { getByRole } = render(await AdminTrainingProgressPage({ searchParams: search({ ui: 'legacy' }) }));
+    expect(getByRole('heading', { level: 1 }).textContent).toBe('Training progress');
+    expect(mocks.loadTrainingRoster).not.toHaveBeenCalled();
   });
 });
 

@@ -314,6 +314,6 @@ test('admin step copy names the surfaces the steps point at', () => {
   assert.match(resolve(en, 'admin.home.messages.body') as string, /reply/);
   assert.match(resolve(en, 'admin.home.programs.body') as string, /Program requests/);
   assert.match(resolve(en, 'admin.home.trainingProgress.body') as string, /Coursera/);
-  assert.match(resolve(en, 'admin.home.settings.body') as string, /under Advanced,/);
+  assert.match(resolve(en, 'admin.home.settings.body') as string, /under Security & system,/);
   assert.match(resolve(en, 'admin.home.help.body') as string, /reopens this tour/);
 });

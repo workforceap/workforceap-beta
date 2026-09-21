@@ -13,12 +13,8 @@ import PageHeader from '@/components/portal/PageHeader';
 import { getTranslations } from 'next-intl/server';
 import AdminExportForm from './AdminExportForm';
 import EligibilityDatasheetPanel from '@/components/admin/EligibilityDatasheetPanel';
-import { DesignSurface } from '@/components/portal/kit';
-import {
-  ExportsKit,
-  type ExportOption,
-} from '@/components/portal/kit/pages/admin-subviews/ExportsKit';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { reportingRedirectHref, wantsLegacyView } from '@/lib/admin/reportingHub';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -28,17 +24,25 @@ export async function generateMetadata(): Promise<Metadata> {
 });
 }
 
+/**
+ * The export card grid is the Exports tab of the reporting hub now (admin
+ * audit 2026-09-19, §6.1; `app/admin/reporting/sections/ExportsSection.tsx`).
+ * This route keeps the filterable Member Training Report form and the
+ * eligibility datasheet — the in-portal export workspace — behind
+ * `?ui=legacy`, which is where the hub's "Open" tiles point.
+ */
 export default async function AdminExportsPage({
   searchParams,
 }: {
   searchParams: Promise<{ ui?: string }>;
 }) {
+  const sp = await searchParams;
+  if (!wantsLegacyView(sp)) redirect(reportingRedirectHref('/admin/exports', sp));
+
   const user = await getUser();
-  if (!user) redirect('/login');
+  if (!user) redirect('/login?redirectTo=/admin/exports');
   const scope = await resolveAdminPageTenant(user.id);
   if (!scope.ok) redirect('/dashboard');
-
-  const { ui: requestedUi } = await searchParams;
 
   const programs = PROGRAMS.map((p) => ({ slug: p.slug, title: p.title }));
   const stages = Object.entries(PIPELINE_STAGE_LABELS).map(([value, label]) => ({
@@ -106,74 +110,7 @@ export default async function AdminExportsPage({
     };
   });
 
-  // --- DEFAULT: kit card-grid of the REAL export options this page exposes ---
-  if (requestedUi !== 'legacy') {
-    const exports: ExportOption[] = [
-      {
-        id: 'member-training-report',
-        title: 'Member Training Report',
-        description: 'Demographics, progress, certs, placements & eligibility · filterable CSV',
-        href: '/admin/exports?ui=legacy',
-        iconKey: 'filters',
-        tone: 'accent',
-      },
-      {
-        id: 'eligibility-datasheet',
-        title: 'Eligibility screening datasheet',
-        description: 'WS4 fields · in-admin table + CSV (not Google Sheets)',
-        href: '/admin/exports?ui=legacy#eligibility-datasheet',
-        iconKey: 'csv',
-        tone: 'gold',
-      },
-      {
-        id: 'funder-program-summary',
-        title: t('exportFunderCsvTitle'),
-        description: 'Grant reporting · per-program enrollment, completion & placements',
-        href: '/api/admin/funder-program-summary',
-        iconKey: 'csv',
-        tone: 'success',
-        download: true,
-        actionLabel: t('exportFunderCsvDownload'),
-      },
-      {
-        id: 'program-catalog',
-        title: 'Program Catalog',
-        description: 'State agency submissions · costs, duration & certifications',
-        href: '/api/admin/programs/export-twc',
-        iconKey: 'roster',
-        tone: 'info',
-        download: true,
-      },
-      // Outcomes snapshots used to be listed again on /admin/outcomes; this is
-      // now their only list (admin audit 2026-09-20, Outcomes).
-      {
-        id: 'outcomes-csv',
-        title: 'Outcomes CSV',
-        description: 'Board-ready · funnel waterfall (counts + conversion), all time',
-        href: '/api/admin/outcomes/snapshot?period=all-time&format=csv',
-        iconKey: 'csv',
-        tone: 'success',
-        download: true,
-      },
-      {
-        id: 'board-packet-pdf',
-        title: 'Board meeting PDF',
-        description: 'Printable snapshot with KPIs, cohorts and methodology notes, all time',
-        href: '/api/admin/outcomes/snapshot?period=all-time&format=pdf',
-        iconKey: 'download',
-        tone: 'muted',
-        download: true,
-      },
-    ];
-
-    return (
-      <DesignSurface surface="dense">
-        <ExportsKit exports={exports} />
-      </DesignSurface>
-    );
-  }
-
-  // --- LEGACY (?ui=legacy): the existing export workspace with filter form ---
+  // The export workspace with the filter form.
   return (
     <PortalPageFrame>
       <div style={{ marginBottom: '2rem' }}>

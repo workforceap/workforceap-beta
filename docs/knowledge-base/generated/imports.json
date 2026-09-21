@@ -16617,115 +16617,27 @@
   },
   {
     "from": "app/admin/analytics/page.tsx",
-    "specifier": "next/headers",
-    "line": 7,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/db/prisma",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/db/queryCaps",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/queryCaps.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/tenant/organization",
-    "line": 11,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
     "specifier": "@/lib/admin/analytics",
-    "line": 12,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/admin/analytics.ts"
   },
   {
     "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/admin/metrics",
-    "line": 13,
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 8,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/metrics.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 14,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/admin/analyticsTabs",
-    "line": 15,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/analyticsTabs.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 16,
-    "kind": "import",
-    "external": false,
-    "target": "lib/audit/readOnlyPortalAudit.ts"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/lib/content/programTitle",
-    "line": 17,
-    "kind": "import",
-    "external": false,
-    "target": "lib/content/programTitle.ts"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/analytics/page.tsx",
     "specifier": "@/components/admin/AnalyticsDashboard",
-    "line": 18,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/admin/AnalyticsDashboard.tsx"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/AnalyticsKit",
-    "line": 19,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
-    "line": 20,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
-  },
-  {
-    "from": "app/admin/analytics/page.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 21,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/admin/assessments/loading.tsx",
@@ -17425,16 +17337,8 @@
   },
   {
     "from": "app/admin/board/page.tsx",
-    "specifier": "lucide-react",
-    "line": 4,
-    "kind": "import",
-    "external": true,
-    "package": "lucide-react"
-  },
-  {
-    "from": "app/admin/board/page.tsx",
     "specifier": "@/app/seo",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -17442,7 +17346,7 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -17450,7 +17354,7 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -17458,7 +17362,7 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/auth/roles",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -17466,7 +17370,7 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/tenant/organization",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -17474,7 +17378,7 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/admin/boardOutcomes",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/admin/boardOutcomes.ts"
@@ -17482,15 +17386,23 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 15,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
   },
   {
     "from": "app/admin/board/page.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "app/admin/board/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 16,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -17498,26 +17410,10 @@
   {
     "from": "app/admin/board/page.tsx",
     "specifier": "@/components/admin/BoardOutcomesView",
-    "line": 17,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/admin/BoardOutcomesView.tsx"
-  },
-  {
-    "from": "app/admin/board/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
-    "line": 18,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
-  },
-  {
-    "from": "app/admin/board/page.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 19,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
   },
   {
     "from": "app/admin/board/print/page.tsx",
@@ -18913,16 +18809,8 @@
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/lib/admin/courseraDiagnostics",
-    "line": 25,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/courseraDiagnostics.ts"
-  },
-  {
-    "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 26,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -18930,7 +18818,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 27,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
@@ -18938,7 +18826,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/tenant/organization",
-    "line": 29,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/organization.ts"
@@ -18946,7 +18834,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 30,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -18954,7 +18842,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 31,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -18962,7 +18850,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/coursera/programCourseList",
-    "line": 32,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/programCourseList.ts"
@@ -18970,23 +18858,15 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/admin/courseraOps",
-    "line": 36,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "lib/admin/courseraOps.ts"
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/lib/coursera/replayPendingXapi",
-    "line": 41,
-    "kind": "import",
-    "external": false,
-    "target": "lib/coursera/replayPendingXapi.ts"
-  },
-  {
-    "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/xapi/mappings",
-    "line": 42,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -18994,18 +18874,18 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/coursera/progressQueries",
-    "line": 47,
+    "line": 45,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressQueries.ts"
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/CourseraSyncKit",
-    "line": 53,
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 51,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/coursera/provisioning/page.tsx",
@@ -20361,27 +20241,19 @@
   },
   {
     "from": "app/admin/exports/page.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 16,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/index.ts"
+    "target": "lib/admin/memberOnlyWhere.ts"
   },
   {
     "from": "app/admin/exports/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/ExportsKit",
+    "specifier": "@/lib/admin/reportingHub",
     "line": 17,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx"
-  },
-  {
-    "from": "app/admin/exports/page.tsx",
-    "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 21,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/feature-flags/page.tsx",
@@ -23769,27 +23641,19 @@
   },
   {
     "from": "app/admin/metrics/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/MetricsKit",
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
     "line": 13,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/MetricsKit.tsx"
+    "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
     "from": "app/admin/metrics/page.tsx",
-    "specifier": "@/components/portal/kit",
+    "specifier": "@/lib/admin/reportingHub",
     "line": 14,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
-  },
-  {
-    "from": "app/admin/metrics/page.tsx",
-    "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 15,
     "kind": "import",
     "external": false,
-    "target": "lib/audit/readOnlyPortalAudit.ts"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/not-found.tsx",
@@ -24025,19 +23889,11 @@
   },
   {
     "from": "app/admin/outcomes/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
+    "specifier": "@/lib/admin/reportingHub",
     "line": 10,
     "kind": "import",
     "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
-  },
-  {
-    "from": "app/admin/outcomes/page.tsx",
-    "specifier": "@/components/portal/kit",
-    "line": 11,
-    "kind": "type",
-    "external": false,
-    "target": "components/portal/kit/index.ts"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/overview/loading.tsx",
@@ -25816,6 +25672,398 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "next",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "next/navigation",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "next/headers",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "app/seo.ts"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/lib/audit/readOnlyPortalAudit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/ReportingHubKit",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "./sections/OverviewSection",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/OverviewSection.tsx"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "./sections/OutcomesSection",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/OutcomesSection.tsx"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "./sections/TrainingSection",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/TrainingSection.tsx"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "./sections/CourseraSection",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/CourseraSection.tsx"
+  },
+  {
+    "from": "app/admin/reporting/page.tsx",
+    "specifier": "./sections/ExportsSection",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/ExportsSection.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "next/link",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/tenant/organization",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/organization.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/admin/courseraDiagnostics",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/courseraDiagnostics.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/admin/courseraOps",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/courseraOps.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/coursera/replayPendingXapi",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/replayPendingXapi.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/coursera/programCourseList",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/programCourseList.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/lib/coursera/progressQueries",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressQueries.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/components/admin/CourseraCatalogHealthTable",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/CourseraCatalogHealthTable.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/CourseraSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/CourseraSyncKit",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/ExportsSection.tsx",
+    "specifier": "next-intl/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/admin/reporting/sections/ExportsSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/ExportsKit",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "next/link",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "lucide-react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "@/lib/admin/boardOutcomes",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/boardOutcomes.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "@/lib/admin/reportingOutcomes",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingOutcomes.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 12,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OutcomesSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/lib/admin/metrics",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/metrics.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/lib/admin/engagementAnalytics",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/engagementAnalytics.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/AnalyticsKit",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/ReportingHubKit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx"
+  },
+  {
+    "from": "app/admin/reporting/sections/OverviewSection.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 8,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/lib/admin/studentsRosterLoad",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterLoad.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/lib/admin/trainingRosterLoad",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/trainingRosterLoad.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 6,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/reporting/sections/TrainingSection.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
     "from": "app/admin/reports/quarterly-outcomes/QuarterlyOutcomesClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -26801,16 +27049,8 @@
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "next/headers",
-    "line": 3,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/app/seo",
-    "line": 4,
+    "line": 3,
     "kind": "import",
     "external": false,
     "target": "app/seo.ts"
@@ -26818,7 +27058,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 5,
+    "line": 4,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -26826,7 +27066,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 6,
+    "line": 5,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -26834,7 +27074,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 7,
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -26842,7 +27082,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/db/queryCaps",
-    "line": 8,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/queryCaps.ts"
@@ -26850,7 +27090,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/admin/memberOnlyWhere",
-    "line": 9,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberOnlyWhere.ts"
@@ -26858,7 +27098,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 10,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -26866,7 +27106,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 11,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -26874,7 +27114,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/content/programSlug",
-    "line": 12,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -26882,7 +27122,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/coursera/courseGradeDisplay",
-    "line": 13,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/courseGradeDisplay.ts"
@@ -26890,55 +27130,31 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/coursera/courseTitle",
-    "line": 14,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/courseTitle.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/audit/readOnlyPortalAudit",
-    "line": 15,
-    "kind": "import",
-    "external": false,
-    "target": "lib/audit/readOnlyPortalAudit.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 16,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/studentsRosterLoad",
-    "line": 17,
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 15,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/studentsRosterLoad.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/trainingRosterLoad",
-    "line": 18,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/trainingRosterLoad.ts"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/lib/admin/studentsRosterView",
-    "line": 19,
-    "kind": "import",
-    "external": false,
-    "target": "lib/admin/studentsRosterView.ts"
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/portal/PageHeader",
-    "line": 20,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -26946,7 +27162,7 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 21,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -26954,23 +27170,15 @@
   {
     "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/components/admin/TrainingProgressClient",
-    "line": 22,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "components/admin/TrainingProgressClient.tsx"
   },
   {
     "from": "app/admin/training-progress/page.tsx",
-    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
-    "line": 26,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
-  },
-  {
-    "from": "app/admin/training-progress/page.tsx",
     "specifier": "@/lib/tenant/adminPageScope",
-    "line": 86,
+    "line": 58,
     "kind": "type",
     "external": false,
     "target": "lib/tenant/adminPageScope.ts"
@@ -67864,6 +68072,62 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/AdminPortalShell",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/AdminPortalShell.tsx"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
     "from": "app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -68358,6 +68622,118 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/PlacementsKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "next/link",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "next/navigation",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "lucide-react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/ReportingHubKit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/AnalyticsKit",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/BoardOutcomesKit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/CourseraSyncKit",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/ExportsKit",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin-subviews/StudentsRosterKit",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/lib/admin/trainingProgressPrograms",
+    "line": 14,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/trainingProgressPrograms.ts"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/lib/admin/studentsRosterView",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/lib/admin/analyticsTabs",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "app/dev/staff/reporting/page.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
   },
   {
     "from": "app/dev/staff/students-roster/page.tsx",
@@ -82337,8 +82713,24 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "./WorkspaceSidebarSections",
     "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/WorkspaceSidebarSections.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/hooks/useFocusTrap",
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
@@ -82346,7 +82738,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/super-admin-view-switcher",
-    "line": 26,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "components/super-admin-view-switcher.tsx"
@@ -82354,7 +82746,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./PortalHeaderActions",
-    "line": 27,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalHeaderActions.tsx"
@@ -82362,7 +82754,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./PortalRoleSwitcher",
-    "line": 28,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalRoleSwitcher.tsx"
@@ -82370,7 +82762,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./SignOutButton",
-    "line": 29,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "components/portal/SignOutButton.tsx"
@@ -82378,7 +82770,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/MobileBottomNav",
-    "line": 30,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "components/MobileBottomNav.tsx"
@@ -82386,7 +82778,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./MemberPortalTopNav",
-    "line": 31,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberPortalTopNav.tsx"
@@ -82394,7 +82786,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./GlobalSearch",
-    "line": 32,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "components/portal/GlobalSearch.tsx"
@@ -82402,7 +82794,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/auth/portalRoleSwitcher",
-    "line": 33,
+    "line": 35,
     "kind": "type",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
@@ -82410,7 +82802,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/tours/registry",
-    "line": 34,
+    "line": 36,
     "kind": "type",
     "external": false,
     "target": "lib/tours/registry.ts"
@@ -82418,7 +82810,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/member/memberIdentity",
-    "line": 35,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberIdentity.ts"
@@ -82426,7 +82818,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/kit/Avatar",
-    "line": 36,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/Avatar.tsx"
@@ -82434,7 +82826,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/LanguageToggle",
-    "line": 37,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
@@ -82442,7 +82834,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/nav/resumeUploadHint",
-    "line": 38,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/nav/resumeUploadHint.ts"
@@ -82450,7 +82842,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 39,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -82458,7 +82850,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 40,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -82466,7 +82858,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 41,
+    "line": 43,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -82474,10 +82866,42 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 42,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
   },
   {
     "from": "components/portal/YouthDashboardNotice.tsx",
@@ -85234,7 +85658,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 14,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
@@ -85242,10 +85666,18 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "@/lib/admin/analyticsTabs",
-    "line": 15,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/admin/analyticsTabs.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/AssessmentsKit.tsx",
@@ -85406,6 +85838,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/CareerMappingsKit.tsx",
@@ -85646,6 +86086,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx",
@@ -85920,6 +86368,22 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
     "from": "components/portal/kit/pages/admin-subviews/EmployersDirectoryKit.tsx",
     "specifier": "next/link",
     "line": 3,
@@ -86042,7 +86506,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
     "specifier": "@astryxdesign/core/Token",
-    "line": 8,
+    "line": 4,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
@@ -86050,10 +86514,18 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
     "specifier": "@astryxdesign/core/EmptyState",
-    "line": 9,
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/FeatureFlagToggle.tsx",
@@ -86704,6 +87176,46 @@
     "package": "next"
   },
   {
+    "from": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx",
+    "specifier": "next/link",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx",
+    "specifier": "lucide-react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/ReportingHubKit.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
     "from": "components/portal/kit/pages/admin-subviews/ScreeningPacksKit.tsx",
     "specifier": "next/link",
     "line": 3,
@@ -86858,7 +87370,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/components/portal/kit/kitTableSort",
-    "line": 24,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/kitTableSort.tsx"
@@ -86866,7 +87378,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/studentsRosterSort",
-    "line": 25,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterSort.ts"
@@ -86874,7 +87386,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/trainingProgressRoster",
-    "line": 31,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/admin/trainingProgressRoster.ts"
@@ -86882,7 +87394,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/trainingProgressPrograms",
-    "line": 38,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/admin/trainingProgressPrograms.ts"
@@ -86890,10 +87402,18 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/studentsRosterView",
-    "line": 39,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterView.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/SubgroupsDirectoryKit.tsx",
@@ -94336,6 +94856,54 @@
     "target": "lib/email/template.ts"
   },
   {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/lib/admin/metrics",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/metrics.ts"
+  },
+  {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/lib/db/queryCaps",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/queryCaps.ts"
+  },
+  {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/lib/content/programTitle",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programTitle.ts"
+  },
+  {
+    "from": "lib/admin/engagementAnalytics.ts",
+    "specifier": "@/components/portal/kit/Charts",
+    "line": 6,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Charts.tsx"
+  },
+  {
     "from": "lib/admin/fitScore.ts",
     "specifier": "@/lib/content/programs",
     "line": 6,
@@ -94902,6 +95470,78 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/PlacementsKit.tsx"
+  },
+  {
+    "from": "lib/admin/reportingHub.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/reportingHub.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/reportingHub.test.ts",
+    "specifier": "./reportingHub",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "lib/admin/reportingHub.ts",
+    "specifier": "@/components/portal/kit/Tabs",
+    "line": 16,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Tabs.tsx"
+  },
+  {
+    "from": "lib/admin/reportingHub.ts",
+    "specifier": "@/lib/admin/boardOutcomes",
+    "line": 17,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/boardOutcomes.ts"
+  },
+  {
+    "from": "lib/admin/reportingOutcomes.ts",
+    "specifier": "@/lib/admin/boardOutcomes",
+    "line": 26,
+    "kind": "type",
+    "external": false,
+    "target": "lib/admin/boardOutcomes.ts"
+  },
+  {
+    "from": "lib/admin/reportingOutcomes.ts",
+    "specifier": "@/lib/content/programTitle",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programTitle.ts"
+  },
+  {
+    "from": "lib/admin/reportingOutcomes.ts",
+    "specifier": "@/components/portal/kit/Charts",
+    "line": 28,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/Charts.tsx"
+  },
+  {
+    "from": "lib/admin/reportingOutcomes.ts",
+    "specifier": "@/components/portal/kit/KpiStrip",
+    "line": 29,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/kit/KpiStrip.tsx"
   },
   {
     "from": "lib/admin/roleLabels.ts",
@@ -111801,8 +112441,16 @@
   },
   {
     "from": "lib/nav/portalNav.test.ts",
-    "specifier": "./portalNav.i18n",
+    "specifier": "./portalNav",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "lib/nav/portalNav.test.ts",
+    "specifier": "./portalNav.i18n",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/nav/portalNav.i18n.ts"
@@ -131656,6 +132304,14 @@
     "target": "app/admin/exports/page.tsx"
   },
   {
+    "from": "tests/app/admin-exports-verbs.spec.tsx",
+    "specifier": "@/app/admin/reporting/sections/ExportsSection",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/sections/ExportsSection.tsx"
+  },
+  {
     "from": "tests/app/admin-guide-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -134880,6 +135536,94 @@
     "target": "messages/en.json"
   },
   {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/reporting/page",
+    "line": 95,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/reporting/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/analytics/page",
+    "line": 96,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/analytics/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/metrics/page",
+    "line": 97,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/metrics/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/board/page",
+    "line": 98,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/board/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/outcomes/page",
+    "line": 99,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/outcomes/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/training-progress/page",
+    "line": 100,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/training-progress/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/app/admin/exports/page",
+    "line": 101,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/exports/page.tsx"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/lib/admin/reportingHub",
+    "line": 102,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/reportingHub.ts"
+  },
+  {
+    "from": "tests/components/admin-reporting-hub.spec.tsx",
+    "specifier": "@/lib/admin/analytics",
+    "line": 235,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/admin/analytics.ts"
+  },
+  {
     "from": "tests/components/admin-roster-routes.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -134898,7 +135642,7 @@
   {
     "from": "tests/components/admin-roster-routes.spec.tsx",
     "specifier": "@/lib/admin/studentsRosterLoad",
-    "line": 39,
+    "line": 51,
     "kind": "type",
     "external": false,
     "target": "lib/admin/studentsRosterLoad.ts"
@@ -134906,7 +135650,7 @@
   {
     "from": "tests/components/admin-roster-routes.spec.tsx",
     "specifier": "@/app/admin/students/page",
-    "line": 57,
+    "line": 69,
     "kind": "import",
     "external": false,
     "target": "app/admin/students/page.tsx"
@@ -134914,7 +135658,7 @@
   {
     "from": "tests/components/admin-roster-routes.spec.tsx",
     "specifier": "@/app/admin/training-progress/page",
-    "line": 58,
+    "line": 70,
     "kind": "import",
     "external": false,
     "target": "app/admin/training-progress/page.tsx"
@@ -134922,7 +135666,7 @@
   {
     "from": "tests/components/admin-roster-routes.spec.tsx",
     "specifier": "@/app/admin/members/training/page",
-    "line": 59,
+    "line": 71,
     "kind": "import",
     "external": false,
     "target": "app/admin/members/training/page.tsx"

@@ -56,6 +56,8 @@
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "expandSidebar": "Expandir barra lateral",
+    "showMoreUnder": "Mostrar {count} más bajo {label}",
+    "hideMoreUnder": "Ocultar {count} más bajo {label}",
     "collapseSidebar": "Contraer barra lateral",
     "workspaceTabs": "Pestañas del espacio de trabajo",
     "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
@@ -3773,11 +3775,11 @@
         },
         "trainingProgress": {
           "title": "Progreso de formación",
-          "body": "Progreso curso a curso de cada estudiante inscrito, ordenable, en el plan de estudios y en Coursera. Evaluaciones y Certificados están en el mismo grupo."
+          "body": "Progreso curso a curso de cada estudiante inscrito, ordenable, en el plan de estudios y en Coursera. Evaluaciones y Certificados se abren justo debajo."
         },
         "settings": {
           "title": "Configuración",
-          "body": "La configuración de la organización está al final del menú, en Avanzado, junto a Usuarios, Exportaciones y Banderas de funciones. La mayoría de los días no necesitarás este grupo."
+          "body": "La configuración de la organización está al final del menú, en Seguridad y sistema, junto a Usuarios, Registros de auditoría y Exportaciones; las Banderas de funciones se abren bajo Configuración. La mayoría de los días no necesitarás esta sección."
         },
         "help": {
           "title": "Vuelve cuando quieras",

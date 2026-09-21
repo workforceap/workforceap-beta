@@ -10,9 +10,8 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import PageHeader from '@/components/portal/PageHeader';
 import AdminAnalyticsCharts from '@/components/admin/AdminAnalyticsChartsLazy';
 import { getTranslations } from 'next-intl/server';
-import { MetricsKit } from '@/components/portal/kit/pages/admin-subviews/MetricsKit';
-import type { KpiItem, RankDatum } from '@/components/portal/kit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { reportingRedirectHref, wantsLegacyView } from '@/lib/admin/reportingHub';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('admin');
@@ -23,11 +22,22 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
+/**
+ * Metrics is the Overview tab of the reporting hub now (admin audit
+ * 2026-09-19, §6.1): the enrollment / outcomes numbers this page printed are
+ * on `/admin/reporting`, and the kit view's placeholder SLA tiles ("API p50",
+ * "Uptime 30d" — no APM ever fed them) are gone. The legacy charts view
+ * (daily activity, enrollment by program, placement charts) stays reachable
+ * behind `?ui=legacy` only.
+ */
 export default async function AdminMetricsPage({
   searchParams,
 }: {
   searchParams: Promise<{ ui?: string }>;
 }) {
+  const sp = await searchParams;
+  if (!wantsLegacyView(sp)) redirect(reportingRedirectHref('/admin/metrics', sp));
+
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/metrics');
   const scope = await resolveAdminPageTenant(user.id);
@@ -37,72 +47,6 @@ export default async function AdminMetricsPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const data = await getAdminMetrics(orgId, { readOnlyAudit });
   const t = await getTranslations('admin');
-
-  const sp = await searchParams;
-  const requestedUi = typeof sp.ui === 'string' ? sp.ui : null;
-
-  // ── DEFAULT (design-kit) PATH — runs AFTER the auth/role guard, so access
-  // control is preserved. Reuses the same getAdminMetrics() loader the legacy
-  // analytics view uses (lean, Promise.allSettled internally; no $transaction).
-  // The legacy charts view is available via ?ui=legacy. ──
-  if (requestedUi !== 'legacy') {
-    // KPI strip mirrors the "Metrics" mockup (API p50 / p99 / Error rate /
-    // Uptime 30d). The admin metrics module has NO real source for infra
-    // latency/uptime/error-rate, so those tiles honestly render "—" rather
-    // than fabricating SLA numbers — there is no APM feeding this page.
-    const kpis: KpiItem[] = [
-      { label: 'API p50', value: '—' },
-      { label: 'API p99', value: '—' },
-      { label: 'Error rate', value: '—' },
-      { label: 'Uptime 30d', value: '—' },
-    ];
-
-    // "Requests by surface (today)". The metrics module tracks real
-    // member-portal activity; the last entry of the daily-activity series is
-    // the current calendar day since midnight (server time, UTC in
-    // production): member events + AI tool runs + applications. It is not a
-    // rolling 24-hour window, so the caption says "today", not "last 24h"
-    // (number audit 2026-09-20, S29). There is no instrumented Admin or
-    // API/webhook request counter, so those surfaces honestly render "—"
-    // (pct 0) instead of inventing traffic.
-    const today = data.dailyActivity.at(-1);
-    const memberPortal24h = today
-      ? today.events + today.aiTools + today.applications
-      : 0;
-
-    const bySurface: RankDatum[] = [
-      { label: 'Member portal', value: memberPortal24h, pct: 100, color: 'info' },
-      { label: 'Admin', value: '—', pct: 0, color: 'muted' },
-      { label: 'API / webhooks', value: '—', pct: 0, color: 'muted' },
-    ];
-
-    return (
-      <>
-        {readOnlyAudit && (
-          <span hidden data-portal-audit-suppressed="admin-metrics-shared-cache" />
-        )}
-        <MetricsKit
-        title="Metrics"
-        goal="Raw platform metrics"
-        kpis={kpis}
-        bySurface={bySurface}
-        surfaceCaption={`today since midnight UTC · member-portal events instrumented; admin & API surfaces not yet metered${data.degradedSlices.length > 0 ? ` · some figures unavailable right now (${data.degradedSlices.join(', ')})` : ''}`}
-        headerAction={
-          <a
-            href="/api/admin/funder-program-summary"
-            className="btn btn-outline btn-small"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">
-              download
-            </span>
-            {t('exportFunderCsv')}
-          </a>
-        }
-        />
-      </>
-    );
-  }
 
   return (
     <div>

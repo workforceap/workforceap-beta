@@ -10078,3 +10078,84 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
         min-width: 0;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GROUPED ADMIN RAIL — collapsible sections + nested rows
+   (components/portal/WorkspaceSidebarSections.tsx; admin audit 2026-09-19 §6.4).
+   Section headers are real buttons (aria-expanded); collapsed lists stay in the
+   DOM under [hidden]. Tokens only — no colour literals.
+   ══════════════════════════════════════════════════════════════════════════ */
+.workspace-sidebar-list[hidden] {
+    display: none;
+}
+.workspace-sidebar-section-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 2.25rem;
+    margin: 0 0 0.2rem;
+    padding: 0.35rem 0.6rem;
+    border: 0;
+    background: transparent;
+    border-radius: var(--wa-radius-sm);
+    color: var(--wa-sidebar-label);
+    font: inherit;
+    font-size: var(--wa-type-meta);
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--wa-dur-fast) var(--wa-ease), color var(--wa-dur-fast) var(--wa-ease);
+}
+.workspace-sidebar-section-btn__label {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.workspace-sidebar-section-btn__chevron,
+.workspace-sidebar-children-toggle > svg {
+    flex-shrink: 0;
+    transition: transform var(--wa-dur-fast) var(--wa-ease);
+}
+.workspace-sidebar-section-btn[aria-expanded='false'] > .workspace-sidebar-section-btn__chevron,
+.workspace-sidebar-children-toggle[aria-expanded='false'] > svg {
+    transform: rotate(-90deg);
+}
+.workspace-sidebar-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.15rem;
+}
+.workspace-sidebar-row > .workspace-sidebar-link {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.workspace-sidebar-children-toggle {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    min-height: 2.25rem;
+    border: 0;
+    background: transparent;
+    border-radius: var(--wa-radius-sm);
+    color: var(--wa-sidebar-muted);
+    cursor: pointer;
+    transition: background-color var(--wa-dur-fast) var(--wa-ease), color var(--wa-dur-fast) var(--wa-ease);
+}
+.workspace-sidebar-list--children {
+    margin: 0.1rem 0 0.3rem 1.1rem;
+    padding-left: 0.45rem;
+    border-left: 1px solid var(--wa-sidebar-border);
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-link--child {
+    font-weight: 500;
+}
+@media (hover: hover) {
+    .workspace-sidebar-section-btn:hover,
+    .workspace-sidebar-children-toggle:hover {
+        color: var(--wa-sidebar-text);
+        background: color-mix(in srgb, var(--wa-sidebar-text) 7%, transparent);
+    }
+}

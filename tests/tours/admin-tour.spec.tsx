@@ -124,7 +124,7 @@ describe('admin guided tour (wave 4)', () => {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
       expect(anchors, step.target).toHaveLength(1);
     }
-    // Every anchor is a real rail row (admin groups never collapse) or the Help trigger.
+    // Every anchor is a real rail row (collapsed sections keep their rows in the DOM) or the Help trigger.
     expect(document.querySelector('[data-tour="tour-command-center"]')).toHaveAttribute('href', '/admin');
     expect(document.querySelector('[data-tour="tour-overview"]')).toHaveAttribute('href', '/admin/overview');
     expect(document.querySelector('[data-tour="tour-students"]')).toHaveAttribute('href', '/admin/students');

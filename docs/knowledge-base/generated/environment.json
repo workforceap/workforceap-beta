@@ -2692,7 +2692,7 @@
         },
         {
           "file": "lib/nav/portalNav.ts",
-          "line": 157
+          "line": 174
         }
       ]
     },
@@ -4400,6 +4400,10 @@
           "line": 150
         },
         {
+          "file": "app/dev/staff/admin-shell/page.tsx",
+          "line": 16
+        },
+        {
           "file": "app/dev/staff/counselor-atrisk/page.tsx",
           "line": 122
         },
@@ -4446,6 +4450,10 @@
         {
           "file": "app/dev/staff/placements/page.tsx",
           "line": 84
+        },
+        {
+          "file": "app/dev/staff/reporting/page.tsx",
+          "line": 202
         },
         {
           "file": "app/dev/staff/students-roster/page.tsx",

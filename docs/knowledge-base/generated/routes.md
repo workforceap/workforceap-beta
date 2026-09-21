@@ -289,7 +289,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/ai-tools | page |  | [app/admin/ai-tools/page.tsx](../../../app/admin/ai-tools/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/analytics/ai-efficacy | page |  | [app/admin/analytics/ai-efficacy/page.tsx](../../../app/admin/analytics/ai-efficacy/page.tsx) | @/lib/auth/server:3, @/lib/tenant/adminPageScope:4 |
 | /admin/analytics | loading |  | [app/admin/analytics/loading.tsx](../../../app/admin/analytics/loading.tsx) |  |
-| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/organization:11 |
+| /admin/analytics | page |  | [app/admin/analytics/page.tsx](../../../app/admin/analytics/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/assessments | loading |  | [app/admin/assessments/loading.tsx](../../../app/admin/assessments/loading.tsx) |  |
 | /admin/assessments | page |  | [app/admin/assessments/page.tsx](../../../app/admin/assessments/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:66, @/lib/tenant/adminPageScope:117 |
 | /admin/audit-logs | loading |  | [app/admin/audit-logs/loading.tsx](../../../app/admin/audit-logs/loading.tsx) |  |
@@ -303,7 +303,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/blog | page |  | [app/admin/blog/page.tsx](../../../app/admin/blog/page.tsx) | @/lib/auth/server:7, @/lib/tenant/adminPageScope:8 |
 | /admin/blog/preview/\[slug\] | page |  | [app/admin/blog/preview/\[slug\]/page.tsx](../../../app/admin/blog/preview/%5Bslug%5D/page.tsx) |  |
 | /admin/board | loading |  | [app/admin/board/loading.tsx](../../../app/admin/board/loading.tsx) |  |
-| /admin/board | page |  | [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7, @/lib/auth/roles:8, @/lib/tenant/organization:9 |
+| /admin/board | page |  | [app/admin/board/page.tsx](../../../app/admin/board/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/auth/roles:7, @/lib/tenant/organization:8 |
 | /admin/board/print | page |  | [app/admin/board/print/page.tsx](../../../app/admin/board/print/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/auth/roles:6, @/lib/tenant/organization:7 |
 | /admin/career-mappings | loading |  | [app/admin/career-mappings/loading.tsx](../../../app/admin/career-mappings/loading.tsx) |  |
 | /admin/career-mappings | page |  | [app/admin/career-mappings/page.tsx](../../../app/admin/career-mappings/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
@@ -318,7 +318,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/coursera/learners/\[userId\] | page |  | [app/admin/coursera/learners/\[userId\]/page.tsx](../../../app/admin/coursera/learners/%5BuserId%5D/page.tsx) | @/lib/tenant/organization:5, @/lib/auth/roles:6, @/lib/auth/server:7, @/lib/tenant/adminPageScope:8, @/lib/auth/roles:9 |
 | /admin/coursera/learners/unmatched/\[externalEmail\]/events | page |  | [app/admin/coursera/learners/unmatched/\[externalEmail\]/events/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/events/page.tsx) | @/lib/auth/server:8, @/lib/tenant/adminPageScope:9, @/lib/tenant/organization:10 |
 | /admin/coursera/learners/unmatched/\[externalEmail\] | page |  | [app/admin/coursera/learners/unmatched/\[externalEmail\]/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/page.tsx) | @/lib/auth/server:11, @/lib/tenant/adminPageScope:12, @/lib/tenant/organization:13 |
-| /admin/coursera | page |  | [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | @/lib/auth/server:22, @/lib/tenant/adminPageScope:23, @/lib/tenant/organization:29 |
+| /admin/coursera | page |  | [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | @/lib/auth/server:22, @/lib/tenant/adminPageScope:23, @/lib/tenant/organization:28 |
 | /admin/coursera/provisioning | page |  | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | @/lib/auth/server:8, @/lib/tenant/adminPageScope:9, @/lib/tenant/organization:10 |
 | /admin/crons | loading |  | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) |  |
 | /admin/crons | page |  | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
@@ -401,6 +401,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/program-change-requests | page |  | [app/admin/program-change-requests/page.tsx](../../../app/admin/program-change-requests/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/programs | loading |  | [app/admin/programs/loading.tsx](../../../app/admin/programs/loading.tsx) |  |
 | /admin/programs | page |  | [app/admin/programs/page.tsx](../../../app/admin/programs/page.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7 |
+| /admin/reporting | page |  | [app/admin/reporting/page.tsx](../../../app/admin/reporting/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
 | /admin/reports/quarterly-outcomes | page |  | [app/admin/reports/quarterly-outcomes/page.tsx](../../../app/admin/reports/quarterly-outcomes/page.tsx) | @/lib/auth/server:3, @/lib/tenant/adminPageScope:4 |
 | /admin/sessions/\[memberId\]/run | page |  | [app/admin/sessions/\[memberId\]/run/page.tsx](../../../app/admin/sessions/%5BmemberId%5D/run/page.tsx) | @/lib/auth/server:7, @/lib/tenant/adminPageScope:8 |
 | /admin/sessions | page |  | [app/admin/sessions/page.tsx](../../../app/admin/sessions/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
@@ -416,7 +417,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/subgroups | page |  | [app/admin/subgroups/page.tsx](../../../app/admin/subgroups/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/testimonials | loading |  | [app/admin/testimonials/loading.tsx](../../../app/admin/testimonials/loading.tsx) |  |
 | /admin/testimonials | page |  | [app/admin/testimonials/page.tsx](../../../app/admin/testimonials/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
-| /admin/training-progress | page |  | [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6, @/lib/tenant/adminPageScope:86 |
+| /admin/training-progress | page |  | [app/admin/training-progress/page.tsx](../../../app/admin/training-progress/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5, @/lib/tenant/adminPageScope:58 |
 | /admin/users/deleted | page |  | [app/admin/users/deleted/page.tsx](../../../app/admin/users/deleted/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/users | loading |  | [app/admin/users/loading.tsx](../../../app/admin/users/loading.tsx) |  |
 | /admin/users | page |  | [app/admin/users/page.tsx](../../../app/admin/users/page.tsx) | @/lib/auth/server:6, @/lib/auth/roles:7, @/lib/tenant/adminPageScope:8 |
@@ -987,6 +988,8 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dev/member/toolkit | page |  | [app/dev/member/toolkit/page.tsx](../../../app/dev/member/toolkit/page.tsx) |  |
 | /dev/member/wioa-qualification | page |  | [app/dev/member/wioa-qualification/page.tsx](../../../app/dev/member/wioa-qualification/page.tsx) |  |
 | /dev/staff/admin-command | page |  | [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) |  |
+| /dev/staff/admin-shell | layout |  | [app/dev/staff/admin-shell/layout.tsx](../../../app/dev/staff/admin-shell/layout.tsx) |  |
+| /dev/staff/admin-shell | page |  | [app/dev/staff/admin-shell/page.tsx](../../../app/dev/staff/admin-shell/page.tsx) |  |
 | /dev/staff/counselor-atrisk | page |  | [app/dev/staff/counselor-atrisk/page.tsx](../../../app/dev/staff/counselor-atrisk/page.tsx) |  |
 | /dev/staff/counselor-command | page |  | [app/dev/staff/counselor-command/page.tsx](../../../app/dev/staff/counselor-command/page.tsx) |  |
 | /dev/staff/counselors | layout |  | [app/dev/staff/counselors/layout.tsx](../../../app/dev/staff/counselors/layout.tsx) |  |
@@ -1007,6 +1010,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dev/staff/pipeline-funnel | page |  | [app/dev/staff/pipeline-funnel/page.tsx](../../../app/dev/staff/pipeline-funnel/page.tsx) |  |
 | /dev/staff/placements | layout |  | [app/dev/staff/placements/layout.tsx](../../../app/dev/staff/placements/layout.tsx) |  |
 | /dev/staff/placements | page |  | [app/dev/staff/placements/page.tsx](../../../app/dev/staff/placements/page.tsx) |  |
+| /dev/staff/reporting | page |  | [app/dev/staff/reporting/page.tsx](../../../app/dev/staff/reporting/page.tsx) |  |
 | /dev/staff/students-roster | page |  | [app/dev/staff/students-roster/page.tsx](../../../app/dev/staff/students-roster/page.tsx) |  |
 | /dev/staff/training-progress | page |  | [app/dev/staff/training-progress/page.tsx](../../../app/dev/staff/training-progress/page.tsx) |  |
 | /dev/voice-studio | layout |  | [app/dev/voice-studio/layout.tsx](../../../app/dev/voice-studio/layout.tsx) |  |
