@@ -11,9 +11,13 @@
  * screen.
  *
  * The fix is presentational and invents no data: with nothing to draw the tile
- * renders `TrendPlaceholder` — a muted "No trend yet" line that reserves the
- * sparkline's own height — so the absence reads as deliberate and a row of
- * tiles keeps one baseline.
+ * renders `TrendPlaceholder` — a muted, translated "No trend yet" line that
+ * reserves the sparkline's own height — so the absence reads as deliberate and
+ * a row of tiles keeps one baseline.
+ *
+ * The slot is opt-in on the shared kit tile, which nine live surfaces use for
+ * pure counts that never implied a trend; only the four member home tiles Mike
+ * reported turn it on.
  *
  * These cases pin both halves: no series => a visible trend slot and no
  * polyline; a real series => the sparkline and no placeholder. A future change
@@ -27,7 +31,9 @@ import { BookOpen } from 'lucide-react';
 import messages from '@/messages/en.json';
 import { MemberHomeKit, type MemberHomeKitProps } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { StatSparkTile } from '@/components/portal/kit/CommandCenter';
-import { NO_TREND_LABEL } from '@/components/portal/kit';
+
+/** The member tile reads this from the `dashboard` catalogue; assert the shipped copy. */
+const NO_TREND_LABEL = messages.dashboard.noTrendYet;
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
@@ -93,7 +99,11 @@ describe('member home stat tiles — trend slot', () => {
 
     // A 2x2 grid at 390px only reads as deliberate if the tiles match: the
     // placeholder must occupy the 28px the sparkline would have.
-    for (const el of placeholders(container)) {
+    const slots = placeholders(container);
+    // Prove the selector matched before asserting a property of every match —
+    // the loop below passes vacuously on an empty list.
+    expect(slots).toHaveLength(4);
+    for (const el of slots) {
       expect(el.style.minHeight).toBe('28px');
     }
   });
@@ -116,29 +126,49 @@ describe('member home stat tiles — trend slot', () => {
       <MemberHomeKit {...liveProps} pointsSpark={{ delta: '85', direction: 'up' }} />
     );
 
+    // The chip must actually be on the page, or "no placeholder next to it" is
+    // proving nothing.
+    expect(within(container).getByText('85')).toBeTruthy();
     expect(placeholders(container)).toHaveLength(3);
   });
 });
 
-describe('shared kit StatSparkTile — trend slot', () => {
-  // The employer, counselor and partner homes use this tile and pass no
-  // series on their live pages either, so they had the same empty slot.
-  it('falls back to the trend placeholder when no series is supplied', () => {
+describe('shared kit StatSparkTile — the empty slot is opt-in', () => {
+  // Nine live surfaces render this tile for pure counts ("Jobs Posted 12",
+  // "In this view 7"). A default empty slot would promise them a trend
+  // nothing upstream computes and add 28px to each, so the slot only appears
+  // when a caller passes copy for it. No live caller does today.
+  it('renders no slot for a series-less tile that did not opt in', () => {
     const { container } = render(
-      <StatSparkTile icon={<BookOpen size={16} />} label="Open roles" value={3} />
+      <StatSparkTile icon={<BookOpen size={16} />} label="Jobs Posted" value={12} />
+    );
+
+    expect(sparklines(container)).toHaveLength(0);
+    expect(container.querySelectorAll('[data-testid="stat-trend-empty"]')).toHaveLength(0);
+  });
+
+  it('renders the slot with the caller-supplied copy when it opts in', () => {
+    const { container } = render(
+      <StatSparkTile
+        icon={<BookOpen size={16} />}
+        label="Open roles"
+        value={3}
+        emptyTrendLabel={NO_TREND_LABEL}
+      />
     );
 
     expect(sparklines(container)).toHaveLength(0);
     expect(within(container).getByText(NO_TREND_LABEL)).toBeTruthy();
   });
 
-  it('draws the sparkline when a series is supplied', () => {
+  it('draws the sparkline when a series is supplied, opted in or not', () => {
     const { container } = render(
       <StatSparkTile
         icon={<BookOpen size={16} />}
         label="Open roles"
         value={3}
         spark={{ series: [1, 2, 3, 4] }}
+        emptyTrendLabel={NO_TREND_LABEL}
       />
     );
 

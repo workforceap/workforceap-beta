@@ -21,10 +21,7 @@ describe('StatSparkTile caption', () => {
 
   it('renders nothing extra when no caption is given', () => {
     const { container } = render(<StatSparkTile icon={<span data-icon />} label="Assigned members" value={12} />);
-    // The tile's other `.wa-kit-meta` is the trend slot's "No trend yet"
-    // placeholder, which is not a caption and is covered by
-    // tests/components/stat-tile-trend-slot.spec.tsx.
-    expect(container.querySelector('.wa-kit-meta:not([data-testid="stat-trend-empty"])')).toBeNull();
+    expect(container.querySelector('.wa-kit-meta')).toBeNull();
   });
 });
 

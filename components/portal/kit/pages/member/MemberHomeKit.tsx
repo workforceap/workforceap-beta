@@ -1,6 +1,7 @@
 'use client';
 
 import type { CSSProperties } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Play,
   Wand2,
@@ -93,7 +94,7 @@ interface GoalSummary {
 
 /** Tiny inline sparkline + delta chip for a stat tile. Omit any field to hide that piece. */
 export interface StatSpark {
-  /** Sparkline series (2+ points, auto-scaled). Omit/short and the tile shows the muted "No trend yet" slot instead (TrendPlaceholder), not a blank. */
+  /** Sparkline series (2+ points, auto-scaled). Omit/short and the tile shows the muted `dashboard.noTrendYet` slot instead (TrendPlaceholder), not a blank. */
   series?: number[];
   /** Delta chip text, e.g. "4%" or "85". Omit to hide the chip entirely. */
   delta?: string;
@@ -303,6 +304,7 @@ function StatSparkTile({
   tone?: KitTone;
   spark?: StatSpark;
 }) {
+  const t = useTranslations('dashboard');
   return (
     <div className="wa-kit-card">
       <div className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -341,7 +343,7 @@ function StatSparkTile({
           />
         </svg>
       ) : spark?.delta ? null : (
-        <TrendPlaceholder />
+        <TrendPlaceholder label={t('noTrendYet')} />
       )}
       </div>
     </div>

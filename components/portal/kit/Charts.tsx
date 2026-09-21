@@ -93,9 +93,6 @@ export function Sparkline({
   );
 }
 
-/** Copy shown in a stat tile's trend slot when there is no series to draw. */
-export const NO_TREND_LABEL = 'No trend yet';
-
 /**
  * Stand-in for the sparkline slot on a tile whose series is empty — a member
  * with no history yet, which on the member home is every tile today (nothing
@@ -110,12 +107,19 @@ export const NO_TREND_LABEL = 'No trend yet';
  * It reserves the sparkline's own height so a row of tiles keeps one baseline
  * whether or not a given member has history, which is what makes the absence
  * read as deliberate rather than as a graph that failed to paint.
+ *
+ * OPT-IN, and `label` is required and must already be translated. This slot
+ * only belongs on a tile that would plot a trend once one exists; on a pure
+ * count ("Jobs Posted 12") it would promise a trend nothing will ever compute
+ * and cost 28px for the privilege. The kit holds no copy of its own, so the
+ * caller passes the string from its own catalogue.
  */
 export function TrendPlaceholder({
-  label = NO_TREND_LABEL,
+  label,
   height = 28,
 }: {
-  label?: string;
+  /** Already-translated copy, e.g. next-intl `t('noTrendYet')`. */
+  label: string;
   height?: number;
 }) {
   return (

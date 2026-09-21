@@ -43,7 +43,7 @@ export { FeatureTile } from './FeatureTile';
 export { QueueRow, type QueueTone } from './QueueRow';
 export { WorkQueueItem } from './WorkQueueItem';
 export { KanbanBoard, KanbanColumnHeader, type KanbanColumnData, type KanbanCardData } from './Kanban';
-export { BarChartMini, RankBars, Sparkline, TrendPlaceholder, NO_TREND_LABEL, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
+export { BarChartMini, RankBars, Sparkline, TrendPlaceholder, AreaChartMini, type ChartDatum, type RankDatum } from './Charts';
 export {
   CardHead,
   DeltaChip,
