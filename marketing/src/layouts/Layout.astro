@@ -1,4 +1,10 @@
 ---
+// Canonical WorkforceAP design tokens. This is the same file app/layout.tsx
+// loads on every Next route (css/wa-brand-tokens.css, WAP-106); importing it
+// here is what puts the static public pages on the same brand token layer as
+// the portals instead of a second hand-maintained copy of the palette.
+// It must stay ahead of blend.css, which reads these tokens.
+import '../../../css/wa-brand-tokens.css';
 import '../styles/blend.css';
 import '../styles/hero-media.css';
 import AnalyticsHead from '../components/AnalyticsHead.astro';
