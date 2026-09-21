@@ -10805,6 +10805,31 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "scripts/test-unit.test.cjs",
+    "area": "operations",
+    "domain": "operations",
+    "frameworkImports": [
+      "./vitest-library-specs.mjs",
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "scripts/vitest-library-specs.mjs",
+        "line": 13
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "scripts/verify-admin-mutation-audit.test.cjs",
     "area": "operations",
     "domain": "operations",

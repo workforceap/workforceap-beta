@@ -241,7 +241,7 @@
 | [components/platform/OrgBrandingBar.tsx](../../../components/platform/OrgBrandingBar.tsx) | 20 | administration | default:5 |
 | [components/platform/OrgBrandingStyle.tsx](../../../components/platform/OrgBrandingStyle.tsx) | 18 | administration | default:7 |
 | [components/portal/AIHistoryList.tsx](../../../components/portal/AIHistoryList.tsx) | 227 | components | default:80 |
-| [components/portal/AdminPortalShell.tsx](../../../components/portal/AdminPortalShell.tsx) | 60 | components | default:13 |
+| [components/portal/AdminPortalShell.tsx](../../../components/portal/AdminPortalShell.tsx) | 64 | components | ADMIN_GUIDE_HREF:14, default:16 |
 | [components/portal/AiResultRenderer.tsx](../../../components/portal/AiResultRenderer.tsx) | 643 | components | AiResultRendererProps:522, default:562 |
 | [components/portal/ApplicationAiFeedbackPrompt.tsx](../../../components/portal/ApplicationAiFeedbackPrompt.tsx) | 118 | components | RecentToolOption:9, default:18 |
 | [components/portal/AssessmentForm.module.css](../../../components/portal/AssessmentForm.module.css) | 380 | components |  |
@@ -527,7 +527,7 @@
 | [components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx](../../../components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx) | 279 | partners-funding | WioaDetermination:34, WioaScreeningRow:36, WioaScreeningKitProps:63, WioaScreeningKit:91 |
 | [components/portal/kit/pages/admin/CommandCenterKit.module.css](../../../components/portal/kit/pages/admin/CommandCenterKit.module.css) | 247 | administration |  |
 | [components/portal/kit/pages/admin/CommandCenterKit.tsx](../../../components/portal/kit/pages/admin/CommandCenterKit.tsx) | 432 | administration | CommandCenterQueueItem:43, ProgramHealthDatum:69, CommandCenterKpiItem:72, CommandCenterSystemHealthRow:80, CommandCenterMemberRow:98, CommandCenterKitProps:111, CommandCenterKit:314 |
-| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 430 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
+| [components/portal/kit/pages/counselor/CounselorHomeKit.tsx](../../../components/portal/kit/pages/counselor/CounselorHomeKit.tsx) | 434 | member-counselor | CounselorQueueBucket:57, CounselorQueueRow:59, CounselorSessionRow:75, CounselorHomeKitProps:104, CounselorHomeKit:244 |
 | [components/portal/kit/pages/counselor/CounselorTodayKit.tsx](../../../components/portal/kit/pages/counselor/CounselorTodayKit.tsx) | 263 | member-counselor | CounselorTodayKitProps:50, CounselorTodayKit:191 |
 | [components/portal/kit/pages/employer/EmployerHomeKit.tsx](../../../components/portal/kit/pages/employer/EmployerHomeKit.tsx) | 390 | jobs-employers | EmployerCandidateRow:52, EmployerOpenRoleItem:72, EmployerHomeKitProps:80, EmployerHomeKit:263 |
 | [components/portal/kit/pages/member/BenefitsCliffKit.tsx](../../../components/portal/kit/pages/member/BenefitsCliffKit.tsx) | 38 | member-counselor | BenefitsCliffKit:15 |

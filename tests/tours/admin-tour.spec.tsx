@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
-import AdminPortalShell from '@/components/portal/AdminPortalShell';
+import AdminPortalShell, { ADMIN_GUIDE_HREF } from '@/components/portal/AdminPortalShell';
 import { CommandCenterKit } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import { TOUR_REGISTRY, getHomeTourForRole } from '@/lib/tours/registry';
 
@@ -162,7 +162,7 @@ describe('admin guided tour (wave 4)', () => {
     expect(posted().some((p) => p.url === '/api/onboarding/tour-complete')).toBe(false);
   });
 
-  it('the Help menu reopens the tour after it was dismissed and has no guide link (admin has no guide page yet)', async () => {
+  it('the Help menu reopens the tour after it was dismissed and links the admin guide', async () => {
     render(<Portal />);
     await openFromHelp();
     fireEvent.click(screen.getByRole('button', { name: 'Skip tour' }));
@@ -178,8 +178,9 @@ describe('admin guided tour (wave 4)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Help' }));
     const menu = await screen.findByRole('menu', { name: 'Help' });
-    expect(within(menu).getAllByRole('menuitem')).toHaveLength(1);
-    expect(within(menu).queryByRole('menuitem', { name: 'Portal guide' })).toBeNull();
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(2);
+    expect(within(menu).getByRole('menuitem', { name: 'Portal guide' })).toHaveAttribute('href', ADMIN_GUIDE_HREF);
+    expect(ADMIN_GUIDE_HREF).toBe('/admin/guide');
   });
 
   it('an org admin without super-admin context has no Messages or Settings rows, so the engine skips those two steps', async () => {

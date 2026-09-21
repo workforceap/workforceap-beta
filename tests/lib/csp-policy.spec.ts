@@ -16,6 +16,7 @@ import {
   extractCspViolations,
   parseCspReportContentType,
   summarizeBlockedUri,
+  collapseDynamicPathSegments,
   summarizeDocumentUri,
 } from '@/lib/security/cspReport';
 
@@ -106,6 +107,21 @@ describe('WAP-36 phase 1: CSP report normalization', () => {
     expect(summarizeBlockedUri(undefined)).toBe('unknown');
     expect(summarizeDocumentUri('https://www.workforceap.org/en/login?redirectTo=%2Fdashboard&email=a%40b.c')).toBe('/en/login');
     expect(summarizeDocumentUri('not a url')).toBe('/unknown');
+  });
+
+  it('collapses dynamic document path segments to :id so ids and tokens never reach the log', () => {
+    // UUID and numeric ids anywhere in the path; the static route segments around them stay.
+    expect(summarizeDocumentUri('https://www.workforceap.org/admin/members/3f2c1d8e-9a4b-4c7d-8e1f-0a2b3c4d5e6f/notes')).toBe('/admin/members/:id/notes');
+    expect(summarizeDocumentUri('https://www.workforceap.org/en/dashboard/jobs/48213?utm=x')).toBe('/en/dashboard/jobs/:id');
+    // Token routes redact whatever follows the known prefix, even a short or slug-looking token.
+    expect(summarizeDocumentUri('https://www.workforceap.org/q/kx7-abc?sig=1')).toBe('/q/:id');
+    expect(summarizeDocumentUri('https://www.workforceap.org/survey/placement/eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0')).toBe('/survey/placement/:id');
+    // Percent-encoded email in the unmatched-learner route (nothing else matches `%`/`.`).
+    expect(summarizeDocumentUri('https://www.workforceap.org/admin/coursera/learners/unmatched/jane%40example.com')).toBe('/admin/coursera/learners/unmatched/:id');
+    // Opaque cuid-style ids collapse; human slugs and locale prefixes do not.
+    expect(collapseDynamicPathSegments('/counselor/students/clx9k2m4p0001abcd8f7e6g5h')).toBe('/counselor/students/:id');
+    expect(collapseDynamicPathSegments('/en/programs/google-it-support-professional-certificate')).toBe('/en/programs/google-it-support-professional-certificate');
+    expect(collapseDynamicPathSegments('/')).toBe('/');
   });
 
   it('normalizes the legacy report-uri body', () => {
