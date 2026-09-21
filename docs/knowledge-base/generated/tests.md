@@ -277,7 +277,7 @@
 | [tests/components/board-outcomes-exports-link.spec.tsx](../../../tests/components/board-outcomes-exports-link.spec.tsx) | 40 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/command-center-system-health.spec.tsx](../../../tests/components/command-center-system-health.spec.tsx) | 228 | tests |  |
-| [tests/components/counselor-home-on-track-caption.spec.tsx](../../../tests/components/counselor-home-on-track-caption.spec.tsx) | 39 | tests |  |
+| [tests/components/counselor-home-on-track-caption.spec.tsx](../../../tests/components/counselor-home-on-track-caption.spec.tsx) | 42 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
 | [tests/components/counselor-notes-panels-load.spec.tsx](../../../tests/components/counselor-notes-panels-load.spec.tsx) | 115 | tests |  |
 | [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
@@ -459,7 +459,7 @@
 | [tests/lib/coursera-tenant-index-migration.spec.ts](../../../tests/lib/coursera-tenant-index-migration.spec.ts) | 71 | learning-coursera |  |
 | [tests/lib/coursera-unmatched-learners-learning-paths.spec.ts](../../../tests/lib/coursera-unmatched-learners-learning-paths.spec.ts) | 157 | learning-coursera |  |
 | [tests/lib/cron-diagnostics-visibility.spec.ts](../../../tests/lib/cron-diagnostics-visibility.spec.ts) | 205 | tests |  |
-| [tests/lib/csp-policy.spec.ts](../../../tests/lib/csp-policy.spec.ts) | 150 | tests |  |
+| [tests/lib/csp-policy.spec.ts](../../../tests/lib/csp-policy.spec.ts) | 166 | tests |  |
 | [tests/lib/curriculum-versioned-read-surfaces.spec.ts](../../../tests/lib/curriculum-versioned-read-surfaces.spec.ts) | 136 | tests |  |
 | [tests/lib/dashboard-white-pill-contrast.spec.tsx](../../../tests/lib/dashboard-white-pill-contrast.spec.tsx) | 64 | tests |  |
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
@@ -576,7 +576,7 @@
 | [tests/setup.ts](../../../tests/setup.ts) | 1 | tests |  |
 | [tests/test-runner-coverage.test.ts](../../../tests/test-runner-coverage.test.ts) | 165 | tests |  |
 | [tests/tours/admin-overview-anchors.spec.tsx](../../../tests/tours/admin-overview-anchors.spec.tsx) | 102 | tests |  |
-| [tests/tours/admin-tour.spec.tsx](../../../tests/tours/admin-tour.spec.tsx) | 272 | tests |  |
+| [tests/tours/admin-tour.spec.tsx](../../../tests/tours/admin-tour.spec.tsx) | 273 | tests |  |
 | [tests/tours/counselor-tour.spec.tsx](../../../tests/tours/counselor-tour.spec.tsx) | 237 | tests |  |
 | [tests/tours/employer-overview-anchors.spec.tsx](../../../tests/tours/employer-overview-anchors.spec.tsx) | 71 | tests |  |
 | [tests/tours/employer-tour.spec.tsx](../../../tests/tours/employer-tour.spec.tsx) | 252 | tests |  |

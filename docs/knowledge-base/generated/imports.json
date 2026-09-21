@@ -119064,6 +119064,46 @@
     "target": "scripts/vitest-library-specs.mjs"
   },
   {
+    "from": "scripts/test-unit.test.cjs",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/test-unit.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/test-unit.test.cjs",
+    "specifier": "node:path",
+    "line": 3,
+    "kind": "require",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/test-unit.test.cjs",
+    "specifier": "node:child_process",
+    "line": 4,
+    "kind": "require",
+    "external": true,
+    "package": "node:child_process"
+  },
+  {
+    "from": "scripts/test-unit.test.cjs",
+    "specifier": "./vitest-library-specs.mjs",
+    "line": 13,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
     "from": "scripts/validate-approved-coursera-catalog.ts",
     "specifier": "@/lib/coursera/b4bClient",
     "line": 1,

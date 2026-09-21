@@ -217,7 +217,7 @@ test('partner.home (wave 3) is written for the overview and walks referrals → 
 });
 
 test('every persona home tour ends on the Help anchor that reopens it', () => {
-  for (const key of ['member.home', 'employer.home', 'partner.home', 'counselor.home'] as const) {
+  for (const key of ['member.home', 'employer.home', 'partner.home', 'counselor.home', 'admin.home'] as const) {
     const steps = TOUR_REGISTRY[key].steps;
     assert.equal(steps[steps.length - 1].target, 'tour-help', key);
   }

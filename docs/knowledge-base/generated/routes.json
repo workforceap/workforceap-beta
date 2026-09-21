@@ -9078,12 +9078,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 22,
+        "line": 20,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 114,
+        "line": 112,
         "kind": "FunctionDeclaration",
         "localName": "AdminGuidePage"
       }

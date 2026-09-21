@@ -127,7 +127,8 @@
 | [scripts/subset-material-symbols.py](../../../scripts/subset-material-symbols.py) | 88 | operations |  |
 | [scripts/subset-material-symbols.sh](../../../scripts/subset-material-symbols.sh) | 11 | operations |  |
 | [scripts/sync-portal-test-auth.ts](../../../scripts/sync-portal-test-auth.ts) | 285 | operations | syncPortalTestAuth:235 |
-| [scripts/test-unit.mjs](../../../scripts/test-unit.mjs) | 189 | operations |  |
+| [scripts/test-unit.mjs](../../../scripts/test-unit.mjs) | 201 | operations |  |
+| [scripts/test-unit.test.cjs](../../../scripts/test-unit.test.cjs) | 31 | operations |  |
 | [scripts/validate-approved-coursera-catalog.ts](../../../scripts/validate-approved-coursera-catalog.ts) | 44 | learning-coursera |  |
 | [scripts/validate-approved-coursera-track.ts](../../../scripts/validate-approved-coursera-track.ts) | 67 | learning-coursera |  |
 | [scripts/vercel-build.cjs](../../../scripts/vercel-build.cjs) | 69 | operations | appBuildScriptForEnvironment:65, copyMarketingBuild:66, main:67, runNpm:68 |
