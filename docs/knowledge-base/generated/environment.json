@@ -2210,7 +2210,7 @@
         },
         {
           "file": "app/api/cron/onboarding-stalls/route.ts",
-          "line": 18
+          "line": 19
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
@@ -4057,6 +4057,21 @@
         {
           "file": "tests/tours/admin-overview-anchors.spec.tsx",
           "line": 1
+        }
+      ]
+    },
+    {
+      "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "lib/retention/config.test.ts",
+          "line": 76
+        },
+        {
+          "file": "lib/retention/config.ts",
+          "line": 148
         }
       ]
     },

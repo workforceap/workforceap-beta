@@ -303,7 +303,7 @@
 | [app/api/cron/milestone-cascade-draft/route.ts](../../../app/api/cron/milestone-cascade-draft/route.ts) | 42 | communications | maxDuration:10, GET:41, POST:42 |
 | [app/api/cron/milestone-cascade-expire/route.ts](../../../app/api/cron/milestone-cascade-expire/route.ts) | 30 | communications | maxDuration:10, GET:29, POST:30 |
 | [app/api/cron/milestone-celebration/route.ts](../../../app/api/cron/milestone-celebration/route.ts) | 147 | communications | maxDuration:15, GET:146, POST:147 |
-| [app/api/cron/onboarding-stalls/route.ts](../../../app/api/cron/onboarding-stalls/route.ts) | 217 | communications | maxDuration:15, GET:216, POST:217 |
+| [app/api/cron/onboarding-stalls/route.ts](../../../app/api/cron/onboarding-stalls/route.ts) | 245 | communications | maxDuration:16, GET:244, POST:245 |
 | [app/api/cron/partner-outcome-digest/route.ts](../../../app/api/cron/partner-outcome-digest/route.ts) | 195 | communications | maxDuration:16, GET:194, POST:195 |
 | [app/api/cron/placement-survey/route.ts](../../../app/api/cron/placement-survey/route.ts) | 49 | communications | maxDuration:7, GET:48, POST:49 |
 | [app/api/cron/retention-decisions/route.ts](../../../app/api/cron/retention-decisions/route.ts) | 197 | communications | maxDuration:11, GET:196, POST:197 |
