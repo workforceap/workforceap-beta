@@ -19,7 +19,6 @@ export type TimelineEvent = {
 
 type Props = {
   events: TimelineEvent[];
-  programAvgDays?: number | null;
 };
 
 const STAGE_ICONS: Record<TimelineStage, string> = {
@@ -53,7 +52,17 @@ const STAGE_COLORS: Record<TimelineEvent['status'], { bg: string; border: string
   },
 };
 
-export default function MemberProgressTimeline({ events, programAvgDays }: Props) {
+/**
+ * Stage-by-stage timeline for one member.
+ *
+ * There is deliberately no "Avg program: Nd" comparison here. The value that
+ * used to fill it was `100 / mean(memberProgramProgress.average_percent) * 30`
+ * — a completion percentage inverted into a day count, unfiltered by org, time
+ * window or completion — so both the caption and the per-stage
+ * "On track / Slower than avg" verdict it drove were meaningless. Restore this
+ * only with a real cohort duration (e.g. median observed days per stage).
+ */
+export default function MemberProgressTimeline({ events }: Props) {
   const completedCount = useMemo(
     () => events.filter((e) => e.status === 'completed').length,
     [events],
@@ -72,11 +81,6 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: 0 }}>
           Progress Timeline
         </h3>
-        {programAvgDays != null ? (
-          <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-            Avg program: {programAvgDays}d
-          </span>
-        ) : null}
       </div>
 
       {/* Progress bar */}
@@ -191,20 +195,6 @@ export default function MemberProgressTimeline({ events, programAvgDays }: Props
                   <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {new Date(event.date).toLocaleDateString()}
                     {event.durationDays != null ? ` · ${event.durationDays}d` : null}
-                    {event.durationDays != null && programAvgDays != null && event.status === 'completed' ? (
-                      <span
-                        style={{
-                          marginLeft: '0.5rem',
-                          fontWeight: 600,
-                          color:
-                            event.durationDays <= programAvgDays
-                              ? 'var(--color-green)'
-                              : 'var(--color-accent)',
-                        }}
-                      >
-                        {event.durationDays <= programAvgDays ? 'On track' : 'Slower than avg'}
-                      </span>
-                    ) : null}
                   </p>
                 ) : (
                   <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>

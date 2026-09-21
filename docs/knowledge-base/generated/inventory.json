@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "bfb355c7311a05af7c8938b9918c3ae59c78a95f947210a1268a082fada12781",
+  "inputTreeSha256": "31326c3aec8bf471f78fca0a0bd5aba492a51476b32123d44fc0b832264c82cb",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -5840,9 +5840,9 @@
       "path": "app/(portal)/counselor/students/[memberId]/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 45565,
-      "lines": 1041,
-      "sha256": "ab4123ff36f6e8d67774a2ddf1a9620bc3fba6401748618183987a5a7269aaa5",
+      "bytes": 46211,
+      "lines": 1046,
+      "sha256": "9e0ca1cca9f238f80ff128f0a8ec4b7a55dc7b81431fbc2277dc7b500c6ef0b4",
       "binary": false,
       "exports": [
         {
@@ -5870,47 +5870,47 @@
         },
         {
           "name": "AtRiskAlertDisplay",
-          "line": 894,
+          "line": 899,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NextBestActionRow",
-          "line": 901,
+          "line": 906,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "Counselor360Signals",
-          "line": 911,
+          "line": 916,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AT_RISK_ALERT_STATUS_LABEL",
-          "line": 931,
+          "line": 936,
           "kind": "Variable"
         },
         {
           "name": "atRiskAlertStatusLabel",
-          "line": 938,
+          "line": 943,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AT_RISK_LEVEL_TONE",
-          "line": 943,
+          "line": 948,
           "kind": "Variable"
         },
         {
           "name": "AtRiskSignalCard",
-          "line": 950,
+          "line": 955,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CareerQuizRecommendationCard",
-          "line": 989,
+          "line": 994,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NextBestActionsCard",
-          "line": 1015,
+          "line": 1020,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -15697,9 +15697,9 @@
       "path": "app/admin/coursera/learners/[userId]/page.tsx",
       "area": "pages",
       "domain": "learning-coursera",
-      "bytes": 14163,
-      "lines": 379,
-      "sha256": "fdee07e4662071a4da4c9f14654136c0183eedf43fd0ebd186e70acb999e0be1",
+      "bytes": 16337,
+      "lines": 431,
+      "sha256": "2f21218ed63da2ef8b95e454504b2df1de168e74e46131314eb909759d8b6638",
       "binary": false,
       "exports": [
         {
@@ -17797,24 +17797,24 @@
       "path": "app/admin/layout.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 5072,
-      "lines": 121,
-      "sha256": "4af589749e9ea29b2293a34c3d38a99f2eaf1d240f0300c886bd2f4d7d6cf2f2",
+      "bytes": 5438,
+      "lines": 127,
+      "sha256": "d75ae731f9a598835c98e86033ad2d4af2f59defc8756685475a523da3c67f56",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 23,
-          "kind": "Variable"
-        },
-        {
-          "name": "metadata",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "metadata",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration",
           "localName": "AdminLayout"
         }
@@ -17822,17 +17822,17 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 23,
-          "kind": "Variable"
-        },
-        {
-          "name": "metadata",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "metadata",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
           "name": "AdminLayout",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -18198,47 +18198,37 @@
       "path": "app/admin/members/[id]/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 71013,
-      "lines": 1467,
-      "sha256": "5ab180c59232e1f291a2da22e544e6f1787d1ccbbac8ae1a213965f884216465",
+      "bytes": 74066,
+      "lines": 1519,
+      "sha256": "e01fada507d544c898872fceb14ea6de969b9946eee5928c9158711661724698",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 103,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 111,
+          "line": 102,
           "kind": "FunctionDeclaration",
           "localName": "AdminMemberDetailPage"
         }
       ],
       "declarations": [
         {
-          "name": "AdminCourseProgressRow",
-          "line": 79,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "AdminMemberProgramProgressRow",
-          "line": 88,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
           "name": "CAREER_PLAN_EVENT_NAMES",
-          "line": 95,
+          "line": 86,
           "kind": "Variable"
         },
         {
           "name": "generateMetadata",
-          "line": 103,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminMemberDetailPage",
-          "line": 111,
+          "line": 102,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -18318,9 +18308,9 @@
       "path": "app/admin/members/[id]/stakeholder/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 24728,
-      "lines": 697,
-      "sha256": "05a5bfebfa0c163d22f75546cb0eb2ec478f274205665194c400d559b60f9624",
+      "bytes": 25047,
+      "lines": 701,
+      "sha256": "3279b0be98aa2d49c082e61c4d510646b00ee7945fae4efb31cf812276a830bd",
       "binary": false,
       "exports": [
         {
@@ -18374,6 +18364,60 @@
         {
           "name": "AdminMemberStakeholderPage",
           "line": 57,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/admin/members/[id]/unassignedTrainingEvidence.ts",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 4347,
+      "lines": 109,
+      "sha256": "32ac5074f145fba255f007abd0fd7ccdd1ca6b83bb374371e7cad1f7626e7ece",
+      "binary": false,
+      "exports": [
+        {
+          "name": "AdminCourseProgressRow",
+          "line": 3,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AdminMemberProgramProgressRow",
+          "line": 12,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UnassignedTrainingEvidence",
+          "line": 19,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "summarizeUnassignedTrainingEvidence",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "AdminCourseProgressRow",
+          "line": 3,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AdminMemberProgramProgressRow",
+          "line": 12,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UnassignedTrainingEvidence",
+          "line": 19,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "summarizeUnassignedTrainingEvidence",
+          "line": 37,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -18753,9 +18797,9 @@
       "path": "app/admin/members/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 18552,
-      "lines": 450,
-      "sha256": "643c6b7904ee127bfcbc64a58d01bde972140d69b288e53c184282be7bee18bb",
+      "bytes": 21035,
+      "lines": 496,
+      "sha256": "e2ecd1cb7201ab72a39bdfd3bec29596636a368ebc7e6451b7807052b46bf7f7",
       "binary": false,
       "exports": [
         {
@@ -26207,21 +26251,21 @@
       "path": "app/api/admin/members/[id]/summary/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 7207,
-      "lines": 176,
-      "sha256": "a63c769b8f33439ff760f970ddc15a80fc3e3de6d57a0eb1ed5925542d44a17b",
+      "bytes": 8945,
+      "lines": 203,
+      "sha256": "c7af40717062d68ef77b69f379ce0e2b96da7a463142c7acdb705b0d026049ec",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 23,
+          "line": 26,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 23,
+          "line": 26,
           "kind": "Variable"
         }
       ],
@@ -26476,41 +26520,41 @@
       "path": "app/api/admin/members/bulk-export/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 6987,
-      "lines": 214,
-      "sha256": "b8773a057329059c988e6955cc13772dde9a166ecb7893e437b026285f3549e7",
+      "bytes": 8897,
+      "lines": 244,
+      "sha256": "3c123d1f13a778ac6726bf9d981f73dd930d8cc2bfbf593812a84909da83f0b8",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 214,
+          "line": 244,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_MEMBERS",
-          "line": 14,
+          "line": 17,
           "kind": "Variable"
         },
         {
           "name": "bodySchema",
-          "line": 16,
+          "line": 19,
           "kind": "Variable"
         },
         {
           "name": "csvEscape",
-          "line": 20,
+          "line": 23,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_POST",
-          "line": 26,
+          "line": 29,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 214,
+          "line": 244,
           "kind": "Variable"
         }
       ],
@@ -26676,41 +26720,41 @@
       "path": "app/api/admin/members/export/route.ts",
       "area": "api",
       "domain": "administration",
-      "bytes": 10005,
-      "lines": 272,
-      "sha256": "ff05f7a77db70bb358e166fce576984257f60c0ac3c3f29894f986c1abaf7ea6",
+      "bytes": 12024,
+      "lines": 313,
+      "sha256": "5c2c82bb2b9e500e3e664b45638013dc38bc2e876273d1a61a74245e21a34807",
       "binary": false,
       "exports": [
         {
           "name": "GET",
-          "line": 272,
+          "line": 313,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "MAX_EXPORT",
-          "line": 17,
+          "line": 20,
           "kind": "Variable"
         },
         {
           "name": "csvEscape",
-          "line": 19,
+          "line": 22,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatDate",
-          "line": 25,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "_GET",
-          "line": 32,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 272,
+          "line": 313,
           "kind": "Variable"
         }
       ],
@@ -52430,14 +52474,14 @@
       "path": "components/admin/MembersTable.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 52098,
-      "lines": 1208,
-      "sha256": "4ee8e05c65118dc0bab4b0d5d153b6e0274080dc23c5be93c16f7586d87ee39d",
+      "bytes": 53747,
+      "lines": 1238,
+      "sha256": "dfe54cc2e8adad0a79c2c718142202cb83012d9538c38d52b09fa1b94ff0652c",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 278,
+          "line": 294,
           "kind": "FunctionDeclaration",
           "localName": "MembersTable"
         }
@@ -52460,87 +52504,87 @@
         },
         {
           "name": "FitScoreBadge",
-          "line": 82,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HealthDot",
-          "line": 92,
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatTraining",
-          "line": 102,
+          "line": 111,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NEW_MEMBER_WINDOW_MS",
-          "line": 116,
+          "line": 125,
           "kind": "Variable"
         },
         {
           "name": "toTime",
-          "line": 118,
+          "line": 127,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isNotInCourse",
-          "line": 126,
+          "line": 142,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isNewMember",
-          "line": 130,
+          "line": 146,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attentionReasons",
-          "line": 140,
+          "line": 156,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "needsAttention",
-          "line": 149,
+          "line": 165,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AttentionBadge",
-          "line": 153,
+          "line": 169,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortKey",
-          "line": 181,
+          "line": 197,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SortDir",
-          "line": 182,
+          "line": 198,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "HEALTH_RANK",
-          "line": 184,
+          "line": 200,
           "kind": "Variable"
         },
         {
           "name": "compareMembers",
-          "line": 186,
+          "line": 202,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortHeader",
-          "line": 207,
+          "line": 223,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HeaderSelectAll",
-          "line": 247,
+          "line": 263,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MembersTable",
-          "line": 278,
+          "line": 294,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -57334,14 +57378,14 @@
       "path": "components/portal/AdminPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1088,
-      "lines": 40,
-      "sha256": "e258317c7bec419a3ad816494fc0d003b18dd1048b16f6d9b37c145231f12593",
+      "bytes": 2158,
+      "lines": 60,
+      "sha256": "6773cf0826c644635a849fb28bc3d2fc6d78714e918638fa3ab40b51b15a8564",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 10,
+          "line": 13,
           "kind": "FunctionDeclaration",
           "localName": "AdminPortalShell"
         }
@@ -57349,7 +57393,7 @@
       "declarations": [
         {
           "name": "AdminPortalShell",
-          "line": 10,
+          "line": 13,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64296,9 +64340,9 @@
       "path": "components/portal/counselor/MemberProgressTimeline.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 7848,
-      "lines": 221,
-      "sha256": "a915d5765fece2ef232e5ab235c39d896488ac753e7cd6b284c47ea120870334",
+      "bytes": 7430,
+      "lines": 211,
+      "sha256": "312f60b45fca4fa6a96622cea1f9c4109221f9547a5989ef62cbadc37c4237e9",
       "binary": false,
       "exports": [
         {
@@ -64313,7 +64357,7 @@
         },
         {
           "name": "default",
-          "line": 56,
+          "line": 65,
           "kind": "FunctionDeclaration",
           "localName": "MemberProgressTimeline"
         }
@@ -64336,17 +64380,17 @@
         },
         {
           "name": "STAGE_ICONS",
-          "line": 25,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "STAGE_COLORS",
-          "line": 33,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "MemberProgressTimeline",
-          "line": 56,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -82417,9 +82461,9 @@
       "path": "lib/admin/analyticsOverview.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 9616,
-      "lines": 298,
-      "sha256": "023e1aaa6a0f74093583106a366f9c5760fffc0cf16e1fd9d04fcf4b5c4f83a6",
+      "bytes": 10379,
+      "lines": 313,
+      "sha256": "0ff1ebebbfa0d3041b9250b938ff4404ae0152dedb79fd7306b1d835940977c9",
       "binary": false,
       "exports": [
         {
@@ -85826,9 +85870,9 @@
       "path": "lib/admin/healthScore.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 1391,
-      "lines": 46,
-      "sha256": "c0f9afeee1858e6cbf9d0d39c495f060088bc6fd13bc7e72eb18ee949fba38b2",
+      "bytes": 5226,
+      "lines": 135,
+      "sha256": "5078bf2f7b58c53b9f0a9c3e233d484e3096b136ac720237fa6047a1478f0178",
       "binary": false,
       "exports": [
         {
@@ -85837,23 +85881,33 @@
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "SYSTEM_GENERATED_MEMBER_EVENTS",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_EVENT_WHERE",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
           "name": "HealthScoreInput",
-          "line": 8,
+          "line": 72,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "calculateHealthStatus",
-          "line": 14,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 32,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 40,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85864,23 +85918,53 @@
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "SYSTEM_GENERATED_MEMBER_EVENTS",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_EVENT_WHERE",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "RECENT_WINDOW_DAYS",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
           "name": "HealthScoreInput",
-          "line": 8,
+          "line": 72,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "mostRecent",
+          "line": 80,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isWithinRecentWindow",
+          "line": 89,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "calculateHealthStatus",
-          "line": 14,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthColor",
-          "line": 32,
+          "line": 118,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHealthLabel",
-          "line": 40,
+          "line": 126,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86998,9 +87082,9 @@
       "path": "lib/admin/studentStatus.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 3527,
-      "lines": 122,
-      "sha256": "b51addf2fadc90a3e63a041d8c2d07fe7cc0212b53ecd0b1360660bfb05be95d",
+      "bytes": 4509,
+      "lines": 136,
+      "sha256": "4e668dbc59303a8b0fa1b0ec525cb6b7c2d81014e4a512833a113ed89ce01b24",
       "binary": false,
       "exports": [
         {
@@ -87025,7 +87109,7 @@
         },
         {
           "name": "buildStatusWhere",
-          "line": 55,
+          "line": 62,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87052,7 +87136,7 @@
         },
         {
           "name": "buildStatusWhere",
-          "line": 55,
+          "line": 62,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87209,9 +87293,9 @@
       "path": "lib/admin/studentsRosterLoad.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 12020,
-      "lines": 302,
-      "sha256": "cef05cedac5095bfdcf7f6d7b106cc21431fb92c5944a7965784cace5fb7cdd5",
+      "bytes": 12864,
+      "lines": 315,
+      "sha256": "8520e87ea409ab7bdb4290e9d863ad32c409fbf001419c2730d54858c32dc5f7",
       "binary": false,
       "exports": [
         {
@@ -87377,9 +87461,9 @@
       "path": "lib/admin/studentsRosterView.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 7143,
-      "lines": 175,
-      "sha256": "2ab9d0137404f0aa72f467e294b9b3c161e37ec0f315904dc9ebe73e2f931d9d",
+      "bytes": 7290,
+      "lines": 177,
+      "sha256": "644422acf0a883368ec7eb533293be775c24ac0eb7d869f1380d059ad667985a",
       "binary": false,
       "exports": [
         {
@@ -87464,42 +87548,42 @@
         },
         {
           "name": "chipForStudentsNeeds",
-          "line": 81,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "studentsNeedsHref",
-          "line": 88,
+          "line": 90,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterChip",
-          "line": 98,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 117,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 126,
+          "line": 128,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 152,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 170,
+          "line": 172,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87591,42 +87675,42 @@
         },
         {
           "name": "chipForStudentsNeeds",
-          "line": 81,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "studentsNeedsHref",
-          "line": 88,
+          "line": 90,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterChip",
-          "line": 98,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "matchesRosterSearch",
-          "line": 111,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterViewCopy",
-          "line": 117,
+          "line": 119,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STUDENTS_ROSTER_VIEW_COPY",
-          "line": 126,
+          "line": 128,
           "kind": "Variable"
         },
         {
           "name": "toTrainingRosterRow",
-          "line": 152,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "initialsFrom",
-          "line": 170,
+          "line": 172,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87698,9 +87782,9 @@
       "path": "lib/admin/trainingDashboard.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 11330,
-      "lines": 315,
-      "sha256": "bee36afca0fdcd909b42952230e29642ef4240921b19c5b36f5a844831a5cb57",
+      "bytes": 11663,
+      "lines": 319,
+      "sha256": "63a2b61c5848a1e248bcb912ec594291a30ea354f1ad512714c3767b4a857966",
       "binary": false,
       "exports": [
         {
@@ -124341,9 +124425,9 @@
       "path": "lib/member/getMemberState.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 11079,
+      "bytes": 11095,
       "lines": 252,
-      "sha256": "7c7cba8367a3881ef07b5e246a261afa3e29c006363c53724e3df354aa1f2521",
+      "sha256": "81762a7562e723626bff29cab3fa8cf0f6f8496465575d6b6c877d52842dc4d4",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -126155,51 +126239,51 @@
       "path": "lib/member/memberProgramTrainingView.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 8917,
-      "lines": 226,
-      "sha256": "ceee5bf912b1e60247aded49647fed257dd9f736073d1847b8fff44db715f9ad",
+      "bytes": 9475,
+      "lines": 236,
+      "sha256": "e509a0cd359e4b9328341da69a1cc8a984ef74d4bd341c44cad4df8b3357e7be",
       "binary": false,
       "exports": [
         {
           "name": "STALE_TRAINING_ACTIVITY_DAYS",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "MemberProgramTrainingView",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadMemberProgramTrainingView",
-          "line": 52,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTrainingStaleForCounselorEscalation",
-          "line": 210,
+          "line": 220,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "STALE_TRAINING_ACTIVITY_DAYS",
-          "line": 15,
+          "line": 16,
           "kind": "Variable"
         },
         {
           "name": "MemberProgramTrainingView",
-          "line": 17,
+          "line": 18,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "loadMemberProgramTrainingView",
-          "line": 52,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTrainingStaleForCounselorEscalation",
-          "line": 210,
+          "line": 220,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130191,9 +130275,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22068,
-      "lines": 517,
-      "sha256": "1c36cc73de7d761194353386e94e143470cedf0d4136a8dc2722919d50078670",
+      "bytes": 22373,
+      "lines": 519,
+      "sha256": "b0cf9285dc9d584d274ec4862cca3a92092359fd1d9dcb9a9a8acd662d913d04",
       "binary": false,
       "exports": [
         {
@@ -130268,27 +130352,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 456,
+          "line": 458,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 477,
+          "line": 479,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 486,
+          "line": 488,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 491,
+          "line": 493,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 508,
+          "line": 510,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130370,27 +130454,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 456,
+          "line": 458,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 477,
+          "line": 479,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 486,
+          "line": 488,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 491,
+          "line": 493,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 508,
+          "line": 510,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141177,9 +141261,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 7308,
-      "lines": 176,
-      "sha256": "f789d739da3b1be6bc4b40a4cf283d93f22ed174b479a3e0587efcf7a84fe704",
+      "bytes": 9696,
+      "lines": 227,
+      "sha256": "69cc96bb3bee9795ef99f5c01dba9f17b173e8f7e0dd795947f6d9f48cf85ef3",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -141220,9 +141304,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 6457,
-      "lines": 180,
-      "sha256": "f9b6b1fc92a44bf519a37717869b243a4ad39c5cfa231e15047aa059ac8df167",
+      "bytes": 7828,
+      "lines": 208,
+      "sha256": "2766aafd3e8e02fa360533dc0ccf99d0d91ee29aef0a70055640de0235b244d8",
       "binary": false,
       "exports": [
         {
@@ -141277,47 +141361,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 136,
+          "line": 164,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 138,
+          "line": 166,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 145,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 147,
+          "line": 175,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 151,
+          "line": 179,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 155,
+          "line": 183,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 159,
+          "line": 187,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 168,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 173,
+          "line": 201,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141379,47 +141463,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 136,
+          "line": 164,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 138,
+          "line": 166,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 145,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 147,
+          "line": 175,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 151,
+          "line": 179,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 155,
+          "line": 183,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 159,
+          "line": 187,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 168,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 173,
+          "line": 201,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -146914,18 +146998,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 220850,
-      "lines": 3676,
-      "sha256": "9a04626f0d8019f06d84e94403aee285a669e57a16381cd289c07977297b5265",
+      "bytes": 223155,
+      "lines": 3716,
+      "sha256": "5a9666acc6c187e6378abd7990ccf47c0ee96f9dc23b60d3748813fc942e0ab2",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 244797,
-      "lines": 3676,
-      "sha256": "eee060e75e6e569dc92097e0c8775e2dcc9621d9a341d60dbe563409bfb4a2f2",
+      "bytes": 247348,
+      "lines": 3716,
+      "sha256": "b88937cc804ba5bb5e8b1e3c8eca1ca16fad977f93c7d5e3f6d5dfc568c6d4b4",
       "binary": false
     },
     {
@@ -159127,12 +159211,45 @@
       "directive": null
     },
     {
+      "path": "tests/api/admin-member-summary-facts.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6913,
+      "lines": 161,
+      "sha256": "5e1cda0ae07097adb80e500869f3941ab7d0d261b86de51c48622eaa5ec7cd3d",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "findUnique",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "call",
+          "line": 50,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "promptText",
+          "line": 56,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/api/admin-members-bulk.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 26467,
-      "lines": 597,
-      "sha256": "dd7210c78d0b5f2773372da17b6e95be1dc749e6c74777fbe3a99793e5fe8ef2",
+      "bytes": 30715,
+      "lines": 681,
+      "sha256": "bf13a998b059654d8949d7edc49eab41d70f05832508c425bd114c495509db60",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -159143,12 +159260,12 @@
         },
         {
           "name": "uid",
-          "line": 149,
+          "line": 152,
           "kind": "Variable"
         },
         {
           "name": "makeRequest",
-          "line": 151,
+          "line": 154,
           "kind": "Variable"
         }
       ],
@@ -159173,6 +159290,54 @@
           "name": "makeRequest",
           "line": 99,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/api/admin-members-export-columns.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 9011,
+      "lines": 222,
+      "sha256": "d6aab1a664537c2c188bd1c642777d60624713bbc681a2ac5cebb37ff4d4dcb3",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 41,
+          "kind": "Variable"
+        },
+        {
+          "name": "RecordValue",
+          "line": 43,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 45,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "runExport",
+          "line": 69,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -163756,9 +163921,9 @@
       "path": "tests/app/admin-directory-search.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 13047,
-      "lines": 212,
-      "sha256": "023ce9ae49cb29bdb94c2d0c732fb2cbe7d82a384cafb0e76138d4c93c773bd5",
+      "bytes": 13143,
+      "lines": 215,
+      "sha256": "c9e217dd407fef0291a4c733b534979a882cb6c88f258a958d699e301fcc5dc0",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163769,22 +163934,22 @@
         },
         {
           "name": "RecordValue",
-          "line": 39,
+          "line": 42,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "matches",
-          "line": 41,
+          "line": 44,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "user",
-          "line": 61,
+          "line": 64,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "propsFor",
-          "line": 69,
+          "line": 72,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -163823,6 +163988,44 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-member-detail-numbers.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 14040,
+      "lines": 311,
+      "sha256": "9d1d02c8a83c3c5c601af5724f772a60821f245d2bcea0fb766e2ca9ae69b560",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "panelMock",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "INSTANT",
+          "line": 120,
+          "kind": "Variable"
+        },
+        {
+          "name": "baseMember",
+          "line": 122,
+          "kind": "Variable"
+        },
+        {
+          "name": "renderPage",
+          "line": 162,
+          "kind": "FunctionDeclaration"
+        }
+      ],
       "directive": null
     },
     {
@@ -163883,6 +164086,49 @@
         {
           "name": "Island",
           "line": 356,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-members-roster-numbers.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 11637,
+      "lines": 254,
+      "sha256": "51c520981f9969d1034669c68b5f027ac92d22d83c138e46e02d10e0522365ca",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "RecordValue",
+          "line": 57,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "propsFor",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 71,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 72,
+          "kind": "Variable"
+        },
+        {
+          "name": "member",
+          "line": 74,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -164255,6 +164501,39 @@
           "name": "renderPage",
           "line": 81,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/counselor-student-detail-progress-numbers.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 9535,
+      "lines": 196,
+      "sha256": "3bce8f3401566376fe820342dd892dc3e2fad57d89afa2e187a5b29ff8529d25",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "INSTANT",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 82,
+          "kind": "Variable"
+        },
+        {
+          "name": "reconciled",
+          "line": 84,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -166900,9 +167179,9 @@
       "path": "tests/components/member-progress-timeline.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2131,
-      "lines": 35,
-      "sha256": "ddc6ff952c9505266e50b2d2018eefdaa3d5d3c07b50259ade5deab9538317c9",
+      "bytes": 2769,
+      "lines": 45,
+      "sha256": "76de1e236e2d0a84c10a89eef22b2db91ec97624f7d15e9b34334bd17de90c33",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -167720,9 +167999,9 @@
       "path": "tests/components/students-roster-needs-link.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7519,
-      "lines": 140,
-      "sha256": "6b73390cd9b370c175c2a4f132c9ece8f0079f09142b0c0fa6ab81de98ca67cf",
+      "bytes": 7615,
+      "lines": 143,
+      "sha256": "624b85378a51384d95ef95b2710f73ffb8a167d9fbf235b56b7a6a762eb9409e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167733,12 +168012,12 @@
         },
         {
           "name": "ROWS",
-          "line": 64,
+          "line": 67,
           "kind": "Variable"
         },
         {
           "name": "checkedChip",
-          "line": 79,
+          "line": 82,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167748,9 +168027,9 @@
       "path": "tests/components/students-roster-page.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4723,
-      "lines": 84,
-      "sha256": "4c619b5320f7634c62e2d3a59f48e2f8d7ce9dd1d854939025a77a88d0880ec7",
+      "bytes": 4819,
+      "lines": 87,
+      "sha256": "97068664dbb8dd73362afae088c8c5532907a7f707b1b1d060455ebc524c8ec8",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167761,17 +168040,17 @@
         },
         {
           "name": "member",
-          "line": 31,
+          "line": 34,
           "kind": "Variable"
         },
         {
           "name": "enrichment",
-          "line": 37,
+          "line": 40,
           "kind": "Variable"
         },
         {
           "name": "displayedStudent",
-          "line": 42,
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -168022,6 +168301,18 @@
           "kind": "Variable"
         }
       ],
+      "directive": null
+    },
+    {
+      "path": "tests/coursera/learner-detail-learning-paths.spec.ts",
+      "area": "tests",
+      "domain": "learning-coursera",
+      "bytes": 1788,
+      "lines": 39,
+      "sha256": "f7797731b1d227b9512d58aeadc13f2460b957c98f26896e095b542c44acf427",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
       "directive": null
     },
     {
@@ -169323,6 +169614,34 @@
       "directive": null
     },
     {
+      "path": "tests/lib/admin-roster-health-and-status-filters.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7460,
+      "lines": 169,
+      "sha256": "bee9e6336cc8987df4b21414aa7d46d790ab0f0c1fecc3834218ceb766b91412",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "DAY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "keysIn",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/admin-user-provisioning-tenant-race.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -169494,6 +169813,49 @@
         {
           "name": "ambassadors",
           "line": 58,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/analytics-overview-health-inputs.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4305,
+      "lines": 105,
+      "sha256": "e78b071c8a209261ca611e29c1e73135a3ef20337dfe93edea820d9a8043c6d8",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_ID",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "LOGIN_AT",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "COURSE_AT",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "EVENT_AT",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "scope",
+          "line": 47,
           "kind": "Variable"
         }
       ],
@@ -172606,6 +172968,64 @@
       "directive": null
     },
     {
+      "path": "tests/lib/training-dashboard-stale-activity.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4902,
+      "lines": 146,
+      "sha256": "dd3ab0da4e071d36b1d7ba301623e1bca7f32561bb3fd110bb18b149e0af00ac",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "PROGRAM",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "daysAgo",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "TONIGHT",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "CourseRow",
+          "line": 37,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "member",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "course",
+          "line": 72,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "scope",
+          "line": 95,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/lib/training-progress-curriculum-version.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -173964,6 +174384,87 @@
       "directive": null
     },
     {
+      "path": "tests/tours/admin-overview-anchors.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4459,
+      "lines": 102,
+      "sha256": "7cf4d1ee36cd402751cc1f8c555b0cc85be47cbdd009044b00db787b7b6fd2c2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "anchors",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/admin-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 14359,
+      "lines": 272,
+      "sha256": "f54fcecf025c84dfab54acae6f57dd9f820fb08eaafc9f3a107cef3d143bd81e",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "Gate",
+          "line": 41,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Posted",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "Home",
+          "line": 54,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 63,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 83,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/counselor-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -174119,9 +174620,9 @@
       "path": "tests/tours/tour-auto-start.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2716,
-      "lines": 71,
-      "sha256": "58df48a901352ac5be1c559e1ac2d6dc55fdd2135ecf9f4f4eb05e5a55fe4088",
+      "bytes": 2800,
+      "lines": 72,
+      "sha256": "420900b170f0c20c04b63bf373d55ff2482fdf6f1d1b5f5547c74132b92883db",
       "binary": false,
       "exports": [],
       "declarations": [

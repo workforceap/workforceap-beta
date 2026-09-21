@@ -152,7 +152,7 @@ test('counselor.home (wave 2) is written for Today and walks the path a new coun
   );
   assert.equal(getHomeTourForRole('counselor')?.key, 'counselor.home');
   assert.equal(getHomeTourForRole('member')?.key, 'member.home');
-  assert.equal(getHomeTourForRole('admin'), null, 'admin wave has not landed');
+  assert.equal(getHomeTourForRole('admin')?.key, 'admin.home');
   assert.equal(getHomeTourForRole('__proto__'), null);
 });
 
@@ -173,4 +173,55 @@ test('counselor step copy names the record tabs and where notes live', () => {
   for (const tab of ['Profile', 'Training', 'Notes', 'Messages']) assert.match(record, new RegExp(tab));
   assert.match(record, /Notes tab/);
   assert.match(resolve(en, 'counselor.home.help.body') as string, /reopens this tour/);
+});
+
+test('admin.home (wave 4) is written for the /admin Command Center and walks command center → overview → students → messages → programs → training progress → settings → help', () => {
+  const tour = TOUR_REGISTRY['admin.home'];
+  assert.equal(tour.role, 'admin');
+  assert.equal(tour.route, '/admin');
+  assert.equal(tour.version, 1, 'first admin wave');
+  assert.deepEqual(
+    tour.steps.map((s) => s.target),
+    [
+      'tour-command-center',
+      'tour-overview',
+      'tour-students',
+      'tour-messages',
+      'tour-programs',
+      'tour-training-progress',
+      'tour-settings',
+      'tour-help',
+    ],
+  );
+  assert.ok(tour.steps.length >= 7 && tour.steps.length <= 8);
+  assert.equal(tour.steps[tour.steps.length - 1].target, 'tour-help', 'ends on the Help anchor that reopens it');
+  assert.equal(tour.steps[tour.steps.length - 1].placement, 'bottom');
+  assert.equal(getHomeTourForRole('admin')?.key, 'admin.home');
+  assert.ok(isTourKey('admin.home'));
+  assert.equal(getTour('admin.home'), tour);
+});
+
+for (const locale of REVIEWED_LOCALES) {
+  test(`${locale}.json: admin offer and step copy resolves`, () => {
+    const tours = loadTours(locale);
+    const keys = ['admin.home.offer.title', 'admin.home.offer.body'];
+    for (const step of TOUR_REGISTRY['admin.home'].steps) keys.push(step.titleKey, step.bodyKey);
+    for (const key of keys) {
+      const value = resolve(tours, key);
+      assert.equal(typeof value, 'string', `tours.${key} missing in ${locale}.json`);
+      assert.ok((value as string).trim().length > 0, `tours.${key} empty in ${locale}.json`);
+    }
+  });
+}
+
+test('admin step copy names the surfaces the steps point at', () => {
+  const en = loadTours('en');
+  assert.match(resolve(en, 'admin.home.commandCenter.body') as string, /What needs you today/);
+  assert.match(resolve(en, 'admin.home.overview.body') as string, /Command Center/);
+  assert.match(resolve(en, 'admin.home.students.body') as string, /roster/i);
+  assert.match(resolve(en, 'admin.home.messages.body') as string, /reply/);
+  assert.match(resolve(en, 'admin.home.programs.body') as string, /Program requests/);
+  assert.match(resolve(en, 'admin.home.trainingProgress.body') as string, /Coursera/);
+  assert.match(resolve(en, 'admin.home.settings.body') as string, /under Advanced,/);
+  assert.match(resolve(en, 'admin.home.help.body') as string, /reopens this tour/);
 });

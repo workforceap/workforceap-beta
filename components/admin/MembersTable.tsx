@@ -71,6 +71,12 @@ type MembersTableProps = {
   partnerFilter: string;
   startDateFilter: string;
   endDateFilter: string;
+  /**
+   * Whether the server included staff / dogfood admin accounts in `members`
+   * and `totalCount`. Default is members only, so the count line agrees with
+   * /admin/students (audit 2026-09-20, S3; Mike: "remove staff in count").
+   */
+  includeStaff?: boolean;
   /** Translated copy for the applicant-triage filter; omitted = filter hidden. */
   applicantTriageCopy?: { filterLabel: string; filterAll: string; buckets: Record<ApplicantTriageBucket, string> };
   /** Org-wide partner list so the dropdown is not limited to the loaded page. */
@@ -91,7 +97,10 @@ function FitScoreBadge({ score }: { score: number }) {
 
 function HealthDot({ status }: { status: HealthStatus }) {
   const variant = status === 'green' ? 'success' : status === 'yellow' ? 'warning' : 'error';
-  const label = status === 'green' ? 'Active' : status === 'yellow' ? 'At Risk' : 'Inactive';
+  // "Low activity", not "At Risk": the yellow dot is a 7-day event-recency
+  // heuristic, unrelated to the at-risk alert queue behind /admin "Risk
+  // alerts" (audit 2026-09-20, S25).
+  const label = status === 'green' ? 'Active' : status === 'yellow' ? 'Low activity' : 'Inactive';
   return (
     <span style={{ display: 'inline-flex', marginRight: '0.35rem', verticalAlign: 'middle' }}>
       <StatusDot variant={variant} label={label} tooltip={label} />
@@ -122,7 +131,14 @@ function toTime(value: Date | string | null | undefined): number {
   return Number.isNaN(t) ? 0 : t;
 }
 
-/** A member is "not in a course" when they have no enrolled program and no enrollment rows. */
+/**
+ * A member has no assigned program when neither the legacy `enrolledProgram`
+ * pointer nor any `course_enrollments` row names one. It does NOT mean they
+ * have done no coursework: 10 members with real course_progress land here, so
+ * the badge says "No assigned program" rather than "No course"
+ * (audit 2026-09-20, S16). Program deliberately stays "—" for them — the
+ * latest rollup row is not an assignment.
+ */
 function isNotInCourse(m: Member): boolean {
   return !m.enrolledProgram && m.enrollmentProgramSlugs.length === 0;
 }
@@ -134,14 +150,14 @@ function isNewMember(m: Member): boolean {
 
 /**
  * "Needs attention" surfaces members dad should look at, derived from existing
- * row signals only: red health (at-risk/inactive) OR stale training detected OR
- * not enrolled in any course OR a brand-new signup. A sensible default he can refine.
+ * row signals only: red health (inactive) OR stale training detected OR
+ * no assigned program OR a brand-new signup. A sensible default he can refine.
  */
 function attentionReasons(m: Member): string[] {
   const reasons: string[] = [];
   if (m.healthStatus === 'red') reasons.push('Inactive');
   if (m.staleTrainingDetectedAt) reasons.push('Stale training');
-  if (isNotInCourse(m)) reasons.push('No course');
+  if (isNotInCourse(m)) reasons.push('No assigned program');
   if (isNewMember(m)) reasons.push('New');
   return reasons;
 }
@@ -288,6 +304,7 @@ export default function MembersTable({
   endDateFilter,
   allPartnerOptions,
   allAssignablePrograms,
+  includeStaff = false,
   applicantTriageCopy,
 }: MembersTableProps) {
   const router = useRouter();
@@ -499,6 +516,8 @@ export default function MembersTable({
       if (healthFilter) params.set('health', healthFilter);
       if (notInCourseFilter) params.set('notInCourse', '1');
       if (needsAttentionFilter) params.set('needsAttention', '1');
+      // The CSV must cover exactly the rows on screen, staff included or not.
+      if (includeStaff) params.set('staff', '1');
       if (startDate) params.set('startDate', startDate);
       if (endDate) params.set('endDate', endDate);
       const res = await fetch(`/api/admin/members/export?${params.toString()}`, {
@@ -515,7 +534,7 @@ export default function MembersTable({
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       const date = new Date().toISOString().slice(0, 10);
-      a.download = `students-export-${date}.csv`;
+      a.download = `members-export-${date}.csv`;
       a.click();
       URL.revokeObjectURL(a.href);
       setBulkHint('Exported all members matching your filters');
@@ -570,6 +589,7 @@ export default function MembersTable({
                 of <strong>{totalCount.toLocaleString()}</strong>
               </>
             ) : null}
+            {includeStaff ? <span className="admin-members-count-line__filters"> · includes staff accounts</span> : null}
             {activeFilterCount > 0 ? <span className="admin-members-count-line__filters"> · {activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'} on</span> : null}
             {totalPages > 1 && (healthFilter || notInCourseFilter || needsAttentionFilter) ? (
               <span className="admin-members-count-line__filters" style={{ display: 'block', fontSize: '0.8125rem' }}>
@@ -645,7 +665,7 @@ export default function MembersTable({
               <option value="">All statuses</option>
               <option value="enrolled">Enrolled (in program)</option>
               <option value="active">Active (recent activity)</option>
-              <option value="completed">Completed (certified)</option>
+              <option value="completed">Completed a course</option>
               <option value="dropped">Dropped (deleted)</option>
               <option value="stale">Stale training (7d+)</option>
             </select>
@@ -667,7 +687,7 @@ export default function MembersTable({
             <select value={healthFilter} onChange={(e) => setHealthFilter(e.target.value)} className="admin-members-filter-select">
               <option value="">All health</option>
               <option value="green">Active</option>
-              <option value="yellow">At Risk</option>
+              <option value="yellow">Low activity</option>
               <option value="red">Inactive</option>
             </select>
           </label>
@@ -696,7 +716,17 @@ export default function MembersTable({
               checked={notInCourseFilter}
               onChange={(e) => setNotInCourseFilter(e.target.checked)}
             />
-            <span>Not in a course</span>
+            <span>No assigned program</span>
+          </label>
+          <label className="admin-members-filter-field admin-members-filter-field--check" style={{ flexDirection: 'row', alignItems: 'center', gap: '0.4rem' }}>
+            <input
+              type="checkbox"
+              checked={includeStaff}
+              onChange={(e) => updateUrl({ staff: e.target.checked ? '1' : '' })}
+            />
+            <span title="Admin and super-admin accounts used for testing member surfaces. Off by default, so this count matches the Students roster.">
+              Include staff accounts
+            </span>
           </label>
           <label className="admin-members-filter-field">
             <span>Sort by</span>
@@ -945,7 +975,7 @@ export default function MembersTable({
                         m.healthStatus === 'green' ? '#16a34a' : m.healthStatus === 'yellow' ? '#d97706' : '#dc2626',
                     }}
                   >
-                    {m.healthStatus === 'green' ? 'Active' : m.healthStatus === 'yellow' ? 'At Risk' : 'Inactive'}
+                    {m.healthStatus === 'green' ? 'Active' : m.healthStatus === 'yellow' ? 'Low activity' : 'Inactive'}
                   </span>
                 ) : (
                   '—'
@@ -1046,7 +1076,7 @@ export default function MembersTable({
                       color: m.healthStatus === 'green' ? 'light-dark(#166534, var(--wa-success))' : m.healthStatus === 'yellow' ? 'var(--wa-gold-dark)' : 'light-dark(#991b1b, var(--wa-danger))',
                     }}
                   >
-                    {m.healthStatus === 'green' ? 'Active' : m.healthStatus === 'yellow' ? 'At Risk' : 'Inactive'}
+                    {m.healthStatus === 'green' ? 'Active' : m.healthStatus === 'yellow' ? 'Low activity' : 'Inactive'}
                   </span>
                 ) : null}
               </div>
