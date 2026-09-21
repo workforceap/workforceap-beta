@@ -240,7 +240,7 @@
 | [components/platform/OrgBrandingBar.tsx](../../../components/platform/OrgBrandingBar.tsx) | 20 | administration | default:5 |
 | [components/platform/OrgBrandingStyle.tsx](../../../components/platform/OrgBrandingStyle.tsx) | 18 | administration | default:7 |
 | [components/portal/AIHistoryList.tsx](../../../components/portal/AIHistoryList.tsx) | 227 | components | default:80 |
-| [components/portal/AdminPortalShell.tsx](../../../components/portal/AdminPortalShell.tsx) | 40 | components | default:10 |
+| [components/portal/AdminPortalShell.tsx](../../../components/portal/AdminPortalShell.tsx) | 60 | components | default:13 |
 | [components/portal/AiResultRenderer.tsx](../../../components/portal/AiResultRenderer.tsx) | 643 | components | AiResultRendererProps:522, default:562 |
 | [components/portal/ApplicationAiFeedbackPrompt.tsx](../../../components/portal/ApplicationAiFeedbackPrompt.tsx) | 118 | components | RecentToolOption:9, default:18 |
 | [components/portal/AssessmentForm.module.css](../../../components/portal/AssessmentForm.module.css) | 380 | components |  |

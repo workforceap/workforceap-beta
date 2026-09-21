@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "0f47d8589a049b1bc838198385f676250b8540e8077522ffebe060fb5862c08d",
+  "inputTreeSha256": "64e11755aa8cd5413a23c1c71e477d49d1968419bf9d3e8611ea3c5b0cd89850",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -17797,24 +17797,24 @@
       "path": "app/admin/layout.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 5072,
-      "lines": 121,
-      "sha256": "4af589749e9ea29b2293a34c3d38a99f2eaf1d240f0300c886bd2f4d7d6cf2f2",
+      "bytes": 5438,
+      "lines": 127,
+      "sha256": "d75ae731f9a598835c98e86033ad2d4af2f59defc8756685475a523da3c67f56",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 23,
-          "kind": "Variable"
-        },
-        {
-          "name": "metadata",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "metadata",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration",
           "localName": "AdminLayout"
         }
@@ -17822,17 +17822,17 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 23,
-          "kind": "Variable"
-        },
-        {
-          "name": "metadata",
           "line": 25,
           "kind": "Variable"
         },
         {
+          "name": "metadata",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
           "name": "AdminLayout",
-          "line": 32,
+          "line": 34,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -57334,14 +57334,14 @@
       "path": "components/portal/AdminPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1088,
-      "lines": 40,
-      "sha256": "e258317c7bec419a3ad816494fc0d003b18dd1048b16f6d9b37c145231f12593",
+      "bytes": 2158,
+      "lines": 60,
+      "sha256": "6773cf0826c644635a849fb28bc3d2fc6d78714e918638fa3ab40b51b15a8564",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 10,
+          "line": 13,
           "kind": "FunctionDeclaration",
           "localName": "AdminPortalShell"
         }
@@ -57349,7 +57349,7 @@
       "declarations": [
         {
           "name": "AdminPortalShell",
-          "line": 10,
+          "line": 13,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130803,9 +130803,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22068,
-      "lines": 517,
-      "sha256": "1c36cc73de7d761194353386e94e143470cedf0d4136a8dc2722919d50078670",
+      "bytes": 22373,
+      "lines": 519,
+      "sha256": "b0cf9285dc9d584d274ec4862cca3a92092359fd1d9dcb9a9a8acd662d913d04",
       "binary": false,
       "exports": [
         {
@@ -130880,27 +130880,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 456,
+          "line": 458,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 477,
+          "line": 479,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 486,
+          "line": 488,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 491,
+          "line": 493,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 508,
+          "line": 510,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -130982,27 +130982,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 456,
+          "line": 458,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 477,
+          "line": 479,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 486,
+          "line": 488,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 491,
+          "line": 493,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 508,
+          "line": 510,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141789,9 +141789,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 7308,
-      "lines": 176,
-      "sha256": "f789d739da3b1be6bc4b40a4cf283d93f22ed174b479a3e0587efcf7a84fe704",
+      "bytes": 9696,
+      "lines": 227,
+      "sha256": "69cc96bb3bee9795ef99f5c01dba9f17b173e8f7e0dd795947f6d9f48cf85ef3",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -141832,9 +141832,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 6457,
-      "lines": 180,
-      "sha256": "f9b6b1fc92a44bf519a37717869b243a4ad39c5cfa231e15047aa059ac8df167",
+      "bytes": 7828,
+      "lines": 208,
+      "sha256": "2766aafd3e8e02fa360533dc0ccf99d0d91ee29aef0a70055640de0235b244d8",
       "binary": false,
       "exports": [
         {
@@ -141889,47 +141889,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 136,
+          "line": 164,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 138,
+          "line": 166,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 145,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 147,
+          "line": 175,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 151,
+          "line": 179,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 155,
+          "line": 183,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 159,
+          "line": 187,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 168,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 173,
+          "line": 201,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141991,47 +141991,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 136,
+          "line": 164,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 138,
+          "line": 166,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 145,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 147,
+          "line": 175,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 151,
+          "line": 179,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 155,
+          "line": 183,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 159,
+          "line": 187,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 168,
+          "line": 196,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 173,
+          "line": 201,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -147526,18 +147526,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 220850,
-      "lines": 3676,
-      "sha256": "9a04626f0d8019f06d84e94403aee285a669e57a16381cd289c07977297b5265",
+      "bytes": 223155,
+      "lines": 3716,
+      "sha256": "5a9666acc6c187e6378abd7990ccf47c0ee96f9dc23b60d3748813fc942e0ab2",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 244797,
-      "lines": 3676,
-      "sha256": "eee060e75e6e569dc92097e0c8775e2dcc9621d9a341d60dbe563409bfb4a2f2",
+      "bytes": 247348,
+      "lines": 3716,
+      "sha256": "b88937cc804ba5bb5e8b1e3c8eca1ca16fad977f93c7d5e3f6d5dfc568c6d4b4",
       "binary": false
     },
     {
@@ -174839,6 +174839,87 @@
       "directive": null
     },
     {
+      "path": "tests/tours/admin-overview-anchors.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4459,
+      "lines": 102,
+      "sha256": "7cf4d1ee36cd402751cc1f8c555b0cc85be47cbdd009044b00db787b7b6fd2c2",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "anchors",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/admin-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 14359,
+      "lines": 272,
+      "sha256": "f54fcecf025c84dfab54acae6f57dd9f820fb08eaafc9f3a107cef3d143bd81e",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "Gate",
+          "line": 41,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Posted",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "Home",
+          "line": 54,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 63,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 83,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/counselor-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
@@ -174994,9 +175075,9 @@
       "path": "tests/tours/tour-auto-start.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2716,
-      "lines": 71,
-      "sha256": "58df48a901352ac5be1c559e1ac2d6dc55fdd2135ecf9f4f4eb05e5a55fe4088",
+      "bytes": 2800,
+      "lines": 72,
+      "sha256": "420900b170f0c20c04b63bf373d55ff2482fdf6f1d1b5f5547c74132b92883db",
       "binary": false,
       "exports": [],
       "declarations": [
