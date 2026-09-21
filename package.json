@@ -54,6 +54,7 @@
     "elevenlabs:verify-agents": "node scripts/elevenlabs/apply-agent-patches.mjs --check --all",
     "elevenlabs:sync-member-tools": "node scripts/elevenlabs/sync-member-agent-tools.mjs",
     "coursera:test": "tsx scripts/coursera-integration-test.ts",
+    "audit:points-ledger": "node scripts/prisma-env.js npx tsx scripts/audit-points-ledger-drift.ts",
     "coursera:audit-links": "node scripts/prisma-env.js npx tsx scripts/audit-coursera-links.ts",
     "coursera:prove-b4b-link": "node scripts/prisma-env.js npx tsx scripts/prove-b4b-identity-link.ts",
     "coursera:backfill-catalog": "node scripts/backfill-coursera-courseids.cjs",

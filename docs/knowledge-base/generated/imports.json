@@ -9640,6 +9640,14 @@
     "target": "lib/events/track.ts"
   },
   {
+    "from": "app/(portal)/dashboard/placementAction.ts",
+    "specifier": "@/lib/member/applicationStatusEvent",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/applicationStatusEvent.ts"
+  },
+  {
     "from": "app/(portal)/dashboard/points/ReferralShareCard.tsx",
     "specifier": "react",
     "line": 3,
@@ -54009,8 +54017,16 @@
   },
   {
     "from": "app/api/member/applications/[id]/route.ts",
-    "specifier": "zod",
+    "specifier": "@/lib/member/applicationStatusEvent",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/applicationStatusEvent.ts"
+  },
+  {
+    "from": "app/api/member/applications/[id]/route.ts",
+    "specifier": "zod",
+    "line": 7,
     "kind": "import",
     "external": true,
     "package": "zod"
@@ -54018,7 +54034,7 @@
   {
     "from": "app/api/member/applications/[id]/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -54026,7 +54042,7 @@
   {
     "from": "app/api/member/applications/[id]/route.ts",
     "specifier": "@/lib/audit",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -54034,7 +54050,7 @@
   {
     "from": "app/api/member/applications/[id]/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -56393,8 +56409,16 @@
   },
   {
     "from": "app/api/member/job-applications/[id]/route.ts",
+    "specifier": "@/lib/member/applicationStatusEvent",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/applicationStatusEvent.ts"
+  },
+  {
+    "from": "app/api/member/job-applications/[id]/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -56402,7 +56426,7 @@
   {
     "from": "app/api/member/job-applications/[id]/route.ts",
     "specifier": "@/lib/audit",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/audit.ts"
@@ -56410,7 +56434,7 @@
   {
     "from": "app/api/member/job-applications/[id]/route.ts",
     "specifier": "@/lib/audit/log",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/audit/log.ts"
@@ -108312,6 +108336,14 @@
     "package": "@prisma/client"
   },
   {
+    "from": "lib/jobs/syncCuratedJobToTracker.ts",
+    "specifier": "@/lib/member/applicationStatusEvent",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/applicationStatusEvent.ts"
+  },
+  {
     "from": "lib/lilley-student-coach-structure.test.ts",
     "specifier": "node:test",
     "line": 1,
@@ -108806,6 +108838,30 @@
     "kind": "type",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/member/applicationStatusEvent.ts",
+    "specifier": "@prisma/client",
+    "line": 29,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/member/applicationStatusEvent.ts",
+    "specifier": "@/lib/events/track",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "lib/member/applicationStatusEvent.ts",
+    "specifier": "@/lib/member/jobApplicationKanban",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/jobApplicationKanban.ts"
   },
   {
     "from": "lib/member/assessmentConfirmMessage.test.ts",
@@ -110297,8 +110353,16 @@
   },
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
-    "specifier": "@/lib/member/memberProgramHref",
+    "specifier": "@/lib/member/memberPointsTrend",
     "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberPointsTrend.ts"
+  },
+  {
+    "from": "lib/member/loadMemberDashboardHome.ts",
+    "specifier": "@/lib/member/memberProgramHref",
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -110306,7 +110370,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 17,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -110314,7 +110378,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 18,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -110322,7 +110386,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/content/courseDelivery",
-    "line": 19,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/content/courseDelivery.ts"
@@ -110582,6 +110646,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/memberIdentity.ts"
+  },
+  {
+    "from": "lib/member/memberPointsTrend.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/memberPointsTrend.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/memberPointsTrend.test.ts",
+    "specifier": "./memberPointsTrend",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberPointsTrend.ts"
   },
   {
     "from": "lib/member/memberProgramHref.test.ts",
@@ -118672,6 +118760,22 @@
     "target": "scripts/lib/portal-audit-paths.mjs"
   },
   {
+    "from": "scripts/audit-points-ledger-drift.ts",
+    "specifier": "@prisma/client",
+    "line": 27,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/audit-points-ledger-drift.ts",
+    "specifier": "../lib/member/memberPointsTrend",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberPointsTrend.ts"
+  },
+  {
     "from": "scripts/audit-portal-routes.mjs",
     "specifier": "@playwright/test",
     "line": 10,
@@ -123846,6 +123950,62 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/app/api/member/applications/[id]/route",
+    "line": 51,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/member/applications/[id]/route.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/app/(portal)/dashboard/placementAction",
+    "line": 52,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/placementAction.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/lib/jobs/syncCuratedJobToTracker",
+    "line": 53,
+    "kind": "import",
+    "external": false,
+    "target": "lib/jobs/syncCuratedJobToTracker.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 54,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 55,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/application-status-events.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 56,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
   },
   {
     "from": "tests/api/apply-confirmation-clarity.spec.ts",
@@ -138070,6 +138230,54 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/JobApplicationForm.tsx"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+  },
+  {
+    "from": "tests/components/member-home-points-trend.spec.tsx",
+    "specifier": "@/lib/member/memberPointsTrend",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberPointsTrend.ts"
   },
   {
     "from": "tests/components/member-jobs-open-roles.spec.tsx",

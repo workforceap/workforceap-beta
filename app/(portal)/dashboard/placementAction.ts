@@ -7,6 +7,7 @@ import { withUserGuc } from '@/lib/db/withRequestGuc';
 import { revalidatePath } from 'next/cache';
 import { recordPartnerWorkflowEvent } from '@/lib/portal/workflowEvents';
 import { persistEvent } from '@/lib/events/track';
+import { recordApplicationStatusChange } from '@/lib/member/applicationStatusEvent';
 
 export async function confirmPlacement(jobApplicationId: string) {
   const user = await getUser();
@@ -32,6 +33,23 @@ export async function confirmPlacement(jobApplicationId: string) {
       where: { id: jobApplicationId },
       data: { status: 'ACCEPTED', updatedAt: now },
     });
+
+    // This forces the row to ACCEPTED, which is a status change like any
+    // other; `placement_confirmation_submitted` below records the placement
+    // claim, not the transition, so the activity log had no record that the
+    // application moved. Durable writer (same client as the event below) so a
+    // failed log fails the action rather than silently losing the move. No-ops
+    // when the row was already ACCEPTED.
+    await recordApplicationStatusChange(
+      {
+        userId: user.id,
+        applicationId: application.id,
+        previousStatus: application.status,
+        nextStatus: 'ACCEPTED',
+        sourcePage: '/dashboard',
+      },
+      prisma,
+    );
 
     await persistEvent({
       userId: user.id,

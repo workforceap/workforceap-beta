@@ -94,6 +94,7 @@
     "scripts": [
       "analyze",
       "audit:member-pages",
+      "audit:points-ledger",
       "audit:portal",
       "build",
       "build:local",

@@ -663,3 +663,83 @@ test('lean loader uses the assigned program over the legacy pointer and still re
   assert.equal(view.coursePercent, 0);
   assert.equal(view.programTitle, getProgramBySlug(canonicalizeProgramSlug(FIXTURE_PROGRAM_SLUG))?.title);
 });
+
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+test('the Points tile gets a real weekly series whose last point is the "this week" chip', async () => {
+  const { db } = mockDb({
+    row: makeRow({
+      // 45 this week, nothing last week, 60 the week before: a gap in the middle.
+      pointsTransactions: [
+        { event: 'course_completed', points: 40, createdAt: new Date(Date.now() - 1 * DAY_MS) },
+        { event: 'daily_study', points: 5, createdAt: new Date(Date.now() - 3 * DAY_MS) },
+        { event: 'job_application', points: 60, createdAt: new Date(Date.now() - 17 * DAY_MS) },
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'Pat' }, db);
+
+  // Still one Prisma operation: the series is bucketed from the nested read
+  // the loader already issued, not from a second aggregate.
+  assert.equal(view.prismaOpCount, 1);
+  assert.ok(view.prismaOpCount <= MEMBER_DASHBOARD_HOME_PRISMA_BUDGET);
+
+  const series = view.pointsSpark?.series;
+  assert.ok(series, 'the Points tile must carry a series');
+  assert.equal(series.length, 8, 'eight rolling weeks');
+  // The trap this feature exists to avoid: the line ending on a different
+  // number than the chip sitting beside it.
+  assert.equal(series[series.length - 1], view.pointsThisWeek);
+  assert.equal(view.pointsThisWeek, 45);
+  // A silent week is a zero in place, so the line shows the stall.
+  assert.equal(series[6], 0);
+  assert.equal(series[5], 60);
+  assert.deepEqual(series, [0, 0, 0, 0, 0, 60, 0, 45]);
+  assert.equal(view.pointsSpark?.delta, '45');
+  assert.equal(view.pointsSpark?.direction, 'up');
+});
+
+test('only the Points tile gets a series: Certs, Course % and Active jobs carry none', async () => {
+  const { db } = mockDb({});
+  const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'Pat' }, db);
+  assert.ok(view.pointsSpark?.series, 'Points has history in points_transactions');
+  // Deliberate: certifications move twice a year, and course percent / active
+  // jobs have no per-week history in the schema to draw from.
+  const keys = Object.keys(view);
+  assert.ok(keys.length > 0, 'the view must not be empty');
+  assert.deepEqual(
+    keys.filter((key) => key.endsWith('Spark')),
+    ['pointsSpark'],
+  );
+});
+
+test('a member with no points history draws no line rather than a flat rule at zero', async () => {
+  const { db } = mockDb({
+    row: makeRow({ pointsTransactions: [], memberPoints: null }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'quiet', fallbackDisplayName: 'Pat' }, db);
+  assert.equal(view.pointsSpark, undefined);
+  assert.equal(view.pointsThisWeek, undefined);
+  assert.equal(view.points, 0);
+});
+
+test('points older than the eight-week window do not inflate the first bucket', async () => {
+  const { db } = mockDb({
+    row: makeRow({
+      pointsTransactions: [
+        { event: 'program_enrolled', points: 500, createdAt: new Date(Date.now() - 200 * DAY_MS) },
+        { event: 'daily_study', points: 5, createdAt: new Date(Date.now() - 2 * DAY_MS) },
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome({ userId: 'member-1', fallbackDisplayName: 'Pat' }, db);
+  const series = view.pointsSpark?.series;
+  assert.ok(series);
+  assert.equal(series.length, 8);
+  assert.equal(series[0], 0, 'an old award is out of the window, not clamped into week one');
+  assert.equal(
+    series.reduce((sum, value) => sum + value, 0),
+    5,
+  );
+});

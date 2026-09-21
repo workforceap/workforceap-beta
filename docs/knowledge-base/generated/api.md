@@ -367,7 +367,7 @@
 | [app/api/member/application-ai-feedback/route.ts](../../../app/api/member/application-ai-feedback/route.ts) | 59 | member-counselor | POST:14 |
 | [app/api/member/application-onboarding/route.ts](../../../app/api/member/application-onboarding/route.ts) | 68 | member-counselor | PATCH:13 |
 | [app/api/member/applications/\[id\]/messages/route.ts](../../../app/api/member/applications/%5Bid%5D/messages/route.ts) | 135 | communications | GET:63, POST:134 |
-| [app/api/member/applications/\[id\]/route.ts](../../../app/api/member/applications/%5Bid%5D/route.ts) | 117 | jobs-employers | PATCH:87, DELETE:117 |
+| [app/api/member/applications/\[id\]/route.ts](../../../app/api/member/applications/%5Bid%5D/route.ts) | 131 | jobs-employers | PATCH:101, DELETE:131 |
 | [app/api/member/applications/route.ts](../../../app/api/member/applications/route.ts) | 96 | jobs-employers | GET:43, POST:96 |
 | [app/api/member/assessment/reset/route.ts](../../../app/api/member/assessment/reset/route.ts) | 85 | member-counselor | POST:9 |
 | [app/api/member/assessment/submit/route.ts](../../../app/api/member/assessment/submit/route.ts) | 238 | member-counselor | POST:18 |
@@ -399,7 +399,7 @@
 | [app/api/member/interest-profiler/questions/route.ts](../../../app/api/member/interest-profiler/questions/route.ts) | 34 | member-counselor | GET:6 |
 | [app/api/member/interest-profiler/score/route.ts](../../../app/api/member/interest-profiler/score/route.ts) | 104 | member-counselor | POST:20 |
 | [app/api/member/interview-request/route.ts](../../../app/api/member/interview-request/route.ts) | 68 | member-counselor | POST:9 |
-| [app/api/member/job-applications/\[id\]/route.ts](../../../app/api/member/job-applications/%5Bid%5D/route.ts) | 180 | member-counselor | PATCH:42 |
+| [app/api/member/job-applications/\[id\]/route.ts](../../../app/api/member/job-applications/%5Bid%5D/route.ts) | 181 | member-counselor | PATCH:43 |
 | [app/api/member/job-applications/log-external/route.ts](../../../app/api/member/job-applications/log-external/route.ts) | 143 | member-counselor | POST:56 |
 | [app/api/member/job-applications/route.ts](../../../app/api/member/job-applications/route.ts) | 126 | member-counselor | GET:37, POST:126 |
 | [app/api/member/job-applications/track-curated/route.ts](../../../app/api/member/job-applications/track-curated/route.ts) | 42 | member-counselor | POST:13 |

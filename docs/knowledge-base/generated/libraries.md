@@ -668,7 +668,7 @@
 | [lib/jobs/formatSalary.ts](../../../lib/jobs/formatSalary.ts) | 7 | jobs-employers | formatJobSalaryRange:2 |
 | [lib/jobs/listingCache.ts](../../../lib/jobs/listingCache.ts) | 6 | jobs-employers | invalidateJobListings:4 |
 | [lib/jobs/publicJobFilters.ts](../../../lib/jobs/publicJobFilters.ts) | 36 | jobs-employers | isExcludedPublicEmployerName:8, isExcludedPublicJobTitle:27 |
-| [lib/jobs/syncCuratedJobToTracker.ts](../../../lib/jobs/syncCuratedJobToTracker.ts) | 60 | jobs-employers | syncCuratedJobToTracker:13 |
+| [lib/jobs/syncCuratedJobToTracker.ts](../../../lib/jobs/syncCuratedJobToTracker.ts) | 78 | jobs-employers | syncCuratedJobToTracker:15 |
 | [lib/lilley-student-coach-structure.test.ts](../../../lib/lilley-student-coach-structure.test.ts) | 309 | libraries |  |
 | [lib/locked-stakes/checkI18nSafeDiff.test.ts](../../../lib/locked-stakes/checkI18nSafeDiff.test.ts) | 26 | libraries |  |
 | [lib/marketing-public-ui-regressions.test.ts](../../../lib/marketing-public-ui-regressions.test.ts) | 146 | libraries |  |
@@ -688,6 +688,7 @@
 | [lib/member/aiToolFollowThrough.ts](../../../lib/member/aiToolFollowThrough.ts) | 148 | member-counselor | AIToolFollowThrough:1, getAIToolFollowThrough:14 |
 | [lib/member/anonymizeMember.ts](../../../lib/member/anonymizeMember.ts) | 179 | member-counselor | AnonymizeMemberReason:35, AnonymizeMemberOptions:40, AnonymizeMemberResult:51, ANONYMIZED_FULL_NAME:59, MEMBER_ANONYMIZED_AUDIT_ACTION:60, ANONYMIZED_PROFILE_DATA:63, ANONYMIZED_PROFILE_FIELDS:98, anonymizeMember:117 |
 | [lib/member/applicationAiFeedback.ts](../../../lib/member/applicationAiFeedback.ts) | 51 | member-counselor | APPLICATION_FEEDBACK_TOOL_TYPES:4, RecentAiToolForFeedback:11, findRecentAiToolsForApplicationFeedback:25, formatFeedbackPromptDate:49 |
+| [lib/member/applicationStatusEvent.ts](../../../lib/member/applicationStatusEvent.ts) | 86 | member-counselor | ApplicationStatusChange:37, applicationStatusChangeMetadata:47, recordApplicationStatusChange:68 |
 | [lib/member/assessmentConfirmMessage.test.ts](../../../lib/member/assessmentConfirmMessage.test.ts) | 18 | member-counselor |  |
 | [lib/member/assessmentConfirmMessage.ts](../../../lib/member/assessmentConfirmMessage.ts) | 6 | member-counselor | assessmentConfirmMessage:2 |
 | [lib/member/atRiskRow.ts](../../../lib/member/atRiskRow.ts) | 112 | member-counselor | AtRiskFactor:12, AtRiskLevel:19, AtRiskAlertStatus:20, AtRiskMember:22, SavedAtRiskCase:46, normalizeAtRiskFactors:71, toAtRiskMemberRow:90 |
@@ -735,8 +736,8 @@
 | [lib/member/labApi.ts](../../../lib/member/labApi.ts) | 38 | member-counselor | LAB_PRIVATE_HEADERS:5, labJson:17, labFailure:18, requireLabMutationOrigin:23, readLabJson:31 |
 | [lib/member/labWorkspace.ts](../../../lib/member/labWorkspace.ts) | 261 | member-counselor | LabWorkspaceError:15, loadLabWorkspace:110, saveLabDraft:169, submitLabEvidence:170, loadLabReviewQueue:201, loadLabReview:233, reviewLabEvidence:237 |
 | [lib/member/labWorkspaceTypes.ts](../../../lib/member/labWorkspaceTypes.ts) | 103 | member-counselor | LAB_MAX_ANSWER_LENGTH:4, LAB_MAX_ARTIFACT_URL_LENGTH:5, LAB_MAX_FEEDBACK_LENGTH:6, LAB_MAX_CRITERION_FEEDBACK_LENGTH:7, LAB_MAX_REQUEST_LENGTH:8, labDraftInputSchema:27, labSubmitInputSchema:28, LabDraftInput:29, LabSubmitInput:30, labReviewInputSchema:31, LabReviewInput:41, LabReviewStatus:42, labReviewStatusSchema:43, LabEvidenceReview:45, LabEvidenceSubmission:55, LabReviewRouting:69, LabWorkspace:74, LabReviewQueueItem:82, LabReviewQueue:95, LabStaffReviewWorkspace:96, LabApiError:103 |
-| [lib/member/loadMemberDashboardHome.test.ts](../../../lib/member/loadMemberDashboardHome.test.ts) | 665 | member-counselor |  |
-| [lib/member/loadMemberDashboardHome.ts](../../../lib/member/loadMemberDashboardHome.ts) | 742 | member-counselor | MEMBER_DASHBOARD_HOME_PRISMA_BUDGET:45, DashboardPipelineRow:51, DashboardGoalSummary:61, DashboardPointsLedgerEntry:66, MemberDashboardHomeView:72, LoadMemberDashboardHomeArgs:123, mapPipelineRows:217, pointsLedgerColor:234, mapPointsLedger:244, mapGoalSummaries:254, deriveNextBadge:276, loadMemberDashboardHome:720 |
+| [lib/member/loadMemberDashboardHome.test.ts](../../../lib/member/loadMemberDashboardHome.test.ts) | 745 | member-counselor |  |
+| [lib/member/loadMemberDashboardHome.ts](../../../lib/member/loadMemberDashboardHome.ts) | 778 | member-counselor | MEMBER_DASHBOARD_HOME_PRISMA_BUDGET:52, DashboardPipelineRow:67, DashboardGoalSummary:77, DashboardPointsLedgerEntry:82, MemberDashboardHomeView:88, LoadMemberDashboardHomeArgs:151, mapPipelineRows:245, pointsLedgerColor:262, mapPointsLedger:272, mapGoalSummaries:282, deriveNextBadge:304, loadMemberDashboardHome:756 |
 | [lib/member/loadProgramCourses.ts](../../../lib/member/loadProgramCourses.ts) | 101 | member-counselor | loadProgramCourses:25, loadProgramCourseCount:91 |
 | [lib/member/loadTrainingWorkspace.ts](../../../lib/member/loadTrainingWorkspace.ts) | 112 | member-counselor | TrainingWorkspaceError:14, loadTrainingWorkspace:81, saveTrainingWorkspace:85 |
 | [lib/member/memberApplicationStatus.test.ts](../../../lib/member/memberApplicationStatus.test.ts) | 98 | member-counselor |  |
@@ -748,6 +749,8 @@
 | [lib/member/memberEngagementSignals.ts](../../../lib/member/memberEngagementSignals.ts) | 60 | member-counselor | MemberEngagementSignals:3, getMemberEngagementSignals:14 |
 | [lib/member/memberIdentity.test.ts](../../../lib/member/memberIdentity.test.ts) | 43 | member-counselor |  |
 | [lib/member/memberIdentity.ts](../../../lib/member/memberIdentity.ts) | 58 | member-counselor | MemberShellIdentity:11, MEMBER_IDENTITY_HREF:24, memberInitials:30, buildMemberShellIdentity:43 |
+| [lib/member/memberPointsTrend.test.ts](../../../lib/member/memberPointsTrend.test.ts) | 211 | member-counselor |  |
+| [lib/member/memberPointsTrend.ts](../../../lib/member/memberPointsTrend.ts) | 181 | member-counselor | MEMBER_TREND_WEEK_MS:27, MEMBER_TREND_WEEKS:30, PointsTrendTransaction:32, MemberStatSpark:38, MemberPointsTrend:44, memberTrendWindows:70, buildMemberPointsTrend:90, memberPointsSpark:137, PointsLedgerReconciliation:150, reconcilePointsLedger:174 |
 | [lib/member/memberProgramHref.test.ts](../../../lib/member/memberProgramHref.test.ts) | 40 | member-counselor |  |
 | [lib/member/memberProgramHref.ts](../../../lib/member/memberProgramHref.ts) | 22 | member-counselor | MEMBER_PROGRAM_HREF:8, LEGACY_TRAINING_STUB_HREF:9, resolveMemberProgramHref:15 |
 | [lib/member/memberProgramTrainingView.ts](../../../lib/member/memberProgramTrainingView.ts) | 236 | member-counselor | STALE_TRAINING_ACTIVITY_DAYS:16, MemberProgramTrainingView:18, loadMemberProgramTrainingView:61, isTrainingStaleForCounselorEscalation:220 |

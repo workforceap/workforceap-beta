@@ -215,6 +215,7 @@ async function renderMemberDashboard(
         programCoursesNote={home.programCoursesNote}
         pointsLedger={home.pointsLedger}
         pointsThisWeek={home.pointsThisWeek}
+        pointsSpark={home.pointsSpark}
         programHref={home.programHref}
         resumeHref={home.resumeHref}
         coursesHref={home.coursesHref}

@@ -15,6 +15,7 @@
 | [scripts/audit-graph-check.sh](../../../scripts/audit-graph-check.sh) | 50 | operations |  |
 | [scripts/audit-map.mjs](../../../scripts/audit-map.mjs) | 126 | operations |  |
 | [scripts/audit-member-pages.mjs](../../../scripts/audit-member-pages.mjs) | 67 | operations |  |
+| [scripts/audit-points-ledger-drift.ts](../../../scripts/audit-points-ledger-drift.ts) | 123 | operations |  |
 | [scripts/audit-portal-routes.mjs](../../../scripts/audit-portal-routes.mjs) | 1552 | operations |  |
 | [scripts/audit-rank.mjs](../../../scripts/audit-rank.mjs) | 113 | operations |  |
 | [scripts/audit-tenant-scoping.cjs](../../../scripts/audit-tenant-scoping.cjs) | 330 | operations | evaluateRatchet:330, parseMaxUnscoped:330 |
