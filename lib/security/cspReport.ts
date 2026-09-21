@@ -26,7 +26,7 @@ export interface CspViolationSummary {
   blockedHost: string;
   /** Effective directive when present, else the violated directive. */
   directive: string;
-  /** Path (no query, no fragment) of the page that produced the report. */
+  /** Path (no query, no fragment, dynamic segments as `:id`) of the page that produced the report. */
   documentPath: string;
   disposition: 'report' | 'enforce' | 'unknown';
 }
@@ -71,13 +71,50 @@ export function summarizeBlockedUri(blockedUri: unknown): string {
   }
 }
 
-/** Path component only — the query string can carry tokens, emails, redirect targets. */
+const UUID_SEGMENT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const NUMERIC_SEGMENT = /^\d+$/;
+/**
+ * Opaque identifiers (cuid, hex digests, base64 without `-`/`_`): alphanumeric
+ * only, at least one digit, 16+ chars. Slugs (`google-it-support`) carry
+ * hyphens or no digits, locale prefixes are short, so both survive.
+ */
+const OPAQUE_SEGMENT = /^(?=.*\d)[a-z0-9]{16,}$/i;
+/** Route segments whose next segment is always a token or id, whatever it looks like. */
+const TOKEN_PARENT_SEGMENTS = new Set(['q', 'r', 'consent', 'placement', 'invite', 'verify', 'reset-password', 'unsubscribe', 'token']);
+
+/**
+ * Replace dynamic segments (`/admin/members/<uuid>`, `/q/<token>`, `/jobs/123`)
+ * with `:id` so the path groups per route and never carries a token. The
+ * static segments before and after are kept.
+ */
+export function collapseDynamicPathSegments(pathname: string): string {
+  const segments = pathname.split('/');
+  let previous = '';
+  for (let i = 0; i < segments.length; i += 1) {
+    const segment = segments[i];
+    if (segment.length === 0) continue;
+    const dynamic =
+      TOKEN_PARENT_SEGMENTS.has(previous.toLowerCase()) ||
+      UUID_SEGMENT.test(segment) ||
+      NUMERIC_SEGMENT.test(segment) ||
+      OPAQUE_SEGMENT.test(segment);
+    previous = segment;
+    if (dynamic) segments[i] = ':id';
+  }
+  return segments.join('/');
+}
+
+/**
+ * Path component only — the query string can carry tokens, emails, redirect
+ * targets — with dynamic segments collapsed to `:id` (see
+ * `collapseDynamicPathSegments`) so path tokens never reach the log either.
+ */
 export function summarizeDocumentUri(documentUri: unknown): string {
   const raw = asString(documentUri);
   if (!raw) return '/unknown';
   try {
     const url = new URL(raw);
-    return clip(url.pathname || '/');
+    return clip(collapseDynamicPathSegments(url.pathname || '/'));
   } catch {
     return '/unknown';
   }

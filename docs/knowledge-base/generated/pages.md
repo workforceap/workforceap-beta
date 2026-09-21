@@ -399,7 +399,7 @@
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
 | [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
-| [app/admin/guide/page.tsx](../../../app/admin/guide/page.tsx) | 252 | administration | generateMetadata:22, default:114 |
+| [app/admin/guide/page.tsx](../../../app/admin/guide/page.tsx) | 250 | administration | generateMetadata:20, default:112 |
 | [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 703 | administration | default:660 |
 | [app/admin/invites/InvitesLegacyClient.tsx](../../../app/admin/invites/InvitesLegacyClient.tsx) | 202 | administration | default:196 |
 | [app/admin/invites/layout.tsx](../../../app/admin/invites/layout.tsx) | 14 | administration | generateMetadata:4, default:12 |

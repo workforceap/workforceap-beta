@@ -8,7 +8,7 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import styles from './resources.module.css';
 
 const WORKFLOW_LINKS = [
-  { href: '/counselor/students', icon: 'groups', label: 'My Members', desc: 'Roster and detail views' },
+  { href: '/counselor/students', icon: 'groups', label: 'My members', desc: 'Roster and detail views' },
   { href: '/counselor/messages', icon: 'forum', label: 'Messages', desc: 'Portal threads with members' },
   { href: '/counselor/guide', icon: 'menu_book', label: 'Portal Guide', desc: 'How the counselor workspace fits together' },
 ];
