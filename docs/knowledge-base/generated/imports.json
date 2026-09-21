@@ -4065,8 +4065,16 @@
   },
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
-    "specifier": "./types",
+    "specifier": "@/lib/tours/getTourOffer",
     "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
+    "specifier": "./types",
+    "line": 20,
     "kind": "type",
     "external": false,
     "target": "app/(portal)/dashboard/_components/types.ts"
@@ -4074,7 +4082,7 @@
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
     "specifier": "@/components/portal/MemberCareerPathSection",
-    "line": 22,
+    "line": 23,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/MemberCareerPathSection.tsx"
@@ -4082,7 +4090,7 @@
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
     "specifier": "@/components/portal/MatchedRoles",
-    "line": 25,
+    "line": 26,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/MatchedRoles.tsx"
@@ -4090,7 +4098,7 @@
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
     "specifier": "../LogCertificationModal",
-    "line": 28,
+    "line": 29,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/LogCertificationModal.tsx"
@@ -4098,7 +4106,7 @@
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
     "specifier": "../PlacementConfirmationStrip",
-    "line": 31,
+    "line": 32,
     "kind": "dynamic-import",
     "external": false,
     "target": "app/(portal)/dashboard/PlacementConfirmationStrip.tsx"
@@ -4106,7 +4114,7 @@
   {
     "from": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
     "specifier": "@/components/portal/PointsWidget",
-    "line": 34,
+    "line": 35,
     "kind": "dynamic-import",
     "external": false,
     "target": "components/portal/PointsWidget.tsx"
@@ -7854,6 +7862,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/dashboard/layout.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "app/(portal)/dashboard/learning/find-your-career/loading.tsx",
@@ -79520,6 +79544,22 @@
     "target": "lib/member/memberIdentity.ts"
   },
   {
+    "from": "components/portal/MemberWorkspaceShell.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 13,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "components/portal/MemberWorkspaceShell.tsx",
+    "specifier": "@/components/onboarding/TourOfferStrip",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
+  },
+  {
     "from": "components/portal/MentorSessionForm.tsx",
     "specifier": "react",
     "line": 3,
@@ -144526,6 +144566,150 @@
     "kind": "import",
     "external": false,
     "target": "lib/onboarding/portalTourSteps.ts"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "react-dom/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "next-intl",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "@/app/(portal)/dashboard/page",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/dashboard/page.tsx"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "@/lib/member/loadMemberDashboardHome",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/loadMemberDashboardHome.ts"
+  },
+  {
+    "from": "tests/tours/member-overview-anchors.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/components/portal/MemberWorkspaceShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/MemberWorkspaceShell.tsx"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "tests/tours/member-tour.spec.tsx",
+    "specifier": "@/lib/member/memberIdentity",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/memberIdentity.ts"
   },
   {
     "from": "tests/tours/onboarding-reset-tour-state.spec.ts",

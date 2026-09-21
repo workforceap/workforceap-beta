@@ -76,6 +76,9 @@ function ShellIdentity({
       onClick={onNavigate}
       title={title}
       data-testid={`${base}-link`}
+      /* `tour-account`: the member tour's Profile & settings step (lib/tours/registry.ts).
+         Header only — the drawer copy is mobile chrome, so desktop has exactly one anchor. */
+      {...(variant === 'header' ? { 'data-tour': 'tour-account' } : {})}
     >
       <Avatar
         initials={identity.initials}

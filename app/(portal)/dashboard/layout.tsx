@@ -11,6 +11,8 @@ import { getMemberProfilePhotoSignedUrlForPath } from '@/lib/portal/memberProfil
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
+import { getHomeTourForRole } from '@/lib/tours/registry';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -44,6 +46,9 @@ export default async function DashboardLayout({
   }
 
   const portalRolesPromise = getPortalSwitcherRoles(user.id, { superAdmin });
+  // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
+  const memberTour = getHomeTourForRole('member');
+  const tourPromise = memberTour ? getTourOffer(user.id, memberTour.key) : Promise.resolve(null);
 
   let dbUser: {
     deletedAt: Date | null;
@@ -98,7 +103,7 @@ export default async function DashboardLayout({
     avatarUrl,
   });
 
-  const portalRoles = await portalRolesPromise;
+  const [portalRoles, tour] = await Promise.all([portalRolesPromise, tourPromise]);
 
   return (
     <MemberWorkspaceShell
@@ -107,6 +112,7 @@ export default async function DashboardLayout({
       superAdmin={superAdmin}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
+      tour={tour}
     >
       {memberLayoutLoadFailed ? <span hidden data-portal-error-state="member-layout-load" /> : null}
       {children}

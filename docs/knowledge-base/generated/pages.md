@@ -95,7 +95,7 @@
 | [app/(portal)/dashboard/PlacementConfirmationStrip.tsx](../../../app/%28portal%29/dashboard/PlacementConfirmationStrip.tsx) | 79 | member-counselor | default:6 |
 | [app/(portal)/dashboard/\[...slug\]/page.tsx](../../../app/%28portal%29/dashboard/%5B...slug%5D/page.tsx) | 5 | member-counselor | default:3 |
 | [app/(portal)/dashboard/_actions/analyticsActions.ts](../../../app/%28portal%29/dashboard/_actions/analyticsActions.ts) | 10 | member-counselor | logCourseraLaunchFromPortal:6 |
-| [app/(portal)/dashboard/_components/DesktopDashboard.tsx](../../../app/%28portal%29/dashboard/_components/DesktopDashboard.tsx) | 323 | member-counselor | default:40 |
+| [app/(portal)/dashboard/_components/DesktopDashboard.tsx](../../../app/%28portal%29/dashboard/_components/DesktopDashboard.tsx) | 330 | member-counselor | default:41 |
 | [app/(portal)/dashboard/_components/MobileDiscoverSection.tsx](../../../app/%28portal%29/dashboard/_components/MobileDiscoverSection.tsx) | 119 | member-counselor | default:9 |
 | [app/(portal)/dashboard/_components/MobileJourneyTimeline.tsx](../../../app/%28portal%29/dashboard/_components/MobileJourneyTimeline.tsx) | 122 | member-counselor | default:5 |
 | [app/(portal)/dashboard/_components/MobilePointsSection.tsx](../../../app/%28portal%29/dashboard/_components/MobilePointsSection.tsx) | 63 | member-counselor | default:12 |
@@ -190,7 +190,7 @@
 | [app/(portal)/dashboard/jobs/\[id\]/page.tsx](../../../app/%28portal%29/dashboard/jobs/%5Bid%5D/page.tsx) | 206 | jobs-employers | generateMetadata:68, default:120 |
 | [app/(portal)/dashboard/jobs/loading.tsx](../../../app/%28portal%29/dashboard/jobs/loading.tsx) | 5 | jobs-employers | default:3 |
 | [app/(portal)/dashboard/jobs/page.tsx](../../../app/%28portal%29/dashboard/jobs/page.tsx) | 648 | jobs-employers | generateMetadata:23, default:32 |
-| [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | 115 | member-counselor | generateMetadata:15, default:20 |
+| [app/(portal)/dashboard/layout.tsx](../../../app/%28portal%29/dashboard/layout.tsx) | 121 | member-counselor | generateMetadata:17, default:22 |
 | [app/(portal)/dashboard/learning/find-your-career/loading.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/loading.tsx) | 6 | learning-coursera | default:3 |
 | [app/(portal)/dashboard/learning/find-your-career/page.tsx](../../../app/%28portal%29/dashboard/learning/find-your-career/page.tsx) | 149 | learning-coursera | generateMetadata:9, default:34 |
 | [app/(portal)/dashboard/learning/interest-profiler/loading.tsx](../../../app/%28portal%29/dashboard/learning/interest-profiler/loading.tsx) | 6 | learning-coursera | default:3 |

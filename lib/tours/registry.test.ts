@@ -175,6 +175,21 @@ test('counselor step copy names the record tabs and where notes live', () => {
   assert.match(resolve(en, 'counselor.home.help.body') as string, /reopens this tour/);
 });
 
+test('member.home (wave 3) is written for the /dashboard overview and walks home → program → jobs → AI tools → messages → profile → help', () => {
+  const tour = TOUR_REGISTRY['member.home'];
+  assert.equal(tour.role, 'member');
+  assert.equal(tour.route, '/dashboard');
+  assert.equal(tour.version, 3, 'v3 re-tours everyone who finished the v2 walk-through');
+  assert.deepEqual(
+    tour.steps.map((s) => s.target),
+    ['tour-dashboard', 'tour-programs', 'tour-jobs', 'tour-ai-tools', 'tour-messages', 'tour-account', 'tour-help'],
+  );
+  assert.ok(tour.steps.length >= 6 && tour.steps.length <= 8);
+  assert.equal(tour.steps[tour.steps.length - 1].target, 'tour-help', 'ends on the Help anchor that reopens it');
+  assert.equal(tour.steps[tour.steps.length - 1].placement, 'bottom');
+  assert.equal(getHomeTourForRole('member')?.key, 'member.home');
+});
+
 test('employer.home (wave 3) is written for the overview and walks post → review → pipeline → messages → settings', () => {
   const tour = TOUR_REGISTRY['employer.home'];
   assert.equal(tour.role, 'employer');
@@ -202,11 +217,24 @@ test('partner.home (wave 3) is written for the overview and walks referrals → 
 });
 
 test('every persona home tour ends on the Help anchor that reopens it', () => {
-  for (const key of ['employer.home', 'partner.home', 'counselor.home'] as const) {
+  for (const key of ['member.home', 'employer.home', 'partner.home', 'counselor.home'] as const) {
     const steps = TOUR_REGISTRY[key].steps;
     assert.equal(steps[steps.length - 1].target, 'tour-help', key);
   }
 });
+
+for (const locale of REVIEWED_LOCALES) {
+  test(`${locale}.json: member offer and step copy resolves`, () => {
+    const tours = loadTours(locale);
+    const keys = ['member.home.offer.title', 'member.home.offer.body'];
+    for (const step of TOUR_REGISTRY['member.home'].steps) keys.push(step.titleKey, step.bodyKey);
+    for (const key of keys) {
+      const value = resolve(tours, key);
+      assert.equal(typeof value, 'string', `tours.${key} missing in ${locale}.json`);
+      assert.ok((value as string).trim().length > 0, `tours.${key} empty in ${locale}.json`);
+    }
+  });
+}
 
 for (const locale of REVIEWED_LOCALES) {
   test(`${locale}.json: employer and partner offer copy resolves`, () => {
@@ -218,6 +246,15 @@ for (const locale of REVIEWED_LOCALES) {
     }
   });
 }
+
+test('member step copy names the surfaces the steps point at', () => {
+  const en = loadTours('en');
+  assert.match(resolve(en, 'member.home.dashboard.body') as string, /My program/);
+  assert.match(resolve(en, 'member.home.program.body') as string, /certif/i);
+  assert.match(resolve(en, 'member.home.jobs.body') as string, /Job board/);
+  assert.match(resolve(en, 'member.home.profile.body') as string, /Profile & settings/);
+  assert.match(resolve(en, 'member.home.help.body') as string, /reopens this tour/);
+});
 
 test('employer and partner step copy names the surfaces the steps point at', () => {
   const en = loadTours('en');

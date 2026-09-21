@@ -575,7 +575,9 @@
 | [tests/tours/employer-overview-anchors.spec.tsx](../../../tests/tours/employer-overview-anchors.spec.tsx) | 71 | tests |  |
 | [tests/tours/employer-tour.spec.tsx](../../../tests/tours/employer-tour.spec.tsx) | 252 | tests |  |
 | [tests/tours/get-tour-offer.spec.ts](../../../tests/tours/get-tour-offer.spec.ts) | 78 | tests |  |
-| [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 265 | tests |  |
+| [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 266 | tests |  |
+| [tests/tours/member-overview-anchors.spec.tsx](../../../tests/tours/member-overview-anchors.spec.tsx) | 100 | tests |  |
+| [tests/tours/member-tour.spec.tsx](../../../tests/tours/member-tour.spec.tsx) | 260 | tests |  |
 | [tests/tours/onboarding-reset-tour-state.spec.ts](../../../tests/tours/onboarding-reset-tour-state.spec.ts) | 95 | tests |  |
 | [tests/tours/partner-overview-anchors.spec.tsx](../../../tests/tours/partner-overview-anchors.spec.tsx) | 77 | tests |  |
 | [tests/tours/partner-tour.spec.tsx](../../../tests/tours/partner-tour.spec.tsx) | 248 | tests |  |
