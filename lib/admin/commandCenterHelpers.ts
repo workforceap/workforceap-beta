@@ -85,6 +85,18 @@ export type AdminProgramHealthRow = {
 export const PROGRAM_HEALTH_SHARE_LABEL = 'share of enrolled students' as const;
 
 /**
+ * The definition printed under the Command Center's "Program health" heading.
+ * #2425 (S21) cut the misleading "10 · 100%" from each row but left the bare
+ * count unlabelled, so "Program health: 312" still read as a score. The
+ * population is the member-only one #2425 settled everywhere
+ * (`MEMBER_ONLY_WHERE`: role = member, staff / dogfood / seeded-test accounts
+ * out), and the bar is `PROGRAM_HEALTH_SHARE_LABEL`, never a completion rate.
+ * Captions and colours only — no number here changes.
+ */
+export const PROGRAM_HEALTH_CAPTION =
+  `Enrolled members per program — member accounts only, staff and test accounts excluded. Each bar is that program's ${PROGRAM_HEALTH_SHARE_LABEL}, not a completion or health score.` as const;
+
+/**
  * Pure projection of a per-program groupBy onto `AdminProgramHealthRow`s.
  * Sorted by count desc, cut to `limit`; the share denominator is the total
  * over EVERY group (not only the listed ones), so a long tail of small

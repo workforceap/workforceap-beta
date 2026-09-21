@@ -12,6 +12,26 @@ import type { EnrollmentOutcomesPanelData } from '@/lib/admin/analyticsTabs';
 export function EnrollmentOutcomesPanel({ data, chartsHref = '/admin/metrics?ui=legacy' }: { data: EnrollmentOutcomesPanelData; chartsHref?: string }) {
   return (
     <>
+      {data.degradedNote ? (
+        <p
+          role="status"
+          data-metrics-degraded="1"
+          className="wa-kit-tone--warn"
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--wa-kit-tone)',
+            background: 'var(--wa-kit-tone-soft)',
+            border: '1px solid var(--wa-kit-tone)',
+            borderRadius: 'var(--wa-radius-sm)',
+            padding: '8px 12px',
+            margin: '0 0 14px',
+          }}
+        >
+          {data.degradedNote}
+        </p>
+      ) : null}
+
       <KpiStrip cols={6} items={data.kpis} />
 
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-2 wa-gap-5 wa-mt-6">
@@ -42,8 +62,11 @@ export function EnrollmentOutcomesPanel({ data, chartsHref = '/admin/metrics?ui=
         </Card>
       </div>
 
-      <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 20 }}>
+      <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 20, marginBottom: 2 }}>
         Daily activity and placement charts: <PanelLink href={chartsHref}>Open full charts</PanelLink>
+      </p>
+      <p data-charts-note="1" style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
+        {data.chartsNote}
       </p>
     </>
   );

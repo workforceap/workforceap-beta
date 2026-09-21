@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "8eee77f33154e3277c5a0d64fafe3251b79bbe64cea80f48db2a6ce0f2de46d2",
+  "inputTreeSha256": "831caad391c03079d5fed3474640ef57f076df50eb42180939b78883a155c2ce",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5044,
-    "sourceModules": 3685,
-    "importReferences": 18414,
-    "resolvedLocalReferences": 12383,
+    "files": 5045,
+    "sourceModules": 3686,
+    "importReferences": 18426,
+    "resolvedLocalReferences": 12392,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1008,
-    "testCandidates": 997,
+    "testFiles": 1009,
+    "testCandidates": 998,
     "testHelpers": 11,
-    "staticallySelectedTests": 995,
+    "staticallySelectedTests": 996,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 600
+      "files": 601
     }
   ],
   "mostReferenced": [
@@ -140,7 +140,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 211
+      "references": 212
     },
     {
       "file": "app/seo.ts",
@@ -215,11 +215,11 @@
       "references": 54
     },
     {
-      "file": "components/portal/ui/DataTable.tsx",
-      "references": 52
+      "file": "messages/en.json",
+      "references": 53
     },
     {
-      "file": "messages/en.json",
+      "file": "components/portal/ui/DataTable.tsx",
       "references": 52
     },
     {

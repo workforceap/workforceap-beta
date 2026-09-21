@@ -9,6 +9,7 @@ import {
   type ProgramHealthDatum,
 } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import type { ChartDatum } from '@/components/portal/kit';
+import { PROGRAM_HEALTH_CAPTION } from '@/lib/admin/commandCenterHelpers';
 
 /**
  * Showcase-only render of the elevated admin Command Center with inline mock
@@ -112,12 +113,20 @@ const QUEUE_ITEMS: CommandCenterQueueItem[] = [
   },
 ];
 
+/**
+ * Mirrors what `/admin/command-center` and `/admin` actually pass since #2425
+ * (S21): the printed value is the enrolled count only, and `pct` is that
+ * program's share of all 847 enrolled members (it sizes the bar, it is never
+ * printed beside the count). The old fixture printed "312 · 74%" with a
+ * per-row ok/alert tone — the completion-score misread S21 removed from the
+ * live pages — so the showcase disagreed with what ships.
+ */
 const PROGRAM_HEALTH: ProgramHealthDatum[] = [
-  { label: 'Cloud & IT', value: '312 · 74%', pct: 74, tone: 'ok' },
-  { label: 'Data & AI', value: '198 · 68%', pct: 68, tone: 'ok' },
-  { label: 'Healthcare', value: '156 · 81%', pct: 81, tone: 'ok' },
-  { label: 'Skilled Trades', value: '81 · 52%', pct: 52, tone: 'alert' },
-  { label: 'Manufacturing', value: '100 · 70%', pct: 70, tone: 'ok' },
+  { label: 'Cloud & IT', value: '312 enrolled', pct: 37, color: 'success' },
+  { label: 'Data & AI', value: '198 enrolled', pct: 23, color: 'success' },
+  { label: 'Healthcare', value: '156 enrolled', pct: 18, color: 'success' },
+  { label: 'Manufacturing', value: '100 enrolled', pct: 12, color: 'success' },
+  { label: 'Skilled Trades', value: '81 enrolled', pct: 10, color: 'success' },
 ];
 
 const PLACEMENTS_BY_MONTH: ChartDatum[] = [
@@ -155,6 +164,7 @@ export default function DevStaffAdminCommandPage() {
       kpis={KPIS}
       queueItems={QUEUE_ITEMS}
       programHealth={PROGRAM_HEALTH}
+      programHealthCaption={PROGRAM_HEALTH_CAPTION}
       placementsByMonth={PLACEMENTS_BY_MONTH}
       placementsSubtitle="2026 YTD · 213 total"
       addStudentHref="/admin/members/new"
