@@ -14,11 +14,11 @@
 | [app/(auth)/login/page.tsx](../../../app/%28auth%29/login/page.tsx) | 70 | pages | generateMetadata:14, default:24 |
 | [app/(auth)/not-found.tsx](../../../app/%28auth%29/not-found.tsx) | 20 | pages | default:3 |
 | [app/(auth)/reset-password/layout.tsx](../../../app/%28auth%29/reset-password/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
-| [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | 302 | pages | default:296 |
+| [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | 306 | pages | default:300 |
 | [app/(auth)/setup-mfa/layout.tsx](../../../app/%28auth%29/setup-mfa/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
 | [app/(auth)/setup-mfa/loading.tsx](../../../app/%28auth%29/setup-mfa/loading.tsx) | 5 | pages | default:3 |
 | [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | 315 | pages | default:19 |
-| [app/(auth)/signup/SignupForm.tsx](../../../app/%28auth%29/signup/SignupForm.tsx) | 612 | applications-enrollment | default:223 |
+| [app/(auth)/signup/SignupForm.tsx](../../../app/%28auth%29/signup/SignupForm.tsx) | 618 | applications-enrollment | default:224 |
 | [app/(auth)/signup/loading.tsx](../../../app/%28auth%29/signup/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/(auth)/signup/page.tsx](../../../app/%28auth%29/signup/page.tsx) | 41 | applications-enrollment | generateMetadata:11, default:20 |
 | [app/(auth)/verify-mfa/layout.tsx](../../../app/%28auth%29/verify-mfa/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
@@ -516,7 +516,7 @@
 | [app/apply/apply-funnel-depth.css](../../../app/apply/apply-funnel-depth.css) | 504 | applications-enrollment |  |
 | [app/apply/confirmation/loading.tsx](../../../app/apply/confirmation/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/apply/confirmation/page.tsx](../../../app/apply/confirmation/page.tsx) | 263 | applications-enrollment | generateMetadata:20, default:33 |
-| [app/apply/create-account/ApplyCreateAccountForm.tsx](../../../app/apply/create-account/ApplyCreateAccountForm.tsx) | 1039 | applications-enrollment | default:55 |
+| [app/apply/create-account/ApplyCreateAccountForm.tsx](../../../app/apply/create-account/ApplyCreateAccountForm.tsx) | 1047 | applications-enrollment | default:56 |
 | [app/apply/create-account/error.tsx](../../../app/apply/create-account/error.tsx) | 13 | applications-enrollment | default:5 |
 | [app/apply/create-account/loading.tsx](../../../app/apply/create-account/loading.tsx) | 5 | applications-enrollment | default:3 |
 | [app/apply/create-account/page.tsx](../../../app/apply/create-account/page.tsx) | 66 | applications-enrollment | generateMetadata:15, default:25 |

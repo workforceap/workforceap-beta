@@ -1009,7 +1009,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 100
+          "line": 101
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -2005,7 +2005,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 27
+          "line": 28
         },
         {
           "file": "app/api/apply/signup/route.test.ts",
@@ -2013,7 +2013,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 281
+          "line": 282
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2029,7 +2029,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 66
+          "line": 67
         },
         {
           "file": "app/api/partner/signup/route.ts",
@@ -2037,7 +2037,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 31
+          "line": 32
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",
@@ -2417,7 +2417,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 464
+          "line": 465
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2425,7 +2425,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 97
+          "line": 98
         },
         {
           "file": "app/api/partner/signup/route.ts",
@@ -2488,7 +2488,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 463
+          "line": 464
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2500,7 +2500,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 96
+          "line": 97
         },
         {
           "file": "app/api/partner/signup/route.ts",
@@ -2591,11 +2591,11 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 28
+          "line": 29
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 294
+          "line": 295
         },
         {
           "file": "app/api/contact/route.ts",
@@ -2611,7 +2611,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 79
+          "line": 80
         },
         {
           "file": "app/api/partner/signup/route.ts",
@@ -2619,7 +2619,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 32
+          "line": 33
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",
@@ -3318,7 +3318,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 100
+          "line": 101
         },
         {
           "file": "prisma/schema.prisma",
@@ -3834,7 +3834,7 @@
       "references": [
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 98
+          "line": 99
         },
         {
           "file": "app/api/partner/signup/route.ts",
@@ -3925,7 +3925,7 @@
       "references": [
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 283
+          "line": 284
         },
         {
           "file": "app/api/contact/route.ts",
@@ -3941,7 +3941,7 @@
         },
         {
           "file": "app/api/member/signup/route.ts",
-          "line": 68
+          "line": 69
         },
         {
           "file": "app/api/partner/signup/route.ts",

@@ -895,6 +895,7 @@
     "errZipFormat": "Ingresa un código postal válido",
     "errPasswordShort": "Usa al menos 8 caracteres.",
     "errPasswordMismatch": "Las contraseñas no coinciden.",
+    "errPasswordWeak": "Elige una contraseña más segura: al menos 8 caracteres y que no sea una contraseña de uso común.",
     "errContactConsent": "Confirma que aceptas ser contactado sobre tu solicitud para que un asesor pueda dar seguimiento.",
     "errSummaryPhone": "Agrega un número de teléfono para continuar.",
     "errSummaryGeneric": "Corrige los campos resaltados e intenta de nuevo.",
@@ -2758,6 +2759,7 @@
       "commsConsent": "Acepto recibir actualizaciones del programa y comunicaciones por correo electrónico",
       "captchaRequired": "Completa la verificación de seguridad antes de continuar.",
       "genericError": "Algo salió mal. Inténtalo de nuevo.",
+      "weakPassword": "Elige una contraseña más segura: al menos 8 caracteres y que no sea una contraseña de uso común.",
       "networkError": "Error de red. Inténtalo de nuevo.",
       "termsOfService": "Términos de Servicio",
       "privacyPolicy": "Política de Privacidad",
@@ -2815,6 +2817,7 @@
       "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
       "passwordMismatch": "Las contraseñas no coinciden.",
       "updateFailed": "No se pudo actualizar la contraseña. Inténtalo de nuevo.",
+      "weakPassword": "Elige una contraseña más segura: al menos 8 caracteres y que no sea una contraseña de uso común.",
       "submit": "Guardar nueva contraseña",
       "saving": "Guardando…",
       "backToLogin": "Volver al inicio de sesión"

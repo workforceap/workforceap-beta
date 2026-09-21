@@ -32,6 +32,7 @@
     "db:cleanup-fixtures": "node scripts/prisma-env.js npx tsx scripts/cleanup-fixtures.ts",
     "db:backfill:courses": "node scripts/prisma-env.js npx tsx scripts/backfill-courses.ts",
     "db:backfill:unanswered-messages": "node scripts/prisma-env.js npx tsx scripts/backfill-unanswered-member-message-notifications.ts",
+    "db:backfill:user-roles": "node scripts/prisma-env.js npx tsx scripts/backfill-user-roles-from-profile.ts",
     "db:push": "node scripts/prisma-env.js prisma db push",
     "db:studio": "node scripts/prisma-env.js prisma studio",
     "db:seed": "node scripts/prisma-env.js npx tsx prisma/seed.ts",
