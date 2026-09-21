@@ -119,12 +119,16 @@ export function MemberJobsKit({
   ];
   const applicationCard = (row: ApplicationRow) => (
     <div className="wa-kit-card wa-kit-card--sm">
-      <div className="wa-flex wa-items-start wa-justify-between wa-gap-3">
-        <div>
+      {/* Phones: stack the stage tag under the role. Side by side, the nowrap
+          tag took ~104px of the 226px row and squeezed the role column to
+          110px, wrapping every title onto 2-3 lines and breaking the applied
+          date across lines ("Jun" / "12"). Row layout returns at >=768px. */}
+      <div className="wa-flex wa-flex-col wa-items-start wa-gap-2 md:wa-flex-row md:wa-justify-between md:wa-gap-3">
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
           <div className="wa-kit-meta" style={{ marginTop: 2 }}>{row.company}</div>
           <div className="wa-kit-meta" style={{ marginTop: 2 }}>
-            {row.location} · <span style={{ fontVariantNumeric: 'tabular-nums' }}>{row.applied}</span>
+            {row.location} · <span style={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{row.applied}</span>
           </div>
         </div>
         <StatusTag tone={row.tone}>{row.stage}</StatusTag>
