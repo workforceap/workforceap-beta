@@ -22,6 +22,8 @@ import {
   getActiveTab,
 } from '@/lib/nav/portalNav';
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
+import WorkspaceSidebarSections from './WorkspaceSidebarSections';
+import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
 import PortalHeaderActions from './PortalHeaderActions';
@@ -215,6 +217,9 @@ export default function WorkspaceShell({
   const isCollapsedDesktop = collapsed && wide;
   const isMobileDrawer = drawerOpen && !wide;
   const isSuperAdmin = useIsSuperAdmin(Boolean(superAdmin));
+  // Admin rail sections open while a guided tour runs so every anchor is visible
+  // (no-op value when no TourProvider is mounted).
+  const { isOpen: tourOpen } = useTour();
   const tNav = useTranslations('nav');
   const tWorkspace = useTranslations('workspace');
   const tGroup = useTranslations('group');
@@ -690,7 +695,19 @@ export default function WorkspaceShell({
             ) : null}
             <nav aria-label={`${translateLabel(workspaceLabel)} navigation`} className="workspace-sidebar-nav">
               <ul className="workspace-sidebar-list workspace-sidebar-list--root">
-                {GROUP_ORDER.map((group) => {
+                {portalRole === 'admin' && !isCollapsedDesktop ? (
+                  /* Grouped admin rail: collapsible sections + nested rows. The
+                     collapsed icon rail below lists every row flat instead. */
+                  <WorkspaceSidebarSections
+                    items={wide ? desktopNavItems : mobileDrawerNavItems}
+                    activeHref={activeHref}
+                    badges={badges}
+                    translateLabel={translateLabel}
+                    onNavigate={closeDrawer}
+                    storageKey={`wa_nav_sections_${portalRole}`}
+                    forceExpanded={tourOpen}
+                  />
+                ) : GROUP_ORDER.map((group) => {
                   const list = wide ? desktopNavItems : mobileDrawerNavItems;
                   // Repeated shortcuts must not paint two current-page entries.
                   const inGroup = list.filter((item, index) =>

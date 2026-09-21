@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "f26a837cbe7fff0eef7917bd0393b63530d6abd10c30cc38729070b64f5560cc",
+  "inputTreeSha256": "dd285a3fdaa5fc18ee48cdb1522f5303c70a26b5b2437c9a4b4a2543652ba328",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -63777,14 +63777,14 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 34574,
-      "lines": 821,
-      "sha256": "221eb26d9ddae1834b376fe8fbe2014fdc54fbdb513fc30bd3cc04fa42afdf25",
+      "bytes": 35537,
+      "lines": 838,
+      "sha256": "912fa9d606d20e337fc44446f46117260e397d998eec0d99b001d192a07d66d1",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 97,
+          "line": 99,
           "kind": "FunctionDeclaration",
           "localName": "WorkspaceShell"
         }
@@ -63792,17 +63792,17 @@
       "declarations": [
         {
           "name": "ROLE_TO_NAV_VARIANT",
-          "line": 47,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "ShellIdentity",
-          "line": 59,
+          "line": 61,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkspaceShell",
-          "line": 97,
+          "line": 99,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -75121,9 +75121,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 273386,
-      "lines": 10080,
-      "sha256": "a8b9b683078c40f7d84ee0b8848fdf52add1abb2e197431569c0e5f0ef0e73e0",
+      "bytes": 276295,
+      "lines": 10161,
+      "sha256": "863dddf7fcb55fb20128d279528a0b06386d40ed7b7bd13543ddaa7726c9564d",
       "binary": false
     },
     {
@@ -75202,9 +75202,9 @@
       "path": "docs/ADMIN_PORTAL.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 14246,
-      "lines": 227,
-      "sha256": "3083fb6f2da56f80f560b889328dfb75e551f2cd2ebd6688a47392dcbe06b97d",
+      "bytes": 15485,
+      "lines": 240,
+      "sha256": "5b6e175b458f27d4a5ff0194f3d88d48c63cbff4de85b0c373fba714276d2d58",
       "binary": false
     },
     {
@@ -75751,9 +75751,9 @@
       "path": "docs/PORTALS.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 11643,
-      "lines": 367,
-      "sha256": "aa319e38c95ee214d32243d893bf760274520ee393b6beb7f1324a9af5cabc56",
+      "bytes": 13445,
+      "lines": 389,
+      "sha256": "bf33d55e9d4a8429b78cd8e1b12c8e2eeab833ce586f000ceb48cb2cdd5bf5e6",
       "binary": false
     },
     {
@@ -131587,20 +131587,20 @@
       "path": "lib/nav/portalNav.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 4228,
-      "lines": 81,
-      "sha256": "5e146378b544777305e20bd58885db395235af06cf20b87744a821ac0122c7f9",
+      "bytes": 9280,
+      "lines": 153,
+      "sha256": "3ee20794140b100ac7a004e0c787c79be1b283a8e13377a5843fb320d2a29c77",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "root",
-          "line": 9,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "source",
-          "line": 10,
+          "line": 11,
           "kind": "Variable"
         }
       ],
@@ -131610,9 +131610,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22551,
-      "lines": 520,
-      "sha256": "fbdc6df275777d3c8c3689ba92ba63bf46b7c89ece5ebffb47a906d4b27c98d6",
+      "bytes": 24657,
+      "lines": 547,
+      "sha256": "87d6f27e0b6824419b11c84736f186a341a6e9063ca2ec58197e653d8031e93a",
       "binary": false,
       "exports": [
         {
@@ -131627,87 +131627,102 @@
         },
         {
           "name": "NavTab",
-          "line": 67,
+          "line": 68,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavBadgeKey",
-          "line": 69,
+          "line": 70,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PortalNavItem",
-          "line": 89,
+          "line": 90,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NAV_TAB_META",
-          "line": 112,
-          "kind": "Variable"
-        },
-        {
-          "name": "NAV_TAB_ORDER",
           "line": 119,
           "kind": "Variable"
         },
         {
+          "name": "NAV_TAB_ORDER",
+          "line": 126,
+          "kind": "Variable"
+        },
+        {
           "name": "NAV_GROUP_LABELS",
-          "line": 121,
+          "line": 128,
+          "kind": "Variable"
+        },
+        {
+          "name": "NAV_GROUP_COLLAPSED_BY_DEFAULT",
+          "line": 150,
           "kind": "Variable"
         },
         {
           "name": "GROUP_ORDER",
-          "line": 138,
+          "line": 154,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_PORTAL_NAV_ITEMS",
-          "line": 159,
+          "line": 176,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_NAV_ITEMS",
-          "line": 271,
+          "line": 288,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_NAV_ITEMS",
-          "line": 313,
+          "line": 330,
           "kind": "Variable"
         },
         {
           "name": "GROUP_PORTAL_NAV_ITEMS",
-          "line": 354,
+          "line": 371,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_PORTAL_NAV_ITEMS",
-          "line": 362,
+          "line": 396,
           "kind": "Variable"
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 459,
+          "line": 476,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 480,
+          "line": 497,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 489,
+          "line": 506,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 494,
+          "line": 511,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 511,
+          "line": 528,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "navTopLevelItems",
+          "line": 540,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "navChildrenOf",
+          "line": 545,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -131724,92 +131739,107 @@
         },
         {
           "name": "NavTab",
-          "line": 67,
+          "line": 68,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NavBadgeKey",
-          "line": 69,
+          "line": 70,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PortalNavItem",
-          "line": 89,
+          "line": 90,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "NAV_TAB_META",
-          "line": 112,
-          "kind": "Variable"
-        },
-        {
-          "name": "NAV_TAB_ORDER",
           "line": 119,
           "kind": "Variable"
         },
         {
+          "name": "NAV_TAB_ORDER",
+          "line": 126,
+          "kind": "Variable"
+        },
+        {
           "name": "NAV_GROUP_LABELS",
-          "line": 121,
+          "line": 128,
+          "kind": "Variable"
+        },
+        {
+          "name": "NAV_GROUP_COLLAPSED_BY_DEFAULT",
+          "line": 150,
           "kind": "Variable"
         },
         {
           "name": "GROUP_ORDER",
-          "line": 138,
+          "line": 154,
           "kind": "Variable"
         },
         {
           "name": "WIOA_AVAILABLE",
-          "line": 157,
+          "line": 174,
           "kind": "Variable"
         },
         {
           "name": "MEMBER_PORTAL_NAV_ITEMS",
-          "line": 159,
+          "line": 176,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYER_PORTAL_NAV_ITEMS",
-          "line": 271,
+          "line": 288,
           "kind": "Variable"
         },
         {
           "name": "PARTNER_PORTAL_NAV_ITEMS",
-          "line": 313,
+          "line": 330,
           "kind": "Variable"
         },
         {
           "name": "GROUP_PORTAL_NAV_ITEMS",
-          "line": 354,
+          "line": 371,
           "kind": "Variable"
         },
         {
           "name": "ADMIN_PORTAL_NAV_ITEMS",
-          "line": 362,
+          "line": 396,
           "kind": "Variable"
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 459,
+          "line": 476,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 480,
+          "line": 497,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 489,
+          "line": 506,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 494,
+          "line": 511,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 511,
+          "line": 528,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "navTopLevelItems",
+          "line": 540,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "navChildrenOf",
+          "line": 545,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -143426,9 +143456,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 14529,
+      "bytes": 14538,
       "lines": 319,
-      "sha256": "175556ca98f5d54e697620ded9802677ebaa7497b9b479bf91a5a57342604e50",
+      "sha256": "767f4f5ac114879e1885497c0041b73980f506c5534e0981e466ce5ed9e10a49",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -143469,9 +143499,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 9822,
-      "lines": 240,
-      "sha256": "ba3ae0124ec7f27f5ad0db37fe0c2276cb0b82e12367623d053a375053e1abbf",
+      "bytes": 9989,
+      "lines": 242,
+      "sha256": "27c6ab36a8d9acaf99014885202f9862d7f718dbf915db402a0337eea9c27caa",
       "binary": false,
       "exports": [
         {
@@ -143526,47 +143556,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 196,
+          "line": 198,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 198,
+          "line": 200,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 205,
+          "line": 207,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 207,
+          "line": 209,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 211,
+          "line": 213,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 215,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 219,
+          "line": 221,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 228,
+          "line": 230,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 233,
+          "line": 235,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -143628,47 +143658,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 196,
+          "line": 198,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 198,
+          "line": 200,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 205,
+          "line": 207,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 207,
+          "line": 209,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 211,
+          "line": 213,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 215,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 219,
+          "line": 221,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 228,
+          "line": 230,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 233,
+          "line": 235,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -149272,18 +149302,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227992,
+      "bytes": 228032,
       "lines": 3789,
-      "sha256": "8835d98153010516df70528f3be1a7cdad3e627f24433097f657a37ed8a616ab",
+      "sha256": "1652f28c579f3940bb3f3dc964d3fab69406714246a9eeca707afa7212ab3b11",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 252875,
+      "bytes": 252947,
       "lines": 3789,
-      "sha256": "611b90c692c18ee4520ffef06c26a445e6132eace1d04b4b89a9c6804fa3b2c9",
+      "sha256": "9d4c4a919a9a7684323446307185bb78064affa223890846a20928d57a5d909f",
       "binary": false
     },
     {
@@ -171085,9 +171115,9 @@
       "path": "tests/components/workspace-sidebar.test.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 27677,
-      "lines": 555,
-      "sha256": "d56037419d120810f3921803f90f5607183491acd4a8675360bc95c288ca41ba",
+      "bytes": 35609,
+      "lines": 691,
+      "sha256": "ab3ae9f851f9fef85aa86059785dcaf5039045ca43770511245f3a6984f3dfa5",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -177356,9 +177386,9 @@
       "path": "tests/tours/admin-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 14435,
+      "bytes": 14453,
       "lines": 273,
-      "sha256": "2619b06200b999af941d9ac9f17134d3b9eed6c5d69e7d1cf31a6611120b01a0",
+      "sha256": "f3fc0a0c3816f8bf6751aa0965413bb3c145943b8ac01d81b175fed55d592176",
       "binary": false,
       "exports": [],
       "declarations": [

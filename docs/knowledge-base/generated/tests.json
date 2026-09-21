@@ -8551,8 +8551,12 @@
         "line": 6
       },
       {
-        "file": "lib/nav/portalNav.i18n.ts",
+        "file": "lib/nav/portalNav.ts",
         "line": 7
+      },
+      {
+        "file": "lib/nav/portalNav.i18n.ts",
+        "line": 8
       }
     ],
     "kind": "test-candidate",
