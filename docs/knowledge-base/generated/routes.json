@@ -9071,17 +9071,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 39,
+        "line": 40,
         "kind": "Variable"
       },
       {
         "name": "generateMetadata",
-        "line": 50,
+        "line": 51,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 142,
+        "line": 143,
         "kind": "FunctionDeclaration",
         "localName": "AdminGrowthPage"
       }
@@ -9093,17 +9093,17 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 27,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/adminPageScope",
         "line": 28,
         "kind": "import"
       },
       {
+        "specifier": "@/lib/tenant/adminPageScope",
+        "line": 29,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/tenant/organization",
-        "line": 32,
+        "line": 33,
         "kind": "import"
       }
     ]
@@ -32107,7 +32107,7 @@
       },
       {
         "name": "default",
-        "line": 158,
+        "line": 162,
         "kind": "FunctionDeclaration",
         "localName": "DevStaffAdminCommandPage"
       }

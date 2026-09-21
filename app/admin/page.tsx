@@ -302,12 +302,13 @@ export default async function AdminTodayPage({
     });
 
     // Count only; `pct` is the share of enrolled students and only sizes the
-    // bar (number audit 2026-09-20, S21).
+    // bar (number audit 2026-09-20, S21). A share is not a state, so the bars
+    // carry no tone and paint the kit's neutral accent — the dropped
+    // `color: 'success'` made every program read as healthy.
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,
       value: `${row.count} enrolled`,
       pct: row.pct,
-      color: 'success',
     }));
 
     const dateLabel = new Intl.DateTimeFormat('en-US', {
