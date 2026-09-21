@@ -19,7 +19,7 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | database | 212 | [Open](database.md) |
 | delivery | 10 | [Open](delivery.md) |
 | documentation | 358 | [Open](documentation.md) |
-| libraries | 1092 | [Open](libraries.md) |
+| libraries | 1094 | [Open](libraries.md) |
 | localization | 6 | [Open](localization.md) |
 | operations | 145 | [Open](operations.md) |
 | pages | 656 | [Open](pages.md) |
