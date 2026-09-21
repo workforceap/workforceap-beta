@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { formatPortalTime } from '@/lib/formatDate';
 import { getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
+import { ARCHIVED_FIXTURE_MARKER, memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 import PageHeader from '@/components/portal/PageHeader';
 import MemberCounselorChatClient from '@/components/portal/MemberCounselorChatClient';
 import MemberMessagesMobileClient from '@/components/portal/MemberMessagesMobileClient';
@@ -81,15 +82,10 @@ export default async function MemberMessagesPage({
     );
   }
 
-  // If memberLastReadAt is null, the member has never explicitly read the thread.
-  // Counting every message as unread is misleading and inflates the badge.
-  // Treat null as "no unread" for the badge; the thread itself is still visible.
-  const lastRead = thread.memberLastReadAt ? new Date(thread.memberLastReadAt) : null;
-
   const [latestMessages, counselor, unreadCount] = await Promise.all([
     prisma.message.findMany({
       take: 200,
-      where: { threadId: thread.id, NOT: { body: { contains: '[ARCHIVED FIXTURE]' } } },
+      where: { threadId: thread.id, NOT: { body: { contains: ARCHIVED_FIXTURE_MARKER } } },
       orderBy: { createdAt: 'desc' },
     }),
     thread.counselorUserId
@@ -98,16 +94,15 @@ export default async function MemberMessagesPage({
           select: { fullName: true },
         })
       : Promise.resolve(null),
-    lastRead
-      ? prisma.message.count({
-          where: {
-            threadId: thread.id,
-            authorId: { not: user.id },
-            createdAt: { gt: lastRead },
-            NOT: { body: { contains: '[ARCHIVED FIXTURE]' } },
-          },
-        })
-      : Promise.resolve(0),
+    // Same rule as the nav badge (lib/messages/memberUnread.ts): a never-opened
+    // thread has every staff message unread.
+    prisma.message.count({
+      where: memberUnreadStaffMessagesWhere({
+        threadId: thread.id,
+        memberUserId: user.id,
+        memberLastReadAt: thread.memberLastReadAt,
+      }),
+    }),
   ]);
 
   const messages = [...latestMessages].reverse();

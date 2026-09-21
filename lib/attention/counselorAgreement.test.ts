@@ -35,7 +35,7 @@ test('Overview "Needs attention" = the flagged set (on-track and celebrations ex
   const needsAttention = priority.rows.filter((r) => r.bucket !== 'ontrack').map((r) => r.memberId);
   assert.deepEqual(sorted(needsAttention), flagged);
   assert.equal(priority.totals.critical + priority.totals.warning, flagged.length);
-  assert.equal(priority.totals.ontrack, 3, 'two on-track members plus the celebration');
+  assert.equal(priority.totals.ontrack, 4, 'three on-track members (incl. the no-program alert holder) plus the celebration');
   assert.equal(priority.rows.find((r) => r.memberId === 'm-celebrate')?.bucket, 'ontrack');
 });
 
@@ -137,7 +137,7 @@ test('Today\'s tiles print the same numbers as the other four surfaces', () => {
     toWorkQueueRows(queue, FIXTURE_NOW).map((r) => r.memberId),
     'the Reply owed group is the Work queue, in the same order',
   );
-  assert.equal(today.totals.onTrack, 2);
+  assert.equal(today.totals.onTrack, 3);
   assert.equal(today.totals.celebrate, 1);
   assert.equal(today.totals.roster, fixtureRoster().length);
 });

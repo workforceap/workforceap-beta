@@ -64,7 +64,7 @@ describe('buildCounselorRosterStats', () => {
 
     expect(atRisk.value).toBe(2);
     expect(atRisk.tone).toBe('accent');
-    expect(atRisk.caption).toBe('Saved at-risk alert that is open, acknowledged or escalated');
+    expect(atRisk.caption).toBe('Saved at-risk alert that is open, acknowledged or escalated, on a member in a program');
     expect(atRisk.href).toBe('/counselor/at-risk');
   });
 

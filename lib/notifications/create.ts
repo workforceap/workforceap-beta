@@ -37,6 +37,13 @@ export interface CreateNotificationInput {
    * nudge run lost 51 of 93 embeds to HTTP 429.
    */
   notifyOperator?: boolean;
+  /**
+   * Refresh the member's existing unread row with the same `type` + `title`
+   * instead of inserting another. Weekly re-engagement crons pass true: the
+   * 2026-09 audit found 608 of 620 nudge rows were same-title duplicates, so
+   * the bell said "8" while only one distinct nudge was ever actionable.
+   */
+  dedupeUnread?: boolean;
 }
 
 function retainRequestWork(operation: Promise<void>): Promise<void> {
@@ -63,15 +70,30 @@ export function createNotification(
 ): Promise<void> {
   const operation = (async () => {
   try {
-    await prisma.notification.create({
-      data: {
-        userId: input.userId,
-        type: input.type,
-        title: input.title,
-        body: input.body,
-        data: (input.data ?? null) as unknown as Prisma.InputJsonValue,
-      },
-    });
+    const data = (input.data ?? null) as unknown as Prisma.InputJsonValue;
+    const existingUnread = input.dedupeUnread
+      ? await prisma.notification.findFirst({
+          where: { userId: input.userId, type: input.type, title: input.title, readAt: null },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true },
+        })
+      : null;
+    if (existingUnread) {
+      await prisma.notification.update({
+        where: { id: existingUnread.id },
+        data: { body: input.body, data, createdAt: new Date() },
+      });
+    } else {
+      await prisma.notification.create({
+        data: {
+          userId: input.userId,
+          type: input.type,
+          title: input.title,
+          body: input.body,
+          data,
+        },
+      });
+    }
     // Best-effort Web Push companion to the in-app notification. No-ops when
     // VAPID is unconfigured or the user has no subscriptions; never throws.
     void sendWebPushToUser(input.userId, {

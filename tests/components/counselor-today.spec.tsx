@@ -56,7 +56,8 @@ describe('Counselor Today page — populated', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(tile('flagged')).toHaveTextContent(String(FIXTURE_FLAGGED_IDS.length));
     expect(tile('reply-owed')).toHaveTextContent('2');
-    expect(tile('on-track')).toHaveTextContent('2');
+    // m-ok, m-ok2 and the no-program alert holder (not a risk alert without a program).
+    expect(tile('on-track')).toHaveTextContent('3');
 
     const expected: Record<string, string[]> = {
       at_risk: ['m-risk', 'm-quiet30'],

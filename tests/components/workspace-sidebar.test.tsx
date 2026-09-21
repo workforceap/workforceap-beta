@@ -6,7 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import WorkspaceShell from '@/components/portal/WorkspaceShell';
 import DashboardFooter from '@/components/portal/DashboardFooter';
-import { MEMBER_PORTAL_NAV_ITEMS, EMPLOYER_PORTAL_NAV_ITEMS, ADMIN_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
+import { MEMBER_PORTAL_NAV_ITEMS, EMPLOYER_PORTAL_NAV_ITEMS, ADMIN_PORTAL_NAV_ITEMS, navTopLevelItems } from '@/lib/nav/portalNav';
 import { getBestActiveHref } from '@/lib/nav/activeRoute';
 import { MEMBER_TOOLKIT_HUB_HREF } from '@/lib/nav/memberToolRoutes';
 import { pickAdminClientMessages } from '@/lib/i18n/pickRootClientMessages';
@@ -551,5 +551,141 @@ describe('AI Career Tools contextual tool row', () => {
     location.pathname = '/dashboard/jobs';
     const board = show();
     expect(board.container.querySelector('.workspace-shell-current-page')).toHaveTextContent('Job board');
+  });
+});
+
+describe('admin grouped rail (sidebar consolidation)', () => {
+  const showAdmin = (superAdmin = true) => {
+    const navItems = ADMIN_PORTAL_NAV_ITEMS.filter((item) => !item.requiresSuperAdminContext || superAdmin);
+    return render(
+      <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+        <WorkspaceShell portalRole="admin" navItems={navItems}
+          workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+          <h1>Admin content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+  };
+  const sectionButtons = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLButtonElement>('.workspace-sidebar-section-btn')];
+  const visibleRows = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLAnchorElement>('.workspace-sidebar-nav a.workspace-sidebar-link')].filter(
+      (link) => !link.closest('[hidden]'),
+    );
+
+  beforeEach(() => { location.pathname = '/admin'; });
+
+  it('renders seven collapsible sections as buttons with aria-expanded and keeps every destination in the DOM', () => {
+    const { container } = showAdmin();
+    const buttons = sectionButtons(container);
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      'Run the org', 'Students', 'Programs', 'Partners & Employers', 'Reporting', 'Content', 'Security & system',
+    ]);
+    for (const b of buttons) {
+      expect(b).toHaveAttribute('aria-expanded');
+      expect(container.querySelector(`#${b.getAttribute('aria-controls')}`)).not.toBeNull();
+    }
+    const hrefs = [...container.querySelectorAll('.workspace-sidebar-nav a')].map((a) => a.getAttribute('href'));
+    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href)));
+    expect(hrefs).toHaveLength(new Set(hrefs).size);
+  });
+
+  it('shows only top-level rows by default, at most 20, with Security & system closed and the rest open', () => {
+    const { container } = showAdmin();
+    const rows = visibleRows(container).map((a) => a.getAttribute('href'));
+    const openTopLevel = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).filter((item) => item.group !== 'system').map((item) => item.href);
+    expect(rows).toEqual(openTopLevel);
+    expect(rows.length).toBeLessThanOrEqual(20);
+    const system = sectionButtons(container).find((b) => b.textContent === 'Security & system')!;
+    expect(system).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('a[href="/admin/settings"]')?.closest('[hidden]')).not.toBeNull();
+    // Nested rows are closed until opened.
+    expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).not.toBeNull();
+    expect(document.querySelectorAll('[data-tour]')).toHaveLength(7);
+  });
+
+  it('an org admin without super-admin context gets no Security & system section and no gated rows', () => {
+    const { container } = showAdmin(false);
+    expect(sectionButtons(container).map((b) => b.textContent)).not.toContain('Security & system');
+    expect(container.querySelector('a[href="/admin/settings"]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/coursera"]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/reporting"]')).not.toBeNull();
+    expect(visibleRows(container).length).toBeLessThanOrEqual(20);
+  });
+
+  it('toggles a section by click, Enter and arrow keys, and persists the choice in localStorage', async () => {
+    const user = userEvent.setup();
+    const { container } = showAdmin();
+    const system = () => sectionButtons(container).find((b) => b.textContent === 'Security & system')!;
+    await user.click(system());
+    expect(system()).toHaveAttribute('aria-expanded', 'true');
+    expect(container.querySelector('a[href="/admin/settings"]')?.closest('[hidden]')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:system': true });
+    system().focus();
+    await user.keyboard('{ArrowLeft}');
+    expect(system()).toHaveAttribute('aria-expanded', 'false');
+    await user.keyboard('{ArrowRight}');
+    expect(system()).toHaveAttribute('aria-expanded', 'true');
+    await user.keyboard('{Enter}');
+    expect(system()).toHaveAttribute('aria-expanded', 'false');
+    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'section:system': false });
+  });
+
+  it('restores persisted state on mount', () => {
+    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:programs': false, 'item:/admin/reporting': true }));
+    const { container } = showAdmin();
+    const programs = sectionButtons(container).find((b) => b.textContent === 'Programs')!;
+    expect(programs).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('a[href="/admin/programs"]')?.closest('[hidden]')).not.toBeNull();
+    expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).toBeNull();
+  });
+
+  it('opens the section and parent holding the current page even when they were closed', () => {
+    localStorage.setItem('wa_nav_sections_admin', JSON.stringify({ 'section:system': false, 'item:/admin/settings': false }));
+    location.pathname = '/admin/feature-flags';
+    const { container } = showAdmin();
+    const flags = container.querySelector('a[href="/admin/feature-flags"]')!;
+    expect(flags).toHaveAttribute('aria-current', 'page');
+    expect(flags.closest('[hidden]')).toBeNull();
+    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
+    const toggle = container.querySelector('[data-testid="sidebar-children-toggle"][data-parent="/admin/settings"]')!;
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('Reporting is one row whose children open on demand and include the absorbed pages', async () => {
+    const user = userEvent.setup();
+    const { container } = showAdmin();
+    const hub = container.querySelector('a[href="/admin/reporting"]')!;
+    expect(hub).toHaveTextContent('Reporting');
+    expect(hub.closest('[hidden]')).toBeNull();
+    const toggle = container.querySelector<HTMLButtonElement>('[data-testid="sidebar-children-toggle"][data-parent="/admin/reporting"]')!;
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAccessibleName('Show 8 more under Reporting');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    const children = [...container.querySelectorAll(`#${toggle.getAttribute('aria-controls')} a`)].map((a) => a.getAttribute('href'));
+    expect(children).toEqual(expect.arrayContaining(['/admin/analytics', '/admin/outcomes', '/admin/board']));
+    expect(children).toHaveLength(8);
+    expect(JSON.parse(localStorage.getItem('wa_nav_sections_admin')!)).toEqual({ 'item:/admin/reporting': true });
+  });
+
+  it('the collapsed icon rail lists every destination flat and marks one current page', async () => {
+    const user = userEvent.setup();
+    location.pathname = '/admin/coursera';
+    const { container } = showAdmin();
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(container.querySelector('.workspace-sidebar-section-btn')).toBeNull();
+    const hrefs = [...container.querySelectorAll('.workspace-sidebar-nav a')].map((a) => a.getAttribute('href'));
+    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href)));
+    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
+  });
+
+  it('the mobile drawer uses the same sections', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    const { container } = showAdmin();
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(sectionButtons(container)).toHaveLength(7);
+    expect(visibleRows(container).length).toBeLessThanOrEqual(20);
   });
 });

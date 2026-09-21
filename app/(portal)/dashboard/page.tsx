@@ -200,6 +200,7 @@ async function renderMemberDashboard(
         pipeline={home.pipeline}
         certModulesDone={home.certModulesDone}
         certModulesTotal={home.certModulesTotal}
+        programCoursesNote={home.programCoursesNote}
         pointsLedger={home.pointsLedger}
         pointsThisWeek={home.pointsThisWeek}
         programHref={home.programHref}

@@ -45,6 +45,8 @@ export default function DevMemberHomePage() {
       pointsSpark={{ series: [900, 950, 1000, 1080, 1120, 1180, 1240], delta: '85', direction: 'up' }}
       certModulesDone={7}
       certModulesTotal={9}
+      programCoursesNote="9 courses: 8 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path)."
+
       weeklyActivity={[
         { day: 'Mon', minutes: 18 },
         { day: 'Tue', minutes: 25 },

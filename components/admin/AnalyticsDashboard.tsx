@@ -136,7 +136,7 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
             <StatCard
               value={fmtNumber(data.memberStatus.active)}
               label="Active"
-              hint="Currently training."
+              hint="Active members with an enrolled program."
               accent={SUCCESS}
             />
             <StatCard

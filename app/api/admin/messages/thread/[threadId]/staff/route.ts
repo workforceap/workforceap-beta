@@ -5,6 +5,8 @@ import { prisma } from '@/lib/db/prisma';
 import { assertStaffCanPost, normalizeMessageBody, serializeMessage } from '@/lib/messages/counselorThread';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
+import { createNotification } from '@/lib/notifications/create';
+import { STAFF_MESSAGE_NOTIFICATION_TITLE } from '@/lib/messages/staffMessageNotification';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -35,7 +37,7 @@ type Props = { params: Promise<{ threadId: string }> };async function _POST(requ
   const canPost = await assertStaffCanPost(user.id, threadId);
   if (!canPost) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
-  const msg = await prisma.$transaction(async (tx) => {
+  const { msg, thread } = await prisma.$transaction(async (tx) => {
     const m = await tx.message.create({
       data: {
         threadId,
@@ -43,16 +45,29 @@ type Props = { params: Promise<{ threadId: string }> };async function _POST(requ
         body: normalized.body,
       },
     });
-    await tx.messageThread.update({
+    const t = await tx.messageThread.update({
       where: { id: threadId },
       data: {
         updatedAt: new Date(),
         staffUserId: user.id,
         staffLastReadAt: new Date(),
       },
+      select: { kind: true, memberId: true },
     });
-    return m;
+    return { msg: m, thread: t };
   });
+
+  // A member thread gets the same in-app notification the counselor route
+  // creates; employer / partner threads have their own portal badges.
+  if (thread.kind === 'member' && thread.memberId) {
+    await createNotification({
+      userId: thread.memberId,
+      type: 'message',
+      title: STAFF_MESSAGE_NOTIFICATION_TITLE,
+      body: normalized.body.slice(0, 200),
+      data: { threadId, authorId: user.id, link: '/dashboard/messages' },
+    });
+  }
 
   auditLog({
     actorUserId: user.id,

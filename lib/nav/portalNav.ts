@@ -61,8 +61,9 @@ export type NavGroup =
   | 'students'
   | 'programs'
   | 'partnersEmployers'
+  | 'reporting'
   | 'outcomes'
-  | 'advanced';
+  | 'system';
 
 export type NavTab = 'journey' | 'program' | 'jobs' | 'me';
 
@@ -102,6 +103,12 @@ export type PortalNavItem = {
   badgeKeys?: NavBadgeKey[];
   requiresSuperAdminContext?: boolean;
   /**
+   * Admin rail only: nests this row under the top-level row with that href
+   * (same `group`). The rail shows it when its parent is opened or when it or
+   * a sibling is the current page; the collapsed icon rail lists it flat.
+   */
+  parentHref?: string;
+  /**
    * Set on a contextual child row (the AI Career Tools tool the member is
    * currently inside). Carries the parent's href so the rail can nest and
    * indent the row under it. Never present on a permanent rail entry.
@@ -131,8 +138,17 @@ export const NAV_GROUP_LABELS: Record<NavGroup, string | null> = {
   students: 'Students',
   programs: 'Programs',
   partnersEmployers: 'Partners & Employers',
+  reporting: 'Reporting',
   outcomes: 'Outcomes',
-  advanced: 'Advanced',
+  system: 'Security & system',
+};
+
+/**
+ * Sections the admin rail renders closed until opened (the current page's
+ * section always opens). Everything else opens by default.
+ */
+export const NAV_GROUP_COLLAPSED_BY_DEFAULT: Partial<Record<NavGroup, true>> = {
+  system: true,
 };
 
 export const GROUP_ORDER: NavGroup[] = [
@@ -142,6 +158,7 @@ export const GROUP_ORDER: NavGroup[] = [
   'students',
   'programs',
   'partnersEmployers',
+  'reporting',
   'outcomes',
   'content',
   // Shared portal groups (members / employers / partners / counselors)
@@ -150,8 +167,8 @@ export const GROUP_ORDER: NavGroup[] = [
   'workflows',
   'insights',
   'manage',
-  // Technical / system tooling, demoted to the very bottom
-  'advanced',
+  // Super-admin security / system tooling, at the very bottom
+  'system',
 ];
 
 const WIOA_AVAILABLE = isWioaPortalAvailable(process.env.NEXT_PUBLIC_WIOA_ENABLED);
@@ -354,31 +371,36 @@ export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
 export const GROUP_PORTAL_NAV_ITEMS: PortalNavItem[] = [];
 
 /**
- * Admin ops — reorganized for a NON-technical owner.
- * Everyday, plain-language groups lead; all technical/system tooling is
- * demoted into a single "Advanced / System" group at the very bottom.
- * Every existing route/href is preserved — this is a reorder + relabel only.
+ * Admin command rail — grouped sections for a NON-technical owner (admin
+ * audit 2026-09-19 §6.4; sidebar consolidation PR, 2026-09-21).
+ *
+ * Shape: seven sections, each a collapsible disclosure in `WorkspaceShell`
+ * (persisted per browser, the current page's section always opens). Daily
+ * pages are top-level rows; related, rarer pages nest under a top-level row via
+ * `parentHref` and open on demand (or when one of them is the current page).
+ * Every destination that was in the flat 50-row rail is still here — this is a
+ * re-grouping, not a removal — and every row keeps its own role gate
+ * (`requiresSuperAdminContext`), so a nested super-admin page never appears for
+ * an org admin even when its parent does. A child always shares its parent's
+ * section, and a gated parent never hides an ungated child (lib/nav/portalNav.test.ts).
+ *
+ * `/admin` IS the Command Center (renders CommandCenterKit); the separate
+ * `/admin/command-center` route still exists and is reachable directly.
+ * `tourTarget`s are the admin.home guided-tour anchors (lib/tours/registry.ts);
+ * all seven sit on top-level rows.
+ *
+ * Reporting: ONE row points at the reporting hub `/admin/reporting` (built by the
+ * sibling reporting PR); the analytics / outcomes / board / metrics pages it
+ * absorbs stay reachable as its children.
  */
 export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
-  // ── Run the org — the home / "who needs you today" ──
-  // /admin IS the Command Center (renders CommandCenterKit); the old separate
-  // /admin/command-center entry was redundant (same view) so it's dropped from
-  // the rail — the route still exists and is reachable directly.
-  // `tourTarget`s are the admin.home guided-tour anchors (lib/tours/registry.ts).
+  // ── Run the org — "who needs you today" ──
   { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap, tourTarget: 'tour-command-center' },
   { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3, tourTarget: 'tour-overview' },
-
-  // ── Students — the people you manage day to day ──
-  // Single entry → the full-kit roster (StudentsRosterKit) at /admin/students,
-  // which matches the admin-full mockup's Students view. The legacy management
-  // hub (/admin/members) remains reachable via /admin/students?ui=legacy and the
-  // flavored sub-lists (Interview ready, Job ready, Duplicates, Applications
-  // funnel) in Advanced / System below. All underlying page.tsx routes preserved.
-  { href: '/admin/students', label: 'Students', group: 'students', Icon: Users, tourTarget: 'tour-students' },
   {
     href: '/admin/messages',
     label: 'Messages',
-    group: 'students',
+    group: 'runTheOrg',
     Icon: MessageSquare,
     requiresSuperAdminContext: true,
     // WAP-168: the badge is every member message awaiting a staff reply, not
@@ -386,74 +408,69 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     badgeKey: 'member_messages_unanswered',
     tourTarget: 'tour-messages',
   },
+  { href: '/admin/feedback', label: 'Feedback', group: 'runTheOrg', Icon: MessageSquare, requiresSuperAdminContext: true, parentHref: '/admin/messages' },
 
-  // ── Programs & Training ──
+  // ── Students — the people you manage day to day ──
+  // Single top-level entry → the full-kit roster (StudentsRosterKit). The legacy
+  // hub (/admin/members) remains reachable via /admin/students?ui=legacy; the
+  // flavored student lists nest under Students.
+  { href: '/admin/students', label: 'Students', group: 'students', Icon: Users, tourTarget: 'tour-students' },
+  { href: '/admin/subgroups', label: 'Subgroups', group: 'students', Icon: UsersRound, parentHref: '/admin/students' },
+  { href: '/admin/sessions', label: 'In-office sessions', group: 'students', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/pipeline', label: 'Applications funnel', group: 'students', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/members/duplicates', label: 'Find duplicate students', group: 'students', Icon: AlertTriangle, requiresSuperAdminContext: true, parentHref: '/admin/students' },
+  { href: '/admin/invites', label: 'Invites', group: 'students', Icon: MessageSquare },
+
+  // ── Programs & training ──
   { href: '/admin/programs', label: 'Programs', group: 'programs', Icon: BookOpen, tourTarget: 'tour-programs' },
-  {
-    href: '/admin/program-change-requests',
-    label: 'Program requests',
-    group: 'programs',
-    Icon: ArrowLeftRight,
-  },
+  { href: '/admin/career-mappings', label: 'Career paths', group: 'programs', Icon: Target, parentHref: '/admin/programs' },
+  { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'programs', Icon: ClipboardList, parentHref: '/admin/programs' },
+  { href: '/admin/program-change-requests', label: 'Program requests', group: 'programs', Icon: ArrowLeftRight },
   { href: '/admin/training-progress', label: 'Training progress', group: 'programs', Icon: Table2, tourTarget: 'tour-training-progress' },
-  { href: '/admin/assessments', label: 'Assessments', group: 'programs', Icon: ClipboardCheck },
-  { href: '/admin/certifications', label: 'Certificates', group: 'programs', Icon: Award },
-  { href: '/admin/career-mappings', label: 'Career paths', group: 'programs', Icon: Target },
-  { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'programs', Icon: ClipboardList },
+  { href: '/admin/assessments', label: 'Assessments', group: 'programs', Icon: ClipboardCheck, parentHref: '/admin/training-progress' },
+  { href: '/admin/certifications', label: 'Certificates', group: 'programs', Icon: Award, parentHref: '/admin/training-progress' },
+  { href: '/admin/coursera', label: 'Coursera', group: 'programs', Icon: Library, requiresSuperAdminContext: true, parentHref: '/admin/training-progress' },
 
   // ── Partners & Employers ──
-  { href: '/admin/partners', label: 'Partners', group: 'partnersEmployers', Icon: Handshake },
   { href: '/admin/employers', label: 'Employers', group: 'partnersEmployers', Icon: Building2 },
-  { href: '/admin/employer-screening-packs', label: 'Employer screening', group: 'partnersEmployers', Icon: ListChecks },
-  { href: '/admin/jobs', label: 'Jobs', group: 'partnersEmployers', Icon: Briefcase },
-  { href: '/admin/mentors', label: 'Mentors', group: 'partnersEmployers', Icon: GraduationCap },
+  { href: '/admin/jobs', label: 'Jobs', group: 'partnersEmployers', Icon: Briefcase, parentHref: '/admin/employers' },
+  { href: '/admin/employer-screening-packs', label: 'Employer screening', group: 'partnersEmployers', Icon: ListChecks, parentHref: '/admin/employers' },
+  { href: '/admin/partners', label: 'Partners', group: 'partnersEmployers', Icon: Handshake },
+  { href: '/admin/placements', label: 'Placements', group: 'partnersEmployers', Icon: Briefcase },
+  { href: '/admin/placement-surveys', label: 'Placement surveys', group: 'partnersEmployers', Icon: ClipboardCheck, parentHref: '/admin/placements' },
   { href: '/admin/counselors', label: 'Counselors', group: 'partnersEmployers', Icon: Users },
-  { href: '/admin/subgroups', label: 'Subgroups', group: 'partnersEmployers', Icon: UsersRound },
+  { href: '/admin/mentors', label: 'Mentors', group: 'partnersEmployers', Icon: GraduationCap },
 
-  // ── Outcomes — results and reporting ──
-  { href: '/admin/board', label: 'Board outcomes', group: 'outcomes', Icon: TrendingUp },
-  { href: '/admin/outcomes', label: 'Placement outcomes', group: 'outcomes', Icon: LineChart },
-  { href: '/admin/placements', label: 'Placements', group: 'outcomes', Icon: Briefcase },
-  { href: '/admin/placement-surveys', label: 'Placement surveys', group: 'outcomes', Icon: ClipboardCheck },
-  { href: '/admin/analytics', label: 'Analytics', group: 'outcomes', Icon: BarChart3 },
+  // ── Reporting — one hub row; the pages it absorbs are its children ──
+  { href: '/admin/reporting', label: 'Reporting', group: 'reporting', Icon: LineChart },
+  { href: '/admin/analytics', label: 'Analytics', group: 'reporting', Icon: BarChart3, parentHref: '/admin/reporting' },
+  { href: '/admin/outcomes', label: 'Placement outcomes', group: 'reporting', Icon: LineChart, parentHref: '/admin/reporting' },
+  { href: '/admin/board', label: 'Board outcomes', group: 'reporting', Icon: TrendingUp, parentHref: '/admin/reporting' },
+  { href: '/admin/metrics', label: 'Metrics', group: 'reporting', Icon: LineChart, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
+  { href: '/admin/weekly-recap', label: 'Weekly recap', group: 'reporting', Icon: BarChart3, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
+  { href: '/admin/growth', label: 'Growth', group: 'reporting', Icon: TrendingUp, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
+  { href: '/admin/ai-tools', label: 'AI tools', group: 'reporting', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
+  { href: '/admin/analytics/ai-efficacy', label: 'AI Efficacy', group: 'reporting', Icon: Target, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
 
-  // ── Content — blog & invites ──
+  // ── Content — public-facing copy ──
   { href: '/admin/blog', label: 'Blog', group: 'content', Icon: FileText },
-  { href: '/admin/invites', label: 'Invites', group: 'content', Icon: MessageSquare },
+  { href: '/admin/email-templates', label: 'Email templates', group: 'content', Icon: FileText, requiresSuperAdminContext: true, parentHref: '/admin/blog' },
+  { href: '/admin/what-workforceap-does', label: 'What WorkforceAP does', group: 'content', Icon: Layers, requiresSuperAdminContext: true, parentHref: '/admin/blog' },
 
-  // ── Advanced / System — technical tooling, super-admin only ──
-  // In-office sessions is operator-facing (counselor flow) but we keep it
-  // out of the dad-default nav for now; it's still reachable directly from
-  // /admin (sessions card) and from the detailed overview.
-  { href: '/admin/sessions', label: 'In-office sessions', group: 'advanced', Icon: Sparkles, requiresSuperAdminContext: true },
-  // Student-list "Tools" surfaces — distinct from the main /admin/members
-  // table (different queries / data shape). Demoted from the Students group
-  // so the everyday operator sees one student list, not five. Both pages
-  // remain reachable via these entries and via chip links on /admin/members.
-  { href: '/admin/pipeline', label: 'Applications funnel', group: 'advanced', Icon: GitBranch, requiresSuperAdminContext: true },
-  { href: '/admin/members/duplicates', label: 'Find duplicate students', group: 'advanced', Icon: AlertTriangle, requiresSuperAdminContext: true },
-  { href: '/admin/users', label: 'Users', group: 'advanced', Icon: User, requiresSuperAdminContext: true },
-  { href: '/admin/exports', label: 'Exports', group: 'advanced', Icon: Download, requiresSuperAdminContext: true },
-  { href: '/admin/coursera', label: 'Coursera', group: 'advanced', Icon: Library, requiresSuperAdminContext: true },
-  { href: '/admin/metrics', label: 'Metrics', group: 'advanced', Icon: LineChart, requiresSuperAdminContext: true },
-  { href: '/admin/weekly-recap', label: 'Weekly recap', group: 'advanced', Icon: BarChart3, requiresSuperAdminContext: true },
-  { href: '/admin/ai-tools', label: 'AI tools', group: 'advanced', Icon: Sparkles, requiresSuperAdminContext: true },
-  { href: '/admin/analytics/ai-efficacy', label: 'AI Efficacy', group: 'advanced', Icon: Target, requiresSuperAdminContext: true },
-  { href: '/admin/diagnostics', label: 'Diagnostics', group: 'advanced', Icon: Activity, requiresSuperAdminContext: true },
-  { href: '/admin/crons', label: 'Cron Monitor', group: 'advanced', Icon: Timer, requiresSuperAdminContext: true },
-  { href: '/admin/health', label: 'System Health', group: 'advanced', Icon: HeartPulse, requiresSuperAdminContext: true },
-  { href: '/admin/what-workforceap-does', label: 'What WorkforceAP does', group: 'advanced', Icon: Layers, requiresSuperAdminContext: true },
-  { href: '/admin/audit-logs', label: 'Audit logs', group: 'advanced', Icon: Shield, requiresSuperAdminContext: true },
-  { href: '/admin/webhook-events', label: 'Webhook events', group: 'advanced', Icon: Activity, requiresSuperAdminContext: true },
-  { href: '/admin/email-crons', label: 'Email & Crons', group: 'advanced', Icon: MessageSquare, requiresSuperAdminContext: true },
-  { href: '/admin/email-templates', label: 'Email templates', group: 'advanced', Icon: FileText, requiresSuperAdminContext: true },
-  { href: '/admin/feedback', label: 'Feedback', group: 'advanced', Icon: MessageSquare, requiresSuperAdminContext: true },
-  { href: '/admin/growth', label: 'Growth', group: 'advanced', Icon: TrendingUp, requiresSuperAdminContext: true },
-  { href: '/admin/feature-flags', label: 'Feature flags', group: 'advanced', Icon: Flag, requiresSuperAdminContext: true },
-  { href: '/admin/agent-inbox', label: 'Agent inbox', group: 'advanced', Icon: ListChecks, requiresSuperAdminContext: true },
-  { href: '/admin/data-retention', label: 'Data retention', group: 'advanced', Icon: Shield, requiresSuperAdminContext: true },
-  { href: '/admin/csp-report', label: 'CSP reports', group: 'advanced', Icon: Shield, requiresSuperAdminContext: true },
-  { href: '/admin/settings', label: 'Settings', group: 'advanced', Icon: Settings, requiresSuperAdminContext: true, tourTarget: 'tour-settings' },
+  // ── Security & system — super-admin only, collapsed by default ──
+  { href: '/admin/settings', label: 'Settings', group: 'system', Icon: Settings, requiresSuperAdminContext: true, tourTarget: 'tour-settings' },
+  { href: '/admin/feature-flags', label: 'Feature flags', group: 'system', Icon: Flag, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
+  { href: '/admin/data-retention', label: 'Data retention', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
+  { href: '/admin/users', label: 'Users', group: 'system', Icon: User, requiresSuperAdminContext: true },
+  { href: '/admin/audit-logs', label: 'Audit logs', group: 'system', Icon: Shield, requiresSuperAdminContext: true },
+  { href: '/admin/csp-report', label: 'CSP reports', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/audit-logs' },
+  { href: '/admin/exports', label: 'Exports', group: 'system', Icon: Download, requiresSuperAdminContext: true },
+  { href: '/admin/health', label: 'System Health', group: 'system', Icon: HeartPulse, requiresSuperAdminContext: true },
+  { href: '/admin/diagnostics', label: 'Diagnostics', group: 'system', Icon: Activity, requiresSuperAdminContext: true, parentHref: '/admin/health' },
+  { href: '/admin/crons', label: 'Cron Monitor', group: 'system', Icon: Timer, requiresSuperAdminContext: true, parentHref: '/admin/health' },
+  { href: '/admin/email-crons', label: 'Email & Crons', group: 'system', Icon: MessageSquare, requiresSuperAdminContext: true, parentHref: '/admin/health' },
+  { href: '/admin/webhook-events', label: 'Webhook events', group: 'system', Icon: Activity, requiresSuperAdminContext: true, parentHref: '/admin/health' },
+  { href: '/admin/agent-inbox', label: 'Agent inbox', group: 'system', Icon: ListChecks, requiresSuperAdminContext: true, parentHref: '/admin/health' },
 ];
 
 export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [
@@ -517,4 +534,14 @@ export function badgeTotalForItem(
   }
   if (item.badgeKey) return counts[item.badgeKey] ?? 0;
   return 0;
+}
+
+/** Rows that render at the top level of a grouped rail (no `parentHref`). */
+export function navTopLevelItems(items: PortalNavItem[]): PortalNavItem[] {
+  return items.filter((item) => !item.parentHref);
+}
+
+/** Rows nested under `parentHref`, in declaration order. */
+export function navChildrenOf(items: PortalNavItem[], parentHref: string): PortalNavItem[] {
+  return items.filter((item) => item.parentHref === parentHref);
 }

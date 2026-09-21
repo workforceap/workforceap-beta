@@ -9,6 +9,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { getAdminAttention } from '@/lib/attention/admin';
 import { buildAdminAttentionTiles, buildCommandCenterAttentionRows } from '@/lib/attention/adminViews';
 import { emptyAttentionQueue, type AttentionQueue } from '@/lib/attention/evaluate';
@@ -98,9 +99,11 @@ export default async function AdminTodayPage({
           console.error('[admin/page] attention model load failed', error);
           return emptyAttentionQueue();
         }),
+        // Placements YTD over member-role accounts only, the same roster the
+        // attention model and Active Students use (number audit 2026-09-20, F1).
         prisma.placementRecord
           .findMany({
-            where: { user: { organizationId: orgId, deletedAt: null }, placedAt: { gte: yearStart } },
+            where: { user: { organizationId: orgId, deletedAt: null, ...MEMBER_ONLY_WHERE }, placedAt: { gte: yearStart } },
             select: { placedAt: true },
           })
           .catch((error) => {
@@ -297,9 +300,11 @@ export default async function AdminTodayPage({
       cronRuns: headline.cronRuns,
     });
 
+    // Count only; `pct` is the share of enrolled students and only sizes the
+    // bar (number audit 2026-09-20, S21).
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,
-      value: `${row.count} · ${row.pct}%`,
+      value: `${row.count} enrolled`,
       pct: row.pct,
       color: 'success',
     }));

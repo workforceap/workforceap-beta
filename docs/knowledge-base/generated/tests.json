@@ -170,6 +170,10 @@
       {
         "file": "app/api/admin/export/members/_membersExportQuery.ts",
         "line": 4
+      },
+      {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -2085,6 +2089,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/admin/analyticsProgramProgress.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/analytics.ts",
+        "line": 3
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/admin/analyticsTabs.test.ts",
     "area": "libraries",
     "domain": "administration",
@@ -2147,6 +2175,30 @@
       {
         "file": "lib/admin/assignableProgramOptions.ts",
         "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/admin/boardOutcomesFunnel.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/boardOutcomes.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -2225,8 +2277,12 @@
     ],
     "localReferences": [
       {
-        "file": "lib/admin/counselorRosterAggregates.ts",
+        "file": "lib/member/atRiskStatuses.ts",
         "line": 4
+      },
+      {
+        "file": "lib/admin/counselorRosterAggregates.ts",
+        "line": 5
       }
     ],
     "kind": "test-candidate",
@@ -4899,6 +4955,46 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/content/syllabusCatalogParity.test.ts",
+    "area": "libraries",
+    "domain": "public-experience",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/content/courseraDiscoveredCatalog.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/content/programCurriculumManifest.ts",
+        "line": 5
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 6
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 7
+      },
+      {
+        "file": "shared/programSyllabi.ts",
+        "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/content/workforceApModule.test.ts",
     "area": "libraries",
     "domain": "public-experience",
@@ -5662,28 +5758,36 @@
         "line": 4
       },
       {
-        "file": "lib/content/coursera/learningPaths.ts",
+        "file": "lib/content/courseraDiscoveredCatalog.ts",
         "line": 5
       },
       {
-        "file": "lib/coursera/canonicalMapping.ts",
+        "file": "lib/content/coursera/learningPaths.ts",
         "line": 6
       },
       {
-        "file": "lib/coursera/curriculumMapping.ts",
+        "file": "lib/coursera/programCourseList.ts",
         "line": 7
       },
       {
-        "file": "lib/coursera/progressPromotion.ts",
+        "file": "lib/coursera/canonicalMapping.ts",
         "line": 8
       },
       {
-        "file": "lib/coursera/progressReconciliation.ts",
+        "file": "lib/coursera/curriculumMapping.ts",
         "line": 9
       },
       {
-        "file": "lib/coursera/progressTileSummary.ts",
+        "file": "lib/coursera/progressPromotion.ts",
         "line": 10
+      },
+      {
+        "file": "lib/coursera/progressReconciliation.ts",
+        "line": 11
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 12
       }
     ],
     "kind": "test-candidate",
@@ -7469,8 +7573,12 @@
         "line": 33
       },
       {
-        "file": "lib/member/atRiskScoring.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 34
+      },
+      {
+        "file": "lib/member/atRiskScoring.ts",
+        "line": 35
       }
     ],
     "kind": "test-candidate",
@@ -8292,6 +8400,10 @@
       {
         "file": "lib/member/streaks.ts",
         "line": 2
+      },
+      {
+        "file": "lib/member/streakDisplay.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -8604,8 +8716,12 @@
         "line": 6
       },
       {
-        "file": "lib/nav/portalNav.i18n.ts",
+        "file": "lib/nav/portalNav.ts",
         "line": 7
+      },
+      {
+        "file": "lib/nav/portalNav.i18n.ts",
+        "line": 8
       }
     ],
     "kind": "test-candidate",
@@ -11861,6 +11977,42 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/api/admin-message-notification.spec.ts",
+    "area": "tests",
+    "domain": "communications",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/admin/members/[id]/messages/route.ts",
+        "line": 58
+      },
+      {
+        "file": "app/api/admin/messages/thread/[threadId]/staff/route.ts",
+        "line": 59
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 60
+      },
+      {
+        "file": "lib/messages/staffMessageNotification.ts",
+        "line": 61
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/api/admin-onet-mappings.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -11958,31 +12110,31 @@
       },
       {
         "file": "app/api/admin/outcomes/route.ts",
-        "line": 78
-      },
-      {
-        "file": "lib/auth/server.ts",
-        "line": 79
-      },
-      {
-        "file": "lib/auth/roles.ts",
         "line": 80
       },
       {
-        "file": "lib/tenant/organization.ts",
+        "file": "lib/auth/server.ts",
         "line": 81
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/auth/roles.ts",
         "line": 82
       },
       {
-        "file": "lib/tenant/withTenantScope.ts",
-        "line": 112
+        "file": "lib/tenant/organization.ts",
+        "line": 83
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 84
       },
       {
         "file": "lib/tenant/withTenantScope.ts",
-        "line": 168
+        "line": 114
+      },
+      {
+        "file": "lib/tenant/withTenantScope.ts",
+        "line": 170
       }
     ],
     "kind": "test-candidate",
@@ -15406,12 +15558,16 @@
         "line": 49
       },
       {
-        "file": "lib/db/optionalBuildDb.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 50
       },
       {
-        "file": "lib/content/programs.ts",
+        "file": "lib/db/optionalBuildDb.ts",
         "line": 51
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 52
       }
     ],
     "kind": "test-candidate",
@@ -16052,6 +16208,38 @@
       {
         "file": "lib/messages/unassignedNotify.ts",
         "line": 137
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/member-nav-badge-unread.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/portal/navBadges.ts",
+        "line": 50
+      },
+      {
+        "file": "lib/messages/counselorInbox.ts",
+        "line": 51
+      },
+      {
+        "file": "lib/messages/memberUnread.ts",
+        "line": 52
       }
     ],
     "kind": "test-candidate",
@@ -18054,175 +18242,175 @@
     "localReferences": [
       {
         "file": "lib/auth/server.ts",
-        "line": 282
-      },
-      {
-        "file": "lib/auth/roles.ts",
-        "line": 283
-      },
-      {
-        "file": "app/api/admin/analytics/dashboard/route.ts",
-        "line": 284
-      },
-      {
-        "file": "app/api/admin/analytics/placements/route.ts",
-        "line": 285
-      },
-      {
-        "file": "app/api/counselor/dashboard/route.ts",
-        "line": 286
-      },
-      {
-        "file": "app/api/counselor/inbox-zero/route.ts",
-        "line": 287
-      },
-      {
-        "file": "app/api/counselor/members/[memberId]/messages/route.ts",
-        "line": 288
-      },
-      {
-        "file": "app/api/counselor/nudge/route.ts",
-        "line": 289
-      },
-      {
-        "file": "app/api/admin/members/at-risk/route.ts",
-        "line": 290
-      },
-      {
-        "file": "app/api/admin/feature-flags/route.ts",
-        "line": 291
-      },
-      {
-        "file": "app/api/admin/feature-flags/[id]/route.ts",
-        "line": 292
-      },
-      {
-        "file": "app/api/admin/chapters/route.ts",
-        "line": 293
-      },
-      {
-        "file": "app/api/admin/certifications/review/route.ts",
         "line": 294
       },
       {
-        "file": "app/api/admin/blog/route.ts",
+        "file": "lib/auth/roles.ts",
         "line": 295
       },
       {
-        "file": "app/api/admin/blog/[id]/route.ts",
+        "file": "app/api/admin/analytics/dashboard/route.ts",
         "line": 296
       },
       {
-        "file": "app/api/admin/invites/route.ts",
+        "file": "app/api/admin/analytics/placements/route.ts",
         "line": 297
       },
       {
-        "file": "app/api/admin/employer-screening-packs/[id]/route.ts",
+        "file": "app/api/counselor/dashboard/route.ts",
         "line": 298
       },
       {
-        "file": "app/api/admin/partners/[id]/quarterly-outcomes/route.ts",
+        "file": "app/api/counselor/inbox-zero/route.ts",
         "line": 299
       },
       {
-        "file": "app/api/admin/members/[id]/billing-packets/route.ts",
+        "file": "app/api/counselor/members/[memberId]/messages/route.ts",
         "line": 300
       },
       {
-        "file": "app/api/admin/members/[id]/reset-assessment/route.ts",
+        "file": "app/api/counselor/nudge/route.ts",
         "line": 301
       },
       {
-        "file": "app/api/admin/members/[id]/erase/route.ts",
+        "file": "app/api/admin/members/at-risk/route.ts",
         "line": 302
       },
       {
-        "file": "app/api/admin/members/[id]/edit-profile/route.ts",
+        "file": "app/api/admin/feature-flags/route.ts",
         "line": 303
       },
       {
-        "file": "app/api/admin/members/create/route.ts",
+        "file": "app/api/admin/feature-flags/[id]/route.ts",
         "line": 304
       },
       {
-        "file": "app/api/admin/messages/thread/[threadId]/staff/route.ts",
+        "file": "app/api/admin/chapters/route.ts",
         "line": 305
       },
       {
-        "file": "app/api/admin/messages/threads/route.ts",
+        "file": "app/api/admin/certifications/review/route.ts",
         "line": 306
       },
       {
-        "file": "app/api/counselor/members/[memberId]/messages/route.ts",
+        "file": "app/api/admin/blog/route.ts",
         "line": 307
       },
       {
-        "file": "app/api/counselor/members/[memberId]/award-points/route.ts",
+        "file": "app/api/admin/blog/[id]/route.ts",
         "line": 308
       },
       {
-        "file": "app/api/admin/members/[id]/award-points/route.ts",
+        "file": "app/api/admin/invites/route.ts",
         "line": 309
       },
       {
-        "file": "app/api/counselor/members/[memberId]/notes/route.ts",
+        "file": "app/api/admin/employer-screening-packs/[id]/route.ts",
         "line": 310
       },
       {
-        "file": "app/api/counselor/members/[memberId]/session-notes/route.ts",
+        "file": "app/api/admin/partners/[id]/quarterly-outcomes/route.ts",
         "line": 311
       },
       {
-        "file": "app/api/counselor/bulk-followup/route.ts",
+        "file": "app/api/admin/members/[id]/billing-packets/route.ts",
         "line": 312
       },
       {
-        "file": "app/api/counselor/feedback/route.ts",
+        "file": "app/api/admin/members/[id]/reset-assessment/route.ts",
         "line": 313
       },
       {
-        "file": "app/api/counselor/placements/route.ts",
+        "file": "app/api/admin/members/[id]/erase/route.ts",
         "line": 314
       },
       {
-        "file": "app/api/counselor/remind-member/route.ts",
+        "file": "app/api/admin/members/[id]/edit-profile/route.ts",
         "line": 315
       },
       {
-        "file": "app/api/admin/placements/route.ts",
+        "file": "app/api/admin/members/create/route.ts",
         "line": 316
       },
       {
-        "file": "app/api/admin/placement-surveys/resend/route.ts",
+        "file": "app/api/admin/messages/thread/[threadId]/staff/route.ts",
         "line": 317
       },
       {
-        "file": "app/api/admin/email-crons/[id]/toggle/route.ts",
+        "file": "app/api/admin/messages/threads/route.ts",
         "line": 318
       },
       {
-        "file": "app/api/admin/members/[id]/messages/route.ts",
+        "file": "app/api/counselor/members/[memberId]/messages/route.ts",
         "line": 319
       },
       {
-        "file": "app/api/employer/checkout/route.ts",
+        "file": "app/api/counselor/members/[memberId]/award-points/route.ts",
         "line": 320
       },
       {
-        "file": "app/api/employer/messages/route.ts",
+        "file": "app/api/admin/members/[id]/award-points/route.ts",
         "line": 321
       },
       {
-        "file": "app/api/partner/messages/route.ts",
+        "file": "app/api/counselor/members/[memberId]/notes/route.ts",
         "line": 322
       },
       {
-        "file": "app/api/admin/organization/logo/route.ts",
+        "file": "app/api/counselor/members/[memberId]/session-notes/route.ts",
         "line": 323
       },
       {
-        "file": "app/api/employer/logo/route.ts",
+        "file": "app/api/counselor/bulk-followup/route.ts",
         "line": 324
+      },
+      {
+        "file": "app/api/counselor/feedback/route.ts",
+        "line": 325
+      },
+      {
+        "file": "app/api/counselor/placements/route.ts",
+        "line": 326
+      },
+      {
+        "file": "app/api/counselor/remind-member/route.ts",
+        "line": 327
+      },
+      {
+        "file": "app/api/admin/placements/route.ts",
+        "line": 328
+      },
+      {
+        "file": "app/api/admin/placement-surveys/resend/route.ts",
+        "line": 329
+      },
+      {
+        "file": "app/api/admin/email-crons/[id]/toggle/route.ts",
+        "line": 330
+      },
+      {
+        "file": "app/api/admin/members/[id]/messages/route.ts",
+        "line": 331
+      },
+      {
+        "file": "app/api/employer/checkout/route.ts",
+        "line": 332
+      },
+      {
+        "file": "app/api/employer/messages/route.ts",
+        "line": 333
+      },
+      {
+        "file": "app/api/partner/messages/route.ts",
+        "line": 334
+      },
+      {
+        "file": "app/api/admin/organization/logo/route.ts",
+        "line": 335
+      },
+      {
+        "file": "app/api/employer/logo/route.ts",
+        "line": 336
       }
     ],
     "kind": "test-candidate",
@@ -20283,6 +20471,46 @@
       {
         "file": "lib/messages/counselorThread.ts",
         "line": 32
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/member-messages-unread-marker.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/(portal)/dashboard/messages/page.tsx",
+        "line": 38
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 39
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 40
+      },
+      {
+        "file": "lib/messages/counselorThread.ts",
+        "line": 41
+      },
+      {
+        "file": "lib/messages/memberUnread.ts",
+        "line": 42
       }
     ],
     "kind": "test-candidate",
@@ -23133,6 +23361,35 @@
       {
         "file": "lib/member/labWorkspaceTypes.ts",
         "line": 8
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/member-messages-kit-mark-read.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/kit/pages/member/MemberMessagesKit.tsx",
+        "line": 32
       }
     ],
     "kind": "test-candidate",
@@ -26440,12 +26697,16 @@
         "line": 26
       },
       {
-        "file": "lib/db/scanCaps.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 27
       },
       {
-        "file": "lib/db/prisma.ts",
+        "file": "lib/db/scanCaps.ts",
         "line": 28
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 29
       }
     ],
     "kind": "test-candidate",
@@ -28010,6 +28271,38 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/member-only-outcomes-population.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/boardOutcomes.ts",
+        "line": 203
+      },
+      {
+        "file": "lib/admin/memberOutcomesSummary.ts",
+        "line": 204
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 205
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/member-program-training-view.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -28024,6 +28317,74 @@
       {
         "file": "lib/coursera/learnerProgress.ts",
         "line": 30
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/member-progress-parity.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/coursera/programCourseList.ts",
+        "line": 53
+      },
+      {
+        "file": "lib/content/programs.ts",
+        "line": 66
+      },
+      {
+        "file": "lib/content/coursera/learningPaths.ts",
+        "line": 67
+      },
+      {
+        "file": "lib/content/programSlug.ts",
+        "line": 68
+      },
+      {
+        "file": "lib/coursera/progressReconciliation.ts",
+        "line": 69
+      },
+      {
+        "file": "lib/coursera/programCourseList.ts",
+        "line": 70
+      },
+      {
+        "file": "lib/coursera/progressTileSummary.ts",
+        "line": 71
+      },
+      {
+        "file": "lib/member/jobPipelineDisplay.ts",
+        "line": 72
+      },
+      {
+        "file": "lib/member/loadMemberDashboardHome.ts",
+        "line": 73
+      },
+      {
+        "file": "lib/member/memberProgramTrainingView.ts",
+        "line": 74
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 191
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 287
       }
     ],
     "kind": "test-candidate",
@@ -28536,11 +28897,11 @@
       },
       {
         "file": "lib/notifications/create.ts",
-        "line": 21
+        "line": 23
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 22
+        "line": 24
       }
     ],
     "kind": "test-candidate",
@@ -28793,12 +29154,16 @@
         "line": 20
       },
       {
-        "file": "lib/admin/commandCenter.ts",
+        "file": "lib/admin/memberOnlyWhere.ts",
         "line": 21
       },
       {
-        "file": "lib/counselor/commandCenter.ts",
+        "file": "lib/admin/commandCenter.ts",
         "line": 22
+      },
+      {
+        "file": "lib/counselor/commandCenter.ts",
+        "line": 23
       }
     ],
     "kind": "test-candidate",
@@ -29222,6 +29587,10 @@
       {
         "file": "lib/admin/counselorRosterAggregates.ts",
         "line": 7
+      },
+      {
+        "file": "lib/admin/memberOnlyWhere.ts",
+        "line": 8
       }
     ],
     "kind": "test-candidate",
@@ -30010,6 +30379,17 @@
   },
   {
     "file": "tests/migrations/audit-events-actor-set-null.mjs",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [],
+    "localReferences": [],
+    "kind": "test-helper",
+    "declaredRunners": [],
+    "collectionStatus": "helper-not-a-suite",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/migrations/chapter-members-user-cascade.mjs",
     "area": "tests",
     "domain": "tests",
     "frameworkImports": [],

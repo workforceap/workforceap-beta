@@ -85,7 +85,8 @@ export interface AdminDashboardSummary {
   activationRate: number;
   aiToolRuns: number;
   totalPlacements: number;
-  avgPlacementSalary: number;
+  /** Mean salary at placement; null when no placement carries a salary (rendered "—"). */
+  avgPlacementSalary: number | null;
   placementRate: number;
   pendingApplications?: number;
   criticalAtRisk?: number;
@@ -146,7 +147,7 @@ export function AdminDashboardKit({
     { label: 'Placement Rate', value: `${summary.placementRate}%` },
     {
       label: 'Avg Salary',
-      value: `$${summary.avgPlacementSalary.toLocaleString()}`,
+      value: summary.avgPlacementSalary != null ? `$${summary.avgPlacementSalary.toLocaleString()}` : '—',
     },
   ];
 
@@ -169,8 +170,8 @@ export function AdminDashboardKit({
     },
     {
       id: 'stale',
-      label: 'Stale Training (7d+)',
-      detail: 'No progress in 7 days',
+      label: 'Stale Training',
+      detail: 'Members flagged: no course progress for 7+ days',
       value: summary.staleTraining ?? 0,
       href: '/admin/members?status=stale',
       tone: 'info',

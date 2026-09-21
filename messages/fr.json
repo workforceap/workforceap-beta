@@ -55,6 +55,8 @@
     "memberPortal": "Portail membre",
     "openMenu": "Ouvrir le menu",
     "expandSidebar": "Développer la barre latérale",
+    "showMoreUnder": "Afficher {count} de plus sous {label}",
+    "hideMoreUnder": "Masquer {count} de plus sous {label}",
     "collapseSidebar": "Réduire la barre latérale",
     "workspaceTabs": "Onglets de l'espace de travail",
     "unreadCount": "{count, plural, one {# non lu} other {# non lus}}",

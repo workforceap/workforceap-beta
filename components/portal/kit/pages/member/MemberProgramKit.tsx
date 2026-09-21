@@ -42,6 +42,8 @@ export interface MemberProgramKitProps {
   progressPercent?: number;
   modulesComplete?: number;
   modulesTotal?: number;
+  /** Plain line naming the WorkforceAP lab inside `modulesTotal` (null when the program has none). */
+  modulesNote?: string | null;
   estRemaining?: string;
   /** Internal Learning Hub destination, kept separate from Coursera launch actions. */
   resumeHref?: string;
@@ -101,6 +103,7 @@ export function MemberProgramKit({
   progressPercent = 0,
   modulesComplete = 0,
   modulesTotal = 0,
+  modulesNote,
   estRemaining,
   resumeHref = '/dashboard/learning',
   courseraLaunchHref,
@@ -112,7 +115,8 @@ export function MemberProgramKit({
   missionsSummary,
   missionsHref = '#',
 }: MemberProgramKitProps) {
-  if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} {...trainingWorkspace} />;
+  // The page states the course denominator once; the workspace view must show it where it states the count too.
+  if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} />;
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
@@ -182,6 +186,11 @@ export function MemberProgramKit({
               {modulesComplete} of {modulesTotal} modules complete
               {estRemaining ? ` · ${estRemaining}` : ''}
             </p>
+            {modulesNote ? (
+              <p data-testid="program-courses-note" style={{ marginTop: 4, fontSize: 'var(--wa-type-meta)', opacity: 0.85 }}>
+                {modulesNote}
+              </p>
+            ) : null}
           </div>
           {courseraLaunchHref ? (
             <TrackedCourseraLaunchLink

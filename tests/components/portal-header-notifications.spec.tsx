@@ -34,7 +34,7 @@ describe('one active header notification source', () => {
     await flush();
     expect(screen.getAllByRole('button', { name: 'Notifications' })).toHaveLength(1);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenLastCalledWith('/api/member/notifications?limit=5', expect.anything());
+    expect(fetch).toHaveBeenLastCalledWith('/api/member/notifications?limit=20&unreadFirst=1', expect.anything());
   });
 
   it('pauses while hidden, refreshes on return, and stops on unmount', async () => {
@@ -78,7 +78,7 @@ describe('one active header notification source', () => {
     await flush();
     expect(signal?.aborted).toBe(true);
     // Every role reads its own Notification rows; staff additionally fetch nav badges when none were supplied.
-    expect(fetch).toHaveBeenCalledWith('/api/member/notifications?limit=5', expect.anything());
+    expect(fetch).toHaveBeenCalledWith('/api/member/notifications?limit=20&unreadFirst=1', expect.anything());
     expect(fetch).toHaveBeenLastCalledWith('/api/portal/nav-badges?role=admin', expect.anything());
     expect(fetch).toHaveBeenCalledTimes(3);
   });
@@ -94,7 +94,7 @@ describe('one active header notification source', () => {
     await act(() => vi.advanceTimersByTimeAsync(600_000));
     expect(fetch).toHaveBeenCalled();
     for (const [url] of vi.mocked(fetch).mock.calls) {
-      expect(String(url)).toBe('/api/member/notifications?limit=5');
+      expect(String(url)).toBe('/api/member/notifications?limit=20&unreadFirst=1');
     }
     // 2 supplied badge items + 1 unread Notification row.
     expect(screen.getByRole('button', { name: '3 notifications' })).toBeInTheDocument();

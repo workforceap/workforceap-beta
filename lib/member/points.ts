@@ -2,6 +2,7 @@ import 'server-only';
 import { prisma } from '@/lib/db/prisma';
 import { getLevelForPoints, getNextLevel, POINT_VALUES } from '@/lib/member/pointsConfig';
 import { updateStreak, getStreak } from '@/lib/member/streaks';
+import { effectiveStreak } from '@/lib/member/streakDisplay';
 
 export type { LevelName } from '@/lib/member/pointsConfig';
 export { getLevelForPoints, getNextLevel, LEVELS } from '@/lib/member/pointsConfig';
@@ -62,8 +63,12 @@ export async function getMemberPoints(userId: string) {
     level: levelName,
     levelMeta: getLevelForPoints(total),
     nextLevel: getNextLevel(levelName),
-    // Daily-habit streak (additive; defaults to 0 when columns are null).
-    currentStreak: mp?.currentStreak ?? 0,
+    // Daily-habit streak: the stored counter only while the last activity was
+    // today or yesterday (UTC); a lapsed streak reads 0 (lib/member/streakDisplay).
+    currentStreak: effectiveStreak({
+      currentStreak: mp?.currentStreak,
+      lastActiveDate: mp?.lastActiveDate,
+    }),
     longestStreak: mp?.longestStreak ?? 0,
     lastActiveDate: mp?.lastActiveDate ?? null,
   };

@@ -32,7 +32,7 @@ export async function ReportingOverviewSection({
   const kpis: KpiItem[] = [
     { label: 'WAU', value: engagement.wau.toLocaleString('en-US'), delta: 'members with any portal event, 7 days', deltaTone: 'muted' },
     { label: 'Avg Session', value: engagement.avgSessionLabel },
-    { label: 'AI Tool Uses', value: engagement.aiToolUses.toLocaleString('en-US'), delta: 'saved AI tool results, all time', deltaTone: 'muted' },
+    { label: 'AI Tool Uses', value: engagement.aiToolUses.toLocaleString('en-US'), delta: 'saved results + voice sessions, members only, all time (same definition as "AI tool runs")', deltaTone: 'muted' },
     { label: 'Voice Sessions', value: engagement.voiceSessions.toLocaleString('en-US') },
   ];
 

@@ -82,7 +82,7 @@ const T = ATTENTION_THRESHOLDS;
 export const ATTENTION_REASON_META: Record<AttentionReason, AttentionReasonMeta> = {
   risk_alert: {
     label: 'Risk alert',
-    definition: 'Saved at-risk alert that is open, acknowledged or escalated',
+    definition: 'Saved at-risk alert that is open, acknowledged or escalated, on a member in a program',
     severity: 'critical',
   },
   no_activity_30d: {
