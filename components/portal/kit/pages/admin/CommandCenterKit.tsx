@@ -203,11 +203,11 @@ const DEFAULT_PLACEMENTS_BY_MONTH: ChartDatum[] = [
 ];
 
 const DEFAULT_PROGRAM_HEALTH: ProgramHealthDatum[] = [
-  { label: 'Cloud & IT', value: '312 · 74%', pct: 74, color: 'success' },
-  { label: 'Data & AI', value: '198 · 68%', pct: 68, color: 'success' },
-  { label: 'Healthcare', value: '156 · 81%', pct: 81, color: 'success' },
-  { label: 'Skilled Trades', value: '81 · 52%', pct: 52, color: 'accent' },
-  { label: 'Manufacturing', value: '100 · 70%', pct: 70, color: 'success' },
+  { label: 'Cloud & IT', value: '312 · 74%', pct: 74, tone: 'ok' },
+  { label: 'Data & AI', value: '198 · 68%', pct: 68, tone: 'ok' },
+  { label: 'Healthcare', value: '156 · 81%', pct: 81, tone: 'ok' },
+  { label: 'Skilled Trades', value: '81 · 52%', pct: 52, tone: 'alert' },
+  { label: 'Manufacturing', value: '100 · 70%', pct: 70, tone: 'ok' },
 ];
 
 /* ---- Small pure helpers ---------------------------------------------------- */

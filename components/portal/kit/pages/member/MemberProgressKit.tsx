@@ -100,7 +100,7 @@ export function MemberProgressKit({
             >
               Score
             </h2>
-            <ProgressRing pct={score} size={160} color="success" label="Readiness score" />
+            <ProgressRing pct={score} size={160} tone="ok" label="Readiness score" />
             {nextAction ? (
               <p className="wa-kit-lede" style={{ marginTop: 12 }}>
                 Next:{' '}

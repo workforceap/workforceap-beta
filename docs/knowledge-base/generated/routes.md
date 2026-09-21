@@ -354,7 +354,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin | layout |  | [app/admin/layout.tsx](../../../app/admin/layout.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7, @/lib/auth/portalRoleSwitcher:8 |
 | /admin | loading |  | [app/admin/loading.tsx](../../../app/admin/loading.tsx) |  |
 | /admin/members/\[id\]/billing | page |  | [app/admin/members/\[id\]/billing/page.tsx](../../../app/admin/members/%5Bid%5D/billing/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
-| /admin/members/\[id\]/lifecycle | page |  | [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) | @/lib/auth/server:6, @/lib/tenant/adminPageScope:7, @/lib/tenant/organization:8 |
+| /admin/members/\[id\]/lifecycle | page |  | [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) |  |
 | /admin/members/\[id\] | page |  | [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | @/lib/auth/server:8, @/lib/tenant/adminPageScope:9 |
 | /admin/members/\[id\]/readiness | page |  | [app/admin/members/\[id\]/readiness/page.tsx](../../../app/admin/members/%5Bid%5D/readiness/page.tsx) | @/lib/auth/server:7, @/lib/tenant/adminPageScope:8, @/lib/tenant/organization:10 |
 | /admin/members/\[id\]/stakeholder | page |  | [app/admin/members/\[id\]/stakeholder/page.tsx](../../../app/admin/members/%5Bid%5D/stakeholder/page.tsx) | @/lib/auth/server:7, @/lib/tenant/adminPageScope:8, @/lib/tenant/organization:12 |

@@ -21681,83 +21681,11 @@
   },
   {
     "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "next",
-    "line": 1,
-    "kind": "type",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "next/link",
-    "line": 2,
-    "kind": "import",
-    "external": true,
-    "package": "next"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
     "specifier": "next/navigation",
-    "line": 3,
+    "line": 1,
     "kind": "import",
     "external": true,
     "package": "next"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/lib/db/prisma",
-    "line": 4,
-    "kind": "import",
-    "external": false,
-    "target": "lib/db/prisma.ts"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/app/seo",
-    "line": 5,
-    "kind": "import",
-    "external": false,
-    "target": "app/seo.ts"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/lib/auth/server",
-    "line": 6,
-    "kind": "import",
-    "external": false,
-    "target": "lib/auth/server.ts"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/lib/tenant/adminPageScope",
-    "line": 7,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/adminPageScope.ts"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/lib/tenant/organization",
-    "line": 8,
-    "kind": "import",
-    "external": false,
-    "target": "lib/tenant/organization.ts"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
-    "line": 9,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/PageHeader.tsx"
-  },
-  {
-    "from": "app/admin/members/[id]/lifecycle/page.tsx",
-    "specifier": "@/components/portal/StatusBadge",
-    "line": 10,
-    "kind": "import",
-    "external": false,
-    "target": "components/portal/StatusBadge.tsx"
   },
   {
     "from": "app/admin/members/[id]/memberDetailTabs.ts",
@@ -83360,6 +83288,14 @@
     "target": "components/portal/kit/tokens.ts"
   },
   {
+    "from": "components/portal/kit/Charts.tsx",
+    "specifier": "./base",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/base.ts"
+  },
+  {
     "from": "components/portal/kit/ChatThread.tsx",
     "specifier": "react",
     "line": 3,
@@ -131046,6 +130982,30 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/app/admin-member-lifecycle-redirect.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-member-lifecycle-redirect.spec.tsx",
+    "specifier": "next/navigation",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/app/admin-member-lifecycle-redirect.spec.tsx",
+    "specifier": "@/app/admin/members/[id]/lifecycle/page",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/members/[id]/lifecycle/page.tsx"
   },
   {
     "from": "tests/app/admin-members-roster-numbers.spec.tsx",

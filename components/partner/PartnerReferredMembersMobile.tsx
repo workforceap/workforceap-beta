@@ -148,7 +148,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                     <StageTrack
                       index={stageTrackIndex(row.stage)}
                       total={STAGE_ORDER.length}
-                      color={isPlaced ? 'success' : 'accent'}
+                      tone={isPlaced ? 'ok' : undefined}
                       width={90}
                     />
                   </div>
