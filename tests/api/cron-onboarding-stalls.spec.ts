@@ -381,12 +381,16 @@ describe('suppression', () => {
 
 describe('GET /api/cron/onboarding-stalls wiring', () => {
   function seedBuckets() {
-    // Promise.all order in the route: interview, wioa, no-program candidates.
+    // Promise.all order in the route: interview, wioa, no-program candidates,
+    // then every WIOA screening awaiting review (WAP-166 queue-age line).
     prismaMock.user.findMany.mockReset();
     prismaMock.user.findMany
       .mockResolvedValueOnce([{ ...alice, interviewRequestedAt: new Date('2026-09-01') }])
       .mockResolvedValueOnce([{ ...carol, updatedAt: new Date('2026-09-01') }])
       .mockResolvedValueOnce([{ ...bob, createdAt: new Date('2026-09-01') }])
+      .mockResolvedValueOnce([
+        { wioaQualificationJson: { submittedAt: '2026-09-01T00:00:00.000Z' }, updatedAt: new Date('2026-09-01') },
+      ])
       // admin users lookup
       .mockResolvedValueOnce([{ id: 'admin-1', email: 'admin@example.com' }])
       // member-only filter in lib/cron/onboardingStallNudges.ts: carol (wioa) is
