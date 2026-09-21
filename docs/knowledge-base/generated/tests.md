@@ -93,7 +93,7 @@
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
-| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 263 | tests |  |
+| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 298 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
 | [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 282 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |

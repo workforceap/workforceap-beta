@@ -80632,6 +80632,54 @@
     "target": "lib/tours/registry.ts"
   },
   {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.test.tsx",
+    "specifier": "./PortalHelpMenu",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalHelpMenu.tsx"
+  },
+  {
     "from": "components/portal/PortalHelpMenu.tsx",
     "specifier": "next/link",
     "line": 3,
@@ -115272,6 +115320,14 @@
     "target": "lib/security/cspReport.ts"
   },
   {
+    "from": "lib/security/cspReport.ts",
+    "specifier": "node:net",
+    "line": 16,
+    "kind": "import",
+    "external": true,
+    "package": "node:net"
+  },
+  {
     "from": "lib/security/cspReportRateLimit.ts",
     "specifier": "@upstash/ratelimit",
     "line": 19,
@@ -115328,10 +115384,18 @@
     "target": "lib/security/cspViolationBuckets.ts"
   },
   {
+    "from": "lib/security/cspViolationBuckets.test.ts",
+    "specifier": "./cspReport",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
+  },
+  {
     "from": "lib/security/cspViolationBuckets.ts",
     "specifier": "./cspReport",
     "line": 15,
-    "kind": "type",
+    "kind": "import",
     "external": false,
     "target": "lib/security/cspReport.ts"
   },
@@ -126046,6 +126110,14 @@
     "kind": "import",
     "external": false,
     "target": "app/api/csp-report/route.ts"
+  },
+  {
+    "from": "tests/api/csp-report-route.spec.ts",
+    "specifier": "@/lib/security/cspViolationStore",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspViolationStore.ts"
   },
   {
     "from": "tests/api/donate-page.spec.ts",

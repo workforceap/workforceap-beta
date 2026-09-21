@@ -22,6 +22,7 @@ vi.mock('@/lib/security/cspReportRateLimit', () => ({ checkCspReportRateLimit: m
 vi.mock('@/lib/http/clientIp', () => ({ getClientIpFromRequest: () => '203.0.113.7' }));
 
 import { GET, POST } from '@/app/api/csp-report/route';
+import { resetCspBucketCountEstimateForTests } from '@/lib/security/cspViolationStore';
 
 const URL = 'https://www.workforceap.org/api/csp-report';
 
@@ -47,6 +48,8 @@ const legacyReport = JSON.stringify({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // The store caches the per-hour distinct-row count in module memory; each test starts like a fresh process.
+  resetCspBucketCountEstimateForTests();
   mocks.rateLimit.mockResolvedValue({ success: true });
   // The store hands `$transaction` an array of upsert "promises"; resolve them like the pooler would.
   mocks.upsert.mockImplementation((args: unknown) => Promise.resolve({ id: 'bucket', args }));
@@ -249,6 +252,38 @@ describe('POST /api/csp-report persistence (WAP-36 phase 2 prep)', () => {
     expect(mocks.warn).toHaveBeenCalledWith('csp.violation.bucket_ceiling', expect.objectContaining({ ceiling: 2000, skipped: 1, kept: 2 }));
     // The log line for every row is unaffected.
     expect(mocks.info).toHaveBeenCalledTimes(3);
+  });
+
+  it('counts distinct rows once per hour bucket, not once per batch, while far below the ceiling', async () => {
+    const first = reportingApi('https://www.workforceap.org/dashboard', 'inline');
+    const second = reportingApi('https://www.workforceap.org/en/login', 'https://cdn.example/x.js');
+    mocks.count.mockResolvedValue(12);
+    expect((await POST(post(JSON.stringify([first]), 'application/reports+json'))).status).toBe(204);
+    expect((await POST(post(JSON.stringify([second]), 'application/reports+json'))).status).toBe(204);
+    expect((await POST(post(JSON.stringify([first, second]), 'application/reports+json'))).status).toBe(204);
+
+    expect(mocks.count).toHaveBeenCalledTimes(1);
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    // Every batch still reaches the store: one upsert per distinct key per batch.
+    expect(mocks.upsert).toHaveBeenCalledTimes(4);
+    expect(mocks.warn).not.toHaveBeenCalled();
+  });
+
+  it('recounts when the cached estimate reaches the recount margin below the ceiling', async () => {
+    const fresh = reportingApi('https://www.workforceap.org/dashboard', 'inline');
+    // 1,880 rows already: 1,880 + 1 ≤ 1,900 rides the first count; the estimate then sits at 1,881...
+    mocks.count.mockResolvedValue(1880);
+    for (let i = 0; i < 20; i += 1) {
+      expect((await POST(post(JSON.stringify([fresh]), 'application/reports+json'))).status).toBe(204);
+    }
+    // ...and the 21st batch (estimate 1,900 + 1 > 1,900) triggers the second real count.
+    expect(mocks.count).toHaveBeenCalledTimes(1);
+    expect((await POST(post(JSON.stringify([fresh]), 'application/reports+json'))).status).toBe(204);
+    expect(mocks.count).toHaveBeenCalledTimes(2);
+    // Still below the ceiling on the fresh count, so no existing-key read and nothing skipped.
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.warn).not.toHaveBeenCalled();
+    expect(mocks.upsert).toHaveBeenCalledTimes(21);
   });
 
   it('does not touch the database for rejected requests (415, 413, 400, 429)', async () => {

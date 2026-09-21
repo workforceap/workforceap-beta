@@ -340,7 +340,8 @@
 | [components/portal/PortalEmptyState.tsx](../../../components/portal/PortalEmptyState.tsx) | 74 | components | default:27 |
 | [components/portal/PortalEntryErrorBoundary.tsx](../../../components/portal/PortalEntryErrorBoundary.tsx) | 41 | components | default:13 |
 | [components/portal/PortalHeaderActions.tsx](../../../components/portal/PortalHeaderActions.tsx) | 45 | components | default:13 |
-| [components/portal/PortalHelpMenu.tsx](../../../components/portal/PortalHelpMenu.tsx) | 150 | components | default:24 |
+| [components/portal/PortalHelpMenu.test.tsx](../../../components/portal/PortalHelpMenu.test.tsx) | 78 | components |  |
+| [components/portal/PortalHelpMenu.tsx](../../../components/portal/PortalHelpMenu.tsx) | 156 | components | default:24 |
 | [components/portal/PortalInlineSpinner.tsx](../../../components/portal/PortalInlineSpinner.tsx) | 42 | components | pixelToSpinnerSize:8, PortalInlineSpinner:28 |
 | [components/portal/PortalKpiCard.tsx](../../../components/portal/PortalKpiCard.tsx) | 51 | components | default:26 |
 | [components/portal/PortalLayoutClient.tsx](../../../components/portal/PortalLayoutClient.tsx) | 12 | components | default:6 |
@@ -430,7 +431,7 @@
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
 | [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |
-| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 320 | components | default:47 |
+| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 329 | components | HELP_ASSISTANT_PANEL_SELECTOR:18, default:55 |
 | [components/portal/help/useHelpAssistantAvailability.ts](../../../components/portal/help/useHelpAssistantAvailability.ts) | 63 | components | HelpAssistantInfo:7, HelpAssistantAvailability:15, useHelpAssistantAvailability:26 |
 | [components/portal/jobs/LogExternalApplicationButton.tsx](../../../components/portal/jobs/LogExternalApplicationButton.tsx) | 327 | jobs-employers | default:53 |
 | [components/portal/kit/AppShellMember.tsx](../../../components/portal/kit/AppShellMember.tsx) | 113 | components | MemberTab:3, AppShellMember:26 |

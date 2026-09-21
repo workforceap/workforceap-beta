@@ -12,7 +12,7 @@
  * dynamic segments collapsed to `:id`, directive, disposition). Nothing here
  * widens it.
  */
-import type { CspViolationCount, CspViolationSummary } from './cspReport';
+import { CSP_VIOLATION_MAX_BUCKETS_PER_HOUR, type CspViolationCount, type CspViolationSummary } from './cspReport';
 
 export const HOUR_MS = 60 * 60 * 1000;
 export const DAY_MS = 24 * HOUR_MS;
@@ -173,4 +173,53 @@ export function groupCspViolationBuckets(
       };
     })
     .sort((a, b) => b.count - a.count || a.directive.localeCompare(b.directive) || a.blockedHost.localeCompare(b.blockedHost));
+}
+
+/**
+ * How close (in distinct rows) the estimate may get to the per-hour ceiling
+ * before the sink runs a real `count()` again. Larger than any single batch
+ * (CSP_REPORT_MAX_VIOLATIONS_PER_BATCH = 20 keys), so the ceiling path always
+ * decides on a fresh count.
+ */
+export const CSP_BUCKET_CEILING_RECOUNT_MARGIN = 100;
+
+/**
+ * Per-process estimate of the distinct `csp_violation_buckets` rows in one
+ * hour bucket (`lib/security/cspViolationStore.ts` keeps one in module
+ * memory). `distinct` is the last real count plus every key this process may
+ * have created since, so within one process it never undercounts.
+ */
+export interface CspBucketCountEstimate {
+  /** `hourBucket.getTime()` the estimate was counted for. */
+  hourBucketMs: number;
+  /** Upper bound on distinct rows this hour, as far as this process knows. */
+  distinct: number;
+}
+
+/**
+ * Whether the sink must run a real `count()` before deciding a batch of
+ * `batchSize` distinct keys: on the first batch of a process, when the hour
+ * bucket changed, or when the estimate plus this batch would land within
+ * `margin` rows of the ceiling. Everything else rides on the cached estimate.
+ */
+export function shouldRecountCspBuckets(
+  estimate: CspBucketCountEstimate | null,
+  hourBucket: Date,
+  batchSize: number,
+  ceiling: number = CSP_VIOLATION_MAX_BUCKETS_PER_HOUR,
+  margin: number = CSP_BUCKET_CEILING_RECOUNT_MARGIN,
+): boolean {
+  if (!estimate || estimate.hourBucketMs !== hourBucket.getTime()) return true;
+  return estimate.distinct + batchSize > ceiling - margin;
+}
+
+/**
+ * The estimate after a batch that may have created up to `createdAtMost` new
+ * rows. Counting increments of existing keys as creations is deliberate: the
+ * estimate must stay an upper bound, and the overshoot only brings the next
+ * real count forward (at most one `count()` per
+ * `(ceiling - margin - realRows) / batchSize` batches, ~95 at 20 keys a batch).
+ */
+export function advanceCspBucketEstimate(estimate: CspBucketCountEstimate, createdAtMost: number): CspBucketCountEstimate {
+  return { hourBucketMs: estimate.hourBucketMs, distinct: estimate.distinct + Math.max(0, createdAtMost) };
 }

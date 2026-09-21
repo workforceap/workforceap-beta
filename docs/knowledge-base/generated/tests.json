@@ -1212,6 +1212,35 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "components/portal/PortalHelpMenu.test.tsx",
+    "area": "components",
+    "domain": "components",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 5
+      },
+      {
+        "file": "components/portal/PortalHelpMenu.tsx",
+        "line": 24
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "components/portal/PortalTeamChatClient.test.tsx",
     "area": "components",
     "domain": "components",
@@ -9886,6 +9915,10 @@
       {
         "file": "lib/security/cspViolationBuckets.ts",
         "line": 4
+      },
+      {
+        "file": "lib/security/cspReport.ts",
+        "line": 15
       }
     ],
     "kind": "test-candidate",
@@ -14771,6 +14804,10 @@
       {
         "file": "app/api/csp-report/route.ts",
         "line": 24
+      },
+      {
+        "file": "lib/security/cspViolationStore.ts",
+        "line": 25
       }
     ],
     "kind": "test-candidate",

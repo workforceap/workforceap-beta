@@ -2,13 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  CSP_BUCKET_CEILING_RECOUNT_MARGIN,
   CSP_VIOLATION_PATH_SAMPLE_SIZE,
+  advanceCspBucketEstimate,
   bucketCspViolations,
   groupCspViolationBuckets,
+  shouldRecountCspBuckets,
   sumCspViolationCounts,
   truncateToHour,
   type CspViolationBucketRow,
 } from './cspViolationBuckets';
+import { CSP_REPORT_MAX_VIOLATIONS_PER_BATCH, CSP_VIOLATION_MAX_BUCKETS_PER_HOUR } from './cspReport';
 
 const at = (iso: string) => new Date(iso);
 
@@ -101,4 +105,43 @@ test('groupCspViolationBuckets folds hours and pages into (directive, host) grou
 
   assert.deepEqual(groupCspViolationBuckets([], 3), []);
   assert.deepEqual(groupCspViolationBuckets([row({})], 0)[0].documentPaths, []);
+});
+
+test('shouldRecountCspBuckets: first batch, bucket change, or estimate within the margin of the ceiling', () => {
+  const hour = at('2026-03-04T05:00:00.000Z');
+  const ceiling = CSP_VIOLATION_MAX_BUCKETS_PER_HOUR;
+  const margin = CSP_BUCKET_CEILING_RECOUNT_MARGIN;
+  assert.ok(margin > CSP_REPORT_MAX_VIOLATIONS_PER_BATCH, 'margin covers a whole batch, so no single batch can jump from riding the cache to past the ceiling');
+
+  assert.equal(shouldRecountCspBuckets(null, hour, 1), true, 'no estimate yet');
+  const estimate = { hourBucketMs: hour.getTime(), distinct: 40 };
+  assert.equal(shouldRecountCspBuckets(estimate, hour, 20), false, 'far below the ceiling');
+  assert.equal(shouldRecountCspBuckets(estimate, at('2026-03-04T06:00:00.000Z'), 1), true, 'new hour bucket');
+  // Boundary: estimate + batch == ceiling - margin still rides the cache; one more forces a count.
+  assert.equal(shouldRecountCspBuckets({ hourBucketMs: hour.getTime(), distinct: ceiling - margin - 20 }, hour, 20), false);
+  assert.equal(shouldRecountCspBuckets({ hourBucketMs: hour.getTime(), distinct: ceiling - margin - 19 }, hour, 20), true);
+  assert.equal(shouldRecountCspBuckets({ hourBucketMs: hour.getTime(), distinct: ceiling }, hour, 1), true, 'at the ceiling');
+  // Explicit ceiling/margin for callers that size their own bound.
+  assert.equal(shouldRecountCspBuckets({ hourBucketMs: hour.getTime(), distinct: 5 }, hour, 5, 20, 10), false);
+  assert.equal(shouldRecountCspBuckets({ hourBucketMs: hour.getTime(), distinct: 6 }, hour, 5, 20, 10), true);
+});
+
+test('advanceCspBucketEstimate adds the keys a batch may have created and never goes down', () => {
+  const hour = at('2026-03-04T05:00:00.000Z');
+  const start = { hourBucketMs: hour.getTime(), distinct: 40 };
+  const next = advanceCspBucketEstimate(start, 20);
+  assert.deepEqual(next, { hourBucketMs: hour.getTime(), distinct: 60 });
+  assert.deepEqual(start, { hourBucketMs: hour.getTime(), distinct: 40 }, 'input not mutated');
+  assert.equal(advanceCspBucketEstimate(next, 0).distinct, 60);
+  assert.equal(advanceCspBucketEstimate(next, -3).distinct, 60, 'a negative creation count is a bug upstream, never a decrement');
+  // Soft-bound arithmetic the store documents: from a fresh count of `real`, full batches ride
+  // the cache floor((ceiling - margin - real) / batch) times before the next real count.
+  let estimate = { hourBucketMs: hour.getTime(), distinct: 30 };
+  let batches = 0;
+  while (!shouldRecountCspBuckets(estimate, hour, CSP_REPORT_MAX_VIOLATIONS_PER_BATCH)) {
+    estimate = advanceCspBucketEstimate(estimate, CSP_REPORT_MAX_VIOLATIONS_PER_BATCH);
+    batches += 1;
+  }
+  assert.equal(batches, Math.floor((CSP_VIOLATION_MAX_BUCKETS_PER_HOUR - CSP_BUCKET_CEILING_RECOUNT_MARGIN - 30) / CSP_REPORT_MAX_VIOLATIONS_PER_BATCH));
+  assert.equal(batches, 93);
 });
