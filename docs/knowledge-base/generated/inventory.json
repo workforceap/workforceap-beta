@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "6f7239824f52ce84711208529381b046cbcb47682d9369752dc7eccf27515094",
+  "inputTreeSha256": "645ec3d2dc7b45a1bc9518ae7e1adaea81fa77aad593af986ea3b3f9e5869699",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -6390,14 +6390,14 @@
       "path": "app/(portal)/dashboard/_components/DesktopDashboard.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 14418,
-      "lines": 323,
-      "sha256": "ba771e90e8825f7be656eea28e40551f7d0f9726fcec6dfbfba994173eb56926",
+      "bytes": 14928,
+      "lines": 330,
+      "sha256": "9d0a950a8b05f019533c00aaf4b418f3ae3611bda223effc134125ece27f9b9a",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration",
           "localName": "DesktopDashboard"
         }
@@ -6405,32 +6405,32 @@
       "declarations": [
         {
           "name": "MemberCareerPathSection",
-          "line": 21,
+          "line": 22,
           "kind": "Variable"
         },
         {
           "name": "MatchedRoles",
-          "line": 25,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "LogCertificationModal",
-          "line": 28,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "PlacementConfirmationStrip",
-          "line": 31,
+          "line": 32,
           "kind": "Variable"
         },
         {
           "name": "PointsWidget",
-          "line": 34,
+          "line": 35,
           "kind": "Variable"
         },
         {
           "name": "DesktopDashboard",
-          "line": 40,
+          "line": 41,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -9502,19 +9502,19 @@
       "path": "app/(portal)/dashboard/layout.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 3896,
-      "lines": 115,
-      "sha256": "f67610448775a39fe7cb964ceb6954380e74475c35026d0db1d4faef0c213456",
+      "bytes": 4302,
+      "lines": 121,
+      "sha256": "576070b8dabbc6f60f2ad61bbbc5fca93725c70e7250c17c24679d59cd3f37fd",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 20,
+          "line": 22,
           "kind": "FunctionDeclaration",
           "localName": "DashboardLayout"
         }
@@ -9522,12 +9522,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DashboardLayout",
-          "line": 20,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60519,22 +60519,32 @@
       "path": "components/portal/MemberWorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2399,
-      "lines": 67,
-      "sha256": "8077cc0181ba5e7ab8841fcb6db0e525efdfbe1e2eadd1b943584d55fe30d910",
+      "bytes": 3204,
+      "lines": 83,
+      "sha256": "d5dfd426c69634ff584fdb482ebd3107af8ad660e83db542231d1588c86f1423",
       "binary": false,
       "exports": [
         {
+          "name": "MEMBER_GUIDE_HREF",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 14,
+          "line": 19,
           "kind": "FunctionDeclaration",
           "localName": "MemberWorkspaceShell"
         }
       ],
       "declarations": [
         {
+          "name": "MEMBER_GUIDE_HREF",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
           "name": "MemberWorkspaceShell",
-          "line": 14,
+          "line": 19,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63658,14 +63668,14 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 34312,
-      "lines": 818,
-      "sha256": "d5c4fae86c3ede73a96a200b3de3ad13ff5997607cdd46678266c85c9108eb32",
+      "bytes": 34574,
+      "lines": 821,
+      "sha256": "221eb26d9ddae1834b376fe8fbe2014fdc54fbdb513fc30bd3cc04fa42afdf25",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 94,
+          "line": 97,
           "kind": "FunctionDeclaration",
           "localName": "WorkspaceShell"
         }
@@ -63683,7 +63693,7 @@
         },
         {
           "name": "WorkspaceShell",
-          "line": 94,
+          "line": 97,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142754,9 +142764,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 12526,
-      "lines": 282,
-      "sha256": "16fbf890f847ab7fd113bbe008ec5bdda2dde7fcaf11ca0e57a6d7d0849ba0c2",
+      "bytes": 14515,
+      "lines": 319,
+      "sha256": "6d86d4690acf995ae0a1e7ecdd6a290e439218c1debbc87709df870153f9f9ad",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -142797,9 +142807,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 8856,
-      "lines": 225,
-      "sha256": "cf19f5fd396477613079d1812def64c79678f56876ac1491b4abc9b01ae8cb3f",
+      "bytes": 9822,
+      "lines": 240,
+      "sha256": "ba3ae0124ec7f27f5ad0db37fe0c2276cb0b82e12367623d053a375053e1abbf",
       "binary": false,
       "exports": [
         {
@@ -142854,47 +142864,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 181,
+          "line": 196,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 183,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 190,
+          "line": 205,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 192,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 196,
+          "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 200,
+          "line": 215,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 204,
+          "line": 219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 213,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 218,
+          "line": 233,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142956,47 +142966,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 181,
+          "line": 196,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 183,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 190,
+          "line": 205,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 192,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 196,
+          "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getTour",
-          "line": 200,
+          "line": 215,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "listTours",
-          "line": 204,
+          "line": 219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getHomeTourForRole",
-          "line": 213,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "toTourSteps",
-          "line": 218,
+          "line": 233,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -148600,18 +148610,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 226438,
-      "lines": 3769,
-      "sha256": "fdeeb20c3608e796b2962c2c6e72d63c22e9de32ab831c91b60612573cd4318a",
+      "bytes": 227613,
+      "lines": 3785,
+      "sha256": "a9755d7b5eccc28cb8cacc2be861dc11dac8ef9de088e37cc22a9997c2a4fcad",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 251088,
-      "lines": 3769,
-      "sha256": "5761119acad72b3e817b2495a6dd41d69bc7ae97c82a241c61f38574b841a0c7",
+      "bytes": 252421,
+      "lines": 3785,
+      "sha256": "ded1f275138156d7f4a898a7459eb64379cf762a63888bcf51c9aa1783f96e91",
       "binary": false
     },
     {
@@ -176683,9 +176693,9 @@
       "path": "tests/tours/guided-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 11708,
-      "lines": 265,
-      "sha256": "f6bc7f39ffb15a7341f0494e2fdcfffdad3cd17a143ea2f3501dbd5f0e59b7f8",
+      "bytes": 11832,
+      "lines": 266,
+      "sha256": "02031aa8f7dcb594e511e1817ecd321951be9964a72093f0106df3d5075ccc8c",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -176696,37 +176706,123 @@
         },
         {
           "name": "MEMBER_ANCHORS",
-          "line": 18,
+          "line": 19,
           "kind": "Variable"
         },
         {
           "name": "Trigger",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "Harness",
-          "line": 33,
+          "line": 34,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "Posted",
-          "line": 62,
+          "line": 63,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "fetchMock",
-          "line": 63,
+          "line": 64,
           "kind": "Variable"
         },
         {
           "name": "posted",
-          "line": 65,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "open",
-          "line": 72,
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/member-overview-anchors.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4433,
+      "lines": 100,
+      "sha256": "d39c5b685fa339afe30a80ca0bc036f45fd7d8e9b75218a767f048dd59d404e9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "anchors",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/member-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 13426,
+      "lines": 260,
+      "sha256": "6fd13ee5c4f9c4902ac2157eaa9b764257e9821f2c01e793b5f617e482c51fe3",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "Gate",
+          "line": 44,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Posted",
+          "line": 45,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "identity",
+          "line": 56,
+          "kind": "Variable"
+        },
+        {
+          "name": "Home",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 82,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 95,
           "kind": "FunctionDeclaration"
         }
       ],

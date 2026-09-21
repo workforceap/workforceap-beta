@@ -16,6 +16,7 @@ import DashboardErrorFallback from '@/components/error/DashboardErrorFallback';
 import RequestHelpButton from '@/components/portal/RequestHelpButton';
 import MemberFeedbackButton from '@/components/portal/MemberFeedbackButton';
 import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
 import type { DesktopDashboardProps } from './types';
 
 const MemberCareerPathSection = dynamic(
@@ -37,7 +38,7 @@ const PointsWidget = dynamic(() => import('@/components/portal/PointsWidget'), {
 
 /* Desktop view (hidden on mobile) - extracted verbatim from page.tsx. All
    data is loaded in page.tsx and passed down; nothing is re-fetched here. */
-export default function DesktopDashboard({
+export default async function DesktopDashboard({
   activeTab,
   availableTabs,
   userId,
@@ -89,6 +90,12 @@ export default function DesktopDashboard({
   showMatchedRoles,
   firstCertProgressPercent,
 }: DesktopDashboardProps) {
+  // Guided tours v2 (flag `guided_tours_v2`): when it is on for this member the
+  // shell's first-login strip and Help menu own the tour, so the legacy 1.5 s
+  // auto-start stays off. Flag row absent → pre-flag behaviour. (The guard
+  // lives here rather than in page.tsx, which computes `showMemberTour`.)
+  const guidedToursV2 = (await getTourOffer(userId, 'member.home'))?.enabled === true;
+  const showTour = !guidedToursV2 && showMemberTour;
   return (
       <div className="wa-hidden md:wa-block">
         <PortalEntryErrorBoundary>
@@ -97,7 +104,7 @@ export default function DesktopDashboard({
               portal="member"
               tourStorageUserId={userId}
               showOnboardingWizard={showMemberOnboarding}
-              showTour={showMemberTour}
+              showTour={showTour}
               readOnlyAudit={readOnlyAudit}
               isSuperAdmin={superAdmin}
               tourSteps={MEMBER_PORTAL_TOUR_STEPS}

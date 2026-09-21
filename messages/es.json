@@ -3542,12 +3542,12 @@
     "member": {
       "home": {
         "dashboard": {
-          "title": "Panel",
-          "body": "Tu resumen: solicitudes, entrevistas y accesos directos. Abre Mi programa en el menú para ver tu lista de cursos, Coursera y el progreso de tu formación."
+          "title": "Tu punto de partida",
+          "body": "Tu resumen: ruta de certificación, solicitudes en curso, actividad de estudio semanal y puntos. Haz esto ahora, arriba, es la acción que más te acerca hoy; Mi programa en el menú tiene tu lista completa de cursos."
         },
         "aiTools": {
           "title": "AI Career Tools",
-          "body": "Impulsa tu búsqueda de empleo con IA: ayuda con el currículum, cartas de presentación, práctica de entrevistas y más."
+          "body": "Ayuda con el currículum, cartas de presentación, práctica de entrevistas y un asesor de carrera por voz, todo en un mismo estudio. Empieza por el currículum para que tus solicitudes salgan listas."
         },
         "learning": {
           "title": "Aprendizaje",
@@ -3555,11 +3555,27 @@
         },
         "messages": {
           "title": "Mensajes",
-          "body": "Mantente en contacto con tu consejero y el equipo de WorkforceAP."
+          "body": "Tu consejero y el equipo de WorkforceAP te escriben aquí. Los hilos sin leer muestran una insignia; responde desde la misma página."
         },
         "profile": {
-          "title": "Perfil",
-          "body": "Mantén tu perfil actualizado para que podamos conectarte con las mejores oportunidades."
+          "title": "Perfil y configuración",
+          "body": "Tu nombre abre Perfil y configuración: datos de contacto, foto, notificaciones e idioma. Mantenlo al día para que tu consejero y los empleadores puedan contactarte."
+        },
+        "program": {
+          "title": "Progreso de tu formación",
+          "body": "Mi programa es tu lista de cursos y tu avance: módulos completados, lo que sigue, Coursera y tus certificados. Registra aquí una certificación cuando apruebes el examen."
+        },
+        "jobs": {
+          "title": "Encuentra empleo",
+          "body": "La Bolsa de empleo muestra puestos acordes a tu programa y tus habilidades. Postúlate con un clic y sigue cada solicitud en Solicitudes de empleo; las entrevistas y ofertas aparecen en tu resumen de inicio."
+        },
+        "help": {
+          "title": "Vuelve cuando quieras",
+          "body": "Ayuda vuelve a abrir este recorrido cuando lo necesites y enlaza a la Guía del miembro."
+        },
+        "offer": {
+          "title": "¿Nuevo aquí? Haz un recorrido de dos minutos",
+          "body": "Descubre dónde está el progreso de tu formación, cómo encontrar y solicitar empleos, dónde están tus mensajes y cómo actualizar tu perfil."
         }
       }
     },

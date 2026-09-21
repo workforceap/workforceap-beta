@@ -1004,8 +1004,8 @@
 | [lib/tours/getTourOffer.ts](../../../lib/tours/getTourOffer.ts) | 38 | libraries | TourOffer:6, getTourOffer:21 |
 | [lib/tours/offer.test.ts](../../../lib/tours/offer.test.ts) | 26 | libraries |  |
 | [lib/tours/offer.ts](../../../lib/tours/offer.ts) | 27 | libraries | TourStateSnapshot:4, shouldOfferTour:23 |
-| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 282 | libraries |  |
-| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 225 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:181, LEGACY_PORTAL_TOUR_KEY:183, LEGACY_TOUR_VERSION:190, isTourKey:192, isTourStatus:196, getTour:200, listTours:204, getHomeTourForRole:213, toTourSteps:218 |
+| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 319 | libraries |  |
+| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 240 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:196, LEGACY_PORTAL_TOUR_KEY:198, LEGACY_TOUR_VERSION:205, isTourKey:207, isTourStatus:211, getTour:215, listTours:219, getHomeTourForRole:228, toTourSteps:233 |
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
 | [lib/ui/adminSemanticTokens.test.ts](../../../lib/ui/adminSemanticTokens.test.ts) | 92 | libraries |  |
 | [lib/ui/brandTokens.test.ts](../../../lib/ui/brandTokens.test.ts) | 143 | libraries |  |

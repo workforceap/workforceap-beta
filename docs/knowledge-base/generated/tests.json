@@ -30557,6 +30557,95 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/tours/member-overview-anchors.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 6
+      },
+      {
+        "file": "app/(portal)/dashboard/page.tsx",
+        "line": 42
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 43
+      },
+      {
+        "file": "lib/member/loadMemberDashboardHome.ts",
+        "line": 44
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 45
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/member-tour.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/MemberWorkspaceShell.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/portal/kit/pages/member/MemberHomeKit.tsx",
+        "line": 6
+      },
+      {
+        "file": "components/onboarding/TourContext.tsx",
+        "line": 7
+      },
+      {
+        "file": "components/portal/kit/GuidedTour.tsx",
+        "line": 8
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 9
+      },
+      {
+        "file": "lib/member/memberIdentity.ts",
+        "line": 10
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/tours/onboarding-reset-tour-state.spec.ts",
     "area": "tests",
     "domain": "tests",
