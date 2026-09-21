@@ -1,4 +1,9 @@
 import { prisma } from '@/lib/db/prisma';
+import {
+  snapshotEmailFailuresByDiagnosticId,
+  snapshotRunLabel,
+  type EmailFailureSnapshotClient,
+} from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
 import {
   RETENTION_TABLES,
@@ -16,6 +21,11 @@ export type CleanupResult = {
   model: string;
   deleted: number;
   batchCount: number;
+  /**
+   * Rows copied into `email_failure_snapshots` before this model's delete ran.
+   * Present only for `workflowDiagnostic` (see SNAPSHOT_BEFORE_DELETE_MODEL).
+   */
+  snapshotted?: number;
   error?: string;
 };
 
@@ -24,10 +34,43 @@ export type DataCleanupReport = {
   completedAt: string;
   results: CleanupResult[];
   totalDeleted: number;
+  /** WAP-163: email-failure diagnostics copied to `email_failure_snapshots` this run. */
+  emailFailuresSnapshotted: number;
   deletedAccounts?: number;
   /** Soft-deleted accounts past retention that a foreign key still holds. */
   blockedAccounts?: BlockedAccount[];
 };
+
+/**
+ * WAP-163: the one model whose rows are evidence before they are noise.
+ * `workflow_diagnostics` holds the only record of the 2026 failed outbound
+ * emails, so every batch of it is copied into `email_failure_snapshots`
+ * before it is deleted. See `snapshotBatchBeforeDelete` below.
+ */
+const SNAPSHOT_BEFORE_DELETE_MODEL = 'workflowDiagnostic';
+
+/**
+ * Copy the email-failure evidence out of the batch that is about to be
+ * deleted. Called inside the batch's transaction, before its `deleteMany`.
+ *
+ * This is deliberately not wrapped in a try/catch: a snapshot failure must
+ * abort the transaction, so the `deleteMany` never runs and the already-written
+ * snapshot rows roll back with it. The throw propagates out of `cleanupTable`,
+ * `runDataCleanup` records it against the model, and `/api/cron/data-cleanup`
+ * answers 500 and logs the run as failed. A partial snapshot followed by a
+ * successful delete is therefore not a reachable state — the worst case is a
+ * run that deletes nothing and is loudly red.
+ */
+async function snapshotBatchBeforeDelete(
+  tx: EmailFailureSnapshotClient,
+  cfg: RetentionTableConfig,
+  ids: readonly string[],
+  snapshotRun: string | null,
+): Promise<number> {
+  if (cfg.model !== SNAPSHOT_BEFORE_DELETE_MODEL || snapshotRun === null) return 0;
+  const result = await snapshotEmailFailuresByDiagnosticId(tx, ids, snapshotRun);
+  return result.inserted;
+}
 
 /**
  * Delete rows older than the retention period in batches.
@@ -37,6 +80,9 @@ export type DataCleanupReport = {
  *
  * Never deletes member data directly; only log/telemetry tables
  * defined in RETENTION_TABLES.
+ *
+ * For `workflow_diagnostics` each batch is snapshotted before it is deleted,
+ * in the same transaction (WAP-163).
  */
 export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupResult> {
   const cutoff = getCutoffDate(cfg.days);
@@ -53,7 +99,12 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
   // SQL pattern for `LIKE`: `wioa.%` etc.
   const criticalLikes = CRITICAL_AUDIT_ACTION_PREFIXES.map((p) => `${p}%`);
 
+  // One run label for every batch of this model, so a re-run of the cron is
+  // distinguishable from the batches of a single run.
+  const snapshotRun = cfg.model === SNAPSHOT_BEFORE_DELETE_MODEL ? snapshotRunLabel() : null;
+
   let totalDeleted = 0;
+  let totalSnapshotted = 0;
   let batchCount = 0;
 
   while (true) {
@@ -81,8 +132,8 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
     // Find-then-delete-by-id is a read-then-write logical unit: the delete
     // targets exactly the IDs the read just selected, so both must run
     // inside the same $transaction to keep a consistent, GUC-tagged view.
-    const batchResult: { deletedCount: number; batchSize: number } | null = await prisma.$transaction(
-      async (tx) => {
+    const batchResult: { deletedCount: number; batchSize: number; snapshotted: number } | null =
+      await prisma.$transaction(async (tx) => {
         const txDelegate = (tx as any)[cfg.model];
         const rows: { id: string }[] = await txDelegate.findMany({
           where,
@@ -94,17 +145,22 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
         if (rows.length === 0) return null;
 
         const ids = rows.map((r) => r.id);
+
+        // Evidence first. If this throws, the transaction aborts and the
+        // delete below never runs (WAP-163).
+        const snapshotted = await snapshotBatchBeforeDelete(tx, cfg, ids, snapshotRun);
+
         const deleteResult = await txDelegate.deleteMany({
           where: { id: { in: ids } },
         });
 
-        return { deletedCount: deleteResult.count ?? rows.length, batchSize: rows.length };
-      },
-    );
+        return { deletedCount: deleteResult.count ?? rows.length, batchSize: rows.length, snapshotted };
+      });
 
     if (batchResult === null) break;
 
     totalDeleted += batchResult.deletedCount;
+    totalSnapshotted += batchResult.snapshotted;
     batchCount += 1;
 
     if (batchResult.batchSize < RETENTION_BATCH_SIZE) break;
@@ -114,6 +170,7 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
     model: cfg.model,
     deleted: totalDeleted,
     batchCount,
+    ...(snapshotRun !== null ? { snapshotted: totalSnapshotted } : {}),
   };
 }
 
@@ -300,17 +357,24 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
  * Iterates every retention table and removes expired rows.
  * Errors for individual tables are captured and reported but do not
  * abort the entire sweep.
+ *
+ * A `workflow_diagnostics` snapshot failure surfaces here as that model's
+ * `error`, which makes the whole run answer 500 from the cron route. The
+ * model's rows are then still on disk: the failed batch's transaction rolled
+ * back, and the loop stopped at the throw (WAP-163).
  */
 export async function runDataCleanup(): Promise<DataCleanupReport> {
   const startedAt = new Date().toISOString();
   const results: CleanupResult[] = [];
   let totalDeleted = 0;
+  let emailFailuresSnapshotted = 0;
 
   for (const cfg of RETENTION_TABLES) {
     try {
       const result = await cleanupTable(cfg);
       results.push(result);
       totalDeleted += result.deleted;
+      emailFailuresSnapshotted += result.snapshotted ?? 0;
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       console.error(`[data-cleanup] Failed for ${cfg.model}:`, error);
@@ -366,6 +430,7 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
     completedAt,
     results,
     totalDeleted,
+    emailFailuresSnapshotted,
     deletedAccounts,
     blockedAccounts,
   };

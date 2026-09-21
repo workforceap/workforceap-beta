@@ -6665,7 +6665,7 @@
       },
       {
         "file": "lib/email/failureRecord.ts",
-        "line": 11
+        "line": 17
       }
     ],
     "kind": "test-candidate",
@@ -9845,7 +9845,7 @@
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 38
+        "line": 59
       }
     ],
     "kind": "test-candidate",

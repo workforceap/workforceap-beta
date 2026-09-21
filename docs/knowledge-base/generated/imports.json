@@ -106554,7 +106554,7 @@
   {
     "from": "lib/email/failureSnapshot.test.ts",
     "specifier": "./failureRecord",
-    "line": 11,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -106562,7 +106562,7 @@
   {
     "from": "lib/email/failureSnapshot.ts",
     "specifier": "@/lib/email/failureRecord",
-    "line": 18,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureRecord.ts"
@@ -115330,7 +115330,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 38,
+    "line": 59,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -115345,8 +115345,16 @@
   },
   {
     "from": "lib/retention/cleanup.ts",
-    "specifier": "@/lib/member/anonymizeMember",
+    "specifier": "@/lib/email/failureSnapshot",
     "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureSnapshot.ts"
+  },
+  {
+    "from": "lib/retention/cleanup.ts",
+    "specifier": "@/lib/member/anonymizeMember",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/member/anonymizeMember.ts"
@@ -115354,7 +115362,7 @@
   {
     "from": "lib/retention/cleanup.ts",
     "specifier": "./config",
-    "line": 3,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/retention/config.ts"
@@ -120498,7 +120506,7 @@
   {
     "from": "scripts/snapshot-email-failures.ts",
     "specifier": "@prisma/client",
-    "line": 21,
+    "line": 41,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -120506,18 +120514,10 @@
   {
     "from": "scripts/snapshot-email-failures.ts",
     "specifier": "../lib/email/failureSnapshot",
-    "line": 23,
+    "line": 43,
     "kind": "import",
     "external": false,
     "target": "lib/email/failureSnapshot.ts"
-  },
-  {
-    "from": "scripts/snapshot-email-failures.ts",
-    "specifier": "../lib/email/failureRecord",
-    "line": 28,
-    "kind": "import",
-    "external": false,
-    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "scripts/stamp-chs-funding.ts",

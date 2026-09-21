@@ -292,7 +292,7 @@
 | [app/api/cron/coursera-b4b-sync/route.ts](../../../app/api/cron/coursera-b4b-sync/route.ts) | 92 | learning-coursera | maxDuration:13, GET:91, POST:92 |
 | [app/api/cron/coursera-sync/route.ts](../../../app/api/cron/coursera-sync/route.ts) | 175 | learning-coursera | maxDuration:14, GET:174, POST:175 |
 | [app/api/cron/coursera-training-sync/route.ts](../../../app/api/cron/coursera-training-sync/route.ts) | 38 | learning-coursera | maxDuration:10, GET:38 |
-| [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 62 | communications | maxDuration:9, GET:61, POST:62 |
+| [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 66 | communications | maxDuration:9, GET:65, POST:66 |
 | [app/api/cron/deploy-health/route.ts](../../../app/api/cron/deploy-health/route.ts) | 81 | communications | maxDuration:7, GET:80, POST:81 |
 | [app/api/cron/employer-pending-applicants/route.ts](../../../app/api/cron/employer-pending-applicants/route.ts) | 172 | communications | maxDuration:12, GET:171, POST:172 |
 | [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 123 | communications | maxDuration:16, GET:122, POST:123 |
