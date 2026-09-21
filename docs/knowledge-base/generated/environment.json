@@ -4083,7 +4083,7 @@
       "references": [
         {
           "file": "lib/retention/config.test.ts",
-          "line": 76
+          "line": 88
         },
         {
           "file": "lib/retention/config.ts",
@@ -4149,7 +4149,7 @@
         },
         {
           "file": "lib/security/cspReportRateLimit.ts",
-          "line": 29
+          "line": 31
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",
@@ -4212,7 +4212,7 @@
         },
         {
           "file": "lib/security/cspReportRateLimit.ts",
-          "line": 28
+          "line": 30
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",

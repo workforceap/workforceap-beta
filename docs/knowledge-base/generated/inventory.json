@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e7ab1d4474ee324f41b16e788f212221059c856cd9dccfe2e3caf24050fb3425",
+  "inputTreeSha256": "acbabb8f01277c8fb9bbb0336423a8008c7552701ba8a658203f9dea993dcdf8",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -16133,6 +16133,41 @@
       "directive": null
     },
     {
+      "path": "app/admin/csp-report/page.tsx",
+      "area": "pages",
+      "domain": "administration",
+      "bytes": 2126,
+      "lines": 54,
+      "sha256": "e2d00e667fddfd121b229921fc53d53b7c6c224b471ec2554d28d32a944d4276",
+      "binary": false,
+      "exports": [
+        {
+          "name": "generateMetadata",
+          "line": 10,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "default",
+          "line": 25,
+          "kind": "FunctionDeclaration",
+          "localName": "AdminCspReportPage"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "generateMetadata",
+          "line": 10,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AdminCspReportPage",
+          "line": 25,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "app/admin/dashboard/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
@@ -16216,9 +16251,9 @@
       "path": "app/admin/data-retention/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 4870,
-      "lines": 147,
-      "sha256": "bf3cc1080d69c877308b2f0b6a12e81f4410f0f697273baf6134a75d6d59aa32",
+      "bytes": 4919,
+      "lines": 148,
+      "sha256": "fe3ff96741c4ddbb7ba79fb29978a8684e7bad16512aa8cc55446b2fe86f5848",
       "binary": false,
       "exports": [
         {
@@ -16228,7 +16263,7 @@
         },
         {
           "name": "default",
-          "line": 85,
+          "line": 86,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataRetentionPage"
         }
@@ -16251,12 +16286,12 @@
         },
         {
           "name": "fetchPolicies",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDataRetentionPage",
-          "line": 85,
+          "line": 86,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -33629,31 +33664,31 @@
       "path": "app/api/csp-report/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 3226,
-      "lines": 86,
-      "sha256": "e31e66e6c08022b1603039679fc6cfba326995bc04e159d48e0444158d7e2ebf",
+      "bytes": 3916,
+      "lines": 98,
+      "sha256": "0d587dec4d118da651a9fc2a3c908ce6e86fdc3352ff2c2995d3881f00b1f6c0",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 84,
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 84,
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -51624,6 +51659,80 @@
           "name": "navigation",
           "line": 6,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "components/admin/CspReportView.tsx",
+      "area": "components",
+      "domain": "administration",
+      "bytes": 7977,
+      "lines": 205,
+      "sha256": "72361c8b3df391a8d0bc802e2a6bba0c6174ee8784380a95b2bb2b81342fa12e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CspReportGroupRow",
+          "line": 20,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspReportViewProps",
+          "line": 31,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "formatUtcMinute",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspReportView",
+          "line": 83,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CspReportGroupRow",
+          "line": 20,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspReportViewProps",
+          "line": 31,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "DISPOSITION_TONE",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "numStyle",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "formatUtcMinute",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Dispositions",
+          "line": 57,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "PathSample",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspReportView",
+          "line": 83,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -75805,9 +75914,9 @@
       "path": "docs/SECURITY-HARDENING.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 28074,
-      "lines": 865,
-      "sha256": "9012d0655890a76306a0ffe447c506e7e6f17df69b223cf06b28d907b1ff0f73",
+      "bytes": 31467,
+      "lines": 916,
+      "sha256": "b26e1dccef54658edbb0e41418c46a41376d0a1af3a4a49d7a74cbc60eaecb2c",
       "binary": false
     },
     {
@@ -132113,9 +132222,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22430,
-      "lines": 519,
-      "sha256": "f5a05bbfd4fc707ecaee516dd4a0c4296cba2bd10a0274fb8117c1977d156101",
+      "bytes": 22551,
+      "lines": 520,
+      "sha256": "fbdc6df275777d3c8c3689ba92ba63bf46b7c89ece5ebffb47a906d4b27c98d6",
       "binary": false,
       "exports": [
         {
@@ -132190,27 +132299,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 458,
+          "line": 459,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 479,
+          "line": 480,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 488,
+          "line": 489,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 493,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 510,
+          "line": 511,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -132292,27 +132401,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 458,
+          "line": 459,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 479,
+          "line": 480,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 488,
+          "line": 489,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 493,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 510,
+          "line": 511,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140718,15 +140827,15 @@
       "path": "lib/retention/config.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4033,
-      "lines": 85,
-      "sha256": "35efc0ab8e253a97a86e8a6ea57b0c6d26b175a7753ec39628be72abfa855d46",
+      "bytes": 4672,
+      "lines": 97,
+      "sha256": "8961387fd434da6aea4a68c943a42ae2d060c182b72b6a57e3529cbc329ba2d0",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "byModel",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         }
       ],
@@ -140736,9 +140845,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 9258,
-      "lines": 235,
-      "sha256": "80c3acfed0a2abdc6dec573aa6d782e564414298df5a62b81fd1be2bdf735ce3",
+      "bytes": 10212,
+      "lines": 253,
+      "sha256": "75399f6900edd7bea5ac2497572ddf69db77c8dc99ea7de7173528f133027903",
       "binary": false,
       "exports": [
         {
@@ -140807,18 +140916,23 @@
           "kind": "Variable"
         },
         {
+          "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
+          "line": 171,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 161,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 227,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 230,
+          "line": 248,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140889,18 +141003,23 @@
           "kind": "Variable"
         },
         {
+          "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
+          "line": 171,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 161,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 227,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 230,
+          "line": 248,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141064,12 +141183,24 @@
       "directive": null
     },
     {
+      "path": "lib/security/cspReport.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 5735,
+      "lines": 98,
+      "sha256": "fd67a5a70208d5c3e93f4aca615b7679f0c244fe477e7d4e45885fb7e7148c66",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
       "path": "lib/security/cspReport.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 8163,
-      "lines": 189,
-      "sha256": "5127003ebd6df124301e4140dd4e3637d5f80be9833d9067a283085d27691858",
+      "bytes": 12161,
+      "lines": 286,
+      "sha256": "d13864aa89ec1b26d6d45813e505dd4bf44db9b6d9d13232b248e19b734ef55f",
       "binary": false,
       "exports": [
         {
@@ -141083,53 +141214,93 @@
           "kind": "Variable"
         },
         {
+          "name": "CSP_REPORT_MAX_PATH_LENGTH",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_REPORT_MAX_HOST_LENGTH",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_VIOLATION_MAX_BUCKETS_PER_HOUR",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_DIRECTIVE_ALLOWLIST",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_DIRECTIVE_OTHER",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_BLOCKED_HOST_INVALID",
+          "line": 77,
+          "kind": "Variable"
+        },
+        {
           "name": "CSP_REPORT_CONTENT_TYPES",
-          "line": 21,
+          "line": 81,
           "kind": "Variable"
         },
         {
           "name": "CspReportContentType",
-          "line": 22,
+          "line": 82,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CspViolationSummary",
-          "line": 24,
+          "line": 84,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CspViolationCount",
-          "line": 34,
+          "line": 94,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "parseCspReportContentType",
-          "line": 39,
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isValidBlockedHost",
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeBlockedUri",
-          "line": 58,
+          "line": 141,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "collapseDynamicPathSegments",
-          "line": 91,
+          "line": 184,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDocumentUri",
-          "line": 113,
+          "line": 208,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeDirective",
+          "line": 224,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "extractCspViolations",
-          "line": 162,
+          "line": 259,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countCspViolations",
-          "line": 180,
+          "line": 277,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141145,118 +141316,173 @@
           "kind": "Variable"
         },
         {
-          "name": "MAX_FIELD_LENGTH",
-          "line": 19,
+          "name": "CSP_REPORT_MAX_PATH_LENGTH",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_REPORT_MAX_HOST_LENGTH",
+          "line": 22,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_VIOLATION_MAX_BUCKETS_PER_HOUR",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_DIRECTIVE_ALLOWLIST",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_DIRECTIVE_OTHER",
+          "line": 68,
+          "kind": "Variable"
+        },
+        {
+          "name": "BLOCKED_SCHEME_ALLOWLIST",
+          "line": 71,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_BLOCKED_HOST_INVALID",
+          "line": 77,
+          "kind": "Variable"
+        },
+        {
+          "name": "NETWORK_SCHEMES",
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "CSP_REPORT_CONTENT_TYPES",
-          "line": 21,
-          "kind": "Variable"
-        },
-        {
-          "name": "CspReportContentType",
-          "line": 22,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "CspViolationSummary",
-          "line": 24,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "CspViolationCount",
-          "line": 34,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "parseCspReportContentType",
-          "line": 39,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "clip",
-          "line": 47,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "asString",
-          "line": 51,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "BLOCKED_KEYWORDS",
-          "line": 55,
-          "kind": "Variable"
-        },
-        {
-          "name": "summarizeBlockedUri",
-          "line": 58,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "UUID_SEGMENT",
-          "line": 74,
-          "kind": "Variable"
-        },
-        {
-          "name": "NUMERIC_SEGMENT",
-          "line": 75,
-          "kind": "Variable"
-        },
-        {
-          "name": "OPAQUE_SEGMENT",
           "line": 81,
           "kind": "Variable"
         },
         {
-          "name": "TOKEN_PARENT_SEGMENTS",
+          "name": "CspReportContentType",
+          "line": 82,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "CspViolationSummary",
           "line": 84,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationCount",
+          "line": 94,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "parseCspReportContentType",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "capPath",
+          "line": 108,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HOSTNAME_LABEL",
+          "line": 118,
+          "kind": "Variable"
+        },
+        {
+          "name": "HOST_PATTERN",
+          "line": 119,
+          "kind": "Variable"
+        },
+        {
+          "name": "isValidBlockedHost",
+          "line": 125,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "asString",
+          "line": 129,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "BLOCKED_KEYWORDS",
+          "line": 133,
+          "kind": "Variable"
+        },
+        {
+          "name": "summarizeBlockedUri",
+          "line": 141,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "UUID_SEGMENT",
+          "line": 163,
+          "kind": "Variable"
+        },
+        {
+          "name": "NUMERIC_SEGMENT",
+          "line": 164,
+          "kind": "Variable"
+        },
+        {
+          "name": "OPAQUE_SEGMENT",
+          "line": 170,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOKEN_PARENT_SEGMENTS",
+          "line": 173,
+          "kind": "Variable"
+        },
+        {
+          "name": "EMAIL_SEGMENT",
+          "line": 176,
           "kind": "Variable"
         },
         {
           "name": "collapseDynamicPathSegments",
-          "line": 91,
+          "line": 184,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDocumentUri",
-          "line": 113,
+          "line": 208,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDisposition",
-          "line": 124,
+          "line": 219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDirective",
-          "line": 128,
+          "line": 224,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fromLegacyReport",
-          "line": 135,
+          "line": 232,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fromReportingApiBody",
-          "line": 144,
+          "line": 241,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isRecord",
-          "line": 153,
+          "line": 250,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "extractCspViolations",
-          "line": 162,
+          "line": 259,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countCspViolations",
-          "line": 180,
+          "line": 277,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141266,51 +141492,297 @@
       "path": "lib/security/cspReportRateLimit.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 2116,
-      "lines": 51,
-      "sha256": "7853fd34f9d27668026ecd91cb1fd56fc3c384bf37e6174cd1771e128ffee302",
+      "bytes": 2834,
+      "lines": 71,
+      "sha256": "2468d8e70f5888459f79eb4eb5bf866c6b7298ea5dcda754bc900ec745c6d30a",
       "binary": false,
       "exports": [
         {
           "name": "CSP_REPORTS_PER_MINUTE_PER_IP",
-          "line": 22,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "checkCspReportRateLimit",
-          "line": 41,
+          "line": 49,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resetCspReportRateLimiterForTests",
-          "line": 49,
+          "line": 68,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "CSP_REPORTS_PER_MINUTE_PER_IP",
-          "line": 22,
-          "kind": "Variable"
-        },
-        {
-          "name": "limiter",
           "line": 24,
           "kind": "Variable"
         },
         {
-          "name": "getLimiter",
+          "name": "limiter",
           "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "getLimiter",
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "missingLimiterLogged",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
           "name": "checkCspReportRateLimit",
-          "line": 41,
+          "line": 49,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resetCspReportRateLimiterForTests",
+          "line": 68,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/security/cspViolationBuckets.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4616,
+      "lines": 104,
+      "sha256": "4b7e38a08f4e13946d11925e66554e1071a6050421b22d1c859ce8992cbabab5",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "at",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "row",
           "line": 49,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/security/cspViolationBuckets.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 6591,
+      "lines": 176,
+      "sha256": "ed7ea7a3599d22a4e5c49b1f2de238425497b84233040589b7f7567963c6b7f1",
+      "binary": false,
+      "exports": [
+        {
+          "name": "HOUR_MS",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_VIOLATION_PATH_SAMPLE_SIZE",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "truncateToHour",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationBucketKey",
+          "line": 29,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationBucketWrite",
+          "line": 34,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationStoredKey",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "cspViolationBucketKey",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "bucketCspViolations",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationBucketRow",
+          "line": 80,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationGroup",
+          "line": 92,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "sumCspViolationCounts",
+          "line": 107,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "groupCspViolationBuckets",
+          "line": 121,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "HOUR_MS",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "DAY_MS",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "CSP_VIOLATION_PATH_SAMPLE_SIZE",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "truncateToHour",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationBucketKey",
+          "line": 29,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationBucketWrite",
+          "line": 34,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationStoredKey",
+          "line": 40,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "cspViolationBucketKey",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "bucketCspViolations",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationBucketRow",
+          "line": 80,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "CspViolationGroup",
+          "line": 92,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "sumCspViolationCounts",
+          "line": 107,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "groupCspViolationBuckets",
+          "line": 121,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/security/cspViolationStore.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 7274,
+      "lines": 188,
+      "sha256": "46b9fcd20ba5a7a81bd922e4f76f24c5e620f7b3b7f9f84eeb38a9fa6b3a2f06",
+      "binary": false,
+      "exports": [
+        {
+          "name": "PersistCspViolationsResult",
+          "line": 33,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "persistCspViolationCounts",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationOverview",
+          "line": 139,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "loadCspViolationOverview",
+          "line": 158,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "VIEWER_MAX_BUCKETS",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "PersistCspViolationsResult",
+          "line": 33,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "BucketKey",
+          "line": 41,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "keyOf",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "applyBucketCeiling",
+          "line": 63,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "persistCspViolationCounts",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "CspViolationOverview",
+          "line": 139,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "loadCspViolationOverview",
+          "line": 158,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -151473,6 +151945,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260921120000_wap36_csp_violation_buckets/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 3966,
+      "lines": 78,
+      "sha256": "3f673dc576fc9c24646cc569ef952d9073de75b5b022f4b93de6f35eeaf1e099",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -151485,9 +151966,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 140753,
-      "lines": 3306,
-      "sha256": "c08ecf6536e37f029fb63cf7239bd7b257bf2c95b992fe2a720ab143f874807d",
+      "bytes": 142471,
+      "lines": 3335,
+      "sha256": "d5321f90d45f48fae2417a4b054897e84c9bc286cd75d7071161caa615a0b018",
       "binary": false
     },
     {
@@ -157589,9 +158070,9 @@
       "path": "scripts/lib/portal-audit-paths.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 16103,
-      "lines": 544,
-      "sha256": "81d0e641483b8bcb5a75e3796526b9d6f9257c36fcda91a67b94f2ea3a298b52",
+      "bytes": 16128,
+      "lines": 545,
+      "sha256": "38e7f0eabc767ae79806ecd24282cacc5e1f5cf49743661770bbd946daee2b81",
       "binary": false,
       "exports": [
         {
@@ -157601,47 +158082,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 203,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 245,
+          "line": 246,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 258,
+          "line": 259,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 353,
+          "line": 354,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 383,
+          "line": 384,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 501,
+          "line": 502,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 507,
+          "line": 508,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 511,
+          "line": 512,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 523,
+          "line": 524,
           "kind": "Variable"
         }
       ],
@@ -157653,47 +158134,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 203,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 245,
+          "line": 246,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 258,
+          "line": 259,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 353,
+          "line": 354,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 383,
+          "line": 384,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 501,
+          "line": 502,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 507,
+          "line": 508,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 511,
+          "line": 512,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 523,
+          "line": 524,
           "kind": "Variable"
         }
       ],
@@ -164108,9 +164589,9 @@
       "path": "tests/api/csp-report-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5735,
-      "lines": 122,
-      "sha256": "848b4dbf8672d7f5cbc63f131eed344bc99ac19ade11eb36dcdedb691b3762eb",
+      "bytes": 13906,
+      "lines": 263,
+      "sha256": "41ab6bf567a4152ed3ffc20be06b3a9c9347515742d7432b33a9bc9044c62317",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -164121,18 +164602,23 @@
         },
         {
           "name": "URL",
-          "line": 16,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "post",
-          "line": 18,
+          "line": 28,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyReport",
-          "line": 22,
+          "line": 32,
           "kind": "Variable"
+        },
+        {
+          "name": "persistedText",
+          "line": 60,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -166717,6 +167203,44 @@
           "name": "loadPage",
           "line": 33,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/app/admin-csp-report-page.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 6499,
+      "lines": 137,
+      "sha256": "627641db536ffb44a85486c1b4194d1133f28e25d66a33ed4cebcf7d80c05d05",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "hour",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "NOW_ISH",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "hoursAgo",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "bucket",
+          "line": 34,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null

@@ -158,6 +158,18 @@ export const UNMATCHED_XAPI_EVENT_RETENTION_DAYS = resolveUnmatchedXapiEventRete
 /** Report label for the raw-SQL purge, alongside the RETENTION_TABLES model names. */
 export const UNMATCHED_XAPI_EVENT_RETENTION_LABEL = 'coursera_xapi_events (unmatched)';
 
+/**
+ * WAP-36 phase 2 prep: `csp_violation_buckets` holds hourly aggregates of the
+ * browser CSP violation reports posted to `/api/csp-report` (count per
+ * directive + blocked host + redacted document path + disposition). The rows
+ * exist to triage the Report-Only soak in `/admin/csp-report` before the
+ * enforce flip, so a rolling month is all the viewer needs; the same window
+ * as `cron_executions` keeps the table from ever growing unbounded (WAP-17).
+ * `hour_bucket` is the purge column so a bucket is dropped once its hour is
+ * older than the window, whatever its first/last-seen timestamps say.
+ */
+export const CSP_VIOLATION_BUCKET_RETENTION_DAYS = 30;
+
 export const RETENTION_TABLES: RetentionTableConfig[] = [
   {
     model: 'auditLog',
@@ -219,6 +231,12 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     dateColumn: 'snapshotAt',
     days: EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS,
     description: 'Preserved copy of email_send failure diagnostics (evidence for the 2026 delivery failures; scripts/snapshot-email-failures.ts)',
+  },
+  {
+    model: 'cspViolationBucket',
+    dateColumn: 'hourBucket',
+    days: CSP_VIOLATION_BUCKET_RETENTION_DAYS,
+    description: 'Hourly aggregates of CSP violation reports from /api/csp-report (WAP-36 soak triage; redacted paths and hosts only, no URLs, IPs or user agents)',
   },
 ];
 

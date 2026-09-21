@@ -869,6 +869,35 @@ model EmailFailureSnapshot {
   @@map("email_failure_snapshots")
 }
 
+/// WAP-36 phase 2 prep: one row per (hour, directive, blocked host, document
+/// path, disposition) of browser CSP violation reports posted to
+/// `/api/csp-report`. `count` is incremented per report so the Report-Only
+/// soak can be triaged in `/admin/csp-report` before the enforce flip. Holds
+/// only the already-redacted facts from lib/security/cspReport.ts (host or CSP
+/// keyword, route path with `:id`, directive, disposition) — never a raw URL,
+/// query string, script sample, user agent, IP or user id. Platform-wide: no
+/// tenant column on purpose (a CSP policy is per deployment, not per org).
+/// Purged after CSP_VIOLATION_BUCKET_RETENTION_DAYS (lib/retention/config.ts).
+model CspViolationBucket {
+  id           String   @id @default(uuid())
+  /// Report time truncated to the hour (UTC), see lib/security/cspViolationBuckets.ts.
+  hourBucket   DateTime @map("hour_bucket") @db.Timestamptz(6)
+  directive    String
+  /// Host of the blocked resource, a CSP keyword (`inline`, `eval`, `data`, …), `unknown` or `invalid`.
+  /// Never null: a NULL would defeat the unique key (NULLs are distinct in PostgreSQL).
+  blockedHost  String   @map("blocked_host")
+  /// Redacted document path (`/admin/members/:id`), never the query string.
+  documentPath String   @map("document_path")
+  disposition  String
+  count        Int      @default(0)
+  firstSeenAt  DateTime @default(now()) @map("first_seen_at") @db.Timestamptz(6)
+  lastSeenAt   DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+
+  @@unique([hourBucket, directive, blockedHost, documentPath, disposition], name: "bucketKey", map: "csp_violation_buckets_bucket_key")
+  @@index([hourBucket])
+  @@map("csp_violation_buckets")
+}
+
 /// One row per provider send attempt (email delivery audit 2026-09-20, PR3).
 /// Nothing recorded a successful send before this table: workflow_diagnostics
 /// only held failures and Resend's own history expires after ~28 days, so

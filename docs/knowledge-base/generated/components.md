@@ -90,6 +90,7 @@
 | [components/admin/CourseraSyncProgressButton.tsx](../../../components/admin/CourseraSyncProgressButton.tsx) | 94 | learning-coursera | default:21 |
 | [components/admin/CourseraUnmatchedLearners.tsx](../../../components/admin/CourseraUnmatchedLearners.tsx) | 328 | learning-coursera | UnmatchedLearnerView:15, default:43 |
 | [components/admin/CreateSuccessToast.test.tsx](../../../components/admin/CreateSuccessToast.test.tsx) | 65 | administration |  |
+| [components/admin/CspReportView.tsx](../../../components/admin/CspReportView.tsx) | 205 | administration | CspReportGroupRow:20, CspReportViewProps:31, formatUtcMinute:51, CspReportView:83 |
 | [components/admin/DataRetentionClient.tsx](../../../components/admin/DataRetentionClient.tsx) | 273 | administration | StorageRow:6, PolicyRow:13, RunRow:21, default:45 |
 | [components/admin/DeletedUsersClient.tsx](../../../components/admin/DeletedUsersClient.tsx) | 316 | administration | DeletedUserRow:9, default:21 |
 | [components/admin/EligibilityDatasheetPanel.tsx](../../../components/admin/EligibilityDatasheetPanel.tsx) | 227 | administration | default:83 |

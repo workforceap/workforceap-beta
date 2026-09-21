@@ -8526,6 +8526,45 @@
     ]
   },
   {
+    "file": "app/admin/csp-report/page.tsx",
+    "kind": "page",
+    "path": "/admin/csp-report",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "generateMetadata",
+        "line": 10,
+        "kind": "FunctionDeclaration"
+      },
+      {
+        "name": "default",
+        "line": 25,
+        "kind": "FunctionDeclaration",
+        "localName": "AdminCspReportPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 4,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/auth/roles",
+        "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/security/cspViolationStore",
+        "line": 7,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/admin/dashboard/page.tsx",
     "kind": "page",
     "path": "/admin/dashboard",
@@ -8557,7 +8596,7 @@
       },
       {
         "name": "default",
-        "line": 85,
+        "line": 86,
         "kind": "FunctionDeclaration",
         "localName": "AdminDataRetentionPage"
       }
@@ -23468,12 +23507,12 @@
     "exports": [
       {
         "name": "POST",
-        "line": 34,
+        "line": 41,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "GET",
-        "line": 84,
+        "line": 96,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -23491,6 +23530,11 @@
       {
         "specifier": "@/lib/security/cspReport",
         "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/security/cspViolationStore",
+        "line": 11,
         "kind": "import"
       }
     ]

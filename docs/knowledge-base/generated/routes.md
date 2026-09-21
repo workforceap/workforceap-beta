@@ -322,6 +322,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/coursera/provisioning | page |  | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | @/lib/auth/server:8, @/lib/tenant/adminPageScope:9, @/lib/tenant/organization:10 |
 | /admin/crons | loading |  | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) |  |
 | /admin/crons | page |  | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
+| /admin/csp-report | page |  | [app/admin/csp-report/page.tsx](../../../app/admin/csp-report/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/security/cspViolationStore:7 |
 | /admin/dashboard | page |  | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) |  |
 | /admin/data-retention | page |  | [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5 |
 | /admin/diagnostics | loading |  | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) |  |
@@ -714,7 +715,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/cron/weekly-recap-email | route | GET, POST | [app/api/cron/weekly-recap-email/route.ts](../../../app/api/cron/weekly-recap-email/route.ts) |  |
 | /api/cron/weekly-recap | route | GET, POST | [app/api/cron/weekly-recap/route.ts](../../../app/api/cron/weekly-recap/route.ts) |  |
 | /api/cron/wioa-report | route | GET, POST | [app/api/cron/wioa-report/route.ts](../../../app/api/cron/wioa-report/route.ts) |  |
-| /api/csp-report | route | POST, GET | [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | @/lib/security/cspReportRateLimit:4, @/lib/security/cspReport:5 |
+| /api/csp-report | route | POST, GET | [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | @/lib/security/cspReportRateLimit:4, @/lib/security/cspReport:5, @/lib/security/cspViolationStore:11 |
 | /api/employer/applications/\[id\]/messages | route | GET, POST, PATCH | [app/api/employer/applications/\[id\]/messages/route.ts](../../../app/api/employer/applications/%5Bid%5D/messages/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/messages/rateLimit:6, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\]/resume | route | GET | [app/api/employer/applications/\[id\]/resume/route.ts](../../../app/api/employer/applications/%5Bid%5D/resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\] | route | PATCH | [app/api/employer/applications/\[id\]/route.ts](../../../app/api/employer/applications/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:10 |
