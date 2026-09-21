@@ -32,6 +32,7 @@ import {
   type EmployerOpenRoleItem,
 } from '@/components/portal/kit/pages/employer/EmployerHomeKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -301,8 +302,12 @@ export default async function EmployerDashboardPage({
   }
 
   const showEmployerOnboarding = employerRow.onboardingCompletedAt == null;
+  // Guided tours v2 (flag `guided_tours_v2`): when it is on for this user the
+  // shell's first-login strip and Help menu own the tour, so the legacy
+  // 1.5 s auto-start stays off. Flag row absent → pre-flag behaviour.
+  const guidedToursV2 = (await getTourOffer(user.id, 'employer.home'))?.enabled === true;
   const showEmployerTour =
-    employerRow.onboardingCompletedAt != null && employerRow.tourCompletedAt == null;
+    !guidedToursV2 && employerRow.onboardingCompletedAt != null && employerRow.tourCompletedAt == null;
 
   const kpiCards = [
     {

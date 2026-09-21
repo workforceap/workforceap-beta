@@ -7,6 +7,8 @@ import { getPartnerForUser, isSuperAdmin, SUPER_ADMIN_PARTNER_COOKIE } from '@/l
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
 import PartnerPortalShell from '@/components/portal/PartnerPortalShell';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
+import { getHomeTourForRole } from '@/lib/tours/registry';
 
 export const metadata: Metadata = {
   title: 'Partner Portal',
@@ -20,10 +22,15 @@ export default async function PartnerPortalLayout({ children }: { children: Reac
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const ctx = await getPartnerForUser(user.id, { isSuperAdminHint: superUser, readOnlyAudit });
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
-  const portalRoles = await getPortalSwitcherRoles(user.id, {
-    superAdmin: superUser,
-    hasPartner: true,
-  });
+  const partnerTour = getHomeTourForRole('partner');
+  const [portalRoles, tour] = await Promise.all([
+    getPortalSwitcherRoles(user.id, {
+      superAdmin: superUser,
+      hasPartner: true,
+    }),
+    // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
+    partnerTour ? getTourOffer(user.id, partnerTour.key) : Promise.resolve(null),
+  ]);
 
   const cookieStore = await cookies();
   const superAdminImpersonating = superUser && Boolean(cookieStore.get(SUPER_ADMIN_PARTNER_COOKIE)?.value);
@@ -39,6 +46,7 @@ export default async function PartnerPortalLayout({ children }: { children: Reac
       superAdminImpersonating={superAdminImpersonating}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
+      tour={tour}
     >
       {children}
     </PartnerPortalShell>
