@@ -41,6 +41,13 @@ export type EnrollmentOutcomesSource = {
     actionsCompleted: number;
     followThroughRate: number;
   };
+  /**
+   * Labels of the `getAdminMetrics()` slices that failed and were zero-filled
+   * (empty when every number is real). The loader settles its slices
+   * independently, so a transient failure prints 0 rather than an error — the
+   * reader has to be told which ones (number audit 2026-09-20, S29).
+   */
+  degradedSlices?: readonly string[];
 };
 
 export type EnrollmentOutcomesPanelData = {
@@ -49,9 +56,47 @@ export type EnrollmentOutcomesPanelData = {
   enrollmentByProgram: RankDatum[];
   enrolledTotal: number;
   careerOs: KpiItem[];
+  /**
+   * What qualifies the daily-activity series behind the "full charts" link:
+   * the buckets are calendar days, so the last one is only the day so far.
+   */
+  chartsNote: string;
+  /** Set only when a slice was zero-filled; names the affected numbers. */
+  degradedNote?: string;
 };
 
 const fmt = (n: number) => n.toLocaleString('en-US');
+
+/**
+ * The qualification the old `/admin/metrics` kit card carried on its
+ * "last 24h" figure. `getDailyActivity` buckets by calendar day
+ * (`start.setHours(0,0,0,0)` + `date_trunc('day', …)`), so the newest bucket
+ * is the day so far, not a rolling 24 hours. `/admin/metrics` folded into
+ * this tab in #2438 and the caption went with the card, leaving the series
+ * unqualified (number audit 2026-09-20, S29).
+ *
+ * The zone is deliberately left as "server time" rather than named: the
+ * boundaries come from the Node process TZ (`setHours`) and the Postgres
+ * session TZ (`date_trunc`), neither of which this repo pins — and the repo
+ * already defaults elsewhere to Central, not UTC (`DEFAULT_GREETING_TZ` in
+ * lib/time/greeting.ts). Naming a zone here would be a caption that can
+ * quietly go wrong, which is the class of bug this note exists to prevent.
+ */
+export const DAILY_ACTIVITY_BUCKET_NOTE =
+  'Daily activity buckets by calendar day, midnight to midnight in server time — the newest day is the day so far, not a rolling 24 hours.';
+
+/**
+ * Prefix of the degraded-slice warning. `getAdminMetrics` settles its slices
+ * independently and zero-fills a rejected one, and it declines to cache such
+ * a result — so a 0 here can mean "failed", not "none", and a refresh retries.
+ */
+export const DEGRADED_SLICES_NOTE_PREFIX = 'Some numbers could not be loaded and are showing 0';
+
+/** "Some numbers could not be loaded and are showing 0 (placementStats, …). Refreshing retries; this result is not cached." */
+export function degradedSlicesNote(slices: readonly string[] | undefined): string | undefined {
+  if (!slices || slices.length === 0) return undefined;
+  return `${DEGRADED_SLICES_NOTE_PREFIX} (${[...slices].join(', ')}). Refreshing retries — a partial result is never cached.`;
+}
 
 /**
  * Projection of the metrics loader onto kit tiles and bars. Bars are shares
@@ -92,5 +137,7 @@ export function buildEnrollmentOutcomesPanel(source: EnrollmentOutcomesSource): 
       { label: 'Actions completed', value: fmt(source.careerOsMetrics.actionsCompleted) },
       { label: 'Follow-through', value: `${source.careerOsMetrics.followThroughRate}%`, delta: 'completed of created', deltaTone: 'muted' },
     ],
+    chartsNote: DAILY_ACTIVITY_BUCKET_NOTE,
+    degradedNote: degradedSlicesNote(source.degradedSlices),
   };
 }

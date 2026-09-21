@@ -8,7 +8,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
-import { normalizeAdminQueueRequest, adminQueueHref } from '@/lib/admin/commandCenterHelpers';
+import { normalizeAdminQueueRequest, adminQueueHref, PROGRAM_HEALTH_CAPTION } from '@/lib/admin/commandCenterHelpers';
 import type { ChartDatum } from '@/components/portal/kit';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PageHeader from '@/components/portal/PageHeader';
@@ -252,6 +252,7 @@ export default async function AdminCommandCenterPage({
           kpis={kpis}
           queueItems={queueItems}
           programHealth={programHealth}
+          programHealthCaption={PROGRAM_HEALTH_CAPTION}
           placementsByMonth={placementsByMonth}
           placementsSubtitle={`${new Date().getUTCFullYear()} YTD · ${headline.placementsYtd} total`}
           addStudentHref="/admin/members/new"

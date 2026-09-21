@@ -170,7 +170,7 @@ const leadConsultants = LEADERS.filter((l) => l.section === 'consultant' || l.ro
 
   /* gold PILL — fully visible, never clipped */
   .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
+    background:var(--grad-gold);color:var(--gold-ink);font-weight:800;font-size:13px;
     letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
     box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
   .pill__star{font-size:13px;opacity:.95}
@@ -178,7 +178,7 @@ const leadConsultants = LEADERS.filter((l) => l.section === 'consultant' || l.ro
 
   .lede h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(38px,5.4vw,64px);
     line-height:1.04;letter-spacing:-.03em;margin:22px 0 0}
-  .shimmer{background:linear-gradient(100deg,#fff 10%,#f3d28f 50%,#fff 90%);
+  .shimmer{background:var(--grad-gold-shimmer);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .lede .sub{font-size:19px;line-height:1.55;color:rgba(255,255,255,.84);max-width:34em;margin:22px 0 0}
 
@@ -189,10 +189,10 @@ const leadConsultants = LEADERS.filter((l) => l.section === 'consultant' || l.ro
   .qhead{display:flex;align-items:center;gap:12px;margin-bottom:16px}
   .qbadge{width:40px;height:40px;border-radius:12px;background:rgba(127,227,137,.18);color:#caffce;
     border:1px solid rgba(120,220,130,.4);display:grid;place-items:center;flex-shrink:0}
-  .qlabel{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#f3d28f}
+  .qlabel{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-glow)}
   .quote-card blockquote{font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:20px;line-height:1.42;color:#fff}
-  .quote-card blockquote::before{content:'\201C';color:#f3d28f}
-  .quote-card blockquote::after{content:'\201D';color:#f3d28f}
+  .quote-card blockquote::before{content:'\201C';color:var(--gold-glow)}
+  .quote-card blockquote::after{content:'\201D';color:var(--gold-glow)}
 
   /* ---------------- ALTERNATING LIGHT BANDS ---------------- */
   .band{width:100%;padding:var(--sec-pad) 0}
