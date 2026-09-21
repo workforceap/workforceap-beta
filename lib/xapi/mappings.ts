@@ -2,6 +2,8 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
+import { withSystemGuc } from '@/lib/db/withRequestGuc';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { EXACT_EMAIL_CANDIDATE_LIMIT, pickExactEmailMatch } from '@/lib/db/exactEmailMatch';
 import { sendCourseraUnmatchedActorAlertEmail } from '@/lib/email';
 import { runBulkEmailOperation } from '@/lib/email/pacing';
@@ -43,6 +45,17 @@ type TenantScopeOptions = {
 };
 
 type CourseraMappingDb = typeof prisma | Prisma.TransactionClient;
+
+/*
+ * WAP-24: inbound xAPI identity resolution is cross-tenant by nature. A
+ * statement carries an actor email or account, not a tenant, so the `users`
+ * lookups in this module run under the system GUC (`withSystemGuc`) rather
+ * than whatever request context happens to be active, inside `$transaction`
+ * so the GUC middleware sees a transaction-local context (lib/db/prisma.ts),
+ * and are marked `crossTenantOK` for scripts/audit-tenant-scoping.cjs. Each
+ * read still narrows by `organizationId` where the caller supplied one; the
+ * wrapper is about which RLS role performs the read, not about widening it.
+ */
 
 type DirectXapiEmailUser = {
   id: string;
@@ -349,18 +362,25 @@ async function getDirectXapiEmailUser(
   // permanent Coursera identity link, so an ILIKE hit is not proof of
   // identity. Collect the candidates, then keep only a genuine
   // case-insensitive equality. See lib/db/exactEmailMatch.ts.
-  const candidates = await prisma.user.findMany({
-    where: {
-      ...(organizationId ? { organizationId } : {}),
-      deletedAt: null,
-      email: {
-        equals: email,
-        mode: 'insensitive',
-      },
-    },
-    select: { id: true, email: true, fullName: true, organizationId: true },
-    take: EXACT_EMAIL_CANDIDATE_LIMIT,
-  });
+  // WAP-24: system-GUC identity read (see the note above CourseraMappingDb).
+  const candidates = await crossTenantOK(() =>
+    withSystemGuc(() =>
+      prisma.$transaction((tx) =>
+        tx.user.findMany({
+          where: {
+            ...(organizationId ? { organizationId } : {}),
+            deletedAt: null,
+            email: {
+              equals: email,
+              mode: 'insensitive',
+            },
+          },
+          select: { id: true, email: true, fullName: true, organizationId: true },
+          take: EXACT_EMAIL_CANDIDATE_LIMIT,
+        }),
+      ),
+    ),
+  );
 
   return pickExactEmailMatch(candidates, email);
 }
@@ -500,10 +520,17 @@ export async function recordXapiEvent(args: {
   let organizationId = normalizeOrganizationId(args.organizationId);
   if (matchedUserId) {
     try {
-      const userRow = await prisma.user.findUnique({
-        where: { id: matchedUserId },
-        select: { organizationId: true },
-      });
+      // WAP-24: system-GUC identity read (see the note above CourseraMappingDb).
+      const userRow = await crossTenantOK(() =>
+        withSystemGuc(() =>
+          prisma.$transaction((tx) =>
+            tx.user.findUnique({
+              where: { id: matchedUserId },
+              select: { organizationId: true },
+            }),
+          ),
+        ),
+      );
       organizationId = userRow?.organizationId ?? null;
     } catch (err) {
       // Non-fatal: event still records, organization_id stays NULL.
@@ -859,7 +886,7 @@ export async function upsertCourseraIdentityMapping(args: {
     throw new Error('courseraEmail or actorIdentifier is required');
   }
 
-  const user = await db.user.findUnique({
+  const identityUserArgs = {
     where: { id: args.userId },
     select: {
       id: true,
@@ -868,7 +895,17 @@ export async function upsertCourseraIdentityMapping(args: {
       organizationId: true,
       deletedAt: true,
     },
-  });
+  } satisfies Prisma.UserFindUniqueArgs;
+  // WAP-24: system-GUC identity read (see the note above CourseraMappingDb).
+  // A caller-supplied transaction client already carries its own context and
+  // cannot open a nested $transaction, so it is used as-is.
+  const user = await crossTenantOK(() =>
+    withSystemGuc(() =>
+      '$transaction' in db
+        ? db.$transaction((tx) => tx.user.findUnique(identityUserArgs))
+        : db.user.findUnique(identityUserArgs),
+    ),
+  );
 
   if (!user || user.deletedAt) throw new Error('Active user not found');
   const expectedOrganizationId = normalizeOrganizationId(args.expectedOrganizationId);

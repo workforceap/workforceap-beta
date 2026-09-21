@@ -18833,8 +18833,16 @@
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/lib/xapi/mappings",
+    "specifier": "@/lib/coursera/replayPendingXapi",
     "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/replayPendingXapi.ts"
+  },
+  {
+    "from": "app/admin/coursera/page.tsx",
+    "specifier": "@/lib/xapi/mappings",
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -18842,7 +18850,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/coursera/progressQueries",
-    "line": 46,
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressQueries.ts"
@@ -18850,7 +18858,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/CourseraSyncKit",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx"
@@ -27289,8 +27297,16 @@
   },
   {
     "from": "app/admin/wioa-screening/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/lib/wioa/wioaQueueAge",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
+    "from": "app/admin/wioa-screening/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -27298,7 +27314,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -27306,7 +27322,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/PortalRouteFallback",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalRouteFallback.tsx"
@@ -27314,7 +27330,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -27322,7 +27338,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/admin/WioaReviewFilterBar",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/admin/WioaReviewFilterBar.tsx"
@@ -27330,7 +27346,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/admin/ApplicantTriageChip",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/admin/ApplicantTriageChip.tsx"
@@ -27338,7 +27354,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/lib/admin/applicantTriage",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriage.ts"
@@ -27346,7 +27362,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/lib/admin/applicantTriageLoad",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriageLoad.ts"
@@ -27354,7 +27370,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/WioaScreeningKit",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx"
@@ -49326,6 +49342,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
+  },
+  {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
   },
   {
     "from": "app/api/cron/partner-outcome-digest/route.ts",
@@ -86296,6 +86320,14 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
     "specifier": "react",
     "line": 3,
@@ -91350,6 +91382,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "emails/onboarding-stalls-digest.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
   },
   {
     "from": "emails/partner-referral-invite.test.ts",
@@ -113010,7 +113050,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 33,
+    "line": 38,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -114752,6 +114792,14 @@
     "target": "lib/apply/publicAssistance.ts"
   },
   {
+    "from": "lib/wioa/wioaQueueAge.ts",
+    "specifier": "@/lib/wioa/wioaQualification",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQualification.ts"
+  },
+  {
     "from": "lib/workflows/careerOS.ts",
     "specifier": "../db/prisma",
     "line": 1,
@@ -114977,8 +115025,24 @@
   },
   {
     "from": "lib/xapi/mappings.ts",
-    "specifier": "@/lib/db/exactEmailMatch",
+    "specifier": "@/lib/db/withRequestGuc",
     "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "lib/xapi/mappings.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
+    "from": "lib/xapi/mappings.ts",
+    "specifier": "@/lib/db/exactEmailMatch",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/exactEmailMatch.ts"
@@ -114986,7 +115050,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/email",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -114994,7 +115058,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -115002,7 +115066,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/coursera/testAccountHeuristic",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/testAccountHeuristic.ts"
@@ -115010,7 +115074,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/coursera/mapIdentityAndProgress.server",
-    "line": 437,
+    "line": 465,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/coursera/mapIdentityAndProgress.server.ts"
@@ -115057,8 +115121,24 @@
   },
   {
     "from": "lib/xapi/reprocess.ts",
-    "specifier": "@/lib/db/exactEmailMatch",
+    "specifier": "@/lib/db/withRequestGuc",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "lib/xapi/reprocess.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
+    "from": "lib/xapi/reprocess.ts",
+    "specifier": "@/lib/db/exactEmailMatch",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/db/exactEmailMatch.ts"
@@ -115066,7 +115146,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/inboundStatementPipeline",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/inboundStatementPipeline.ts"
@@ -115074,7 +115154,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/statements",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/statements.ts"
@@ -115082,7 +115162,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/coursera/mapIdentityAndProgress.server",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/mapIdentityAndProgress.server.ts"
@@ -115090,7 +115170,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/coursera/replayPendingXapi",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/replayPendingXapi.ts"
@@ -115098,7 +115178,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/persistedOrganization",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/persistedOrganization.ts"
@@ -116274,7 +116354,7 @@
   {
     "from": "scripts/audit-tenant-scoping.cjs",
     "specifier": "node:fs",
-    "line": 19,
+    "line": 23,
     "kind": "require",
     "external": true,
     "package": "node:fs"
@@ -116282,10 +116362,34 @@
   {
     "from": "scripts/audit-tenant-scoping.cjs",
     "specifier": "node:path",
-    "line": 20,
+    "line": 24,
     "kind": "require",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "node:test",
+    "line": 8,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 9,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "./audit-tenant-scoping.cjs",
+    "line": 11,
+    "kind": "require",
+    "external": false,
+    "target": "scripts/audit-tenant-scoping.cjs"
   },
   {
     "from": "scripts/backfill-coursera-courseids.cjs",
@@ -136672,6 +136776,62 @@
     "target": "emails/applicant-chase.ts"
   },
   {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/app/api/cron/onboarding-stalls/route",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/onboarding-stalls/route.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/notifications/create",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notifications/create.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/emails/onboarding-stalls-digest",
+    "line": 36,
+    "kind": "import",
+    "external": false,
+    "target": "emails/onboarding-stalls-digest.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "tests/e2e/admin-login-search.spec.ts",
     "specifier": "@playwright/test",
     "line": 1,
@@ -138801,8 +138961,16 @@
   },
   {
     "from": "tests/lib/coursera-stage-a-direct-email-resolution.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 19,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/coursera-stage-a-direct-email-resolution.spec.ts",
     "specifier": "@/lib/xapi/mappings",
-    "line": 27,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -141360,6 +141528,22 @@
     "target": "lib/recap/weekLabel.ts"
   },
   {
+    "from": "tests/lib/wioa-queue-age.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/wioa-queue-age.spec.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "tests/lib/wioa-review-snapshot.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -141433,8 +141617,16 @@
   },
   {
     "from": "tests/lib/xapi-exact-email-match.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 22,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/xapi-exact-email-match.spec.ts",
     "specifier": "@/lib/xapi/mappings",
-    "line": 45,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -141442,7 +141634,7 @@
   {
     "from": "tests/lib/xapi-exact-email-match.spec.ts",
     "specifier": "@/lib/xapi/reprocess",
-    "line": 46,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/reprocess.ts"
@@ -141474,7 +141666,7 @@
   {
     "from": "tests/lib/xapi-replay-tenant-boundary.spec.ts",
     "specifier": "@/lib/coursera/replayPendingXapi",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/replayPendingXapi.ts"
@@ -141489,8 +141681,16 @@
   },
   {
     "from": "tests/lib/xapi-reprocess-tenant-boundary.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 18,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/xapi-reprocess-tenant-boundary.spec.ts",
     "specifier": "@/lib/xapi/reprocess",
-    "line": 32,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/reprocess.ts"

@@ -162,6 +162,7 @@ Some operations cross tenants by design. These get explicit annotation and revie
 - **Super-admin subject-member support mutations** — program assignment, Coursera approval, and paid Coursera enrollment resolve the member and subject organization server-side; org admins cannot cross tenants
 - **System cron jobs** that aggregate across tenants for platform-wide metrics (e.g. monthly Coursera sync) — wrapped in `withSystemScope()`, audited, doc'd
 - **`getBoardSnapshot()`** in `lib/admin/boardOutcomes.ts` — currently aggregates platform-wide; will be scoped to the requesting admin's org in Sprint A.2
+- **Inbound xAPI identity resolution** (`lib/xapi/mappings.ts` direct-email lookup, `recordXapiEvent` org lookup, `upsertCourseraIdentityMapping` user lookup; `lib/xapi/reprocess.ts` direct-email candidates) — a statement carries an actor, not a tenant, so the `users` read runs under the system GUC (`withSystemGuc`, inside `$transaction`) and is marked `crossTenantOK`. Each read still narrows by `organizationId` where the caller has one (WAP-24, 2026-09-21).
 
 Anything not on this list must be tenant-scoped.
 
@@ -183,7 +184,7 @@ Estimated 30 endpoints to migrate. ~3-5 per PR, ~6-10 PRs for full migration.
 
 - ✅ This doc + the program plan (`docs/PROGRAM-ENTERPRISE-GRADE.md`)
 - ✅ `lib/tenant/withTenantScope.ts` — the foundation helper
-- ✅ `scripts/audit-tenant-scoping.cjs` — the static-analysis script (currently reports; future PR makes it block CI)
+- ✅ `scripts/audit-tenant-scoping.cjs` — the static-analysis script. Since 2026-09-21 (WAP-24) it is also a required CI gate: `ci-gate.yml` runs it with `--max-unscoped <pin>` and fails when the UNSCOPED count exceeds the pin; when a PR lowers the count the script asks for the pin to be lowered in the same PR. The pin only goes down.
 - ✅ One reference endpoint migration — demonstrates the pattern
 - ✅ `tests/tenant-isolation.test.ts` — fixture seeds, isolation assertion for the migrated endpoint
 
@@ -199,7 +200,7 @@ What this PR **does not** do:
 
 1. Read this doc + the program plan
 2. Read `lib/tenant/withTenantScope.ts` — the API surface
-3. Run `node scripts/audit-tenant-scoping.cjs` — see the current violation count
+3. Run `node scripts/audit-tenant-scoping.cjs` — see the current violation count (`--max-unscoped <n>` is what CI runs; the pin lives in `.github/workflows/ci-gate.yml`)
 4. Read the migrated endpoint's diff — note how short the change is
 5. Run the isolation test — confirm it passes for the migrated endpoint and fails (intentionally documented) for the un-migrated comparison
 

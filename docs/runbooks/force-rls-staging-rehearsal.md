@@ -249,20 +249,29 @@ already be authenticated against the prod DB.
 
 ## CI smoke
 
-A GitHub Actions workflow runs this harness on every PR that touches
-`prisma/migrations/**` or `app/api/**`:
+A GitHub Actions workflow runs this harness **nightly (06:17 UTC) and on
+`workflow_dispatch`** (WAP-24, 2026-09-21; before that it was manual-only,
+so the streak below could never accumulate):
 
 - `.github/workflows/force-rls-shadow.yml` — spins up a Postgres
   service container, sets `SHADOW_DATABASE_URL` to it, and runs
   `pnpm tsx scripts/p1/test-force-rls.ts`.
 - Marked **report-only** (`continue-on-error: true`) until the policy
   coverage gap from RLS-AUDIT-REPORT-2026-05-11.md is closed.
+- **Ledger:** every run appends one `pass` / `fail` row to
+  `docs/runbooks/force-rls-shadow-ledger.md` on the `force-rls-shadow-ledger`
+  branch (master is PR-protected, so the bot cannot commit there). The seed
+  of that file on master explains the columns and the streak-counting
+  command. An infrastructure failure is recorded as `fail`: a run that
+  cannot prove the policies does not extend the streak.
 
 To promote to **required**:
 
-1. Confirm at least 30 consecutive PRs pass without skipping the job.
-2. Flip `continue-on-error: false` and add the job to the branch
-   protection required-checks list.
+1. Confirm at least 30 consecutive `pass` rows in the ledger (count with
+   the command in the ledger file).
+2. Flip `continue-on-error: false` on the job and on the harness step, add
+   the job to the branch protection required-checks list, and note the
+   flip under the ledger table.
 
 ---
 

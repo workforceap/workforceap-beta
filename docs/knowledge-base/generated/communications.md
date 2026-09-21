@@ -65,7 +65,7 @@
 | [emails/member-welcome-letter.ts](../../../emails/member-welcome-letter.ts) | 85 | communications | MEMBER_WELCOME_LETTER_TITLE:9, memberWelcomeLetterHtml:28 |
 | [emails/new-application-alert.ts](../../../emails/new-application-alert.ts) | 47 | communications | newApplicationAlertHtml:9 |
 | [emails/new-job-application.ts](../../../emails/new-job-application.ts) | 22 | communications | newJobApplicationHtml:7 |
-| [emails/onboarding-stalls-digest.ts](../../../emails/onboarding-stalls-digest.ts) | 101 | communications | onboardingStallsDigestHtml:28 |
+| [emails/onboarding-stalls-digest.ts](../../../emails/onboarding-stalls-digest.ts) | 119 | communications | oldestPendingLine:34, onboardingStallsDigestHtml:42 |
 | [emails/partner-referral-invite.test.ts](../../../emails/partner-referral-invite.test.ts) | 39 | communications |  |
 | [emails/partner-referral-invite.ts](../../../emails/partner-referral-invite.ts) | 18 | communications | partnerReferralInviteHtml:3 |
 | [emails/partner-weekly-digest.ts](../../../emails/partner-weekly-digest.ts) | 27 | communications | partnerWeeklyDigestHtml:7 |

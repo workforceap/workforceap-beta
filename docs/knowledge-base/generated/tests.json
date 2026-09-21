@@ -9592,7 +9592,7 @@
       },
       {
         "file": "lib/db/prisma.ts",
-        "line": 33
+        "line": 38
       }
     ],
     "kind": "test-candidate",
@@ -10386,6 +10386,30 @@
       {
         "file": "lib/xapi/persistXapiStatement.ts",
         "line": 5
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "scripts/audit-tenant-scoping.test.cjs",
+    "area": "operations",
+    "domain": "operations",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "scripts/audit-tenant-scoping.cjs",
+        "line": 11
       }
     ],
     "kind": "test-candidate",
@@ -23767,6 +23791,50 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "area": "tests",
+    "domain": "communications",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/cron/onboarding-stalls/route.ts",
+        "line": 32
+      },
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 33
+      },
+      {
+        "file": "lib/email.ts",
+        "line": 34
+      },
+      {
+        "file": "lib/notifications/create.ts",
+        "line": 35
+      },
+      {
+        "file": "emails/onboarding-stalls-digest.ts",
+        "line": 36
+      },
+      {
+        "file": "lib/wioa/wioaQueueAge.ts",
+        "line": 37
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/e2e/admin-login-search.spec.ts",
     "area": "tests",
     "domain": "tests",
@@ -26263,8 +26331,12 @@
     ],
     "localReferences": [
       {
+        "file": "lib/db/prisma.ts",
+        "line": 19
+      },
+      {
         "file": "lib/xapi/mappings.ts",
-        "line": 27
+        "line": 31
       }
     ],
     "kind": "test-candidate",
@@ -28716,6 +28788,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/lib/wioa-queue-age.spec.ts",
+    "area": "tests",
+    "domain": "partners-funding",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/wioa/wioaQueueAge.ts",
+        "line": 7
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/lib/wioa-review-snapshot.spec.ts",
     "area": "tests",
     "domain": "partners-funding",
@@ -28784,12 +28880,16 @@
     ],
     "localReferences": [
       {
+        "file": "lib/db/prisma.ts",
+        "line": 22
+      },
+      {
         "file": "lib/xapi/mappings.ts",
-        "line": 45
+        "line": 49
       },
       {
         "file": "lib/xapi/reprocess.ts",
-        "line": 46
+        "line": 50
       }
     ],
     "kind": "test-candidate",
@@ -28837,7 +28937,7 @@
     "localReferences": [
       {
         "file": "lib/coursera/replayPendingXapi.ts",
-        "line": 35
+        "line": 37
       }
     ],
     "kind": "test-candidate",
@@ -28860,8 +28960,12 @@
     ],
     "localReferences": [
       {
+        "file": "lib/db/prisma.ts",
+        "line": 18
+      },
+      {
         "file": "lib/xapi/reprocess.ts",
-        "line": 32
+        "line": 36
       }
     ],
     "kind": "test-candidate",

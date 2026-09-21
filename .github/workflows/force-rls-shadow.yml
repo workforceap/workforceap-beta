@@ -4,25 +4,37 @@ name: FORCE RLS Shadow Rehearsal
 # Postgres service container. See
 # docs/runbooks/force-rls-staging-rehearsal.md for context.
 #
-# Status: report-only, manual-only. The harness needs tuning runs
-# before it can auto-trigger on every PR without producing false
-# negatives — the seed data and policy assertions need to be
-# validated against the live policy set first. Triggered manually
-# via workflow_dispatch until the runbook's "promotion to required"
-# section is satisfied (30 consecutive clean runs).
+# Status: report-only, nightly + manual (WAP-24). The job keeps
+# `continue-on-error: true` until the runbook's "promotion to required"
+# condition is met: 30 consecutive clean runs. Each run appends one
+# pass/fail row to docs/runbooks/force-rls-shadow-ledger.md on the
+# `force-rls-shadow-ledger` branch (master is PR-protected, so the bot
+# cannot commit there); the streak is counted from that file.
 
 on:
+  schedule:
+    # Nightly, 06:17 UTC — off the hour so it does not queue behind the
+    # many workflows GitHub schedules at :00.
+    - cron: "17 6 * * *"
   workflow_dispatch:
+
+permissions:
+  # The ledger step pushes to the `force-rls-shadow-ledger` branch.
+  contents: write
 
 concurrency:
   group: force-rls-shadow-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  LEDGER_BRANCH: force-rls-shadow-ledger
+  LEDGER_PATH: docs/runbooks/force-rls-shadow-ledger.md
+
 jobs:
   shadow-rehearsal:
     name: FORCE RLS shadow rehearsal (report-only)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     continue-on-error: true
 
     services:
@@ -65,8 +77,12 @@ jobs:
       - name: Generate Prisma client
         run: node scripts/prisma-env.js prisma generate
 
+      # The harness exits with the number of failed assertions (0 = clean).
+      # `continue-on-error` here lets the ledger step below record the
+      # outcome; the job-level flag keeps the workflow report-only.
       - name: Run FORCE RLS rehearsal harness
         id: rehearsal
+        continue-on-error: true
         run: |
           set -o pipefail
           pnpm tsx scripts/p1/test-force-rls.ts | tee force-rls-summary.md
@@ -78,3 +94,74 @@ jobs:
           name: force-rls-summary
           path: force-rls-summary.md
           if-no-files-found: warn
+
+      # WAP-24: persist pass/fail so the 30-run streak can accumulate.
+      # Appends one row to the ledger on the LEDGER_BRANCH branch. Reads of
+      # the harness outcome come from the step above; an infrastructure
+      # failure (no summary, install error) is recorded as `fail` because a
+      # run that cannot prove the policies does not extend the streak.
+      - name: Append result to the shadow ledger
+        if: always()
+        env:
+          OUTCOME: ${{ steps.rehearsal.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TRIGGER: ${{ github.event_name }}
+          SHORT_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          result=fail
+          [ "$OUTCOME" = "success" ] && result=pass
+          stamp="$(date -u +%FT%TZ)"
+          row="| ${stamp} | ${TRIGGER} | ${result} | [run](${RUN_URL}) | ${SHORT_SHA:0:9} |"
+          echo "ledger row: ${row}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Work on the ledger branch in a separate worktree so the checkout
+          # used by the harness is untouched. Create the branch from the
+          # current commit on the first run.
+          if git fetch origin "refs/heads/${LEDGER_BRANCH}:refs/remotes/origin/${LEDGER_BRANCH}" 2>/dev/null; then
+            git worktree add --detach ledger "origin/${LEDGER_BRANCH}"
+          else
+            echo "ledger branch ${LEDGER_BRANCH} does not exist yet; seeding it from ${SHORT_SHA:0:9}"
+            git worktree add --detach ledger HEAD
+          fi
+          cd ledger
+          if [ ! -f "$LEDGER_PATH" ]; then
+            # A ledger branch older than the seed on master: bring the seed over.
+            git checkout "$SHORT_SHA" -- "$LEDGER_PATH"
+          fi
+          printf '%s\n' "$row" >> "$LEDGER_PATH"
+          git add "$LEDGER_PATH"
+          git commit -q -m "ledger(force-rls-shadow): ${stamp} ${result} (${TRIGGER}, ${SHORT_SHA:0:9})"
+          # Retry once on a concurrent push (two dispatches back to back).
+          for attempt in 1 2; do
+            if git push origin "HEAD:refs/heads/${LEDGER_BRANCH}"; then
+              break
+            fi
+            echo "push attempt ${attempt} rejected; rebasing onto the remote ledger"
+            git fetch origin "refs/heads/${LEDGER_BRANCH}:refs/remotes/origin/${LEDGER_BRANCH}"
+            git rebase "origin/${LEDGER_BRANCH}"
+          done
+          {
+            echo "### FORCE RLS shadow ledger"
+            echo ""
+            echo "Appended to \`${LEDGER_PATH}\` on \`${LEDGER_BRANCH}\`:"
+            echo ""
+            echo "${row}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Report-only job: surface the harness result in the log even though
+      # the job itself does not fail the workflow.
+      - name: Harness outcome
+        if: always()
+        env:
+          OUTCOME: ${{ steps.rehearsal.outcome }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then
+            echo "FORCE RLS rehearsal: pass"
+          else
+            echo "::warning::FORCE RLS rehearsal: ${OUTCOME} (report-only until 30 consecutive clean runs; see docs/runbooks/force-rls-shadow-ledger.md)"
+          fi

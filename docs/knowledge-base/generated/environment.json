@@ -2204,7 +2204,7 @@
         },
         {
           "file": "app/api/cron/onboarding-stalls/route.ts",
-          "line": 16
+          "line": 17
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
@@ -4035,6 +4035,21 @@
         {
           "file": "tests/lib/weekly-recap-label.spec.ts",
           "line": 19
+        }
+      ]
+    },
+    {
+      "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "lib/retention/config.test.ts",
+          "line": 72
+        },
+        {
+          "file": "lib/retention/config.ts",
+          "line": 139
         }
       ]
     },
