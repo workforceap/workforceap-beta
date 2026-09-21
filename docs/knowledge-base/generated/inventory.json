@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "831caad391c03079d5fed3474640ef57f076df50eb42180939b78883a155c2ce",
+  "inputTreeSha256": "846de4b45fa6f2cc5de52e07e04a76cf0989f3bce45732b74c6451b22ecc23ed",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -104319,12 +104319,18 @@
       "path": "lib/content/coursera/catalogCoverage.test.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 2455,
-      "lines": 53,
-      "sha256": "e5d3c767853b7cc572e82df6c3e9006b84946dc8734e6cf4b9e895ef04b6ee83",
+      "bytes": 5025,
+      "lines": 108,
+      "sha256": "ed2067113a094d8a69b36625a578f732c29165bd58e7fade63e71efda7824886",
       "binary": false,
       "exports": [],
-      "declarations": [],
+      "declarations": [
+        {
+          "name": "DELIBERATELY_UNREFRESHED",
+          "line": 65,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -104426,6 +104432,77 @@
         {
           "name": "catalogCoverageIssueLabel",
           "line": 150,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/content/coursera/courseSlugRemap.test.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 4260,
+      "lines": 100,
+      "sha256": "06b79f2520b39ab3cd405084ecb06ce40f7a037eb9a104bc7e37b9c3bb4df45b",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "lib/content/coursera/courseSlugRemap.ts",
+      "area": "libraries",
+      "domain": "learning-coursera",
+      "bytes": 5531,
+      "lines": 101,
+      "sha256": "c5be236b7a962e2cceb6407a7e476e33773dc420b58503024101742e5f95bbcc",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CourseSlugRemapEntry",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "COURSE_SLUG_REMAP",
+          "line": 67,
+          "kind": "Variable"
+        },
+        {
+          "name": "REMAPPED_SOURCE_SLUGS",
+          "line": 91,
+          "kind": "Variable"
+        },
+        {
+          "name": "remapCourseSlug",
+          "line": 96,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "CourseSlugRemapEntry",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "entry",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "COURSE_SLUG_REMAP",
+          "line": 67,
+          "kind": "Variable"
+        },
+        {
+          "name": "REMAPPED_SOURCE_SLUGS",
+          "line": 91,
+          "kind": "Variable"
+        },
+        {
+          "name": "remapCourseSlug",
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -104963,29 +105040,29 @@
       "path": "lib/content/courseraDiscoveredCatalog.ts",
       "area": "libraries",
       "domain": "learning-coursera",
-      "bytes": 38429,
-      "lines": 369,
-      "sha256": "ab4db45359b6ecacd2532aba7471ac39ac99d0d4a8512240d9054a33c8f45fe8",
+      "bytes": 38837,
+      "lines": 376,
+      "sha256": "697558b3fd26f13567a1e1b4fb5dc55e333332973cb392d4705b65b1c96ce392",
       "binary": false,
       "exports": [
         {
           "name": "CourseraProgramSlug",
-          "line": 327,
+          "line": 334,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgram",
-          "line": 332,
+          "line": 339,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourse",
-          "line": 344,
+          "line": 351,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DISCOVERED_COURSERA_PROGRAMS",
-          "line": 368,
+          "line": 375,
           "kind": "Variable"
         }
       ],
@@ -104997,42 +105074,42 @@
         },
         {
           "name": "CourseraProgramSlug",
-          "line": 327,
+          "line": 334,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgramInner",
-          "line": 328,
+          "line": 335,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourseInner",
-          "line": 329,
+          "line": 336,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredProgram",
-          "line": 332,
+          "line": 339,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "CourseraDiscoveredCourse",
-          "line": 344,
+          "line": 351,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "WAP_PROGRAM_DISCOVERED_ALIASES",
-          "line": 347,
+          "line": 354,
           "kind": "Variable"
         },
         {
           "name": "mergeDiscoveredWithWapAliases",
-          "line": 357,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DISCOVERED_COURSERA_PROGRAMS",
-          "line": 368,
+          "line": 375,
           "kind": "Variable"
         }
       ],
@@ -107228,9 +107305,9 @@
       "path": "lib/content/syllabusCatalogParity.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 10426,
-      "lines": 184,
-      "sha256": "e0333ae63fc46a1b746a2e4048b30804c7c5f2e1c02f132274fbe7985b56b788",
+      "bytes": 11074,
+      "lines": 190,
+      "sha256": "4504a9895c9792135794ed07b47f44689c72863bc0b6b932a5c7768be341fdae",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -107251,12 +107328,12 @@
         },
         {
           "name": "isAllowlisted",
-          "line": 72,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "syllabusPrograms",
-          "line": 76,
+          "line": 82,
           "kind": "Variable"
         }
       ],
@@ -129488,6 +129565,158 @@
       "directive": null
     },
     {
+      "path": "lib/member/programProgressRepair.test.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 7943,
+      "lines": 179,
+      "sha256": "334e392b5d1f24ee6a2ea78295c9943e3d7176e0ab3163fc53e010907e1922b0",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "APLUS",
+          "line": 24,
+          "kind": "Variable"
+        },
+        {
+          "name": "computed",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "plan",
+          "line": 35,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/member/programProgressRepair.ts",
+      "area": "libraries",
+      "domain": "member-counselor",
+      "bytes": 11907,
+      "lines": 301,
+      "sha256": "9a4fd09887dac9279434fd5a926c8f2004a16f860156964615b2136d443ef65d",
+      "binary": false,
+      "exports": [
+        {
+          "name": "StoredRollup",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ProgramRecompute",
+          "line": 39,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RepairReason",
+          "line": 52,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RollupRepairAction",
+          "line": 58,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UnexplainedRollup",
+          "line": 84,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RollupRepairPlan",
+          "line": 92,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AVERAGE_PERCENT_TOLERANCE",
+          "line": 114,
+          "kind": "Variable"
+        },
+        {
+          "name": "recomputeKey",
+          "line": 116,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "planProgramProgressRepair",
+          "line": 141,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatRepairPlan",
+          "line": 258,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "StoredRollup",
+          "line": 29,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "ProgramRecompute",
+          "line": 39,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RepairReason",
+          "line": 52,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RollupRepairAction",
+          "line": 58,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "UnexplainedRollup",
+          "line": 84,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RollupRepairPlan",
+          "line": 92,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "AVERAGE_PERCENT_TOLERANCE",
+          "line": 114,
+          "kind": "Variable"
+        },
+        {
+          "name": "recomputeKey",
+          "line": 116,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "groupRollups",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "chooseSurvivor",
+          "line": 137,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "planProgramProgressRepair",
+          "line": 141,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatRepairPlan",
+          "line": 258,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/member/programStartEnrollment.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
@@ -151117,9 +151346,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 8085,
-      "lines": 150,
-      "sha256": "b1c8a18710f817d09ae25da87dec0fa832e5bbbb7e8060878531bf1e5a636593",
+      "bytes": 8199,
+      "lines": 151,
+      "sha256": "06d39174e38dc9e3ed8c64647defe43e8c9787a43372073f8a413d37d7325a3a",
       "binary": false
     },
     {
@@ -152984,6 +153213,24 @@
       "bytes": 907,
       "lines": 13,
       "sha256": "aa8ff9f3a4dfbdddffb3b115582b874a40f32d01078872b3f4ec81cf82c2cc6a",
+      "binary": false
+    },
+    {
+      "path": "prisma/migrations/20260921220000_wap76_course_progress_slug_remap/down.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 2474,
+      "lines": 64,
+      "sha256": "7dbc3174c4eec2d71a9d8c9a6f4a6afef2efdca5b423fed6d04530c613733401",
+      "binary": false
+    },
+    {
+      "path": "prisma/migrations/20260921220000_wap76_course_progress_slug_remap/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 10354,
+      "lines": 153,
+      "sha256": "a90fb5a791d24035bb6875083eee7c11c57ef8083dfae2ac276f204d84f56730",
       "binary": false
     },
     {
@@ -160575,6 +160822,44 @@
         {
           "name": "main",
           "line": 22,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/repair-member-program-progress.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 8898,
+      "lines": 223,
+      "sha256": "e8d0eaa94270d77cd11e2141c7b10a996f4435cd470d383312c09eb4088560b3",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "prisma",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "recomputeProgram",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "reportOrphanedCourseKeys",
+          "line": 110,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "main",
+          "line": 152,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDirectInvocation",
+          "line": 209,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -178579,6 +178864,109 @@
         {
           "name": "assertFollowOnColumns",
           "line": 82,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/migrations/wap76-course-slug-remap.mjs",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 14709,
+      "lines": 297,
+      "sha256": "ea338e6b3950800402616c7255e6294565a41559decdde594a698b4da9abd7b0",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "migrationDir",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "migration",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "rollback",
+          "line": 19,
+          "kind": "Variable"
+        },
+        {
+          "name": "EXPECTED_REMAP",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceUrl",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "target",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceDatabase",
+          "line": 47,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabase",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
+          "name": "createsDatabase",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "env",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "runSql",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sql",
+          "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "ident",
+          "line": 80,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabaseCreated",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
+          "name": "resetTables",
+          "line": 84,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "rows",
+          "line": 150,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "byId",
+          "line": 162,
+          "kind": "Variable"
+        },
+        {
+          "name": "journal",
+          "line": 164,
           "kind": "FunctionDeclaration"
         }
       ],

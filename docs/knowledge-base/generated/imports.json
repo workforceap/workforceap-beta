@@ -100896,6 +100896,54 @@
     "target": "lib/content/coursera/learningPaths.ts"
   },
   {
+    "from": "lib/content/coursera/courseSlugRemap.test.ts",
+    "specifier": "node:test",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/content/coursera/courseSlugRemap.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/content/coursera/courseSlugRemap.test.ts",
+    "specifier": "@/lib/content/programs",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "lib/content/coursera/courseSlugRemap.test.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
+    "from": "lib/content/coursera/courseSlugRemap.test.ts",
+    "specifier": "./courseSlugRemap",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/courseSlugRemap.ts"
+  },
+  {
+    "from": "lib/content/coursera/courseSlugRemap.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
     "from": "lib/content/coursera/curatedCollections.generated.ts",
     "specifier": "./curatedCollectionsCsv",
     "line": 5,
@@ -110928,6 +110976,38 @@
     "target": "lib/content/programs.ts"
   },
   {
+    "from": "lib/member/programProgressRepair.test.ts",
+    "specifier": "node:test",
+    "line": 12,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/programProgressRepair.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/programProgressRepair.test.ts",
+    "specifier": "./programProgressRepair",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/programProgressRepair.ts"
+  },
+  {
+    "from": "lib/member/programProgressRepair.ts",
+    "specifier": "@/lib/content/programSlug",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
     "from": "lib/member/programStartEnrollment.test.ts",
     "specifier": "node:assert/strict",
     "line": 1,
@@ -120238,6 +120318,70 @@
     "kind": "import",
     "external": false,
     "target": "lib/coursera/resolveUserIdByEmail.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "node:path",
+    "line": 35,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "node:url",
+    "line": 36,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "@prisma/client",
+    "line": 38,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/content/programs",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programs.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/content/programSlug",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/programSlug.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/coursera/programCourseList",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/programCourseList.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/coursera/progressReconciliation",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/progressReconciliation.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/member/programProgressRepair",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/programProgressRepair.ts"
   },
   {
     "from": "scripts/resolve-failed-migration-in-db.cjs",
@@ -145595,6 +145739,30 @@
     "from": "tests/migrations/placement-survey-sent-state.mjs",
     "specifier": "node:child_process",
     "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "node:child_process"
+  },
+  {
+    "from": "tests/migrations/wap76-course-slug-remap.mjs",
+    "specifier": "node:assert/strict",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "tests/migrations/wap76-course-slug-remap.mjs",
+    "specifier": "node:fs",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/migrations/wap76-course-slug-remap.mjs",
+    "specifier": "node:child_process",
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "node:child_process"

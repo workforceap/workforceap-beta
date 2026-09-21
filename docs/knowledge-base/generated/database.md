@@ -196,6 +196,8 @@
 | [prisma/migrations/20260921120000_wap36_csp_violation_buckets/migration.sql](../../../prisma/migrations/20260921120000_wap36_csp_violation_buckets/migration.sql) | 78 | database |  |
 | [prisma/migrations/20260921150000_chapter_members_user_fk_on_delete/migration.sql](../../../prisma/migrations/20260921150000_chapter_members_user_fk_on_delete/migration.sql) | 22 | database |  |
 | [prisma/migrations/20260921160000_wap170_nullable_screening_triad/migration.sql](../../../prisma/migrations/20260921160000_wap170_nullable_screening_triad/migration.sql) | 13 | database |  |
+| [prisma/migrations/20260921220000_wap76_course_progress_slug_remap/down.sql](../../../prisma/migrations/20260921220000_wap76_course_progress_slug_remap/down.sql) | 64 | database |  |
+| [prisma/migrations/20260921220000_wap76_course_progress_slug_remap/migration.sql](../../../prisma/migrations/20260921220000_wap76_course_progress_slug_remap/migration.sql) | 153 | database |  |
 | [prisma/migrations/migration_lock.toml](../../../prisma/migrations/migration_lock.toml) | 3 | database |  |
 | [prisma/schema.prisma](../../../prisma/schema.prisma) | 3338 | database |  |
 | [prisma/seed-automation-rules.ts](../../../prisma/seed-automation-rules.ts) | 46 | database |  |

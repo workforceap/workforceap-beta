@@ -7,17 +7,17 @@ flowchart LR
   communications["communications: 72 files"]
   components["components: 621 files"]
   content["content: 14 files"]
-  database["database: 212 files"]
+  database["database: 214 files"]
   delivery["delivery: 10 files"]
   documentation["documentation: 358 files"]
-  libraries["libraries: 1092 files"]
+  libraries["libraries: 1096 files"]
   localization["localization: 6 files"]
-  operations["operations: 145 files"]
+  operations["operations: 146 files"]
   pages["pages: 656 files"]
   root["root: 56 files"]
   styles["styles: 17 files"]
   supporting_files["supporting-files: 74 files"]
-  tests["tests: 601 files"]
+  tests["tests: 602 files"]
   api -->|"8 static references"| communications
   api -->|"1 static references"| content
   api -->|"3722 static references"| libraries
@@ -43,7 +43,7 @@ flowchart LR
   libraries -->|"2 static references"| supporting_files
   libraries -->|"3 static references"| tests
   localization -->|"1 static references"| libraries
-  operations -->|"50 static references"| libraries
+  operations -->|"55 static references"| libraries
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
   pages -->|"1133 static references"| components
