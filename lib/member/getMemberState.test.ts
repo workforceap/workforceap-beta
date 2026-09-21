@@ -195,7 +195,7 @@ describe('member dashboard business facts', () => {
       completedCount: 0, totalCourses: 2, progressPercentDisplay: 0,
       hasStartedTraining: false, hasCompletedFirstCourse: false, allCoursesComplete: false,
       nextIncompleteCourseName: 'First course', nextIncompleteCourseSlug: 'course-1',
-      completedSlugsAuthoritative: [], validatedCourseSlugs: ['course-1', 'course-2'],
+      completedSlugsAuthoritative: [], courseRows: [], validatedCourseSlugs: ['course-1', 'course-2'],
       lastTrainingActivityAt: null, averageGradePercentDisplay: null,
     });
   });
