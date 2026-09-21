@@ -14,13 +14,13 @@ import { Card } from '@astryxdesign/core/Card';
 import { Badge } from '@astryxdesign/core/Badge';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
-import { Sparkline } from './Charts';
+import { Sparkline, TrendPlaceholder } from './Charts';
 import { cx } from './base';
 import { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
 
 /** Trend series + optional delta chip for a stat tile. Omit any field to hide that piece. */
 export interface SparkStat {
-  /** 2+ points; auto-scaled. Fewer than 2 hides the sparkline. */
+  /** 2+ points; auto-scaled. Fewer than 2 draws no line; the tile shows the empty-trend slot only if it opted in with `emptyTrendLabel`. */
   series?: number[];
   /** Delta chip text, e.g. "6.2%" or "12". Omit to hide the chip. */
   delta?: string;
@@ -74,6 +74,7 @@ export function StatSparkTile({
   tone,
   spark,
   caption,
+  emptyTrendLabel,
 }: {
   /**
    * A rendered icon element, e.g. `<Users size={16} />` — not the bare
@@ -89,6 +90,15 @@ export function StatSparkTile({
   spark?: SparkStat;
   /** One muted line under the label saying what the number counts (a definition, not a trend). */
   caption?: string;
+  /**
+   * Opt in to the empty-trend slot by passing the already-translated copy for
+   * it (e.g. "No trend yet"). Only for a tile that genuinely plots a trend
+   * once it has one — nine live surfaces use this tile for pure counts
+   * ("Jobs Posted", "In this view"), where the slot would promise a trend
+   * nothing upstream computes and add 28px to a card that never implied one.
+   * Omitted (the default), a series-less tile renders no slot at all.
+   */
+  emptyTrendLabel?: string;
 }) {
   return (
     <Card>
@@ -123,6 +133,8 @@ export function StatSparkTile({
       </div>
       {spark?.series && spark.series.length > 1 ? (
         <Sparkline series={spark.series} stroke={tone ? 'var(--wa-kit-tone)' : undefined} />
+      ) : emptyTrendLabel && !spark?.delta ? (
+        <TrendPlaceholder label={emptyTrendLabel} />
       ) : null}
       </div>
     </Card>

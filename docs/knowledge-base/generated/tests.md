@@ -337,7 +337,7 @@
 | [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 127 | communications |  |
 | [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 177 | tests |  |
 | [tests/components/portal-team-chat-read-cursor.spec.tsx](../../../tests/components/portal-team-chat-read-cursor.spec.tsx) | 123 | tests |  |
-| [tests/components/program-health-tone.spec.tsx](../../../tests/components/program-health-tone.spec.tsx) | 118 | tests |  |
+| [tests/components/program-health-tone.spec.tsx](../../../tests/components/program-health-tone.spec.tsx) | 125 | tests |  |
 | [tests/components/program-outcome-claims.spec.tsx](../../../tests/components/program-outcome-claims.spec.tsx) | 72 | tests |  |
 | [tests/components/public-staff-form-connection-failure.spec.tsx](../../../tests/components/public-staff-form-connection-failure.spec.tsx) | 160 | tests |  |
 | [tests/components/referral-share-toolkit.spec.tsx](../../../tests/components/referral-share-toolkit.spec.tsx) | 146 | applications-enrollment |  |
@@ -345,6 +345,7 @@
 | [tests/components/skill-mission-close-guard.test.tsx](../../../tests/components/skill-mission-close-guard.test.tsx) | 103 | tests |  |
 | [tests/components/staff-shell-auth-reads.spec.tsx](../../../tests/components/staff-shell-auth-reads.spec.tsx) | 115 | tests |  |
 | [tests/components/stat-tile-tones.spec.tsx](../../../tests/components/stat-tile-tones.spec.tsx) | 111 | tests |  |
+| [tests/components/stat-tile-trend-slot.spec.tsx](../../../tests/components/stat-tile-trend-slot.spec.tsx) | 178 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
 | [tests/components/students-roster-needs-link.spec.tsx](../../../tests/components/students-roster-needs-link.spec.tsx) | 143 | tests |  |
