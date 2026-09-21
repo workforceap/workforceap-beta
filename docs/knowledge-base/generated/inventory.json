@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "579822ee11fabe4b5e15567dba48484f4a2f2ab2d44e87d23bdfd06f9f548254",
+  "inputTreeSha256": "4841dd8227c8fed67c13348cba5cba0e750ee931c9e21790b39425e4cc579bd9",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -45945,9 +45945,9 @@
       "path": "app/dev/staff/reporting/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 11521,
+      "bytes": 11580,
       "lines": 251,
-      "sha256": "3cdc594d05866e013fa091fef39b903c69b45f78857c0bb3bbade16f4a5fc175",
+      "sha256": "24185c19723c5a3945d54ea0d9289afa581e29322ca38f27b9ddd176eae54ba6",
       "binary": false,
       "exports": [
         {
