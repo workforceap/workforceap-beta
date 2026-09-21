@@ -3,6 +3,7 @@ import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { withSystemGuc } from '@/lib/db/withRequestGuc';
 import { createMember } from '@/lib/member/service';
 import { NextRequest, NextResponse } from 'next/server';
+import { WEAK_PASSWORD_MESSAGE, WEAK_PASSWORD_REASON, isWeakPasswordError } from '@/lib/auth/authProviderError';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
@@ -181,6 +182,13 @@ export async function POST(request: NextRequest) {
       if (authError.message.includes('already registered') || authError.code === 'user_already_exists') {
         return NextResponse.json(
           { error: 'An account with this email may already exist. Try logging in or resetting your password.' },
+          { status: 400 }
+        );
+      }
+      if (isWeakPasswordError(authError)) {
+        // WAP-26: say what to fix instead of the generic "could not create".
+        return NextResponse.json(
+          { error: WEAK_PASSWORD_MESSAGE, reason: WEAK_PASSWORD_REASON },
           { status: 400 }
         );
       }

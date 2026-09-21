@@ -139,7 +139,16 @@ describe('auth forms after a request fails before the app gets a usable answer',
   });
 
   it('reset-password: provider validation copy still reaches the member', async () => {
-    auth.updateUser.mockResolvedValueOnce({ error: { name: 'AuthWeakPasswordError', message: 'Password should contain at least one number.', status: 422 } });
-    expect(await submitNewPassword()).toHaveTextContent('Password should contain at least one number.');
+    auth.updateUser.mockResolvedValueOnce({ error: { name: 'AuthApiError', code: 'same_password', message: 'New password should be different from the old password.', status: 422 } });
+    expect(await submitNewPassword()).toHaveTextContent('New password should be different from the old password.');
+  });
+
+  it('reset-password: a weak-password refusal reads as clear sentence-case guidance, not the provider phrasing (WAP-26)', async () => {
+    auth.updateUser.mockResolvedValueOnce({ error: { name: 'AuthWeakPasswordError', code: 'weak_password', message: 'Password should contain at least one number.', status: 422 } });
+    const alert = await submitNewPassword();
+    expect(alert).toHaveTextContent(messages.auth.resetPassword.weakPassword);
+    expect(alert).toHaveTextContent('Choose a stronger password: at least 8 characters, not a commonly used password.');
+    expect(alert).not.toHaveTextContent(/should contain at least one number/);
+    expect(screen.getByRole('button', { name: 'Save new password' })).toBeEnabled();
   });
 });

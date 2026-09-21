@@ -497,8 +497,16 @@
   },
   {
     "from": "app/(auth)/reset-password/page.tsx",
-    "specifier": "@/components/LocalizedLink",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/(auth)/reset-password/page.tsx",
+    "specifier": "@/components/LocalizedLink",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/LocalizedLink.tsx"
@@ -506,7 +514,7 @@
   {
     "from": "app/(auth)/reset-password/page.tsx",
     "specifier": "@/lib/auth/client",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/auth/client.ts"
@@ -514,7 +522,7 @@
   {
     "from": "app/(auth)/reset-password/page.tsx",
     "specifier": "@/lib/auth/postLoginRedirect",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/auth/postLoginRedirect.ts"
@@ -689,8 +697,16 @@
   },
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
-    "specifier": "@/components/LocalizedLink",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/(auth)/signup/SignupForm.tsx",
+    "specifier": "@/components/LocalizedLink",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/LocalizedLink.tsx"
@@ -698,7 +714,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/validation/member",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/validation/member.ts"
@@ -706,7 +722,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/analytics/events",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/events.ts"
@@ -714,7 +730,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -722,7 +738,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/marketing/utmCapture",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/utmCapture.ts"
@@ -730,7 +746,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/auth/safeRedirectPath",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/auth/safeRedirectPath.ts"
@@ -738,7 +754,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
@@ -746,7 +762,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/consent/reserve",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/consent/reserve.ts"
@@ -754,7 +770,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 25,
+    "line": 26,
     "kind": "dynamic-import",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -44473,8 +44489,16 @@
   },
   {
     "from": "app/api/apply/signup/route.ts",
-    "specifier": "@supabase/ssr",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/api/apply/signup/route.ts",
+    "specifier": "@supabase/ssr",
+    "line": 6,
     "kind": "import",
     "external": true,
     "package": "@supabase/ssr"
@@ -44482,7 +44506,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "next/headers",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -44490,7 +44514,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/supabaseCookieOptions",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/supabaseCookieOptions.ts"
@@ -44498,7 +44522,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -44506,7 +44530,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/supabase-admin",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/supabase-admin.ts"
@@ -44514,7 +44538,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/content/programs",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -44522,7 +44546,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -44530,7 +44554,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/content/programSlug",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -44538,7 +44562,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/member/courseEnrollmentAssignment",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/member/courseEnrollmentAssignment.ts"
@@ -44546,7 +44570,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "zod",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": true,
     "package": "zod"
@@ -44554,7 +44578,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -44562,7 +44586,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"
@@ -44570,7 +44594,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -44578,7 +44602,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/analytics/conversionValue",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/conversionValue.ts"
@@ -44586,7 +44610,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@prisma/client",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -44594,7 +44618,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/tenant/resolveProvisionOrg",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/resolveProvisionOrg.ts"
@@ -44602,7 +44626,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -44610,7 +44634,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/observability/logger",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/observability/logger.ts"
@@ -44618,7 +44642,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/db/withRequestGuc",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/db/withRequestGuc.ts"
@@ -44626,7 +44650,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -44634,7 +44658,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/counselor/ambassadorAutoAssign",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/ambassadorAutoAssign.ts"
@@ -44642,7 +44666,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/member/referrals",
-    "line": 26,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/member/referrals.ts"
@@ -44650,7 +44674,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/counselor/autoAssign",
-    "line": 27,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/counselor/autoAssign.ts"
@@ -44658,7 +44682,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -44666,7 +44690,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/partners/sponsorship",
-    "line": 33,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "lib/partners/sponsorship.ts"
@@ -44674,7 +44698,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/schoolCollection",
-    "line": 42,
+    "line": 43,
     "kind": "import",
     "external": false,
     "target": "lib/apply/schoolCollection.ts"
@@ -44682,7 +44706,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/eligibilityExtendedFields",
-    "line": 47,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityExtendedFields.ts"
@@ -44690,7 +44714,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/apply/publicAssistance",
-    "line": 48,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "lib/apply/publicAssistance.ts"
@@ -44698,7 +44722,7 @@
   {
     "from": "app/api/apply/signup/route.ts",
     "specifier": "@/lib/email",
-    "line": 54,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -58985,8 +59009,16 @@
   },
   {
     "from": "app/api/member/signup/route.ts",
-    "specifier": "@supabase/ssr",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/api/member/signup/route.ts",
+    "specifier": "@supabase/ssr",
+    "line": 7,
     "kind": "import",
     "external": true,
     "package": "@supabase/ssr"
@@ -58994,7 +59026,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "next/headers",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -59002,7 +59034,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/supabaseCookieOptions",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/supabaseCookieOptions.ts"
@@ -59010,7 +59042,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/validation/member",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/validation/member.ts"
@@ -59018,7 +59050,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/rate-limit",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/rate-limit.ts"
@@ -59026,7 +59058,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/turnstile/verifyTurnstile",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/turnstile/verifyTurnstile.ts"
@@ -59034,7 +59066,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/events/track",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/events/track.ts"
@@ -59042,7 +59074,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/analytics/conversionValue",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/conversionValue.ts"
@@ -59050,7 +59082,7 @@
   {
     "from": "app/api/member/signup/route.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -64313,8 +64345,16 @@
   },
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-    "specifier": "@/lib/analytics/events",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
+    "specifier": "@/lib/analytics/events",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/events.ts"
@@ -64322,7 +64362,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/validation/postalCode",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/validation/postalCode.ts"
@@ -64330,7 +64370,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/analytics/conversionValue",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/conversionValue.ts"
@@ -64338,7 +64378,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -64346,7 +64386,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/paidApplyUtm",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/apply/paidApplyUtm.ts"
@@ -64354,7 +64394,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/usStates",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/apply/usStates.ts"
@@ -64362,7 +64402,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/marketing/utmCapture",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/utmCapture.ts"
@@ -64370,7 +64410,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyProgramStorage",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyProgramStorage.ts"
@@ -64378,7 +64418,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyBrowserState",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyBrowserState.ts"
@@ -64386,7 +64426,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyRecoveryHref",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyRecoveryHref.ts"
@@ -64394,7 +64434,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/components/apply/ApplyReadiness",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "components/apply/ApplyReadiness.tsx"
@@ -64402,7 +64442,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/components/forms/PasswordToggle",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/forms/PasswordToggle.tsx"
@@ -64410,7 +64450,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "lucide-react",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -64418,7 +64458,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -64426,7 +64466,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/marketing/buttonClasses",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/buttonClasses.ts"
@@ -64434,7 +64474,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/a11y/scrollBehavior",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/a11y/scrollBehavior.ts"
@@ -64442,7 +64482,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/schoolCollection",
-    "line": 26,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/apply/schoolCollection.ts"
@@ -64450,7 +64490,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 27,
+    "line": 28,
     "kind": "type",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -64458,7 +64498,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 29,
+    "line": 30,
     "kind": "dynamic-import",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -94529,11 +94569,11 @@
   },
   {
     "from": "lib/admin/roleLabels.ts",
-    "specifier": "./memberOnlyWhere",
+    "specifier": "@/lib/auth/roleAccess",
     "line": 2,
     "kind": "import",
     "external": false,
-    "target": "lib/admin/memberOnlyWhere.ts"
+    "target": "lib/auth/roleAccess.ts"
   },
   {
     "from": "lib/admin/runAdminJobMatchesGet.test.ts",
@@ -98601,8 +98641,24 @@
   },
   {
     "from": "lib/auth/roles.ts",
-    "specifier": "@/lib/auth/roleAccess",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
+    "from": "lib/auth/roles.ts",
+    "specifier": "@/lib/observability/logger",
     "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "lib/auth/roles.ts",
+    "specifier": "@/lib/auth/roleAccess",
+    "line": 12,
     "kind": "re-export",
     "external": false,
     "target": "lib/auth/roleAccess.ts"
@@ -98610,7 +98666,7 @@
   {
     "from": "lib/auth/roles.ts",
     "specifier": "@/lib/auth/server",
-    "line": 573,
+    "line": 624,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -117286,6 +117342,62 @@
     "kind": "import",
     "external": false,
     "target": "lib/messages/unansweredBackfill.ts"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.test.ts",
+    "specifier": "./backfill-user-roles-from-profile",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "scripts/backfill-user-roles-from-profile.ts"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.ts",
+    "specifier": "node:path",
+    "line": 27,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.ts",
+    "specifier": "node:url",
+    "line": 28,
+    "kind": "import",
+    "external": true,
+    "package": "node:url"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.ts",
+    "specifier": "@prisma/client",
+    "line": 29,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "scripts/backfill-user-roles-from-profile.ts",
+    "specifier": "../lib/auth/roleAccess",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roleAccess.ts"
   },
   {
     "from": "scripts/canonicalize-course-progress-slugs.test.ts",
@@ -139646,6 +139758,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/atRiskScoring.ts"
+  },
+  {
+    "from": "tests/lib/auth-role-resolution.spec.ts",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/auth-role-resolution.spec.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/lib/auth-role-resolution.spec.ts",
+    "specifier": "@/lib/auth/roleAccess",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roleAccess.ts"
   },
   {
     "from": "tests/lib/auth-server.test.ts",

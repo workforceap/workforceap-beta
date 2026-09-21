@@ -5,6 +5,7 @@ import PasswordToggle from '@/components/forms/PasswordToggle';
 import { useEffect, useRef, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { isWeakPasswordError } from '@/lib/auth/authProviderError';
 import LocalizedLink from '@/components/LocalizedLink';
 import { createSupabaseBrowserClient } from '@/lib/auth/client';
 import { normalizePostLoginRedirect } from '@/lib/auth/postLoginRedirect';
@@ -123,6 +124,9 @@ function ResetPasswordForm() {
         setFormError(
           connectionFailure
             ? tCommon('connectionError')
+            : isWeakPasswordError(error)
+              // WAP-26: clear, localised guidance instead of the provider's phrasing.
+              ? tAuth('resetPassword.weakPassword')
             : !retryableProviderFailure && message && message !== '{}' && message !== '[object Object]'
               ? message
               : tAuth('resetPassword.updateFailed'),
