@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "645ec3d2dc7b45a1bc9518ae7e1adaea81fa77aad593af986ea3b3f9e5869699",
+  "inputTreeSha256": "68216865810cdffeef95433ebe1402699e6903b9b895e3306b37a857c054ae1b",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -10,8 +10,8 @@
   "counts": {
     "files": 4993,
     "sourceModules": 3637,
-    "importReferences": 18138,
-    "resolvedLocalReferences": 12177,
+    "importReferences": 18139,
+    "resolvedLocalReferences": 12178,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
@@ -176,7 +176,7 @@
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
-      "references": 104
+      "references": 105
     },
     {
       "file": "lib/events/track.ts",

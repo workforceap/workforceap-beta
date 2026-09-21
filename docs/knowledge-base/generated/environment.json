@@ -2322,7 +2322,7 @@
         },
         {
           "file": "lib/cron/onboardingStallNudges.ts",
-          "line": 120
+          "line": 121
         },
         {
           "file": "lib/cron/placement-surveys.ts",

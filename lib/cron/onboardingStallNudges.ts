@@ -6,6 +6,7 @@ import { isRecipientSkipReason } from '@/lib/email/send';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThrottle';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 /**
  * WAP-92: member-side nudges for the onboarding-stall buckets.
@@ -169,18 +170,23 @@ async function restrictToEligibleMembers(
   const ids = Array.from(new Set(STALL_BUCKETS.flatMap((b) => buckets[b].map((m) => m.id))));
   result.candidates = ids.length;
   if (ids.length === 0) return buckets;
-  const rows = await prisma.user.findMany({
-    where: {
-      id: { in: ids },
-      deletedAt: null,
-      notificationsReminders: true,
-      ...MEMBER_ONLY_WHERE,
-    },
-    select: { id: true, email: true, fullName: true },
-    // The route already caps each bucket at 500; this bounds the scoped read
-    // to exactly the ids asked for so no eligible member is dropped as excluded.
-    take: ids.length,
-  });
+  // Cross-tenant on purpose: the route's baseline reads already span every
+  // organization (the cron is platform-wide), and this is a re-read of those
+  // same ids through the member-only filter.
+  const rows = await crossTenantOK(() =>
+    prisma.user.findMany({
+      where: {
+        id: { in: ids },
+        deletedAt: null,
+        notificationsReminders: true,
+        ...MEMBER_ONLY_WHERE,
+      },
+      select: { id: true, email: true, fullName: true },
+      // The route already caps each bucket at 500; this bounds the scoped read
+      // to exactly the ids asked for so no eligible member is dropped as excluded.
+      take: ids.length,
+    }),
+  );
   const eligible = new Map(rows.map((r) => [r.id, r]));
   result.excluded = ids.filter((id) => !eligible.has(id)).length;
   const restrict = (list: readonly StallNudgeCandidate[]): StallNudgeCandidate[] =>

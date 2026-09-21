@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "645ec3d2dc7b45a1bc9518ae7e1adaea81fa77aad593af986ea3b3f9e5869699",
+  "inputTreeSha256": "68216865810cdffeef95433ebe1402699e6903b9b895e3306b37a857c054ae1b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -113797,211 +113797,211 @@
       "path": "lib/cron/onboardingStallNudges.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 14665,
-      "lines": 379,
-      "sha256": "2ea5e2f9d49a7f13c3e05503a8f935486a240c2ae05bba98d706a2e75c92c798",
+      "bytes": 14978,
+      "lines": 385,
+      "sha256": "04330cdbdadda535762a573c02328a2100ded92378d4fa5e87f31642cabc1222",
       "binary": false,
       "exports": [
         {
           "name": "MEMBER_STALL_NUDGES_FLAG",
-          "line": 46,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "StallBucket",
-          "line": 48,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeTemplate",
           "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeTemplate",
+          "line": 50,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "STALL_BUCKETS",
-          "line": 52,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "STALL_BUCKET_TEMPLATE",
-          "line": 68,
+          "line": 69,
           "kind": "Variable"
         },
         {
           "name": "STALL_NUDGE_TIER",
-          "line": 75,
+          "line": 76,
           "kind": "Variable"
         },
         {
           "name": "stallNudgeKind",
-          "line": 78,
+          "line": 79,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberStallNudgesEnabled",
-          "line": 82,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StallNudgeCandidate",
-          "line": 87,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeBuckets",
           "line": 88,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeBuckets",
+          "line": 89,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "StallNudgePacer",
-          "line": 91,
+          "line": 92,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberStallNudgeResult",
-          "line": 95,
+          "line": 96,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "emptyMemberStallNudgeResult",
-          "line": 124,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planMemberStallNudges",
-          "line": 198,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberStallNudges",
-          "line": 273,
+          "line": 279,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_STALL_NUDGES_FLAG",
-          "line": 46,
+          "line": 47,
           "kind": "Variable"
         },
         {
           "name": "StallBucket",
-          "line": 48,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeTemplate",
           "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeTemplate",
+          "line": 50,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "STALL_BUCKETS",
-          "line": 52,
+          "line": 53,
           "kind": "Variable"
         },
         {
           "name": "STALL_BUCKET_TEMPLATE",
-          "line": 68,
+          "line": 69,
           "kind": "Variable"
         },
         {
           "name": "STALL_NUDGE_TIER",
-          "line": 75,
+          "line": 76,
           "kind": "Variable"
         },
         {
           "name": "stallNudgeKind",
-          "line": 78,
+          "line": 79,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberStallNudgesEnabled",
-          "line": 82,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StallNudgeCandidate",
-          "line": 87,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeBuckets",
           "line": 88,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeBuckets",
+          "line": 89,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "StallNudgePacer",
-          "line": 91,
+          "line": 92,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberStallNudgeResult",
-          "line": 95,
+          "line": 96,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SITE_URL",
-          "line": 120,
-          "kind": "Variable"
-        },
-        {
-          "name": "FALLBACK_COUNSELOR_NAME",
           "line": 121,
           "kind": "Variable"
         },
         {
-          "name": "LOG_EVENT",
+          "name": "FALLBACK_COUNSELOR_NAME",
           "line": 122,
           "kind": "Variable"
         },
         {
+          "name": "LOG_EVENT",
+          "line": 123,
+          "kind": "Variable"
+        },
+        {
           "name": "emptyMemberStallNudgeResult",
-          "line": 124,
+          "line": 125,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "firstNameOf",
-          "line": 143,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ledgerKey",
-          "line": 148,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "logCounts",
-          "line": 153,
+          "line": 154,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PlannedNudge",
-          "line": 157,
+          "line": 158,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "restrictToEligibleMembers",
-          "line": 165,
+          "line": 166,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planMemberStallNudges",
-          "line": 198,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadAlreadyNudged",
-          "line": 236,
+          "line": 242,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "loadCounselorNames",
-          "line": 253,
+          "line": 259,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberStallNudges",
-          "line": 273,
+          "line": 279,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -151017,9 +151017,9 @@
       "path": "public/fonts/material-symbols-outlined.woff2",
       "area": "assets",
       "domain": "assets",
-      "bytes": 19228,
+      "bytes": 17496,
       "lines": null,
-      "sha256": "20e026f06ea28a78971d2bd42d362c53d5c2677796dadb349415d75c0447dac1",
+      "sha256": "422c65b5dc34fd78089d65b94f4e3a634e67250afc89fb2ae0e210031108995f",
       "binary": true
     },
     {
@@ -157637,9 +157637,9 @@
       "path": "scripts/material-symbol-glyphs.txt",
       "area": "operations",
       "domain": "operations",
-      "bytes": 2306,
-      "lines": 217,
-      "sha256": "ed955ef174dd4f8fc170aa7716d2f420b969638bef7fcbd414f071a046855e83",
+      "bytes": 2065,
+      "lines": 196,
+      "sha256": "f985daf1edc1dcb94832c23a2fd3567d4d98eabbff421632f3893ea41ef904cd",
       "binary": false
     },
     {

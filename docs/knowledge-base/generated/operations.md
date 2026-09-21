@@ -99,7 +99,7 @@
 | [scripts/lint/check-type-floor.test.cjs](../../../scripts/lint/check-type-floor.test.cjs) | 90 | operations |  |
 | [scripts/lint/verify-no-retired-groq-models.mjs](../../../scripts/lint/verify-no-retired-groq-models.mjs) | 81 | operations |  |
 | [scripts/locked-stakes/check-i18n-safe-diff.mjs](../../../scripts/locked-stakes/check-i18n-safe-diff.mjs) | 296 | operations | checkI18nSafeDiff:225 |
-| [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 217 | operations |  |
+| [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 196 | operations |  |
 | [scripts/migrate-metadata-async.mjs](../../../scripts/migrate-metadata-async.mjs) | 80 | operations |  |
 | [scripts/migration-collision-baseline.json](../../../scripts/migration-collision-baseline.json) | 137 | operations |  |
 | [scripts/p1/test-force-rls.ts](../../../scripts/p1/test-force-rls.ts) | 1126 | operations |  |

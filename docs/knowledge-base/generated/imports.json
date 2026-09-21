@@ -104016,6 +104016,14 @@
     "target": "lib/observability/captureApiError.ts"
   },
   {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
     "from": "lib/cron/placement-surveys.ts",
     "specifier": "node:crypto",
     "line": 8,
