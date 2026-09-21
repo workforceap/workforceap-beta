@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
 import { getErrorMessageFromResponse } from '@/lib/fetchWithTimeout';
@@ -276,11 +277,15 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      // The panel is portaled onto <body>, so it is not inside `dropRef`:
+      // check it explicitly or every click inside the panel would close it.
+      if (panelTrapRef.current?.contains(target)) return;
+      if (dropRef.current && !dropRef.current.contains(target)) setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  }, [open, panelTrapRef]);
 
   const badgeNotifications = buildBadgeNotifications(badges, role);
   const badgeTotal = badgeNotifications.reduce((s, n) => s + n.count, 0);
@@ -291,7 +296,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
   const totalUnread = dbUnreadCount + shownBadgeTotal;
 
   const dbList = dbNotifications.length === 0 ? null : (
-        <div style={{ maxHeight: '24rem', overflowY: 'auto' }}>
+        <div style={{ maxHeight: '24rem', overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
           {dbNotifications.map((n) => (
             <div
               key={n.id}
@@ -368,8 +373,36 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
         )}
       </button>
 
-      {open && (
-        <div ref={panelTrapRef as React.RefObject<HTMLDivElement>} style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, width: '22rem', maxWidth: '90vw', zIndex: 200, borderRadius: '0.875rem', background: 'var(--surface-container-low)', border: '1px solid var(--outline-variant)', boxShadow: '0 8px 32px rgba(0,0,0,0.22)', overflow: 'hidden' }}>
+      {open && typeof document !== 'undefined' &&
+        createPortal(
+          /* Portaled onto <body> instead of staying in place under the bell:
+             the bell sits inside `header.workspace-shell-header`, whose
+             `backdrop-filter` makes it the containing block for fixed
+             descendants, and whose `.workspace-shell-header__meta` scroll
+             container (`overflow-x: auto; overflow-y: hidden` at <=768px)
+             clipped this absolute panel to a 179x44 box — at 390px the
+             dropdown opened with zero visible pixels. Same portal fix as
+             HelpAssistantPanel. */
+          <div
+            ref={panelTrapRef as React.RefObject<HTMLDivElement>}
+            role="dialog"
+            aria-label="Notifications"
+            style={{
+              position: 'fixed',
+              top: 'calc(var(--wa-header-height, 3.25rem) + 0.5rem)',
+              right: '0.75rem',
+              width: 'min(22rem, calc(100vw - 1.5rem))',
+              maxHeight: 'calc(100dvh - var(--wa-header-height, 3.25rem) - 1.5rem)',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 205,
+              borderRadius: '0.875rem',
+              background: 'var(--surface-container-low)',
+              border: '1px solid var(--outline-variant)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
+              overflow: 'hidden',
+            }}
+          >
           <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ fontWeight: 800, fontSize: '0.8125rem', color: 'var(--color-on-surface)', margin: 0 }}>Notifications</p>
             {dbUnreadCount > 0 && (
@@ -438,8 +471,9 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
               </div>
             )
           )}
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

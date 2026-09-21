@@ -328,7 +328,7 @@
 | [components/portal/MemberWorkspaceShell.tsx](../../../components/portal/MemberWorkspaceShell.tsx) | 83 | components | MEMBER_GUIDE_HREF:17, default:19 |
 | [components/portal/MentorSessionForm.tsx](../../../components/portal/MentorSessionForm.tsx) | 68 | components | default:5 |
 | [components/portal/MobileProfileSkillsResume.tsx](../../../components/portal/MobileProfileSkillsResume.tsx) | 346 | components | default:50 |
-| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 445 | communications | NOTIFICATION_LIST_LIMIT:114, default:116 |
+| [components/portal/NotificationBell.tsx](../../../components/portal/NotificationBell.tsx) | 479 | communications | NOTIFICATION_LIST_LIMIT:115, default:117 |
 | [components/portal/PageHeader.tsx](../../../components/portal/PageHeader.tsx) | 33 | components | default:4 |
 | [components/portal/PartnerExclusiveServerGate.tsx](../../../components/portal/PartnerExclusiveServerGate.tsx) | 56 | components | default:28 |
 | [components/portal/PartnerInviteMemberButton.tsx](../../../components/portal/PartnerInviteMemberButton.tsx) | 224 | components | default:11 |
@@ -340,7 +340,8 @@
 | [components/portal/PortalEmptyState.tsx](../../../components/portal/PortalEmptyState.tsx) | 74 | components | default:27 |
 | [components/portal/PortalEntryErrorBoundary.tsx](../../../components/portal/PortalEntryErrorBoundary.tsx) | 41 | components | default:13 |
 | [components/portal/PortalHeaderActions.tsx](../../../components/portal/PortalHeaderActions.tsx) | 45 | components | default:13 |
-| [components/portal/PortalHelpMenu.tsx](../../../components/portal/PortalHelpMenu.tsx) | 150 | components | default:24 |
+| [components/portal/PortalHelpMenu.test.tsx](../../../components/portal/PortalHelpMenu.test.tsx) | 78 | components |  |
+| [components/portal/PortalHelpMenu.tsx](../../../components/portal/PortalHelpMenu.tsx) | 156 | components | default:24 |
 | [components/portal/PortalInlineSpinner.tsx](../../../components/portal/PortalInlineSpinner.tsx) | 42 | components | pixelToSpinnerSize:8, PortalInlineSpinner:28 |
 | [components/portal/PortalKpiCard.tsx](../../../components/portal/PortalKpiCard.tsx) | 51 | components | default:26 |
 | [components/portal/PortalLayoutClient.tsx](../../../components/portal/PortalLayoutClient.tsx) | 12 | components | default:6 |
@@ -430,12 +431,12 @@
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
 | [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |
-| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 320 | components | default:47 |
+| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 329 | components | HELP_ASSISTANT_PANEL_SELECTOR:18, default:55 |
 | [components/portal/help/useHelpAssistantAvailability.ts](../../../components/portal/help/useHelpAssistantAvailability.ts) | 63 | components | HelpAssistantInfo:7, HelpAssistantAvailability:15, useHelpAssistantAvailability:26 |
 | [components/portal/jobs/LogExternalApplicationButton.tsx](../../../components/portal/jobs/LogExternalApplicationButton.tsx) | 327 | jobs-employers | default:53 |
 | [components/portal/kit/AppShellMember.tsx](../../../components/portal/kit/AppShellMember.tsx) | 113 | components | MemberTab:3, AppShellMember:26 |
 | [components/portal/kit/AppShellSidebar.tsx](../../../components/portal/kit/AppShellSidebar.tsx) | 117 | components | NavItem:7, NavGroup:13, AppShellSidebar:34 |
-| [components/portal/kit/Avatar.tsx](../../../components/portal/kit/Avatar.tsx) | 66 | components | Avatar:16 |
+| [components/portal/kit/Avatar.tsx](../../../components/portal/kit/Avatar.tsx) | 69 | components | Avatar:16 |
 | [components/portal/kit/Charts.tsx](../../../components/portal/kit/Charts.tsx) | 210 | components | ChartDatum:4, BarChartMini:20, Sparkline:55, AreaChartMini:105, RankDatum:177, RankBars:191 |
 | [components/portal/kit/ChatThread.tsx](../../../components/portal/kit/ChatThread.tsx) | 179 | components | ChatMessage:7, ChatThread:36 |
 | [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 193 | components | SparkStat:22, CardHead:36, DeltaChip:50, StatSparkTile:70, StageTrack:138, SegmentedProgress:165 |
@@ -548,10 +549,10 @@
 | [components/portal/kit/pages/member/MemberCertificatesKit.tsx](../../../components/portal/kit/pages/member/MemberCertificatesKit.tsx) | 193 | member-counselor | MemberCertificatesKitProps:39, MemberCertificatesKit:70 |
 | [components/portal/kit/pages/member/MemberCounselorKit.tsx](../../../components/portal/kit/pages/member/MemberCounselorKit.tsx) | 76 | member-counselor | CounselorSessionSummary:16, MemberCounselorKitProps:22, MemberCounselorKit:31 |
 | [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 95 | member-counselor |  |
-| [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 939 | member-counselor | StatSpark:85, WeeklyActivityPoint:95, PointsLedgerEntry:101, MemberHomeKitProps:107, MemberHomeKit:552 |
+| [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 943 | member-counselor | StatSpark:85, WeeklyActivityPoint:95, PointsLedgerEntry:101, MemberHomeKitProps:107, MemberHomeKit:556 |
 | [components/portal/kit/pages/member/MemberJobDetail.tsx](../../../components/portal/kit/pages/member/MemberJobDetail.tsx) | 193 | member-counselor | JobDetailScreeningQuestion:15, MemberJobDetailProps:21, MemberJobDetail:52 |
 | [components/portal/kit/pages/member/MemberJobsBoard.tsx](../../../components/portal/kit/pages/member/MemberJobsBoard.tsx) | 154 | member-counselor | BoardJob:19, MemberJobsBoardProps:30, MemberJobsBoard:59 |
-| [components/portal/kit/pages/member/MemberJobsKit.tsx](../../../components/portal/kit/pages/member/MemberJobsKit.tsx) | 270 | member-counselor | JOBS_OPEN_ROLES_ANCHOR:27, OpenRoleRow:48, MemberJobsKitProps:59, MemberJobsKit:98 |
+| [components/portal/kit/pages/member/MemberJobsKit.tsx](../../../components/portal/kit/pages/member/MemberJobsKit.tsx) | 274 | member-counselor | JOBS_OPEN_ROLES_ANCHOR:27, OpenRoleRow:48, MemberJobsKitProps:59, MemberJobsKit:98 |
 | [components/portal/kit/pages/member/MemberMentorProfileKit.tsx](../../../components/portal/kit/pages/member/MemberMentorProfileKit.tsx) | 103 | member-counselor | MentorProfile:16, MemberMentorProfileKitProps:26, MemberMentorProfileKit:39 |
 | [components/portal/kit/pages/member/MemberMentorsKit.tsx](../../../components/portal/kit/pages/member/MemberMentorsKit.tsx) | 142 | member-counselor | MentorSummary:26, MemberMentorsKitProps:34, MemberMentorsKit:68 |
 | [components/portal/kit/pages/member/MemberMessagesEmpty.tsx](../../../components/portal/kit/pages/member/MemberMessagesEmpty.tsx) | 44 | member-counselor | MemberMessagesEmpty:10 |
