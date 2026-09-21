@@ -223,11 +223,23 @@ vi.mock('@/lib/billing/packetSchema', () => ({
   sumLineItems: vi.fn(() => 0),
 }));
 vi.mock('@/lib/billing/providerIdentity', () => ({ getPacketNumberPrefix: vi.fn(() => 'INV') }));
-vi.mock('@prisma/client', () => ({
-  InvitationStatus: { pending: 'pending', accepted: 'accepted', expired: 'expired', revoked: 'revoked' },
-  MessageThreadKind: { member: 'member', employer: 'employer', partner: 'partner' },
-  Prisma: { PrismaClientKnownRequestError: class extends Error {} },
-}));
+vi.mock('@prisma/client', async (importOriginal) => {
+  // Routes build raw fragments with the real Prisma.sql / raw / join / empty
+  // (e.g. the shared member-only join); keep those real so the SQL the
+  // `pgTypeCheck` proxy inspects is the SQL production would send.
+  const actual = await importOriginal<typeof import('@prisma/client')>();
+  return {
+    InvitationStatus: { pending: 'pending', accepted: 'accepted', expired: 'expired', revoked: 'revoked' },
+    MessageThreadKind: { member: 'member', employer: 'employer', partner: 'partner' },
+    Prisma: {
+      PrismaClientKnownRequestError: class extends Error {},
+      sql: actual.Prisma.sql,
+      raw: actual.Prisma.raw,
+      join: actual.Prisma.join,
+      empty: actual.Prisma.empty,
+    },
+  };
+});
 vi.mock('@/lib/member/getMemberState', () => ({ invalidateMemberState: vi.fn(async () => undefined) }));
 vi.mock('@/lib/supabase-admin', () => ({ getSupabaseAdmin: vi.fn(() => null) }));
 vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn(async () => undefined) }));

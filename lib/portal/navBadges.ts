@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db/prisma';
 import { getCounselorForUser, getEmployerForUser, getPartnerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { countThreadsWithSlaBreach, countUnansweredMemberThreads, getSlaStatusForThreads } from '@/lib/messages/superAdminMessageQueries';
+import { countThreadsWithUnread, countUnreadMemberMessagesByThread } from '@/lib/messages/counselorInbox';
+import { memberUnreadStaffMessagesWhere } from '@/lib/messages/memberUnread';
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { countPartnerAttention } from '@/lib/partner/attentionQueue';
 import {
@@ -82,17 +84,17 @@ async function getMemberBadgeCounts(userId: string): Promise<NavBadgeCounts> {
 
   let counselor_messages_unread = 0;
   if (thread) {
-    // If memberLastReadAt is null, the member hasn't explicitly read the thread.
-    // Counting every message as unread inflates the badge and undermines trust.
-    counselor_messages_unread = thread.memberLastReadAt
-      ? await prisma.message.count({
-          where: {
-            threadId: thread.id,
-            authorId: { not: userId },
-            createdAt: { gt: thread.memberLastReadAt },
-          },
-        })
-      : 0;
+    // Same rule as the Messages page (lib/messages/memberUnread.ts): a null
+    // read marker means every staff-authored message is unread.
+    const unreadStaffMessages = await prisma.message.count({
+      where: memberUnreadStaffMessagesWhere({
+        threadId: thread.id,
+        memberUserId: userId,
+        memberLastReadAt: thread.memberLastReadAt,
+      }),
+    });
+    // Unread badges count threads: a member has one thread, so 0 or 1.
+    counselor_messages_unread = countThreadsWithUnread(new Map([[thread.id, unreadStaffMessages]]));
   }
 
   return {
@@ -184,26 +186,10 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
 
   if (threads.length === 0) return { counselor_notifications_unread };
 
-  // Batch unread counts into a single SQL query (eliminates N message.count calls).
-  const threadIds = threads.map((t) => t.id);
-  const unreadRows = await prisma.$queryRawUnsafe<
-    Array<{ threadId: string; count: bigint }>
-  >(
-    `SELECT m.thread_id as "threadId", COUNT(*) as count
-     FROM messages m
-     JOIN message_threads t ON m.thread_id = t.id
-     WHERE m.thread_id = ANY($1)
-       AND m.author_id = t.member_id
-       AND t.counselor_last_read_at IS NOT NULL
-       AND m.created_at > t.counselor_last_read_at
-     GROUP BY m.thread_id`,
-    threadIds,
-  );
-  const unreadMap = new Map<string, bigint>();
-  for (const row of unreadRows) {
-    unreadMap.set(row.threadId, row.count);
-  }
-  const unreadCounts = threads.map((t) => Number(unreadMap.get(t.id) ?? 0));
+  // One batched query shared with the counselor inbox, so the rail badge and
+  // the inbox "Unread" tab count the same unread THREADS (never-opened threads
+  // included).
+  const unreadMap = await countUnreadMemberMessagesByThread(threads.map((t) => t.id));
 
   const slaRows = await getSlaStatusForThreads(threads.map((thread) => thread.id));
   let counselor_sla_breach_48h = 0;
@@ -212,7 +198,7 @@ async function getCounselorBadgeCounts(counselorId: string, userId: string): Pro
   }
 
   return {
-    counselor_messages_unread: unreadCounts.reduce((sum, count) => sum + count, 0),
+    counselor_messages_unread: countThreadsWithUnread(unreadMap),
     counselor_notifications_unread,
     counselor_sla_breach_48h,
   };

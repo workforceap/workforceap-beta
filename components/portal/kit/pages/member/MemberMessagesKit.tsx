@@ -93,6 +93,32 @@ export function MemberMessagesKit({
   const otherInitialsRef = useRef(otherInitials);
   otherInitialsRef.current = otherInitials;
 
+  // Read marker: opening the thread (and receiving a counselor reply while it
+  // is open) marks it read, the same way the legacy clients do. Without this
+  // the badge the nav turns on for a never-opened thread could never clear.
+  const markRead = useCallback(async () => {
+    if (!memberUserId || !threadId) return;
+    try {
+      const r = await fetch('/api/member/messages', { method: 'PATCH', credentials: 'include' });
+      if (r.ok) {
+        try {
+          window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh'));
+        } catch {
+          /* ignore */
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [memberUserId, threadId]);
+  const markReadRef = useRef(markRead);
+  markReadRef.current = markRead;
+
+  useEffect(() => {
+    if (!memberUserId || !threadId) return;
+    void markRead();
+  }, [memberUserId, threadId, markRead]);
+
   // Live send path: reuse the existing legacy endpoint that
   // MemberCounselorChatClient posts to. Only active when a real member id is
   // present and no explicit onSend override was passed.
@@ -184,14 +210,9 @@ export function MemberMessagesKit({
                 : { id, from: 'other', text: body, author: otherInitialsRef.current };
               return [...prev, incoming];
             });
-            // Counselor reply arrived — refresh the nav unread badge.
-            if (!mine) {
-              try {
-                window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh'));
-              } catch {
-                /* ignore */
-              }
-            }
+            // Counselor reply arrived while the thread is open: mark it read
+            // (which also refreshes the nav unread badge).
+            if (!mine) void markReadRef.current();
           },
         )
         .subscribe();

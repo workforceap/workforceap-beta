@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { programSlugReadCandidates } from '@/lib/content/programSlug';
+import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -79,7 +81,9 @@ export default async function DashboardCertificationsPage({
     primaryPathway
       ? prisma.pathwayStepProgress.findMany({
         take: 500,
-          where: { userId: user.id, pathwayId: primaryPathway.id },
+          // Pathway ids are program slugs; rows saved under a legacy alias
+          // slug belong to the same pathway.
+          where: { userId: user.id, pathwayId: { in: programSlugReadCandidates(primaryPathway.id) } },
         })
       : Promise.resolve([] as Array<{ pathwayId: string; stepIndex: number; status: string }>),
     // Same program ledger as home and My program (reconcileProgramProgress), so
@@ -129,7 +133,10 @@ export default async function DashboardCertificationsPage({
               id: `${trainingProgram.slug}-program`,
               title: nextCourseName ?? trainingProgram.title,
               percent: trainingView.progressPercentDisplay,
-              note: `${trainingView.completedCount} of ${trainingView.totalCourses} courses complete in ${trainingProgram.title}`,
+              note: [
+                `${trainingView.completedCount} of ${trainingView.totalCourses} courses complete in ${trainingProgram.title}`,
+                describeCourseDenominator(trainingProgram.courses),
+              ].filter(Boolean).join(' '),
             },
           ]
         : primaryPathway && currentMilestone
@@ -482,7 +489,7 @@ export default async function DashboardCertificationsPage({
                   trending_up
                 </span>
                 <div>
-                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)' }}>Program Progress</div>
+                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-on-surface-variant)' }}>Pathway steps</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 'var(--font-weight-bold)' }}>{pathwayPct}%</div>
                 </div>
               </div>

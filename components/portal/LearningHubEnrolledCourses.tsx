@@ -4,6 +4,7 @@ import Link from 'next/link';
 import TrainingCourseList from '@/components/portal/TrainingCourseList';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import type { LanguageSupport, ProgramCourse } from '@/lib/content/programs';
+import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 
 type LearningHubEnrolledCoursesProps = {
   programSlug: string | null;
@@ -121,6 +122,11 @@ export default function LearningHubEnrolledCourses({
             <p style={{ fontSize: '0.875rem', color: 'var(--color-on-surface-variant)', marginTop: '0.35rem' }}>
               {completedInProgram} of {courses.length} courses marked complete
             </p>
+            {describeCourseDenominator(courses) ? (
+              <p data-testid="program-courses-note" style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.3rem' }}>
+                {describeCourseDenominator(courses)}
+              </p>
+            ) : null}
             {languageSupportLine ? (
               <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.3rem' }}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '0.9rem', verticalAlign: '-0.15em', marginRight: '0.25rem' }}>

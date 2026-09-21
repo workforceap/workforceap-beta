@@ -338,7 +338,7 @@ export default function OutcomesSnapshot({ initialSnapshot, initialPeriod }: Out
         </SectionShell>
 
         {/* ── Funnel Waterfall ── */}
-        <SectionShell title="Funnel waterfall" subtitle="Accounts → Applications → Approved → Enrolled → Training completed → Placed (counts + conversion rates).">
+        <SectionShell title="Funnel waterfall" subtitle="Accounts → Applications → Enrolled → Training completed → Placed (counts + conversion from the previous stage; approval is not a gate to enrolment, so approved applications are shown in the application funnel above).">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {waterfall.map((step, idx) => (
               <div key={step.stage}>

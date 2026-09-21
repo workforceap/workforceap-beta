@@ -154,6 +154,11 @@ export interface MemberHomeKitProps {
   certModulesDone?: number;
   /** Total modules in the active certification. */
   certModulesTotal?: number;
+  /**
+   * Plain line under the module row naming the WorkforceAP lab inside the
+   * module count, so nobody wonders why Coursera's path covers one fewer.
+   */
+  programCoursesNote?: string | null;
   /** Daily study-minutes series for the weekly activity chart. Omit/short (<2 points) shows a placeholder instead of an empty chart. */
   weeklyActivity?: WeeklyActivityPoint[];
   /** Caption next to the weekly-activity legend, e.g. "+41% vs last week". Omit to hide. */
@@ -578,6 +583,7 @@ export function MemberHomeKit({
   pointsSpark,
   certModulesDone,
   certModulesTotal,
+  programCoursesNote,
   weeklyActivity = [],
   weeklyActivityDeltaLabel,
   pointsThisWeek,
@@ -714,6 +720,14 @@ export function MemberHomeKit({
                       aria-label="Certification module progress"
                     />
                   </div>
+                ) : null}
+                {programTitle && programCoursesNote ? (
+                  <p
+                    data-testid="program-courses-note"
+                    style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 6 }}
+                  >
+                    {programCoursesNote}
+                  </p>
                 ) : null}
                 <div style={{ marginTop: 12 }}>
                   <Link

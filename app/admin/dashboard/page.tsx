@@ -61,7 +61,7 @@ interface MetricsData {
     jobApplicationsTracked: number;
     totalPlacements: number;
     recentPlacements: number;
-    avgPlacementSalary: number;
+    avgPlacementSalary: number | null;
     placementRate: number;
     pendingApplications?: number;
     criticalAtRisk?: number;
@@ -290,7 +290,7 @@ function ExecutiveDashboardContent() {
         <SummaryCard label="AI Tool Runs" value={summary.aiToolRuns} color="var(--wa-gold-dark)" />
         <SummaryCard label="Placements" value={summary.totalPlacements} color="var(--wa-success-dark)" />
         <SummaryCard label="Placement Rate" value={`${summary.placementRate}%`} color="var(--color-accent)" />
-        <SummaryCard label="Avg Salary" value={`$${summary.avgPlacementSalary.toLocaleString()}`} color="var(--wa-info-dark)" />
+        <SummaryCard label="Avg Salary" value={summary.avgPlacementSalary != null ? `$${summary.avgPlacementSalary.toLocaleString()}` : '—'} color="var(--wa-info-dark)" />
       </div>
 
       {/* Work Queue — actionable items needing attention */}
@@ -318,11 +318,11 @@ function ExecutiveDashboardContent() {
             subtitle="Needs counselor follow-up"
           />
           <WorkQueueCard
-            label="Stale Training (7d+)"
+            label="Stale Training"
             value={summary.staleTraining ?? 0}
             href="/admin/members?status=stale"
             color="#a47f38"
-            subtitle="No progress in 7 days"
+            subtitle="Members flagged: no course progress for 7+ days"
           />
           <WorkQueueCard
             label="Unmatched Coursera"

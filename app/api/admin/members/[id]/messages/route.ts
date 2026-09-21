@@ -16,6 +16,8 @@ import {
 } from '@/lib/messages/counselorThread';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
+import { createNotification } from '@/lib/notifications/create';
+import { STAFF_MESSAGE_NOTIFICATION_TITLE } from '@/lib/messages/staffMessageNotification';
 
 type Props = { params: Promise<{ id: string }> };async function _GET(_request: NextRequest, { params }: Props) {
   try {
@@ -118,6 +120,16 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest, {
       },
     });
     return m;
+  });
+
+  // Same in-app notification the counselor route creates: without it a staff
+  // reply sent from the admin side never reaches the member's bell.
+  await createNotification({
+    userId: memberId,
+    type: 'message',
+    title: STAFF_MESSAGE_NOTIFICATION_TITLE,
+    body: normalized.body.slice(0, 200),
+    data: { threadId: thread.id, authorId: user.id, link: '/dashboard/messages' },
   });
 
   void auditLog({ actorUserId: user.id, action: 'admin_member_message_sent', targetType: 'User', targetId: memberId, metadata: { messageId: msg.id } }).catch(() => {});

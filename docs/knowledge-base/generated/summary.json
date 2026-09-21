@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "07671efba2856feff7c2290d51772c68f28c6fc7d9a50b0e534dc033121d1755",
+  "inputTreeSha256": "717fb7ad39511e83c9876579a3f13082b26841579a471fff85ef8948ac742b80",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5023,
-    "sourceModules": 3666,
-    "importReferences": 18277,
-    "resolvedLocalReferences": 12274,
+    "files": 5038,
+    "sourceModules": 3681,
+    "importReferences": 18391,
+    "resolvedLocalReferences": 12371,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 996,
-    "testCandidates": 986,
+    "testFiles": 1005,
+    "testCandidates": 995,
     "testHelpers": 10,
-    "staticallySelectedTests": 984,
+    "staticallySelectedTests": 993,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1082
+      "files": 1091
     },
     {
       "area": "localization",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 592
+      "files": 598
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 936
+      "references": 940
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 759
+      "references": 760
     },
     {
       "file": "lib/auth/roles.ts",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 246
+      "references": 248
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -187,12 +187,12 @@
       "references": 83
     },
     {
-      "file": "components/portal/PortalPageFrame.tsx",
-      "references": 72
+      "file": "lib/content/programSlug.ts",
+      "references": 73
     },
     {
-      "file": "lib/content/programSlug.ts",
-      "references": 69
+      "file": "components/portal/PortalPageFrame.tsx",
+      "references": 72
     },
     {
       "file": "lib/email/escapeHtml.ts",
@@ -203,6 +203,14 @@
       "references": 60
     },
     {
+      "file": "lib/admin/memberOnlyWhere.ts",
+      "references": 57
+    },
+    {
+      "file": "lib/content/programCurriculumManifest.ts",
+      "references": 54
+    },
+    {
       "file": "lib/supabase-admin.ts",
       "references": 54
     },
@@ -211,15 +219,11 @@
       "references": 52
     },
     {
-      "file": "lib/content/programCurriculumManifest.ts",
-      "references": 52
+      "file": "messages/en.json",
+      "references": 51
     },
     {
       "file": "lib/member/curriculumAssignment.ts",
-      "references": 50
-    },
-    {
-      "file": "messages/en.json",
       "references": 50
     },
     {
@@ -243,12 +247,8 @@
       "references": 39
     },
     {
-      "file": "components/LocalizedLink.tsx",
-      "references": 37
-    },
-    {
-      "file": "lib/db/queryCaps.ts",
-      "references": 37
+      "file": "lib/notifications/create.ts",
+      "references": 39
     }
   ],
   "largestSourceFiles": [
@@ -317,6 +317,10 @@
       "lines": 1369
     },
     {
+      "file": "lib/admin/boardOutcomes.ts",
+      "lines": 1357
+    },
+    {
       "file": "lib/coursera/csvImport.server.ts",
       "lines": 1351
     },
@@ -341,10 +345,6 @@
       "lines": 1296
     },
     {
-      "file": "lib/admin/boardOutcomes.ts",
-      "lines": 1284
-    },
-    {
       "file": "tests/portal-audit-five-role.test.ts",
       "lines": 1284
     },
@@ -362,7 +362,7 @@
     },
     {
       "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1209
+      "lines": 1210
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",
