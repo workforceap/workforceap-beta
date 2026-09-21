@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "1ae2a1f8b81e6564b08a3787063453fa3befd3c27c0e1aa24dba33a48ac6954d",
+  "inputTreeSha256": "22ed57f6f8038b360fd4bd3c08a15a3bb7bf73cba0f8f2b70d952e5293387954",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5020,
-    "sourceModules": 3663,
-    "importReferences": 18263,
-    "resolvedLocalReferences": 12267,
+    "files": 5022,
+    "sourceModules": 3665,
+    "importReferences": 18273,
+    "resolvedLocalReferences": 12275,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1069,
     "nextRouteFiles": 1035,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 996,
-    "testCandidates": 986,
+    "testFiles": 997,
+    "testCandidates": 987,
     "testHelpers": 10,
-    "staticallySelectedTests": 984,
+    "staticallySelectedTests": 985,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1082
+      "files": 1083
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 592
+      "files": 593
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 936
+      "references": 937
     },
     {
       "file": "lib/auth/server.ts",
@@ -305,16 +305,16 @@
       "lines": 1454
     },
     {
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1400
+    },
+    {
       "file": "app/(portal)/partner/page.tsx",
       "lines": 1391
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
       "lines": 1386
-    },
-    {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1369
     },
     {
       "file": "lib/coursera/csvImport.server.ts",

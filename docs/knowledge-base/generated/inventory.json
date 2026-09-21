@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "1ae2a1f8b81e6564b08a3787063453fa3befd3c27c0e1aa24dba33a48ac6954d",
+  "inputTreeSha256": "22ed57f6f8038b360fd4bd3c08a15a3bb7bf73cba0f8f2b70d952e5293387954",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -24057,9 +24057,9 @@
       "path": "app/api/admin/email-failures/[id]/resend/route.ts",
       "area": "api",
       "domain": "communications",
-      "bytes": 5551,
-      "lines": 148,
-      "sha256": "ac7383c0855e4181433ac5282b99bb7d9b2b95faf552813bd49a1ac318f30019",
+      "bytes": 5793,
+      "lines": 154,
+      "sha256": "6362f039bf1ff6044c262bce04e1eb95975876700ff84490f37476789abac774",
       "binary": false,
       "exports": [
         {
@@ -30345,9 +30345,9 @@
       "path": "app/api/apply/signup/route.test.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 50893,
-      "lines": 1369,
-      "sha256": "65b75bea04ce5edecf8b8bf5bd89e8a5f5db4fb6dad7b7c2722895eb4aa544dd",
+      "bytes": 52333,
+      "lines": 1400,
+      "sha256": "544b2db4cc654ada7f107939e4e8ac3b8005cb3f84e42c8d24cb25c5d8c3150f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -30393,9 +30393,9 @@
       "path": "app/api/apply/signup/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 48440,
-      "lines": 1087,
-      "sha256": "cd0731245223088d36aa2c9e1ceee8c99b07360e6ced1bcf70d9e099be2dd7a6",
+      "bytes": 47998,
+      "lines": 1082,
+      "sha256": "4a57546d88001881f3fc2d722f344644a1f1591acb70d838cbfa764658b737fb",
       "binary": false,
       "exports": [
         {
@@ -40723,26 +40723,26 @@
       "path": "app/api/public/wioa-qualification/voice-session/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 2559,
-      "lines": 66,
-      "sha256": "56f1e768e549b406d3b8e9812a46f92785593e14dd4f7bbe12589428c3b1c428",
+      "bytes": 2640,
+      "lines": 68,
+      "sha256": "835a61ebbf2fc51f135e48e4e0ff1795751e99ab489db6034ab770dbd80ef6ee",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "payloadSchema",
-          "line": 8,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -86930,105 +86930,43 @@
       "path": "lib/admin/memberActivity.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 5270,
-      "lines": 143,
-      "sha256": "f1643f458e546ecfa517cab696a5633ca233555a65c28486e2a4429ef05f2d8c",
+      "bytes": 4998,
+      "lines": 135,
+      "sha256": "a74f22c5c3bcae737161eb0f9e3d3cf08387263b1dd4370987426c0e407c9e87",
       "binary": false,
       "exports": [
         {
           "name": "MemberActivityKind",
-          "line": 11,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberActivityAuditInput",
-          "line": 13,
+          "line": 15,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityEventInput",
-          "line": 22,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityDetail",
-          "line": 33,
+          "line": 35,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityRow",
-          "line": 40,
+          "line": 42,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MEMBER_ACTIVITY_CAP",
-          "line": 53,
-          "kind": "Variable"
-        },
-        {
-          "name": "MEMBER_EVENT_LOAD_CAP",
           "line": 55,
           "kind": "Variable"
         },
         {
-          "name": "redactActivityMetadata",
-          "line": 64,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "formatActivityMetadata",
-          "line": 77,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "humanizeActivityName",
-          "line": 96,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "buildMemberActivityRows",
-          "line": 119,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "MemberActivityKind",
-          "line": 11,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "MemberActivityAuditInput",
-          "line": 13,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityEventInput",
-          "line": 22,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityDetail",
-          "line": 33,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityRow",
-          "line": 40,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MEMBER_ACTIVITY_CAP",
-          "line": 53,
-          "kind": "Variable"
-        },
-        {
           "name": "MEMBER_EVENT_LOAD_CAP",
-          "line": 55,
-          "kind": "Variable"
-        },
-        {
-          "name": "REDACTED_KEY",
           "line": 57,
           "kind": "Variable"
         },
@@ -87039,27 +86977,84 @@
         },
         {
           "name": "formatActivityMetadata",
-          "line": 77,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "eventDetail",
-          "line": 83,
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "humanizeActivityName",
-          "line": 96,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "auditActor",
-          "line": 109,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMemberActivityRows",
-          "line": 119,
+          "line": 111,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MemberActivityKind",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberActivityAuditInput",
+          "line": 15,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityEventInput",
+          "line": 24,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityDetail",
+          "line": 35,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityRow",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_CAP",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_EVENT_LOAD_CAP",
+          "line": 57,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactActivityMetadata",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatActivityMetadata",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "eventDetail",
+          "line": 75,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "humanizeActivityName",
+          "line": 88,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "auditActor",
+          "line": 101,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberActivityRows",
+          "line": 111,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -91468,81 +91463,86 @@
       "path": "lib/ai/elevenlabsPortalContext.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 7134,
-      "lines": 189,
-      "sha256": "efa81f9c5438e097425ea38395b7a313cfa22a640001cddd1fe296bb9ce3dbc9",
+      "bytes": 7496,
+      "lines": 195,
+      "sha256": "30676e569fe879acd608dd0e38c8c6cd69f11059138dcf316fa01f37071c774c",
       "binary": false,
       "exports": [
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 65,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 88,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 116,
+          "line": 122,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 138,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 165,
+          "line": 171,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "VOICE_DEFAULTS",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "withVoiceDefaults",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 65,
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "firstNameOnly",
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 88,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 116,
+          "line": 122,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 138,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 165,
+          "line": 171,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96290,9 +96290,9 @@
       "path": "lib/apply/eligibilityScreeningFields.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 5495,
-      "lines": 150,
-      "sha256": "db3193db420ccc4746c8a498ce40d6f572051553abc9a14da83528c78eac4994",
+      "bytes": 5371,
+      "lines": 157,
+      "sha256": "43e3dd3b0cc733c752b2cf5b0ae02c61aea12278df6f4458b1076a1894c000e7",
       "binary": false,
       "exports": [
         {
@@ -96326,8 +96326,8 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "eligibilityFieldsPlainLines",
-          "line": 120,
+          "name": "eligibilityScreeningNotesPointer",
+          "line": 153,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96363,8 +96363,18 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "eligibilityFieldsPlainLines",
-          "line": 120,
+          "name": "hasEligibilityScreeningAnswers",
+          "line": 124,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ELIGIBILITY_SCREENING_NOTES_POINTER",
+          "line": 150,
+          "kind": "Variable"
+        },
+        {
+          "name": "eligibilityScreeningNotesPointer",
+          "line": 153,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116439,31 +116449,41 @@
       "path": "lib/diagnostics.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1232,
-      "lines": 37,
-      "sha256": "dd4d38ea26194f3d2cef4b5c82f0c3adf4097c84053be0a941cd3832a079970e",
+      "bytes": 2188,
+      "lines": 57,
+      "sha256": "41c71ff3b361ca41feff4d0f97ab4ed86bd48fb2a6d97bc0630340d95fc2bf56",
       "binary": false,
       "exports": [
         {
           "name": "WorkflowDiagnosticParams",
-          "line": 3,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "redactDiagnosticMetadata",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "recordWorkflowDiagnostic",
-          "line": 17,
+          "line": 37,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "WorkflowDiagnosticParams",
-          "line": 3,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "redactDiagnosticMetadata",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "recordWorkflowDiagnostic",
-          "line": 17,
+          "line": 37,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116473,9 +116493,9 @@
       "path": "lib/elevenlabs-agent-dynamic-defaults.test.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 8574,
-      "lines": 188,
-      "sha256": "44a4e32a0063480e04079523e08c48029b3fc389f9d21cd86829359a0ff61985",
+      "bytes": 8561,
+      "lines": 186,
+      "sha256": "0ce10bc8ca2af5a19c8a057aadc948dc698e06ea6dae84bcb29ac931c725170d",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -117793,146 +117813,146 @@
       "path": "lib/email/failureRecord.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 8938,
-      "lines": 201,
-      "sha256": "5f4c1578f626674457b151618f18234c0f0efb1196cb109ffbba5ad35a35ffad",
+      "bytes": 9807,
+      "lines": 220,
+      "sha256": "f9c26121171e8f1a3762ff0fceba6daaa339ab8f4f4b7b79b27947a94a32591c",
       "binary": false,
       "exports": [
         {
           "name": "EMAIL_SEND_WORKFLOW",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_TEMPLATE_ENTITY_TYPE",
-          "line": 24,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_RESEND_METHOD",
-          "line": 26,
+          "line": 31,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureClass",
-          "line": 28,
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailTemplateRef",
-          "line": 36,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmailFailureMetadata",
-          "line": 43,
+          "line": 48,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 94,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 120,
+          "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientDomain",
-          "line": 127,
+          "line": 141,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildEmailFailureMetadata",
-          "line": 138,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 174,
+          "line": 193,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EMAIL_SEND_WORKFLOW",
-          "line": 22,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_TEMPLATE_ENTITY_TYPE",
-          "line": 24,
+          "line": 29,
           "kind": "Variable"
         },
         {
           "name": "EMAIL_RESEND_METHOD",
-          "line": 26,
+          "line": 31,
           "kind": "Variable"
         },
         {
           "name": "EmailFailureClass",
-          "line": 28,
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "EmailTemplateRef",
-          "line": 36,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmailFailureMetadata",
-          "line": 43,
+          "line": 48,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "asRecord",
-          "line": 68,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "statusOf",
-          "line": 74,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "messageOf",
-          "line": 81,
+          "line": 95,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyEmailSendFailure",
-          "line": 94,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientHash",
-          "line": 120,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "recipientDomain",
-          "line": 127,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "jsonSafe",
           "line": 134,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "recipientDomain",
+          "line": 141,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "jsonSafe",
+          "line": 148,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildEmailFailureMetadata",
-          "line": 138,
+          "line": 152,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FAILURE_CLASSES",
-          "line": 165,
+          "line": 184,
           "kind": "Variable"
         },
         {
           "name": "parseEmailFailureMetadata",
-          "line": 174,
+          "line": 193,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141877,6 +141897,65 @@
         {
           "name": "verifyPlacementSurveyToken",
           "line": 94,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/security/redactMetadata.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1790,
+      "lines": 44,
+      "sha256": "7ffc28251b6d99d475a079d9a0724652d3210e7f427f4d6f04f2fc6c72fca741",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CONTACT_AND_SECRET_KEY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "PERSONAL_DATA_KEY",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactMetadataKeys",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "containsRedactedValue",
+          "line": 37,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "REDACTED_VALUE",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONTACT_AND_SECRET_KEY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "PERSONAL_DATA_KEY",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactMetadataKeys",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "containsRedactedValue",
+          "line": 37,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -171884,6 +171963,18 @@
       "directive": null
     },
     {
+      "path": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4639,
+      "lines": 111,
+      "sha256": "5216170009cb446ad9aff298d60a8375c4aec3a93960f04c686ecb309bb7995e",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
       "path": "tests/e2e/README.md",
       "area": "tests",
       "domain": "tests",
@@ -172707,9 +172798,9 @@
       "path": "tests/email/failure-record.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 9013,
-      "lines": 178,
-      "sha256": "90406d45dc47aea98abe0f46cbe2861dc92f88a28b534c7af423b60b72c241bc",
+      "bytes": 10151,
+      "lines": 204,
+      "sha256": "8e3eb1c08f094a704e68af3850052b8a23228472892e0c7d185ffb37c3e70da2",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172725,9 +172816,9 @@
       "path": "tests/email/resend-route.spec.ts",
       "area": "tests",
       "domain": "communications",
-      "bytes": 10234,
-      "lines": 196,
-      "sha256": "b1f9a87fb3c5d5594f9ac84916a1c77aa58b1604612d8ee650156a6ad62e0fa9",
+      "bytes": 10860,
+      "lines": 208,
+      "sha256": "33a93d5b9c6f11111ffa01f5ab7a508d0bc791d0d4d649a5a5c5d851a9771768",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -177489,9 +177580,9 @@
       "path": "tests/privacy/voice-context-minimisation.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3328,
-      "lines": 75,
-      "sha256": "8f878221f0b0a81c61679a74fbb1271553963cb723e0532ee040353d8109e343",
+      "bytes": 4529,
+      "lines": 110,
+      "sha256": "9eb210b832f73f57a79573638d480b653a5fb77abadc7c08418f9aa287d65f04",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -177502,12 +177593,12 @@
         },
         {
           "name": "ANSWER_KEY",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "ANSWER_VALUES",
-          "line": 47,
+          "line": 51,
           "kind": "Variable"
         }
       ],

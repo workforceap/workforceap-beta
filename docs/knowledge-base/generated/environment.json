@@ -2417,7 +2417,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 465
+          "line": 476
         },
         {
           "file": "app/api/employer/signup/route.ts",
@@ -2488,7 +2488,7 @@
         },
         {
           "file": "app/api/apply/signup/route.ts",
-          "line": 464
+          "line": 475
         },
         {
           "file": "app/api/employer/signup/route.ts",

@@ -65,7 +65,7 @@
 | [app/api/admin/email-crons/\[id\]/trigger/route.ts](../../../app/api/admin/email-crons/%5Bid%5D/trigger/route.ts) | 108 | communications | POST:11 |
 | [app/api/admin/email-crons/activate-all/route.ts](../../../app/api/admin/email-crons/activate-all/route.ts) | 73 | communications | POST:12 |
 | [app/api/admin/email-crons/route.ts](../../../app/api/admin/email-crons/route.ts) | 66 | communications | GET:9 |
-| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 148 | communications | maxDuration:17, POST:32 |
+| [app/api/admin/email-failures/\[id\]/resend/route.ts](../../../app/api/admin/email-failures/%5Bid%5D/resend/route.ts) | 154 | communications | maxDuration:17, POST:32 |
 | [app/api/admin/email-templates/\[id\]/preview/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.test.ts) | 6 | communications |  |
 | [app/api/admin/email-templates/\[id\]/preview/route.ts](../../../app/api/admin/email-templates/%5Bid%5D/preview/route.ts) | 43 | communications | POST:9 |
 | [app/api/admin/email-templates/\[id\]/route.test.ts](../../../app/api/admin/email-templates/%5Bid%5D/route.test.ts) | 6 | communications |  |
@@ -235,8 +235,8 @@
 | [app/api/ai/salary-negotiation/route.ts](../../../app/api/ai/salary-negotiation/route.ts) | 112 | ai-voice | POST:16 |
 | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | 207 | ai-voice | GET:24 |
 | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | 94 | applications-enrollment | POST:94 |
-| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1369 | applications-enrollment |  |
-| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1087 | applications-enrollment | POST:192 |
+| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1400 | applications-enrollment |  |
+| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1082 | applications-enrollment | POST:192 |
 | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | 55 | applications-enrollment | POST:28 |
 | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | 120 | identity-tenancy | GET:14 |
 | [app/api/auth/forgot-password/route.ts](../../../app/api/auth/forgot-password/route.ts) | 78 | identity-tenancy | POST:10 |
@@ -503,7 +503,7 @@
 | [app/api/public/interest-profiler/questions/route.ts](../../../app/api/public/interest-profiler/questions/route.ts) | 43 | api | GET:9 |
 | [app/api/public/interest-profiler/score/route.ts](../../../app/api/public/interest-profiler/score/route.ts) | 82 | api | POST:20 |
 | [app/api/public/wioa-qualification/route.ts](../../../app/api/public/wioa-qualification/route.ts) | 113 | partners-funding | POST:113 |
-| [app/api/public/wioa-qualification/voice-session/route.ts](../../../app/api/public/wioa-qualification/voice-session/route.ts) | 66 | partners-funding | POST:15 |
+| [app/api/public/wioa-qualification/voice-session/route.ts](../../../app/api/public/wioa-qualification/voice-session/route.ts) | 68 | partners-funding | POST:17 |
 | [app/api/push/subscribe/route.ts](../../../app/api/push/subscribe/route.ts) | 65 | communications | POST:64, DELETE:65 |
 | [app/api/q/\[token\]/submit/route.ts](../../../app/api/q/%5Btoken%5D/submit/route.ts) | 361 | api | POST:89 |
 | [app/api/recommend/route.ts](../../../app/api/recommend/route.ts) | 35 | api | GET:15 |

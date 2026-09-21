@@ -46,8 +46,8 @@ import {
   schoolProfileBarriers,
 } from '@/lib/apply/schoolCollection';
 import { normalizeHearAbout, normalizeYesNo } from '@/lib/apply/eligibilityExtendedFields';
+import { eligibilityScreeningNotesPointer } from '@/lib/apply/eligibilityScreeningFields';
 import {
-  formatPublicAssistancePrograms,
   normalizePublicAssistanceFollowUp,
   publicAssistanceFollowUpIssue,
   publicAssistanceFollowUpSchema,
@@ -351,6 +351,27 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       ? partnerAmbassadorReferral.trim().slice(0, 200)
       : null;
 
+    const eligibilityEmailFields = {
+      q1: eligibilityQ1 ?? null,
+      q2: eligibilityQ2 ?? null,
+      q3: eligibilityQ3 ?? null,
+      qualifies: eligibilityQualifies ?? null,
+      yesCount: eligibilityYesCount ?? null,
+      receivingUnemployment: receivingUnemploymentNormalized,
+      exhaustedUnemployment: exhaustedUnemploymentNormalized,
+      layoffCompany: layoffCompanyNormalized,
+      snapWic: snapWicNormalized,
+      ...publicAssistanceFollowUp,
+      hearAbout: hearAboutNormalized,
+      hearAboutOther: hearAboutOtherNormalized,
+      partnerAmbassadorReferral: partnerAmbassadorNormalized,
+    };
+
+    // WAP-170/172: screening answers (triad, quick-fit flag, unemployment,
+    // layoff, benefits) are persisted once, in ApplyEligibilityScreening.
+    // `Application.notes` is returned verbatim by the member's self-serve
+    // export and copied into the staff alert email, so it carries a pointer
+    // only. Location and referral lines are unchanged (WAP-171 column scope).
     let applicationNotes = [
       ageGroup ? `Age group: ${ageGroup}` : null,
       city?.trim() ? `City: ${city.trim()}` : null,
@@ -358,17 +379,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       zip?.trim() ? `ZIP: ${zip.trim()}` : null,
       county?.trim() ? `County: ${county.trim()}` : null,
       profileBarrierTypes.length > 0 ? `Primary barrier(s): ${profileBarrierTypes.join(', ')}` : null,
-      typeof eligibilityQualifies === 'boolean' ? `Quick eligibility fit: ${eligibilityQualifies ? 'yes' : 'review'} (${eligibilityYesCount ?? 0}/3)` : null,
-      receivingUnemploymentNormalized ? `Receiving unemployment: ${receivingUnemploymentNormalized}` : null,
-      exhaustedUnemploymentNormalized ? `Exhausted unemployment: ${exhaustedUnemploymentNormalized}` : null,
-      layoffCompanyNormalized ? `Layoff / last employer: ${layoffCompanyNormalized}` : null,
-      snapWicNormalized ? `SNAP/WIC: ${snapWicNormalized}` : null,
-      publicAssistanceFollowUp.publicAssistancePrograms.length > 0
-        ? `Benefit programs: ${formatPublicAssistancePrograms(publicAssistanceFollowUp.publicAssistancePrograms)}`
-        : null,
-      publicAssistanceFollowUp.publicAssistanceHelpRequested
-        ? `Wants help applying for benefits: ${publicAssistanceFollowUp.publicAssistanceHelpRequested}`
-        : null,
+      eligibilityScreeningNotesPointer(eligibilityEmailFields),
       hearAboutNormalized ? `Heard about us: ${hearAboutNormalized}` : null,
       hearAboutOtherNormalized ? `Heard about us (other): ${hearAboutOtherNormalized}` : null,
       partnerAmbassadorNormalized ? `Partner/ambassador referral: ${partnerAmbassadorNormalized}` : null,
@@ -833,22 +844,6 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         sourcePage: '/apply/create-account',
       });
   
-      const eligibilityEmailFields = {
-        q1: eligibilityQ1 ?? null,
-        q2: eligibilityQ2 ?? null,
-        q3: eligibilityQ3 ?? null,
-        qualifies: eligibilityQualifies ?? null,
-        yesCount: eligibilityYesCount ?? null,
-        receivingUnemployment: receivingUnemploymentNormalized,
-        exhaustedUnemployment: exhaustedUnemploymentNormalized,
-        layoffCompany: layoffCompanyNormalized,
-        snapWic: snapWicNormalized,
-        ...publicAssistanceFollowUp,
-        hearAbout: hearAboutNormalized,
-        hearAboutOther: hearAboutOtherNormalized,
-        partnerAmbassadorReferral: partnerAmbassadorNormalized,
-      };
-
       // Applicant receipt is awaited before the success response — the promise
       // the confirmation page makes ("receipt on file"). Serverless `after()`
       // alone still races on Vercel: the function can freeze before Resend

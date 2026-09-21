@@ -17,6 +17,11 @@
 import { createHash } from 'node:crypto';
 
 import { isEmailProviderRateLimitError } from '@/lib/email/rateLimitError';
+import {
+  PERSONAL_DATA_KEY,
+  containsRedactedValue,
+  redactMetadataKeys,
+} from '@/lib/security/redactMetadata';
 
 /** `WorkflowDiagnostic.workflow` value for provider send outcomes. */
 export const EMAIL_SEND_WORKFLOW = 'email_send';
@@ -50,10 +55,19 @@ export interface EmailFailureMetadata {
   /** Raw subject on historical rows only; new rows store the template key instead. */
   subject: string;
   template: string | null;
+  /**
+   * Wrapper params with every personal-data key (recipient, name, email,
+   * phone, address, secrets) replaced by "[redacted]" before the row is
+   * written. Kept so staff can see which template and what shape failed.
+   */
   templateParams?: Record<string, unknown>;
   errorClass: EmailFailureClass;
   retryable: boolean;
-  /** Whether the admin resend route can replay this row (template + params stored). */
+  /**
+   * Whether the admin resend route can replay this row: template + params
+   * stored AND nothing in the params was redacted. Rows whose payload named a
+   * recipient or a person are not replayable from the store.
+   */
   resendable: boolean;
   recipientHash: string | null;
   /** Domain of the first recipient (lowercased), for grouping without the address. */
@@ -142,12 +156,17 @@ export function buildEmailFailureMetadata(
 ): EmailFailureMetadata {
   const { errorClass, retryable } = classifyEmailSendFailure(error);
   const template = args.template?.name?.trim() || null;
-  const params = template && args.template ? jsonSafe(args.template.params ?? {}) : undefined;
+  const rawParams = template && args.template ? jsonSafe(args.template.params ?? {}) : undefined;
   // The raw address and subject are not stored: the recipient is identified
   // by hash + domain and the message by its template key. `templateParams`
-  // is the one place an address may remain, because the admin resend route
-  // replays the wrapper with exactly those params; wrappers that must never
-  // be replayed do not pass `template` and so store none.
+  // is redacted key-by-key (recipient, name, email, phone, address, secrets)
+  // before it is written, so the diagnostics table holds the payload's shape,
+  // never the person. A payload that lost a value to redaction cannot be
+  // replayed verbatim, so such rows are recorded as not resendable; wrappers
+  // that must never be replayed do not pass `template` and so store none.
+  const params = rawParams
+    ? (redactMetadataKeys(rawParams, PERSONAL_DATA_KEY) as Record<string, unknown>)
+    : undefined;
   return {
     to: [],
     subject: '',
@@ -155,7 +174,7 @@ export function buildEmailFailureMetadata(
     ...(params ? { templateParams: params } : {}),
     errorClass,
     retryable,
-    resendable: Boolean(template && params),
+    resendable: Boolean(template && params && !containsRedactedValue(params)),
     recipientHash: recipientHash(args.to),
     recipientDomain: recipientDomain(args.to),
     failedAt: now.toISOString(),
@@ -188,7 +207,7 @@ export function parseEmailFailureMetadata(value: unknown): EmailFailureMetadata 
     ...(templateParams ? { templateParams } : {}),
     errorClass,
     retryable: typeof record.retryable === 'boolean' ? record.retryable : errorClass !== 'provider_rejected',
-    resendable: Boolean(template && templateParams),
+    resendable: Boolean(template && templateParams && !containsRedactedValue(templateParams)),
     recipientHash: typeof record.recipientHash === 'string' ? record.recipientHash : null,
     recipientDomain: typeof record.recipientDomain === 'string'
       ? record.recipientDomain

@@ -7,7 +7,8 @@
  * - WIOA prequal: member fields above plus the static wioa_program_name / wioa_pronunciation.
  *   WAP-173: the member's screening answers (barrier, dislocated worker, income,
  *   public assistance, signal, age, county) are never sent to the voice vendor —
- *   the privacy policy's ElevenLabs row does not disclose them.
+ *   the privacy policy's ElevenLabs row does not disclose them. The public
+ *   (logged-out) variant sends a first name only: no email, phone or county.
  * - Counselor: staff_name, partner_name, partner_id
  * - Employer: staff_name, employer_company_name, employer_tier, employer_id
  * - Partner: staff_name, partner_org_name, partner_slug, partner_id
@@ -62,21 +63,26 @@ export async function fetchMemberPortalDynamicVariables(userId: string): Promise
   }
 }
 
+/**
+ * Public (logged-out) WIOA prequal voice context. The public form collects a
+ * name, email, phone and county for the written screening record; only a
+ * first name is handed to the voice vendor, for the greeting. Email, phone
+ * and county are never sent — the privacy policy's ElevenLabs row does not
+ * disclose them, and the agent has no use for them.
+ */
 export function buildPublicWioaPortalDynamicVariables(input?: {
   fullName?: string;
-  email?: string;
-  phone?: string;
-  countyOrZip?: string;
 }): Record<string, string> {
   return withVoiceDefaults({
-    member_name: input?.fullName?.trim() ?? '',
-    member_email: input?.email?.trim() ?? '',
-    member_phone: input?.phone?.trim() ?? '',
-    wioa_county_or_zip: input?.countyOrZip?.trim() ?? '',
+    member_name: firstNameOnly(input?.fullName),
     wioa_public_screening: 'true',
     wioa_program_name: 'Workforce Innovation and Opportunity Act (WIOA)',
     wioa_pronunciation: 'W. I. O. A.',
   });
+}
+
+function firstNameOnly(fullName: string | undefined): string {
+  return fullName?.trim().split(/\s+/)[0] ?? '';
 }
 
 /**

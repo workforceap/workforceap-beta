@@ -8,6 +8,8 @@
  * this module only labels, merges, sorts and caps. No DB access here.
  */
 
+import { CONTACT_AND_SECRET_KEY, redactMetadataKeys } from '@/lib/security/redactMetadata';
+
 export type MemberActivityKind = 'staff' | 'member';
 
 export interface MemberActivityAuditInput {
@@ -54,23 +56,13 @@ export const MEMBER_ACTIVITY_CAP = 20;
 /** Member events loaded for the Activity tab (the retired lifecycle page showed 100). */
 export const MEMBER_EVENT_LOAD_CAP = 100;
 
-const REDACTED_KEY = /email|phone|token|password/i;
-
 /**
  * Deep copy of event metadata with any key named like email / phone / token /
  * password replaced by "[redacted]" (arrays and nested objects included), so
  * the Activity tab never prints contact details or secrets an event stored.
  */
 export function redactActivityMetadata(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(redactActivityMetadata);
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {};
-    for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
-      out[key] = REDACTED_KEY.test(key) ? '[redacted]' : redactActivityMetadata(inner);
-    }
-    return out;
-  }
-  return value;
+  return redactMetadataKeys(value, CONTACT_AND_SECRET_KEY);
 }
 
 /** Pretty JSON of the redacted metadata; null for null/undefined or an empty object. */

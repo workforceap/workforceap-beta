@@ -116,35 +116,42 @@ export function eligibilityDatasheetCells(
   ];
 }
 
-/** Plain-text lines for Application.notes / admin email notes blocks. */
-export function eligibilityFieldsPlainLines(fields: EligibilityScreeningFields): string[] {
-  const lines: string[] = [];
-  if (typeof fields.qualifies === 'boolean') {
-    lines.push(
-      `Quick eligibility fit: ${fields.qualifies ? 'yes' : 'review'} (${fields.yesCount ?? 0}/3)`,
-    );
-  }
-  if (fields.q1) lines.push(`Eligibility Q1 (unemployed/underemployed): ${fields.q1}`);
-  if (fields.q2) lines.push(`Eligibility Q2 (household income < $60k): ${fields.q2}`);
-  if (fields.q3) lines.push(`Eligibility Q3 (work authorization): ${fields.q3}`);
-  if (fields.receivingUnemployment) {
-    lines.push(`Receiving unemployment: ${fields.receivingUnemployment}`);
-  }
-  if (fields.exhaustedUnemployment) {
-    lines.push(`Exhausted unemployment: ${fields.exhaustedUnemployment}`);
-  }
-  if (fields.layoffCompany) lines.push(`Layoff / last employer: ${fields.layoffCompany}`);
-  if (fields.snapWic) lines.push(`SNAP/WIC: ${fields.snapWic}`);
-  if (fields.publicAssistancePrograms?.length) {
-    lines.push(`Benefit programs: ${formatPublicAssistancePrograms(fields.publicAssistancePrograms)}`);
-  }
-  if (fields.publicAssistanceHelpRequested) {
-    lines.push(`Wants help applying for benefits: ${fields.publicAssistanceHelpRequested}`);
-  }
-  if (fields.hearAbout) lines.push(`Heard about us: ${fields.hearAbout}`);
-  if (fields.hearAboutOther) lines.push(`Heard about us (other): ${fields.hearAboutOther}`);
-  if (fields.partnerAmbassadorReferral) {
-    lines.push(`Partner/ambassador referral: ${fields.partnerAmbassadorReferral}`);
-  }
-  return lines;
+/**
+ * True when any WS4/WS5 screening answer is present: the triad, the quick-fit
+ * flag, unemployment / layoff / benefit answers. Referral fields (hear-about,
+ * ambassador) are not screening answers.
+ */
+function hasEligibilityScreeningAnswers(
+  fields: EligibilityScreeningFields | null | undefined,
+): boolean {
+  if (!fields) return false;
+  return Boolean(
+    fields.q1 ||
+      fields.q2 ||
+      fields.q3 ||
+      typeof fields.qualifies === 'boolean' ||
+      typeof fields.yesCount === 'number' ||
+      fields.receivingUnemployment ||
+      fields.exhaustedUnemployment ||
+      fields.layoffCompany ||
+      fields.snapWic ||
+      (fields.publicAssistancePrograms?.length ?? 0) > 0 ||
+      fields.publicAssistanceHelpRequested,
+  );
+}
+
+/**
+ * The one screening line allowed in `Application.notes` and the staff alert
+ * (WAP-170/172): a pointer, never an answer or the quick-fit flag. The answers
+ * live in `ApplyEligibilityScreening`, read on the member's admin page;
+ * `Application.notes` is also returned verbatim by the member's self-serve
+ * export and copied into the admin alert email, so neither may carry them.
+ */
+const ELIGIBILITY_SCREENING_NOTES_POINTER =
+  'Eligibility screening: on file (answers on the member record in admin, not in these notes)';
+
+export function eligibilityScreeningNotesPointer(
+  fields: EligibilityScreeningFields | null | undefined,
+): string | null {
+  return hasEligibilityScreeningAnswers(fields) ? ELIGIBILITY_SCREENING_NOTES_POINTER : null;
 }

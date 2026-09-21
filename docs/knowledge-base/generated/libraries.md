@@ -74,7 +74,7 @@
 | [lib/admin/jobsBoardSort.ts](../../../lib/admin/jobsBoardSort.ts) | 65 | administration | JOB_SORT_KEYS:3, JobSortKey:4, JobSortDirection:5, DEFAULT_JOB_SORT_KEY:7, DEFAULT_JOB_SORT_DIRECTION:8, sortJobRows:45 |
 | [lib/admin/logCronRun.ts](../../../lib/admin/logCronRun.ts) | 29 | administration | logCronRun:7 |
 | [lib/admin/matchSuggestionsConfig.ts](../../../lib/admin/matchSuggestionsConfig.ts) | 16 | administration | getMatchSuggestionsTestRecipient:8, isMatchSuggestionsDryRun:13 |
-| [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 143 | administration | MemberActivityKind:11, MemberActivityAuditInput:13, MemberActivityEventInput:22, MemberActivityDetail:33, MemberActivityRow:40, MEMBER_ACTIVITY_CAP:53, MEMBER_EVENT_LOAD_CAP:55, redactActivityMetadata:64, formatActivityMetadata:77, humanizeActivityName:96, buildMemberActivityRows:119 |
+| [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 135 | administration | MemberActivityKind:13, MemberActivityAuditInput:15, MemberActivityEventInput:24, MemberActivityDetail:35, MemberActivityRow:42, MEMBER_ACTIVITY_CAP:55, MEMBER_EVENT_LOAD_CAP:57, redactActivityMetadata:64, formatActivityMetadata:69, humanizeActivityName:88, buildMemberActivityRows:111 |
 | [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 289 | administration |  |
 | [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 613 | administration | MergeConflict:5, MergePreview:12, MergeResult:20, assertNoCourseraOwnershipForMemberMerge:40, checkMergeConflicts:103, buildMergePreview:168, executeMemberMerge:326 |
 | [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 71 | administration |  |
@@ -143,7 +143,7 @@
 | [lib/ai/elevenlabs.ts](../../../lib/ai/elevenlabs.ts) | 319 | ai-voice | ELEVENLABS_LILLEY_BRANCH_ENV:16, ElevenLabsApiError:24, requireElevenLabsBranchId:34, InterviewType:58, TranscriptTurn:60, FeedbackResult:66, generateSpeech:78, listVoices:124, createConversationalSession:151, generateInterviewFeedback:215 |
 | [lib/ai/elevenlabsAgents.test.ts](../../../lib/ai/elevenlabsAgents.test.ts) | 102 | ai-voice |  |
 | [lib/ai/elevenlabsAgents.ts](../../../lib/ai/elevenlabsAgents.ts) | 140 | ai-voice | ElevenLabsPortalAgentKey:14, LILLEY_STUDENT_COACH_AGENT_ID:15, FALLBACK_AGENT_IDS:17, CounselorVoiceSessionPlan:26, resolveCounselorVoiceSessionPlan:49, getElevenLabsAgentId:74, envKeyForPortalAgent:85, startElevenLabsPortalSession:89 |
-| [lib/ai/elevenlabsPortalContext.ts](../../../lib/ai/elevenlabsPortalContext.ts) | 189 | ai-voice | fetchMemberPortalDynamicVariables:34, buildPublicWioaPortalDynamicVariables:65, fetchWioaPortalDynamicVariables:88, fetchCounselorPortalDynamicVariables:116, fetchEmployerPortalDynamicVariables:138, fetchPartnerPortalDynamicVariables:165 |
+| [lib/ai/elevenlabsPortalContext.ts](../../../lib/ai/elevenlabsPortalContext.ts) | 195 | ai-voice | fetchMemberPortalDynamicVariables:35, buildPublicWioaPortalDynamicVariables:73, fetchWioaPortalDynamicVariables:94, fetchCounselorPortalDynamicVariables:122, fetchEmployerPortalDynamicVariables:144, fetchPartnerPortalDynamicVariables:171 |
 | [lib/ai/elevenlabsSession.test.ts](../../../lib/ai/elevenlabsSession.test.ts) | 118 | ai-voice |  |
 | [lib/ai/geminiChat.ts](../../../lib/ai/geminiChat.ts) | 47 | ai-voice | isGeminiConfigured:9, geminiChat:13 |
 | [lib/ai/geminiEmbed.ts](../../../lib/ai/geminiEmbed.ts) | 84 | ai-voice | isGeminiEmbedConfigured:8, EmbedResult:12, embedTexts:49, cosineSimilarity:68, _resetCacheForTests:82 |
@@ -213,7 +213,7 @@
 | [lib/apply/applyReferralCapture.ts](../../../lib/apply/applyReferralCapture.ts) | 132 | applications-enrollment | APPLY_REFERRAL_SESSION_KEY:9, APPLY_REFERRAL_COOKIE:11, normalizePartnerRef:11, PARTNER_REF_COOKIE:19, PARTNER_REF_COOKIE_MAX_AGE:22, partnerRefForApplyLanding:34, partnerRefCookieClearOptions:41, persistPartnerRef:58, readPersistedPartnerRef:75, clearPersistedPartnerRef:86, partnerRefFromEnrollPath:108, shouldCaptureEnrollRef:125 |
 | [lib/apply/eligibilityExtendedFields.test.ts](../../../lib/apply/eligibilityExtendedFields.test.ts) | 242 | applications-enrollment |  |
 | [lib/apply/eligibilityExtendedFields.ts](../../../lib/apply/eligibilityExtendedFields.ts) | 80 | applications-enrollment | YES_NO:15, YesNo:16, APPLY_HEAR_ABOUT_OPTIONS:24, ApplyHearAboutOption:26, APPLY_HEAR_ABOUT_OTHER:28, APPLY_HEAR_ABOUT_AMBASSADOR:30, isYesNo:32, normalizeYesNo:36, normalizeHearAbout:41, hearAboutNeedsOther:48, hearAboutSuggestsAmbassador:58, layoffCompanyApplicable:74 |
-| [lib/apply/eligibilityScreeningFields.ts](../../../lib/apply/eligibilityScreeningFields.ts) | 150 | applications-enrollment | EligibilityScreeningFields:8, ELIGIBILITY_DATASHEET_COLUMNS:29, EligibilityDatasheetColumn:47, hasEligibilityScreeningFields:49, eligibilityScreeningAnswerCount:76, eligibilityDatasheetCells:97, eligibilityFieldsPlainLines:120 |
+| [lib/apply/eligibilityScreeningFields.ts](../../../lib/apply/eligibilityScreeningFields.ts) | 157 | applications-enrollment | EligibilityScreeningFields:8, ELIGIBILITY_DATASHEET_COLUMNS:29, EligibilityDatasheetColumn:47, hasEligibilityScreeningFields:49, eligibilityScreeningAnswerCount:76, eligibilityDatasheetCells:97, eligibilityScreeningNotesPointer:153 |
 | [lib/apply/layoffCompanyUi.test.ts](../../../lib/apply/layoffCompanyUi.test.ts) | 39 | applications-enrollment |  |
 | [lib/apply/paidApplyUtm.test.ts](../../../lib/apply/paidApplyUtm.test.ts) | 31 | applications-enrollment |  |
 | [lib/apply/paidApplyUtm.ts](../../../lib/apply/paidApplyUtm.ts) | 67 | applications-enrollment | PAID_APPLY_UTM_SOURCES:3, PaidApplyUtmSource:10, UTM_SOURCE_COOKIE:12, WAP_PAID_APPLY_HEADER:15, UTM_SOURCE_COOKIE_MAX_AGE:18, isPaidUtmSource:20, resolvePaidApplyUtmSource:27, persistUtmSourceCookie:43, readUtmSourceCookie:54, isPaidApplyLanding:60 |
@@ -544,8 +544,8 @@
 | [lib/db/withRequestGuc.ts](../../../lib/db/withRequestGuc.ts) | 166 | libraries | buildGucContextFromUser:23, withUserGuc:45, withSystemGuc:68, withAnonymousGuc:78, withApiGuc:99, withApiGuc:104, withApiGuc:107, withAuthenticatedApiGuc:137, withAuthenticatedApiGuc:140, withAuthenticatedApiGuc:143 |
 | [lib/demo/demoProgressPlan.test.ts](../../../lib/demo/demoProgressPlan.test.ts) | 101 | libraries |  |
 | [lib/demo/demoProgressPlan.ts](../../../lib/demo/demoProgressPlan.ts) | 160 | libraries | DemoMemberProgressInput:5, DemoPointsEvent:12, DemoProgressPlan:18, matchCompletedCatalogCourses:42, planDemoMemberPoints:69, planDemoMemberProgress:129 |
-| [lib/diagnostics.ts](../../../lib/diagnostics.ts) | 37 | libraries | WorkflowDiagnosticParams:3, recordWorkflowDiagnostic:17 |
-| [lib/elevenlabs-agent-dynamic-defaults.test.ts](../../../lib/elevenlabs-agent-dynamic-defaults.test.ts) | 188 | ai-voice |  |
+| [lib/diagnostics.ts](../../../lib/diagnostics.ts) | 57 | libraries | WorkflowDiagnosticParams:5, redactDiagnosticMetadata:26, recordWorkflowDiagnostic:37 |
+| [lib/elevenlabs-agent-dynamic-defaults.test.ts](../../../lib/elevenlabs-agent-dynamic-defaults.test.ts) | 186 | ai-voice |  |
 | [lib/elevenlabs-agent-patch-runner.test.ts](../../../lib/elevenlabs-agent-patch-runner.test.ts) | 864 | ai-voice |  |
 | [lib/elevenlabs-member-agent-tools.test.ts](../../../lib/elevenlabs-member-agent-tools.test.ts) | 1679 | ai-voice |  |
 | [lib/elevenlabs/agentRegistry.test.ts](../../../lib/elevenlabs/agentRegistry.test.ts) | 239 | ai-voice |  |
@@ -556,7 +556,7 @@
 | [lib/email/escapeHtml.test.ts](../../../lib/email/escapeHtml.test.ts) | 18 | communications |  |
 | [lib/email/escapeHtml.ts](../../../lib/email/escapeHtml.ts) | 21 | communications | escapeHtml:5, sanitizeEmailSubjectLine:15 |
 | [lib/email/failureAlert.ts](../../../lib/email/failureAlert.ts) | 64 | communications | EMAIL_FAILURE_ALERT_WINDOW_HOURS:16, EMAIL_FAILURE_ALERT_THRESHOLD:18, emailFailureWindowStart:22, countRecentEmailFailures:26, alertOnRecentEmailFailures:36 |
-| [lib/email/failureRecord.ts](../../../lib/email/failureRecord.ts) | 201 | communications | EMAIL_SEND_WORKFLOW:22, EMAIL_TEMPLATE_ENTITY_TYPE:24, EMAIL_RESEND_METHOD:26, EmailFailureClass:28, EmailTemplateRef:36, EmailFailureMetadata:43, classifyEmailSendFailure:94, recipientHash:120, recipientDomain:127, buildEmailFailureMetadata:138, parseEmailFailureMetadata:174 |
+| [lib/email/failureRecord.ts](../../../lib/email/failureRecord.ts) | 220 | communications | EMAIL_SEND_WORKFLOW:27, EMAIL_TEMPLATE_ENTITY_TYPE:29, EMAIL_RESEND_METHOD:31, EmailFailureClass:33, EmailTemplateRef:41, EmailFailureMetadata:48, classifyEmailSendFailure:108, recipientHash:134, recipientDomain:141, buildEmailFailureMetadata:152, parseEmailFailureMetadata:193 |
 | [lib/email/failureSnapshot.test.ts](../../../lib/email/failureSnapshot.test.ts) | 91 | communications |  |
 | [lib/email/failureSnapshot.ts](../../../lib/email/failureSnapshot.ts) | 107 | communications | EMAIL_FAILURE_STATUSES:25, EmailFailureDiagnosticSource:27, EmailFailureSnapshotRow:43, isEmailFailureDiagnostic:66, toEmailFailureSnapshotRow:75, snapshotRunLabel:105 |
 | [lib/email/pacing.test.ts](../../../lib/email/pacing.test.ts) | 196 | communications |  |
@@ -968,6 +968,7 @@
 | [lib/security/cspViolationBuckets.ts](../../../lib/security/cspViolationBuckets.ts) | 176 | libraries | HOUR_MS:17, DAY_MS:18, CSP_VIOLATION_PATH_SAMPLE_SIZE:21, truncateToHour:24, CspViolationBucketKey:29, CspViolationBucketWrite:34, CspViolationStoredKey:40, cspViolationBucketKey:48, bucketCspViolations:59, CspViolationBucketRow:80, CspViolationGroup:92, sumCspViolationCounts:107, groupCspViolationBuckets:121 |
 | [lib/security/cspViolationStore.ts](../../../lib/security/cspViolationStore.ts) | 188 | libraries | PersistCspViolationsResult:33, persistCspViolationCounts:99, CspViolationOverview:139, loadCspViolationOverview:158 |
 | [lib/security/placementSurveyToken.ts](../../../lib/security/placementSurveyToken.ts) | 118 | libraries | issuePlacementSurveyToken:66, VerifyResult:90, verifyPlacementSurveyToken:94 |
+| [lib/security/redactMetadata.ts](../../../lib/security/redactMetadata.ts) | 44 | libraries | CONTACT_AND_SECRET_KEY:11, PERSONAL_DATA_KEY:17, redactMetadataKeys:24, containsRedactedValue:37 |
 | [lib/seo/activeProgramSlugs.ts](../../../lib/seo/activeProgramSlugs.ts) | 42 | libraries | ActiveProgramSlug:6, getActiveProgramSlugsForSitemap:11 |
 | [lib/seo/robotsPolicy.ts](../../../lib/seo/robotsPolicy.ts) | 54 | libraries | PRODUCTION_DISALLOW_PATHS:4, PRODUCTION_ALLOW_PATHS:30, buildProductionRobots:32, buildStagingRobots:47 |
 | [lib/seo/siteEnvironment.ts](../../../lib/seo/siteEnvironment.ts) | 44 | libraries | getSiteUrl:6, isStagingDeployment:12, buildOgImageUrl:38 |
