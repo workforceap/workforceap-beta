@@ -70,6 +70,25 @@ Sentry is the **single pane of glass** for latency + errors; Vercel Analytics is
 
 ---
 
+## External readiness monitor (GitHub Actions)
+
+**What exists (WAP-164 item 1, 2026-09-21).** `.github/workflows/uptime-ping.yml` runs on GitHub's infrastructure every 15 minutes (`schedule: */15 * * * *`, plus `workflow_dispatch`) and issues one anonymous `GET https://www.workforceap.org/api/health/ready`. The run **fails** when the answer is not HTTP 200 or the whole request takes longer than 5 seconds (`curl --max-time 5`). Nothing else in the repo watches the site from outside: the hourly `smoke-test` cron runs *inside* the deployment it checks, so when the deployment is down the monitor is down with it.
+
+Why this endpoint: `/api/health/ready` is the dependency probe (Prisma can read the default organization row — the same lookup `app/layout.tsx` needs on every request) and answers 503 when that fails. It is public, needs no secret, is rate-limited per IP and reads no member data. Do not point this at `/api/health` (liveness only) or at `/api/cron/smoke-test` (needs `CRON_SECRET`). See `docs/HEALTH-PROBES.md`.
+
+| Property | Value |
+|---|---|
+| Cadence | every 15 minutes (GitHub may delay scheduled runs; treat detection as 15-30 min) |
+| Pass | HTTP 200 within 5 s |
+| Fail | any other status, a timeout, DNS/TLS failure |
+| Alert channel | GitHub's workflow-failure email to the repository owner (default for scheduled runs); the run summary carries status + timing |
+| Evidence | Actions run history for "Uptime Ping" — a rough uptime series until a hosted monitor exists |
+| Secrets | none |
+
+**What it is not.** It is not burn-rate alerting, not a status page and not paging. The Vercel log drain (WAP-164 item 3) and the production Sentry alert rule (item 4) are operator-console changes, not repository changes, and remain open. When a hosted monitor (Better Uptime or similar) is set up, keep this workflow: two independent observers are cheap, and this one is versioned with the code it checks.
+
+---
+
 ## Burn-rate alert policy
 
 Burn-rate alerts page when error budget is being consumed faster than the SLO window allows. We use the standard two-window approach (Google SRE chapter 5):
@@ -218,6 +237,7 @@ This loop is the actual "incident response story" buyers ask about. It's deliber
 - **Email delivery SLO requires the Resend delivery webhook to be wired and writing back to the `Email` table.** We have the webhook handler; whether we have all delivery events landing in the `Email` row needs an audit.
 - **The `/status` page itself is unbuilt as of this PR.** This doc commits us to its shape; the route + UI are queued.
 - **No "burn rate" alerting infrastructure exists yet.** The thresholds in this doc are a contract for Sprint D.2, when we wire Sentry alert rules. Today we have manual review.
+- **The only external monitor is the 15-minute GitHub Actions ping on `/api/health/ready`** (see "External readiness monitor"). It emails on failure; it does not page, and it does not cover portal render timeouts (a 504 on `/dashboard` with a healthy database — see `docs/POSTMORTEM-2026-06-18-PORTAL-OUTAGE.md`). A Vercel log drain and a production Sentry alert rule are still unconfigured.
 - **Cost SLOs / unit economics** (per-request cost, infra spend per active member) are intentionally out of scope for this doc — that's a finance dashboard, not an availability story.
 
 We list these because pretending they don't exist is what gets you in trouble during diligence. The gap list itself is a buyer-trust artifact: it shows we know what we don't measure.
@@ -229,7 +249,7 @@ We list these because pretending they don't exist is what gets you in trouble du
 | Question | Answer |
 |---|---|
 | What's your uptime target? | 99.9% on `/api/health`, measured over rolling 30 days. |
-| Where can I see it? | Public `/status` page (Sprint D.2). External uptime monitor at Better Uptime is the source of truth. |
+| Where can I see it? | Public `/status` page (Sprint D.2). Today the external observer is the 15-minute GitHub Actions readiness ping (`uptime-ping.yml` run history); a hosted monitor (Better Uptime or similar) is not yet set up. |
 | What if it breaches? | Burn-rate alert pages on-call; incident opened in 15 min; PIR within 48h; action items tracked. |
 | What about correctness, not just uptime? | One binary SLO: 0 cross-tenant leaks. Any failure is sev-1. Currently enforced by CI tests; runtime synthetic probe is Track A.3. |
 | Do you have an SLO on placement retention? | No, not yet — requires longer dwell and the verification pipeline (Track C). |
@@ -243,7 +263,8 @@ We list these because pretending they don't exist is what gets you in trouble du
 | Date | Change |
 |---|---|
 | 2026-05-08 | Initial doc; Track D Sprint D.1 foundation. SLOs defined, route stub shipped, Sprint D.2 will wire real telemetry. |
+| 2026-09-21 | WAP-164 item 1: documented the external readiness monitor (`.github/workflows/uptime-ping.yml`, 15-minute GitHub Actions probe of `/api/health/ready`, fails on non-200 or >5 s). Log drain + Sentry alert rule remain open operator items. |
 
 ---
 
-*Updated alongside any change to `app/api/health/slo/route.ts`, the public `/status` route when it lands, or any change to the committed SLO targets above.*
+*Updated alongside any change to `app/api/health/slo/route.ts`, `.github/workflows/uptime-ping.yml`, the public `/status` route when it lands, or any change to the committed SLO targets above.*
