@@ -3860,12 +3860,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 15,
+        "line": 17,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 20,
+        "line": 22,
         "kind": "FunctionDeclaration",
         "localName": "DashboardLayout"
       }
