@@ -7,6 +7,8 @@ import { getEmployerForUser, isSuperAdmin, SUPER_ADMIN_EMPLOYER_COOKIE } from '@
 import { getPortalSwitcherRoles } from '@/lib/auth/portalRoleSwitcher';
 import EmployerPortalShell from '@/components/portal/EmployerPortalShell';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
+import { getHomeTourForRole } from '@/lib/tours/registry';
 
 export const metadata: Metadata = {
   title: 'Employer Portal',
@@ -24,10 +26,15 @@ export default async function EmployerPortalLayout({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
   const ctx = await getEmployerForUser(user.id, { isSuperAdminHint: superAdmin, readOnlyAudit });
   if (!ctx) redirect(await unlinkedEmployerHref(user.id));
-  const portalRoles = await getPortalSwitcherRoles(user.id, {
-    superAdmin,
-    hasEmployer: true,
-  });
+  const employerTour = getHomeTourForRole('employer');
+  const [portalRoles, tour] = await Promise.all([
+    getPortalSwitcherRoles(user.id, {
+      superAdmin,
+      hasEmployer: true,
+    }),
+    // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
+    employerTour ? getTourOffer(user.id, employerTour.key) : Promise.resolve(null),
+  ]);
   const cookieStore = await cookies();
   const superAdminImpersonating =
     superAdmin && Boolean(cookieStore.get(SUPER_ADMIN_EMPLOYER_COOKIE)?.value);
@@ -41,6 +48,7 @@ export default async function EmployerPortalLayout({
       superAdminImpersonating={superAdminImpersonating}
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
+      tour={tour}
     >
       {children}
     </EmployerPortalShell>

@@ -2128,7 +2128,7 @@
       "references": [
         {
           "file": "app/(portal)/partner/page.tsx",
-          "line": 533
+          "line": 538
         },
         {
           "file": "app/api/admin/coursera/reconcile/add-to-wap/route.ts",
@@ -4047,6 +4047,14 @@
         {
           "file": "tests/tours/admin-overview-anchors.spec.tsx",
           "line": 1
+        },
+        {
+          "file": "tests/tours/employer-overview-anchors.spec.tsx",
+          "line": 1
+        },
+        {
+          "file": "tests/tours/partner-overview-anchors.spec.tsx",
+          "line": 1
         }
       ]
     },
@@ -4693,7 +4701,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 168
+          "line": 174
         },
         {
           "file": "tests/api/auth-routes.spec.ts",
@@ -4740,7 +4748,7 @@
         },
         {
           "file": "lib/rate-limit.ts",
-          "line": 172
+          "line": 178
         },
         {
           "file": "tests/api/auth-routes.spec.ts",
