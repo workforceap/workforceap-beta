@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "68216865810cdffeef95433ebe1402699e6903b9b895e3306b37a857c054ae1b",
+  "inputTreeSha256": "12e92880602d1d761bfa4832d94efd759151d381a42e1889bddb3a36d66a32f0",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4993,
-    "sourceModules": 3637,
-    "importReferences": 18139,
-    "resolvedLocalReferences": 12178,
+    "files": 4996,
+    "sourceModules": 3640,
+    "importReferences": 18153,
+    "resolvedLocalReferences": 12186,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 987,
-    "testCandidates": 977,
+    "testFiles": 989,
+    "testCandidates": 979,
     "testHelpers": 10,
-    "staticallySelectedTests": 975,
+    "staticallySelectedTests": 977,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 142
+      "files": 144
     },
     {
       "area": "pages",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 588
+      "files": 589
     }
   ],
   "mostReferenced": [
@@ -119,12 +119,12 @@
       "references": 757
     },
     {
-      "file": "lib/db/withRequestGuc.ts",
+      "file": "lib/auth/roles.ts",
       "references": 441
     },
     {
-      "file": "lib/auth/roles.ts",
-      "references": 440
+      "file": "lib/db/withRequestGuc.ts",
+      "references": 441
     },
     {
       "file": "lib/content/programs.ts",
@@ -176,7 +176,7 @@
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
-      "references": 105
+      "references": 106
     },
     {
       "file": "lib/events/track.ts",
@@ -318,7 +318,7 @@
     },
     {
       "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1353
+      "lines": 1369
     },
     {
       "file": "lib/coursera/csvImport.server.ts",

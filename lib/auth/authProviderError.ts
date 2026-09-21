@@ -9,7 +9,16 @@
  * tell a typo from an outage.
  */
 
-type AuthProviderFailureKind = 'duplicate' | 'validation' | 'unavailable' | 'unknown';
+type AuthProviderFailureKind = 'duplicate' | 'weak_password' | 'validation' | 'unavailable' | 'unknown';
+
+/**
+ * WAP-26: member-facing copy for a password the provider refused as weak.
+ * Sentence case, says what to do; the sign-up and password-reset forms show a
+ * localised equivalent (`auth.signup.weakPassword`, `auth.resetPassword.weakPassword`,
+ * `apply.errPasswordWeak`) when the API answers `reason: 'weak_password'`.
+ */
+export const WEAK_PASSWORD_MESSAGE = 'Choose a stronger password: at least 8 characters, not a commonly used password.';
+export const WEAK_PASSWORD_REASON = 'weak_password';
 
 type ProviderErrorShape = {
   name?: unknown;
@@ -40,6 +49,20 @@ export function isAuthProviderConfigError(error: unknown): boolean {
   return /SUPABASE_SERVICE_ROLE_KEY|NEXT_PUBLIC_SUPABASE_URL/i.test(message);
 }
 
+/**
+ * True for GoTrue's weak-password refusal: `code: 'weak_password'`
+ * (supabase-js `AuthWeakPasswordError`), or the older text-only answers
+ * ("Password should be at least 6 characters", "... contain at least one ...").
+ */
+export function isWeakPasswordError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const shape = error as ProviderErrorShape;
+  if (readString(shape.code) === WEAK_PASSWORD_REASON) return true;
+  if (readString(shape.name) === 'AuthWeakPasswordError') return true;
+  const message = readString(shape.message);
+  return /weak[_ ]?password|password is (too )?weak|^password should (be at least|contain)/i.test(message);
+}
+
 export function classifyAuthProviderError(error: unknown): AuthProviderFailureKind {
   if (!error || typeof error !== 'object') return 'unknown';
   const shape = error as ProviderErrorShape;
@@ -52,6 +75,7 @@ export function classifyAuthProviderError(error: unknown): AuthProviderFailureKi
     return 'duplicate';
   }
   if (isAuthProviderConfigError(error)) return 'unavailable';
+  if (isWeakPasswordError(error)) return 'weak_password';
   if (
     /Retryable|FetchError|AbortError/i.test(name) ||
     UNAVAILABLE_STATUSES.has(status) ||
@@ -79,6 +103,7 @@ export function authProviderFailureStatus(kind: AuthProviderFailureKind): number
       return 409;
     case 'unavailable':
       return 503;
+    case 'weak_password':
     case 'validation':
     case 'unknown':
     default:
@@ -101,6 +126,10 @@ export function describeAuthProviderFailure(kind: AuthProviderFailureKind, actio
         : 'That email already has an account. Use the edit or reset tools on the existing user.';
     case 'unavailable':
       return `${prefix}the sign-in provider is unavailable right now, so ${subject} was not created. Try again in a few minutes.`;
+    case 'weak_password':
+      return action === 'invite'
+        ? `${prefix}the sign-in provider rejected the generated password as weak. Try again, and contact support if it keeps failing.`
+        : WEAK_PASSWORD_MESSAGE;
     case 'validation':
       return `${prefix}the sign-in provider rejected that email address. Check the spelling and domain, then try again.`;
     case 'unknown':

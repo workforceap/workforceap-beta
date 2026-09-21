@@ -10480,6 +10480,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "scripts/backfill-user-roles-from-profile.test.ts",
+    "area": "operations",
+    "domain": "operations",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "scripts/backfill-user-roles-from-profile.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "scripts/canonicalize-course-progress-slugs.test.ts",
     "area": "operations",
     "domain": "operations",
@@ -26062,6 +26086,34 @@
       {
         "file": "lib/member/atRiskScoring.ts",
         "line": 43
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/auth-role-resolution.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/auth/roles.ts",
+        "line": 18
+      },
+      {
+        "file": "lib/auth/roleAccess.ts",
+        "line": 19
       }
     ],
     "kind": "test-candidate",

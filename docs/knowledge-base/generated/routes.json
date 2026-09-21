@@ -20815,7 +20815,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 191,
+        "line": 192,
         "kind": "Variable"
       }
     ],
@@ -20830,18 +20830,23 @@
         "kind": "import"
       },
       {
+        "specifier": "@/lib/auth/authProviderError",
+        "line": 5,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/rate-limit",
-        "line": 15,
+        "line": 16,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/resolveProvisionOrg",
-        "line": 20,
+        "line": 21,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/withRequestGuc",
-        "line": 23,
+        "line": 24,
         "kind": "import"
       }
     ]
@@ -27924,7 +27929,7 @@
     "exports": [
       {
         "name": "POST",
-        "line": 24,
+        "line": 25,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -27944,8 +27949,13 @@
         "kind": "import"
       },
       {
+        "specifier": "@/lib/auth/authProviderError",
+        "line": 6,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/rate-limit",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]

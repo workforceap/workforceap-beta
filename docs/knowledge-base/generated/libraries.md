@@ -87,7 +87,7 @@
 | [lib/admin/pipelineFunnel.test.ts](../../../lib/admin/pipelineFunnel.test.ts) | 47 | administration |  |
 | [lib/admin/pipelineFunnel.ts](../../../lib/admin/pipelineFunnel.ts) | 61 | administration | PipelineFunnelCounts:15, PIPELINE_FUNNEL_STAGES:25, WIOA_SCREENED_LABEL:32, WIOA_SCREENED_CAPTION:33, pipelineFunnelSubtitle:35, buildPipelineFunnel:41 |
 | [lib/admin/placementsRosterSort.ts](../../../lib/admin/placementsRosterSort.ts) | 72 | administration | PLACEMENT_SORT_KEYS:7, PlacementSortKey:16, PlacementSortDirection:17, DEFAULT_PLACEMENT_SORT_KEY:19, DEFAULT_PLACEMENT_SORT_DIRECTION:20, sortPlacementRows:52 |
-| [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 51 | administration | directoryRoleLabel:15, resolveDirectoryRole:40 |
+| [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 46 | administration | directoryRoleLabel:15, resolveDirectoryRole:35 |
 | [lib/admin/runAdminJobMatchesGet.test.ts](../../../lib/admin/runAdminJobMatchesGet.test.ts) | 135 | administration |  |
 | [lib/admin/runAdminJobMatchesGet.ts](../../../lib/admin/runAdminJobMatchesGet.ts) | 105 | administration | AdminJobMatchRow:5, RunAdminJobMatchesDeps:21, serializeAdminJobMatchRow:39, runAdminJobMatchesGet:52 |
 | [lib/admin/studentStatus.ts](../../../lib/admin/studentStatus.ts) | 136 | administration | StudentStatus:4, STUDENT_STATUS_LABELS:6, StudentStatusContext:14, getStudentStatus:35, buildStatusWhere:62 |
@@ -247,8 +247,8 @@
 | [lib/audit/readOnlyPortalAudit.test.ts](../../../lib/audit/readOnlyPortalAudit.test.ts) | 35 | libraries |  |
 | [lib/audit/readOnlyPortalAudit.ts](../../../lib/audit/readOnlyPortalAudit.ts) | 29 | libraries | READ_ONLY_PORTAL_AUDIT_HEADER:1, READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER:2, isValidReadOnlyPortalAuditToken:5, isReadOnlyPortalAuditHeader:25 |
 | [lib/auth/actAsSubject.ts](../../../lib/auth/actAsSubject.ts) | 109 | identity-tenancy | ActOnBehalfResolution:25, resolveActOnBehalf:30 |
-| [lib/auth/authProviderError.test.ts](../../../lib/auth/authProviderError.test.ts) | 53 | identity-tenancy |  |
-| [lib/auth/authProviderError.ts](../../../lib/auth/authProviderError.ts) | 110 | identity-tenancy | isAuthProviderConfigError:38, classifyAuthProviderError:43, authProviderFailureStatus:76, describeAuthProviderFailure:94 |
+| [lib/auth/authProviderError.test.ts](../../../lib/auth/authProviderError.test.ts) | 72 | identity-tenancy |  |
+| [lib/auth/authProviderError.ts](../../../lib/auth/authProviderError.ts) | 139 | identity-tenancy | WEAK_PASSWORD_MESSAGE:20, WEAK_PASSWORD_REASON:21, isAuthProviderConfigError:47, isWeakPasswordError:57, classifyAuthProviderError:66, authProviderFailureStatus:100, describeAuthProviderFailure:119 |
 | [lib/auth/authRead.ts](../../../lib/auth/authRead.ts) | 55 | identity-tenancy | AuthReadFailure:2, AUTH_READ_RETRY_DELAY_MS:8, classifyAuthReadFailure:10, readAuthWithRetry:35, reportAuthReadFailure:50 |
 | [lib/auth/client.ts](../../../lib/auth/client.ts) | 23 | identity-tenancy | createSupabaseBrowserClient:10 |
 | [lib/auth/currentUserClient.test.ts](../../../lib/auth/currentUserClient.test.ts) | 84 | identity-tenancy |  |
@@ -269,10 +269,10 @@
 | [lib/auth/qaBypass.test.ts](../../../lib/auth/qaBypass.test.ts) | 92 | identity-tenancy |  |
 | [lib/auth/qaBypass.ts](../../../lib/auth/qaBypass.ts) | 26 | identity-tenancy | isQaBypassEnabled:14, isQaBypassRequest:19 |
 | [lib/auth/roleAccess.test.ts](../../../lib/auth/roleAccess.test.ts) | 26 | identity-tenancy |  |
-| [lib/auth/roleAccess.ts](../../../lib/auth/roleAccess.ts) | 13 | identity-tenancy | hasSuperAdminAccess:2, hasAdminAccess:6 |
+| [lib/auth/roleAccess.ts](../../../lib/auth/roleAccess.ts) | 90 | identity-tenancy | hasSuperAdminAccess:2, hasAdminAccess:6, ROLE_PRECEDENCE:21, normalizeRoleName:34, RoleResolutionInput:38, RoleResolution:47, resolveEffectiveRole:75 |
 | [lib/auth/roles.read-only-audit.test.ts](../../../lib/auth/roles.read-only-audit.test.ts) | 84 | identity-tenancy |  |
 | [lib/auth/roles.test.ts](../../../lib/auth/roles.test.ts) | 116 | identity-tenancy |  |
-| [lib/auth/roles.ts](../../../lib/auth/roles.ts) | 589 | identity-tenancy | hasAdminAccess:10, hasSuperAdminAccess:10, SUPER_ADMIN_EMPLOYER_COOKIE:12, SUPER_ADMIN_PARTNER_COOKIE:13, getUserRoles:19, getProfileRole:29, isSuperAdmin:39, isAdmin:46, isAdminInOrg:63, isStaff:73, canBypassMemberAssessment:93, isCaseManager:102, requireAdmin:109, isCounselor:116, isPartner:125, PartnerPortalContext:134, getPartnerForUser:177, getCounselorForUser:254, hasMultiplePortalRoles:269, isSubgroupLeader:291, getSubgroupsForUser:300, requireSubgroupLeader:328, isEmployer:337, getEmployerForUser:458, getEmployerAccountForNav:529, isMentor:555, requireAdminOrCounselor:569 |
+| [lib/auth/roles.ts](../../../lib/auth/roles.ts) | 625 | identity-tenancy | hasAdminAccess:12, hasSuperAdminAccess:12, SUPER_ADMIN_EMPLOYER_COOKIE:14, SUPER_ADMIN_PARTNER_COOKIE:15, getUserRoles:21, getProfileRole:46, isSuperAdmin:75, isAdmin:82, isAdminInOrg:99, isStaff:109, canBypassMemberAssessment:129, isCaseManager:138, requireAdmin:145, isCounselor:152, isPartner:161, PartnerPortalContext:170, getPartnerForUser:213, getCounselorForUser:290, hasMultiplePortalRoles:305, isSubgroupLeader:327, getSubgroupsForUser:336, requireSubgroupLeader:364, isEmployer:373, getEmployerForUser:494, getEmployerAccountForNav:565, isMentor:591, requireAdminOrCounselor:605 |
 | [lib/auth/safeRedirectPath.test.ts](../../../lib/auth/safeRedirectPath.test.ts) | 20 | identity-tenancy |  |
 | [lib/auth/safeRedirectPath.ts](../../../lib/auth/safeRedirectPath.ts) | 20 | identity-tenancy | sanitizeRedirectPath:5 |
 | [lib/auth/server.ts](../../../lib/auth/server.ts) | 229 | identity-tenancy | hasSupabaseServerEnv:14, createSupabaseServerClient:38, getSession:103, getUser:133, resolveAuthGucContext:166, withAuthGuc:227 |

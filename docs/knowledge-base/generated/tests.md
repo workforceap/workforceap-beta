@@ -135,7 +135,7 @@
 | [tests/api/member-route-malformed-input.spec.ts](../../../tests/api/member-route-malformed-input.spec.ts) | 231 | tests |  |
 | [tests/api/member-route-null-body.spec.ts](../../../tests/api/member-route-null-body.spec.ts) | 334 | tests |  |
 | [tests/api/member-settings.spec.ts](../../../tests/api/member-settings.spec.ts) | 154 | tests |  |
-| [tests/api/member-signup.spec.ts](../../../tests/api/member-signup.spec.ts) | 161 | tests |  |
+| [tests/api/member-signup.spec.ts](../../../tests/api/member-signup.spec.ts) | 177 | tests |  |
 | [tests/api/member-training-workspace.spec.ts](../../../tests/api/member-training-workspace.spec.ts) | 198 | tests |  |
 | [tests/api/member-weekly-recap.spec.ts](../../../tests/api/member-weekly-recap.spec.ts) | 168 | tests |  |
 | [tests/api/member-wioa-qualification.spec.ts](../../../tests/api/member-wioa-qualification.spec.ts) | 77 | tests |  |
@@ -418,6 +418,7 @@
 | [tests/lib/apply-metadata-image.spec.ts](../../../tests/lib/apply-metadata-image.spec.ts) | 24 | tests |  |
 | [tests/lib/apply-resume-gate-contrast.spec.ts](../../../tests/lib/apply-resume-gate-contrast.spec.ts) | 82 | tests |  |
 | [tests/lib/at-risk-curriculum-assignment.spec.ts](../../../tests/lib/at-risk-curriculum-assignment.spec.ts) | 89 | tests |  |
+| [tests/lib/auth-role-resolution.spec.ts](../../../tests/lib/auth-role-resolution.spec.ts) | 108 | tests |  |
 | [tests/lib/auth-server.test.ts](../../../tests/lib/auth-server.test.ts) | 292 | tests |  |
 | [tests/lib/auth-user-lifecycle.spec.ts](../../../tests/lib/auth-user-lifecycle.spec.ts) | 99 | tests |  |
 | [tests/lib/board-outcomes-official-totals.spec.ts](../../../tests/lib/board-outcomes-official-totals.spec.ts) | 124 | tests |  |

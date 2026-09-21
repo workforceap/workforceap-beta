@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  WEAK_PASSWORD_MESSAGE,
   authProviderFailureStatus,
   classifyAuthProviderError,
   describeAuthProviderFailure,
   isAuthProviderConfigError,
+  isWeakPasswordError,
 } from './authProviderError';
 
 test('duplicate identities are recognised by code or message', () => {
@@ -31,6 +33,23 @@ test('provider validation errors are reported as validation', () => {
   assert.equal(classifyAuthProviderError({ status: 422, message: 'Unable to validate email address: invalid format' }), 'validation');
 });
 
+test('a weak password is its own kind with clear sentence-case copy (WAP-26)', () => {
+  const byCode = { code: 'weak_password', message: 'Password is known to be weak and easy to guess, please choose a different one.', status: 422 };
+  const byName = { name: 'AuthWeakPasswordError', message: 'Password should contain at least one number.', status: 422 };
+  const byText = { message: 'Password should be at least 6 characters.', status: 422 };
+  for (const error of [byCode, byName, byText]) {
+    assert.equal(isWeakPasswordError(error), true);
+    assert.equal(classifyAuthProviderError(error), 'weak_password');
+  }
+  assert.equal(isWeakPasswordError({ code: 'same_password', message: 'New password should be different from the old password.' }), false);
+  assert.equal(isWeakPasswordError({ code: 'email_address_invalid', message: 'Unable to validate email address: invalid format' }), false);
+  assert.equal(isWeakPasswordError(null), false);
+  assert.equal(authProviderFailureStatus('weak_password'), 400);
+  assert.equal(describeAuthProviderFailure('weak_password', 'create'), WEAK_PASSWORD_MESSAGE);
+  assert.equal(WEAK_PASSWORD_MESSAGE, 'Choose a stronger password: at least 8 characters, not a commonly used password.');
+  assert.match(WEAK_PASSWORD_MESSAGE, /^[A-Z][^A-Z]*$/, 'sentence case: one capital, no shouting');
+});
+
 test('anything else stays unknown and maps to a generic 400', () => {
   assert.equal(classifyAuthProviderError(null), 'unknown');
   assert.equal(classifyAuthProviderError({ message: 'Something odd' }), 'unknown');
@@ -41,7 +60,7 @@ test('anything else stays unknown and maps to a generic 400', () => {
 });
 
 test('messages never echo provider text and invite copy starts with "Invite not sent:"', () => {
-  for (const kind of ['duplicate', 'validation', 'unavailable', 'unknown'] as const) {
+  for (const kind of ['duplicate', 'weak_password', 'validation', 'unavailable', 'unknown'] as const) {
     const invite = describeAuthProviderFailure(kind, 'invite');
     assert.ok(invite.startsWith('Invite not sent: '), invite);
     const create = describeAuthProviderFailure(kind, 'create');

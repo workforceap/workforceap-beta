@@ -127,6 +127,22 @@ describe('POST /api/member/signup response contract (mocked providers)', () => {
     expect(mocks.trackEvent).not.toHaveBeenCalled();
   });
 
+  it('answers a weak-password refusal with clear copy and a reason the form can localise (WAP-26)', async () => {
+    mocks.signUp.mockResolvedValueOnce({
+      data: { user: null },
+      error: { name: 'AuthWeakPasswordError', code: 'weak_password', status: 422, message: 'Password should contain at least one number.' },
+    });
+    const response = await POST(request());
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: 'Choose a stronger password: at least 8 characters, not a commonly used password.',
+      reason: 'weak_password',
+    });
+    expect(mocks.createMember).not.toHaveBeenCalled();
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
   it.each(['active-with-auth', 'legacy-missing-auth', 'deleted-original-email'])('requires staff recovery for a case-insensitive existing app identity (%s)', async () => {
     // No Auth lookup/signUp is needed: every app-email collision is protected,
     // including the historical case where its original Auth ID no longer exists.

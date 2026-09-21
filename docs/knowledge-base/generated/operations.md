@@ -23,6 +23,8 @@
 | [scripts/backfill-coursera-courseids.cjs](../../../scripts/backfill-coursera-courseids.cjs) | 381 | learning-coursera | scanProgramsFromSource:374 |
 | [scripts/backfill-courses.ts](../../../scripts/backfill-courses.ts) | 82 | operations |  |
 | [scripts/backfill-unanswered-member-message-notifications.ts](../../../scripts/backfill-unanswered-member-message-notifications.ts) | 45 | communications |  |
+| [scripts/backfill-user-roles-from-profile.test.ts](../../../scripts/backfill-user-roles-from-profile.test.ts) | 53 | operations |  |
+| [scripts/backfill-user-roles-from-profile.ts](../../../scripts/backfill-user-roles-from-profile.ts) | 146 | operations | UserRoleSnapshot:26, BackfillPlan:32, planUserRoleBackfill:43, countByRole:65 |
 | [scripts/canonicalize-course-progress-slugs.test.ts](../../../scripts/canonicalize-course-progress-slugs.test.ts) | 67 | operations |  |
 | [scripts/canonicalize-course-progress-slugs.ts](../../../scripts/canonicalize-course-progress-slugs.ts) | 339 | operations | mergeCourseProgressCollision:72 |
 | [scripts/capture-roster-after-screenshots.mjs](../../../scripts/capture-roster-after-screenshots.mjs) | 85 | operations |  |

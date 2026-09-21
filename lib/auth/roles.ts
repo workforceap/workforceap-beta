@@ -4,8 +4,10 @@ import { cookies, headers } from 'next/headers';
 import { prisma } from '@/lib/db/prisma';
 import { getDefaultOrganizationId } from '@/lib/tenant/organization';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
-import { hasAdminAccess, hasSuperAdminAccess } from '@/lib/auth/roleAccess';
+import { hasAdminAccess, hasSuperAdminAccess, resolveEffectiveRole } from '@/lib/auth/roleAccess';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
+import { logger } from '@/lib/observability/logger';
 
 export { hasAdminAccess, hasSuperAdminAccess } from '@/lib/auth/roleAccess';
 
@@ -19,21 +21,55 @@ const SUPER_ADMIN_FALLBACK_EMPLOYER_NAME = 'WorkforceAP Example Employer';
 export const getUserRoles = cache(async function getUserRoles(userId: string): Promise<string[]> {
   const userRoles = await prisma.$transaction((tx) =>
     tx.userRole.findMany({
-      where: { userId },
+      // A soft-deleted account keeps its rows until the hard delete, but
+      // they grant nothing (WAP-182 item 1, matches getProfileRole).
+      where: { userId, user: { deletedAt: null } },
       include: { role: true },
     })
   );
   return userRoles.map((ur) => ur.role.name);
 });
 
+let profileRoleFallbackLogged = false;
+
+/**
+ * The user's effective role, with `user_roles` as the source of truth
+ * (WAP-182 item 1). Precedence lives in `resolveEffectiveRole`
+ * (lib/auth/roleAccess.ts): soft-deleted -> member; a `super_admin` profile
+ * stays super_admin; otherwise the most privileged `user_roles` row by
+ * `ROLE_PRECEDENCE`; no row -> `profiles.role` (logged once, no PII);
+ * nothing -> `member`. Signature and return type are unchanged so the ~20
+ * callers (login redirect, /api/auth/me, feature flags, route guards) keep
+ * working; `scripts/backfill-user-roles-from-profile.ts` seeds the missing
+ * rows so the profile fallback becomes the exception.
+ */
 export const getProfileRole = cache(async function getProfileRole(userId: string): Promise<string> {
-  const profile = await prisma.$transaction((tx) =>
-    tx.profile.findUnique({
-      where: { userId },
-      select: { role: true },
-    })
+  // Identity lookup by auth user id: deliberately cross-tenant, the role is
+  // not tenant data (super_admin in particular is platform-level).
+  const user = await crossTenantOK(() =>
+    prisma.$transaction((tx) =>
+      tx.user.findUnique({
+        where: { id: userId },
+        select: {
+          deletedAt: true,
+          profile: { select: { role: true } },
+          userRoles: { select: { role: { select: { name: true } } } },
+        },
+      })
+    )
   );
-  return profile?.role ?? 'member';
+  const resolution = resolveEffectiveRole({
+    deletedAt: user?.deletedAt ?? null,
+    profileRole: user?.profile?.role ?? null,
+    userRoleNames: user?.userRoles.map((entry) => entry.role.name) ?? [],
+  });
+  if (resolution.source === 'profile' && !profileRoleFallbackLogged) {
+    profileRoleFallbackLogged = true;
+    logger.debug('role resolution fell back to profiles.role; no matching user_roles row', {
+      source: 'profile',
+    });
+  }
+  return resolution.role;
 });
 
 export const isSuperAdmin = cache(async function isSuperAdmin(userId: string): Promise<boolean> {
