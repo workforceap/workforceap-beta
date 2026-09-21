@@ -186,6 +186,7 @@
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 215 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
+| [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
@@ -248,6 +249,7 @@
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-legacy-dialogs.spec.tsx](../../../tests/components/admin-legacy-dialogs.spec.tsx) | 125 | tests |  |
+| [tests/components/admin-member-assignment-sections.spec.tsx](../../../tests/components/admin-member-assignment-sections.spec.tsx) | 59 | tests |  |
 | [tests/components/admin-member-notes-panel.spec.tsx](../../../tests/components/admin-member-notes-panel.spec.tsx) | 81 | tests |  |
 | [tests/components/admin-overview-page.spec.tsx](../../../tests/components/admin-overview-page.spec.tsx) | 149 | tests |  |
 | [tests/components/admin-pipeline-funnel-order.spec.tsx](../../../tests/components/admin-pipeline-funnel-order.spec.tsx) | 68 | tests |  |
@@ -259,6 +261,7 @@
 | [tests/components/analytics-kit-tabs-empty.spec.tsx](../../../tests/components/analytics-kit-tabs-empty.spec.tsx) | 102 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
+| [tests/components/at-risk-detail-modal-dialog.spec.tsx](../../../tests/components/at-risk-detail-modal-dialog.spec.tsx) | 121 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 152 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
@@ -269,6 +272,7 @@
 | [tests/components/board-outcomes-exports-link.spec.tsx](../../../tests/components/board-outcomes-exports-link.spec.tsx) | 40 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/command-center-system-health.spec.tsx](../../../tests/components/command-center-system-health.spec.tsx) | 228 | tests |  |
+| [tests/components/counselor-home-on-track-caption.spec.tsx](../../../tests/components/counselor-home-on-track-caption.spec.tsx) | 39 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
 | [tests/components/counselor-notes-panels-load.spec.tsx](../../../tests/components/counselor-notes-panels-load.spec.tsx) | 115 | tests |  |
 | [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
@@ -419,7 +423,7 @@
 | [tests/lib/counselor-at-risk-page-data.spec.ts](../../../tests/lib/counselor-at-risk-page-data.spec.ts) | 155 | tests |  |
 | [tests/lib/counselor-booking-email.spec.ts](../../../tests/lib/counselor-booking-email.spec.ts) | 59 | tests |  |
 | [tests/lib/counselor-roster-stats.spec.ts](../../../tests/lib/counselor-roster-stats.spec.ts) | 127 | tests |  |
-| [tests/lib/counselor-thread-assign-flag.spec.ts](../../../tests/lib/counselor-thread-assign-flag.spec.ts) | 153 | tests |  |
+| [tests/lib/counselor-thread-assign-flag.spec.ts](../../../tests/lib/counselor-thread-assign-flag.spec.ts) | 178 | tests |  |
 | [tests/lib/counselor-thread-authorization.spec.ts](../../../tests/lib/counselor-thread-authorization.spec.ts) | 82 | tests |  |
 | [tests/lib/course-enrollment-email-copy.spec.ts](../../../tests/lib/course-enrollment-email-copy.spec.ts) | 77 | tests |  |
 | [tests/lib/course-progress-completion-lock.spec.ts](../../../tests/lib/course-progress-completion-lock.spec.ts) | 158 | tests |  |

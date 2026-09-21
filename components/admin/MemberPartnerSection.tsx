@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from './memberAssignmentSection.module.css';
 
 type PartnerOpt = { id: string; name: string };
 
@@ -51,17 +52,17 @@ export default function MemberPartnerSection({
   }
 
   return (
-    <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Partner assignment</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+    <section className="wa-kit-card" aria-labelledby="admin-member-partner-title">
+      <h2 id="admin-member-partner-title" className={styles.title}>Partner assignment</h2>
+      <p className={styles.lede}>
         Link this member to a partner organization for referral tracking and milestone emails to the partner contact.
       </p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+      <div className={styles.row}>
         <select
           value={partnerId}
           onChange={(e) => setPartnerId(e.target.value)}
           aria-label="Partner organization"
-          style={{ padding: '0.5rem', minWidth: 260, borderRadius: 6, border: '1px solid var(--color-border)' }}
+          className={`${styles.select} wa-kit-focus`}
         >
           <option value="">No partner</option>
           {partners.map((p) => (
@@ -77,7 +78,7 @@ export default function MemberPartnerSection({
       {message && (
         <p
           role={message.type === 'ok' ? 'status' : 'alert'}
-          style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: message.type === 'ok' ? '#166534' : '#b91c1c' }}
+          className={`${styles.message} ${message.type === 'ok' ? styles.messageOk : styles.messageErr}`}
         >
           {message.text}
         </p>

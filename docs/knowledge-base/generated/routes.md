@@ -341,6 +341,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/feedback | loading |  | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) |  |
 | /admin/feedback | page |  | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
 | /admin/growth | page |  | [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | @/lib/auth/server:27, @/lib/tenant/adminPageScope:28, @/lib/tenant/organization:32 |
+| /admin/guide | page |  | [app/admin/guide/page.tsx](../../../app/admin/guide/page.tsx) | @/lib/auth/server:5, @/lib/tenant/adminPageScope:6 |
 | /admin/health | page |  | [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) |  |
 | /admin/invites | layout |  | [app/admin/invites/layout.tsx](../../../app/admin/invites/layout.tsx) |  |
 | /admin/invites | loading |  | [app/admin/invites/loading.tsx](../../../app/admin/invites/loading.tsx) |  |
