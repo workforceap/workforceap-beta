@@ -8,7 +8,7 @@
 | [app/api/(portal)/dashboard/jobs/\[id\]/route.ts](../../../app/api/%28portal%29/dashboard/jobs/%5Bid%5D/route.ts) | 25 | jobs-employers | GET:25 |
 | [app/api/(portal)/dashboard/jobs/route.ts](../../../app/api/%28portal%29/dashboard/jobs/route.ts) | 151 | jobs-employers | GET:151 |
 | [app/api/admin/analytics/ai-efficacy/route.ts](../../../app/api/admin/analytics/ai-efficacy/route.ts) | 71 | administration | GET:71 |
-| [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | 76 | member-counselor | GET:13 |
+| [app/api/admin/analytics/dashboard/route.ts](../../../app/api/admin/analytics/dashboard/route.ts) | 80 | member-counselor | GET:14 |
 | [app/api/admin/analytics/members/route.ts](../../../app/api/admin/analytics/members/route.ts) | 71 | administration | GET:8 |
 | [app/api/admin/analytics/placements/_placementsAnalytics.ts](../../../app/api/admin/analytics/placements/_placementsAnalytics.ts) | 44 | jobs-employers | fetchPlacementAnalytics:3 |
 | [app/api/admin/analytics/placements/route.test.ts](../../../app/api/admin/analytics/placements/route.test.ts) | 39 | jobs-employers |  |
@@ -86,7 +86,7 @@
 | [app/api/admin/employers/route.ts](../../../app/api/admin/employers/route.ts) | 167 | administration | GET:78, POST:167 |
 | [app/api/admin/export/eligibility/route.ts](../../../app/api/admin/export/eligibility/route.ts) | 113 | administration | GET:113 |
 | [app/api/admin/export/members/_membersExportQuery.ts](../../../app/api/admin/export/members/_membersExportQuery.ts) | 194 | administration | MEMBER_EXPORT_LIMIT:6, MemberExportUser:106, buildMemberExportWhere:108, fetchMembersForExport:149 |
-| [app/api/admin/export/members/route.test.ts](../../../app/api/admin/export/members/route.test.ts) | 94 | administration |  |
+| [app/api/admin/export/members/route.test.ts](../../../app/api/admin/export/members/route.test.ts) | 90 | administration |  |
 | [app/api/admin/export/members/route.ts](../../../app/api/admin/export/members/route.ts) | 223 | administration | GET:223 |
 | [app/api/admin/feature-flags/\[id\]/route.ts](../../../app/api/admin/feature-flags/%5Bid%5D/route.ts) | 86 | administration | PATCH:60, DELETE:86 |
 | [app/api/admin/feature-flags/route.ts](../../../app/api/admin/feature-flags/route.ts) | 68 | administration | GET:26, POST:68 |
@@ -118,7 +118,7 @@
 | [app/api/admin/members/\[id\]/erase/route.ts](../../../app/api/admin/members/%5Bid%5D/erase/route.ts) | 189 | administration | POST:33 |
 | [app/api/admin/members/\[id\]/export-data/route.ts](../../../app/api/admin/members/%5Bid%5D/export-data/route.ts) | 77 | administration | GET:77 |
 | [app/api/admin/members/\[id\]/interview/route.ts](../../../app/api/admin/members/%5Bid%5D/interview/route.ts) | 74 | jobs-employers | PATCH:14 |
-| [app/api/admin/members/\[id\]/messages/route.ts](../../../app/api/admin/members/%5Bid%5D/messages/route.ts) | 168 | communications | GET:72, POST:132, PATCH:167 |
+| [app/api/admin/members/\[id\]/messages/route.ts](../../../app/api/admin/members/%5Bid%5D/messages/route.ts) | 180 | communications | GET:74, POST:144, PATCH:179 |
 | [app/api/admin/members/\[id\]/notes/route.ts](../../../app/api/admin/members/%5Bid%5D/notes/route.ts) | 102 | administration | GET:59, POST:102 |
 | [app/api/admin/members/\[id\]/partner/route.ts](../../../app/api/admin/members/%5Bid%5D/partner/route.ts) | 88 | partners-funding | PATCH:18 |
 | [app/api/admin/members/\[id\]/pipeline-stage/route.ts](../../../app/api/admin/members/%5Bid%5D/pipeline-stage/route.ts) | 88 | administration | PATCH:88 |
@@ -152,9 +152,9 @@
 | [app/api/admin/mentors/\[id\]/route.ts](../../../app/api/admin/mentors/%5Bid%5D/route.ts) | 40 | administration | PATCH:10 |
 | [app/api/admin/messages/stats/route.ts](../../../app/api/admin/messages/stats/route.ts) | 32 | communications | GET:32 |
 | [app/api/admin/messages/thread/\[threadId\]/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/route.ts) | 175 | communications | GET:11 |
-| [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | 107 | communications | POST:79, PATCH:106 |
+| [app/api/admin/messages/thread/\[threadId\]/staff/route.ts](../../../app/api/admin/messages/thread/%5BthreadId%5D/staff/route.ts) | 122 | communications | POST:94, PATCH:121 |
 | [app/api/admin/messages/threads/route.ts](../../../app/api/admin/messages/threads/route.ts) | 345 | communications | GET:206, POST:345 |
-| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 263 | administration | GET:237 |
+| [app/api/admin/metrics/route.ts](../../../app/api/admin/metrics/route.ts) | 290 | administration | GET:264 |
 | [app/api/admin/milestone-cascades/\[id\]/approve/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/approve/route.ts) | 195 | member-counselor | POST:195 |
 | [app/api/admin/milestone-cascades/\[id\]/dismiss/route.ts](../../../app/api/admin/milestone-cascades/%5Bid%5D/dismiss/route.ts) | 116 | member-counselor | POST:116 |
 | [app/api/admin/milestone-cascades/synthetic/route.ts](../../../app/api/admin/milestone-cascades/synthetic/route.ts) | 97 | member-counselor | POST:97 |
@@ -164,7 +164,7 @@
 | [app/api/admin/onet/sync/route.ts](../../../app/api/admin/onet/sync/route.ts) | 67 | administration | POST:16 |
 | [app/api/admin/organization/logo/route.ts](../../../app/api/admin/organization/logo/route.ts) | 83 | administration | POST:13 |
 | [app/api/admin/outcomes/pdf/route.ts](../../../app/api/admin/outcomes/pdf/route.ts) | 189 | administration | GET:189 |
-| [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | 280 | administration | GET:280 |
+| [app/api/admin/outcomes/route.ts](../../../app/api/admin/outcomes/route.ts) | 316 | administration | GET:316 |
 | [app/api/admin/outcomes/snapshot/route.ts](../../../app/api/admin/outcomes/snapshot/route.ts) | 83 | administration | GET:83 |
 | [app/api/admin/partner-context/route.ts](../../../app/api/admin/partner-context/route.ts) | 82 | administration | GET:42, POST:82 |
 | [app/api/admin/partner-payouts/route.ts](../../../app/api/admin/partner-payouts/route.ts) | 103 | administration | GET:103 |
@@ -179,7 +179,7 @@
 | [app/api/admin/partners/invite/route.ts](../../../app/api/admin/partners/invite/route.ts) | 92 | partners-funding | POST:92 |
 | [app/api/admin/partners/route.ts](../../../app/api/admin/partners/route.ts) | 176 | partners-funding | GET:83, POST:176 |
 | [app/api/admin/pipeline/at-risk-stats/route.ts](../../../app/api/admin/pipeline/at-risk-stats/route.ts) | 115 | administration | GET:10 |
-| [app/api/admin/pipeline/route.ts](../../../app/api/admin/pipeline/route.ts) | 86 | administration | GET:86 |
+| [app/api/admin/pipeline/route.ts](../../../app/api/admin/pipeline/route.ts) | 90 | administration | GET:90 |
 | [app/api/admin/pipeline/stale/route.ts](../../../app/api/admin/pipeline/stale/route.ts) | 41 | administration | GET:10 |
 | [app/api/admin/pipeline/surveys/route.ts](../../../app/api/admin/pipeline/surveys/route.ts) | 87 | administration | GET:12 |
 | [app/api/admin/placement-surveys/resend/route.ts](../../../app/api/admin/placement-surveys/resend/route.ts) | 165 | administration | POST:23 |
@@ -295,8 +295,8 @@
 | [app/api/cron/data-cleanup/route.ts](../../../app/api/cron/data-cleanup/route.ts) | 62 | communications | maxDuration:9, GET:61, POST:62 |
 | [app/api/cron/deploy-health/route.ts](../../../app/api/cron/deploy-health/route.ts) | 81 | communications | maxDuration:7, GET:80, POST:81 |
 | [app/api/cron/employer-pending-applicants/route.ts](../../../app/api/cron/employer-pending-applicants/route.ts) | 172 | communications | maxDuration:12, GET:171, POST:172 |
-| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 120 | communications | maxDuration:16, GET:119, POST:120 |
-| [app/api/cron/inactivity-nudge/route.ts](../../../app/api/cron/inactivity-nudge/route.ts) | 108 | communications | maxDuration:15, GET:107, POST:108 |
+| [app/api/cron/inactive-nudge/route.ts](../../../app/api/cron/inactive-nudge/route.ts) | 123 | communications | maxDuration:16, GET:122, POST:123 |
+| [app/api/cron/inactivity-nudge/route.ts](../../../app/api/cron/inactivity-nudge/route.ts) | 111 | communications | maxDuration:15, GET:110, POST:111 |
 | [app/api/cron/interview-reminders/route.ts](../../../app/api/cron/interview-reminders/route.ts) | 98 | communications | maxDuration:11, GET:98 |
 | [app/api/cron/job-alerts/route.ts](../../../app/api/cron/job-alerts/route.ts) | 145 | communications | maxDuration:13, GET:144, POST:145 |
 | [app/api/cron/job-expiry/route.ts](../../../app/api/cron/job-expiry/route.ts) | 110 | communications | maxDuration:14, GET:109, POST:110 |
@@ -416,7 +416,7 @@
 | [app/api/member/notifications/\[id\]/route.ts](../../../app/api/member/notifications/%5Bid%5D/route.ts) | 43 | communications | DELETE:43 |
 | [app/api/member/notifications/dismiss-all/route.ts](../../../app/api/member/notifications/dismiss-all/route.ts) | 37 | communications | POST:37 |
 | [app/api/member/notifications/read-all/route.ts](../../../app/api/member/notifications/read-all/route.ts) | 37 | communications | POST:37 |
-| [app/api/member/notifications/route.ts](../../../app/api/member/notifications/route.ts) | 54 | communications | GET:54 |
+| [app/api/member/notifications/route.ts](../../../app/api/member/notifications/route.ts) | 60 | communications | GET:60 |
 | [app/api/member/pathway-steps/\[pathwayId\]/\[stepIndex\]/complete/route.ts](../../../app/api/member/pathway-steps/%5BpathwayId%5D/%5BstepIndex%5D/complete/route.ts) | 185 | member-counselor | POST:20 |
 | [app/api/member/pathway-steps/progress/route.ts](../../../app/api/member/pathway-steps/progress/route.ts) | 27 | member-counselor | GET:6 |
 | [app/api/member/pitch-deployments/route.ts](../../../app/api/member/pitch-deployments/route.ts) | 74 | member-counselor | GET:29, POST:73 |

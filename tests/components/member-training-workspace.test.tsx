@@ -37,9 +37,9 @@ function fixture(): TrainingWorkspace {
   };
 }
 
-function mount(workspace = fixture(), completedSlugs: string[] = [], practiceMissions: TrainingCoursePractice[] = []) {
+function mount(workspace = fixture(), completedSlugs: string[] = [], practiceMissions: TrainingCoursePractice[] = [], modulesNote?: string | null) {
   return render(<MemberTrainingWorkspace workspace={workspace} programTitle={workspace.programTitle}
-    completedSlugs={completedSlugs} practiceMissions={practiceMissions} syllabusHours={160} syllabusBreakdown={syllabus.totalHoursLabel}
+    completedSlugs={completedSlugs} practiceMissions={practiceMissions} syllabusHours={160} syllabusBreakdown={syllabus.totalHoursLabel} modulesNote={modulesNote}
     destinations={[
       { slug: courseSlug(0), launchHref },
       { slug: courseSlug(9), moduleHref },
@@ -334,5 +334,24 @@ describe('member training workspace', () => {
     expect(screen.getByRole('heading', { name: 'Your course-by-course schedule' })).toBeInTheDocument();
     expect(screen.queryByText(/Invalid Date/)).not.toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('shows the course denominator note where the count is stated, and nothing when there is none', () => {
+    // /dashboard/program renders this workspace for assigned members, so the
+    // "Lab named in the 17" sentence must appear here, not only on the home tile.
+    const note = "10 courses: 9 on Coursera's learning path plus the WorkforceAP Lab (delivered by WorkforceAP, not part of the Coursera path).";
+    mount(fixture(), [], [], note);
+    const rendered = screen.getByTestId('program-courses-note');
+    expect(rendered).toHaveTextContent(note);
+    expect(rendered).toHaveClass('wa-kit-training-muted');
+    expect(rendered.closest('section')).toHaveAttribute('aria-label', 'Your assigned training');
+    cleanup();
+
+    mount(fixture(), [], [], undefined);
+    expect(screen.queryByTestId('program-courses-note')).not.toBeInTheDocument();
+    cleanup();
+
+    mount(fixture(), [], [], null);
+    expect(screen.queryByTestId('program-courses-note')).not.toBeInTheDocument();
   });
 });

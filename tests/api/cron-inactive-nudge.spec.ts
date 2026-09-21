@@ -97,6 +97,12 @@ describe('GET /api/cron/inactive-nudge', () => {
     ]);
     expect(findManyArgs.take).toBe(CRON_NUDGE_CANDIDATE_CAP);
     expect(prisma.memberEvent.create).toHaveBeenCalledTimes(2);
+    // Weekly cadence: the unread nudge is refreshed, never stacked (608 of 620
+    // nudge rows were same-title duplicates before this).
+    expect(createNotification).toHaveBeenCalledTimes(2);
+    for (const call of vi.mocked(createNotification).mock.calls) {
+      expect(call[0]).toMatchObject({ type: 'nudge', dedupeUnread: true, notifyOperator: false });
+    }
   });
 
   it('counts only successful sends', async () => {
@@ -191,6 +197,9 @@ describe('inactivity email acceptance', () => {
       data: { userId: 'accepted', tier: 'yellow', kind: 'inactivity' },
     });
     expect(createNotification).toHaveBeenCalledTimes(1);
+    expect(createNotification).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 'accepted', type: 'nudge', dedupeUnread: true }),
+    );
     expect(setCronRecordsProcessed).toHaveBeenCalledWith(1);
   });
 

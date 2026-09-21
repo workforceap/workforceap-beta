@@ -81,6 +81,8 @@ export interface MemberTrainingWorkspaceProps {
   initialCourseSlug?: string;
   syllabusHours?: number;
   syllabusBreakdown?: string;
+  /** How the course count is made up (e.g. "17 courses: 16 on Coursera's learning path plus the WorkforceAP Lab…"). */
+  modulesNote?: string | null;
   trainingEmail?: string | null;
   practiceMissions?: TrainingCoursePractice[];
   practiceUnavailable?: boolean;
@@ -98,7 +100,7 @@ function addDays(date: string, days: number) {
 }
 
 /** The member's assigned curriculum, study schedule, and durable work in one place. */
-export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
+export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
   const [workspace, setWorkspace] = useState(initialWorkspace);
   const completed = new Set(completedSlugs);
@@ -213,6 +215,7 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
             <p className="wa-kit-training-eyebrow">{totalHours} hours of assigned training</p>
             <h2>{programTitle}</h2>
             <p className="wa-kit-training-muted">{syllabusHours === totalHours && syllabusBreakdown ? syllabusBreakdown : `${workspace.courses.length} courses and applied modules in your assigned learning path.`}</p>
+            {modulesNote ? <p className="wa-kit-training-muted" data-testid="program-courses-note">{modulesNote}</p> : null}
             <ProgressBar label="Assigned courses completed" value={workspace.courses.length ? Math.round(completedCount / workspace.courses.length * 100) : 0} hasValueLabel />
             <p className="wa-kit-training-muted">{completedCount} of {workspace.courses.length} complete · {hoursRemaining} planned hours in unfinished courses</p>
           </VStack>

@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_COHORT_DETAIL_CAP, sqlCount } from '@/lib/db/scanCaps';
-import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
@@ -213,7 +213,7 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
         WHERE u.organization_id = ${orgId}
           AND u.deleted_at IS NULL
           AND u.enrolled_program IS NOT NULL
-          AND u.email NOT IN (${Prisma.join([...MEMBER_ONLY_EXCLUDED_EMAILS])})
+          AND ${memberOnlyEmailSql('u')}
           AND EXISTS (
             SELECT 1
             FROM validated_programs user_program
@@ -256,7 +256,7 @@ export async function getPublicImpactStats(orgId: string): Promise<PublicImpactS
           AND u.organization_id = ${orgId}
           AND u.deleted_at IS NULL
           AND p.role = 'member'
-          AND u.email NOT IN ('member.success@workforceap.org', 'mbrown@hsconglomerates.com')
+          AND ${memberOnlyEmailSql('u')}
       `,
     ]);
 

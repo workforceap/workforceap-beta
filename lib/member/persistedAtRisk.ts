@@ -3,8 +3,10 @@ import 'server-only';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { resolveMemberLastActivity } from '@/lib/counselor/lastActivity';
+import { memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
 
-export const ACTIVE_AT_RISK_STATUSES = ['open', 'acknowledged', 'escalated'] as const;
+export { ACTIVE_AT_RISK_STATUSES };
 
 export type PersistedRiskScope =
   | { organizationId: string; counselorUserId?: string; platform?: false }
@@ -22,6 +24,14 @@ export type PersistedAtRiskMember = {
  * Count and page are distinct members in one snapshot. When several active cases
  * exist, show the highest score, then most recently updated case, then its ID.
  * No age cutoff is applied to an unresolved saved case.
+ *
+ * Population: member-role accounts only (`memberOnlySqlJoin`) who are
+ * enrolled in a program. "At risk" means not active lately AND in a program
+ * (Mike, 2026-09-20, Needs Mike 8): the saved alert is the inactivity signal,
+ * and a member with no program has nothing to fall behind in. The /admin
+ * attention model (`lib/attention/evaluate.ts`, `risk_alert`) applies the
+ * same two conditions, so the Command Center KPI and the /admin "Risk
+ * alerts" tile count one population (number audit 2026-09-20, S2).
  */
 export async function loadPersistedAtRiskMembers(
   scope: PersistedRiskScope,
@@ -47,8 +57,9 @@ export async function loadPersistedAtRiskMembers(
         PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC
       ) AS member_rank
       FROM at_risk_alerts a JOIN users u ON u.id = a.user_id
+      ${memberOnlySqlJoin('u')}
       WHERE a.status IN (${Prisma.join(statuses)}) AND a.score >= ${threshold}
-        AND u.deleted_at IS NULL ${organization} ${assignment}
+        AND u.deleted_at IS NULL AND u.enrolled_program IS NOT NULL ${organization} ${assignment}
     ), members AS (
       SELECT * FROM ranked_alerts WHERE member_rank = 1
     ), page AS (

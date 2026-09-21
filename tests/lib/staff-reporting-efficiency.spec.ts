@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PrismaClient } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 const h = vi.hoisted(() => ({ countUsers: vi.fn(), countPlacements: vi.fn(), average: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { count: h.countUsers }, placementRecord: { count: h.countPlacements }, $queryRaw: h.average } }));
 import { getMemberOutcomesSummary } from '@/lib/admin/memberOutcomesSummary';
 import { loadCounselorRoster, parseCounselorRosterQuery } from '@/lib/admin/counselorRoster';
 import { loadCounselorAssignmentAggregates } from '@/lib/admin/counselorRosterAggregates';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 const now = new Date('2026-09-19T12:00:00Z');
 const cutoff = new Date(now.getTime() - 90 * 86400000);
@@ -24,12 +25,16 @@ describe('member outcomes summary', () => {
       rows.filter(row => row.organizationId === where.user.organizationId && (!where.placedAt || (row.placedAt >= where.placedAt.gte && row.placedAt <= where.placedAt.lte))).length);
     h.average.mockResolvedValue([{ avg_weeks: 5.6 }]);
     expect(await getMemberOutcomesSummary('org-1', now)).toEqual({ membersEnrolled: 400, membersPlaced: 304, placedLast90d: 302, placementRate: 76, averageWeeksToPlacement: 6 });
-    expect(h.countUsers).toHaveBeenCalledWith({ where: { organizationId: 'org-1', deletedAt: null, enrolledProgram: { not: null } } });
+    // Numerator and denominator share one member-only population (number audit F1).
+    expect(h.countUsers).toHaveBeenCalledWith({ where: { organizationId: 'org-1', ...MEMBER_ONLY_WHERE, deletedAt: null, enrolledProgram: { not: null } } });
     expect(h.countPlacements).toHaveBeenCalledTimes(2);
     // Preserve historical placement numerator (no new deleted-user restriction),
     // while the enrolled denominator continues to exclude deleted users.
-    expect(h.countPlacements.mock.calls[0][0].where).toEqual({ user: { organizationId: 'org-1' } });
-    expect(h.average.mock.calls[0].slice(1)).toEqual(['org-1']);
+    expect(h.countPlacements.mock.calls[0][0].where).toEqual({ user: { organizationId: 'org-1', ...MEMBER_ONLY_WHERE } });
+    const [strings, ...values] = h.average.mock.calls[0] as [TemplateStringsArray, ...unknown[]];
+    const average = Prisma.sql(strings, ...values);
+    expect(average.sql).toContain("member_profile.role = 'member'");
+    expect(average.values).toContain('org-1');
     expect(h.average).toHaveBeenCalledTimes(1); expect(h.countUsers).toHaveBeenCalledTimes(1);
   });
   it('never widens a missing tenant to platform scope', async () => {
@@ -64,7 +69,8 @@ describe('counselor grouped reports and pagination', () => {
     expect(db.counselorAssignment.groupBy.mock.calls[0][0].where).toEqual(cohort);
     expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[0]).toEqual(cohort);
     expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[0]).toEqual(cohort);
-    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[1].OR).toContainEqual({ member: { lastLoginAt: { lt: new Date(now.getTime() - 21 * 86400000) } } });
+    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[1]).toEqual({ member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: ['open', 'acknowledged', 'escalated'] } } } } });
+    expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[1]).toEqual({ member: { placementRecord: { isNot: null } } });
   });
   it('searches in the tenant query and clamps stale pages without changing cohort KPIs', async () => {
     const db = makeDb(); db.counselor.count.mockReset().mockResolvedValueOnce(125).mockResolvedValueOnce(3);
@@ -77,7 +83,7 @@ describe('counselor grouped reports and pagination', () => {
   });
   it('preserves explicit super-admin cross-tenant cohort behavior', async () => {
     const db = makeDb();
-    await loadCounselorAssignmentAggregates(db as unknown as PrismaClient, cutoff, { ...scoped, superAdmin: true });
+    await loadCounselorAssignmentAggregates(db as unknown as PrismaClient, { ...scoped, superAdmin: true });
     expect(db.counselorAssignment.groupBy.mock.calls[0][0].where).toEqual({ active: true, counselor: { active: true } });
   });
   it.each(['0', '-1', 'NaN', '1.5', '9007199254740992'])('normalizes invalid page %s', page => {

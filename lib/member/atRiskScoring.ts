@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { fetchLearnerProgressFromB4B } from '@/lib/coursera/learnerProgress';
 import { getMemberEngagementSignals } from '@/lib/member/memberEngagementSignals';
@@ -446,14 +447,25 @@ export async function buildMemberClassificationInput(
 // external API / DB pool).
 const SCORING_BATCH_SIZE = 15;
 
+/**
+ * The population the nightly check scores and persists alerts for: member-role
+ * accounts (`MEMBER_ONLY_WHERE`) enrolled in a program and not yet placed. At
+ * risk = not active lately AND in a program (Mike, 2026-09-20), the same rule
+ * every read side applies, so `at_risk_alerts` no longer fills with staff or
+ * no-program alerts that the Command Center, /admin and counselor surfaces ignore.
+ */
+export const AT_RISK_SCORING_POPULATION_WHERE = {
+  deletedAt: null,
+  ...MEMBER_ONLY_WHERE,
+  enrolledProgram: { not: null },
+  // Exclude already placed members
+  placementRecord: null,
+} as const;
+
 export async function calculateAllAtRiskScores(): Promise<AtRiskScore[]> {
   const activeMembers = await prisma.user.findMany({
     take: 500,
-    where: {
-      deletedAt: null,
-      // Exclude already placed members
-      placementRecord: null,
-    },
+    where: AT_RISK_SCORING_POPULATION_WHERE,
     select: { id: true },
   });
 

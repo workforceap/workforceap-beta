@@ -2,7 +2,7 @@ import 'server-only';
 
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
-import { MEMBER_ONLY_EXCLUDED_EMAILS } from '@/lib/admin/memberOnlyWhere';
+import { memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 export type JobReadyProgressRow = {
@@ -46,7 +46,7 @@ export async function loadJobReadyProgressPage(args: {
         INNER JOIN profiles p ON p.user_id = u.id
         WHERE u.deleted_at IS NULL
           AND p.role IN ('member', 'admin', 'super_admin')
-          AND NOT (u.email = ANY(${[...MEMBER_ONLY_EXCLUDED_EMAILS]}::text[]))
+          AND ${memberOnlyEmailSql('u')}
           AND mpp.program_slug = ANY(${args.programStorageValues}::text[])
           AND mpp.average_percent >= ${args.minimumPercent}
           ${tenantPredicate}
@@ -63,7 +63,7 @@ export async function loadJobReadyProgressPage(args: {
         INNER JOIN profiles p ON p.user_id = u.id
         WHERE u.deleted_at IS NULL
           AND p.role IN ('member', 'admin', 'super_admin')
-          AND NOT (u.email = ANY(${[...MEMBER_ONLY_EXCLUDED_EMAILS]}::text[]))
+          AND ${memberOnlyEmailSql('u')}
           AND mpp.program_slug = ANY(${args.programStorageValues}::text[])
           AND mpp.average_percent >= ${args.minimumPercent}
           ${tenantPredicate}

@@ -14,6 +14,8 @@ vi.mock('@/lib/db/prisma', () => ({
     notification: {
       create: vi.fn(),
       createMany: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
@@ -29,6 +31,51 @@ describe('createNotification', () => {
     lifetime.after.mockImplementation((task: Promise<unknown> | (() => unknown)) => {
       if (typeof task === 'function') void task();
     });
+  });
+
+  it('does not look for duplicates unless asked', async () => {
+    prisma.notification.create.mockResolvedValue({ id: 'n1' });
+    await createNotification({ userId: 'user-1', type: 'nudge', title: 'We miss you!', body: 'x' });
+    expect(prisma.notification.findFirst).not.toHaveBeenCalled();
+    expect(prisma.notification.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('dedupeUnread refreshes the existing unread row with the same type + title instead of inserting', async () => {
+    prisma.notification.findFirst.mockResolvedValue({ id: 'existing-unread' });
+    prisma.notification.update.mockResolvedValue({ id: 'existing-unread' });
+
+    await createNotification({
+      userId: 'user-1',
+      type: 'nudge',
+      title: 'We miss you!',
+      body: 'Week two',
+      data: { link: '/dashboard' },
+      notifyOperator: false,
+      dedupeUnread: true,
+    });
+
+    expect(prisma.notification.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'user-1', type: 'nudge', title: 'We miss you!', readAt: null },
+      }),
+    );
+    expect(prisma.notification.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'existing-unread' },
+        data: expect.objectContaining({ body: 'Week two', data: { link: '/dashboard' }, createdAt: expect.any(Date) }),
+      }),
+    );
+    expect(prisma.notification.create).not.toHaveBeenCalled();
+  });
+
+  it('dedupeUnread inserts when the previous row was read (a new nudge is a new event)', async () => {
+    prisma.notification.findFirst.mockResolvedValue(null);
+    prisma.notification.create.mockResolvedValue({ id: 'n2' });
+
+    await createNotification({ userId: 'user-1', type: 'nudge', title: 'We miss you!', body: 'x', dedupeUnread: true, notifyOperator: false });
+
+    expect(prisma.notification.update).not.toHaveBeenCalled();
+    expect(prisma.notification.create).toHaveBeenCalledTimes(1);
   });
 
   it('creates a single notification', async () => {

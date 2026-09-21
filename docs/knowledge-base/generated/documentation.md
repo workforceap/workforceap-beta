@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [docs/A11Y-AUDIT.md](../../../docs/A11Y-AUDIT.md) | 128 | documentation |  |
-| [docs/ADMIN_PORTAL.md](../../../docs/ADMIN_PORTAL.md) | 227 | documentation |  |
+| [docs/ADMIN_PORTAL.md](../../../docs/ADMIN_PORTAL.md) | 240 | documentation |  |
 | [docs/AGENT_CHANGE_GUARDRAILS.md](../../../docs/AGENT_CHANGE_GUARDRAILS.md) | 43 | documentation |  |
 | [docs/API-REFERENCE.md](../../../docs/API-REFERENCE.md) | 525 | documentation |  |
 | [docs/API-ROUTE-ACCESS-INTENTIONS.md](../../../docs/API-ROUTE-ACCESS-INTENTIONS.md) | 41 | documentation |  |
@@ -66,7 +66,7 @@
 | [docs/PORTAL-UI-ONE-SHOT-TASK.md](../../../docs/PORTAL-UI-ONE-SHOT-TASK.md) | 233 | documentation |  |
 | [docs/PORTAL-UI-UX-AUDIT-FINDINGS.md](../../../docs/PORTAL-UI-UX-AUDIT-FINDINGS.md) | 123 | documentation |  |
 | [docs/PORTAL-UI-UX-ENHANCEMENTS.md](../../../docs/PORTAL-UI-UX-ENHANCEMENTS.md) | 166 | documentation |  |
-| [docs/PORTALS.md](../../../docs/PORTALS.md) | 367 | documentation |  |
+| [docs/PORTALS.md](../../../docs/PORTALS.md) | 389 | documentation |  |
 | [docs/PORTAL_DESIGN_KIT.md](../../../docs/PORTAL_DESIGN_KIT.md) | 139 | documentation |  |
 | [docs/PORTAL_NAV_SPEC.md](../../../docs/PORTAL_NAV_SPEC.md) | 156 | documentation |  |
 | [docs/PORTAL_REDESIGN_PLAN.md](../../../docs/PORTAL_REDESIGN_PLAN.md) | 189 | documentation |  |

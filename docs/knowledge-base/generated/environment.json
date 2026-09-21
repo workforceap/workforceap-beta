@@ -185,6 +185,17 @@
       ]
     },
     {
+      "name": "CHAPTER_MEMBERS_CASCADE_PROOF_DATABASE_URL",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "tests/migrations/chapter-members-user-cascade.mjs",
+          "line": 17
+        }
+      ]
+    },
+    {
       "name": "CI",
       "publicPrefix": false,
       "declaredInRootExample": false,
@@ -662,6 +673,10 @@
       "declaredInRootExample": false,
       "references": [
         {
+          "file": "lib/content/coursera/learningPaths.ts",
+          "line": 302
+        },
+        {
           "file": "lib/coursera/programCourseList.test.ts",
           "line": 22
         },
@@ -676,10 +691,6 @@
         {
           "file": "lib/coursera/programCourseList.test.ts",
           "line": 30
-        },
-        {
-          "file": "lib/coursera/programCourseList.ts",
-          "line": 18
         }
       ]
     },
@@ -1524,7 +1535,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 300
+          "line": 299
         }
       ]
     },
@@ -1551,7 +1562,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 263
+          "line": 268
         }
       ]
     },
@@ -1658,7 +1669,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 284
+          "line": 289
         },
         {
           "file": "lib/notifications/partner-notify.ts",
@@ -1736,7 +1747,7 @@
       "references": [
         {
           "file": "lib/email/send.ts",
-          "line": 82
+          "line": 87
         }
       ]
     },
@@ -2366,7 +2377,7 @@
         },
         {
           "file": "lib/outcomes/socialProof.ts",
-          "line": 42
+          "line": 43
         },
         {
           "file": "lib/partner/referralLink.ts",
@@ -2692,7 +2703,7 @@
         },
         {
           "file": "lib/nav/portalNav.ts",
-          "line": 157
+          "line": 174
         }
       ]
     },
@@ -3673,6 +3684,10 @@
           "line": 15
         },
         {
+          "file": "tests/migrations/chapter-members-user-cascade.mjs",
+          "line": 17
+        },
+        {
           "file": "tests/migrations/placement-survey-sent-state.mjs",
           "line": 13
         }
@@ -3996,6 +4011,10 @@
         },
         {
           "file": "tests/app/member-messages-inbox-time.spec.tsx",
+          "line": 1
+        },
+        {
+          "file": "tests/app/member-messages-unread-marker.spec.tsx",
           "line": 1
         },
         {
@@ -4394,6 +4413,10 @@
         {
           "file": "app/dev/staff/admin-command/page.tsx",
           "line": 150
+        },
+        {
+          "file": "app/dev/staff/admin-shell/page.tsx",
+          "line": 16
         },
         {
           "file": "app/dev/staff/counselor-atrisk/page.tsx",
