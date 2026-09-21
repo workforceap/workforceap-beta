@@ -3285,6 +3285,10 @@
     }
   },
   "memberApproval": {
+    "dismiss": "Masquer",
+    "dismissLabel": "Masquer l'état de votre approbation",
+    "restore": "Afficher l'état de votre approbation",
+    "summaryAllApproved": "Toutes les étapes enregistrées sont approuvées ; l'invitation Coursera n'est pas confirmée ici.",
     "title": "État de votre approbation",
     "intro": "Consultez les dernières étapes enregistrées. Votre équipe peut vous expliquer ce qui manque.",
     "application": "Candidature",
