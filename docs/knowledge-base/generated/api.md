@@ -235,8 +235,8 @@
 | [app/api/ai/salary-negotiation/route.ts](../../../app/api/ai/salary-negotiation/route.ts) | 112 | ai-voice | POST:16 |
 | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | 207 | ai-voice | GET:24 |
 | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | 94 | applications-enrollment | POST:94 |
-| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1353 | applications-enrollment |  |
-| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1082 | applications-enrollment | POST:191 |
+| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1369 | applications-enrollment |  |
+| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1087 | applications-enrollment | POST:192 |
 | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | 55 | applications-enrollment | POST:28 |
 | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | 120 | identity-tenancy | GET:14 |
 | [app/api/auth/forgot-password/route.ts](../../../app/api/auth/forgot-password/route.ts) | 78 | identity-tenancy | POST:10 |
@@ -449,7 +449,7 @@
 | [app/api/member/resume/upload/route.ts](../../../app/api/member/resume/upload/route.ts) | 115 | member-counselor | POST:25 |
 | [app/api/member/saved-jobs/route.ts](../../../app/api/member/saved-jobs/route.ts) | 101 | member-counselor | GET:35, POST:77, DELETE:101 |
 | [app/api/member/settings/route.ts](../../../app/api/member/settings/route.ts) | 44 | member-counselor | PATCH:9 |
-| [app/api/member/signup/route.ts](../../../app/api/member/signup/route.ts) | 284 | applications-enrollment | POST:24 |
+| [app/api/member/signup/route.ts](../../../app/api/member/signup/route.ts) | 292 | applications-enrollment | POST:25 |
 | [app/api/member/skill-assessment/route.ts](../../../app/api/member/skill-assessment/route.ts) | 72 | member-counselor | POST:13 |
 | [app/api/member/skill-checkpoints/route.ts](../../../app/api/member/skill-checkpoints/route.ts) | 63 | member-counselor | POST:63 |
 | [app/api/member/skill-profile/route.ts](../../../app/api/member/skill-profile/route.ts) | 431 | member-counselor | GET:247 |

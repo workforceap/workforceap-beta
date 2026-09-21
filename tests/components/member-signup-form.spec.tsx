@@ -109,6 +109,19 @@ describe('member signup form response contract (mocked transport)', () => {
     expect(screen.queryByRole('link', { name: 'Go to login' })).not.toBeInTheDocument();
   });
 
+  it('shows the localised weak-password guidance when the API reports reason weak_password (WAP-26)', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ error: 'provider text the form must not echo', reason: 'weak_password' }, { status: 400 }));
+    renderSignup();
+    fillRequiredFields();
+    submit();
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(messages.auth.signup.weakPassword);
+    expect(alert).toHaveTextContent('Choose a stronger password: at least 8 characters, not a commonly used password.');
+    expect(alert).not.toHaveTextContent(/provider text/);
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeEnabled();
+  });
+
   it('shows a retryable error when the signup request rejects', async () => {
     fetchMock.mockRejectedValueOnce(new TypeError('Simulated network failure'));
     renderSignup();

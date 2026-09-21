@@ -15,7 +15,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /login | page |  | [app/(auth)/login/page.tsx](../../../app/%28auth%29/login/page.tsx) | @/lib/auth/postLoginRedirect:4, @/lib/auth/server:5, @/lib/auth/roles:6 |
 | / | not-found |  | [app/(auth)/not-found.tsx](../../../app/%28auth%29/not-found.tsx) |  |
 | /reset-password | layout |  | [app/(auth)/reset-password/layout.tsx](../../../app/%28auth%29/reset-password/layout.tsx) |  |
-| /reset-password | page |  | [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | @/lib/auth/client:9, @/lib/auth/postLoginRedirect:10 |
+| /reset-password | page |  | [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | @/lib/auth/authProviderError:8, @/lib/auth/client:10, @/lib/auth/postLoginRedirect:11 |
 | /setup-mfa | layout |  | [app/(auth)/setup-mfa/layout.tsx](../../../app/%28auth%29/setup-mfa/layout.tsx) |  |
 | /setup-mfa | loading |  | [app/(auth)/setup-mfa/loading.tsx](../../../app/%28auth%29/setup-mfa/loading.tsx) |  |
 | /setup-mfa | page |  | [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | @/lib/auth/safeRedirectPath:10 |
@@ -640,7 +640,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/ai/salary-negotiation | route | POST | [app/api/ai/salary-negotiation/route.ts](../../../app/api/ai/salary-negotiation/route.ts) | @/lib/auth/server:2, @/lib/auth/ensureUser:3, @/lib/rate-limit:4, @/lib/auth/actAsSubject:9, @/lib/db/withRequestGuc:15 |
 | /api/ai/skill-mapper | route | GET | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | @/lib/auth/server:8, @/lib/auth/ensureUser:9, @/lib/rate-limit:12, @/lib/db/withRequestGuc:18 |
 | /api/apply/confirmation-email | route | POST | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | @/lib/rate-limit:4, @/lib/db/withRequestGuc:9 |
-| /api/apply/signup | route | POST | [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | @/lib/tenant/withTenantScope:3, @/lib/rate-limit:15, @/lib/tenant/resolveProvisionOrg:20, @/lib/db/withRequestGuc:23 |
+| /api/apply/signup | route | POST | [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | @/lib/tenant/withTenantScope:3, @/lib/auth/authProviderError:5, @/lib/rate-limit:16, @/lib/tenant/resolveProvisionOrg:21, @/lib/db/withRequestGuc:24 |
 | /api/apply/status-lookup | route | POST | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | @/lib/rate-limit:3, @/lib/db/withRequestGuc:6 |
 | /api/auth/check-mfa-required | route | GET | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | @/lib/auth/mfaTrust:5, @/lib/auth/mfaConfig:7, @/lib/rate-limit:8, @/lib/db/withRequestGuc:13 |
 | /api/auth/forgot-password | route | POST | [app/api/auth/forgot-password/route.ts](../../../app/api/auth/forgot-password/route.ts) | @/lib/rate-limit:2, @/lib/auth/passwordReset:4, @/lib/auth/postLoginRedirect:5 |
@@ -841,7 +841,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/member/resume/upload | route | POST | [app/api/member/resume/upload/route.ts](../../../app/api/member/resume/upload/route.ts) | @/lib/auth/server:2, @/lib/db/withRequestGuc:18, @/lib/rate-limit:21 |
 | /api/member/saved-jobs | route | GET, POST, DELETE | [app/api/member/saved-jobs/route.ts](../../../app/api/member/saved-jobs/route.ts) | @/lib/auth/server:2, @/lib/auth/ensureUser:3, @/lib/db/withRequestGuc:8 |
 | /api/member/settings | route | PATCH | [app/api/member/settings/route.ts](../../../app/api/member/settings/route.ts) | @/lib/auth/server:2, @/lib/db/withRequestGuc:6 |
-| /api/member/signup | route | POST | [app/api/member/signup/route.ts](../../../app/api/member/signup/route.ts) | @/lib/tenant/withTenantScope:2, @/lib/db/withRequestGuc:3, @/lib/rate-limit:10 |
+| /api/member/signup | route | POST | [app/api/member/signup/route.ts](../../../app/api/member/signup/route.ts) | @/lib/tenant/withTenantScope:2, @/lib/db/withRequestGuc:3, @/lib/auth/authProviderError:6, @/lib/rate-limit:11 |
 | /api/member/skill-assessment | route | POST | [app/api/member/skill-assessment/route.ts](../../../app/api/member/skill-assessment/route.ts) | @/lib/auth/ensureUser:4, @/lib/auth/server:5, @/lib/db/withRequestGuc:10 |
 | /api/member/skill-checkpoints | route | POST | [app/api/member/skill-checkpoints/route.ts](../../../app/api/member/skill-checkpoints/route.ts) | @/lib/auth/server:2, @/lib/auth/ensureUser:3, @/lib/db/withRequestGuc:9 |
 | /api/member/skill-profile | route | GET | [app/api/member/skill-profile/route.ts](../../../app/api/member/skill-profile/route.ts) | @/lib/auth/server:2, @/lib/db/withRequestGuc:10 |

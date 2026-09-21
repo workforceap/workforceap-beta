@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "51eaaefbd687052dc0124bbda1565456c938f3cce8d92895ebcd293b0c338ebb",
+  "inputTreeSha256": "fde257b7c353373ddbdccb132c8480fd20fcfcf4d4773937323ce2a19ca7e51f",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5009,
-    "sourceModules": 3653,
-    "importReferences": 18257,
-    "resolvedLocalReferences": 12275,
+    "files": 5012,
+    "sourceModules": 3656,
+    "importReferences": 18274,
+    "resolvedLocalReferences": 12286,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 997,
-    "testCandidates": 987,
+    "testFiles": 999,
+    "testCandidates": 989,
     "testHelpers": 10,
-    "staticallySelectedTests": 985,
+    "staticallySelectedTests": 987,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 143
+      "files": 145
     },
     {
       "area": "pages",
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 594
+      "files": 595
     }
   ],
   "mostReferenced": [
@@ -119,12 +119,12 @@
       "references": 758
     },
     {
-      "file": "lib/db/withRequestGuc.ts",
+      "file": "lib/auth/roles.ts",
       "references": 441
     },
     {
-      "file": "lib/auth/roles.ts",
-      "references": 440
+      "file": "lib/db/withRequestGuc.ts",
+      "references": 441
     },
     {
       "file": "lib/content/programs.ts",
@@ -176,7 +176,7 @@
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
-      "references": 105
+      "references": 106
     },
     {
       "file": "lib/events/track.ts",
@@ -204,7 +204,7 @@
     },
     {
       "file": "lib/admin/memberOnlyWhere.ts",
-      "references": 58
+      "references": 57
     },
     {
       "file": "lib/content/programCurriculumManifest.ts",
@@ -317,12 +317,12 @@
       "lines": 1386
     },
     {
-      "file": "lib/admin/boardOutcomes.ts",
-      "lines": 1357
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1369
     },
     {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1353
+      "file": "lib/admin/boardOutcomes.ts",
+      "lines": 1357
     },
     {
       "file": "lib/coursera/csvImport.server.ts",

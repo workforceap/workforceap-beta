@@ -1,5 +1,5 @@
 import type { USER_DIRECTORY_ROLES } from './directorySearch';
-import { STAFF_PROFILE_ROLES } from './memberOnlyWhere';
+import { ROLE_PRECEDENCE } from '@/lib/auth/roleAccess';
 
 const ROLE_LABELS: Record<(typeof USER_DIRECTORY_ROLES)[number], string> = {
   member: 'Member',
@@ -19,16 +19,11 @@ export function directoryRoleLabel(role: string): string {
 }
 
 /**
- * Most-privileged-first order for accounts that carry more than one role row.
- * `case_manager` is a `UserRole` the admin directory manages next to the
- * `STAFF_PROFILE_ROLES` profile vocabulary.
+ * Most-privileged-first order for accounts that carry more than one role row:
+ * the shared `ROLE_PRECEDENCE` that role resolution uses (WAP-182 item 1),
+ * minus the `member` baseline this function falls back to anyway.
  */
-const DIRECTORY_ROLE_PRECEDENCE: readonly string[] = [
-  'super_admin',
-  'admin',
-  'case_manager',
-  ...STAFF_PROFILE_ROLES.filter((role) => role !== 'super_admin' && role !== 'admin'),
-];
+const DIRECTORY_ROLE_PRECEDENCE: readonly string[] = ROLE_PRECEDENCE.filter((role) => role !== 'member');
 
 /**
  * The role the admin directory displays for an account (admin audit §4.7,

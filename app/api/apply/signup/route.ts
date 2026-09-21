@@ -2,6 +2,7 @@ import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
 import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { NextRequest, NextResponse, after } from 'next/server';
+import { WEAK_PASSWORD_MESSAGE, WEAK_PASSWORD_REASON, isWeakPasswordError } from '@/lib/auth/authProviderError';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getSupabaseCookieOptions } from '@/lib/supabaseCookieOptions';
@@ -531,6 +532,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
           { error: 'An account with this email already exists. Log in to continue, or use password reset if you are returning.' },
           { status: 400 }
         );
+      }
+      if (isWeakPasswordError(authError)) {
+        // WAP-26: the form maps `reason` to the localised password-field copy.
+        return NextResponse.json({ error: WEAK_PASSWORD_MESSAGE, reason: WEAK_PASSWORD_REASON }, { status: 400 });
       }
       return NextResponse.json({ error: 'We could not create your account just yet. Please try again in a moment.' }, { status: 400 });
     }

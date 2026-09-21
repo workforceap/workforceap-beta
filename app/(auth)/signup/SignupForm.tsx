@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { WEAK_PASSWORD_REASON } from '@/lib/auth/authProviderError';
 import LocalizedLink from '@/components/LocalizedLink';
 import {
   memberSignupSchema,
@@ -284,7 +285,12 @@ export default function SignupForm({ initialRedirectTo = '/dashboard' }: SignupF
       if (!res.ok) {
         trackFunnelEvent('member_signup', 'signup_failed', { program_interest: data.programInterest });
         setSubmitStatus('error');
-        setErrorMessage(json.error ?? tAuth('signup.genericError'));
+        // WAP-26: a provider weak-password refusal gets clear, localised copy.
+        setErrorMessage(
+          json?.reason === WEAK_PASSWORD_REASON
+            ? tAuth('signup.weakPassword')
+            : json.error ?? tAuth('signup.genericError'),
+        );
         return;
       }
 

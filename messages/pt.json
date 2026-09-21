@@ -846,6 +846,7 @@
     "errZipFormat": "Por favor, digite um código postal válido",
     "errPasswordShort": "Use pelo menos 8 caracteres.",
     "errPasswordMismatch": "As senhas não coincidem.",
+    "errPasswordWeak": "Escolha uma senha mais forte: pelo menos 8 caracteres e que não seja uma senha de uso comum.",
     "errContactConsent": "Por favor, confirme que concorda em ser contatado sobre sua candidatura para que um conselheiro possa fazer acompanhamento.",
     "errSummaryPhone": "Por favor, adicione um número de telefone para continuar.",
     "errSummaryGeneric": "Por favor, corrija os campos destacados e tente novamente.",
@@ -2698,6 +2699,7 @@
       "commsConsent": "I agree to receive program updates and communications via email",
       "captchaRequired": "Conclua a verificação de segurança antes de continuar.",
       "genericError": "Algo deu errado. Tente novamente.",
+      "weakPassword": "Escolha uma senha mais forte: pelo menos 8 caracteres e que não seja uma senha de uso comum.",
       "networkError": "Erro de rede. Tente novamente.",
       "termsOfService": "Termos de Serviço",
       "privacyPolicy": "Política de Privacidade",
@@ -2755,6 +2757,7 @@
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "updateFailed": "Could not update password. Please try again.",
+      "weakPassword": "Escolha uma senha mais forte: pelo menos 8 caracteres e que não seja uma senha de uso comum.",
       "submit": "Save new password",
       "saving": "Saving…",
       "backToLogin": "Back to login"
