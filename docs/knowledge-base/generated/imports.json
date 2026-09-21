@@ -145296,6 +145296,30 @@
     "package": "node:child_process"
   },
   {
+    "from": "tests/migrations/chapter-members-user-cascade.mjs",
+    "specifier": "node:assert/strict",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "tests/migrations/chapter-members-user-cascade.mjs",
+    "specifier": "node:fs",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "tests/migrations/chapter-members-user-cascade.mjs",
+    "specifier": "node:child_process",
+    "line": 12,
+    "kind": "import",
+    "external": true,
+    "package": "node:child_process"
+  },
+  {
     "from": "tests/migrations/placement-survey-sent-state.mjs",
     "specifier": "node:assert/strict",
     "line": 6,

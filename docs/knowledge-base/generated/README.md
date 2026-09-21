@@ -16,7 +16,7 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | communications | 72 | [Open](communications.md) |
 | components | 620 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
-| database | 210 | [Open](database.md) |
+| database | 211 | [Open](database.md) |
 | delivery | 10 | [Open](delivery.md) |
 | documentation | 358 | [Open](documentation.md) |
 | libraries | 1091 | [Open](libraries.md) |
@@ -26,4 +26,4 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | root | 56 | [Open](root.md) |
 | styles | 17 | [Open](styles.md) |
 | supporting-files | 74 | [Open](supporting-files.md) |
-| tests | 598 | [Open](tests.md) |
+| tests | 599 | [Open](tests.md) |
