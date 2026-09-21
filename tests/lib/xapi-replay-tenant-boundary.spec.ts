@@ -4,6 +4,8 @@ const mocks = vi.hoisted(() => ({
   executeRaw: vi.fn(),
   transaction: vi.fn(),
   findMany: vi.fn(),
+  findFirst: vi.fn(),
+  count: vi.fn(),
   eventQueryRaw: vi.fn(),
   handle: vi.fn(),
   parse: vi.fn(),
@@ -16,7 +18,7 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $executeRaw: mocks.executeRaw,
     $transaction: mocks.transaction,
-    xapiStatement: { findMany: mocks.findMany },
+    xapiStatement: { findMany: mocks.findMany, findFirst: mocks.findFirst, count: mocks.count },
   },
 }));
 vi.mock('@/lib/xapi/inboundStatementPipeline', () => ({
@@ -33,6 +35,8 @@ vi.mock('@/lib/xapi/xapiStatementRowToRaw', () => ({
 }));
 
 import {
+  countUnresolvedXapiOrganizations,
+  reconcileUnresolvedXapiOrganizations,
   replayPendingXapiStatements,
   replayUnresolvedXapiStatementsForIdentity,
 } from '@/lib/coursera/replayPendingXapi';
@@ -51,9 +55,11 @@ describe('persisted xAPI replay tenant boundary', () => {
     vi.clearAllMocks();
     mocks.executeRaw.mockResolvedValue(0);
     mocks.transaction.mockImplementation(async (callback) => callback({
-      xapiStatement: { findMany: mocks.findMany },
+      xapiStatement: { findMany: mocks.findMany, findFirst: mocks.findFirst, count: mocks.count },
       $queryRaw: mocks.eventQueryRaw,
     }));
+    // A sentinel row exists by default so the reconciliation UPDATE runs.
+    mocks.findFirst.mockResolvedValue({ id: 'sentinel-row' });
     mocks.findMany.mockResolvedValue([
       { id: 'row-1', statementId: 'statement-1', organizationId: 'org-a' },
     ]);
@@ -117,5 +123,63 @@ describe('persisted xAPI replay tenant boundary', () => {
     });
     const statementQuery = mocks.findMany.mock.calls[0]?.[0];
     expect(statementQuery.where.organizationId).toBe('org-a');
+  });
+});
+
+describe('sentinel organization reconciliation (WAP-33)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.executeRaw.mockResolvedValue(0);
+    mocks.transaction.mockImplementation(async (callback) => callback({
+      xapiStatement: { findMany: mocks.findMany, findFirst: mocks.findFirst, count: mocks.count },
+      $queryRaw: mocks.eventQueryRaw,
+    }));
+  });
+
+  it("skips the UPDATE when no 'unresolved-%' statement exists", async () => {
+    mocks.findFirst.mockResolvedValue(null);
+
+    await expect(reconcileUnresolvedXapiOrganizations()).resolves.toBe(0);
+
+    expect(mocks.findFirst).toHaveBeenCalledWith({
+      where: { organizationId: { startsWith: 'unresolved-' } },
+      select: { id: true },
+    });
+    expect(mocks.executeRaw).not.toHaveBeenCalled();
+  });
+
+  it('runs the UPDATE when a sentinel row exists and reports the repaired count', async () => {
+    mocks.findFirst.mockResolvedValue({ id: 'sentinel-row' });
+    mocks.executeRaw.mockResolvedValue(3);
+
+    await expect(reconcileUnresolvedXapiOrganizations()).resolves.toBe(3);
+    expect(mocks.executeRaw).toHaveBeenCalledTimes(1);
+  });
+
+  it('still runs the UPDATE when the probe itself fails — skipping is only an optimisation', async () => {
+    mocks.findFirst.mockRejectedValue(new Error('probe down'));
+    mocks.executeRaw.mockResolvedValue(1);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(reconcileUnresolvedXapiOrganizations()).resolves.toBe(1);
+    expect(mocks.executeRaw).toHaveBeenCalledTimes(1);
+    errorSpy.mockRestore();
+  });
+
+  it('the pending replay reports orgsRepaired 0 without touching the UPDATE when the queue has no sentinels', async () => {
+    mocks.findFirst.mockResolvedValue(null);
+    mocks.findMany.mockResolvedValue([]);
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.orgsRepaired).toBe(0);
+    expect(mocks.executeRaw).not.toHaveBeenCalled();
+  });
+
+  it('counts the sentinel rows for the admin health page', async () => {
+    mocks.count.mockResolvedValue(37);
+
+    await expect(countUnresolvedXapiOrganizations()).resolves.toBe(37);
+    expect(mocks.count).toHaveBeenCalledWith({ where: { organizationId: { startsWith: 'unresolved-' } } });
   });
 });

@@ -162,6 +162,14 @@ export async function ensureCourseraMappingTables() {
         ON coursera_xapi_events (completion_status, received_at DESC)
       `);
 
+      // WAP-33: FK to users(id) was unindexed (Supabase advisor). Mirrored in
+      // prisma/migrations/20260921010000_wap33_fk_indexes_drop_duplicates for
+      // environments where the table already exists.
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS coursera_xapi_events_matched_user_id_idx
+        ON coursera_xapi_events (matched_user_id)
+      `);
+
       await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS coursera_unmatched_actor_alerts (
           actor_email_lower TEXT PRIMARY KEY,

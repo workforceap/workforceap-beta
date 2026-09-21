@@ -118,6 +118,37 @@ export const WORKFLOW_DIAGNOSTIC_RETENTION_DAYS = resolveWorkflowDiagnosticReten
  */
 export const EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS = 365;
 
+/**
+ * WAP-33: `coursera_xapi_events` rows whose actor never resolved to a member
+ * (`matched_user_id IS NULL`, `completion_status = 'unmatched'`). On
+ * 2026-09-10 they were 4,211 of 6,371 rows (66%), the newest from 2026-09-03
+ * and only 2 in the prior 14 days — a historical backlog, not a live leak.
+ * The raw statement stays in `xapi_statements` for a year (RETENTION_TABLES),
+ * and the identity-replay paths only look back 30-90 days, so an unmatched
+ * event older than 90 days has nothing left to replay into.
+ *
+ * The table has no Prisma model (lib/xapi/mappings.ts creates it at runtime),
+ * so `lib/retention/cleanup.ts` purges it with raw SQL rather than through
+ * RETENTION_TABLES. Env-overridable like WORKFLOW_DIAGNOSTIC_RETENTION_DAYS;
+ * anything that is not a positive integer falls back to the default so a typo
+ * can never widen the purge.
+ */
+export const DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS = 90;
+
+export function resolveUnmatchedXapiEventRetentionDays(
+  raw: string | undefined = process.env.UNMATCHED_XAPI_EVENT_RETENTION_DAYS,
+): number {
+  if (raw === undefined || !/^[1-9][0-9]*$/.test(raw.trim())) {
+    return DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS;
+  }
+  return Number(raw.trim());
+}
+
+export const UNMATCHED_XAPI_EVENT_RETENTION_DAYS = resolveUnmatchedXapiEventRetentionDays();
+
+/** Report label for the raw-SQL purge, alongside the RETENTION_TABLES model names. */
+export const UNMATCHED_XAPI_EVENT_RETENTION_LABEL = 'coursera_xapi_events (unmatched)';
+
 export const RETENTION_TABLES: RetentionTableConfig[] = [
   {
     model: 'auditLog',
