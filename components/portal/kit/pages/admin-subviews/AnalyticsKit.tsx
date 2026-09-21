@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import {
-  DesignSurface,
   KitEmptyState,
   KpiStrip,
   PageOpener,
@@ -13,6 +12,7 @@ import {
 } from '@/components/portal/kit';
 import { Card } from '@astryxdesign/core/Card';
 import { ANALYTICS_TABS, type AnalyticsTabId } from '@/lib/admin/analyticsTabs';
+import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
  * Analytics — engagement & funnel analytics workspace.
@@ -47,6 +47,8 @@ export interface AnalyticsKitProps {
   enrollmentPanel?: ReactNode;
   /** Tab open on first render (`?tab=`), when `enrollmentPanel` is set. */
   initialTab?: AnalyticsTabId;
+  /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1). */
+  embedded?: boolean;
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
@@ -98,6 +100,7 @@ export function AnalyticsKit({
   kicker,
   enrollmentPanel,
   initialTab = 'engagement',
+  embedded = false,
 }: AnalyticsKitProps) {
   const engagement = (
     <>
@@ -133,9 +136,10 @@ export function AnalyticsKit({
   );
 
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} />
-
+    <EmbeddableFrame
+      embedded={embedded}
+      opener={<PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} />}
+    >
       {enrollmentPanel ? (
         // Both panels are server-rendered; the Tabs island only toggles
         // `hidden`, and `?tab=` picks the opening tab (same pattern as the
@@ -147,6 +151,6 @@ export function AnalyticsKit({
       ) : (
         engagement
       )}
-    </DesignSurface>
+    </EmbeddableFrame>
   );
 }

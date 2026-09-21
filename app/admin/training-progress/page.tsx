@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
@@ -12,18 +11,14 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { parseCourseGradeString, scoreScaledToDisplayPercent } from '@/lib/coursera/courseGradeDisplay';
 import { humanizeCourseraCourseTitle } from '@/lib/coursera/courseTitle';
-import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { STUDENTS_SECONDARY_LOAD_NOTICE } from '@/lib/admin/studentsRosterLoad';
-import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
-import { TRAINING_PROGRESS_LEGACY_HREF } from '@/lib/admin/studentsRosterView';
+import { reportingRedirectHref, wantsLegacyView } from '@/lib/admin/reportingHub';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import TrainingProgressClient, {
   type CurriculumRow,
   type RawCourseraRow,
 } from '@/components/admin/TrainingProgressClient';
-import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -37,49 +32,26 @@ export async function generateMetadata(): Promise<Metadata> {
 export const dynamic = 'force-dynamic';
 
 /**
- * Training progress is the training preset of the one admin roster
- * (`StudentsRosterKit view="training"`, also at /admin/students?view=training).
- * The original sortable dual-table (canonical + raw Coursera) stays behind
- * `?ui=legacy`.
+ * Training progress is the Training tab of the reporting hub now (admin audit
+ * 2026-09-19, §6.1) — the training preset of the one admin roster, also at
+ * `/admin/students?view=training`. The original sortable dual-table
+ * (canonical + raw Coursera) stays behind `?ui=legacy` and remains the
+ * fallback the roster loaders redirect to when they fail.
  */
 export default async function AdminTrainingProgressPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const params = (await searchParams) ?? {};
+  if (!wantsLegacyView(params)) redirect(reportingRedirectHref('/admin/training-progress', params));
+
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/training-progress');
   const scope = await resolveAdminPageTenant(user.id);
   if (!scope.ok) redirect('/dashboard');
-  const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
-  const params = (await searchParams) ?? {};
-  const requestedUi = typeof params.ui === 'string' ? params.ui : null;
-
-  // ─── Legacy: the original sortable dual-table (canonical + raw Coursera) ───
-  if (requestedUi === 'legacy') {
-    return renderLegacy(scope);
-  }
-
-  // ─── DEFAULT: the shared roster kit with the training column preset ───
-  const training = await loadTrainingRoster(scope, { readOnlyAudit });
-  if (!training.ok) redirect(TRAINING_PROGRESS_LEGACY_HREF);
-
-  return (
-    <>
-      {training.secondaryLoadFailed ? (
-        <span hidden data-portal-error-state="admin-training-progress-secondary-load" />
-      ) : null}
-      <StudentsRosterKit
-        view="training"
-        viewHrefs={{ roster: '/admin/students', training: '/admin/training-progress' }}
-        students={training.students}
-        total={training.total}
-        showingLabel={training.showingLabel}
-        notice={training.secondaryLoadFailed ? STUDENTS_SECONDARY_LOAD_NOTICE : undefined}
-      />
-    </>
-  );
+  return renderLegacy(scope);
 }
 
 /** Original sortable dual-table view (canonical curriculum + raw Coursera). */
