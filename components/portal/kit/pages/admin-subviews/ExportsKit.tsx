@@ -1,12 +1,9 @@
 import type { ReactNode } from 'react';
 import { ArrowRight, FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
-import {
-  DesignSurface,
-  PageOpener,
-  colorVar,
-} from '@/components/portal/kit';
+import { colorVar } from '@/components/portal/kit';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
  * Exports — board / funder / compliance data downloads as a responsive card grid.
@@ -61,6 +58,8 @@ export function exportRowKind(option: Pick<ExportOption, 'href' | 'download'>): 
 
 export interface ExportsKitProps {
   exports?: ExportOption[];
+  /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1). */
+  embedded?: boolean;
 }
 
 const DEFAULT_EXPORTS: ExportOption[] = [
@@ -187,15 +186,14 @@ function ExportTile({ option }: { option: ExportOption }) {
   );
 }
 
-export function ExportsKit({ exports = DEFAULT_EXPORTS }: ExportsKitProps) {
+export function ExportsKit({ exports = DEFAULT_EXPORTS, embedded = false }: ExportsKitProps) {
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5"
-        title="Exports"
-        kicker="Reporting"
-        lede="Download data for board, funders & compliance"
-      />
-
+    <EmbeddableFrame
+      embedded={embedded}
+      title="Exports"
+      kicker="Reporting"
+      lede="Download data for board, funders & compliance"
+    >
       {exports.length > 0 ? (
         <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4">
           {exports.map((option) => (
@@ -209,6 +207,6 @@ export function ExportsKit({ exports = DEFAULT_EXPORTS }: ExportsKitProps) {
           description="Export options will appear here once reporting is configured."
         />
       )}
-    </DesignSurface>
+    </EmbeddableFrame>
   );
 }

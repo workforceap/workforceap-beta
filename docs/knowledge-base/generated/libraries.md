@@ -60,6 +60,7 @@
 | [lib/admin/eligibilityDatasheet.ts](../../../lib/admin/eligibilityDatasheet.ts) | 83 | administration | ELIGIBILITY_SOFT_DEADLINE_LABEL:17, ELIGIBILITY_EXPORT_BASE_COLUMNS:19, EligibilityExportRow:29, buildEligibilityExportCsvRows:39, buildEligibilityCampaignWhere:56, eligibilityCampaignSelect:74, EligibilityCampaignMember:81 |
 | [lib/admin/emailTemplate.test.ts](../../../lib/admin/emailTemplate.test.ts) | 39 | communications |  |
 | [lib/admin/emailTemplate.ts](../../../lib/admin/emailTemplate.ts) | 125 | communications | EmailTemplateVariable:3, EMAIL_TEMPLATE_VARIABLES:9, getDefaultSampleData:95, renderTemplate:106 |
+| [lib/admin/engagementAnalytics.ts](../../../lib/admin/engagementAnalytics.ts) | 194 | administration | EngagementData:47, getEngagementData:62 |
 | [lib/admin/fitScore.ts](../../../lib/admin/fitScore.ts) | 90 | administration | FitScoreInput:8, calculateFitScore:25, getFitScoreColor:80, getFitScoreLabel:86 |
 | [lib/admin/funderProgramMetrics.test.ts](../../../lib/admin/funderProgramMetrics.test.ts) | 75 | partners-funding |  |
 | [lib/admin/funderProgramMetrics.ts](../../../lib/admin/funderProgramMetrics.ts) | 155 | partners-funding | FunderProgramSummaryRow:15, getFunderProgramSummaryRows:22 |
@@ -87,6 +88,9 @@
 | [lib/admin/pipelineFunnel.test.ts](../../../lib/admin/pipelineFunnel.test.ts) | 47 | administration |  |
 | [lib/admin/pipelineFunnel.ts](../../../lib/admin/pipelineFunnel.ts) | 61 | administration | PipelineFunnelCounts:15, PIPELINE_FUNNEL_STAGES:25, WIOA_SCREENED_LABEL:32, WIOA_SCREENED_CAPTION:33, pipelineFunnelSubtitle:35, buildPipelineFunnel:41 |
 | [lib/admin/placementsRosterSort.ts](../../../lib/admin/placementsRosterSort.ts) | 72 | administration | PLACEMENT_SORT_KEYS:7, PlacementSortKey:16, PlacementSortDirection:17, DEFAULT_PLACEMENT_SORT_KEY:19, DEFAULT_PLACEMENT_SORT_DIRECTION:20, sortPlacementRows:52 |
+| [lib/admin/reportingHub.test.ts](../../../lib/admin/reportingHub.test.ts) | 84 | administration |  |
+| [lib/admin/reportingHub.ts](../../../lib/admin/reportingHub.ts) | 170 | administration | REPORTING_HUB_PATH:19, REPORTING_TABS:21, ReportingTabId:29, REPORTING_TAB_PARAM:31, REPORTING_PERIOD_PARAM:32, parseReportingTab:44, REPORTING_PERIODS:49, parseReportingPeriod:52, REPORTING_PERIOD_LABELS:57, reportingTabHref:68, REPORTING_REDIRECTS:82, ReportingLegacyPath:92, reportingRedirectHref:101, wantsLegacyView:119, ReportingTabCopy:123, REPORTING_TAB_COPY:129, ReportingRelatedLink:152, REPORTING_RELATED_LINKS:162 |
+| [lib/admin/reportingOutcomes.ts](../../../lib/admin/reportingOutcomes.ts) | 90 | administration | OutcomesKitData:31, buildOutcomesKitData:41 |
 | [lib/admin/roleLabels.ts](../../../lib/admin/roleLabels.ts) | 46 | administration | directoryRoleLabel:15, resolveDirectoryRole:35 |
 | [lib/admin/runAdminJobMatchesGet.test.ts](../../../lib/admin/runAdminJobMatchesGet.test.ts) | 135 | administration |  |
 | [lib/admin/runAdminJobMatchesGet.ts](../../../lib/admin/runAdminJobMatchesGet.ts) | 105 | administration | AdminJobMatchRow:5, RunAdminJobMatchesDeps:21, serializeAdminJobMatchRow:39, runAdminJobMatchesGet:52 |

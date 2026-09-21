@@ -3,15 +3,14 @@ import Link from 'next/link';
 import { ArrowRight, Download } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
 import {
-  DesignSurface,
   KpiStrip,
-  PageOpener,
   BarChartMini,
   RankBars,
   type KpiItem,
   type ChartDatum,
   type RankDatum,
 } from '@/components/portal/kit';
+import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
  * Board Outcomes — the board-ready outcomes & metrics workspace (dense).
@@ -49,6 +48,10 @@ export interface BoardOutcomesKitProps {
    * the board view hides it.
    */
   showExports?: boolean;
+  /** Where the exports pointer goes; the reporting hub points at its own Exports tab. */
+  exportsHref?: string;
+  /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1). */
+  embedded?: boolean;
 }
 
 const DEFAULT_KPIS: KpiItem[] = [
@@ -69,11 +72,11 @@ export function BoardOutcomesKit({
   goal = 'Board-ready — everything in one place.',
   headerAction,
   showExports = true,
+  exportsHref = ADMIN_EXPORTS_HREF,
+  embedded = false,
 }: BoardOutcomesKitProps) {
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />
-
+    <EmbeddableFrame embedded={embedded} title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction}>
       <KpiStrip cols={4} items={kpis} />
 
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5 wa-mt-6">
@@ -130,7 +133,7 @@ export function BoardOutcomesKit({
               </p>
             </div>
             <Link
-              href={ADMIN_EXPORTS_HREF}
+              href={exportsHref}
               className="wa-kit-focus"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
             >
@@ -140,6 +143,6 @@ export function BoardOutcomesKit({
           </div>
         </Card>
       )}
-    </DesignSurface>
+    </EmbeddableFrame>
   );
 }

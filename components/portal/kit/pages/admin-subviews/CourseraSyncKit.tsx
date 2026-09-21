@@ -17,7 +17,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
-import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
  * Coursera Sync — sync-status card + unmatched-learners list (dense).
@@ -88,6 +88,8 @@ export interface CourseraSyncKitProps {
    * staff triage the actor. Platform-wide by definition. Omitted = not loaded.
    */
   unresolvedOrgSentinels?: string;
+  /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1). */
+  embedded?: boolean;
 }
 
 function healthColorVar(health: SyncHealth): string {
@@ -156,6 +158,7 @@ export function CourseraSyncKit({
   approvedForEnrollment,
   activeLast30Days,
   unresolvedOrgSentinels,
+  embedded = false,
 }: CourseraSyncKitProps) {
   const color = healthColorVar(health);
   const HealthIcon = health === 'attention' ? TriangleAlert : health === 'healthy' ? CircleCheck : CircleHelp;
@@ -190,14 +193,13 @@ export function CourseraSyncKit({
   ];
 
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5"
-        title="Coursera Sync"
-        kicker="Integrations"
-        lede="Keep Coursera learning flowing into the right members"
-        action={headerAction}
-      />
-
+    <EmbeddableFrame
+      embedded={embedded}
+      title="Coursera Sync"
+      kicker="Integrations"
+      lede="Keep Coursera learning flowing into the right members"
+      action={headerAction}
+    >
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-4">
         {/* LEFT — Sync Status card + Force Sync action. */}
         <Card style={{ minWidth: 0 }}>
@@ -390,6 +392,6 @@ export function CourseraSyncKit({
           </p>
         </Card>
       </div>
-    </DesignSurface>
+    </EmbeddableFrame>
   );
 }
