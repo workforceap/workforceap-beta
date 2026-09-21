@@ -34,6 +34,8 @@ export type WorkspaceSidebarSectionsProps = {
   activeHref: string | null;
   badges: Partial<Record<NavBadgeKey, number>>;
   translateLabel: (label: string) => string;
+  /** Accessible name for a nested-rows toggle (localized in the shell via the `nav` namespace). */
+  childToggleLabel: (open: boolean, count: number, parentLabel: string) => string;
   onNavigate: () => void;
   storageKey: string;
   forceExpanded?: boolean;
@@ -66,6 +68,7 @@ export default function WorkspaceSidebarSections({
   activeHref,
   badges,
   translateLabel,
+  childToggleLabel,
   onNavigate,
   storageKey,
   forceExpanded = false,
@@ -209,7 +212,7 @@ export default function WorkspaceSidebarSections({
                         className="workspace-sidebar-children-toggle wa-kit-focus wa-kit-focus--on-dark"
                         aria-expanded={childrenOpen}
                         aria-controls={childPanelId}
-                        aria-label={`${childrenOpen ? 'Hide' : 'Show'} ${children.length} more under ${label}`}
+                        aria-label={childToggleLabel(childrenOpen, children.length, label)}
                         data-testid="sidebar-children-toggle"
                         data-parent={item.href}
                         onClick={() => toggle(pid, false)}

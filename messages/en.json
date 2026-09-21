@@ -56,6 +56,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "expandSidebar": "Expand sidebar",
+    "showMoreUnder": "Show {count} more under {label}",
+    "hideMoreUnder": "Hide {count} more under {label}",
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",

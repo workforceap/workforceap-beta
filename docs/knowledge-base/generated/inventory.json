@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "211fa8001ed884218c9bcc953f0ef5e528c7384f40bbbcf1abc4671d90b924ae",
+  "inputTreeSha256": "36ac96d564de14321728d245d90b15d32be5961869b00e5672dee166ceb24102",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -63847,9 +63847,9 @@
       "path": "components/portal/WorkspaceShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 35537,
-      "lines": 838,
-      "sha256": "912fa9d606d20e337fc44446f46117260e397d998eec0d99b001d192a07d66d1",
+      "bytes": 35708,
+      "lines": 841,
+      "sha256": "911f584a954c1c1b3d6a7e3035fc5603a6cbce5b74eb1d9debf52906c8d72cb1",
       "binary": false,
       "exports": [
         {
@@ -63882,9 +63882,9 @@
       "path": "components/portal/WorkspaceSidebarSections.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9734,
-      "lines": 235,
-      "sha256": "3825d1a7771d1d343deff1762f57cefc2eade2453f530a420af443b61076e46a",
+      "bytes": 9917,
+      "lines": 238,
+      "sha256": "468ac70076d8eabcf4f8aaba7b3daf24e85f28a821517130e958b2c09c46c45b",
       "binary": false,
       "exports": [
         {
@@ -63894,7 +63894,7 @@
         },
         {
           "name": "default",
-          "line": 64,
+          "line": 66,
           "kind": "FunctionDeclaration",
           "localName": "WorkspaceSidebarSections"
         }
@@ -63907,32 +63907,32 @@
         },
         {
           "name": "sectionId",
-          "line": 42,
-          "kind": "Variable"
-        },
-        {
-          "name": "parentId",
-          "line": 43,
-          "kind": "Variable"
-        },
-        {
-          "name": "domId",
           "line": 44,
           "kind": "Variable"
         },
         {
-          "name": "Prefs",
+          "name": "parentId",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "domId",
           "line": 46,
+          "kind": "Variable"
+        },
+        {
+          "name": "Prefs",
+          "line": 48,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "readPrefs",
-          "line": 48,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkspaceSidebarSections",
-          "line": 64,
+          "line": 66,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -149432,27 +149432,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 228032,
-      "lines": 3789,
-      "sha256": "1652f28c579f3940bb3f3dc964d3fab69406714246a9eeca707afa7212ab3b11",
+      "bytes": 228144,
+      "lines": 3791,
+      "sha256": "1e25ad36a972a3735421fd087b6502c050ec80338d538da9fa70d75223a09d9b",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 252947,
-      "lines": 3789,
-      "sha256": "9d4c4a919a9a7684323446307185bb78064affa223890846a20928d57a5d909f",
+      "bytes": 253060,
+      "lines": 3791,
+      "sha256": "bc6144f6b488c93fcd5b8811391b930cdb2cb25b1b82fd468e029aa4e9d9e913",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 239578,
-      "lines": 3476,
-      "sha256": "51b234c5e87782a8cfbdf7d7437cf5d6bd06e45ad5b839e3d9e1222838164e27",
+      "bytes": 239701,
+      "lines": 3478,
+      "sha256": "9582e0825b668fde535c501c27bd80a59eb5be87b8dad65f6b120a19be7a9ca5",
       "binary": false
     },
     {
@@ -149468,9 +149468,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 229758,
-      "lines": 3476,
-      "sha256": "6933c8b68f50d1873442b91093d77252f2a1c481cdb77d3673a56bfcdd846e42",
+      "bytes": 229870,
+      "lines": 3478,
+      "sha256": "2b3a53f71361a65e17fdcc6eaa65c1f696c7a0869d805480900706c14d9e1293",
       "binary": false
     },
     {

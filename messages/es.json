@@ -56,6 +56,8 @@
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
     "expandSidebar": "Expandir barra lateral",
+    "showMoreUnder": "Mostrar {count} más bajo {label}",
+    "hideMoreUnder": "Ocultar {count} más bajo {label}",
     "collapseSidebar": "Contraer barra lateral",
     "workspaceTabs": "Pestañas del espacio de trabajo",
     "unreadCount": "{count, plural, one {# sin leer} other {# sin leer}}",
@@ -3773,7 +3775,7 @@
         },
         "trainingProgress": {
           "title": "Progreso de formación",
-          "body": "Progreso curso a curso de cada estudiante inscrito, ordenable, en el plan de estudios y en Coursera. Evaluaciones y Certificados están en el mismo grupo."
+          "body": "Progreso curso a curso de cada estudiante inscrito, ordenable, en el plan de estudios y en Coursera. Evaluaciones y Certificados se abren justo debajo."
         },
         "settings": {
           "title": "Configuración",

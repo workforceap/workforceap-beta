@@ -703,6 +703,9 @@ export default function WorkspaceShell({
                     activeHref={activeHref}
                     badges={badges}
                     translateLabel={translateLabel}
+                    childToggleLabel={(open, count, label) =>
+                      tNav(open ? 'hideMoreUnder' : 'showMoreUnder', { count, label })
+                    }
                     onNavigate={closeDrawer}
                     storageKey={`wa_nav_sections_${portalRole}`}
                     forceExpanded={tourOpen}
