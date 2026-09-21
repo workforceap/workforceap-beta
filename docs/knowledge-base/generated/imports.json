@@ -85362,7 +85362,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "@astryxdesign/core/Card",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": true,
     "package": "@astryxdesign/core"
@@ -85370,7 +85370,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "@/lib/admin/analyticsTabs",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/admin/analyticsTabs.ts"
@@ -85378,7 +85378,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
     "specifier": "./EmbeddableFrame",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
@@ -85546,7 +85546,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
     "specifier": "./EmbeddableFrame",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
@@ -85777,8 +85777,16 @@
   },
   {
     "from": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx",
-    "specifier": "./EmbeddableFrame",
+    "specifier": "@/components/portal/kit",
     "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx",
+    "specifier": "./EmbeddableFrame",
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"
@@ -87058,7 +87066,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/components/portal/kit/kitTableSort",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/kitTableSort.tsx"
@@ -87066,7 +87074,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/studentsRosterSort",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterSort.ts"
@@ -87074,7 +87082,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/trainingProgressRoster",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/admin/trainingProgressRoster.ts"
@@ -87082,7 +87090,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/trainingProgressPrograms",
-    "line": 36,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/admin/trainingProgressPrograms.ts"
@@ -87090,7 +87098,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "@/lib/admin/studentsRosterView",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/admin/studentsRosterView.ts"
@@ -87098,7 +87106,7 @@
   {
     "from": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
     "specifier": "./EmbeddableFrame",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx"

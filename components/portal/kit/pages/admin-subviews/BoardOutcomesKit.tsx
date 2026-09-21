@@ -4,6 +4,7 @@ import { ArrowRight, Download } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
 import {
   KpiStrip,
+  PageOpener,
   BarChartMini,
   RankBars,
   type KpiItem,
@@ -76,7 +77,11 @@ export function BoardOutcomesKit({
   embedded = false,
 }: BoardOutcomesKitProps) {
   return (
-    <EmbeddableFrame embedded={embedded} title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction}>
+    <EmbeddableFrame
+      embedded={embedded}
+      action={headerAction}
+      opener={<PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />}
+    >
       <KpiStrip cols={4} items={kpis} />
 
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5 wa-mt-6">

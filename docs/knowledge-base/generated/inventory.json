@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "cba2e2a96f9f0bef6a485c3d59afa57ebed287592556b5d3a34a9896488c7558",
+  "inputTreeSha256": "1ae2a1f8b81e6564b08a3787063453fa3befd3c27c0e1aa24dba33a48ac6954d",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -68160,51 +68160,51 @@
       "path": "components/portal/kit/pages/admin-subviews/AnalyticsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5358,
-      "lines": 152,
-      "sha256": "667f6b409025f39a53b7279f7c63dac960a489878c1b3568ba18bdb5e6d61d30",
+      "bytes": 5433,
+      "lines": 156,
+      "sha256": "b5fc44341c2ec9371c1471e746ec1b4d8a168a8112cc80384dda5fb20113dfae",
       "binary": false,
       "exports": [
         {
           "name": "AnalyticsKitProps",
-          "line": 28,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "AnalyticsKit",
-          "line": 93,
+          "line": 94,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "AnalyticsKitProps",
-          "line": 28,
+          "line": 29,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 53,
+          "line": 54,
           "kind": "Variable"
         },
         {
           "name": "EMPTY_TOP_TOOLS",
-          "line": 65,
+          "line": 66,
           "kind": "Variable"
         },
         {
           "name": "EMPTY_ACTIVE_BY_PROGRAM",
-          "line": 73,
+          "line": 74,
           "kind": "Variable"
         },
         {
           "name": "EmptyStateLink",
-          "line": 81,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AnalyticsKit",
-          "line": 93,
+          "line": 94,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -68391,46 +68391,46 @@
       "path": "components/portal/kit/pages/admin-subviews/BoardOutcomesKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 5804,
-      "lines": 148,
-      "sha256": "630e6db1ccf01046bfea4b835e53ea0da1029b913173eca6f1ae6167a3e4d963",
+      "bytes": 5907,
+      "lines": 153,
+      "sha256": "58bc28f996c5f2e31b13479a44ebdfadfbbd16876a2b9fa812335d8d44b5c5c9",
       "binary": false,
       "exports": [
         {
           "name": "ADMIN_EXPORTS_HREF",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "BoardOutcomesKitProps",
-          "line": 26,
+          "line": 27,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "BoardOutcomesKit",
-          "line": 64,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "ADMIN_EXPORTS_HREF",
-          "line": 24,
+          "line": 25,
           "kind": "Variable"
         },
         {
           "name": "BoardOutcomesKitProps",
-          "line": 26,
+          "line": 27,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 57,
+          "line": 58,
           "kind": "Variable"
         },
         {
           "name": "BoardOutcomesKit",
-          "line": 64,
+          "line": 65,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -68607,71 +68607,71 @@
       "path": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx",
       "area": "components",
       "domain": "learning-coursera",
-      "bytes": 14246,
-      "lines": 397,
-      "sha256": "fd595e7a8a7868fc7ab9e426366a5419eee907d7f25c6b2414d7298f5085d1a0",
+      "bytes": 14428,
+      "lines": 404,
+      "sha256": "e395248d9d2e0226d192e9bd69eea8be011ab53120c1a26f169a13fbcc0538fb",
       "binary": false,
       "exports": [
         {
           "name": "SyncHealth",
-          "line": 38,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "UnmatchedLearnerRow",
-          "line": 40,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CourseraSyncKitProps",
-          "line": 53,
+          "line": 54,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CourseraSyncKit",
-          "line": 145,
+          "line": 146,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "SyncHealth",
-          "line": 38,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "UnmatchedLearnerRow",
-          "line": 40,
+          "line": 41,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CourseraSyncKitProps",
-          "line": 53,
+          "line": 54,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "healthColorVar",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "healthChipBg",
-          "line": 108,
+          "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "healthTokenColor",
-          "line": 122,
+          "line": 123,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StatRow",
-          "line": 135,
+          "line": 136,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CourseraSyncKit",
-          "line": 145,
+          "line": 146,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69127,31 +69127,31 @@
       "path": "components/portal/kit/pages/admin-subviews/EmbeddableFrame.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1454,
-      "lines": 41,
-      "sha256": "445bfe5d2719f0c225c8fe53c1585c898a762368b02f16f1d8726f0a21395469",
+      "bytes": 1526,
+      "lines": 42,
+      "sha256": "8fab52ec70d7ff258afd470b6bb8d684f39c7270f20ec942bc0651bbfac36a99",
       "binary": false,
       "exports": [
         {
           "name": "EmbeddableFrameProps",
-          "line": 14,
+          "line": 15,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmbeddableFrame",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "EmbeddableFrameProps",
-          "line": 14,
+          "line": 15,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "EmbeddableFrame",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69269,9 +69269,9 @@
       "path": "components/portal/kit/pages/admin-subviews/ExportsKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 7210,
-      "lines": 212,
-      "sha256": "4fecee0499a28d18137562c8ce11a68e2181f4e58ceef5c90dd8c03659534d18",
+      "bytes": 7318,
+      "lines": 217,
+      "sha256": "74ec0925949d6fdfc7a86197b0afe557a7a5788847080b73e42bae6e09ca0763",
       "binary": false,
       "exports": [
         {
@@ -70411,111 +70411,111 @@
       "path": "components/portal/kit/pages/admin-subviews/StudentsRosterKit.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 22268,
-      "lines": 639,
-      "sha256": "9f7d24f2cbe7822682572269d3efc9819e443d0f3059c8768d2ee8432cb56355",
+      "bytes": 22305,
+      "lines": 640,
+      "sha256": "565380aa06f5787aa1cb5a319e2ded9e53b710ca549d32867d6630436fa53cf2",
       "binary": false,
       "exports": [
         {
           "name": "StudentStatus",
-          "line": 68,
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StudentTrainingFacts",
-          "line": 70,
+          "line": 71,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StudentRow",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StudentFilter",
-          "line": 116,
+          "line": 117,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StudentsRosterKitProps",
-          "line": 118,
+          "line": 119,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StudentsRosterKit",
-          "line": 237,
+          "line": 238,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "StudentStatus",
-          "line": 68,
+          "line": 69,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StudentTrainingFacts",
-          "line": 70,
+          "line": 71,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StudentRow",
-          "line": 79,
+          "line": 80,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StudentFilter",
-          "line": 116,
+          "line": 117,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StudentsRosterKitProps",
-          "line": 118,
+          "line": 119,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "DEFAULT_STUDENTS",
-          "line": 139,
+          "line": 140,
           "kind": "Variable"
         },
         {
           "name": "STATUS_TOKEN_COLOR",
-          "line": 195,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "PACE_TOKEN_COLOR",
-          "line": 203,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "TEXT_SORT_KEYS",
-          "line": 210,
+          "line": 211,
           "kind": "Variable"
         },
         {
           "name": "formatRosterGrade",
-          "line": 212,
+          "line": 213,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readinessColor",
-          "line": 218,
+          "line": 219,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "readinessVar",
-          "line": 225,
+          "line": 226,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "NavButton",
-          "line": 229,
+          "line": 230,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StudentsRosterKit",
-          "line": 237,
+          "line": 238,
           "kind": "FunctionDeclaration"
         }
       ],

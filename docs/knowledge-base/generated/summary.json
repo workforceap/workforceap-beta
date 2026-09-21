@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "cba2e2a96f9f0bef6a485c3d59afa57ebed287592556b5d3a34a9896488c7558",
+  "inputTreeSha256": "1ae2a1f8b81e6564b08a3787063453fa3befd3c27c0e1aa24dba33a48ac6954d",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -10,8 +10,8 @@
   "counts": {
     "files": 5020,
     "sourceModules": 3663,
-    "importReferences": 18262,
-    "resolvedLocalReferences": 12266,
+    "importReferences": 18263,
+    "resolvedLocalReferences": 12267,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1069,
     "nextRouteFiles": 1035,
@@ -140,7 +140,7 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 210
+      "references": 211
     },
     {
       "file": "app/seo.ts",

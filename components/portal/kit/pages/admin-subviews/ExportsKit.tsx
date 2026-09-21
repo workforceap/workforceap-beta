@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ArrowRight, FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
-import { colorVar } from '@/components/portal/kit';
+import { PageOpener, colorVar } from '@/components/portal/kit';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import { EmbeddableFrame } from './EmbeddableFrame';
@@ -190,9 +190,14 @@ export function ExportsKit({ exports = DEFAULT_EXPORTS, embedded = false }: Expo
   return (
     <EmbeddableFrame
       embedded={embedded}
-      title="Exports"
-      kicker="Reporting"
-      lede="Download data for board, funders & compliance"
+      opener={
+        <PageOpener
+          className="wa-mb-5"
+          title="Exports"
+          kicker="Reporting"
+          lede="Download data for board, funders & compliance"
+        />
+      }
     >
       {exports.length > 0 ? (
         <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4">

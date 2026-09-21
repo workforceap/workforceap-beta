@@ -17,6 +17,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { PageOpener } from '@/components/portal/kit';
 import { EmbeddableFrame } from './EmbeddableFrame';
 
 /**
@@ -195,10 +196,16 @@ export function CourseraSyncKit({
   return (
     <EmbeddableFrame
       embedded={embedded}
-      title="Coursera Sync"
-      kicker="Integrations"
-      lede="Keep Coursera learning flowing into the right members"
       action={headerAction}
+      opener={
+        <PageOpener
+          className="wa-mb-5"
+          title="Coursera Sync"
+          kicker="Integrations"
+          lede="Keep Coursera learning flowing into the right members"
+          action={headerAction}
+        />
+      }
     >
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-4">
         {/* LEFT — Sync Status card + Force Sync action. */}

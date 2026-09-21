@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   KitEmptyState,
   KpiStrip,
+  PageOpener,
   RankBars,
   TabPanel,
   Tabs,
@@ -135,7 +136,10 @@ export function AnalyticsKit({
   );
 
   return (
-    <EmbeddableFrame embedded={embedded} title={title} kicker={kicker ?? 'Admin'} lede={goal}>
+    <EmbeddableFrame
+      embedded={embedded}
+      opener={<PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} />}
+    >
       {enrollmentPanel ? (
         // Both panels are server-rendered; the Tabs island only toggles
         // `hidden`, and `?tab=` picks the opening tab (same pattern as the
