@@ -7,6 +7,7 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
+import { WIOA_AWAITING_REVIEW_STATUSES, WIOA_QUEUE_AGE_ALERT_DAYS, oldestWioaWaitDays } from '@/lib/wioa/wioaQueueAge';
 
 // WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
 // by data-cleanup instead of pinning a RUNNING row forever.
@@ -46,13 +47,19 @@ function toNamedMember(m: { id: string; fullName: string | null; email: string |
  * One digest notification (type 'task_assigned') per admin + one staff
  * email listing counts and up to 10 named members per bucket, linking to
  * the relevant admin queue.
+ *
+ * WAP-166 item 2: the digest also names the oldest screening still awaiting
+ * review ("oldest pending WIOA screening: N days"), measured from the
+ * member's `submittedAt` in `wioa_qualification_json` across every
+ * pending/in_review row — not only the `updatedAt`-stalled bucket above,
+ * since a profile edit resets that proxy while the member keeps waiting.
  */
 async function handle(_request: Request) {
   const now = new Date();
   const stallThreshold = new Date(now.getTime() - STALL_DAYS * MS_PER_DAY);
   const noProgramThreshold = new Date(now.getTime() - NO_PROGRAM_DAYS * MS_PER_DAY);
 
-  const [interviewStalled, wioaStalled, noProgramCandidates] = await Promise.all([
+  const [interviewStalled, wioaStalled, noProgramCandidates, wioaAwaitingReview] = await Promise.all([
     prisma.user.findMany({
       where: {
         deletedAt: null,
@@ -84,7 +91,20 @@ async function handle(_request: Request) {
       orderBy: { createdAt: 'asc' },
       take: 500,
     }),
+    // Every screening still waiting on staff, regardless of `updatedAt`, so
+    // the oldest wait is measured from submission (see header).
+    prisma.user.findMany({
+      where: {
+        deletedAt: null,
+        wioaReviewStatus: { in: [...WIOA_AWAITING_REVIEW_STATUSES] },
+      },
+      select: { wioaQualificationJson: true, updatedAt: true },
+      take: 500,
+    }),
   ]);
+
+  const wioaOldestPendingDays = oldestWioaWaitDays(wioaAwaitingReview, now);
+  const wioaQueueOverdue = wioaOldestPendingDays !== null && wioaOldestPendingDays >= WIOA_QUEUE_AGE_ALERT_DAYS;
 
   // Exclude members who already have an active counselor from the
   // "no program" bucket — one batched query rather than N+1 lookups.
@@ -128,7 +148,11 @@ async function handle(_request: Request) {
       : [];
 
     const title = `${totalStalled} onboarding stall${totalStalled === 1 ? '' : 's'} need attention`;
-    const body = `${interviewCount} interview${interviewCount === 1 ? '' : 's'} awaiting completion, ${wioaCount} WIOA screening${wioaCount === 1 ? '' : 's'} pending review, ${noProgramCount} member${noProgramCount === 1 ? '' : 's'} without a program or counselor.`;
+    const oldestLine =
+      wioaOldestPendingDays !== null
+        ? ` Oldest pending WIOA screening: ${wioaOldestPendingDays} day${wioaOldestPendingDays === 1 ? '' : 's'}${wioaQueueOverdue ? ' (over the ' + WIOA_QUEUE_AGE_ALERT_DAYS + '-day threshold)' : ''}.`
+        : '';
+    const body = `${interviewCount} interview${interviewCount === 1 ? '' : 's'} awaiting completion, ${wioaCount} WIOA screening${wioaCount === 1 ? '' : 's'} pending review, ${noProgramCount} member${noProgramCount === 1 ? '' : 's'} without a program or counselor.${oldestLine}`;
 
     for (const admin of adminUsers) {
       try {
@@ -142,6 +166,7 @@ async function handle(_request: Request) {
             interviewCount,
             wioaCount,
             noProgramCount,
+            wioaOldestPendingDays,
           },
         });
         notificationsSent++;
@@ -165,6 +190,7 @@ async function handle(_request: Request) {
           noProgramCount,
           interviewMembers: interviewStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
           wioaMembers: wioaStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
+          wioaOldestPendingDays,
           noProgramMembers: noProgramStalled.slice(0, MAX_NAMED_PER_BUCKET).map(toNamedMember),
           interviewQueueLink: `${SITE_URL}${INTERVIEW_QUEUE_LINK}`,
           wioaQueueLink: `${SITE_URL}${WIOA_QUEUE_LINK}`,
@@ -183,6 +209,8 @@ async function handle(_request: Request) {
     checkedAt: now.toISOString(),
     interviewStalled: interviewCount,
     wioaStalled: wioaCount,
+    wioaOldestPendingDays,
+    wioaQueueOverdue,
     noProgramStalled: noProgramCount,
     totalStalled,
     notificationsSent,
