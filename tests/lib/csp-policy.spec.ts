@@ -116,6 +116,8 @@ describe('WAP-36 phase 1: CSP report normalization', () => {
     // Token routes redact whatever follows the known prefix, even a short or slug-looking token.
     expect(summarizeDocumentUri('https://www.workforceap.org/q/kx7-abc?sig=1')).toBe('/q/:id');
     expect(summarizeDocumentUri('https://www.workforceap.org/survey/placement/eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0')).toBe('/survey/placement/:id');
+    // Percent-encoded email in the unmatched-learner route (nothing else matches `%`/`.`).
+    expect(summarizeDocumentUri('https://www.workforceap.org/admin/coursera/learners/unmatched/jane%40example.com')).toBe('/admin/coursera/learners/unmatched/:id');
     // Opaque cuid-style ids collapse; human slugs and locale prefixes do not.
     expect(collapseDynamicPathSegments('/counselor/students/clx9k2m4p0001abcd8f7e6g5h')).toBe('/counselor/students/:id');
     expect(collapseDynamicPathSegments('/en/programs/google-it-support-professional-certificate')).toBe('/en/programs/google-it-support-professional-certificate');

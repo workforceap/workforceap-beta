@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "cecd316d46fbcd636aa3842711d96e69edf11c2bf16c3adfd18e3225100f3ce3",
+  "inputTreeSha256": "23e9be1e304571071887c6ede33991d35d04dac1594df4c138e9efd33906c003",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -64684,9 +64684,9 @@
       "path": "components/portal/help/HelpAssistantPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 11933,
+      "bytes": 11934,
       "lines": 320,
-      "sha256": "519dd87732336095b413373839b6d277ec52d729aa42c2d6e63b1986f06bc0af",
+      "sha256": "a9a2c74d5f08e4dd51eac23ed1c9f3ffab2573aa73c46cc41574e2a33b7865b9",
       "binary": false,
       "exports": [
         {
@@ -140305,9 +140305,9 @@
       "path": "lib/security/cspReport.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 8054,
-      "lines": 188,
-      "sha256": "4e92b23fcd000bf6d1631e7c73888fbf1d55073c9e8cc14f5e46347db1119380",
+      "bytes": 8163,
+      "lines": 189,
+      "sha256": "5127003ebd6df124301e4140dd4e3637d5f80be9833d9067a283085d27691858",
       "binary": false,
       "exports": [
         {
@@ -140352,22 +140352,22 @@
         },
         {
           "name": "collapseDynamicPathSegments",
-          "line": 90,
+          "line": 91,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDocumentUri",
-          "line": 112,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "extractCspViolations",
-          "line": 161,
+          "line": 162,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countCspViolations",
-          "line": 179,
+          "line": 180,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140449,52 +140449,52 @@
         },
         {
           "name": "TOKEN_PARENT_SEGMENTS",
-          "line": 83,
+          "line": 84,
           "kind": "Variable"
         },
         {
           "name": "collapseDynamicPathSegments",
-          "line": 90,
+          "line": 91,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDocumentUri",
-          "line": 112,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDisposition",
-          "line": 123,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDirective",
-          "line": 127,
+          "line": 128,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fromLegacyReport",
-          "line": 134,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fromReportingApiBody",
-          "line": 143,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isRecord",
-          "line": 152,
+          "line": 153,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "extractCspViolations",
-          "line": 161,
+          "line": 162,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countCspViolations",
-          "line": 179,
+          "line": 180,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -173056,9 +173056,9 @@
       "path": "tests/lib/csp-policy.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 8905,
-      "lines": 164,
-      "sha256": "65b8cfa91292a68c1e1606a5140f18ec75e9f2366bcc39eada36aa793b770e6a",
+      "bytes": 9162,
+      "lines": 166,
+      "sha256": "bca4a3c205f1c700f8d924cc50b213c7642927e43b2de38f1166b4c1a42ec007",
       "binary": false,
       "exports": [],
       "declarations": [

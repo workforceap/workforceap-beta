@@ -80,7 +80,8 @@ const NUMERIC_SEGMENT = /^\d+$/;
  */
 const OPAQUE_SEGMENT = /^(?=.*\d)[a-z0-9]{16,}$/i;
 /** Route segments whose next segment is always a token or id, whatever it looks like. */
-const TOKEN_PARENT_SEGMENTS = new Set(['q', 'r', 'consent', 'placement', 'invite', 'verify', 'reset-password', 'unsubscribe', 'token']);
+// `unmatched`: /admin/coursera/learners/unmatched/[externalEmail] — a percent-encoded email.
+const TOKEN_PARENT_SEGMENTS = new Set(['q', 'r', 'consent', 'placement', 'invite', 'verify', 'reset-password', 'unsubscribe', 'token', 'unmatched']);
 
 /**
  * Replace dynamic segments (`/admin/members/<uuid>`, `/q/<token>`, `/jobs/123`)
