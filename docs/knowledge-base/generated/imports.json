@@ -132897,8 +132897,16 @@
   },
   {
     "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
-    "specifier": "@testing-library/react",
+    "specifier": "react",
     "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 3,
     "kind": "import",
     "external": true,
     "package": "@testing-library/react"
@@ -132906,7 +132914,7 @@
   {
     "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
     "specifier": "@/components/portal/counselor/AtRiskDetailModal",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "components/portal/counselor/AtRiskDetailModal.tsx"

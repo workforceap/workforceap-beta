@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 // JSDOM lacks native <dialog> methods. Keep the actual Astryx dialog, its
@@ -89,7 +90,31 @@ describe('AtRiskDetailModal on the kit dialog primitive', () => {
     expect(screen.getByRole('button', { name: 'Escalate' })).toBeInTheDocument();
   });
 
-  it('renders nothing without a member', () => {
+  it('hands focus back to the row that opened it when closed', async () => {
+    function Harness() {
+      const [open, setOpen] = useState<typeof member | null>(null);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(member)}>Open Jordan Rivera</button>
+          <AtRiskDetailModal member={open} onClose={() => setOpen(null)} onStatusChange={vi.fn()} />
+        </>
+      );
+    }
+    render(<Harness />);
+    const trigger = screen.getByRole('button', { name: 'Open Jordan Rivera' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAttribute('open');
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2, name: 'Jordan Rivera' })).toHaveFocus());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    // Stays mounted with isOpen=false so the primitive can restore focus.
+    expect(dialog).not.toHaveAttribute('open');
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('renders nothing until it has ever been given a member', () => {
     render(<AtRiskDetailModal member={null} onClose={vi.fn()} onStatusChange={vi.fn()} />);
     expect(screen.queryByRole('dialog')).toBeNull();
   });

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "101b5e124dfb033968a28b23f4cfedd4eb03b0bd95c76e2b4acea8d9af2d761e",
+  "inputTreeSha256": "eb0a5044d2006ed1d662fa2dace18a86de84afee147e124c1d962a00aa2f7d0f",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -17322,9 +17322,9 @@
       "path": "app/admin/guide/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 12429,
+      "bytes": 12552,
       "lines": 252,
-      "sha256": "d9d516b661bdb300d0d7d20467f4e1b66ce2aaae7278f3e182efdb2b9bcfe08a",
+      "sha256": "a2b8dc90db69dc73003dafa3b17203f0e4cf061f10d7501e8376f557dc6f793d",
       "binary": false,
       "exports": [
         {
@@ -63547,9 +63547,9 @@
       "path": "components/portal/counselor/AtRiskDashboard.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 42811,
-      "lines": 1120,
-      "sha256": "49e362b660903488a68250213e6842f8453fd8ef6b1fd9c3ad4a52cb9acce790",
+      "bytes": 42886,
+      "lines": 1119,
+      "sha256": "2b494ce3a92e0c45e4fb235e70375f4af5e7cad9ef8cf41898c37411994a4580",
       "binary": false,
       "exports": [
         {
@@ -63574,12 +63574,12 @@
         },
         {
           "name": "AtRiskDashboardProps",
-          "line": 758,
+          "line": 757,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "default",
-          "line": 777,
+          "line": 776,
           "kind": "FunctionDeclaration",
           "localName": "AtRiskDashboard"
         }
@@ -63677,47 +63677,47 @@
         },
         {
           "name": "AtRiskDashboardProps",
-          "line": 758,
+          "line": 757,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "patchAlertStatus",
-          "line": 765,
+          "line": 764,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AtRiskDashboard",
-          "line": 777,
+          "line": 776,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTransportFailure",
-          "line": 846,
+          "line": 845,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SortModeButton",
-          "line": 852,
+          "line": 851,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterChip",
-          "line": 875,
+          "line": 874,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FilterTag",
-          "line": 930,
+          "line": 929,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FactorChips",
-          "line": 957,
+          "line": 956,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RiskRow",
-          "line": 980,
+          "line": 979,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -63727,9 +63727,9 @@
       "path": "components/portal/counselor/AtRiskDetailModal.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 18730,
-      "lines": 513,
-      "sha256": "82151678d3f8b7fa210e8d8ac3498005a00f8fe8153aae4254ce4f36ec15b216",
+      "bytes": 19279,
+      "lines": 521,
+      "sha256": "35b799067da8f2b2e8a549e4bf6173a0025b5b48bbd0c09bbcc7aedceec69300",
       "binary": false,
       "exports": [
         {
@@ -155016,9 +155016,9 @@
       "path": "scripts/lib/portal-audit-paths.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 16083,
-      "lines": 543,
-      "sha256": "c91ba1a277c564bd26bbb298acce1eb38853acaed61c2ea3a32ba2bcb7664675",
+      "bytes": 16103,
+      "lines": 544,
+      "sha256": "81d0e641483b8bcb5a75e3796526b9d6f9257c36fcda91a67b94f2ea3a298b52",
       "binary": false,
       "exports": [
         {
@@ -155028,47 +155028,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 202,
+          "line": 203,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 244,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 257,
+          "line": 258,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 352,
+          "line": 353,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 382,
+          "line": 383,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 500,
+          "line": 501,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 506,
+          "line": 507,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 510,
+          "line": 511,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 522,
+          "line": 523,
           "kind": "Variable"
         }
       ],
@@ -155080,47 +155080,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 202,
+          "line": 203,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 244,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 257,
+          "line": 258,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 352,
+          "line": 353,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 382,
+          "line": 383,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 500,
+          "line": 501,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 506,
+          "line": 507,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 510,
+          "line": 511,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 522,
+          "line": 523,
           "kind": "Variable"
         }
       ],
@@ -165777,30 +165777,30 @@
       "path": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 4498,
-      "lines": 96,
-      "sha256": "babc991194712106653d9499aa4902a6f37f6cae442533e85ab04d3c08a9a5bc",
+      "bytes": 5578,
+      "lines": 121,
+      "sha256": "4ba28b08242d8614275457c4b48e70b954ccdccd8c87d04f221c85bd13d4768c",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "dialogMethods",
-          "line": 7,
-          "kind": "Variable"
-        },
-        {
-          "name": "originalMethods",
           "line": 8,
           "kind": "Variable"
         },
         {
+          "name": "originalMethods",
+          "line": 9,
+          "kind": "Variable"
+        },
+        {
           "name": "member",
-          "line": 30,
+          "line": 31,
           "kind": "Variable"
         },
         {
           "name": "fetchMock",
-          "line": 48,
+          "line": 49,
           "kind": "Variable"
         }
       ],

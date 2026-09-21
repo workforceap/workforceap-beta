@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
@@ -156,12 +156,20 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
     }
   }
 
-  if (!member) return null;
+  // Stay mounted across close: Astryx Dialog restores focus to the trigger
+  // only when `isOpen` flips false while mounted (no unmount cleanup), so the
+  // caller passes `member={null}` to close and the last member keeps the body
+  // populated through the close animation (kit precedent:
+  // EmailTemplatesClient's `isOpen={!!editingId}`).
+  const lastMemberRef = useRef<AtRiskMember | null>(null);
+  if (member) lastMemberRef.current = member;
+  const shown = member ?? lastMemberRef.current;
+  if (!shown) return null;
 
   const riskColor =
-    member.riskLevel === 'CRITICAL'
+    shown.riskLevel === 'CRITICAL'
       ? 'var(--color-accent)'
-      : member.riskLevel === 'HIGH'
+      : shown.riskLevel === 'HIGH'
         ? 'var(--color-gold)'
         : 'var(--color-blue)';
 
@@ -170,18 +178,18 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
   };
 
   // Kit dialog primitive (Astryx `Dialog`, native <dialog>.showModal()): focus
-  // trap, Escape (shared kit stack), backdrop dismiss and focus restore to the
-  // roster row come from the primitive; `aria-labelledby` names the dialog
-  // after the member heading, which `data-autofocus` puts focus on at open.
+  // trap, Escape (shared kit stack), backdrop dismiss and — because this stays
+  // mounted, see above — focus restore to the roster row; `aria-labelledby`
+  // names the dialog after the member heading, which `data-autofocus` puts
+  // focus on at open. No `.at-risk-modal` class: the primitive animates entry.
   return (
     <Dialog
-      isOpen
+      isOpen={!!member}
       onOpenChange={handleOpenChange}
       purpose="info"
       width={640}
       maxHeight="90vh"
       aria-labelledby={TITLE_ID}
-      className="at-risk-modal"
       data-testid="at-risk-detail-dialog"
     >
       <Layout
@@ -202,15 +210,15 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                     border: `2px solid ${riskColor}40`,
                     flexShrink: 0}}
                 >
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: riskColor }}>{member.score}</span>
+                  <span style={{ fontWeight: 700, fontSize: '0.9rem', color: riskColor }}>{shown.score}</span>
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <Heading level={2} id={TITLE_ID} tabIndex={-1} data-autofocus="true" style={{ outline: 'none' }}>
-                    {member.name}
+                    {shown.name}
                   </Heading>
                   <Text type="body" size="sm" color="secondary">
-                    {member.email}
-                    {member.phone ? ` · ${member.phone}` : ''}
+                    {shown.email}
+                    {shown.phone ? ` · ${shown.phone}` : ''}
                   </Text>
                 </div>
               </div>
@@ -242,10 +250,10 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 color: riskColor,
                 border: `1.5px solid ${riskColor}40`}}
             >
-              {member.riskLevel === 'CRITICAL' && <ShieldAlert size={14} />}
-              {member.riskLevel === 'HIGH' && <ShieldHalf size={14} />}
-              {member.riskLevel === 'MEDIUM' && <ShieldCheck size={14} />}
-              {member.riskLevel} Risk
+              {shown.riskLevel === 'CRITICAL' && <ShieldAlert size={14} />}
+              {shown.riskLevel === 'HIGH' && <ShieldHalf size={14} />}
+              {shown.riskLevel === 'MEDIUM' && <ShieldCheck size={14} />}
+              {shown.riskLevel} Risk
             </span>
             <span
               style={{
@@ -259,17 +267,17 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 background: 'var(--surface-container-high)',
                 color: 'var(--color-on-surface-variant)'}}
             >
-              Status: {member.status}
+              Status: {shown.status}
             </span>
             <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
-              Alerted {new Date(member.alertCreatedAt).toLocaleDateString()}
+              Alerted {new Date(shown.alertCreatedAt).toLocaleDateString()}
             </span>
           </div>
 
           {/* Quick links */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link
-              href={`/counselor/students/${member.userId}`}
+              href={`/counselor/students/${shown.userId}`}
               className="btn btn-outline btn-sm"
               style={{ fontSize: '0.8125rem' }}
             >
@@ -277,7 +285,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
               Full profile
             </Link>
             <Link
-              href={`/counselor/messages?memberId=${encodeURIComponent(member.userId)}`}
+              href={`/counselor/messages?memberId=${encodeURIComponent(shown.userId)}`}
               className="btn btn-outline btn-sm"
               style={{ fontSize: '0.8125rem' }}
             >
@@ -298,15 +306,15 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 letterSpacing: '0.08em'}}
             >
               <AlertTriangle size={14} style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} />
-              Risk factors ({member.factors.length})
+              Risk factors ({shown.factors.length})
             </h3>
-            {member.factors.length === 0 ? (
+            {shown.factors.length === 0 ? (
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
                 No specific factors recorded for this alert.
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {member.factors.map((f) => (
+                {shown.factors.map((f) => (
                   <div
                     key={f.name}
                     style={{
@@ -474,7 +482,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
         footer={
           <LayoutFooter hasDivider>
             <HStack gap={2} justify="end" wrap="wrap">
-              {member.status === 'open' && (
+              {shown.status === 'open' && (
                 <Button
                   label="Acknowledge"
                   variant="secondary"
@@ -484,7 +492,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                   onClick={() => void handleStatusChange('acknowledged')}
                 />
               )}
-              {member.status !== 'resolved' && (
+              {shown.status !== 'resolved' && (
                 <Button
                   label="Resolve"
                   variant="primary"
@@ -493,7 +501,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                   onClick={() => void handleStatusChange('resolved')}
                 />
               )}
-              {member.status !== 'escalated' && (
+              {shown.status !== 'escalated' && (
                 <Button
                   label="Escalate"
                   variant="secondary"

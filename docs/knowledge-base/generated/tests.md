@@ -256,7 +256,7 @@
 | [tests/components/analytics-kit-tabs-empty.spec.tsx](../../../tests/components/analytics-kit-tabs-empty.spec.tsx) | 102 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
-| [tests/components/at-risk-detail-modal-dialog.spec.tsx](../../../tests/components/at-risk-detail-modal-dialog.spec.tsx) | 96 | tests |  |
+| [tests/components/at-risk-detail-modal-dialog.spec.tsx](../../../tests/components/at-risk-detail-modal-dialog.spec.tsx) | 121 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 152 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |

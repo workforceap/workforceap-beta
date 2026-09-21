@@ -71,7 +71,7 @@ const WORKSPACE = [
     href: '/admin/messages',
     icon: 'forum',
     label: 'Messages',
-    desc: 'Every conversation with staff — members, employers, partners — with the ones waiting on a reply first.',
+    desc: 'Every conversation with staff — members, employers, partners — with the ones waiting on a reply first. Super admins only.',
   },
   {
     href: '/admin/settings',
@@ -103,11 +103,11 @@ const FAQS = [
   },
   {
     q: 'Where is a member’s conversation with their counselor?',
-    a: 'On the member record, the Messages tab shows the counselor thread. Messages, in the sidebar, shows every conversation across the organization with the ones waiting on staff first.',
+    a: 'On the member record, the Messages tab shows the counselor thread. Messages, in the sidebar, shows every conversation across the organization with the ones waiting on staff first; like Settings, it is limited to super admins.',
   },
   {
     q: 'Who can change settings?',
-    a: 'Settings and the other advanced pages are limited to super admins. Organization admins can work every student, program, and message page without them.',
+    a: 'Settings, Messages, and the other advanced pages are limited to super admins. Organization admins work the student and program pages, and each member\u2019s conversation from the Messages tab of their record.',
   },
 ];
 
