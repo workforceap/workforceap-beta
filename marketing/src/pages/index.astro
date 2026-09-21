@@ -226,7 +226,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
 
   /* gold PILL — fully visible, never clipped */
   .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
+    background:var(--grad-gold);color:var(--gold-ink);font-weight:800;font-size:13px;
     letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
     box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
   .pill__star{font-size:13px;opacity:.95}
@@ -242,14 +242,14 @@ const homeHeroPhoto = heroPhotoForKey('/');
 
   .lede h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(42px,6vw,74px);
     line-height:1.02;letter-spacing:-.03em;margin:22px 0 0}
-  .shimmer{background:linear-gradient(100deg,#fff 10%,#f3d28f 50%,#fff 90%);
+  .shimmer{background:var(--grad-gold-shimmer);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .lede .sub{font-size:20px;line-height:1.55;color:rgba(255,255,255,.82);max-width:30em;margin:22px 0 30px}
   /* compact glass card for the hero sub / vision statement (smaller, contained) */
   .hero-card{max-width:28em;margin:22px 0 30px;padding:15px 19px;border-radius:16px;
     background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(10px);
     box-shadow:0 14px 44px -18px rgba(58,10,30,.55),0 1px 0 rgba(255,255,255,.18) inset}
-  .hero-card .hero-card__label{display:block;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f3d28f;margin-bottom:8px}
+  .hero-card .hero-card__label{display:block;font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-glow);margin-bottom:8px}
   .hero-card p{font-size:16px;line-height:1.5;color:rgba(255,255,255,.92);margin:0}
   /* mission-as-hero: wider + slightly larger lead so the founder statement reads as the hero message */
   .hero-card--mission{max-width:44em;padding:20px 24px}
@@ -310,7 +310,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
   .mid-big{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:22px;margin:10px 0 18px;color:var(--text)}
   .track{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .track i{height:8px;border-radius:5px;background:var(--border)}
-  .track i.t-done{background:linear-gradient(90deg,#caa148,#e3bd6a)}
+  .track i.t-done{background:linear-gradient(90deg,#caa148,var(--gold-lift))}
   .track i.t-now{background:var(--crimson);box-shadow:0 0 0 3px rgba(173,44,77,.18)}
   .track-labels{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
   .track-labels span{font-size:13px;font-weight:700;color:var(--muted);text-align:center}
@@ -353,7 +353,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
   .imm-band__inner{position:relative;z-index:2;color:#fff;padding:var(--sec-pad) 24px;max-width:var(--max)}
   .imm-head{text-align:center;max-width:720px;margin:0 auto 52px}
   .imm-eyebrow{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
-    color:#f3d28f;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);padding:7px 15px;border-radius:999px;margin-bottom:18px}
+    color:var(--gold-glow);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);padding:7px 15px;border-radius:999px;margin-bottom:18px}
   .imm-head h2{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(32px,4.6vw,54px);line-height:1.05;letter-spacing:-.02em;margin-bottom:14px;
     text-shadow:0 2px 40px rgba(45,8,22,.5)}
   .imm-grad{background:linear-gradient(100deg,#ffd98a,#ffb4c4);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -369,7 +369,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
   .imm-jcard h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px}
   .imm-jcard p{color:rgba(255,255,255,.82);font-size:15px}
   .imm-tag{display:inline-flex;margin-top:14px;font-size:13px;font-weight:700;padding:5px 11px;border-radius:999px;
-    background:rgba(243,210,143,.2);color:#f3d28f;border:1px solid rgba(243,210,143,.3)}
+    background:rgba(243,210,143,.2);color:var(--gold-glow);border:1px solid rgba(243,210,143,.3)}
   .imm-note{text-align:center;color:rgba(255,255,255,.78);font-size:14px;margin-top:34px}
   @media(max-width:900px){.imm-journey{grid-template-columns:1fr 1fr}}
   @media(max-width:520px){.imm-journey{grid-template-columns:1fr}}
@@ -378,7 +378,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
   .blk{width:100%;padding:var(--sec-pad) 0}
   .blk--crimson{background:var(--grad);color:#fff}
   .blk--cream{background:var(--bg);color:var(--text)}
-  .gold{color:#e9c879}
+  .gold{color:var(--gold-hi)}
 
   .head{margin-bottom:56px}
   .head h2{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(38px,6vw,72px);line-height:.96;letter-spacing:-.03em}
@@ -406,7 +406,7 @@ const homeHeroPhoto = heroPhotoForKey('/');
 
   /* BOLD facts */
   .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
-  .fact .fk{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,6vw,72px);color:#e9c879;line-height:1}
+  .fact .fk{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(40px,6vw,72px);color:var(--gold-hi);line-height:1}
   /* 501(c)(3) is long — render it smaller so it stays on one line (no goofy wrap) */
   .fact .fk--sm{font-size:clamp(26px,3.4vw,44px);white-space:nowrap}
   .fact p{color:rgba(255,255,255,.9);font-size:15px;margin-top:10px}
