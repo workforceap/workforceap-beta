@@ -320,18 +320,18 @@ export default async function PartnerDashboardPage({
     // already loaded above (no extra query). Each stage's bar width is its
     // share of the top-of-funnel referred count.
     const funnelStages = [
-      { label: t('membersReferred'), value: referredCount, pct: 100, color: 'accent' as const },
+      { label: t('membersReferred'), value: referredCount, pct: 100 },
       {
         label: t('membersEnrolled'),
         value: enrolledCount,
         pct: referredCount > 0 ? Math.round((enrolledCount / referredCount) * 100) : 0,
-        color: 'info' as const,
+        tone: 'info' as const,
       },
       {
         label: t('membersPlaced'),
         value: placedCount,
         pct: referredCount > 0 ? Math.round((placedCount / referredCount) * 100) : 0,
-        color: 'success' as const,
+        tone: 'ok' as const,
       },
     ];
 

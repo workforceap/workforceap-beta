@@ -359,7 +359,7 @@ export default function ResumeClient({
           <span>Profile completeness</span>
           <span style={{ fontWeight: 700, color: "var(--wa-text)" }}>{completeness}%</span>
         </div>
-        <ProgressBar pct={completeness} color={completeness >= recommendedProfileCompleteness ? "success" : "gold"} aria-label="Profile completeness" />
+        <ProgressBar pct={completeness} tone={completeness >= recommendedProfileCompleteness ? "ok" : "warn"} aria-label="Profile completeness" />
       </div>
       {completeness < recommendedProfileCompleteness && (
         <p style={{ marginBottom: "0.875rem", fontSize: "0.875rem", color: "var(--wa-muted)" }}>

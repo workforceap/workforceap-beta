@@ -109,9 +109,9 @@ export default function DevStaffPartnerCommandPage() {
 
       <PartnerReferralFunnel
         stages={[
-          { label: 'Referred', value: 86, pct: 100, color: 'accent' },
-          { label: 'Enrolled', value: 54, pct: 63, color: 'info' },
-          { label: 'Placed', value: 31, pct: 36, color: 'success' },
+          { label: 'Referred', value: 86, pct: 100 },
+          { label: 'Enrolled', value: 54, pct: 63, tone: 'info' },
+          { label: 'Placed', value: 31, pct: 36, tone: 'ok' },
         ]}
       />
 

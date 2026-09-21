@@ -83,4 +83,13 @@ describe('Staff reply composer preserves recipient and draft', () => {
     render(<AdminMemberCounselorChatClient initial={{ ...initial(), messages: [] }} compact readCursorMode />);
     expect(fetch).not.toHaveBeenCalled();
   });
+  it('renders an empty thread as a status line, not an empty log box', () => {
+    const empty = render(<AdminMemberCounselorChatClient initial={{ ...initial(), messages: [] }} compact />);
+    expect(empty.container.querySelector('.member-counselor-chat__scroll')).toBeNull();
+    expect(empty.container.querySelector('p.member-counselor-chat__empty[role="status"]')?.textContent).toContain('No messages in this thread yet');
+    empty.unmount();
+    const seeded = render(<AdminMemberCounselorChatClient initial={initial()} compact />);
+    expect(seeded.container.querySelector('.member-counselor-chat__scroll[role="log"]')).not.toBeNull();
+    expect(seeded.container.querySelector('.member-counselor-chat__empty')).toBeNull();
+  });
 });

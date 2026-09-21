@@ -249,6 +249,11 @@ The old categorical `color` prop is gone — omit `tone` for a total that is not
 (`tone: failing > 0 ? 'danger' : undefined`). Legacy names map by meaning: `success → ok`,
 `gold → warn`, `accent → alert` (`danger` for failed / rejected), `info → info`, `muted → muted`.
 
+The same rule covers the fills: `RankBars` rows (`RankDatum.tone`), `ProgressBar`, `ProgressRing` and
+`StageTrack` take `tone?: KitTone` and paint the bar / ring / segments through `.wa-kit-tone--<tone>`;
+omit it for the plain accent fill (a progress value is not a state). Their old categorical `color` prop still
+works but is deprecated and ignored when `tone` is set — do not add new `color=` callers.
+
 Use `lib/ui/statusToneAdapters.ts` at these boundaries instead of copying color triples.
 `StatusBadge` reads the same palette as `statusColor`; its `error` and `accent` variants
 both preserve the legacy attention meaning. Partner overview pills are `StatusTag` on every

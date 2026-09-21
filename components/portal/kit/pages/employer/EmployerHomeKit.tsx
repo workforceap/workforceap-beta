@@ -133,12 +133,12 @@ function kitInitials(name: string): string {
 }
 
 /** Applied → Screen → Interview → Offer (4-stage tracker). Unknown statuses land on "Applied". */
-function stageForStatus(status: string): { index: number; total: number; color: KitColor } {
+function stageForStatus(status: string): { index: number; total: number; tone: KitTone } {
   const s = status.toLowerCase();
-  if (s === 'hired' || s === 'offered' || s === 'offer') return { index: 4, total: 4, color: 'success' };
-  if (s === 'interview' || s === 'interviewing') return { index: 3, total: 4, color: 'gold' };
-  if (s === 'reviewing' || s === 'screening') return { index: 2, total: 4, color: 'info' };
-  return { index: 1, total: 4, color: 'muted' }; // saved / applied / default
+  if (s === 'hired' || s === 'offered' || s === 'offer') return { index: 4, total: 4, tone: 'ok' };
+  if (s === 'interview' || s === 'interviewing') return { index: 3, total: 4, tone: 'warn' };
+  if (s === 'reviewing' || s === 'screening') return { index: 2, total: 4, tone: 'info' };
+  return { index: 1, total: 4, tone: 'muted' }; // saved / applied / default
 }
 
 /** Status pill tone — mirrors the tone convention used across the rest of the employer portal. */
@@ -210,7 +210,7 @@ const candidateColumns: Column<EmployerCandidateRow>[] = [
     header: 'Stage',
     render: (row) => {
       const stage = stageForStatus(row.status);
-      return <StageTrack index={stage.index} total={stage.total} color={stage.color} />;
+      return <StageTrack index={stage.index} total={stage.total} tone={stage.tone} />;
     },
   },
   {
@@ -236,7 +236,7 @@ function candidateCard(row: EmployerCandidateRow) {
         <StatusTag tone={statusTagTone(row.status)}>{row.statusLabel ?? titleCase(row.status)}</StatusTag>
       </div>
       <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 10 }}>
-        <StageTrack index={stage.index} total={stage.total} color={stage.color} />
+        <StageTrack index={stage.index} total={stage.total} tone={stage.tone} />
         {typeof row.fitScore === 'number' ? (
           <span style={{ fontSize: 13, fontWeight: 800, color: fitScoreColor(clampPct(row.fitScore)), fontVariantNumeric: 'tabular-nums' }}>
             {clampPct(row.fitScore)}% fit

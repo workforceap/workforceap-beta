@@ -16,7 +16,7 @@ import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
 import { Sparkline } from './Charts';
 import { cx } from './base';
-import { colorVar, toneClass, type KitColor, type KitTone } from './tokens';
+import { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
 
 /** Trend series + optional delta chip for a stat tile. Omit any field to hide that piece. */
 export interface SparkStat {
@@ -131,24 +131,29 @@ export function StatSparkTile({
 
 /**
  * N-segment stage tracker (e.g. a 3-step application/candidate pipeline). Fills
- * `index` of `total` segments with the tone color. Decorative (aria-hidden);
+ * `index` of `total` segments with the tone colour (`.wa-kit-tone--<tone>`; the
+ * old `color` prop is deprecated). Decorative (aria-hidden);
  * pair with a visible status label.
  */
 export function StageTrack({
   index,
   total = 3,
-  color = 'accent',
+  tone,
+  color,
   width = 84,
 }: {
   index: number;
   total?: number;
+  /** Semantic state of the filled segments (`ok` placed, `warn` interviewing, …); omit for accent. */
+  tone?: KitTone;
+  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
   color?: KitColor;
   width?: number;
 }) {
   const filled = Math.max(0, Math.min(total, index));
-  const c = colorVar(color);
+  const c = tonePaint(tone, color) ?? 'var(--wa-accent)';
   return (
-    <div aria-hidden className="wa-flex wa-items-center wa-gap-1" style={{ width }}>
+    <div aria-hidden className={cx('wa-flex wa-items-center wa-gap-1', toneClass(tone))} style={{ width }}>
       {Array.from({ length: total }).map((_, i) => (
         <span key={i} style={{ height: 5, flex: 1, borderRadius: 3, background: i < filled ? c : 'var(--wa-track)' }} />
       ))}

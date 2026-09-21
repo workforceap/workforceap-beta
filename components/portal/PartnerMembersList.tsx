@@ -94,7 +94,7 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
           <StageTrack
             index={stageTrackIndex(m.stage)}
             total={STAGE_ORDER.length}
-            color={m.stage === 'placed' ? 'success' : 'accent'}
+            tone={m.stage === 'placed' ? 'ok' : undefined}
             width={100}
           />
           <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>
