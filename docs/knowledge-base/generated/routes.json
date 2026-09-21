@@ -8557,7 +8557,7 @@
       },
       {
         "name": "default",
-        "line": 85,
+        "line": 86,
         "kind": "FunctionDeclaration",
         "localName": "AdminDataRetentionPage"
       }
@@ -23468,12 +23468,12 @@
     "exports": [
       {
         "name": "POST",
-        "line": 34,
+        "line": 41,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "GET",
-        "line": 84,
+        "line": 96,
         "kind": "FunctionDeclaration"
       }
     ],
@@ -23491,6 +23491,11 @@
       {
         "specifier": "@/lib/security/cspReport",
         "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/security/cspViolationStore",
+        "line": 11,
         "kind": "import"
       }
     ]

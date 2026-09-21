@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "6b02d810fec8dd9be0d39606f9a40e296f85d3e61c6fa388084c698c1e5c0fea",
+  "inputTreeSha256": "306145e66c8772cde69b9ad16dc0ac1c54accc810cdf38330bbbecf80ffc22e8",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -10,16 +10,16 @@
   "counts": {
     "files": 4998,
     "sourceModules": 3642,
-    "importReferences": 18156,
+    "importReferences": 18157,
     "resolvedLocalReferences": 12185,
-    "unresolvedLocalReferences": 0,
+    "unresolvedLocalReferences": 1,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
     "apiHandlers": 496,
     "pageFiles": 317,
     "astroPageFiles": 34,
     "configuredCrons": 31,
-    "prismaModels": 114,
+    "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
     "testFiles": 991,

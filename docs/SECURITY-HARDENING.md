@@ -477,7 +477,8 @@ Step 1 of the migration is live in observe-only mode. Nothing is enforced by it.
   `application/csp-report` and `application/reports+json`, refuses bodies over
   16 KB (413), rate-limits 60/min per proxy-trusted IP (fail-open without
   Upstash, like the other public sinks; `lib/security/cspReportRateLimit.ts`),
-  writes nothing to the database and answers 204. GET is 405.
+  increments the hourly aggregate described under "Persisted aggregates"
+  below and answers 204 (also when the database write fails). GET is 405.
 
 **Reading the reports.** The sink emits one structured log line per distinct
 violation per batch: `{"message":"csp.violation","directive":"script-src-elem",
@@ -489,6 +490,38 @@ In Vercel logs filter on `csp.violation` and group by `directive` +
 `blockedHost`; anything not in the enforced allow-list and not `inline`/`eval`
 from our own bundles is a real finding. Expect `inline` from `WorkspaceShell`
 and third-party tags GTM injects until those are nonced.
+
+**Persisted aggregates and the viewer (phase 2 prep).** Log lines are enough
+to notice a violation, not to triage a week of them, so the sink also keeps an
+hourly aggregate in `csp_violation_buckets` (Prisma `CspViolationBucket`,
+migration `20260921120000_wap36_csp_violation_buckets`): one row per
+`(hour_bucket, directive, blocked_host, document_path, disposition)` with a
+`count`, `first_seen_at` and `last_seen_at`. The write path
+(`lib/security/cspViolationStore.ts`) dedupes each accepted batch first and
+issues one `INSERT … ON CONFLICT` upsert per distinct key inside a single
+transaction, so a 20-report batch costs at most 20 statements on one pooled
+connection (WAP-17). It stores exactly the fields the log line carries — the
+redacted route path (`/admin/members/:id`), the host or CSP keyword, the
+directive and the disposition — never the raw URL, query string, script
+sample, report body, IP address or user agent. A database error is logged as
+`csp.violation.persist_failed` and swallowed; the sink still answers 204. The
+table is platform-wide by design (no tenant column: the policy is set once per
+deployment), has RLS enabled with a single `SELECT` policy for the
+`super_admin` GUC role and no write policies (the sink writes as the table
+owner, like the other log-like tables), and is purged on `hour_bucket` after
+`CSP_VIOLATION_BUCKET_RETENTION_DAYS` (30) by the daily data-cleanup cron
+(`lib/retention/config.ts`), so it can never grow unbounded.
+
+Super admins read it at **`/admin/csp-report`** ("CSP reports" under Advanced
+in the admin sidebar; `app/admin/csp-report/page.tsx`, same guard as
+`/admin/data-retention`): totals for the last 24 hours and 7 days, the number
+of enforced blocks (expected 0 while Report-Only), and a table grouped by
+directive + blocked host with the report count, a sample of up to three
+document paths, dispositions and first/last seen. The page is read-only and
+states that the policy is Report-Only and that the flip is the checklist
+below. Triage rule for the soak: a source that is not in the enforced
+allow-list and not `inline`/`eval` from our own bundles is a real finding; an
+`inline` row on a known page needs a nonce before the flip.
 
 **Phase 2 — the enforce flip (Mike, after a week-long soak with no unexpected
 reports).** (1) In `middleware.ts` set `Content-Security-Policy` instead of

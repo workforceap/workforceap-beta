@@ -374,7 +374,7 @@
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
 | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) | 509 | member-counselor | default:191 |
-| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 147 | administration | generateMetadata:12, default:85 |
+| [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | 148 | administration | generateMetadata:12, default:86 |
 | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) | 6 | administration | default:3 |
 | [app/admin/diagnostics/page.tsx](../../../app/admin/diagnostics/page.tsx) | 636 | administration | generateMetadata:28, default:213 |
 | [app/admin/email-crons/page.tsx](../../../app/admin/email-crons/page.tsx) | 195 | communications | generateMetadata:18, default:40 |

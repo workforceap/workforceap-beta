@@ -50128,6 +50128,14 @@
     "target": "lib/security/cspReport.ts"
   },
   {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/security/cspViolationStore",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": null
+  },
+  {
     "from": "app/api/employer/applications/[id]/messages/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -124578,7 +124586,7 @@
   {
     "from": "tests/api/csp-report-route.spec.ts",
     "specifier": "@/app/api/csp-report/route",
-    "line": 14,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "app/api/csp-report/route.ts"

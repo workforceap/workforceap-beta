@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "6b02d810fec8dd9be0d39606f9a40e296f85d3e61c6fa388084c698c1e5c0fea",
+  "inputTreeSha256": "306145e66c8772cde69b9ad16dc0ac1c54accc810cdf38330bbbecf80ffc22e8",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -16216,9 +16216,9 @@
       "path": "app/admin/data-retention/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 4870,
-      "lines": 147,
-      "sha256": "bf3cc1080d69c877308b2f0b6a12e81f4410f0f697273baf6134a75d6d59aa32",
+      "bytes": 4919,
+      "lines": 148,
+      "sha256": "fe3ff96741c4ddbb7ba79fb29978a8684e7bad16512aa8cc55446b2fe86f5848",
       "binary": false,
       "exports": [
         {
@@ -16228,7 +16228,7 @@
         },
         {
           "name": "default",
-          "line": 85,
+          "line": 86,
           "kind": "FunctionDeclaration",
           "localName": "AdminDataRetentionPage"
         }
@@ -16251,12 +16251,12 @@
         },
         {
           "name": "fetchPolicies",
-          "line": 66,
+          "line": 67,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminDataRetentionPage",
-          "line": 85,
+          "line": 86,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -33629,31 +33629,31 @@
       "path": "app/api/csp-report/route.ts",
       "area": "api",
       "domain": "api",
-      "bytes": 3226,
-      "lines": 86,
-      "sha256": "e31e66e6c08022b1603039679fc6cfba326995bc04e159d48e0444158d7e2ebf",
+      "bytes": 3916,
+      "lines": 98,
+      "sha256": "0d587dec4d118da651a9fc2a3c908ce6e86fdc3352ff2c2995d3881f00b1f6c0",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 84,
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "POST",
-          "line": 34,
+          "line": 41,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "GET",
-          "line": 84,
+          "line": 96,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -75795,9 +75795,9 @@
       "path": "docs/SECURITY-HARDENING.md",
       "area": "documentation",
       "domain": "documentation",
-      "bytes": 28074,
-      "lines": 865,
-      "sha256": "9012d0655890a76306a0ffe447c506e7e6f17df69b223cf06b28d907b1ff0f73",
+      "bytes": 30366,
+      "lines": 898,
+      "sha256": "831acb8bdc7a3e0bb57c238ce852112b8d0fb3f71e96c47147285ffb04eb9f42",
       "binary": false
     },
     {
@@ -131501,9 +131501,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22430,
-      "lines": 519,
-      "sha256": "f5a05bbfd4fc707ecaee516dd4a0c4296cba2bd10a0274fb8117c1977d156101",
+      "bytes": 22551,
+      "lines": 520,
+      "sha256": "fbdc6df275777d3c8c3689ba92ba63bf46b7c89ece5ebffb47a906d4b27c98d6",
       "binary": false,
       "exports": [
         {
@@ -131578,27 +131578,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 458,
+          "line": 459,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 479,
+          "line": 480,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 488,
+          "line": 489,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 493,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 510,
+          "line": 511,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -131680,27 +131680,27 @@
         },
         {
           "name": "COUNSELOR_PORTAL_NAV_ITEMS",
-          "line": 458,
+          "line": 459,
           "kind": "Variable"
         },
         {
           "name": "PORTAL_NAV",
-          "line": 479,
+          "line": 480,
           "kind": "Variable"
         },
         {
           "name": "navItemsForActiveRoute",
-          "line": 488,
+          "line": 489,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getActiveTab",
-          "line": 493,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "badgeTotalForItem",
-          "line": 510,
+          "line": 511,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140106,15 +140106,15 @@
       "path": "lib/retention/config.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 4033,
-      "lines": 85,
-      "sha256": "35efc0ab8e253a97a86e8a6ea57b0c6d26b175a7753ec39628be72abfa855d46",
+      "bytes": 4672,
+      "lines": 97,
+      "sha256": "8961387fd434da6aea4a68c943a42ae2d060c182b72b6a57e3529cbc329ba2d0",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "byModel",
-          "line": 16,
+          "line": 17,
           "kind": "Variable"
         }
       ],
@@ -140124,9 +140124,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 9258,
-      "lines": 235,
-      "sha256": "80c3acfed0a2abdc6dec573aa6d782e564414298df5a62b81fd1be2bdf735ce3",
+      "bytes": 10212,
+      "lines": 253,
+      "sha256": "75399f6900edd7bea5ac2497572ddf69db77c8dc99ea7de7173528f133027903",
       "binary": false,
       "exports": [
         {
@@ -140195,18 +140195,23 @@
           "kind": "Variable"
         },
         {
+          "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
+          "line": 171,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 161,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 227,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 230,
+          "line": 248,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140277,18 +140282,23 @@
           "kind": "Variable"
         },
         {
+          "name": "CSP_VIOLATION_BUCKET_RETENTION_DAYS",
+          "line": 171,
+          "kind": "Variable"
+        },
+        {
           "name": "RETENTION_TABLES",
-          "line": 161,
+          "line": 173,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 227,
+          "line": 245,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 230,
+          "line": 248,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -150873,9 +150883,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 140753,
-      "lines": 3306,
-      "sha256": "c08ecf6536e37f029fb63cf7239bd7b257bf2c95b992fe2a720ab143f874807d",
+      "bytes": 142360,
+      "lines": 3334,
+      "sha256": "679e14a11baa97e281d5fd26d973eee709f2280b566733b346794a3200753998",
       "binary": false
     },
     {
@@ -156977,9 +156987,9 @@
       "path": "scripts/lib/portal-audit-paths.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 16103,
-      "lines": 544,
-      "sha256": "81d0e641483b8bcb5a75e3796526b9d6f9257c36fcda91a67b94f2ea3a298b52",
+      "bytes": 16128,
+      "lines": 545,
+      "sha256": "38e7f0eabc767ae79806ecd24282cacc5e1f5cf49743661770bbd946daee2b81",
       "binary": false,
       "exports": [
         {
@@ -156989,47 +156999,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 203,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 245,
+          "line": 246,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 258,
+          "line": 259,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 353,
+          "line": 354,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 383,
+          "line": 384,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 501,
+          "line": 502,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 507,
+          "line": 508,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 511,
+          "line": 512,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 523,
+          "line": 524,
           "kind": "Variable"
         }
       ],
@@ -157041,47 +157051,47 @@
         },
         {
           "name": "DYNAMIC_PATHS",
-          "line": 203,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "REQUIRED_DYNAMIC_PATHS",
-          "line": 245,
+          "line": 246,
           "kind": "Variable"
         },
         {
           "name": "SAFE_ACTION_CONTRACTS",
-          "line": 258,
+          "line": 259,
           "kind": "Variable"
         },
         {
           "name": "ATTENDED_ACTION_GATES",
-          "line": 353,
+          "line": 354,
           "kind": "Variable"
         },
         {
           "name": "REDIRECT_ONLY_PATHS",
-          "line": 383,
+          "line": 384,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_PATHS",
-          "line": 501,
+          "line": 502,
           "kind": "Variable"
         },
         {
           "name": "PRODUCTION_CANARY_ROLES",
-          "line": 507,
+          "line": 508,
           "kind": "Variable"
         },
         {
           "name": "SECTION_LOGIN_REDIRECT",
-          "line": 511,
+          "line": 512,
           "kind": "Variable"
         },
         {
           "name": "ROLE_ACCESS_MATRIX",
-          "line": 523,
+          "line": 524,
           "kind": "Variable"
         }
       ],
@@ -163473,9 +163483,9 @@
       "path": "tests/api/csp-report-route.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5735,
-      "lines": 122,
-      "sha256": "848b4dbf8672d7f5cbc63f131eed344bc99ac19ade11eb36dcdedb691b3762eb",
+      "bytes": 10706,
+      "lines": 210,
+      "sha256": "9d15f8b597633bef8de83116a51fd3d01b2011ddbd4e6392e004aa95d6136a53",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -163486,18 +163496,23 @@
         },
         {
           "name": "URL",
-          "line": 16,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "post",
-          "line": 18,
+          "line": 26,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "legacyReport",
-          "line": 22,
+          "line": 30,
           "kind": "Variable"
+        },
+        {
+          "name": "persistedText",
+          "line": 55,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null

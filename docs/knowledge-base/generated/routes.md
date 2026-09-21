@@ -714,7 +714,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/cron/weekly-recap-email | route | GET, POST | [app/api/cron/weekly-recap-email/route.ts](../../../app/api/cron/weekly-recap-email/route.ts) |  |
 | /api/cron/weekly-recap | route | GET, POST | [app/api/cron/weekly-recap/route.ts](../../../app/api/cron/weekly-recap/route.ts) |  |
 | /api/cron/wioa-report | route | GET, POST | [app/api/cron/wioa-report/route.ts](../../../app/api/cron/wioa-report/route.ts) |  |
-| /api/csp-report | route | POST, GET | [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | @/lib/security/cspReportRateLimit:4, @/lib/security/cspReport:5 |
+| /api/csp-report | route | POST, GET | [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | @/lib/security/cspReportRateLimit:4, @/lib/security/cspReport:5, @/lib/security/cspViolationStore:11 |
 | /api/employer/applications/\[id\]/messages | route | GET, POST, PATCH | [app/api/employer/applications/\[id\]/messages/route.ts](../../../app/api/employer/applications/%5Bid%5D/messages/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/messages/rateLimit:6, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\]/resume | route | GET | [app/api/employer/applications/\[id\]/resume/route.ts](../../../app/api/employer/applications/%5Bid%5D/resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\] | route | PATCH | [app/api/employer/applications/\[id\]/route.ts](../../../app/api/employer/applications/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:10 |
