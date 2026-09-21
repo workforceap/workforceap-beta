@@ -226,8 +226,8 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * transaction as the user row.
  *
  * Each account is purged in its own transaction. An account that is still
- * held by a foreign key (a chapter membership, a subgroup they created) is
- * reported by constraint name and skipped, so one held account can no longer
+ * held by a foreign key (a subgroup they created, a table added later without
+ * a delete rule) is reported by constraint name and skipped, so one held account can no longer
  * stop every other account in the batch from being purged. A held account is
  * passed through `anonymizeMember` (WAP-169) so the row that stays behind
  * carries no identifying or special-category data; the helper is idempotent
@@ -235,7 +235,9 @@ export function foreignKeyConstraintName(err: unknown): string | null {
  * later purge once the holding row is gone.
  *
  * Since migration 20260920141800 `audit_events.actor_user_id` is
- * `ON DELETE SET NULL`, so the admin audit trail no longer holds an account;
+ * `ON DELETE SET NULL`, so the admin audit trail no longer holds an account,
+ * and since 20260921150000 `chapter_members.user_id` cascades, so a chapter
+ * membership no longer holds one either;
  * the member's own self-service rows are still removed with the account
  * because they are the account's data, not the staff trail.
  */

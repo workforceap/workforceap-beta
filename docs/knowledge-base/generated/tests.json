@@ -29983,6 +29983,17 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/migrations/chapter-members-user-cascade.mjs",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [],
+    "localReferences": [],
+    "kind": "test-helper",
+    "declaredRunners": [],
+    "collectionStatus": "helper-not-a-suite",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/migrations/placement-survey-sent-state.mjs",
     "area": "tests",
     "domain": "tests",
