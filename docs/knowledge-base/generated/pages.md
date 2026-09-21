@@ -23,7 +23,7 @@
 | [app/(auth)/signup/page.tsx](../../../app/%28auth%29/signup/page.tsx) | 41 | applications-enrollment | generateMetadata:11, default:20 |
 | [app/(auth)/verify-mfa/layout.tsx](../../../app/%28auth%29/verify-mfa/layout.tsx) | 17 | pages | generateMetadata:5, default:15 |
 | [app/(auth)/verify-mfa/loading.tsx](../../../app/%28auth%29/verify-mfa/loading.tsx) | 5 | pages | default:3 |
-| [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | 210 | pages | default:17 |
+| [app/(auth)/verify-mfa/page.tsx](../../../app/%28auth%29/verify-mfa/page.tsx) | 218 | pages | default:17 |
 | [app/(decision-journey)/error.tsx](../../../app/%28decision-journey%29/error.tsx) | 13 | pages | default:5 |
 | [app/(decision-journey)/find-your-path/FindYourPathClient.tsx](../../../app/%28decision-journey%29/find-your-path/FindYourPathClient.tsx) | 973 | pages | default:550 |
 | [app/(decision-journey)/find-your-path/loading.tsx](../../../app/%28decision-journey%29/find-your-path/loading.tsx) | 5 | pages | default:3 |

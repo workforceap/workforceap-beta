@@ -23,6 +23,7 @@ export default function VerifyMfaPage() {
   const [trustDevice, setTrustDevice] = useState(true);
   const [nextPath, setNextPath] = useState('/dashboard');
   const codeInputRef = useRef<HTMLInputElement>(null);
+  const codeIncomplete = code.length !== 6;
 
   // Redirect to login if no active session (no aal1 session)
   useEffect(() => {
@@ -134,7 +135,7 @@ export default function VerifyMfaPage() {
               placeholder="000000"
               autoFocus
               aria-invalid={!!error}
-              aria-describedby={error ? 'mfa-verify-error' : undefined}
+              aria-describedby={error ? 'mfa-verify-error' : codeIncomplete ? 'mfa-code-help' : undefined}
               className="mfa-code-input"
               style={{
                 width: '100%',
@@ -150,6 +151,13 @@ export default function VerifyMfaPage() {
                 outline: 'none',
               }}
             />
+            {/* WAP-108: say what enables the disabled Verify button instead of
+                leaving a dead-looking slab; swapped for the error once one exists. */}
+            {codeIncomplete && !error && (
+              <p id="mfa-code-help" style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center' }}>
+                {tAuth('mfaVerify.codeHelper')}
+              </p>
+            )}
           </div>
 
           {error && (
@@ -171,14 +179,14 @@ export default function VerifyMfaPage() {
               type="checkbox"
               checked={trustDevice}
               onChange={(e) => setTrustDevice(e.target.checked)}
-              style={{ marginTop: '0.15rem', accentColor: '#ad2c4d' }}
+              style={{ marginTop: '0.15rem' }}
             />
             <span>{tAuth('mfaVerify.trustDeviceLabel')}</span>
           </label>
 
           <button
             type="submit"
-            disabled={loading || code.length !== 6}
+            disabled={loading || codeIncomplete}
             aria-busy={loading}
             className="btn btn-primary btn-full-width"
             style={{

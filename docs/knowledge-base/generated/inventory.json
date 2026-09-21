@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "acbabb8f01277c8fb9bbb0336423a8008c7552701ba8a658203f9dea993dcdf8",
+  "inputTreeSha256": "2391b597c4b478f2a5984f6aa021f678c94becd02962806e63df5041df76436f",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -4108,9 +4108,9 @@
       "path": "app/(auth)/verify-mfa/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 7938,
-      "lines": 210,
-      "sha256": "94a943d3aa2d1673afaf1c262336a9648563da4a4cb3b8c9bb7b27964beb484c",
+      "bytes": 8439,
+      "lines": 218,
+      "sha256": "4ed14d9ea35982fab73a77b2fb6f7a4a91f2b6b488ec1f2647c795891c75bed6",
       "binary": false,
       "exports": [
         {
@@ -75032,9 +75032,9 @@
       "path": "css/auth-depth.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 7803,
-      "lines": 218,
-      "sha256": "6f48085c5fb352c332eae8855e2f6e30104a61c9376594e697ca75a6ddcd63b5",
+      "bytes": 8130,
+      "lines": 225,
+      "sha256": "5931ab736efdd43c47debe95b611f252b8aede09e09b6331e2c5920068a25445",
       "binary": false
     },
     {
@@ -149884,27 +149884,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227932,
-      "lines": 3788,
-      "sha256": "de7926d17d8be4835c7ae851a6f5e1441a6707aff8c4e407f68fe8c0c6c83be2",
+      "bytes": 227992,
+      "lines": 3789,
+      "sha256": "8835d98153010516df70528f3be1a7cdad3e627f24433097f657a37ed8a616ab",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 252800,
-      "lines": 3788,
-      "sha256": "8f0857e17b324ff6057756762b3be7317b510ab44759d032e5aa6d12bc892971",
+      "bytes": 252875,
+      "lines": 3789,
+      "sha256": "611b90c692c18ee4520ffef06c26a445e6132eace1d04b4b89a9c6804fa3b2c9",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 239508,
-      "lines": 3475,
-      "sha256": "5d7528765839311eccd89b3ad5809e9b308a3cc8be8ac4564a6f20ab3778a785",
+      "bytes": 239578,
+      "lines": 3476,
+      "sha256": "51b234c5e87782a8cfbdf7d7437cf5d6bd06e45ad5b839e3d9e1222838164e27",
       "binary": false
     },
     {
@@ -149920,9 +149920,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 229685,
-      "lines": 3475,
-      "sha256": "4da6cb5f13f67fc5b5f9217d0748e8399011ca6eed50a9f0abf1eb1633100220",
+      "bytes": 229758,
+      "lines": 3476,
+      "sha256": "6933c8b68f50d1873442b91093d77252f2a1c481cdb77d3673a56bfcdd846e42",
       "binary": false
     },
     {
@@ -169479,9 +169479,9 @@
       "path": "tests/components/auth-controls.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3592,
-      "lines": 61,
-      "sha256": "654eedc12351c1dbb3411797c8de18b1545777ea4ddaa3e3a5c121831e3d8398",
+      "bytes": 4189,
+      "lines": 72,
+      "sha256": "0533e38ad1bd6e0943acc065f520f8440d563f5f68dd245e7b5d38db2154cebb",
       "binary": false,
       "exports": [],
       "declarations": [
