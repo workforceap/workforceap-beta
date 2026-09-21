@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "bdd0a5e1acf37f9af9b9e513eccc2e99d1c62b75b5ec02834f8958278ee58007",
+  "inputTreeSha256": "0c2a57963181002295ca166e05c3f36098222a245e4036b7ba7751c11fe5328d",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4942,
-    "sourceModules": 3590,
-    "importReferences": 17862,
-    "resolvedLocalReferences": 11985,
+    "files": 4944,
+    "sourceModules": 3592,
+    "importReferences": 17885,
+    "resolvedLocalReferences": 12002,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 954,
-    "testCandidates": 944,
+    "testFiles": 956,
+    "testCandidates": 946,
     "testHelpers": 10,
-    "staticallySelectedTests": 942,
+    "staticallySelectedTests": 944,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 558
+      "files": 560
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 749
+      "references": 750
     },
     {
       "file": "lib/auth/roles.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 103
+      "references": 104
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
@@ -223,12 +223,12 @@
       "references": 49
     },
     {
-      "file": "lib/analytics/events.ts",
-      "references": 45
+      "file": "messages/en.json",
+      "references": 46
     },
     {
-      "file": "messages/en.json",
-      "references": 44
+      "file": "lib/analytics/events.ts",
+      "references": 45
     },
     {
       "file": "lib/ai/groq.ts",
