@@ -193,7 +193,7 @@
 | [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
-| [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 422 | tests |  |
+| [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 507 | tests |  |
 | [tests/app/admin-member-lifecycle-redirect.spec.tsx](../../../tests/app/admin-member-lifecycle-redirect.spec.tsx) | 28 | tests |  |
 | [tests/app/admin-members-roster-numbers.spec.tsx](../../../tests/app/admin-members-roster-numbers.spec.tsx) | 254 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
@@ -552,7 +552,7 @@
 | [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 185 | tests |  |
 | [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 125 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
-| [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 86 | tests |  |
+| [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 131 | tests |  |
 | [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
 | [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |

@@ -23,6 +23,18 @@ export interface MemberActivityEventInput {
   id: string;
   eventName: string;
   createdAt: Date;
+  /** `MemberEvent.entityType` / `entityId` / `metadata` — optional, shown in the row's "Event details" disclosure. */
+  entityType?: string | null;
+  entityId?: string | null;
+  metadata?: unknown;
+}
+
+/** What the "Event details" disclosure prints for a member event. */
+export interface MemberActivityDetail {
+  entityType: string | null;
+  entityId: string | null;
+  /** Pretty-printed, redacted JSON; null when the event carried no metadata. */
+  metadata: string | null;
 }
 
 export interface MemberActivityRow {
@@ -33,9 +45,48 @@ export interface MemberActivityRow {
   /** Who did it: staff name (or e-mail snapshot), or "Member" for the member's own events. */
   actor: string;
   at: Date;
+  /** Member events only; staff audit rows carry no entity/metadata. */
+  detail?: MemberActivityDetail;
 }
 
+/** Rows shown before the "Show all N events" disclosure. */
 export const MEMBER_ACTIVITY_CAP = 20;
+/** Member events loaded for the Activity tab (the retired lifecycle page showed 100). */
+export const MEMBER_EVENT_LOAD_CAP = 100;
+
+const REDACTED_KEY = /email|phone|token|password/i;
+
+/**
+ * Deep copy of event metadata with any key named like email / phone / token /
+ * password replaced by "[redacted]" (arrays and nested objects included), so
+ * the Activity tab never prints contact details or secrets an event stored.
+ */
+export function redactActivityMetadata(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redactActivityMetadata);
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [key, inner] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = REDACTED_KEY.test(key) ? '[redacted]' : redactActivityMetadata(inner);
+    }
+    return out;
+  }
+  return value;
+}
+
+/** Pretty JSON of the redacted metadata; null for null/undefined or an empty object. */
+export function formatActivityMetadata(metadata: unknown): string | null {
+  if (metadata === null || metadata === undefined) return null;
+  if (typeof metadata === 'object' && !Array.isArray(metadata) && Object.keys(metadata as object).length === 0) return null;
+  return JSON.stringify(redactActivityMetadata(metadata), null, 2);
+}
+
+function eventDetail(row: MemberActivityEventInput): MemberActivityDetail | undefined {
+  const entityType = row.entityType?.trim() || null;
+  const entityId = row.entityId?.trim() || null;
+  const metadata = formatActivityMetadata(row.metadata);
+  if (!entityType && !entityId && !metadata) return undefined;
+  return { entityType, entityId, metadata };
+}
 
 /**
  * `admin_feature_flag_update` → "Feature flag update";
@@ -84,6 +135,7 @@ export function buildMemberActivityRows(input: {
     label: humanizeActivityName(row.eventName),
     actor: 'Member',
     at: row.createdAt,
+    ...(eventDetail(row) ? { detail: eventDetail(row) } : null),
   }));
   return [...staff, ...member]
     .sort((a, b) => b.at.getTime() - a.at.getTime() || a.id.localeCompare(b.id))

@@ -453,7 +453,7 @@
 | [components/portal/kit/MemberDashboardKit.tsx](../../../components/portal/kit/MemberDashboardKit.tsx) | 119 | components | MemberDashboardKitProps:16, MemberDashboardKit:28 |
 | [components/portal/kit/MemberProfilePhotoEditor.tsx](../../../components/portal/kit/MemberProfilePhotoEditor.tsx) | 289 | components | MemberProfilePhotoEditor:17 |
 | [components/portal/kit/PageOpener.tsx](../../../components/portal/kit/PageOpener.tsx) | 64 | components | PageOpener:24 |
-| [components/portal/kit/ProgressBar.tsx](../../../components/portal/kit/ProgressBar.tsx) | 51 | components | ProgressBar:19 |
+| [components/portal/kit/ProgressBar.tsx](../../../components/portal/kit/ProgressBar.tsx) | 52 | components | ProgressBar:19 |
 | [components/portal/kit/ProgressRing.tsx](../../../components/portal/kit/ProgressRing.tsx) | 78 | components | ProgressRing:27 |
 | [components/portal/kit/QueueRow.tsx](../../../components/portal/kit/QueueRow.tsx) | 101 | components | QueueTone:9, QueueRow:44 |
 | [components/portal/kit/SectionHeader.tsx](../../../components/portal/kit/SectionHeader.tsx) | 47 | components | SectionHeader:18 |

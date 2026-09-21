@@ -27,6 +27,7 @@ export function ProgressBar({
   ...rest
 }: ProgressBarProps) {
   const clamped = Math.max(0, Math.min(100, pct));
+  const fill = tonePaint(tone, color);
   return (
     <div
       ref={ref}
@@ -43,7 +44,7 @@ export function ProgressBar({
         className="wa-kit-bar-fill"
         style={{
           width: `${clamped}%`,
-          ...(tonePaint(tone, color) ? { background: tonePaint(tone, color) } : null),
+          ...(fill ? { background: fill } : null),
         }}
       />
     </div>

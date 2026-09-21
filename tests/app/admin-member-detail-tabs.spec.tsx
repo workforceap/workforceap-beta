@@ -344,6 +344,91 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     expect(activity.querySelector('a[href="/admin/audit-logs"]')).not.toBeNull();
   });
 
+  it('flags enrollment drift on the Activity tab and names the enrollment origin', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    // Pointer set, no primary CourseEnrollment → drift, no origin label.
+    db.overrides['user.findFirst'] = async () => ({ ...(await baseUser({}) as object), enrolledProgram: 'aws-cloud-technology-amazon' });
+    const pointerOnly = panel(await renderPage({ tab: 'activity' }), 'activity');
+    const notice = pointerOnly.querySelector('[data-enrollment-drift]');
+    expect(notice).not.toBeNull();
+    expect(notice!.className).toContain('wa-kit-tone--alert');
+    expect(notice!.textContent).toContain('User.enrolledProgram = aws-cloud-technology-amazon');
+    expect(notice!.textContent).toContain('CourseEnrollment.programSlug = missing');
+    expect(notice!.querySelector('a[href="/admin/diagnostics"]')).not.toBeNull();
+    expect(pointerOnly.querySelector('[data-enrollment-origin]')?.textContent).toContain('no CourseEnrollment on file');
+
+    // Same program on both sides, self-enrolled → no drift notice, origin label shown.
+    db.overrides['courseEnrollment.findFirst'] = async () => ({
+      programSlug: 'aws-cloud-technology-amazon', curriculumVersion: 'legacy-v1', enrolledAt: INSTANT, enrolledByAdminId: null,
+      fundingSource: null, fundingNotes: null, workspaceEmail: null, workspaceEmailProvisioned: false,
+    });
+    const aligned = panel(await renderPage({ tab: 'activity' }), 'activity');
+    expect(aligned.querySelector('[data-enrollment-drift]')).toBeNull();
+    expect(aligned.querySelector('[data-enrollment-origin]')?.textContent).toContain('Self-enrolled');
+
+    // Enrollment row without the pointer, admin-enrolled → drift again.
+    db.overrides['user.findFirst'] = baseUser;
+    db.overrides['courseEnrollment.findFirst'] = async () => ({
+      programSlug: 'aws-cloud-technology-amazon', curriculumVersion: 'legacy-v1', enrolledAt: INSTANT, enrolledByAdminId: 'staff-1',
+      fundingSource: null, fundingNotes: null, workspaceEmail: null, workspaceEmailProvisioned: false,
+    });
+    const recordOnly = panel(await renderPage({ tab: 'activity' }), 'activity');
+    expect(recordOnly.querySelector('[data-enrollment-drift]')?.textContent).toContain('User.enrolledProgram = null');
+    expect(recordOnly.querySelector('[data-enrollment-origin]')?.textContent).toContain('Admin-enrolled');
+  });
+
+  it('renders member event entity and redacted metadata inside an "Event details" disclosure', async () => {
+    db.overrides['memberEvent.findMany'] = async (args: unknown) => {
+      const where = (args as { where?: { eventName?: unknown } }).where ?? {};
+      if (where.eventName) return [];
+      return [{
+        id: 'e1', eventName: 'placement_recorded', createdAt: new Date('2026-09-18T10:00:00Z'),
+        entityType: 'PlacementRecord', entityId: 'pl-1',
+        metadata: { employerName: 'Acme Corp', contactEmail: 'hr@acme.example', contact: { phone: '5125550100' }, tokens: ['abc'] },
+      }];
+    };
+    const activity = panel(await renderPage({ tab: 'activity' }), 'activity');
+    const rows = Array.from(activity.querySelectorAll('li'));
+    const staffRow = rows.find((li) => li.textContent?.includes('Staff · Staff Person'));
+    const memberRow = rows.find((li) => li.textContent?.includes('Placement recorded'));
+    expect(staffRow?.querySelector('details')).toBeNull();
+    const details = memberRow!.querySelector('details[data-event-details]');
+    expect(details).not.toBeNull();
+    expect(details!.querySelector('summary')?.textContent).toBe('Event details');
+    expect(details!.textContent).toContain('PlacementRecord: pl-1');
+    const json = details!.querySelector('pre')!.textContent!;
+    expect(json).toContain('"employerName": "Acme Corp"');
+    expect(json).toContain('"contactEmail": "[redacted]"');
+    expect(json).toContain('"phone": "[redacted]"');
+    expect(json).toContain('"tokens": "[redacted]"');
+    expect(json).not.toContain('hr@acme.example');
+    expect(json).not.toContain('5125550100');
+  });
+
+  it('loads up to 100 member events and folds rows past the first 20 into a "Show all" disclosure', async () => {
+    let eventTake: unknown;
+    db.overrides['memberEvent.findMany'] = async (args: unknown) => {
+      const { where, take } = args as { where?: { eventName?: unknown }; take?: unknown };
+      if (where?.eventName) return [];
+      eventTake = take;
+      return Array.from({ length: 30 }, (_, i) => ({
+        id: `e${i}`, eventName: 'lesson_completed', createdAt: new Date(Date.UTC(2026, 8, 1, 0, 30 - i)),
+        entityType: null, entityId: null, metadata: null,
+      }));
+    };
+    const activity = panel(await renderPage({ tab: 'activity' }), 'activity');
+    expect(eventTake).toBe(100);
+    const overflow = activity.querySelector('details[data-activity-overflow]');
+    expect(overflow).not.toBeNull();
+    expect(overflow!.querySelector('summary')?.textContent).toBe('Show all 31 events');
+    expect(overflow!.querySelectorAll('li')).toHaveLength(11);
+    expect(activity.querySelectorAll('li')).toHaveLength(31);
+    expect(activity.querySelectorAll(':scope > div > section > ul > li')).toHaveLength(20);
+    expect(activity.querySelector('.wa-kit-tag')?.textContent).toBe('Latest 20 of 31');
+    // No detail on events without entity/metadata.
+    expect(activity.querySelector('details[data-event-details]')).toBeNull();
+  });
+
   it('shows the identity card status chips from loaded data', async () => {
     const doc = await renderPage();
     const chips = Array.from(panel(doc, 'overview').querySelectorAll('.wa-kit-tag')).map((el) => el.textContent);

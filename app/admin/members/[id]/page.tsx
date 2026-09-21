@@ -74,7 +74,7 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { eventNameReadCandidates } from '@/lib/events/names';
 import { KitEmptyState, StatusTag, TabPanel, Tabs, type KitTone } from '@/components/portal/kit';
-import { buildMemberActivityRows, MEMBER_ACTIVITY_CAP } from '@/lib/admin/memberActivity';
+import { buildMemberActivityRows, MEMBER_ACTIVITY_CAP, MEMBER_EVENT_LOAD_CAP, type MemberActivityRow } from '@/lib/admin/memberActivity';
 import {
   ADMIN_MEMBER_DETAIL_TABS,
   ADMIN_MEMBER_DETAIL_TABS_ID_BASE,
@@ -432,6 +432,18 @@ export default async function AdminMemberDetailPage({
   const enrollmentGateBlocked = !gate.ok;
 
   const activeProgramSlug = courseEnrollment?.programSlug ?? member.enrolledProgram ?? null;
+  // Enrollment drift (ported from the retired /lifecycle page): the legacy
+  // `User.enrolledProgram` pointer and the primary `CourseEnrollment` row must
+  // name the same program. One side set without the other, or two different
+  // programs, is drift and is called out at the top of the Activity tab.
+  const enrollmentPointer: string | null = member.enrolledProgram ?? null;
+  const enrollmentRecordSlug: string | null = courseEnrollment?.programSlug ?? null;
+  const hasEnrollmentDrift =
+    (enrollmentPointer !== null) !== (enrollmentRecordSlug !== null) ||
+    (enrollmentPointer !== null && enrollmentRecordSlug !== null && !programSlugsEquivalent(enrollmentPointer, enrollmentRecordSlug));
+  const enrollmentOriginLabel: string | null = courseEnrollment
+    ? (courseEnrollment.enrolledByAdminId ? 'Admin-enrolled' : 'Self-enrolled')
+    : null;
   const program = activeProgramSlug ? getProgramBySlug(activeProgramSlug) : null;
   const curriculumVersion =
     program &&
@@ -652,8 +664,10 @@ export default async function AdminMemberDetailPage({
   })();
 
   // Activity tab: staff actions on this record (AuditLog, indexed on
-  // [targetType, targetId]) + the member's own events, both capped. Either
-  // read failing degrades to an empty list, never a broken page.
+  // [targetType, targetId]) + the member's own events (up to
+  // MEMBER_EVENT_LOAD_CAP, with entity + metadata for the per-row "Event
+  // details" disclosure). Either read failing degrades to an empty list,
+  // never a broken page.
   const [activityAuditRows, activityEventRows] = await Promise.all([
     withAdminPageScope(scope, (db) => db.auditLog.findMany({
       where: { targetId: member.id, targetType: { in: ['User', 'user'] } },
@@ -674,8 +688,8 @@ export default async function AdminMemberDetailPage({
     withAdminPageScope(scope, (db) => db.memberEvent.findMany({
       where: { userId: member.id },
       orderBy: { createdAt: 'desc' },
-      take: MEMBER_ACTIVITY_CAP,
-      select: { id: true, eventName: true, createdAt: true },
+      take: MEMBER_EVENT_LOAD_CAP,
+      select: { id: true, eventName: true, createdAt: true, entityType: true, entityId: true, metadata: true },
     })).catch((error: unknown) => {
       console.error('[admin/member-detail] activity events load failed', error);
       return [];
@@ -691,8 +705,35 @@ export default async function AdminMemberDetailPage({
       actorRoleSnapshot: row.actorRoleSnapshot,
     })),
     eventRows: activityEventRows,
-    limit: MEMBER_ACTIVITY_CAP,
+    limit: MEMBER_ACTIVITY_CAP + MEMBER_EVENT_LOAD_CAP,
   });
+  // The first MEMBER_ACTIVITY_CAP rows render open; the rest fold into a
+  // "Show all N events" disclosure so the full trail stays on this tab.
+  const activityVisibleRows = activityRows.slice(0, MEMBER_ACTIVITY_CAP);
+  const activityOverflowRows = activityRows.slice(MEMBER_ACTIVITY_CAP);
+  const renderActivityRow = (row: MemberActivityRow) => (
+    <li key={row.id} className={`${styles.activityRow} ${row.kind === 'staff' ? 'wa-kit-tone--info' : 'wa-kit-tone--ok'}`}>
+      <span className={styles.activityDot} aria-hidden="true" />
+      <div className={styles.activityCopy}>
+        <p className={styles.activityLabel}>{row.label}</p>
+        <p className={styles.activityMeta}>
+          {row.kind === 'staff' ? `Staff · ${row.actor}` : 'Member'} ·{' '}
+          {row.at.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+        </p>
+        {row.detail ? (
+          <details className={styles.activityDetails} data-event-details>
+            <summary className={styles.activitySummary}>Event details</summary>
+            {row.detail.entityType || row.detail.entityId ? (
+              <p className={styles.activityMeta}>
+                {row.detail.entityType ?? 'Entity'}{row.detail.entityId ? `: ${row.detail.entityId}` : ''}
+              </p>
+            ) : null}
+            {row.detail.metadata ? <pre className={styles.activityJson}>{row.detail.metadata}</pre> : null}
+          </details>
+        ) : null}
+      </div>
+    </li>
+  );
 
   return (
     <div>
@@ -1476,23 +1517,26 @@ export default async function AdminMemberDetailPage({
             <section className="wa-kit-card" aria-labelledby="admin-member-activity-title">
               <div className={styles.sectionHead}>
                 <h2 id="admin-member-activity-title" className={styles.sectionTitle}>Recent activity</h2>
-                <StatusTag tone="muted">Latest {activityRows.length} of {MEMBER_ACTIVITY_CAP} max</StatusTag>
+                <StatusTag tone="muted">Latest {activityVisibleRows.length} of {activityRows.length}</StatusTag>
               </div>
-              {activityRows.length > 0 ? (
-                <ul className={styles.activityList}>
-                  {activityRows.map((row) => (
-                    <li key={row.id} className={`${styles.activityRow} ${row.kind === 'staff' ? 'wa-kit-tone--info' : 'wa-kit-tone--ok'}`}>
-                      <span className={styles.activityDot} aria-hidden="true" />
-                      <div className={styles.activityCopy}>
-                        <p className={styles.activityLabel}>{row.label}</p>
-                        <p className={styles.activityMeta}>
-                          {row.kind === 'staff' ? `Staff · ${row.actor}` : 'Member'} ·{' '}
-                          {row.at.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              {enrollmentPointer !== null || enrollmentRecordSlug !== null ? (
+                <p className={styles.activityOrigin} data-enrollment-origin>
+                  Primary enrollment: {enrollmentRecordSlug ? programDisplayTitle(enrollmentRecordSlug) : 'no CourseEnrollment on file'}
+                  {enrollmentOriginLabel ? ` · ${enrollmentOriginLabel}` : ''}
+                </p>
+              ) : null}
+              {hasEnrollmentDrift ? (
+                <div className={`${styles.callout} ${styles.activityNotice} wa-kit-tone--alert`} role="status" data-enrollment-drift>
+                  <p className={styles.calloutTitle}>Enrollment drift detected</p>
+                  <p className={styles.calloutBody}>
+                    <code>User.enrolledProgram</code> = {enrollmentPointer ?? 'null'} · primary <code>CourseEnrollment.programSlug</code> = {enrollmentRecordSlug ?? 'missing'}.
+                    The two enrollment records disagree, so program progress and reporting may read from different programs.{' '}
+                    <Link href="/admin/diagnostics" className={styles.inlineLink}>Open diagnostics →</Link>
+                  </p>
+                </div>
+              ) : null}
+              {activityVisibleRows.length > 0 ? (
+                <ul className={styles.activityList}>{activityVisibleRows.map(renderActivityRow)}</ul>
               ) : (
                 <KitEmptyState
                   headingAs="h3"
@@ -1500,6 +1544,12 @@ export default async function AdminMemberDetailPage({
                   description="Staff actions on this record and the member's own events will appear here as they happen."
                 />
               )}
+              {activityOverflowRows.length > 0 ? (
+                <details className={styles.activityMore} data-activity-overflow>
+                  <summary className={styles.activitySummary}>Show all {activityRows.length} events</summary>
+                  <ul className={styles.activityList}>{activityOverflowRows.map(renderActivityRow)}</ul>
+                </details>
+              ) : null}
               {scope.superAdmin ? (
                 <div className={styles.activityLinks}>
                   <Link href="/admin/audit-logs" className={styles.inlineLink}>Open platform audit logs →</Link>

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "2c2dbb29bafba2789e8bc4e8541f07e89a9b8785de4f29e5c206aea9a6b4ba0f",
+  "inputTreeSha256": "6b02d810fec8dd9be0d39606f9a40e296f85d3e61c6fa388084c698c1e5c0fea",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4997,
-    "sourceModules": 3641,
-    "importReferences": 18161,
-    "resolvedLocalReferences": 12190,
+    "files": 4998,
+    "sourceModules": 3642,
+    "importReferences": 18156,
+    "resolvedLocalReferences": 12185,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 990,
-    "testCandidates": 980,
+    "testFiles": 991,
+    "testCandidates": 981,
     "testHelpers": 10,
-    "staticallySelectedTests": 978,
+    "staticallySelectedTests": 979,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 589
+      "files": 590
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 935
+      "references": 934
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 757
+      "references": 756
     },
     {
       "file": "lib/auth/roles.ts",
@@ -132,7 +132,7 @@
     },
     {
       "file": "lib/tenant/organization.ts",
-      "references": 242
+      "references": 241
     },
     {
       "file": "lib/audit.ts",
@@ -144,7 +144,7 @@
     },
     {
       "file": "app/seo.ts",
-      "references": 203
+      "references": 202
     },
     {
       "file": "lib/audit/log.ts",
@@ -152,7 +152,7 @@
     },
     {
       "file": "components/portal/PageHeader.tsx",
-      "references": 141
+      "references": 140
     },
     {
       "file": "components/portal/PortalRouteLoading.tsx",
@@ -171,12 +171,12 @@
       "references": 109
     },
     {
-      "file": "lib/tenant/adminPageScope.ts",
+      "file": "lib/tenant/withTenantScope.ts",
       "references": 106
     },
     {
-      "file": "lib/tenant/withTenantScope.ts",
-      "references": 106
+      "file": "lib/tenant/adminPageScope.ts",
+      "references": 105
     },
     {
       "file": "lib/events/track.ts",
@@ -293,12 +293,12 @@
       "lines": 1637
     },
     {
-      "file": "scripts/audit-portal-routes.mjs",
-      "lines": 1552
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1564
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1519
+      "file": "scripts/audit-portal-routes.mjs",
+      "lines": 1552
     },
     {
       "file": "app/admin/coursera/page.tsx",
