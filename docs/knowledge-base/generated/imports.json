@@ -19136,6 +19136,70 @@
     "target": "components/portal/kit/pages/admin-subviews/CronsMonitorKit.tsx"
   },
   {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "next",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "next/navigation",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "app/seo.ts"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/lib/auth/roles",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/lib/retention/config",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/retention/config.ts"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/lib/security/cspViolationStore",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspViolationStore.ts"
+  },
+  {
+    "from": "app/admin/csp-report/page.tsx",
+    "specifier": "@/components/admin/CspReportView",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/CspReportView.tsx"
+  },
+  {
     "from": "app/admin/dashboard/page.tsx",
     "specifier": "react",
     "line": 3,
@@ -50133,7 +50197,7 @@
     "line": 11,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "lib/security/cspViolationStore.ts"
   },
   {
     "from": "app/api/employer/applications/[id]/messages/route.ts",
@@ -72206,6 +72270,22 @@
     "kind": "import",
     "external": false,
     "target": "app/admin/members/[id]/CreateSuccessToast.tsx"
+  },
+  {
+    "from": "components/admin/CspReportView.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/admin/CspReportView.tsx",
+    "specifier": "@astryxdesign/core/Card",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/admin/DataRetentionClient.tsx",
@@ -113960,6 +114040,70 @@
     "package": "@upstash/redis"
   },
   {
+    "from": "lib/security/cspViolationBuckets.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/security/cspViolationBuckets.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/security/cspViolationBuckets.test.ts",
+    "specifier": "./cspViolationBuckets",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspViolationBuckets.ts"
+  },
+  {
+    "from": "lib/security/cspViolationBuckets.ts",
+    "specifier": "./cspReport",
+    "line": 15,
+    "kind": "type",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
+  },
+  {
+    "from": "lib/security/cspViolationStore.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/security/cspViolationStore.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "lib/security/cspViolationStore.ts",
+    "specifier": "./cspReport",
+    "line": 18,
+    "kind": "type",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
+  },
+  {
+    "from": "lib/security/cspViolationStore.ts",
+    "specifier": "./cspViolationBuckets",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspViolationBuckets.ts"
+  },
+  {
     "from": "lib/seo/activeProgramSlugs.ts",
     "specifier": "@/lib/content/programs",
     "line": 1,
@@ -130694,6 +130838,46 @@
     "kind": "import",
     "external": false,
     "target": "app/admin/command-center/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-csp-report-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-csp-report-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/admin-csp-report-page.spec.tsx",
+    "specifier": "@/app/admin/csp-report/page",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/csp-report/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-csp-report-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-csp-report-page.spec.tsx",
+    "specifier": "@/lib/auth/roles",
+    "line": 24,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
   },
   {
     "from": "tests/app/admin-directory-search.spec.tsx",

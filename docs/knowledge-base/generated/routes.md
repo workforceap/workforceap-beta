@@ -322,6 +322,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /admin/coursera/provisioning | page |  | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | @/lib/auth/server:8, @/lib/tenant/adminPageScope:9, @/lib/tenant/organization:10 |
 | /admin/crons | loading |  | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) |  |
 | /admin/crons | page |  | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | @/lib/auth/server:4, @/lib/tenant/adminPageScope:5 |
+| /admin/csp-report | page |  | [app/admin/csp-report/page.tsx](../../../app/admin/csp-report/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5, @/lib/security/cspViolationStore:7 |
 | /admin/dashboard | page |  | [app/admin/dashboard/page.tsx](../../../app/admin/dashboard/page.tsx) |  |
 | /admin/data-retention | page |  | [app/admin/data-retention/page.tsx](../../../app/admin/data-retention/page.tsx) | @/lib/auth/server:4, @/lib/auth/roles:5 |
 | /admin/diagnostics | loading |  | [app/admin/diagnostics/loading.tsx](../../../app/admin/diagnostics/loading.tsx) |  |

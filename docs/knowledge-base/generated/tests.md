@@ -188,6 +188,7 @@
 | [tests/app/add-member-wizard.spec.tsx](../../../tests/app/add-member-wizard.spec.tsx) | 247 | tests |  |
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
+| [tests/app/admin-csp-report-page.spec.tsx](../../../tests/app/admin-csp-report-page.spec.tsx) | 136 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 215 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
