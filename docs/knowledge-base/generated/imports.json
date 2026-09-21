@@ -67888,6 +67888,62 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/AdminPortalShell",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/AdminPortalShell.tsx"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
     "from": "app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -82465,8 +82521,24 @@
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
-    "specifier": "@/hooks/useFocusTrap",
+    "specifier": "./WorkspaceSidebarSections",
     "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/WorkspaceSidebarSections.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "components/portal/WorkspaceShell.tsx",
+    "specifier": "@/hooks/useFocusTrap",
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
@@ -82474,7 +82546,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/super-admin-view-switcher",
-    "line": 26,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "components/super-admin-view-switcher.tsx"
@@ -82482,7 +82554,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./PortalHeaderActions",
-    "line": 27,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalHeaderActions.tsx"
@@ -82490,7 +82562,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./PortalRoleSwitcher",
-    "line": 28,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalRoleSwitcher.tsx"
@@ -82498,7 +82570,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./SignOutButton",
-    "line": 29,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "components/portal/SignOutButton.tsx"
@@ -82506,7 +82578,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/MobileBottomNav",
-    "line": 30,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "components/MobileBottomNav.tsx"
@@ -82514,7 +82586,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./MemberPortalTopNav",
-    "line": 31,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberPortalTopNav.tsx"
@@ -82522,7 +82594,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "./GlobalSearch",
-    "line": 32,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "components/portal/GlobalSearch.tsx"
@@ -82530,7 +82602,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/auth/portalRoleSwitcher",
-    "line": 33,
+    "line": 35,
     "kind": "type",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
@@ -82538,7 +82610,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/tours/registry",
-    "line": 34,
+    "line": 36,
     "kind": "type",
     "external": false,
     "target": "lib/tours/registry.ts"
@@ -82546,7 +82618,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/member/memberIdentity",
-    "line": 35,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/member/memberIdentity.ts"
@@ -82554,7 +82626,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/kit/Avatar",
-    "line": 36,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/Avatar.tsx"
@@ -82562,7 +82634,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/LanguageToggle",
-    "line": 37,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "components/portal/LanguageToggle.tsx"
@@ -82570,7 +82642,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/lib/nav/resumeUploadHint",
-    "line": 38,
+    "line": 40,
     "kind": "import",
     "external": false,
     "target": "lib/nav/resumeUploadHint.ts"
@@ -82578,7 +82650,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/theme/ThemeSelector",
-    "line": 39,
+    "line": 41,
     "kind": "import",
     "external": false,
     "target": "components/theme/ThemeSelector.tsx"
@@ -82586,7 +82658,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/components/portal/UnreviewedLocaleBanner",
-    "line": 40,
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "components/portal/UnreviewedLocaleBanner.tsx"
@@ -82594,7 +82666,7 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "next-intl",
-    "line": 41,
+    "line": 43,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -82602,10 +82674,42 @@
   {
     "from": "components/portal/WorkspaceShell.tsx",
     "specifier": "@/hooks/useWorkspaceMobileScrollChrome",
-    "line": 42,
+    "line": 44,
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
   },
   {
     "from": "components/portal/YouthDashboardNotice.tsx",
@@ -111809,8 +111913,16 @@
   },
   {
     "from": "lib/nav/portalNav.test.ts",
-    "specifier": "./portalNav.i18n",
+    "specifier": "./portalNav",
     "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
+    "from": "lib/nav/portalNav.test.ts",
+    "specifier": "./portalNav.i18n",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/nav/portalNav.i18n.ts"

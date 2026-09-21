@@ -822,8 +822,8 @@
 | [lib/nav/memberToolRoutes.ts](../../../lib/nav/memberToolRoutes.ts) | 125 | public-experience | MEMBER_TOOLKIT_HUB_HREF:9, MEMBER_TOOLKIT_HUB_LABEL:10, humanizeToolSlug:50, memberToolSlugForPath:61, memberContextualToolItem:79, claimedNavHrefs:100, withContextualToolRow:114 |
 | [lib/nav/mobileBottomNavLayout.ts](../../../lib/nav/mobileBottomNavLayout.ts) | 21 | public-experience | WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER:5, shouldReserveMobileBottomNavClearance:11 |
 | [lib/nav/portalNav.i18n.ts](../../../lib/nav/portalNav.i18n.ts) | 136 | public-experience | MEMBER_PORTAL_NAV_ITEMS_I18N:42 |
-| [lib/nav/portalNav.test.ts](../../../lib/nav/portalNav.test.ts) | 81 | public-experience |  |
-| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 520 | public-experience | PortalRole:49, NavGroup:51, NavTab:67, NavBadgeKey:69, PortalNavItem:89, NAV_TAB_META:112, NAV_TAB_ORDER:119, NAV_GROUP_LABELS:121, GROUP_ORDER:138, MEMBER_PORTAL_NAV_ITEMS:159, EMPLOYER_PORTAL_NAV_ITEMS:271, PARTNER_PORTAL_NAV_ITEMS:313, GROUP_PORTAL_NAV_ITEMS:354, ADMIN_PORTAL_NAV_ITEMS:362, COUNSELOR_PORTAL_NAV_ITEMS:459, PORTAL_NAV:480, navItemsForActiveRoute:489, getActiveTab:494, badgeTotalForItem:511 |
+| [lib/nav/portalNav.test.ts](../../../lib/nav/portalNav.test.ts) | 153 | public-experience |  |
+| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 547 | public-experience | PortalRole:49, NavGroup:51, NavTab:68, NavBadgeKey:70, PortalNavItem:90, NAV_TAB_META:119, NAV_TAB_ORDER:126, NAV_GROUP_LABELS:128, NAV_GROUP_COLLAPSED_BY_DEFAULT:150, GROUP_ORDER:154, MEMBER_PORTAL_NAV_ITEMS:176, EMPLOYER_PORTAL_NAV_ITEMS:288, PARTNER_PORTAL_NAV_ITEMS:330, GROUP_PORTAL_NAV_ITEMS:371, ADMIN_PORTAL_NAV_ITEMS:396, COUNSELOR_PORTAL_NAV_ITEMS:476, PORTAL_NAV:497, navItemsForActiveRoute:506, getActiveTab:511, badgeTotalForItem:528, navTopLevelItems:540, navChildrenOf:545 |
 | [lib/nav/resumeUploadHint.test.ts](../../../lib/nav/resumeUploadHint.test.ts) | 33 | public-experience |  |
 | [lib/nav/resumeUploadHint.ts](../../../lib/nav/resumeUploadHint.ts) | 31 | public-experience | shouldShowResumeUploadHint:26 |
 | [lib/nav/workspaceCopy.ts](../../../lib/nav/workspaceCopy.ts) | 42 | public-experience | PRODUCT_COPY:1, EMPLOYER_PORTAL_NAV:11, PARTNER_PORTAL_NAV:18, GROUP_PORTAL_NAV:24, ADMIN_NAV:26 |
@@ -1013,7 +1013,7 @@
 | [lib/tours/offer.test.ts](../../../lib/tours/offer.test.ts) | 26 | libraries |  |
 | [lib/tours/offer.ts](../../../lib/tours/offer.ts) | 27 | libraries | TourStateSnapshot:4, shouldOfferTour:23 |
 | [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 319 | libraries |  |
-| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 240 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:196, LEGACY_PORTAL_TOUR_KEY:198, LEGACY_TOUR_VERSION:205, isTourKey:207, isTourStatus:211, getTour:215, listTours:219, getHomeTourForRole:228, toTourSteps:233 |
+| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 242 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:198, LEGACY_PORTAL_TOUR_KEY:200, LEGACY_TOUR_VERSION:207, isTourKey:209, isTourStatus:213, getTour:217, listTours:221, getHomeTourForRole:230, toTourSteps:235 |
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
 | [lib/ui/adminSemanticTokens.test.ts](../../../lib/ui/adminSemanticTokens.test.ts) | 92 | libraries |  |
 | [lib/ui/brandTokens.test.ts](../../../lib/ui/brandTokens.test.ts) | 143 | libraries |  |

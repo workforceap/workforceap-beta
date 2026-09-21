@@ -56,6 +56,8 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "expandSidebar": "Expand sidebar",
+    "showMoreUnder": "Show {count} more under {label}",
+    "hideMoreUnder": "Hide {count} more under {label}",
     "collapseSidebar": "Collapse sidebar",
     "workspaceTabs": "Workspace tabs",
     "unreadCount": "{count, plural, one {# unread} other {# unread}}",
@@ -3773,11 +3775,11 @@
         },
         "trainingProgress": {
           "title": "Training progress",
-          "body": "Course-by-course progress for every enrolled student, sortable, across the curriculum and Coursera. Assessments and Certificates live in the same group."
+          "body": "Course-by-course progress for every enrolled student, sortable, across the curriculum and Coursera. Assessments and Certificates open right under it."
         },
         "settings": {
           "title": "Settings",
-          "body": "Organization settings sit at the bottom of the rail under Advanced, with Users, Exports and Feature flags. Most days you will not need this group."
+          "body": "Organization settings sit at the bottom of the rail under Security & system, with Users, Audit logs and Exports; Feature flags open under Settings. Most days you will not need this section."
         },
         "help": {
           "title": "Come back any time",

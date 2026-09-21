@@ -32119,6 +32119,54 @@
     "boundaryReferences": []
   },
   {
+    "file": "app/dev/staff/admin-shell/layout.tsx",
+    "kind": "layout",
+    "path": "/dev/staff/admin-shell",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "metadata",
+        "line": 13,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 15,
+        "kind": "FunctionDeclaration",
+        "localName": "DevStaffAdminShellLayout"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": []
+  },
+  {
+    "file": "app/dev/staff/admin-shell/page.tsx",
+    "kind": "page",
+    "path": "/dev/staff/admin-shell",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 13,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 15,
+        "kind": "FunctionDeclaration",
+        "localName": "DevStaffAdminShellPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": []
+  },
+  {
     "file": "app/dev/staff/counselor-atrisk/page.tsx",
     "kind": "page",
     "path": "/dev/staff/counselor-atrisk",

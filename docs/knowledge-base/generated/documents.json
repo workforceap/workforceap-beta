@@ -14273,32 +14273,32 @@
       {
         "level": 2,
         "title": "5. The command rail (`WorkspaceShell.tsx` + CSS)",
-        "line": 123
+        "line": 128
       },
       {
         "level": 2,
         "title": "6. APIs the rail/pages depend on",
-        "line": 142
+        "line": 155
       },
       {
         "level": 2,
         "title": "7. Build gates (run these before every push)",
-        "line": 156
+        "line": 169
       },
       {
         "level": 2,
         "title": "8. Staging / safety",
-        "line": 172
+        "line": 185
       },
       {
         "level": 2,
         "title": "9. Status (as of this branch)",
-        "line": 183
+        "line": 196
       },
       {
         "level": 2,
         "title": "10. Applicant intake triage (auto-review aid)",
-        "line": 198
+        "line": 211
       }
     ],
     "datedFilename": false,
@@ -19445,108 +19445,113 @@
       },
       {
         "level": 3,
-        "title": "Dashboard & Analytics",
+        "title": "Sidebar sections (2026-09-21 consolidation)",
         "line": 111
       },
       {
         "level": 3,
+        "title": "Dashboard & Analytics",
+        "line": 133
+      },
+      {
+        "level": 3,
         "title": "Member Management",
-        "line": 121
+        "line": 143
       },
       {
         "level": 3,
         "title": "Program & Training",
-        "line": 136
+        "line": 158
       },
       {
         "level": 3,
         "title": "Employer Management",
-        "line": 149
+        "line": 171
       },
       {
         "level": 3,
         "title": "Partner Management",
-        "line": 161
+        "line": 183
       },
       {
         "level": 3,
         "title": "Outcomes & Reporting",
-        "line": 167
+        "line": 189
       },
       {
         "level": 3,
         "title": "Communications",
-        "line": 179
+        "line": 201
       },
       {
         "level": 3,
         "title": "System Administration",
-        "line": 192
+        "line": 214
       },
       {
         "level": 2,
         "title": "Counselor Portal (`/counselor/*`)",
-        "line": 218
+        "line": 240
       },
       {
         "level": 2,
         "title": "Employer Portal (`/employer/*`)",
-        "line": 238
+        "line": 260
       },
       {
         "level": 2,
         "title": "Partner Portal (`/partner/*`)",
-        "line": 262
+        "line": 284
       },
       {
         "level": 2,
         "title": "Key Features by Portal",
-        "line": 280
+        "line": 302
       },
       {
         "level": 3,
         "title": "Member Portal Features",
-        "line": 282
+        "line": 304
       },
       {
         "level": 3,
         "title": "Admin Portal Features",
-        "line": 294
-      },
-      {
-        "level": 3,
-        "title": "Counselor Portal Features",
-        "line": 307
-      },
-      {
-        "level": 3,
-        "title": "Employer Portal Features",
         "line": 316
       },
       {
         "level": 3,
+        "title": "Counselor Portal Features",
+        "line": 329
+      },
+      {
+        "level": 3,
+        "title": "Employer Portal Features",
+        "line": 338
+      },
+      {
+        "level": 3,
         "title": "Partner Portal Features",
-        "line": 326
+        "line": 348
       },
       {
         "level": 2,
         "title": "Data Flows",
-        "line": 337
+        "line": 359
       },
       {
         "level": 3,
         "title": "Member Onboarding",
-        "line": 339
+        "line": 361
       },
       {
         "level": 3,
         "title": "Job Placement Flow",
-        "line": 348
+        "line": 370
       },
       {
         "level": 3,
         "title": "Counselor Session Flow",
-        "line": 357
+        "line": 379
       }
     ],
     "datedFilename": false,

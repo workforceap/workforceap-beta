@@ -107,12 +107,17 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
 ## 4. Navigation data (`lib/nav/portalNav.ts`)
 
 - `ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[]` — the admin rail. Each item:
-  `{ href, label, group: NavGroup, Icon?, badgeKey?/badgeKeys?, requiresSuperAdminContext? }`.
+  `{ href, label, group: NavGroup, Icon?, badgeKey?/badgeKeys?, requiresSuperAdminContext?, parentHref? }`.
+  `parentHref` nests the row under a top-level row in the same group (see docs/PORTALS.md, "Sidebar
+  sections", for the full table). `navTopLevelItems()` / `navChildrenOf()` read that structure.
 - `NavGroup` taxonomy is shared; **admin-only groups** = `runTheOrg, students, programs,
-  partnersEmployers, outcomes, advanced` (relabel/reorder these freely without touching other portals).
-- `NAV_GROUP_LABELS` (group → header text) and `GROUP_ORDER` (render order; a group renders only if it
-  has items). Admin groups match the mockup exactly: Run the org · Students · Programs · Partners &
-  Employers · Outcomes · Content · Advanced.
+  partnersEmployers, reporting, system` (relabel/reorder these freely without touching other portals;
+  `content` is admin-only in practice, `outcomes` is also used by the counselor rail).
+- `NAV_GROUP_LABELS` (group → header text), `GROUP_ORDER` (render order; a group renders only if it
+  has items) and `NAV_GROUP_COLLAPSED_BY_DEFAULT` (sections that start closed — `system`). Admin
+  sections (2026-09-21 consolidation): Run the org · Students · Programs · Partners & Employers ·
+  Reporting · Content · Security & system. Reporting is one row → `/admin/reporting` with the
+  analytics/outcomes/board pages as children.
 - `requiresSuperAdminContext: true` items are filtered out for non-super-admins in `AdminPortalShell`.
 - Active-route: `lib/nav/activeRoute.ts` (`isActiveRoute`, `getBestActiveHref` = longest matching
   prefix). **WorkspaceShell strips the locale prefix** (`/en`) off `usePathname()` before matching —
@@ -126,6 +131,14 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   optional `.workspace-sidebar-search` → `.workspace-sidebar-nav` (groups → `.workspace-sidebar-group`
   → `.workspace-sidebar-link` items with `.workspace-sidebar-icon` + `.workspace-nav-badge`) →
   `.workspace-sidebar-footer`.
+- **Admin sections** (`components/portal/WorkspaceSidebarSections.tsx`, mounted by WorkspaceShell for
+  `portalRole === 'admin'` when the desktop rail is not collapsed): each group header is a
+  `<button.workspace-sidebar-section-btn aria-expanded>`; rows with children get a
+  `.workspace-sidebar-children-toggle` that opens `.workspace-sidebar-list--children`. Collapsed lists
+  stay in the DOM under `[hidden]` (tour anchors and hrefs are always present). State persists in
+  `localStorage` (`wa_nav_sections_admin`); the current page's section/parent opens on arrival; every
+  section opens while a guided tour runs (`useTour().isOpen`). ArrowRight/ArrowLeft open/close.
+  The collapsed icon rail falls back to the flat list (every row, icons only).
 - **Staff dark treatment** (`css/portal-main-extracted.css`, block headed `STAFF DARK RAIL`, ~line 9346):
   scoped to `html[data-portal-role]:not([data-portal-role='member'])`. Flat groups (no card chrome),
   **active row = solid crimson** `var(--wa-accent)` + white, hover `#242424`, group labels `#6b6b6b`
