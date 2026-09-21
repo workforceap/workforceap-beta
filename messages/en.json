@@ -3542,12 +3542,12 @@
     "member": {
       "home": {
         "dashboard": {
-          "title": "Dashboard",
-          "body": "Your overview: applications, interviews, and shortcuts. Open My program in the menu for your course list, Coursera, and training progress."
+          "title": "Your home base",
+          "body": "Your overview: certification path, application pipeline, weekly study activity and points. Do this next at the top is the one action that moves you forward today; My program in the menu holds your full course list."
         },
         "aiTools": {
           "title": "AI Career Tools",
-          "body": "Power up your job search with AI — resume help, cover letters, interview practice, and more."
+          "body": "Resume help, cover letters, interview practice and a voice career advisor in one studio. Start with the resume so your applications go out ready."
         },
         "learning": {
           "title": "Learning",
@@ -3555,11 +3555,27 @@
         },
         "messages": {
           "title": "Messages",
-          "body": "Stay connected with your counselor and the WorkforceAP team."
+          "body": "Your counselor and the WorkforceAP team write to you here. Unread threads show a badge; reply from the same page."
         },
         "profile": {
-          "title": "Profile",
-          "body": "Keep your profile up to date so we can match you with the best opportunities."
+          "title": "Profile & settings",
+          "body": "Your name opens Profile & settings: contact details, photo, notifications and language. Keep it current so your counselor and employers can reach you."
+        },
+        "program": {
+          "title": "Training progress",
+          "body": "My program is your course list and progress: modules done, what comes next, Coursera and your certificates. Log a certification here once you pass the exam."
+        },
+        "jobs": {
+          "title": "Find a job",
+          "body": "Job board lists roles matched to your program and skills. Apply in one click and follow every application in Job applications; interviews and offers show on your home pipeline."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it and links to the Member Guide."
+        },
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See where your training progress lives, how to find and apply for jobs, where your messages are and how to update your profile."
         }
       }
     },

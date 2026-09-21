@@ -4053,6 +4053,10 @@
           "line": 1
         },
         {
+          "file": "tests/tours/member-overview-anchors.spec.tsx",
+          "line": 1
+        },
+        {
           "file": "tests/tours/partner-overview-anchors.spec.tsx",
           "line": 1
         }

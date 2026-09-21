@@ -10,6 +10,11 @@ import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
+import type { TourOffer } from '@/lib/tours/getTourOffer';
+import TourOfferStrip from '@/components/onboarding/TourOfferStrip';
+
+/** Guide page the Help menu links beside "Take the tour" (the nav's "Member Guide"). */
+export const MEMBER_GUIDE_HREF = '/dashboard/guide';
 
 export default function MemberWorkspaceShell({
   identity,
@@ -17,6 +22,7 @@ export default function MemberWorkspaceShell({
   superAdmin,
   portalRoles,
   readOnlyAudit = false,
+  tour = null,
   children,
 }: {
   /** Signed-in member's name / email / avatar for the shell header and drawer. */
@@ -26,11 +32,18 @@ export default function MemberWorkspaceShell({
   superAdmin?: boolean;
   portalRoles?: PortalSwitcherRole[];
   readOnlyAudit?: boolean;
+  /**
+   * Member guided tour gate from `getTourOffer` (tours wave 3). `enabled`
+   * shows the header Help menu; `offer` shows the first-login strip. Null (flag
+   * row absent, lookup failed) renders the pre-flag shell unchanged.
+   */
+  tour?: TourOffer | null;
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const helpTourKey = tour?.enabled ? tour.key : null;
 
   useEffect(() => {
     if (readOnlyAudit) return;
@@ -60,7 +73,10 @@ export default function MemberWorkspaceShell({
       portalRoles={portalRoles}
       readOnlyAudit={readOnlyAudit}
       footer={<DashboardFooter />}
+      helpTourKey={helpTourKey}
+      helpGuideHref={helpTourKey ? MEMBER_GUIDE_HREF : undefined}
     >
+      {tour?.enabled && tour.offer && !readOnlyAudit ? <TourOfferStrip tourKey={tour.key} /> : null}
       <DashboardPageErrorBoundary>{children}</DashboardPageErrorBoundary>
     </WorkspaceShell>
   );
