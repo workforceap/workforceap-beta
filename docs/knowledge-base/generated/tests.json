@@ -9712,6 +9712,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/security/cspReport.test.ts",
+    "area": "libraries",
+    "domain": "libraries",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/security/cspReport.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/security/cspViolationBuckets.test.ts",
     "area": "libraries",
     "domain": "libraries",
@@ -14570,7 +14594,7 @@
     "localReferences": [
       {
         "file": "app/api/csp-report/route.ts",
-        "line": 22
+        "line": 24
       }
     ],
     "kind": "test-candidate",

@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({ findMany: vi.fn(), error: vi.fn() }));
 vi.mock('@/lib/observability/logger', () => ({ logger: { info: vi.fn(), warn: vi.fn(), error: mocks.error, debug: vi.fn() } }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
-    cspViolationBucket: { findMany: mocks.findMany },
+    cspViolationBucket: { findMany: mocks.findMany, count: vi.fn(), upsert: vi.fn() },
   },
 }));
 
@@ -130,7 +130,8 @@ describe('/admin/csp-report for a super admin', () => {
     mocks.findMany.mockResolvedValue([]);
     render(await AdminCspReportPage());
     expect(screen.getByText('Reports (7d)').parentElement).toHaveTextContent('0');
-    // The kit renders the empty state for both the table and the mobile-card layout.
-    expect(screen.getAllByText('No violation reports in the last 7 days').length).toBeGreaterThanOrEqual(1);
+    // DataTable mobile="cards" renders both the table variant and the stacked-card variant
+    // (CSS picks one per viewport), so the empty state appears exactly twice in the DOM.
+    expect(screen.getAllByText('No violation reports in the last 7 days')).toHaveLength(2);
   });
 });

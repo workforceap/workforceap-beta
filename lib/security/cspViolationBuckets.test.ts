@@ -78,7 +78,7 @@ test('groupCspViolationBuckets folds hours and pages into (directive, host) grou
     row({ documentPath: '/admin/members/:id', count: 3 }),
     row({ documentPath: '/jobs/:id', count: 3, disposition: 'enforce' }),
     row({ directive: 'connect-src', blockedHost: 'cdn.evil.example', documentPath: '/', count: 9 }),
-    row({ directive: 'img-src', blockedHost: null, documentPath: '/', count: 9 }),
+    row({ directive: 'img-src', blockedHost: 'unknown', documentPath: '/', count: 9 }),
   ]);
 
   assert.deepEqual(

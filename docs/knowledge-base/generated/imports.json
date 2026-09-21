@@ -114024,6 +114024,30 @@
     "package": "node:path"
   },
   {
+    "from": "lib/security/cspReport.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/security/cspReport.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/security/cspReport.test.ts",
+    "specifier": "./cspReport",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
+  },
+  {
     "from": "lib/security/cspReportRateLimit.ts",
     "specifier": "@upstash/ratelimit",
     "line": 19,
@@ -114038,6 +114062,22 @@
     "kind": "import",
     "external": true,
     "package": "@upstash/redis"
+  },
+  {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
   },
   {
     "from": "lib/security/cspViolationBuckets.test.ts",
@@ -114091,7 +114131,7 @@
     "from": "lib/security/cspViolationStore.ts",
     "specifier": "./cspReport",
     "line": 18,
-    "kind": "type",
+    "kind": "import",
     "external": false,
     "target": "lib/security/cspReport.ts"
   },
@@ -124730,7 +124770,7 @@
   {
     "from": "tests/api/csp-report-route.spec.ts",
     "specifier": "@/app/api/csp-report/route",
-    "line": 22,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "app/api/csp-report/route.ts"

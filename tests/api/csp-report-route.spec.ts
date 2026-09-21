@@ -7,13 +7,15 @@ const mocks = vi.hoisted(() => ({
   error: vi.fn(),
   rateLimit: vi.fn(),
   upsert: vi.fn(),
+  count: vi.fn(),
+  findMany: vi.fn(),
   transaction: vi.fn(),
 }));
 vi.mock('@/lib/observability/logger', () => ({ logger: { info: mocks.info, warn: mocks.warn, error: mocks.error, debug: vi.fn() } }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $transaction: mocks.transaction,
-    cspViolationBucket: { upsert: mocks.upsert },
+    cspViolationBucket: { upsert: mocks.upsert, count: mocks.count, findMany: mocks.findMany },
   },
 }));
 vi.mock('@/lib/security/cspReportRateLimit', () => ({ checkCspReportRateLimit: mocks.rateLimit }));
@@ -49,6 +51,9 @@ beforeEach(() => {
   // The store hands `$transaction` an array of upsert "promises"; resolve them like the pooler would.
   mocks.upsert.mockImplementation((args: unknown) => Promise.resolve({ id: 'bucket', args }));
   mocks.transaction.mockImplementation((ops: Promise<unknown>[]) => Promise.all(ops));
+  // Normal case: the hour bucket is far below the per-hour ceiling.
+  mocks.count.mockResolvedValue(0);
+  mocks.findMany.mockResolvedValue([]);
 });
 
 /** Every argument the route handed to the persistence layer, as one string, for negative privacy assertions. */
@@ -196,6 +201,54 @@ describe('POST /api/csp-report persistence (WAP-36 phase 2 prep)', () => {
     expect(mocks.info).toHaveBeenCalledTimes(1);
     expect(mocks.info.mock.calls[0][0]).toBe('csp.violation');
     expect(mocks.error).toHaveBeenCalledWith('csp.violation.persist_failed', expect.objectContaining({ buckets: 1, error: expect.stringContaining('P1001') }));
+  });
+
+  it('stores attacker-controlled directive / host garbage only as the allowlist fallbacks', async () => {
+    const garbage = {
+      type: 'csp-violation',
+      url: 'https://www.workforceap.org/members/jane@example.com/profile',
+      body: {
+        documentURL: 'https://www.workforceap.org/members/jane@example.com/profile',
+        blockedURL: 'foo://<img src=x onerror=alert(1)>',
+        effectiveDirective: '<b>x</b>',
+        disposition: 'report',
+      },
+    };
+    const longDirective = { ...garbage, body: { ...garbage.body, effectiveDirective: 'z'.repeat(300), blockedURL: `https://${'a'.repeat(260)}.example/x.js` } };
+    await POST(post(JSON.stringify([garbage, longDirective]), 'application/reports+json'));
+    // Both rows normalise to the same fallback key, so they collapse into ONE upsert with count 2:
+    // garbage cannot mint distinct rows.
+    expect(mocks.upsert).toHaveBeenCalledTimes(1);
+    expect(mocks.upsert.mock.calls[0][0].where.bucketKey).toMatchObject({ directive: 'other', blockedHost: 'invalid', documentPath: '/members/:id/profile' });
+    expect(mocks.upsert.mock.calls[0][0].create.count).toBe(2);
+    const persisted = persistedText();
+    expect(persisted).not.toContain('<');
+    expect(persisted).not.toContain('jane');
+    expect(persisted).not.toContain('zzzz');
+  });
+
+  it('stops creating new rows above the per-hour ceiling but still increments existing ones', async () => {
+    const existing = reportingApi('https://www.workforceap.org/dashboard', 'inline');
+    const fresh = reportingApi('https://www.workforceap.org/en/login', 'inline');
+    // 1,999 distinct rows already this hour: room for exactly one more new key.
+    mocks.count.mockResolvedValue(1999);
+    mocks.findMany.mockImplementation(async () => [
+      { hourBucket: mocks.count.mock.calls[0][0].where.hourBucket, directive: 'script-src-elem', blockedHost: 'inline', documentPath: '/dashboard', disposition: 'report' },
+    ]);
+    const third = reportingApi('https://www.workforceap.org/jobs', 'inline');
+    const response = await POST(post(JSON.stringify([existing, existing, fresh, third]), 'application/reports+json'));
+    expect(response.status).toBe(204);
+
+    expect(mocks.count).toHaveBeenCalledTimes(1);
+    expect(mocks.findMany).toHaveBeenCalledTimes(1);
+    // existing key increments; the first new key fits; the second new key is dropped.
+    expect(mocks.upsert).toHaveBeenCalledTimes(2);
+    expect(mocks.upsert.mock.calls[0][0]).toMatchObject({ where: { bucketKey: { documentPath: '/dashboard' } }, update: { count: { increment: 2 } } });
+    expect(mocks.upsert.mock.calls[1][0].where.bucketKey.documentPath).toBe('/en/login');
+    expect(mocks.warn).toHaveBeenCalledTimes(1);
+    expect(mocks.warn).toHaveBeenCalledWith('csp.violation.bucket_ceiling', expect.objectContaining({ ceiling: 2000, skipped: 1, kept: 2 }));
+    // The log line for every row is unaffected.
+    expect(mocks.info).toHaveBeenCalledTimes(3);
   });
 
   it('does not touch the database for rejected requests (415, 413, 400, 429)', async () => {

@@ -883,8 +883,9 @@ model CspViolationBucket {
   /// Report time truncated to the hour (UTC), see lib/security/cspViolationBuckets.ts.
   hourBucket   DateTime @map("hour_bucket") @db.Timestamptz(6)
   directive    String
-  /// Host of the blocked resource or a CSP keyword (`inline`, `eval`, `data`, …).
-  blockedHost  String?  @map("blocked_host")
+  /// Host of the blocked resource, a CSP keyword (`inline`, `eval`, `data`, …), `unknown` or `invalid`.
+  /// Never null: a NULL would defeat the unique key (NULLs are distinct in PostgreSQL).
+  blockedHost  String   @map("blocked_host")
   /// Redacted document path (`/admin/members/:id`), never the query string.
   documentPath String   @map("document_path")
   disposition  String

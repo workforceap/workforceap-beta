@@ -36,7 +36,16 @@ export interface CspViolationBucketWrite extends CspViolationBucketKey {
   seenAt: Date;
 }
 
-export function cspViolationBucketKey(key: CspViolationBucketKey): string {
+/** The five key columns as stored (disposition widened to string: rows read back from the table). */
+export type CspViolationStoredKey = {
+  hourBucket: Date;
+  directive: string;
+  blockedHost: string;
+  documentPath: string;
+  disposition: string;
+};
+
+export function cspViolationBucketKey(key: CspViolationStoredKey): string {
   return [key.hourBucket.toISOString(), key.directive, key.blockedHost, key.documentPath, key.disposition].join('|');
 }
 
@@ -71,7 +80,7 @@ export function bucketCspViolations(rows: readonly CspViolationCount[], seenAt: 
 export interface CspViolationBucketRow {
   hourBucket: Date;
   directive: string;
-  blockedHost: string | null;
+  blockedHost: string;
   documentPath: string;
   disposition: string;
   count: number;
@@ -124,7 +133,7 @@ export function groupCspViolationBuckets(
   };
   const groups = new Map<string, Acc>();
   for (const row of rows) {
-    const blockedHost = row.blockedHost ?? 'unknown';
+    const blockedHost = row.blockedHost;
     const id = `${row.directive}|${blockedHost}`;
     let acc = groups.get(id);
     if (!acc) {

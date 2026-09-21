@@ -475,8 +475,10 @@ Step 1 of the migration is live in observe-only mode. Nothing is enforced by it.
   (`data-portal-role` first-paint mirror) — stamp it in phase 2.
 - `POST /api/csp-report` (`app/api/csp-report/route.ts`) accepts
   `application/csp-report` and `application/reports+json`, refuses bodies over
-  16 KB (413), rate-limits 60/min per proxy-trusted IP (fail-open without
-  Upstash, like the other public sinks; `lib/security/cspReportRateLimit.ts`),
+  16 KB (413), rate-limits 60/min per proxy-trusted IP (same missing-Redis
+  policy as `lib/rate-limit.ts`: fail-closed in production unless
+  `RATE_LIMIT_ALLOW_MISSING_UPSTASH=1`, fail-open in dev;
+  `lib/security/cspReportRateLimit.ts`),
   increments the hourly aggregate described under "Persisted aggregates"
   below and answers 204 (also when the database write fails). GET is 405.
 
@@ -504,7 +506,23 @@ connection (WAP-17). It stores exactly the fields the log line carries — the
 redacted route path (`/admin/members/:id`), the host or CSP keyword, the
 directive and the disposition — never the raw URL, query string, script
 sample, report body, IP address or user agent. A database error is logged as
-`csp.violation.persist_failed` and swallowed; the sink still answers 204. The
+`csp.violation.persist_failed` and swallowed; the sink still answers 204.
+
+Because the four key columns come from the client, none of them may carry
+free text: the directive is kept only when it is in
+`CSP_DIRECTIVE_ALLOWLIST` (the CSP Level 3 names plus `report-uri` /
+`block-all-mixed-content`), otherwise stored as `other`; the blocked host is a
+CSP keyword (`inline`, `eval`, `data`, `blob`, …), an extension scheme, or a
+shape-checked RFC 1123 hostname / IP literal with optional port of at most
+253 characters, otherwise `invalid`; the document path collapses UUIDs,
+numbers, opaque tokens, token-parent segments and any segment containing `@`
+or `%40` to `:id` and is hard-capped at 200 characters. On top of that the
+store refuses to create new rows once an hour bucket holds
+`CSP_VIOLATION_MAX_BUCKETS_PER_HOUR` (2000) distinct keys — existing rows
+still increment, the dropped keys are logged once per batch as
+`csp.violation.bucket_ceiling` — so a client that mints paths on purpose can
+add at most 2000 rows per hour to the table, not 1,200 per hour per IP for a
+month. The
 table is platform-wide by design (no tenant column: the policy is set once per
 deployment), has RLS enabled with a single `SELECT` policy for the
 `super_admin` GUC role and no write policies (the sink writes as the table

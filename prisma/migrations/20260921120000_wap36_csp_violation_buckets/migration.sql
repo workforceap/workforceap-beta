@@ -8,7 +8,11 @@
 -- `count` the sink increments via INSERT ... ON CONFLICT (Prisma upsert on
 -- the unique key). Never a raw URL, query string, script sample, user agent,
 -- IP address or user id — `document_path` is the already-redacted route path
--- (`/admin/members/:id`) from lib/security/cspReport.ts.
+-- (`/admin/members/:id`, capped at 200 chars) from lib/security/cspReport.ts,
+-- `directive` is from a fixed allowlist (else `other`), `blocked_host` is a
+-- CSP keyword or a shape-checked hostname / IP literal (else `invalid`) and is
+-- NOT NULL because a NULL would defeat the unique key. The sink also stops
+-- creating new rows once an hour holds CSP_VIOLATION_MAX_BUCKETS_PER_HOUR.
 --
 -- Platform-wide on purpose: there is no organization_id / tenant column. The
 -- CSP policy is set once per deployment in middleware.ts, so a violation is a
@@ -32,7 +36,7 @@ CREATE TABLE IF NOT EXISTS "csp_violation_buckets" (
   "id" TEXT NOT NULL,
   "hour_bucket" TIMESTAMPTZ(6) NOT NULL,
   "directive" TEXT NOT NULL,
-  "blocked_host" TEXT,
+  "blocked_host" TEXT NOT NULL,
   "document_path" TEXT NOT NULL,
   "disposition" TEXT NOT NULL,
   "count" INTEGER NOT NULL DEFAULT 0,
