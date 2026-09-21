@@ -987,6 +987,8 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /dev/member/toolkit | page |  | [app/dev/member/toolkit/page.tsx](../../../app/dev/member/toolkit/page.tsx) |  |
 | /dev/member/wioa-qualification | page |  | [app/dev/member/wioa-qualification/page.tsx](../../../app/dev/member/wioa-qualification/page.tsx) |  |
 | /dev/staff/admin-command | page |  | [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) |  |
+| /dev/staff/admin-shell | layout |  | [app/dev/staff/admin-shell/layout.tsx](../../../app/dev/staff/admin-shell/layout.tsx) |  |
+| /dev/staff/admin-shell | page |  | [app/dev/staff/admin-shell/page.tsx](../../../app/dev/staff/admin-shell/page.tsx) |  |
 | /dev/staff/counselor-atrisk | page |  | [app/dev/staff/counselor-atrisk/page.tsx](../../../app/dev/staff/counselor-atrisk/page.tsx) |  |
 | /dev/staff/counselor-command | page |  | [app/dev/staff/counselor-command/page.tsx](../../../app/dev/staff/counselor-command/page.tsx) |  |
 | /dev/staff/counselors | layout |  | [app/dev/staff/counselors/layout.tsx](../../../app/dev/staff/counselors/layout.tsx) |  |

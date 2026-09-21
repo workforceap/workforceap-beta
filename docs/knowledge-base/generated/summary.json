@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "dd285a3fdaa5fc18ee48cdb1522f5303c70a26b5b2437c9a4b4a2543652ba328",
+  "inputTreeSha256": "211fa8001ed884218c9bcc953f0ef5e528c7384f40bbbcf1abc4671d90b924ae",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,15 +8,15 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5006,
-    "sourceModules": 3649,
-    "importReferences": 18188,
-    "resolvedLocalReferences": 12207,
-    "unresolvedLocalReferences": 1,
-    "routeFiles": 1067,
-    "nextRouteFiles": 1033,
+    "files": 5009,
+    "sourceModules": 3652,
+    "importReferences": 18199,
+    "resolvedLocalReferences": 12212,
+    "unresolvedLocalReferences": 0,
+    "routeFiles": 1069,
+    "nextRouteFiles": 1035,
     "apiHandlers": 496,
-    "pageFiles": 318,
+    "pageFiles": 319,
     "astroPageFiles": 34,
     "configuredCrons": 31,
     "prismaModels": 115,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 617
+      "files": 618
     },
     {
       "area": "content",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 647
+      "files": 649
     },
     {
       "area": "root",

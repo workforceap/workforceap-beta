@@ -589,6 +589,8 @@
 | [app/dev/member/toolkit/page.tsx](../../../app/dev/member/toolkit/page.tsx) | 39 | member-counselor | dynamic:13, default:19 |
 | [app/dev/member/wioa-qualification/page.tsx](../../../app/dev/member/wioa-qualification/page.tsx) | 14 | partners-funding | dynamic:9, default:11 |
 | [app/dev/staff/admin-command/page.tsx](../../../app/dev/staff/admin-command/page.tsx) | 165 | pages | dynamic:20, default:149 |
+| [app/dev/staff/admin-shell/layout.tsx](../../../app/dev/staff/admin-shell/layout.tsx) | 18 | pages | metadata:13, default:15 |
+| [app/dev/staff/admin-shell/page.tsx](../../../app/dev/staff/admin-shell/page.tsx) | 22 | pages | dynamic:13, default:15 |
 | [app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx](../../../app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx) | 37 | pages | default:12 |
 | [app/dev/staff/counselor-atrisk/page.tsx](../../../app/dev/staff/counselor-atrisk/page.tsx) | 125 | pages | dynamic:10, default:121 |
 | [app/dev/staff/counselor-command/page.tsx](../../../app/dev/staff/counselor-command/page.tsx) | 111 | pages | dynamic:13, default:80 |

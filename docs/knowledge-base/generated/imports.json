@@ -67672,6 +67672,62 @@
     "target": "components/portal/kit/index.ts"
   },
   {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "react",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "next-intl/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/layout.tsx",
+    "specifier": "@/lib/i18n/pickRootClientMessages",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/pickRootClientMessages.ts"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "next/navigation",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/AdminPortalShell",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/AdminPortalShell.tsx"
+  },
+  {
+    "from": "app/dev/staff/admin-shell/page.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
     "from": "app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx",
     "specifier": "react",
     "line": 3,
@@ -82141,7 +82197,7 @@
     "line": 25,
     "kind": "import",
     "external": false,
-    "target": null
+    "target": "components/portal/WorkspaceSidebarSections.tsx"
   },
   {
     "from": "components/portal/WorkspaceShell.tsx",
@@ -82294,6 +82350,38 @@
     "kind": "import",
     "external": false,
     "target": "hooks/useWorkspaceMobileScrollChrome.ts"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "react",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "components/portal/WorkspaceSidebarSections.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
   },
   {
     "from": "components/portal/YouthDashboardNotice.tsx",

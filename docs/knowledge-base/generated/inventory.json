@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "dd285a3fdaa5fc18ee48cdb1522f5303c70a26b5b2437c9a4b4a2543652ba328",
+  "inputTreeSha256": "211fa8001ed884218c9bcc953f0ef5e528c7384f40bbbcf1abc4671d90b924ae",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -44887,6 +44887,76 @@
       "directive": null
     },
     {
+      "path": "app/dev/staff/admin-shell/layout.tsx",
+      "area": "pages",
+      "domain": "pages",
+      "bytes": 879,
+      "lines": 18,
+      "sha256": "fcdb481bb0a04cc172a8ba2137e88b4e59da5d1eddebb390212eca43818d2c4e",
+      "binary": false,
+      "exports": [
+        {
+          "name": "metadata",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "default",
+          "line": 15,
+          "kind": "FunctionDeclaration",
+          "localName": "DevStaffAdminShellLayout"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "metadata",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "DevStaffAdminShellLayout",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/dev/staff/admin-shell/page.tsx",
+      "area": "pages",
+      "domain": "pages",
+      "bytes": 958,
+      "lines": 22,
+      "sha256": "40df40fc264cfbbc48267bd83711fc243ebf4b284059c0db5f2ecc8afc1eefeb",
+      "binary": false,
+      "exports": [
+        {
+          "name": "dynamic",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "default",
+          "line": 15,
+          "kind": "FunctionDeclaration",
+          "localName": "DevStaffAdminShellPage"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "dynamic",
+          "line": 13,
+          "kind": "Variable"
+        },
+        {
+          "name": "DevStaffAdminShellPage",
+          "line": 15,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "app/dev/staff/counselor-atrisk/AtRiskShowcaseClient.tsx",
       "area": "pages",
       "domain": "pages",
@@ -63803,6 +63873,66 @@
         {
           "name": "WorkspaceShell",
           "line": 99,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/WorkspaceSidebarSections.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 9734,
+      "lines": 235,
+      "sha256": "3825d1a7771d1d343deff1762f57cefc2eade2453f530a420af443b61076e46a",
+      "binary": false,
+      "exports": [
+        {
+          "name": "WorkspaceSidebarSectionsProps",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "default",
+          "line": 64,
+          "kind": "FunctionDeclaration",
+          "localName": "WorkspaceSidebarSections"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "WorkspaceSidebarSectionsProps",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "sectionId",
+          "line": 42,
+          "kind": "Variable"
+        },
+        {
+          "name": "parentId",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "domId",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "Prefs",
+          "line": 46,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "readPrefs",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "WorkspaceSidebarSections",
+          "line": 64,
           "kind": "FunctionDeclaration"
         }
       ],
