@@ -93,6 +93,42 @@ export function Sparkline({
   );
 }
 
+/** Copy shown in a stat tile's trend slot when there is no series to draw. */
+export const NO_TREND_LABEL = 'No trend yet';
+
+/**
+ * Stand-in for the sparkline slot on a tile whose series is empty — a member
+ * with no history yet, which on the member home is every tile today (nothing
+ * upstream loads a per-tile series; see loadMemberDashboardHome).
+ *
+ * Deliberately NOT a chart. A flat rule here would read as a real trend
+ * sitting at zero, and inventing a series to draw is worse. Instead it uses
+ * the kit's existing empty-chart vocabulary — a short muted caption where the
+ * plot would be, the same move the weekly-activity card makes with "No study
+ * minutes this week".
+ *
+ * It reserves the sparkline's own height so a row of tiles keeps one baseline
+ * whether or not a given member has history, which is what makes the absence
+ * read as deliberate rather than as a graph that failed to paint.
+ */
+export function TrendPlaceholder({
+  label = NO_TREND_LABEL,
+  height = 28,
+}: {
+  label?: string;
+  height?: number;
+}) {
+  return (
+    <div
+      className="wa-kit-meta"
+      data-testid="stat-trend-empty"
+      style={{ minHeight: height, display: 'flex', alignItems: 'center', lineHeight: 1.2 }}
+    >
+      {label}
+    </div>
+  );
+}
+
 /**
  * Dependency-free area chart with a faint gridline set and an emphasized
  * endpoint dot — the "weekly activity" look, generalized for any portal

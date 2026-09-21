@@ -88578,7 +88578,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/MemberDoThisNextCard",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberDoThisNextCard.tsx"
@@ -88586,7 +88586,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 36,
+    "line": 37,
     "kind": "type",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -88594,7 +88594,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 37,
+    "line": 38,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -139459,6 +139459,78 @@
     "from": "tests/components/stat-tile-tones.spec.tsx",
     "specifier": "@/components/portal/kit",
     "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "vitest",
+    "line": 22,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 23,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "next-intl",
+    "line": 24,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "react",
+    "line": 25,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "lucide-react",
+    "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 28,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/components/portal/kit/CommandCenter",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/CommandCenter.tsx"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"

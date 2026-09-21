@@ -24364,6 +24364,43 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 27
+      },
+      {
+        "file": "components/portal/kit/pages/member/MemberHomeKit.tsx",
+        "line": 28
+      },
+      {
+        "file": "components/portal/kit/CommandCenter.tsx",
+        "line": 29
+      },
+      {
+        "file": "components/portal/kit/index.ts",
+        "line": 30
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/components/students-roster-identity.spec.tsx",
     "area": "tests",
     "domain": "tests",

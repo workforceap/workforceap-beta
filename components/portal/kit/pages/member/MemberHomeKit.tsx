@@ -25,6 +25,7 @@ import {
   ProgressBar,
   ProgressRing,
   StatusTag,
+  TrendPlaceholder,
   colorVar,
   cx,
   toneClass,
@@ -92,7 +93,7 @@ interface GoalSummary {
 
 /** Tiny inline sparkline + delta chip for a stat tile. Omit any field to hide that piece. */
 export interface StatSpark {
-  /** Sparkline series (2+ points, auto-scaled). Omit to hide the sparkline. */
+  /** Sparkline series (2+ points, auto-scaled). Omit/short and the tile shows the muted "No trend yet" slot instead (TrendPlaceholder), not a blank. */
   series?: number[];
   /** Delta chip text, e.g. "4%" or "85". Omit to hide the chip entirely. */
   delta?: string;
@@ -339,7 +340,9 @@ function StatSparkTile({
             strokeLinejoin="round"
           />
         </svg>
-      ) : null}
+      ) : spark?.delta ? null : (
+        <TrendPlaceholder />
+      )}
       </div>
     </div>
   );

@@ -14,13 +14,13 @@ import { Card } from '@astryxdesign/core/Card';
 import { Badge } from '@astryxdesign/core/Badge';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
-import { Sparkline } from './Charts';
+import { Sparkline, TrendPlaceholder } from './Charts';
 import { cx } from './base';
 import { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
 
 /** Trend series + optional delta chip for a stat tile. Omit any field to hide that piece. */
 export interface SparkStat {
-  /** 2+ points; auto-scaled. Fewer than 2 hides the sparkline. */
+  /** 2+ points; auto-scaled. Fewer than 2 shows the muted "No trend yet" slot (TrendPlaceholder) unless a `delta` is supplied. */
   series?: number[];
   /** Delta chip text, e.g. "6.2%" or "12". Omit to hide the chip. */
   delta?: string;
@@ -123,7 +123,9 @@ export function StatSparkTile({
       </div>
       {spark?.series && spark.series.length > 1 ? (
         <Sparkline series={spark.series} stroke={tone ? 'var(--wa-kit-tone)' : undefined} />
-      ) : null}
+      ) : spark?.delta ? null : (
+        <TrendPlaceholder />
+      )}
       </div>
     </Card>
   );
