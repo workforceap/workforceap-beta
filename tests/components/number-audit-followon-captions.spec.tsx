@@ -52,7 +52,10 @@ describe('1. reporting hub Overview qualifies the metrics numbers (S29 follow-on
     const { container } = render(<EnrollmentOutcomesPanel data={buildEnrollmentOutcomesPanel(METRICS)} />);
     const note = container.querySelector('[data-charts-note]');
     expect(note).not.toBeNull();
-    expect(note).toHaveTextContent(/midnight to midnight in server time \(UTC\)/);
+    expect(note).toHaveTextContent(/midnight to midnight in server time/);
+    // The zone is not pinned by the code (Node TZ + Postgres session TZ, and
+    // the repo defaults to Central elsewhere), so the caption must not name one.
+    expect(note).not.toHaveTextContent(/UTC/);
     expect(note).toHaveTextContent(/not a rolling 24 hours/);
   });
 
@@ -137,7 +140,10 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
 
   it('keeps the icon chip and trend line on the tone hook, never an inline hue', () => {
     const { container } = renderHome({ activeJobsSpark: { series: [1, 2, 3], delta: '1' } });
-    for (const chip of container.querySelectorAll<HTMLElement>('.wa-kit-tone-icon')) {
+    const chips = container.querySelectorAll<HTMLElement>('.wa-kit-tone-icon');
+    // Guard the loop: with no chips in the tree it would pass vacuously.
+    expect(chips.length).toBeGreaterThan(0);
+    for (const chip of chips) {
       expect(chip.getAttribute('style')).toBeNull();
     }
     const strokes = Array.from(container.querySelectorAll('polyline')).map((p) => p.getAttribute('stroke'));
@@ -170,7 +176,9 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
     )!;
     // Progress toward a badge has no good/bad state; it stays on the accent.
     expect(badge.className).not.toMatch(/wa-kit-tone--/);
-    for (const segment of badge.querySelectorAll<HTMLElement>('span')) {
+    const badgeSegments = badge.querySelectorAll<HTMLElement>('span');
+    expect(badgeSegments.length).toBeGreaterThan(0);
+    for (const segment of badgeSegments) {
       expect(segment.getAttribute('style')).not.toMatch(LEGACY_INLINE);
     }
   });
@@ -181,7 +189,9 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
     });
     const track = container.querySelector<HTMLElement>(`.${toneClass('warn')}.wa-flex.wa-items-center.wa-gap-1`);
     expect(track).not.toBeNull();
-    for (const segment of track!.querySelectorAll<HTMLElement>('span')) {
+    const trackSegments = track!.querySelectorAll<HTMLElement>('span');
+    expect(trackSegments.length).toBeGreaterThan(0);
+    for (const segment of trackSegments) {
       expect(segment.getAttribute('style')).not.toMatch(LEGACY_INLINE);
     }
   });

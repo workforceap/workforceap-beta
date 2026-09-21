@@ -70,14 +70,20 @@ const fmt = (n: number) => n.toLocaleString('en-US');
 /**
  * The qualification the old `/admin/metrics` kit card carried on its
  * "last 24h" figure. `getDailyActivity` buckets by calendar day
- * (`start.setHours(0,0,0,0)` + `date_trunc('day', …)`, server time — UTC in
- * production), so the newest bucket is the day so far, not a rolling 24
- * hours. `/admin/metrics` folded into this tab in #2438 and the caption went
- * with the card, leaving the series unqualified (number audit 2026-09-20,
- * S29).
+ * (`start.setHours(0,0,0,0)` + `date_trunc('day', …)`), so the newest bucket
+ * is the day so far, not a rolling 24 hours. `/admin/metrics` folded into
+ * this tab in #2438 and the caption went with the card, leaving the series
+ * unqualified (number audit 2026-09-20, S29).
+ *
+ * The zone is deliberately left as "server time" rather than named: the
+ * boundaries come from the Node process TZ (`setHours`) and the Postgres
+ * session TZ (`date_trunc`), neither of which this repo pins — and the repo
+ * already defaults elsewhere to Central, not UTC (`DEFAULT_GREETING_TZ` in
+ * lib/time/greeting.ts). Naming a zone here would be a caption that can
+ * quietly go wrong, which is the class of bug this note exists to prevent.
  */
 export const DAILY_ACTIVITY_BUCKET_NOTE =
-  'Daily activity buckets by calendar day, midnight to midnight in server time (UTC) — the newest day is the day so far, not a rolling 24 hours.';
+  'Daily activity buckets by calendar day, midnight to midnight in server time — the newest day is the day so far, not a rolling 24 hours.';
 
 /**
  * Prefix of the degraded-slice warning. `getAdminMetrics` settles its slices
