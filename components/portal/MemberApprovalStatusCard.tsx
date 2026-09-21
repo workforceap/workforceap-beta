@@ -212,16 +212,15 @@ export default function MemberApprovalStatusCard({
               {/* Block summary (not flex) so the browser keeps its own
                   disclosure marker as the expand affordance. */}
               <summary className="wa-kit-focus wa-cursor-pointer wa-min-h-[44px]">
+                {/* Title on the marker's line; the saved state and, when the
+                    member owns it, the next step each get their own line, so
+                    the phone-width wrap is structural instead of a run-on. */}
                 <h2 id="member-approval-title" className="wa-kit-stat-label wa-m-0 wa-inline">{t('title')}</h2>
-                {' '}
-                <span className="wa-text-sm wa-text-[var(--wa-muted)]" data-approval-summary="">
+                <span className="wa-block wa-text-sm wa-text-[var(--wa-muted)]" data-approval-summary="">
                   {summaryStatus}
                 </span>
                 {summaryAction ? (
-                  <>
-                    {' '}
-                    <span className="wa-text-sm" data-approval-summary-action="">{summaryAction}</span>
-                  </>
+                  <span className="wa-block wa-text-sm" data-approval-summary-action="">{summaryAction}</span>
                 ) : null}
               </summary>
               <VStack gap={3}>

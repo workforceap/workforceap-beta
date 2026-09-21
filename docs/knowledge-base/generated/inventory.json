@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "72f5e36ee6d806f93e66dc4b4bce64f6a533be3ef47facebdec725b77014a7a5",
+  "inputTreeSha256": "088b25cc2ac0135da677fe4aaa9ddd0c48717f86a22d2d5e236b326ff8be221e",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -60181,9 +60181,9 @@
       "path": "components/portal/MemberApprovalStatusCard.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 9732,
-      "lines": 256,
-      "sha256": "71c45f94abdcc5bb2d459ec201f8700338a9c301dacdfee617089cc009eeeccd",
+      "bytes": 9893,
+      "lines": 255,
+      "sha256": "ea6eb7998e4082d47ff94a4b24ce3f07db43beed38c23945b9db9a601e4cf4dc",
       "binary": false,
       "exports": [
         {
