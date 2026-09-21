@@ -53,6 +53,12 @@ const UNBOUND_PROVIDER_ROWS: ReadonlyArray<{ program: string; name: string; reas
     reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
+    program: 'ux-design-professional-certificate-google',
+    name: 'Build Dynamic User Interfaces (UI) for Websites',
+    reason:
+      'Coursera dropped it from the org curriculum: the 2026-09-17 Curriculum download\'s UX Design collection (h0Rk9) carries six courses and no longer lists it (WAP-76), so there is no id left to bind. The WAP course key and the eight-course denominator are unchanged -- the regulated syllabus still names the course and keeps its own courseraSlug -- and progress stored on responsive-web-design-adobe-xd still credits by slug. OPEN QUESTION, see the PR: dropping a course from a collection is not the same as the course ceasing to exist for members already enrolled in it, so a stored row carrying course_id YLwdQgp-Eeu0VAqNda9Xjw under any OTHER course_slug used to credit by id and no longer does. Nobody has yet counted those rows in production; until someone has, this entry is a known risk accepted on purpose, not a proof that the risk is zero.',
+  },
+  {
     program: 'data-science-professional-certificate-ibm',
     name: 'Introduction to Data Engineering',
     reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',

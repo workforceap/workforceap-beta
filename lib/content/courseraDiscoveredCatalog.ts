@@ -191,9 +191,16 @@ const DISCOVERED_COURSERA_PROGRAMS_INNER = {
       { courseId: "aDPeKsbTEeqqzg7nmRt_BQ", slug: "foundations-user-experience-design", name: "Foundations of User Experience (UX) Design", partner: "Google" },
       { courseId: "R-r2uwp-Eeuf7w5EwYPThw", slug: "start-ux-design-process", name: "Start the UX Design Process: Empathize, Define, and Ideate", partner: "Google" },
       { courseId: "TjOLkAp-EeubJBIM7h4jow", slug: "wireframes-low-fidelity-prototypes", name: "Build Wireframes and Low-Fidelity Prototypes", partner: "Google" },
-      { courseId: "U7e_Lgp-EeubJBIM7h4jow", slug: "conduct-ux-research", name: "Conduct UX Research and Test Early Concepts", partner: "Google" },
       { courseId: "W5kcLAp-Eeua7xKR7OK1aw", slug: "high-fidelity-designs-prototype", name: "Create High-Fidelity Designs and Prototypes in Figma", partner: "Google" },
-      { courseId: "YLwdQgp-Eeu0VAqNda9Xjw", slug: "responsive-web-design-adobe-xd", name: "Build Dynamic User Interfaces (UI) for Websites", partner: "Google" },
+      { courseId: "U7e_Lgp-EeubJBIM7h4jow", slug: "conduct-ux-research", name: "Conduct UX Research and Test Early Concepts", partner: "Google" },
+      // Dropped by Coursera: the 2026-09-17 Curriculum download's UX Design
+      // collection (h0Rk9) no longer carries "Build Dynamic User Interfaces
+      // (UI) for Websites" (YLwdQgp-Eeu0VAqNda9Xjw). The regulated syllabus
+      // still names the course and carries its own `courseraSlug`
+      // ("responsive-web-design-adobe-xd"), so the WAP course key and the
+      // eight-course denominator are unchanged and stored progress on that
+      // slug still credits by slug; only the catalog's claim that Coursera
+      // delivers it is removed. See WAP-76.
       { courseId: "coP2hgp-Eeuh2QpCvqFzYQ", slug: "ux-design-jobs", name: "Design a User Experience for Social Good & Prepare for Jobs", partner: "Google" },
     ],
   },
