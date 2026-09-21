@@ -59,6 +59,7 @@ import {
   type StallNudgeBuckets,
 } from '@/lib/cron/onboardingStallNudges';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   sendMemberCheckInEmail,
   sendMemberStuckEmail,
@@ -74,6 +75,20 @@ const prismaMock = prisma as unknown as {
 };
 
 const passthroughPacer = { run: <T,>(op: () => Promise<T>) => op() };
+
+/**
+ * The module re-reads every candidate through the member-only, opted-in
+ * filter (`prisma.user.findMany`). By default the filter returns the
+ * candidates unchanged, so the other suites test one thing at a time; the
+ * population suite overrides it.
+ */
+function memberFilterReturns(rows: Array<{ id: string; fullName: string | null; email: string | null }> | 'all') {
+  prismaMock.user.findMany.mockImplementation(async (args: { where: { id: { in: string[] } } }) => {
+    const ids = new Set(args.where.id.in);
+    const pool = rows === 'all' ? [alice, bob, carol, noEmail] : rows;
+    return pool.filter((r) => ids.has(r.id)).map((r) => ({ id: r.id, fullName: r.fullName, email: r.email }));
+  });
+}
 
 const alice = { id: 'u-alice', fullName: 'Alice Smith', email: 'alice@example.com' };
 const bob = { id: 'u-bob', fullName: 'Bob Jones', email: 'bob@example.com' };
@@ -109,6 +124,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   delete process.env[MEMBER_STALL_NUDGES_FLAG];
   ledger({});
+  memberFilterReturns('all');
   prismaMock.counselorAssignment.findMany.mockResolvedValue([]);
   infoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -141,6 +157,66 @@ describe('MEMBER_STALL_NUDGES_ENABLED flag', () => {
     expect(sendMemberCheckInEmail).not.toHaveBeenCalled();
     expect(prismaMock.memberNudgeLog.findMany).not.toHaveBeenCalled();
     expect(prismaMock.memberNudgeLog.create).not.toHaveBeenCalled();
+    expect(prismaMock.user.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe('population: only opted-in members are ever emailed', () => {
+  const staff = { id: 'u-admin', fullName: 'Ada Admin', email: 'ada@example.com' };
+  const counselor = { id: 'u-counselor', fullName: 'Cal Counselor', email: 'cal@example.com' };
+  const employer = { id: 'u-employer', fullName: 'Emma Employer', email: 'emma@example.com' };
+  const partner = { id: 'u-partner', fullName: 'Pat Partner', email: 'pat@example.com' };
+  const roleless = { id: 'u-roleless', fullName: 'Rae Roleless', email: 'rae@example.com' };
+  const unsubscribed = { id: 'u-unsub', fullName: 'Uma Unsub', email: 'uma@example.com' };
+  const dogfood = { id: 'u-dogfood', fullName: 'Dog Food', email: 'member.success@workforceap.org' };
+  const everyone = [alice, staff, counselor, employer, partner, roleless, unsubscribed, dogfood];
+
+  beforeEach(() => {
+    process.env[MEMBER_STALL_NUDGES_FLAG] = 'true';
+  });
+
+  it('re-reads the route candidates with the member-only, opted-in, non-deleted filter', async () => {
+    memberFilterReturns([alice]);
+    await sendMemberStallNudges(buckets({ no_program: everyone }), passthroughPacer);
+    expect(prismaMock.user.findMany).toHaveBeenCalledTimes(1);
+    const args = prismaMock.user.findMany.mock.calls[0][0];
+    expect(args.where.id).toEqual({ in: everyone.map((m) => m.id) });
+    expect(args.where.deletedAt).toBeNull();
+    expect(args.where.notificationsReminders).toBe(true);
+    expect(args.where).toEqual(expect.objectContaining(MEMBER_ONLY_WHERE));
+    expect(args.where.email.notIn).toEqual(expect.arrayContaining([...MEMBER_ONLY_EXCLUDED_EMAILS]));
+    expect(args.take).toBe(everyone.length);
+  });
+
+  it('staff, counselor, employer, partner, role-less, unsubscribed and dogfood accounts are never emailed; a plain member is', async () => {
+    memberFilterReturns([alice]);
+    const result = await sendMemberStallNudges(
+      buckets({ interview: [staff, counselor], no_program: everyone, wioa: [dogfood] }),
+      passthroughPacer,
+    );
+    expect(sendMemberCheckInEmail).toHaveBeenCalledTimes(1);
+    expect(sendMemberCheckInEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice@example.com' }));
+    expect(sendMemberStuckEmail).not.toHaveBeenCalled();
+    const sentTo = [...vi.mocked(sendMemberCheckInEmail).mock.calls, ...vi.mocked(sendMemberStuckEmail).mock.calls].map((c) => c[0].to);
+    for (const m of everyone.slice(1)) expect(sentTo).not.toContain(m.email);
+    expect(result.candidates).toBe(everyone.length);
+    expect(result.excluded).toBe(everyone.length - 1);
+    expect(result.sentTotal).toBe(1);
+    expect(prismaMock.memberNudgeLog.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('emails the address the member filter returns, not the one the route carried', async () => {
+    memberFilterReturns([{ ...alice, email: 'alice.new@example.com' }]);
+    await sendMemberStallNudges(buckets({ interview: [alice] }), passthroughPacer);
+    expect(sendMemberStuckEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'alice.new@example.com' }));
+  });
+
+  it('sends nothing when the member filter read fails', async () => {
+    prismaMock.user.findMany.mockRejectedValue(new Error('db down'));
+    const result = await sendMemberStallNudges(buckets({ interview: [alice] }), passthroughPacer);
+    expect(sendMemberStuckEmail).not.toHaveBeenCalled();
+    expect(result.failed).toBe(1);
+    expect(result.sentTotal).toBe(0);
   });
 });
 
@@ -306,12 +382,16 @@ describe('suppression', () => {
 describe('GET /api/cron/onboarding-stalls wiring', () => {
   function seedBuckets() {
     // Promise.all order in the route: interview, wioa, no-program candidates.
+    prismaMock.user.findMany.mockReset();
     prismaMock.user.findMany
       .mockResolvedValueOnce([{ ...alice, interviewRequestedAt: new Date('2026-09-01') }])
       .mockResolvedValueOnce([{ ...carol, updatedAt: new Date('2026-09-01') }])
       .mockResolvedValueOnce([{ ...bob, createdAt: new Date('2026-09-01') }])
       // admin users lookup
-      .mockResolvedValueOnce([{ id: 'admin-1', email: 'admin@example.com' }]);
+      .mockResolvedValueOnce([{ id: 'admin-1', email: 'admin@example.com' }])
+      // member-only filter in lib/cron/onboardingStallNudges.ts: carol (wioa) is
+      // a member too but her bucket has no member template.
+      .mockResolvedValueOnce([alice, bob, carol]);
     prismaMock.profile.findMany.mockResolvedValue([{ userId: 'admin-1' }]);
     prismaMock.userRole.findMany.mockResolvedValue([]);
     // First counselorAssignment read = "no program" exclusion; second = counselor names.

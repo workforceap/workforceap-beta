@@ -103353,8 +103353,16 @@
   },
   {
     "from": "lib/cron/onboardingStallNudges.ts",
-    "specifier": "@/lib/cron/nudgeThrottle",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/cron/nudgeThrottle",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/cron/nudgeThrottle.ts"
@@ -103362,7 +103370,7 @@
   {
     "from": "lib/cron/onboardingStallNudges.ts",
     "specifier": "@/lib/observability/captureApiError",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
@@ -123289,8 +123297,16 @@
   },
   {
     "from": "tests/api/cron-onboarding-stalls.spec.ts",
-    "specifier": "@/lib/email",
+    "specifier": "@/lib/admin/memberOnlyWhere",
     "line": 62,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 63,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"

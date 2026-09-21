@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "6ca2b90d30ce1755e0a37dcd800986d36ecb6bf290a9e77c00e01ca8525f0d3d",
+  "inputTreeSha256": "6f689e2ac18072ba2a901079238ab35cc6b1c5feca18abee9226cbf173a3e82a",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -113384,206 +113384,211 @@
       "path": "lib/cron/onboardingStallNudges.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 11471,
-      "lines": 313,
-      "sha256": "54dafa9a1ea047cfe27f3660b6a982b60a9fef03e8105a818e7fff26019e3534",
+      "bytes": 14665,
+      "lines": 379,
+      "sha256": "2ea5e2f9d49a7f13c3e05503a8f935486a240c2ae05bba98d706a2e75c92c798",
       "binary": false,
       "exports": [
         {
           "name": "MEMBER_STALL_NUDGES_FLAG",
-          "line": 38,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "StallBucket",
-          "line": 40,
+          "line": 48,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StallNudgeTemplate",
-          "line": 41,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STALL_BUCKETS",
-          "line": 44,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "STALL_BUCKET_TEMPLATE",
-          "line": 60,
+          "line": 68,
           "kind": "Variable"
         },
         {
           "name": "STALL_NUDGE_TIER",
-          "line": 67,
+          "line": 75,
           "kind": "Variable"
         },
         {
           "name": "stallNudgeKind",
-          "line": 70,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberStallNudgesEnabled",
-          "line": 74,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StallNudgeCandidate",
-          "line": 79,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeBuckets",
-          "line": 80,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgePacer",
-          "line": 83,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "MemberStallNudgeResult",
           "line": 87,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeBuckets",
+          "line": 88,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "StallNudgePacer",
+          "line": 91,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberStallNudgeResult",
+          "line": 95,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "emptyMemberStallNudgeResult",
-          "line": 114,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "planMemberStallNudges",
-          "line": 152,
+          "line": 198,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendMemberStallNudges",
-          "line": 218,
+          "line": 273,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "MEMBER_STALL_NUDGES_FLAG",
-          "line": 38,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "StallBucket",
-          "line": 40,
+          "line": 48,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "StallNudgeTemplate",
-          "line": 41,
+          "line": 49,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "STALL_BUCKETS",
-          "line": 44,
+          "line": 52,
           "kind": "Variable"
         },
         {
           "name": "STALL_BUCKET_TEMPLATE",
-          "line": 60,
+          "line": 68,
           "kind": "Variable"
         },
         {
           "name": "STALL_NUDGE_TIER",
-          "line": 67,
+          "line": 75,
           "kind": "Variable"
         },
         {
           "name": "stallNudgeKind",
-          "line": 70,
+          "line": 78,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberStallNudgesEnabled",
-          "line": 74,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StallNudgeCandidate",
-          "line": 79,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgeBuckets",
-          "line": 80,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "StallNudgePacer",
-          "line": 83,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "MemberStallNudgeResult",
           "line": 87,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "StallNudgeBuckets",
+          "line": 88,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "StallNudgePacer",
+          "line": 91,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberStallNudgeResult",
+          "line": 95,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "SITE_URL",
-          "line": 110,
+          "line": 120,
           "kind": "Variable"
         },
         {
           "name": "FALLBACK_COUNSELOR_NAME",
-          "line": 111,
+          "line": 121,
           "kind": "Variable"
         },
         {
           "name": "LOG_EVENT",
-          "line": 112,
+          "line": 122,
           "kind": "Variable"
         },
         {
           "name": "emptyMemberStallNudgeResult",
-          "line": 114,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "firstNameOf",
-          "line": 132,
+          "line": 143,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ledgerKey",
-          "line": 137,
+          "line": 148,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "logCounts",
-          "line": 142,
+          "line": 153,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PlannedNudge",
-          "line": 146,
+          "line": 157,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "restrictToEligibleMembers",
+          "line": 165,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "planMemberStallNudges",
-          "line": 152,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "loadAlreadyNudged",
-          "line": 181,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "loadCounselorNames",
           "line": 198,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "loadAlreadyNudged",
+          "line": 236,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "loadCounselorNames",
+          "line": 253,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "sendMemberStallNudges",
-          "line": 218,
+          "line": 273,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -161352,60 +161357,65 @@
       "path": "tests/api/cron-onboarding-stalls.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 15568,
-      "lines": 346,
-      "sha256": "fbc4e6f92b9890dbca7517baa263c6539b6529c4874e25a1b26c9f8cd5269d49",
+      "bytes": 20114,
+      "lines": 426,
+      "sha256": "8e86d95e5ad3916b6f68488844a95706aa403f608fcc743241d31b689dbc651e",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "prismaMock",
-          "line": 68,
+          "line": 69,
           "kind": "Variable"
         },
         {
           "name": "passthroughPacer",
-          "line": 76,
+          "line": 77,
           "kind": "Variable"
         },
         {
+          "name": "memberFilterReturns",
+          "line": 85,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "alice",
-          "line": 78,
+          "line": 93,
           "kind": "Variable"
         },
         {
           "name": "bob",
-          "line": 79,
+          "line": 94,
           "kind": "Variable"
         },
         {
           "name": "carol",
-          "line": 80,
+          "line": 95,
           "kind": "Variable"
         },
         {
           "name": "noEmail",
-          "line": 81,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "buckets",
-          "line": 83,
+          "line": 98,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ledger",
-          "line": 92,
+          "line": 107,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "originalFlag",
-          "line": 105,
+          "line": 120,
           "kind": "Variable"
         },
         {
           "name": "infoSpy",
-          "line": 106,
+          "line": 121,
           "kind": "Variable"
         }
       ],
