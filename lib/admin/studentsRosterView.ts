@@ -72,8 +72,10 @@ export function parseStudentsNeeds(value: string | string[] | undefined | null):
 
 /**
  * Which chip a `?needs=` link opens on. The roster's "At Risk" chip (health
- * yellow/red, quiet 7+ days) is the nearest filter today for both a saved
- * risk alert and a 30-day quiet spell; the training preset has a real
+ * yellow/red: no login, Coursera/course action or member-driven event for 7+
+ * days, or at most one such signal in 30 days while enrolled; system-sent
+ * mail does not count) is the nearest filter today for both a saved risk
+ * alert and a 30-day quiet spell; the training preset has a real
  * "Stalled" pace chip. New applicants without a counselor have no chip yet,
  * so they open the full roster. Server-side `needs=` filters from the
  * attention model replace this mapping when the roster consolidation lands.

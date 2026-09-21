@@ -252,6 +252,58 @@ export default async function AdminCourseraLearnerPage({
         </section>
       ) : null}
 
+      {/* Learning Path rows are Coursera's program-level percentage, not
+          courses: they are kept out of the course table and its count (which
+          otherwise read 5 of 7 where 5 of 6 is true) but still shown here, so
+          this raw learner view does not silently drop rows that exist in
+          coursera_course_progress. */}
+      {csvProgress && csvProgress.learningPaths.length > 0 ? (
+        <section
+          className="content-card"
+          style={{ padding: '1rem 1.1rem', marginBottom: '1rem', display: 'grid', gap: '0.6rem' }}
+        >
+          <SectionHeader title={`Coursera Learning Paths (${csvProgress.learningPaths.length})`} />
+          <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+            Coursera&rsquo;s program-level percentage. Not counted as a course anywhere.
+          </p>
+          <div style={{ overflowX: 'auto' }}>
+            <DataTable<LearnerCourseRow>
+              density="compact"
+              scrollX={false}
+              rows={csvProgress.learningPaths}
+              rowKey={(path) => path.id}
+              columns={[
+                {
+                  key: 'path',
+                  header: 'Learning Path',
+                  cell: (path) => (
+                    <>
+                      <strong>{path.courseName}</strong>
+                      <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                        {path.courseraCourseId}
+                      </div>
+                    </>
+                  ),
+                },
+                {
+                  key: 'progress',
+                  header: 'Progress',
+                  align: 'right',
+                  cell: (path) => (
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{path.overallProgress.toFixed(2)}%</span>
+                  ),
+                },
+                {
+                  key: 'last',
+                  header: 'Last activity',
+                  cell: (path) => formatDateTime(path.lastActivityTime),
+                },
+              ]}
+            />
+          </div>
+        </section>
+      ) : null}
+
       {csvProgress && csvProgress.badges.length > 0 ? (
         <section
           className="content-card"

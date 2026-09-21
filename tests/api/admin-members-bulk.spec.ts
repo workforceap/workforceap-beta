@@ -127,6 +127,9 @@ vi.mock('@/lib/db/prisma', () => ({
     memberEvent: {
       groupBy: vi.fn(),
     },
+    courseProgress: {
+      groupBy: vi.fn(),
+    },
     auditEvent: {
       create: vi.fn(async () => ({})),
     },
@@ -167,6 +170,7 @@ describe('Bulk operations', () => {
     vi.mocked(invalidateMemberState).mockResolvedValue(undefined);
     vi.mocked(prisma.organizationProgramCatalog.count).mockResolvedValue(0);
     vi.mocked(prisma.organizationProgramCatalog.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.courseProgress.groupBy).mockResolvedValue([] as any);
   });
 
   // ─── Bulk Email ───
@@ -585,6 +589,86 @@ describe('Bulk operations', () => {
       const text = await res.text();
       expect(text).toContain('Alice');
       expect(text).toContain('alice@example.com');
+    });
+
+    it('resolves Program and rollup progress from the enrollment row (audit S17)', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: uid(2),
+          fullName: 'Bob',
+          email: 'bob@example.com',
+          phone: null,
+          // No legacy pointer: the assignment lives on the enrollment row, and
+          // the rollup was written under the alias slug. Reading
+          // `enrolledProgram` blanked all three columns for 11 members.
+          enrolledProgram: null,
+          enrolledAt: new Date('2024-01-15'),
+          assessmentScorePct: null,
+          assessmentCompleted: false,
+          pipelineBoardStage: 'in_training',
+          updatedAt: new Date(),
+          createdAt: new Date(),
+          lastLoginAt: null,
+          profile: null,
+          courseEnrollments: [
+            { programSlug: 'comptia-a-professional-certificate', curriculumVersion: 'legacy-v1', isPrimary: true },
+          ],
+          partnerReferrals: [],
+          counselorAssignments: [],
+        },
+      ] as any);
+      vi.mocked(prisma.memberProgramProgress.findMany).mockResolvedValue([
+        { userId: uid(2), programSlug: 'comptia-a-plus', averagePercent: 24, coursesCompleted: 3 },
+      ] as any);
+      vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([] as any);
+
+      const res = await bulkExportPost(makeExportRequest({ memberIds: [uid(2)] }));
+      expect(res.status).toBe(200);
+      const [header, row] = (await res.text()).split('\n');
+      const columns = header.split(',');
+      const values = row.split(',');
+      expect(values[columns.indexOf('Program')]).not.toBe('');
+      expect(values[columns.indexOf('Progress %')]).toBe('24');
+      expect(values[columns.indexOf('Courses Completed')]).toBe('3');
+    });
+
+    it('"Last Activity" is the newest of a member-driven event, a login and course work', async () => {
+      vi.mocked(getUser).mockResolvedValue({ id: uid(99), email: 'admin@example.com' } as any);
+      vi.mocked(isAdmin).mockResolvedValue(true);
+      vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
+      const loginAt = new Date('2026-09-10T00:00:00.000Z');
+      const courseAt = new Date('2026-09-18T00:00:00.000Z');
+      const eventAt = new Date('2026-09-05T00:00:00.000Z');
+      vi.mocked(prisma.user.findMany).mockResolvedValue([
+        {
+          id: uid(3), fullName: 'Cara', email: 'cara@example.com', phone: null,
+          enrolledProgram: null, enrolledAt: null, assessmentScorePct: null, assessmentCompleted: false,
+          pipelineBoardStage: null, updatedAt: new Date(), createdAt: new Date(), lastLoginAt: loginAt,
+          profile: null, courseEnrollments: [], partnerReferrals: [], counselorAssignments: [],
+        },
+      ] as any);
+      vi.mocked(prisma.memberProgramProgress.findMany).mockResolvedValue([] as any);
+      vi.mocked(prisma.memberEvent.groupBy).mockResolvedValue([
+        { userId: uid(3), _max: { createdAt: eventAt } },
+      ] as any);
+      vi.mocked(prisma.courseProgress.groupBy).mockResolvedValue([
+        { userId: uid(3), _max: { lastActivityAt: courseAt } },
+      ] as any);
+
+      const res = await bulkExportPost(makeExportRequest({ memberIds: [uid(3)] }));
+      expect(res.status).toBe(200);
+      const [header, row] = (await res.text()).split('\n');
+      const columns = header.split(',');
+      const values = row.split(',');
+      // The newest of the three wins (course work here), not just the last event.
+      expect(values[columns.indexOf('Last Activity')]).toBe(courseAt.toISOString());
+      // And the event aggregate excludes system-sent mail, as Health does.
+      const eventWhere = vi.mocked(prisma.memberEvent.groupBy).mock.calls[0][0].where as any;
+      expect(eventWhere.eventName.notIn).toContain('inactive_nudge_sent');
+      expect(eventWhere.eventName.notIn).toContain('counselor_nudge_sent');
     });
 
     it('limits to 500 members', async () => {

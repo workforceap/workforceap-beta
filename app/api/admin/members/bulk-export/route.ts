@@ -8,7 +8,10 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { formatPhone } from '@/lib/formatPhone';
+import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 const MAX_MEMBERS = 500;
@@ -69,7 +72,7 @@ async function _POST(request: NextRequest) {
             },
           },
           courseEnrollments: {
-            select: { programSlug: true, isPrimary: true },
+            select: { programSlug: true, curriculumVersion: true, isPrimary: true },
           },
           partnerReferrals: {
             take: 1,
@@ -106,24 +109,42 @@ async function _POST(request: NextRequest) {
         coursesCompleted: true,
       },
     });
+    // Keyed on the canonical slug: rollups are written under alias slugs
+    // (comptia-a-plus vs comptia-a-professional-certificate), so an exact-slug
+    // lookup missed them (audit 2026-09-20, S17).
     const progressMap = new Map<string, { averagePercent: number; coursesCompleted: number }>();
     for (const p of programProgress) {
-      const key = `${p.userId}:${p.programSlug}`;
+      const key = `${p.userId}:${canonicalizeProgramSlug(p.programSlug)}`;
       progressMap.set(key, { averagePercent: p.averagePercent, coursesCompleted: p.coursesCompleted });
     }
 
-    // Get last activity events
+    // "Last Activity" = the newest of a member-driven event, a login and a
+    // Coursera/course action — the same three signals Health reads. System-sent
+    // mail is excluded, so the column no longer prints the last nudge email
+    // as activity beside a row the screen marks Inactive.
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const lastEvents = await prisma.memberEvent.groupBy({
-      by: ['userId'],
-      where: { userId: { in: memberIdsList }, createdAt: { gte: thirtyDaysAgo } },
-      _max: { createdAt: true },
-    });
-    const lastEventMap = new Map<string, Date>();
-    for (const e of lastEvents) {
-      if (e._max.createdAt) lastEventMap.set(e.userId, e._max.createdAt);
-    }
+    const [lastEvents, courseActivity] = await Promise.all([
+      prisma.memberEvent.groupBy({
+        by: ['userId'],
+        where: { userId: { in: memberIdsList }, createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
+        _max: { createdAt: true },
+      }),
+      prisma.courseProgress.groupBy({
+        by: ['userId'],
+        where: { userId: { in: memberIdsList } },
+        _max: { lastActivityAt: true },
+      }),
+    ]);
+    const lastActivityMap = new Map<string, Date>();
+    const noteActivity = (userId: string, at: Date | null | undefined) => {
+      if (!at) return;
+      const current = lastActivityMap.get(userId);
+      if (!current || at > current) lastActivityMap.set(userId, at);
+    };
+    for (const e of lastEvents) noteActivity(e.userId, e._max.createdAt);
+    for (const row of courseActivity) noteActivity(row.userId, row._max.lastActivityAt);
+    for (const m of members) noteActivity(m.id, m.lastLoginAt);
 
     const headers = [
       'ID',
@@ -147,14 +168,23 @@ async function _POST(request: NextRequest) {
     ];
 
     const rows = members.map((m) => {
-      const programTitle = m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '';
-      const progress = m.enrolledProgram
-        ? progressMap.get(`${m.id}:${m.enrolledProgram}`)
+      // Resolve the same assignment the roster row shows (primary enrollment
+      // first, then an alias-equivalent legacy pointer) instead of the raw
+      // `enrolledProgram` column, which is null for members whose program
+      // only exists as a CourseEnrollment row — they exported a blank
+      // Program / Progress % / Courses Completed (audit 2026-09-20, S17).
+      const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments);
+      const programSlug = assignment.programSlug
+        ? canonicalizeProgramSlug(assignment.programSlug)
+        : null;
+      const programTitle = programSlug ? programDisplayTitle(programSlug) : '';
+      const progress = programSlug
+        ? progressMap.get(`${m.id}:${programSlug}`)
         : null;
       const phone = formatPhone(m.profile?.profilePhone ?? m.phone) ?? '';
       const partner = m.partnerReferrals[0]?.partner.name ?? '';
       const counselor = m.counselorAssignments[0]?.counselor.user.fullName ?? '';
-      const lastActivity = lastEventMap.get(m.id)?.toISOString() ?? '';
+      const lastActivity = lastActivityMap.get(m.id)?.toISOString() ?? '';
       const enrolledAt = m.enrolledAt?.toISOString() ?? '';
       const lastLogin = m.lastLoginAt?.toISOString() ?? '';
       const createdAt = m.createdAt.toISOString();
