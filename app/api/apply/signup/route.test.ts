@@ -1202,6 +1202,22 @@ describe('POST /api/apply/signup account-safety guards (9/2/26)', () => {
     expect((await res.json()).error).toMatch(/already exists/i);
   });
 
+  it('reports a weak password by reason with clear copy instead of the generic failure (WAP-26)', async () => {
+    supabaseSignUp.mockResolvedValue({
+      data: { user: null, session: null },
+      error: { name: 'AuthWeakPasswordError', code: 'weak_password', status: 422, message: 'Password is known to be weak and easy to guess, please choose a different one.' },
+    } as never);
+
+    const res = await POST(makeRequest());
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: 'Choose a stronger password: at least 8 characters, not a commonly used password.',
+      reason: 'weak_password',
+    });
+    expect(state.applicationCreates).toEqual([]);
+  });
+
   function p2002EmailCollision() {
     return {
       code: 'P2002',

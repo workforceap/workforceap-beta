@@ -118,6 +118,7 @@
       "coursera:validate-approved-track",
       "db:backfill:courses",
       "db:backfill:unanswered-messages",
+      "db:backfill:user-roles",
       "db:cleanup-fixtures",
       "db:create-employer-michael-brown",
       "db:generate",

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import LocalizedLink from '@/components/LocalizedLink';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { WEAK_PASSWORD_REASON } from '@/lib/auth/authProviderError';
 import { trackApplyFunnel } from '@/lib/analytics/events';
 import { isValidPostalCode } from '@/lib/validation/postalCode';
 import { trackConversionWithValue } from '@/lib/analytics/conversionValue';
@@ -426,10 +427,17 @@ export default function ApplyCreateAccountForm({ readyHeader, readyIntro, recove
       if (!res.ok) {
         // Map common server-side errors to the specific field that produced
         // them so users can fix the issue inline instead of guessing.
-        const serverMessage: string = typeof data?.error === 'string' ? data.error : '';
+        // WAP-26: a weak-password refusal is reported by reason so the copy
+        // stays localised (the message text alone need not mention "password").
+        const weakPassword = data?.reason === WEAK_PASSWORD_REASON;
+        const serverMessage: string = weakPassword
+          ? t('errPasswordWeak')
+          : typeof data?.error === 'string' ? data.error : '';
         const lower = serverMessage.toLowerCase();
         const serverFieldErrors: typeof fieldErrors = {};
-        if (lower.includes('already exists') || lower.includes('already registered')) {
+        if (weakPassword) {
+          serverFieldErrors.password = serverMessage;
+        } else if (lower.includes('already exists') || lower.includes('already registered')) {
           serverFieldErrors.email = serverMessage;
         } else if (lower.includes('password')) {
           serverFieldErrors.password = serverMessage;
