@@ -508,7 +508,11 @@ const pipelineCard = (row: PipelineRow) => {
   const initial = row.company.trim().charAt(0).toUpperCase() || '?';
   return (
     <div className="wa-kit-card wa-kit-card--sm">
-      <div className="wa-flex wa-items-start wa-justify-between wa-gap-3">
+      {/* Phones: stack the stage tag under the role+company block. Side by
+          side, the nowrap tag took up to 116px of the 226px row, leaving the
+          role column 98-139px and wrapping titles onto 3 lines. Row layout
+          returns at >=768px. */}
+      <div className="wa-flex wa-flex-col wa-items-start wa-gap-2 md:wa-flex-row md:wa-justify-between md:wa-gap-3">
         <div className="wa-flex wa-items-center wa-gap-3" style={{ minWidth: 0 }}>
           <div
             aria-hidden

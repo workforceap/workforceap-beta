@@ -24,7 +24,10 @@ export function Avatar({
   ...rest
 }: AvatarProps) {
   const label = initials.slice(0, 2).toUpperCase();
-  const fontSize = Math.max(10, Math.round(size * 0.36));
+  // 13px is the repo type floor (WAP-122, docs/KIT_GUIDE.md §1); the old
+  // floor of 10 put every avatar at size <= 34 below it (size 28, used by
+  // ChatThread on the member Messages page, rendered its initials at 10px).
+  const fontSize = Math.max(13, Math.round(size * 0.36));
   const shellStyle = {
     display: 'inline-flex',
     alignItems: 'center',

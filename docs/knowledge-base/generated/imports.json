@@ -80217,8 +80217,16 @@
   },
   {
     "from": "components/portal/NotificationBell.tsx",
-    "specifier": "next/navigation",
+    "specifier": "react-dom",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "components/portal/NotificationBell.tsx",
+    "specifier": "next/navigation",
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -80226,7 +80234,7 @@
   {
     "from": "components/portal/NotificationBell.tsx",
     "specifier": "@/lib/nav/portalNav",
-    "line": 5,
+    "line": 6,
     "kind": "type",
     "external": false,
     "target": "lib/nav/portalNav.ts"
@@ -80234,7 +80242,7 @@
   {
     "from": "components/portal/NotificationBell.tsx",
     "specifier": "@/lib/fetchWithTimeout",
-    "line": 6,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/fetchWithTimeout.ts"
@@ -80242,7 +80250,7 @@
   {
     "from": "components/portal/NotificationBell.tsx",
     "specifier": "@/hooks/useFocusTrap",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "hooks/useFocusTrap.ts"
@@ -80250,7 +80258,7 @@
   {
     "from": "components/portal/NotificationBell.tsx",
     "specifier": "@/components/icons/LegacyGlyph",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/icons/LegacyGlyph.tsx"
