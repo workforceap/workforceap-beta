@@ -1216,6 +1216,12 @@ html.dark .portal-nav {
         }
     }
 }
+/* Header height for chrome portaled to <body> (HelpAssistantPanel), which
+   cannot inherit from .workspace-shell-root. WorkspaceShell measures the real
+   header into --workspace-header-h on <html>; the fallback matches its CSS default. */
+html {
+    --wa-header-height: var(--workspace-header-h, 3.25rem);
+}
 .workspace-shell-header {
     display: flex;
     flex-wrap: wrap;

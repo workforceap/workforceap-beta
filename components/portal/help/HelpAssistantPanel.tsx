@@ -137,7 +137,7 @@ export default function HelpAssistantPanel({
       data-testid="help-assistant-panel"
       style={{
         position: 'fixed',
-        top: 'calc(var(--wa-header-height, 3.5rem) + 0.5rem)',
+        top: 'calc(var(--wa-header-height, 3.25rem) + 0.5rem)',
         right: '0.75rem',
         bottom: '0.75rem',
         width: 'min(24rem, calc(100vw - 1.5rem))',
