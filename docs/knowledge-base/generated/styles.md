@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [css/astryx-brand-bridge.css](../../../css/astryx-brand-bridge.css) | 60 | styles |  |
-| [css/auth-depth.css](../../../css/auth-depth.css) | 218 | styles |  |
+| [css/auth-depth.css](../../../css/auth-depth.css) | 225 | styles |  |
 | [css/counselor.css](../../../css/counselor.css) | 513 | styles |  |
 | [css/enroll-school.css](../../../css/enroll-school.css) | 228 | styles |  |
 | [css/language-toggle.css](../../../css/language-toggle.css) | 129 | styles |  |
