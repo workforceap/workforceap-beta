@@ -8,6 +8,7 @@ import {
   extractCspViolations,
   parseCspReportContentType,
 } from '@/lib/security/cspReport';
+import { persistCspViolationCounts } from '@/lib/security/cspViolationStore';
 
 /**
  * POST /api/csp-report — browser CSP violation sink (WAP-36 phase 1).
@@ -25,10 +26,16 @@ import {
  *    (directive, blocked host, document path, disposition) with a `count`.
  *    No query strings, no script samples, no source files, no user ids —
  *    see the privacy contract in `lib/security/cspReport.ts`;
- *  - never writes to the database; answers 204 so the browser drops the beacon.
+ *  - (phase 2 prep) increments the hourly aggregate in `csp_violation_buckets`
+ *    for the same counted rows — one upsert per distinct key per batch, in one
+ *    transaction (`lib/security/cspViolationStore.ts`). Only the redacted
+ *    summary is stored, never the report body, IP or user agent. A database
+ *    error is logged and swallowed: the sink still answers 204;
+ *  - answers 204 so the browser drops the beacon.
  *
- * Reading the soak: filter the log stream on `message: "csp.violation"` and
- * group by `directive` + `blockedHost`. Details in
+ * Reading the soak: `/admin/csp-report` (super admins) shows the stored
+ * aggregates for the last 24h / 7d; the log stream still carries one
+ * `message: "csp.violation"` line per distinct row per batch. Details in
  * `docs/SECURITY-HARDENING.md` §13.
  */
 export async function POST(request: Request) {
@@ -66,7 +73,8 @@ export async function POST(request: Request) {
   }
 
   const violations = extractCspViolations(contentType, payload);
-  for (const row of countCspViolations(violations)) {
+  const counted = countCspViolations(violations);
+  for (const row of counted) {
     logger.info('csp.violation', {
       directive: row.directive,
       blockedHost: row.blockedHost,
@@ -75,6 +83,10 @@ export async function POST(request: Request) {
       count: row.count,
       format: contentType,
     });
+  }
+  if (counted.length > 0) {
+    // Fail-soft by contract: persistCspViolationCounts never throws.
+    await persistCspViolationCounts(counted);
   }
 
   return new NextResponse(null, { status: 204 });

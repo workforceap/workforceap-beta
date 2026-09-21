@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "6b02d810fec8dd9be0d39606f9a40e296f85d3e61c6fa388084c698c1e5c0fea",
+  "inputTreeSha256": "4fca02b71a678722405ddd8aa826705e0e8aa2c860bc74465f11bf35ab85230c",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,24 +8,24 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4998,
-    "sourceModules": 3642,
-    "importReferences": 18156,
-    "resolvedLocalReferences": 12185,
+    "files": 5006,
+    "sourceModules": 3649,
+    "importReferences": 18185,
+    "resolvedLocalReferences": 12205,
     "unresolvedLocalReferences": 0,
-    "routeFiles": 1066,
-    "nextRouteFiles": 1032,
+    "routeFiles": 1067,
+    "nextRouteFiles": 1033,
     "apiHandlers": 496,
-    "pageFiles": 317,
+    "pageFiles": 318,
     "astroPageFiles": 34,
     "configuredCrons": 31,
-    "prismaModels": 114,
+    "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 991,
-    "testCandidates": 981,
+    "testFiles": 994,
+    "testCandidates": 984,
     "testHelpers": 10,
-    "staticallySelectedTests": 979,
+    "staticallySelectedTests": 982,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -58,7 +58,7 @@
     },
     {
       "area": "components",
-      "files": 616
+      "files": 617
     },
     {
       "area": "content",
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 209
+      "files": 210
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1074
+      "files": 1078
     },
     {
       "area": "localization",
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 646
+      "files": 647
     },
     {
       "area": "root",
@@ -106,21 +106,21 @@
     },
     {
       "area": "tests",
-      "files": 590
+      "files": 591
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 934
+      "references": 935
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 756
+      "references": 758
     },
     {
       "file": "lib/auth/roles.ts",
-      "references": 441
+      "references": 443
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -140,11 +140,11 @@
     },
     {
       "file": "components/portal/kit/index.ts",
-      "references": 212
+      "references": 213
     },
     {
       "file": "app/seo.ts",
-      "references": 202
+      "references": 203
     },
     {
       "file": "lib/audit/log.ts",
@@ -164,7 +164,7 @@
     },
     {
       "file": "lib/rate-limit.ts",
-      "references": 112
+      "references": 113
     },
     {
       "file": "lib/email.ts",

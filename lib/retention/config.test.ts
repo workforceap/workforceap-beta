@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  CSP_VIOLATION_BUCKET_RETENTION_DAYS,
   DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS,
   DEFAULT_WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
   UNMATCHED_XAPI_EVENT_RETENTION_DAYS,
@@ -48,6 +49,17 @@ test('the email-failure snapshot outlives the diagnostics rows it copies', () =>
   // scripts/snapshot-email-failures.ts is the evidence path for the 2026
   // delivery failures; shortening the source window must not shorten the copy.
   assert.ok(EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS > WORKFLOW_DIAGNOSTIC_RETENTION_DAYS);
+});
+
+test('WAP-36: CSP violation buckets are purged on their hour bucket after a rolling month', () => {
+  // The table exists to triage the Report-Only soak; a month is more than the
+  // week-long soak needs and matches the cron_executions trim beside it.
+  assert.equal(CSP_VIOLATION_BUCKET_RETENTION_DAYS, 30);
+  const entry = byModel('cspViolationBucket');
+  assert.equal(entry.days, CSP_VIOLATION_BUCKET_RETENTION_DAYS);
+  assert.equal(entry.days, byModel('cronExecution').days);
+  assert.equal(entry.dateColumn, 'hourBucket');
+  assert.match(entry.description, /no URLs, IPs or user agents/);
 });
 
 test('every retention entry has a positive integer window and a description', () => {

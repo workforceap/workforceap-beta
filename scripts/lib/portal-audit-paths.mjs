@@ -92,6 +92,7 @@ export const STATIC_PATHS = {
     '/admin/coursera/health',
     '/admin/coursera/provisioning',
     '/admin/crons',
+    '/admin/csp-report',
     '/admin/dashboard',
     '/admin/data-retention',
     '/admin/diagnostics',
