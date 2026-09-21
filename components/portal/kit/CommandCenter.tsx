@@ -73,6 +73,7 @@ export function StatSparkTile({
   value,
   tone,
   spark,
+  caption,
 }: {
   /**
    * A rendered icon element, e.g. `<Users size={16} />` — not the bare
@@ -86,6 +87,8 @@ export function StatSparkTile({
   /** Semantic state derived from the value; paints the icon chip and trend line only. */
   tone?: KitTone;
   spark?: SparkStat;
+  /** One muted line under the label saying what the number counts (a definition, not a trend). */
+  caption?: string;
 }) {
   return (
     <Card>
@@ -112,6 +115,11 @@ export function StatSparkTile({
         <div className="wa-kit-stat-label" style={{ marginTop: 4 }}>
           {label}
         </div>
+        {caption ? (
+          <div className="wa-kit-meta" style={{ marginTop: 2 }}>
+            {caption}
+          </div>
+        ) : null}
       </div>
       {spark?.series && spark.series.length > 1 ? (
         <Sparkline series={spark.series} stroke={tone ? 'var(--wa-kit-tone)' : undefined} />

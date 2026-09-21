@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from './memberAssignmentSection.module.css';
 
 type SubgroupOpt = { id: string; name: string; type: string };
 
@@ -71,23 +72,22 @@ export default function MemberSubgroupSection({
   const availableToAdd = subgroups.filter((s) => !currentSubgroupIds.includes(s.id));
 
   return (
-    <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Subgroup assignment</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+    <section className="wa-kit-card" aria-labelledby="admin-member-subgroup-title">
+      <h2 id="admin-member-subgroup-title" className={styles.title}>Subgroup assignment</h2>
+      <p className={styles.lede}>
         Assign this member to subgroups so partners, managers, or churches can view their progress in the portal.
       </p>
       {currentSubgroupIds.length > 0 && (
-        <div style={{ marginBottom: '0.75rem' }}>
-          <strong>Current:</strong>{' '}
+        <div className={styles.current}>
+          <strong>Current:</strong>
           {currentSubgroupIds.map((id) => {
             const sg = subgroups.find((s) => s.id === id);
             return sg ? (
-              <span key={id} style={{ marginRight: '0.5rem' }}>
-                <span style={{ marginRight: '0.25rem' }}>{sg.name}</span>
+              <span key={id} className={styles.chip}>
+                <span>{sg.name}</span>
                 <button
                   type="button"
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.8125rem', padding: '0.15rem 0.35rem' }}
+                  className="btn btn-outline btn-sm"
                   onClick={() => remove(id)}
                   disabled={loading}
                   aria-label={`Remove from ${sg.name}`}
@@ -100,12 +100,12 @@ export default function MemberSubgroupSection({
         </div>
       )}
       {availableToAdd.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+        <div className={styles.row}>
           <select
             value={subgroupId}
             onChange={(e) => setSubgroupId(e.target.value)}
             aria-label="Select subgroup to add"
-            style={{ padding: '0.5rem', minWidth: 260, borderRadius: 6, border: '1px solid var(--color-border)' }}
+            className={`${styles.select} wa-kit-focus`}
           >
             <option value="">Select subgroup</option>
             {availableToAdd.map((s) => (
@@ -125,15 +125,15 @@ export default function MemberSubgroupSection({
         </div>
       )}
       {availableToAdd.length === 0 && currentSubgroupIds.length > 0 && (
-        <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)' }}>Member is in all subgroups.</p>
+        <p className={styles.note}>Member is in all subgroups.</p>
       )}
       {subgroups.length === 0 && (
-        <p style={{ fontSize: '0.9rem', color: 'var(--color-on-surface-variant)' }}>No subgroups exist.</p>
+        <p className={styles.note}>No subgroups exist.</p>
       )}
       {message && (
         <p
           role={message.type === 'ok' ? 'status' : 'alert'}
-          style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: message.type === 'ok' ? '#166534' : '#b91c1c' }}
+          className={`${styles.message} ${message.type === 'ok' ? styles.messageOk : styles.messageErr}`}
         >
           {message.text}
         </p>

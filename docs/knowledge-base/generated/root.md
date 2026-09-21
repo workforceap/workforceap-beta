@@ -5,7 +5,7 @@
 | File | Lines | Domain | Exported symbols |
 | --- | ---: | --- | --- |
 | [.crabbox.yaml](../../../.crabbox.yaml) | 31 | root |  |
-| [.env.example](../../../.env.example) | 377 | root |  |
+| [.env.example](../../../.env.example) | 381 | root |  |
 | [.gitattributes](../../../.gitattributes) | 1 | root |  |
 | [.gitignore](../../../.gitignore) | 121 | root |  |
 | [.nvmrc](../../../.nvmrc) | 1 | root |  |
@@ -22,7 +22,7 @@
 | [DESIGN.md](../../../DESIGN.md) | 292 | root |  |
 | [EMAIL-SETUP.md](../../../EMAIL-SETUP.md) | 169 | root |  |
 | [ENG_REVIEW_i18n.md](../../../ENG_REVIEW_i18n.md) | 235 | root |  |
-| [ENV-VARIABLES.md](../../../ENV-VARIABLES.md) | 158 | root |  |
+| [ENV-VARIABLES.md](../../../ENV-VARIABLES.md) | 166 | root |  |
 | [LAUNCH-RUNBOOK.md](../../../LAUNCH-RUNBOOK.md) | 283 | root |  |
 | [MEMBER_ICP_AUDIT_REPORT.md](../../../MEMBER_ICP_AUDIT_REPORT.md) | 235 | root |  |
 | [MOBILE_AUDIT.md](../../../MOBILE_AUDIT.md) | 57 | root |  |
@@ -43,7 +43,7 @@
 | [instrumentation-client.ts](../../../instrumentation-client.ts) | 270 | root | onRouterTransitionStart:239, setSentryUser:258 |
 | [instrumentation.ts](../../../instrumentation.ts) | 15 | root | register:3, onRequestError:12 |
 | [knip.json](../../../knip.json) | 61 | root |  |
-| [middleware.ts](../../../middleware.ts) | 463 | identity-tenancy | middleware:149, config:459 |
+| [middleware.ts](../../../middleware.ts) | 504 | identity-tenancy | middleware:158, config:500 |
 | [next.config.ts](../../../next.config.ts) | 404 | root | default:402 |
 | [package.json](../../../package.json) | 149 | root |  |
 | [playwright.config.ts](../../../playwright.config.ts) | 80 | root | default:56 |

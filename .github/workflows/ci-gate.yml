@@ -122,6 +122,15 @@ jobs:
       - name: Verify high-risk tenant routes
         run: node scripts/verify-high-risk-tenant-routes.cjs
 
+      # Tenant-scoping ratchet (WAP-24). scripts/audit-tenant-scoping.cjs
+      # counts Prisma call sites on tenant-scoped models that are neither
+      # inside withTenantScope nor marked crossTenantOK. The pin below is
+      # the exact count on the day this step landed (2026-09-21); the gate
+      # fails when a PR adds one, and asks for the pin to be lowered when a
+      # PR removes some. Never raise it. Required gate.
+      - name: Verify tenant-scoping ratchet
+        run: node scripts/audit-tenant-scoping.cjs --max-unscoped 684
+
       # Source-text test retirement contract (WAP-175). A test that reads an
       # application source file and asserts on its text proves nothing about
       # behaviour. Today's inventory is frozen in

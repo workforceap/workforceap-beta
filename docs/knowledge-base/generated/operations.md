@@ -17,7 +17,8 @@
 | [scripts/audit-member-pages.mjs](../../../scripts/audit-member-pages.mjs) | 67 | operations |  |
 | [scripts/audit-portal-routes.mjs](../../../scripts/audit-portal-routes.mjs) | 1552 | operations |  |
 | [scripts/audit-rank.mjs](../../../scripts/audit-rank.mjs) | 113 | operations |  |
-| [scripts/audit-tenant-scoping.cjs](../../../scripts/audit-tenant-scoping.cjs) | 258 | operations |  |
+| [scripts/audit-tenant-scoping.cjs](../../../scripts/audit-tenant-scoping.cjs) | 330 | operations | evaluateRatchet:330, parseMaxUnscoped:330 |
+| [scripts/audit-tenant-scoping.test.cjs](../../../scripts/audit-tenant-scoping.test.cjs) | 36 | operations |  |
 | [scripts/auto-sync-master.ps1](../../../scripts/auto-sync-master.ps1) | 123 | operations |  |
 | [scripts/backfill-coursera-courseids.cjs](../../../scripts/backfill-coursera-courseids.cjs) | 381 | learning-coursera | scanProgramsFromSource:374 |
 | [scripts/backfill-courses.ts](../../../scripts/backfill-courses.ts) | 82 | operations |  |
@@ -84,7 +85,7 @@
 | [scripts/lib/portal-audit-classify.mjs](../../../scripts/lib/portal-audit-classify.mjs) | 152 | operations | canonicalPathname:27, classifyPortalAuditRow:46 |
 | [scripts/lib/portal-audit-health-gate.mjs](../../../scripts/lib/portal-audit-health-gate.mjs) | 278 | operations | HEALTH_PATH:28, DEFAULT_HEALTH_GATE_TIMEOUT_MS:29, DEFAULT_HEALTH_GATE_INTERVAL_MS:30, HEALTH_REQUEST_TIMEOUT_MS:31, MIN_VERSION_LENGTH:32, normalizeOriginInput:39, expectedSupabaseRefForMode:45, resolveHealthGateTarget:57, normalizeTrustedSha:66, evaluateHealthPayload:85, formatHealthGateAttempt:158, describeHealthGateFailure:183, waitForTrustedHealth:222, formatPortalAuditTargetErrors:278 |
 | [scripts/lib/portal-audit-inventory.mjs](../../../scripts/lib/portal-audit-inventory.mjs) | 237 | operations | PORTAL_ROLE_PREFIXES:4, routeFromPageFile:52, discoverPortalPageRoutes:64, comparePortalRouteInventory:127, formatPortalRouteInventoryDrift:203, auditPortalRouteInventory:225 |
-| [scripts/lib/portal-audit-paths.mjs](../../../scripts/lib/portal-audit-paths.mjs) | 543 | operations | STATIC_PATHS:12, DYNAMIC_PATHS:202, REQUIRED_DYNAMIC_PATHS:244, SAFE_ACTION_CONTRACTS:257, ATTENDED_ACTION_GATES:352, REDIRECT_ONLY_PATHS:382, PRODUCTION_CANARY_PATHS:500, PRODUCTION_CANARY_ROLES:506, SECTION_LOGIN_REDIRECT:510, ROLE_ACCESS_MATRIX:522 |
+| [scripts/lib/portal-audit-paths.mjs](../../../scripts/lib/portal-audit-paths.mjs) | 544 | operations | STATIC_PATHS:12, DYNAMIC_PATHS:203, REQUIRED_DYNAMIC_PATHS:245, SAFE_ACTION_CONTRACTS:258, ATTENDED_ACTION_GATES:353, REDIRECT_ONLY_PATHS:383, PRODUCTION_CANARY_PATHS:501, PRODUCTION_CANARY_ROLES:507, SECTION_LOGIN_REDIRECT:511, ROLE_ACCESS_MATRIX:523 |
 | [scripts/lib/portal-audit-target.mjs](../../../scripts/lib/portal-audit-target.mjs) | 104 | operations | PORTAL_AUDIT_MODES:1, PRODUCTION_PORTAL_ORIGINS:7, normalizePortalAuditMode:13, validatePortalAuditTarget:47, formatPortalAuditTargetErrors:102 |
 | [scripts/lib/portal-hub-smoke-paths.mjs](../../../scripts/lib/portal-hub-smoke-paths.mjs) | 46 | operations | PORTAL_HUB_SMOKE_ROLES:8, PORTAL_HUB_SMOKE_PATHS:15, isPortalHubSmokePath:41 |
 | [scripts/lib/portal-qa-guard.cjs](../../../scripts/lib/portal-qa-guard.cjs) | 49 | operations | QA_ROLES:49, readPortalQaConfig:49, assertPortalQaOrganization:49 |
@@ -98,7 +99,7 @@
 | [scripts/lint/check-type-floor.test.cjs](../../../scripts/lint/check-type-floor.test.cjs) | 90 | operations |  |
 | [scripts/lint/verify-no-retired-groq-models.mjs](../../../scripts/lint/verify-no-retired-groq-models.mjs) | 81 | operations |  |
 | [scripts/locked-stakes/check-i18n-safe-diff.mjs](../../../scripts/locked-stakes/check-i18n-safe-diff.mjs) | 296 | operations | checkI18nSafeDiff:225 |
-| [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 217 | operations |  |
+| [scripts/material-symbol-glyphs.txt](../../../scripts/material-symbol-glyphs.txt) | 196 | operations |  |
 | [scripts/migrate-metadata-async.mjs](../../../scripts/migrate-metadata-async.mjs) | 80 | operations |  |
 | [scripts/migration-collision-baseline.json](../../../scripts/migration-collision-baseline.json) | 137 | operations |  |
 | [scripts/p1/test-force-rls.ts](../../../scripts/p1/test-force-rls.ts) | 1126 | operations |  |

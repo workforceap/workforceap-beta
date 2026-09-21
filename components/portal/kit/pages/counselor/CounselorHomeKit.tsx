@@ -266,7 +266,7 @@ export function CounselorHomeKit({
   const total = queueTotal ?? queueRows.length;
 
   // Only a state paints a tile (WAP-99): risk / SLA counts carry a tone while above zero, totals stay neutral.
-  const kpis: Array<{ key: string; icon: LucideIcon; label: string; value: number; tone?: KitTone; spark?: SparkStat }> = [
+  const kpis: Array<{ key: string; icon: LucideIcon; label: string; value: number; tone?: KitTone; spark?: SparkStat; caption?: string }> = [
     { key: 'assigned', icon: Users, label: 'Assigned members', value: assignedCount, spark: assignedSpark },
     {
       key: 'atRisk',
@@ -284,7 +284,17 @@ export function CounselorHomeKit({
       tone: slaBreachCount > 0 ? 'alert' : needsReplyCount > 0 ? 'info' : undefined,
       spark: needsReplySpark,
     },
-    { key: 'onTrack', icon: CheckCircle2, label: 'On track', value: onTrackCount, tone: 'ok', spark: onTrackSpark },
+    {
+      key: 'onTrack',
+      icon: CheckCircle2,
+      label: 'On track',
+      value: onTrackCount,
+      tone: 'ok',
+      spark: onTrackSpark,
+      // Says what the count is (members without an open risk alert), so the
+      // tile does not read as "everyone else" (counselor audit gap map, 1).
+      caption: 'No risk alert',
+    },
   ];
 
   const hasActivitySeries = activity.length > 1;
@@ -321,7 +331,7 @@ export function CounselorHomeKit({
         {/* 2. KPI row */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {kpis.map((k) => (
-            <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={k.value} tone={k.tone} spark={k.spark} />
+            <StatSparkTile key={k.key} icon={<k.icon size={16} />} label={k.label} value={k.value} tone={k.tone} spark={k.spark} caption={k.caption} />
           ))}
         </div>
 

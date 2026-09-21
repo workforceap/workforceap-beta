@@ -446,6 +446,60 @@ upgrade-insecure-requests;
 
 **Effort estimate:** 2-3 days + thorough QA.
 
+#### Phase 1 — Report-Only nonce (shipped 2026-09-21, WAP-36)
+
+Step 1 of the migration is live in observe-only mode. Nothing is enforced by it.
+
+- `middleware.ts` mints a 128-bit base64 nonce for every HTML **document**
+  request (not API calls, RSC/prefetch payloads, `/sw.js` or other static
+  files) and forwards it to server components on the `x-nonce` request
+  header. Client-supplied `x-nonce` is stripped first.
+- The same middleware sets `Content-Security-Policy-Report-Only` on the
+  response. Its directive list is a verbatim copy of the enforced header
+  (`lib/security/csp.ts`, parity-tested against `next.config.ts` in
+  `tests/lib/csp-policy.spec.ts`) with three changes: `script-src` gains
+  `'nonce-<value>' 'strict-dynamic'`, `upgrade-insecure-requests` is dropped
+  (browsers ignore it in report-only mode and warn), and `report-uri
+  /api/csp-report` + `report-to csp-endpoint` (with a `Reporting-Endpoints`
+  header) are added. Under `'strict-dynamic'` browsers ignore
+  `'unsafe-inline'` and the host allow-list, so every script that would break
+  under a nonce-only policy produces a report while the enforced header keeps
+  the page working.
+- The Report-Only header is also forwarded on the **request**: Next.js
+  (`app-render`) reads the nonce out of `content-security-policy[-report-only]`
+  in the request headers and stamps its own framework `<script>` tags with it.
+- `app/layout.tsx` stamps `nonce` on the inline scripts it renders:
+  `ThemeInitScript`, the chunk-reload guard, `sw-register`,
+  `gtm-consent-default` and `gtm`. Known un-nonced inline scripts that WILL
+  show up in reports during the soak: `components/portal/WorkspaceShell.tsx`
+  (`data-portal-role` first-paint mirror) — stamp it in phase 2.
+- `POST /api/csp-report` (`app/api/csp-report/route.ts`) accepts
+  `application/csp-report` and `application/reports+json`, refuses bodies over
+  16 KB (413), rate-limits 60/min per proxy-trusted IP (fail-open without
+  Upstash, like the other public sinks; `lib/security/cspReportRateLimit.ts`),
+  writes nothing to the database and answers 204. GET is 405.
+
+**Reading the reports.** The sink emits one structured log line per distinct
+violation per batch: `{"message":"csp.violation","directive":"script-src-elem",
+"blockedHost":"inline","documentPath":"/dashboard","disposition":"report","count":3}`.
+Only the blocked resource's host (or CSP keyword: `inline`, `eval`, `data`,
+`blob`), the directive, the document path (never the query string) and the
+disposition are kept — no script samples, source files, user ids or cookies.
+In Vercel logs filter on `csp.violation` and group by `directive` +
+`blockedHost`; anything not in the enforced allow-list and not `inline`/`eval`
+from our own bundles is a real finding. Expect `inline` from `WorkspaceShell`
+and third-party tags GTM injects until those are nonced.
+
+**Phase 2 — the enforce flip (Mike, after a week-long soak with no unexpected
+reports).** (1) In `middleware.ts` set `Content-Security-Policy` instead of
+`Content-Security-Policy-Report-Only` from `buildCspReportOnlyPolicy` (rename
+it) and drop `'unsafe-inline'`/`'unsafe-eval'` from the `script-src` entry in
+`lib/security/csp.ts`; (2) remove the static `Content-Security-Policy` header
+from `next.config.ts` (two enforcing policies intersect — the stricter wins,
+so leaving both is safe but confusing); (3) keep `report-uri`/`report-to` so
+regressions still surface; (4) update the parity test to the new shape.
+`style-src 'unsafe-inline'` (CSP-DEBT-002) is untouched by this phase.
+
 ---
 
 ### 14. Security Headers
