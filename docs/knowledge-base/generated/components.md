@@ -47,8 +47,8 @@
 | [components/admin/AdminJobsFilterTabs.tsx](../../../components/admin/AdminJobsFilterTabs.tsx) | 49 | administration | default:12 |
 | [components/admin/AdminMemberConsentPanel.tsx](../../../components/admin/AdminMemberConsentPanel.tsx) | 157 | administration | ConsentProfile:6, default:17 |
 | [components/admin/AdminMemberCounselorAssign.tsx](../../../components/admin/AdminMemberCounselorAssign.tsx) | 98 | administration | default:8 |
-| [components/admin/AdminMemberCounselorChatClient.test.tsx](../../../components/admin/AdminMemberCounselorChatClient.test.tsx) | 86 | administration |  |
-| [components/admin/AdminMemberCounselorChatClient.tsx](../../../components/admin/AdminMemberCounselorChatClient.tsx) | 287 | administration | default:285 |
+| [components/admin/AdminMemberCounselorChatClient.test.tsx](../../../components/admin/AdminMemberCounselorChatClient.test.tsx) | 95 | administration |  |
+| [components/admin/AdminMemberCounselorChatClient.tsx](../../../components/admin/AdminMemberCounselorChatClient.tsx) | 295 | administration | default:293 |
 | [components/admin/AdminMemberDbActions.tsx](../../../components/admin/AdminMemberDbActions.tsx) | 174 | administration | default:17 |
 | [components/admin/AdminMemberEnrollmentFundingForm.test.tsx](../../../components/admin/AdminMemberEnrollmentFundingForm.test.tsx) | 91 | administration |  |
 | [components/admin/AdminMemberEnrollmentFundingForm.tsx](../../../components/admin/AdminMemberEnrollmentFundingForm.tsx) | 194 | administration | FundingSource:6, EnrollmentFundingInitial:8, default:23 |
@@ -434,9 +434,9 @@
 | [components/portal/kit/AppShellMember.tsx](../../../components/portal/kit/AppShellMember.tsx) | 113 | components | MemberTab:3, AppShellMember:26 |
 | [components/portal/kit/AppShellSidebar.tsx](../../../components/portal/kit/AppShellSidebar.tsx) | 117 | components | NavItem:7, NavGroup:13, AppShellSidebar:34 |
 | [components/portal/kit/Avatar.tsx](../../../components/portal/kit/Avatar.tsx) | 66 | components | Avatar:16 |
-| [components/portal/kit/Charts.tsx](../../../components/portal/kit/Charts.tsx) | 203 | components | ChartDatum:3, BarChartMini:19, Sparkline:54, AreaChartMini:104, RankDatum:176, RankBars:187 |
+| [components/portal/kit/Charts.tsx](../../../components/portal/kit/Charts.tsx) | 210 | components | ChartDatum:4, BarChartMini:20, Sparkline:55, AreaChartMini:105, RankDatum:177, RankBars:191 |
 | [components/portal/kit/ChatThread.tsx](../../../components/portal/kit/ChatThread.tsx) | 179 | components | ChatMessage:7, ChatThread:36 |
-| [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 188 | components | SparkStat:22, CardHead:36, DeltaChip:50, StatSparkTile:70, StageTrack:137, SegmentedProgress:160 |
+| [components/portal/kit/CommandCenter.tsx](../../../components/portal/kit/CommandCenter.tsx) | 193 | components | SparkStat:22, CardHead:36, DeltaChip:50, StatSparkTile:70, StageTrack:138, SegmentedProgress:165 |
 | [components/portal/kit/DataTable.tsx](../../../components/portal/kit/DataTable.tsx) | 199 | components | KitTableBulkBarContext:11, KitTablePagination:11, Column:13, DataTable:73 |
 | [components/portal/kit/DesignSurface.tsx](../../../components/portal/kit/DesignSurface.tsx) | 40 | components | SurfaceMode:17, useSurface:21, DesignSurface:32 |
 | [components/portal/kit/FeatureTile.tsx](../../../components/portal/kit/FeatureTile.tsx) | 70 | components | FeatureTile:28 |
@@ -453,8 +453,8 @@
 | [components/portal/kit/MemberDashboardKit.tsx](../../../components/portal/kit/MemberDashboardKit.tsx) | 119 | components | MemberDashboardKitProps:16, MemberDashboardKit:28 |
 | [components/portal/kit/MemberProfilePhotoEditor.tsx](../../../components/portal/kit/MemberProfilePhotoEditor.tsx) | 289 | components | MemberProfilePhotoEditor:17 |
 | [components/portal/kit/PageOpener.tsx](../../../components/portal/kit/PageOpener.tsx) | 64 | components | PageOpener:24 |
-| [components/portal/kit/ProgressBar.tsx](../../../components/portal/kit/ProgressBar.tsx) | 46 | components | ProgressBar:15 |
-| [components/portal/kit/ProgressRing.tsx](../../../components/portal/kit/ProgressRing.tsx) | 75 | components | ProgressRing:24 |
+| [components/portal/kit/ProgressBar.tsx](../../../components/portal/kit/ProgressBar.tsx) | 51 | components | ProgressBar:19 |
+| [components/portal/kit/ProgressRing.tsx](../../../components/portal/kit/ProgressRing.tsx) | 78 | components | ProgressRing:27 |
 | [components/portal/kit/QueueRow.tsx](../../../components/portal/kit/QueueRow.tsx) | 101 | components | QueueTone:9, QueueRow:44 |
 | [components/portal/kit/SectionHeader.tsx](../../../components/portal/kit/SectionHeader.tsx) | 47 | components | SectionHeader:18 |
 | [components/portal/kit/StatTile.tsx](../../../components/portal/kit/StatTile.tsx) | 46 | components | StatTile:26 |
@@ -476,7 +476,7 @@
 | [components/portal/kit/kitTableSort.tsx](../../../components/portal/kit/kitTableSort.tsx) | 55 | components | KitSortDirection:6, ariaSortForColumn:8, useKitTableSort:21 |
 | [components/portal/kit/kitTableUrlState.ts](../../../components/portal/kit/kitTableUrlState.ts) | 109 | components | KIT_TABLE_PAGE_SIZE:11, KitTableSortDirection:13, KitTableSort:15, KitTableUrlState:17, parseKitTableSort:32, serializeKitTableSort:44, readKitTableUrlState:55, KitTableUrlChanges:66, writeKitTableUrlState:78, kitTableHref:106 |
 | [components/portal/kit/pages/PartnerOverviewKit.module.css](../../../components/portal/kit/pages/PartnerOverviewKit.module.css) | 20 | components |  |
-| [components/portal/kit/pages/PartnerOverviewKit.tsx](../../../components/portal/kit/pages/PartnerOverviewKit.tsx) | 268 | components | PartnerKpiTile:37, PartnerKpiGrid:54, PartnerFunnelStage:77, PartnerReferralFunnel:85, PartnerPayoutLedgerRow:101, PartnerPayoutLedger:112, PartnerAttentionCard:142, PartnerAssistantAccordion:167, PartnerQuickAction:207, PartnerQuickActions:227 |
+| [components/portal/kit/pages/PartnerOverviewKit.tsx](../../../components/portal/kit/pages/PartnerOverviewKit.tsx) | 269 | components | PartnerKpiTile:37, PartnerKpiGrid:54, PartnerFunnelStage:77, PartnerReferralFunnel:86, PartnerPayoutLedgerRow:102, PartnerPayoutLedger:113, PartnerAttentionCard:143, PartnerAssistantAccordion:168, PartnerQuickAction:208, PartnerQuickActions:228 |
 | [components/portal/kit/pages/VoiceStudioKit.tsx](../../../components/portal/kit/pages/VoiceStudioKit.tsx) | 1637 | components | VoiceStudioAgentKey:77, VOICE_STUDIO_AGENT_KEYS:78, SessionAgentConfig:85, ResumeStudioIssue:171, ResumeStudioData:172, VoiceStudioKitProps:181, VoiceStudioKit:200 |
 | [components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx](../../../components/portal/kit/pages/admin-subviews/AdminDashboardKit.tsx) | 368 | components | AdminDashboardFunnel:66, AdminDashboardTrendPoint:74, AdminDashboardSummary:79, AdminDashboardWorkItem:97, AdminDashboardKitProps:106, AdminDashboardKit:125 |
 | [components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx](../../../components/portal/kit/pages/admin-subviews/AgentInboxKit.tsx) | 225 | components | AgentInboxRow:32, AgentInboxKitProps:50, AgentInboxKit:62 |
@@ -561,7 +561,7 @@
 | [components/portal/kit/pages/member/ResumeStudioKit.tsx](../../../components/portal/kit/pages/member/ResumeStudioKit.tsx) | 63 | member-counselor | ResumeStudioKit:16 |
 | [components/portal/kit/pages/member/SalaryNegotiationKit.tsx](../../../components/portal/kit/pages/member/SalaryNegotiationKit.tsx) | 58 | member-counselor | SalaryNegotiationKit:15 |
 | [components/portal/kit/pages/member/ToolkitToolChrome.tsx](../../../components/portal/kit/pages/member/ToolkitToolChrome.tsx) | 48 | member-counselor | ToolkitToolChrome:11 |
-| [components/portal/kit/tokens.ts](../../../components/portal/kit/tokens.ts) | 39 | components | KitColor:6, colorVar:18, KitTone:28, toneClass:37 |
+| [components/portal/kit/tokens.ts](../../../components/portal/kit/tokens.ts) | 51 | components | KitColor:6, colorVar:18, KitTone:28, toneClass:37, tonePaint:48 |
 | [components/portal/sessions/SessionRunClient.tsx](../../../components/portal/sessions/SessionRunClient.tsx) | 1350 | components | default:67 |
 | [components/portal/sessions/SessionsHistoryClient.tsx](../../../components/portal/sessions/SessionsHistoryClient.tsx) | 214 | components | SessionRow:7, default:29 |
 | [components/portal/sessions/SessionsIndexBody.tsx](../../../components/portal/sessions/SessionsIndexBody.tsx) | 214 | components | default:60 |

@@ -19,11 +19,11 @@ const KPIS: KpiItem[] = [
 ];
 
 const FUNNEL: RankDatum[] = [
-  { label: 'Started application', value: '1,204', pct: 100, color: 'info' },
-  { label: 'Completed intake', value: '968', pct: 80, color: 'info' },
-  { label: 'Eligibility cleared', value: '847', pct: 70, color: 'info' },
-  { label: 'Enrolled', value: '724', pct: 60, color: 'success' },
-  { label: 'Active', value: '612', pct: 51, color: 'success' },
+  { label: 'Started application', value: '1,204', pct: 100, tone: 'info' },
+  { label: 'Completed intake', value: '968', pct: 80, tone: 'info' },
+  { label: 'Eligibility cleared', value: '847', pct: 70, tone: 'info' },
+  { label: 'Enrolled', value: '724', pct: 60, tone: 'ok' },
+  { label: 'Active', value: '612', pct: 51, tone: 'ok' },
 ];
 
 export default function DevStaffPipelineFunnelPage() {

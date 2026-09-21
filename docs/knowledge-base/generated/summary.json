@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "23e9be1e304571071887c6ede33991d35d04dac1594df4c138e9efd33906c003",
+  "inputTreeSha256": "0b374d198a7b99e8494a2efddd1d9e84ba8d58a93c2c75c09514dfef08f25f9e",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4994,
-    "sourceModules": 3638,
-    "importReferences": 18144,
-    "resolvedLocalReferences": 12179,
+    "files": 4995,
+    "sourceModules": 3639,
+    "importReferences": 18139,
+    "resolvedLocalReferences": 12174,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1066,
     "nextRouteFiles": 1032,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 988,
-    "testCandidates": 978,
+    "testFiles": 989,
+    "testCandidates": 979,
     "testHelpers": 10,
-    "staticallySelectedTests": 976,
+    "staticallySelectedTests": 977,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 588
+      "files": 589
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 935
+      "references": 934
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 757
+      "references": 756
     },
     {
       "file": "lib/db/withRequestGuc.ts",
@@ -132,7 +132,7 @@
     },
     {
       "file": "lib/tenant/organization.ts",
-      "references": 242
+      "references": 241
     },
     {
       "file": "lib/audit.ts",
@@ -144,7 +144,7 @@
     },
     {
       "file": "app/seo.ts",
-      "references": 203
+      "references": 202
     },
     {
       "file": "lib/audit/log.ts",
@@ -152,7 +152,7 @@
     },
     {
       "file": "components/portal/PageHeader.tsx",
-      "references": 141
+      "references": 140
     },
     {
       "file": "components/portal/PortalRouteLoading.tsx",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 106
+      "references": 105
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
@@ -298,7 +298,7 @@
     },
     {
       "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1519
+      "lines": 1514
     },
     {
       "file": "app/admin/coursera/page.tsx",

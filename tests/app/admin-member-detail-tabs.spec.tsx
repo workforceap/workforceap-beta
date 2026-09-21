@@ -339,7 +339,9 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     expect(rows.map((li) => li.querySelector('p')?.textContent)).toEqual(['Program change', 'Career plan saved']);
     expect(rows[0].textContent).toContain('Staff · Staff Person');
     expect(rows[1].textContent).toContain('Member');
-    expect(activity.querySelector('a[href="/admin/members/member-1/lifecycle"]')).not.toBeNull();
+    // The lifecycle route is a redirect alias of this tab, so the panel never links back to it.
+    expect(activity.querySelector('a[href="/admin/members/member-1/lifecycle"]')).toBeNull();
+    expect(activity.querySelector('a[href="/admin/audit-logs"]')).not.toBeNull();
   });
 
   it('shows the identity card status chips from loaded data', async () => {

@@ -418,11 +418,11 @@
 | [app/admin/members/\[id\]/billing/BillingPacketClient.tsx](../../../app/admin/members/%5Bid%5D/billing/BillingPacketClient.tsx) | 405 | partners-funding | BillingProgramOption:11, default:63 |
 | [app/admin/members/\[id\]/billing/page.tsx](../../../app/admin/members/%5Bid%5D/billing/page.tsx) | 128 | partners-funding | generateMetadata:16, default:29 |
 | [app/admin/members/\[id\]/introduceAction.ts](../../../app/admin/members/%5Bid%5D/introduceAction.ts) | 107 | administration | introduceMemberToEmployer:14 |
-| [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) | 225 | administration | generateMetadata:12, default:20 |
-| [app/admin/members/\[id\]/memberDetail.module.css](../../../app/admin/members/%5Bid%5D/memberDetail.module.css) | 421 | administration |  |
+| [app/admin/members/\[id\]/lifecycle/page.tsx](../../../app/admin/members/%5Bid%5D/lifecycle/page.tsx) | 16 | administration | default:9 |
+| [app/admin/members/\[id\]/memberDetail.module.css](../../../app/admin/members/%5Bid%5D/memberDetail.module.css) | 415 | administration |  |
 | [app/admin/members/\[id\]/memberDetailTabs.ts](../../../app/admin/members/%5Bid%5D/memberDetailTabs.ts) | 40 | administration | AdminMemberDetailTabId:11, ADMIN_MEMBER_DETAIL_TABS_ID_BASE:16, ADMIN_MEMBER_DETAIL_TAB_PARAM:19, ADMIN_MEMBER_DETAIL_TABS:21, parseAdminMemberDetailTab:32 |
 | [app/admin/members/\[id\]/notesPanel.module.css](../../../app/admin/members/%5Bid%5D/notesPanel.module.css) | 86 | administration |  |
-| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1519 | administration | generateMetadata:94, default:102 |
+| [app/admin/members/\[id\]/page.tsx](../../../app/admin/members/%5Bid%5D/page.tsx) | 1514 | administration | generateMetadata:94, default:102 |
 | [app/admin/members/\[id\]/readiness/ReadinessCounselorClient.tsx](../../../app/admin/members/%5Bid%5D/readiness/ReadinessCounselorClient.tsx) | 216 | administration | default:25 |
 | [app/admin/members/\[id\]/readiness/page.tsx](../../../app/admin/members/%5Bid%5D/readiness/page.tsx) | 64 | administration | generateMetadata:13, default:21 |
 | [app/admin/members/\[id\]/stakeholder/page.tsx](../../../app/admin/members/%5Bid%5D/stakeholder/page.tsx) | 701 | administration | dynamic:21, generateMetadata:23, default:57 |

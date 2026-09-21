@@ -23,12 +23,6 @@
   flex: 1 1 10rem;
 }
 
-.actionIcon {
-  font-size: 1.125rem;
-  margin-right: 0.25rem;
-  vertical-align: middle;
-}
-
 .strip {
   max-width: 800px;
   margin-bottom: 1.5rem;

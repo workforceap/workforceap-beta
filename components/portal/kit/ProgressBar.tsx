@@ -1,19 +1,24 @@
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
-import { colorVar, type KitColor } from './tokens';
+import { toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
 
 interface ProgressBarProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   /** 0–100. */
   pct: number;
+  /** Semantic state the fill paints (`ok`, `warn`, …) via the tone hook; omit for the plain accent fill. */
+  tone?: KitTone;
+  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
   color?: KitColor;
   'aria-label'?: string;
 }
 
 /**
  * Kit progress track — native `.wa-kit-bar-track` / `.wa-kit-bar-fill` on `--wa-*`.
- * Optional `color` tints the fill (`accent` default).
+ * Optional `tone` tints the fill through `.wa-kit-tone--<tone>` (`accent` default;
+ * the old `color` prop still works but is deprecated).
  */
 export function ProgressBar({
   pct,
+  tone,
   color,
   'aria-label': ariaLabel,
   className,
@@ -25,7 +30,7 @@ export function ProgressBar({
   return (
     <div
       ref={ref}
-      className={cx('wa-kit-bar-track', className)}
+      className={cx('wa-kit-bar-track', toneClass(tone), className)}
       style={style}
       role="progressbar"
       aria-valuenow={clamped}
@@ -38,7 +43,7 @@ export function ProgressBar({
         className="wa-kit-bar-fill"
         style={{
           width: `${clamped}%`,
-          ...(color ? { background: colorVar(color) } : null),
+          ...(tonePaint(tone, color) ? { background: tonePaint(tone, color) } : null),
         }}
       />
     </div>

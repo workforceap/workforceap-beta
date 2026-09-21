@@ -9440,36 +9440,15 @@
     "routing": "filesystem",
     "exports": [
       {
-        "name": "generateMetadata",
-        "line": 12,
-        "kind": "FunctionDeclaration"
-      },
-      {
         "name": "default",
-        "line": 20,
+        "line": 9,
         "kind": "FunctionDeclaration",
         "localName": "AdminMemberLifecyclePage"
       }
     ],
     "methods": [],
     "configuration": {},
-    "boundaryReferences": [
-      {
-        "specifier": "@/lib/auth/server",
-        "line": 6,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/adminPageScope",
-        "line": 7,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/organization",
-        "line": 8,
-        "kind": "import"
-      }
-    ]
+    "boundaryReferences": []
   },
   {
     "file": "app/admin/members/[id]/page.tsx",

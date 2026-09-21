@@ -9010,6 +9010,11 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
     font-size: 0.9rem;
     margin-bottom: 0.75rem;
 }
+.member-counselor-chat__empty {
+    margin: 0 0 1rem;
+    font-size: 0.875rem;
+    color: var(--color-on-surface-variant);
+}
 .member-counselor-chat__scroll {
     max-height: min(420px, 55vh);
     overflow-y: auto;

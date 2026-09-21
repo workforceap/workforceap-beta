@@ -193,7 +193,8 @@
 | [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
-| [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
+| [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 422 | tests |  |
+| [tests/app/admin-member-lifecycle-redirect.spec.tsx](../../../tests/app/admin-member-lifecycle-redirect.spec.tsx) | 28 | tests |  |
 | [tests/app/admin-members-roster-numbers.spec.tsx](../../../tests/app/admin-members-roster-numbers.spec.tsx) | 254 | tests |  |
 | [tests/app/admin-partners-page.spec.tsx](../../../tests/app/admin-partners-page.spec.tsx) | 108 | tests |  |
 | [tests/app/admin-placement-surveys-page.spec.tsx](../../../tests/app/admin-placement-surveys-page.spec.tsx) | 87 | tests |  |

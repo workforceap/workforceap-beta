@@ -47,9 +47,9 @@ const DEFAULT_KPIS: KpiItem[] = [
 ];
 
 const DEFAULT_BY_SURFACE: RankDatum[] = [
-  { label: 'Member portal', value: '—', pct: 0, color: 'info' },
-  { label: 'Admin', value: '—', pct: 0, color: 'info' },
-  { label: 'API / webhooks', value: '—', pct: 0, color: 'info' },
+  { label: 'Member portal', value: '—', pct: 0, tone: 'info' },
+  { label: 'Admin', value: '—', pct: 0, tone: 'info' },
+  { label: 'API / webhooks', value: '—', pct: 0, tone: 'info' },
 ];
 
 export function MetricsKit({

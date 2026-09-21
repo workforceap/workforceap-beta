@@ -37,3 +37,15 @@ export type KitTone = 'ok' | 'warn' | 'alert' | 'danger' | 'info' | 'muted';
 export function toneClass(tone: KitTone | undefined): string | undefined {
   return tone ? `wa-kit-tone--${tone}` : undefined;
 }
+
+/**
+ * Fill / stroke for a component that takes `tone?: KitTone` (preferred) and a
+ * deprecated `color?: KitColor`: the tone hook variable when a tone is set
+ * (pair it with `toneClass(tone)` on the container), the legacy colour var
+ * when only `color` is set, else `undefined` so the component's CSS default
+ * (`--wa-accent`) paints.
+ */
+export function tonePaint(tone: KitTone | undefined, color?: KitColor): string | undefined {
+  if (tone) return 'var(--wa-kit-tone)';
+  return color ? colorVar(color) : undefined;
+}

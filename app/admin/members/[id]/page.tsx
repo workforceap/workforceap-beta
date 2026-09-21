@@ -706,10 +706,6 @@ export default async function AdminMemberDetailPage({
         action={
           <div className={styles.headerActions}>
             <Link href={`/admin/members/${id}/stakeholder`} className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>Open stakeholder view</Link>
-            <Link href={`/admin/members/${id}/lifecycle`} className={`btn btn-outline ${styles.headerAction}`}>
-              <span className={`material-symbols-outlined ${styles.actionIcon}`} aria-hidden="true">timeline</span>
-              Lifecycle
-            </Link>
             <Link href={`/admin/members/${id}/readiness`} className={`btn btn-outline ${styles.headerAction}`}>
               <ClipboardList size={18} style={{ marginRight: '0.35rem', verticalAlign: 'middle' }} />
               Readiness
@@ -1473,8 +1469,8 @@ export default async function AdminMemberDetailPage({
 
         {/* ── Activity ─────────────────────────────────────────
             Staff actions recorded against this member (AuditLog) merged with
-            the member's own recent events, newest first. The full lifecycle
-            timeline keeps its own page. */}
+            the member's own recent events, newest first. `/admin/members/[id]/lifecycle`
+            redirects here (`?tab=activity`). */}
         <TabPanel value="activity">
           <div className={styles.stack}>
             <section className="wa-kit-card" aria-labelledby="admin-member-activity-title">
@@ -1504,12 +1500,11 @@ export default async function AdminMemberDetailPage({
                   description="Staff actions on this record and the member's own events will appear here as they happen."
                 />
               )}
-              <div className={styles.activityLinks}>
-                <Link href={`/admin/members/${id}/lifecycle`} className={styles.inlineLink}>Open full lifecycle timeline →</Link>
-                {scope.superAdmin ? (
+              {scope.superAdmin ? (
+                <div className={styles.activityLinks}>
                   <Link href="/admin/audit-logs" className={styles.inlineLink}>Open platform audit logs →</Link>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </section>
           </div>
         </TabPanel>

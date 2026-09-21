@@ -93,7 +93,7 @@ export default async function OutcomesPage({
         label: p.programSlug,
         value: p.placed,
         pct: Math.round((p.placed / programMaxPlaced) * 100),
-        color: 'info',
+        tone: 'info',
       }));
 
     // The period's CSV / PDF / Markdown snapshots are listed on /admin/exports
