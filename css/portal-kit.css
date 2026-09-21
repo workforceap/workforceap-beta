@@ -520,6 +520,32 @@ a.wa-kit-tab {
   white-space: nowrap;
 }
 
+/* Streak chip — an achievement affordance on the member home, not a status.
+   Deliberately NOT a `.wa-kit-tone--*` tone: a streak is something the member
+   earned, so painting it `ok` would put it in the same vocabulary as "this is
+   healthy" and a broken streak would then have to read as `warn`. Gold is the
+   kit's achievement hue, taken from the shared tokens (--wa-gold-soft /
+   --wa-gold-dark), both of which are light-dark() so this needs no dark-mode
+   override. */
+.wa-kit-streak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px 7px 10px;
+  border-radius: 999px;
+  background: var(--wa-gold-soft);
+  border: 1px solid color-mix(in srgb, var(--wa-gold) 35%, transparent);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-gold-dark);
+  flex-shrink: 0;
+}
+.wa-kit-streak-chip b {
+  color: var(--wa-text);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .wa-kit-bar-track {
   height: 8px;
   border-radius: 999px;

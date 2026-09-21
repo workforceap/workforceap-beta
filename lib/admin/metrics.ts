@@ -61,10 +61,11 @@ async function countEventOnlyAiRunsBetween(orgId: string | undefined, start: Dat
 /**
  * The one definition of an "AI tool run" for every admin surface: saved
  * `AIToolResult` rows plus the voice sessions that only leave a member event,
- * over member-role accounts. /admin/metrics ("AI tool runs"), the Executive
- * Dashboard and /admin/analytics ("AI Tool Uses") all print this number, so
- * they can no longer disagree (340 vs 291, two-thirds of it staff usage;
- * number audit 2026-09-20, S22). `orgId` undefined = platform-wide.
+ * over member-role accounts. The reporting hub ("AI tool runs" / "AI Tool
+ * Uses", on the Overview section that /admin/metrics and /admin/analytics now
+ * redirect into) and the Executive Dashboard all print this number, so they
+ * can no longer disagree (340 vs 291, two-thirds of it staff usage; number
+ * audit 2026-09-20, S22). `orgId` undefined = platform-wide.
  */
 export async function countMemberAiToolRuns(
   orgId: string | undefined,
