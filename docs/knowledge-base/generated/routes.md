@@ -748,6 +748,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/health/ready | route | OPTIONS, GET | [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | @/lib/db/withRequestGuc:3, @/lib/rate-limit:6, @/lib/tenant/organization:7 |
 | /api/health | route | OPTIONS, GET | [app/api/health/route.ts](../../../app/api/health/route.ts) | @/lib/rate-limit:4 |
 | /api/health/slo | route | GET | [app/api/health/slo/route.ts](../../../app/api/health/slo/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:6 |
+| /api/help/chat | route | GET, POST | [app/api/help/chat/route.ts](../../../app/api/help/chat/route.ts) | @/lib/auth/server:2, @/lib/db/withRequestGuc:3, @/lib/rate-limit:7 |
 | /api/interview/history | route | GET, POST | [app/api/interview/history/route.ts](../../../app/api/interview/history/route.ts) | @/lib/auth/ensureUser:2, @/lib/auth/server:3, @/lib/rate-limit:11, @/lib/db/withRequestGuc:13 |
 | /api/interview/session | route | POST | [app/api/interview/session/route.ts](../../../app/api/interview/session/route.ts) | @/lib/auth/server:3, @/lib/rate-limit:5, @/lib/db/withRequestGuc:13 |
 | /api/invite/accept | route | POST | [app/api/invite/accept/route.ts](../../../app/api/invite/accept/route.ts) | @/lib/tenant/organization:6, @/lib/tenant/resolveOrgFromRequest:7, @/lib/rate-limit:13, @/lib/auth/supabaseAdminUsers:15, @/lib/db/withRequestGuc:30 |

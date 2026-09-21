@@ -5889,12 +5889,12 @@
     "exports": [
       {
         "name": "metadata",
-        "line": 11,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 15,
+        "line": 17,
         "kind": "FunctionDeclaration",
         "localName": "EmployerPortalLayout"
       }
@@ -6097,12 +6097,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 36,
+        "line": 37,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 45,
+        "line": 46,
         "kind": "FunctionDeclaration",
         "localName": "EmployerDashboardPage"
       }
@@ -6656,12 +6656,12 @@
     "exports": [
       {
         "name": "metadata",
-        "line": 11,
+        "line": 13,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 15,
+        "line": 17,
         "kind": "FunctionDeclaration",
         "localName": "PartnerPortalLayout"
       }
@@ -6965,12 +6965,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 62,
+        "line": 63,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 73,
+        "line": 74,
         "kind": "FunctionDeclaration",
         "localName": "PartnerDashboardPage"
       }
@@ -24756,6 +24756,47 @@
       {
         "specifier": "@/lib/db/withRequestGuc",
         "line": 6,
+        "kind": "import"
+      }
+    ]
+  },
+  {
+    "file": "app/api/help/chat/route.ts",
+    "kind": "route",
+    "path": "/api/help/chat",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "GET",
+        "line": 65,
+        "kind": "Variable"
+      },
+      {
+        "name": "POST",
+        "line": 100,
+        "kind": "Variable"
+      }
+    ],
+    "methods": [
+      "GET",
+      "POST"
+    ],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 2,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/db/withRequestGuc",
+        "line": 3,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/rate-limit",
+        "line": 7,
         "kind": "import"
       }
     ]

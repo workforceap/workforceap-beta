@@ -76,34 +76,51 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
       step('member.home', 'profile', 'tour-profile'),
     ],
   },
+  /**
+   * Employer first-login tour (tours wave 3, v3). Written for the /employer
+   * overview: `tour-post-job` is the page's Post a job action, the `tour-*`
+   * nav anchors are `tourTarget`s on `EMPLOYER_PORTAL_NAV_ITEMS` (rendered by
+   * `WorkspaceShell`) and `tour-help` is the header Help menu that reopens the
+   * tour. Post a job → review candidates → pipeline → messages → settings.
+   * v3 supersedes the v2 rail walk-through (work queue / jobs / matches are
+   * named in the copy instead of getting their own step).
+   */
   'employer.home': {
     key: 'employer.home',
-    version: 2,
+    version: 3,
     role: 'employer',
     route: '/employer',
     steps: [
       step('employer.home', 'overview', 'tour-overview'),
-      step('employer.home', 'workQueue', 'tour-work-queue'),
-      step('employer.home', 'jobs', 'tour-jobs'),
+      step('employer.home', 'postJob', 'tour-post-job', 'bottom'),
       step('employer.home', 'applicants', 'tour-applicants'),
       step('employer.home', 'pipeline', 'tour-pipeline'),
-      step('employer.home', 'matches', 'tour-matches'),
       step('employer.home', 'messages', 'tour-messages'),
-      step('employer.home', 'postJob', 'tour-post-job', 'bottom'),
+      step('employer.home', 'settings', 'tour-settings'),
+      step('employer.home', 'help', 'tour-help', 'bottom'),
     ],
   },
+  /**
+   * Partner first-login tour (tours wave 3, v3). Written for the /partner
+   * overview: `tour-referral-link` and `tour-payouts` are page sections
+   * (payouts renders for referral partners only, so that step is skipped for
+   * everyone else), the `tour-*` nav anchors are `tourTarget`s on
+   * `PARTNER_PORTAL_NAV_ITEMS` and `tour-help` is the header Help menu.
+   * Referral link → referred members → attention → payouts → exports → messages.
+   */
   'partner.home': {
     key: 'partner.home',
-    version: 2,
+    version: 3,
     role: 'partner',
     route: '/partner',
     steps: [
-      step('partner.home', 'overview', 'tour-overview'),
+      step('partner.home', 'referralLink', 'tour-referral-link', 'bottom'),
       step('partner.home', 'members', 'tour-members'),
       step('partner.home', 'attention', 'tour-attention'),
-      step('partner.home', 'outcomes', 'tour-outcomes'),
+      step('partner.home', 'payouts', 'tour-payouts', 'top'),
+      step('partner.home', 'exports', 'tour-exports'),
       step('partner.home', 'messages', 'tour-messages'),
-      step('partner.home', 'referralLink', 'tour-referral-link', 'bottom'),
+      step('partner.home', 'help', 'tour-help', 'bottom'),
     ],
   },
   /**

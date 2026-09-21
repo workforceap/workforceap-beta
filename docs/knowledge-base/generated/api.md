@@ -352,6 +352,7 @@
 | [app/api/health/ready/route.ts](../../../app/api/health/ready/route.ts) | 149 | api | dynamic:12, OPTIONS:81, GET:90 |
 | [app/api/health/route.ts](../../../app/api/health/route.ts) | 95 | api | dynamic:8, OPTIONS:55, GET:64 |
 | [app/api/health/slo/route.ts](../../../app/api/health/slo/route.ts) | 388 | api | dynamic:40, GET:388 |
+| [app/api/help/chat/route.ts](../../../app/api/help/chat/route.ts) | 194 | api | GET:65, POST:100 |
 | [app/api/interview/history/route.ts](../../../app/api/interview/history/route.ts) | 242 | jobs-employers | GET:104, POST:242 |
 | [app/api/interview/session/route.ts](../../../app/api/interview/session/route.ts) | 133 | jobs-employers | POST:35 |
 | [app/api/invite/accept/_invitationClaim.ts](../../../app/api/invite/accept/_invitationClaim.ts) | 32 | api | InvitationClaimError:5, claimPendingInvitationForAccept:11 |
