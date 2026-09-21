@@ -7,3 +7,7 @@
 -- the triad is absent); readers treat q1 IS NULL as "triad not answered".
 ALTER TABLE "apply_eligibility_screenings" ALTER COLUMN "q1" DROP NOT NULL;
 ALTER TABLE "apply_eligibility_screenings" ALTER COLUMN "q2" DROP NOT NULL;
+
+-- Down (manual; only safe when no rows have NULL q1/q2):
+--   ALTER TABLE "apply_eligibility_screenings" ALTER COLUMN "q1" SET NOT NULL;
+--   ALTER TABLE "apply_eligibility_screenings" ALTER COLUMN "q2" SET NOT NULL;

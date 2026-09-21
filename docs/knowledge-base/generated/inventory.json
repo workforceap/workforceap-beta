@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "83cba72cf98a9f55f2ddafb2a1de43b5977a236fa7e9e5f71fd7acb9731a0a0b",
+  "inputTreeSha256": "1656b2bb3ad19c3547cba7a27e9a4217e02c12186fd70bdc955c5e1cef934566",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -152031,9 +152031,9 @@
       "path": "prisma/migrations/20260921160000_wap170_nullable_screening_triad/migration.sql",
       "area": "database",
       "domain": "database",
-      "bytes": 688,
-      "lines": 9,
-      "sha256": "99c472a13a1f9e0ee6da937c513c34df7f7ff8d751dffdab0049b8225f323087",
+      "bytes": 907,
+      "lines": 13,
+      "sha256": "aa8ff9f3a4dfbdddffb3b115582b874a40f32d01078872b3f4ec81cf82c2cc6a",
       "binary": false
     },
     {
