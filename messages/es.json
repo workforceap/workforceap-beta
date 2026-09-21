@@ -3553,10 +3553,6 @@
           "title": "AI Career Tools",
           "body": "Ayuda con el currículum, cartas de presentación, práctica de entrevistas y un asesor de carrera por voz, todo en un mismo estudio. Empieza por el currículum para que tus solicitudes salgan listas."
         },
-        "learning": {
-          "title": "Aprendizaje",
-          "body": "Accede a tus cursos, materiales de formación y recursos para desarrollar habilidades."
-        },
         "messages": {
           "title": "Mensajes",
           "body": "Tu consejero y el equipo de WorkforceAP te escriben aquí. Los hilos sin leer muestran una insignia; responde desde la misma página."
@@ -3589,14 +3585,6 @@
           "title": "Tu panel de contratación",
           "body": "Puestos activos, candidatos en revisión y ofertas abiertas de un vistazo. Cola de trabajo, en el menú, enumera las acciones de hoy: candidatos por revisar, entrevistas por programar y publicaciones sin actividad."
         },
-        "workQueue": {
-          "title": "Cola de trabajo",
-          "body": "Tareas diarias: candidatos por revisar, entrevistas por programar y publicaciones sin actividad."
-        },
-        "jobs": {
-          "title": "Ofertas de empleo",
-          "body": "Publica nuevos puestos, importa desde tu bolsa de trabajo o LinkedIn y gestiona las publicaciones activas."
-        },
         "applicants": {
           "title": "Revisa candidatos",
           "body": "Todas las personas que se postularon, con programa, estado y puntuación de compatibilidad. Abre un candidato para ver su progreso de formación y su perfil, y luego avánzalo o descártalo."
@@ -3604,10 +3592,6 @@
         "pipeline": {
           "title": "Sigue tu proceso de contratación",
           "body": "Revisado, en entrevista, con oferta, contratado: un tablero para cada puesto abierto. Historial de coincidencias guarda los miembros sugeridos por IA para cada publicación."
-        },
-        "matches": {
-          "title": "Coincidencias de IA",
-          "body": "Candidatos sugeridos por IA para tus puestos abiertos según sus habilidades y su encaje con el programa."
         },
         "messages": {
           "title": "Mensajes",
@@ -3633,10 +3617,6 @@
     },
     "partner": {
       "home": {
-        "overview": {
-          "title": "Panel de socios",
-          "body": "Los miembros que has referido y su estado actual, todo en una sola vista."
-        },
         "members": {
           "title": "Miembros referidos",
           "body": "Todas las personas que has referido, con su etapa, progreso de formación y última actividad. Abre un miembro para ver su recorrido completo."
@@ -3644,10 +3624,6 @@
         "attention": {
           "title": "Cola de atención",
           "body": "Miembros que pueden necesitar un empujón: solicitudes estancadas, estudiantes inactivos y alertas de riesgo, cada uno con el motivo y un siguiente paso."
-        },
-        "outcomes": {
-          "title": "Resultados",
-          "body": "Sigue las colocaciones y los resultados de empleo de tus referidos."
         },
         "messages": {
           "title": "Mensajes",

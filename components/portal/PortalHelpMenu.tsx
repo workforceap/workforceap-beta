@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTour } from '@/components/onboarding/TourContext';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
-import HelpAssistantPanel from '@/components/portal/help/HelpAssistantPanel';
+import HelpAssistantPanel, { HELP_ASSISTANT_PANEL_SELECTOR } from '@/components/portal/help/HelpAssistantPanel';
 import { useHelpAssistantAvailability } from '@/components/portal/help/useHelpAssistantAvailability';
 import type { TourKey } from '@/lib/tours/registry';
 
@@ -37,7 +37,13 @@ export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKe
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node | null;
+      if (!target || (rootRef.current && rootRef.current.contains(target))) return;
+      // The Ask-for-help drawer is rendered through a portal onto <body>, so
+      // it sits outside `rootRef` in the DOM although this menu owns it; a
+      // click inside it is not a click outside the menu.
+      if (target instanceof Element && target.closest(HELP_ASSISTANT_PANEL_SELECTOR)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);

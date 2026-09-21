@@ -3472,5 +3472,234 @@
       "legacy": "Explicação salva (idioma original): {text}",
       "unavailable": "Nenhuma explicação foi salva com esta avaliação."
     }
+  },
+  "tours": {
+    "chrome": {
+      "close": "Fechar o tour",
+      "stepOf": "Passo {current} de {total}",
+      "back": "Voltar",
+      "skip": "Pular o tour",
+      "next": "Próximo",
+      "done": "Concluído",
+      "announceStep": "Passo {current} de {total} do tour: {title}"
+    },
+    "member": {
+      "home": {
+        "dashboard": {
+          "title": "Sua base",
+          "body": "Sua visão geral: trilha de certificação, candidaturas em andamento, atividade de estudo semanal e pontos. Faça isto agora, no topo, é a ação que faz você avançar hoje; Meu programa, no menu, tem sua lista completa de cursos."
+        },
+        "aiTools": {
+          "title": "AI Career Tools",
+          "body": "Ajuda com currículo, cartas de apresentação, prática de entrevistas e um orientador de carreira por voz em um só estúdio. Comece pelo currículo para que suas candidaturas saiam prontas."
+        },
+        "messages": {
+          "title": "Mensagens",
+          "body": "Seu conselheiro e a equipe WorkforceAP escrevem para você aqui. Conversas não lidas mostram um selo; responda na mesma página."
+        },
+        "profile": {
+          "title": "Perfil e configurações",
+          "body": "Seu nome abre Perfil e configurações: dados de contato, foto, notificações e idioma. Mantenha tudo atualizado para que seu conselheiro e os empregadores possam falar com você."
+        },
+        "program": {
+          "title": "Progresso do treinamento",
+          "body": "Meu programa é sua lista de cursos e seu progresso: módulos concluídos, o que vem a seguir, Coursera e seus certificados. Registre aqui uma certificação assim que passar no exame."
+        },
+        "jobs": {
+          "title": "Encontrar um emprego",
+          "body": "Vagas de emprego lista posições compatíveis com seu programa e suas habilidades. Candidate-se com um clique e acompanhe cada candidatura em Candidaturas; entrevistas e ofertas aparecem no pipeline da sua página inicial."
+        },
+        "help": {
+          "title": "Volte quando quiser",
+          "body": "Ajuda reabre este tour sempre que você quiser e leva ao Guia do membro."
+        },
+        "offer": {
+          "title": "Novo por aqui? Faça um tour de dois minutos",
+          "body": "Veja onde fica seu progresso de treinamento, como encontrar vagas e se candidatar, onde estão suas mensagens e como atualizar seu perfil."
+        }
+      }
+    },
+    "employer": {
+      "home": {
+        "overview": {
+          "title": "Seu painel de contratação",
+          "body": "Vagas ativas, candidatos em análise e ofertas em aberto de uma só vez. Fila de trabalho, no menu, lista as ações de hoje: candidatos a analisar, entrevistas a agendar e anúncios parados."
+        },
+        "applicants": {
+          "title": "Analisar candidatos",
+          "body": "Todas as pessoas que se candidataram, com programa, status e pontuação de compatibilidade. Abra um candidato para ver o progresso no treinamento e o perfil, depois avance com ele ou passe."
+        },
+        "pipeline": {
+          "title": "Acompanhar seu pipeline",
+          "body": "Analisados, em entrevista, com oferta, contratados: um só quadro para cada vaga aberta. Histórico de compatibilidade guarda os membros sugeridos pela IA para cada anúncio."
+        },
+        "messages": {
+          "title": "Mensagens",
+          "body": "Fale com a equipe WorkforceAP sobre um anúncio, um candidato ou uma entrevista. Conversas não lidas mostram um selo aqui."
+        },
+        "postJob": {
+          "title": "Publicar uma vaga",
+          "body": "Leva cerca de dois minutos: título, remuneração, horário e as habilidades necessárias. Importações traz vagas do seu site de empregos ou do LinkedIn. Membros qualificados do programa são combinados automaticamente com cada vaga ativa."
+        },
+        "offer": {
+          "title": "Novo por aqui? Faça um tour de dois minutos",
+          "body": "Veja onde publicar uma vaga, analisar candidatos, acompanhar seu pipeline, falar com a equipe e gerenciar o perfil da sua empresa."
+        },
+        "settings": {
+          "title": "Configurações da empresa",
+          "body": "Perfil, logotipo e dados de contato da sua empresa. Os candidatos veem em cada anúncio as informações que você define aqui."
+        },
+        "help": {
+          "title": "Volte quando quiser",
+          "body": "Ajuda reabre este tour sempre que você quiser e leva a Como funciona, o guia do empregador."
+        }
+      }
+    },
+    "partner": {
+      "home": {
+        "members": {
+          "title": "Membros indicados",
+          "body": "Todas as pessoas que você indicou, com etapa, progresso no treinamento e última atividade. Abra um membro para ver toda a sua jornada."
+        },
+        "attention": {
+          "title": "Fila de atenção",
+          "body": "Membros que podem precisar de um empurrão: candidaturas paradas, alunos inativos e alertas de risco, cada um com o motivo e um próximo passo."
+        },
+        "messages": {
+          "title": "Mensagens",
+          "body": "Fale com a equipe WorkforceAP sobre uma indicação, um marco ou suporte a parceiros. Conversas não lidas mostram um selo aqui."
+        },
+        "referralLink": {
+          "title": "Seu link de indicação",
+          "body": "Compartilhe este link ou código com as pessoas que você atende. Quem se candidatar por ele fica vinculado à sua organização, da candidatura à colocação."
+        },
+        "offer": {
+          "title": "Novo por aqui? Faça um tour de dois minutos",
+          "body": "Veja onde fica seu link de indicação, como acompanhar os membros indicados, onde estão os pagamentos e as exportações e como falar com a equipe."
+        },
+        "payouts": {
+          "title": "Pagamentos",
+          "body": "Parceiros de indicação recebem um pagamento por cada colocação verificada. Conecte uma conta bancária aqui uma única vez; os pagamentos são enviados quando uma colocação é verificada."
+        },
+        "exports": {
+          "title": "Exportações",
+          "body": "Baixe seus membros indicados, marcos e resultados em CSV para relatórios de subvenção e atualizações ao conselho. Resumo de resultados mostra os mesmos números na tela."
+        },
+        "help": {
+          "title": "Volte quando quiser",
+          "body": "Ajuda reabre este tour sempre que você quiser e leva ao Guia de indicação."
+        }
+      }
+    },
+    "help": {
+      "label": "Ajuda",
+      "takeTour": "Fazer o tour",
+      "guide": "Guia do portal",
+      "askAssistant": "Pedir ajuda"
+    },
+    "offer": {
+      "take": "Fazer o tour",
+      "dismiss": "Agora não"
+    },
+    "counselor": {
+      "home": {
+        "offer": {
+          "title": "Novo por aqui? Faça um tour de dois minutos",
+          "body": "Veja o que precisa de atenção hoje, como abrir um membro, como enviar mensagens e onde ficam as anotações."
+        },
+        "attention": {
+          "title": "O que precisa de atenção hoje",
+          "body": "Três números, uma regra para cada: membros marcados como urgentes ou em observação, respostas que você deve após 24 horas e todos que estão no caminho certo. Hoje lista apenas quem precisa de você."
+        },
+        "queue": {
+          "title": "Uma lista, cada membro uma vez",
+          "body": "Os membros são agrupados pelo tipo de contato de que precisam — em risco, resposta pendente, sem atividade, acompanhamentos, novos, comemorar — e cada linha diz o motivo. Linhas urgentes aparecem primeiro."
+        },
+        "openMember": {
+          "title": "Abrir um membro",
+          "body": "Use Ver membro em qualquer linha, ou Todos os membros para a lista completa. Os cartões de estatísticas da lista explicam por que um membro precisa de atenção e cada um leva à página onde agir."
+        },
+        "memberRecord": {
+          "title": "O registro do membro",
+          "body": "Cada membro abre em quatro abas: Perfil, Treinamento, Anotações e Mensagens. As anotações ficam na aba Anotações — anotações do conselheiro e anotações de sessão — e a ação Mensagem fica no topo da página."
+        },
+        "atRisk": {
+          "title": "Membros em risco",
+          "body": "O modelo de risco classifica sua carteira por inatividade, treinamento parado e mensagens sem resposta. Comece por aqui em dias cheios."
+        },
+        "messages": {
+          "title": "Enviar mensagem a um membro",
+          "body": "Mensagens guarda todas as conversas com seus membros. Abrir conversa em uma linha de Hoje leva você direto à pessoa que está esperando."
+        },
+        "help": {
+          "title": "Volte quando quiser",
+          "body": "Ajuda reabre este tour sempre que você quiser e leva ao guia do portal."
+        }
+      }
+    },
+    "assistant": {
+      "title": "Pedir ajuda",
+      "intro": "Pergunte como usar este portal: onde fica uma página, para que ela serve ou os passos para fazer algo. Respondo apenas sobre o seu próprio portal e nunca vejo seus dados.",
+      "placeholder": "Pergunte como fazer algo aqui…",
+      "send": "Enviar",
+      "thinking": "Procurando…",
+      "error": "Algo deu errado. Tente novamente em instantes.",
+      "tooMany": "Você fez muitas perguntas em pouco tempo. Tente novamente daqui a pouco.",
+      "links": "Páginas relacionadas",
+      "close": "Fechar ajuda",
+      "disclaimer": "Orientação apenas sobre o portal. Nada do que você digitar aqui altera sua conta.",
+      "scope": {
+        "member": "Como usar seu portal do membro",
+        "counselor": "Como usar o portal do conselheiro",
+        "employer": "Como usar o portal do empregador",
+        "partner": "Como usar o portal do parceiro",
+        "admin": "Como usar o espaço de administração"
+      },
+      "starters": {
+        "whereAmI": "Para que serve esta página?",
+        "howToMessage": "Como envio uma mensagem?",
+        "whatCanIDo": "O que posso fazer neste portal?"
+      }
+    },
+    "admin": {
+      "home": {
+        "offer": {
+          "title": "Novo por aqui? Faça um tour de dois minutos",
+          "body": "Veja quem precisa de você hoje, onde ficam seus estudantes e programas, como o progresso do treinamento é acompanhado e onde as mensagens dos membros aguardam resposta."
+        },
+        "commandCenter": {
+          "title": "Centro de comando",
+          "body": "Sua base. Estudantes ativos, colocações no ano e quem precisa de atenção ficam no topo; depois, O que precisa de você hoje: respostas pendentes, candidaturas e certificações aguardando análise, preparação de entrevistas. Cada linha leva à página onde agir."
+        },
+        "overview": {
+          "title": "Visão detalhada",
+          "body": "O quadro completo por trás do Centro de comando: total de membros, avaliações concluídas, quem está ativo no treinamento, programas matriculados e concluídos, além de inscrições e colocações recentes. Venha aqui pelos números, não só pela fila."
+        },
+        "students": {
+          "title": "Estudantes",
+          "body": "Todos os estudantes em uma só lista: status, programa e quem precisa de atenção. Abra um estudante para ver o registro completo ou exporte a lista. Progresso do treinamento é a mesma lista ordenada por treinamento."
+        },
+        "messages": {
+          "title": "Mensagens",
+          "body": "Todas as conversas que membros, empregadores e parceiros têm com a equipe. O selo conta as mensagens ainda aguardando resposta, para que alguém veja hoje."
+        },
+        "programs": {
+          "title": "Programas",
+          "body": "Os programas de treinamento que você oferece, um cartão por programa com alunos matriculados e conclusão. Solicitações de programa, estudantes pedindo para trocar, fica logo abaixo."
+        },
+        "trainingProgress": {
+          "title": "Progresso do treinamento",
+          "body": "Progresso curso a curso de cada estudante matriculado, ordenável, em todo o currículo e no Coursera. Avaliações e Certificados ficam no mesmo grupo."
+        },
+        "settings": {
+          "title": "Configurações",
+          "body": "As configurações da organização ficam no fim do menu, em Avançado, com Usuários, Exportações e Sinalizadores de recursos. Na maioria dos dias você não precisará deste grupo."
+        },
+        "help": {
+          "title": "Volte quando quiser",
+          "body": "Ajuda reabre este tour sempre que você quiser."
+        }
+      }
+    }
   }
 }

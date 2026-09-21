@@ -18,10 +18,13 @@ import { logger } from '@/lib/observability/logger';
 import { CSP_VIOLATION_MAX_BUCKETS_PER_HOUR, type CspViolationCount } from './cspReport';
 import {
   DAY_MS,
+  advanceCspBucketEstimate,
   cspViolationBucketKey,
   bucketCspViolations,
   groupCspViolationBuckets,
+  shouldRecountCspBuckets,
   sumCspViolationCounts,
+  type CspBucketCountEstimate,
   type CspViolationBucketRow,
   type CspViolationBucketWrite,
   type CspViolationGroup,
@@ -51,19 +54,49 @@ function keyOf(write: BucketKey): BucketKey {
 }
 
 /**
+ * Last observed distinct-row count for the current hour bucket, per process
+ * (see `shouldRecountCspBuckets`). Null until the first batch after boot.
+ */
+let bucketCountEstimate: CspBucketCountEstimate | null = null;
+
+/** Test seam: forget the cached count so a spec starts like a freshly booted process. */
+export function resetCspBucketCountEstimateForTests(): void {
+  bucketCountEstimate = null;
+}
+
+/**
  * Split a batch into the writes that may run and the new keys to drop so the
  * hour never holds more than CSP_VIOLATION_MAX_BUCKETS_PER_HOUR distinct rows.
- * Fast path (the normal case): the hour has room for every key in the batch,
- * so nothing else is read. Near the ceiling, one indexed read tells which
- * keys already exist — those still increment — and only the first
- * `ceiling - distinct` new keys are created. The count and the insert are not
- * one atomic step, so concurrent batches can overshoot by at most one batch
- * (20 keys); the ceiling bounds growth, it is not an exact quota.
+ *
+ * The distinct-row `count()` does not run per batch: the last count is cached
+ * in module memory per hour bucket and advanced by every key a batch may have
+ * created, and a real count runs again only when the bucket changed or the
+ * estimate lands within CSP_BUCKET_CEILING_RECOUNT_MARGIN (100) rows of the
+ * ceiling. Fast path (the normal case): the estimate has room for every key
+ * in the batch, so nothing is read at all. Near the ceiling, the count is
+ * fresh and one indexed read tells which keys already exist — those still
+ * increment — and only the first `ceiling - distinct` new keys are created.
+ *
+ * Soft bound, not a quota: within one process the estimate is an upper bound,
+ * so this process alone never creates a row past the ceiling. Rows other
+ * instances insert are invisible until this instance's next count, so with K
+ * concurrent instances an hour can grow to at most K × (ceiling − margin) +
+ * one batch (20 keys) before every instance has recounted and stopped; the
+ * count and the insert were never one atomic step either (the old bound was
+ * one batch per concurrent request).
  */
 async function applyBucketCeiling(writes: CspViolationBucketWrite[]): Promise<{ allowed: CspViolationBucketWrite[]; skipped: number }> {
   const hourBucket = writes[0].hourBucket;
-  const distinct = await prisma.cspViolationBucket.count({ where: { hourBucket } });
-  if (distinct + writes.length <= CSP_VIOLATION_MAX_BUCKETS_PER_HOUR) return { allowed: writes, skipped: 0 };
+  let estimate = bucketCountEstimate;
+  if (!estimate || shouldRecountCspBuckets(estimate, hourBucket, writes.length)) {
+    const distinct = await prisma.cspViolationBucket.count({ where: { hourBucket } });
+    estimate = { hourBucketMs: hourBucket.getTime(), distinct };
+  }
+  const distinct = estimate.distinct;
+  if (distinct + writes.length <= CSP_VIOLATION_MAX_BUCKETS_PER_HOUR) {
+    bucketCountEstimate = advanceCspBucketEstimate(estimate, writes.length);
+    return { allowed: writes, skipped: 0 };
+  }
 
   const existing = await prisma.cspViolationBucket.findMany({
     where: { hourBucket, OR: writes.map((write) => keyOf(write)) },
@@ -74,16 +107,19 @@ async function applyBucketCeiling(writes: CspViolationBucketWrite[]): Promise<{ 
   let room = Math.max(0, CSP_VIOLATION_MAX_BUCKETS_PER_HOUR - distinct);
   const allowed: CspViolationBucketWrite[] = [];
   let skipped = 0;
+  let created = 0;
   for (const write of writes) {
     if (existingKeys.has(cspViolationBucketKey(write))) {
       allowed.push(write);
     } else if (room > 0) {
       room -= 1;
+      created += 1;
       allowed.push(write);
     } else {
       skipped += 1;
     }
   }
+  bucketCountEstimate = advanceCspBucketEstimate(estimate, created);
   return { allowed, skipped };
 }
 

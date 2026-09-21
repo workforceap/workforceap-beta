@@ -9,6 +9,14 @@ import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
 import { HELP_MAX_HISTORY_TURNS, HELP_MAX_QUESTION_CHARS, type HelpLink } from '@/lib/help/assistant';
 import type { HelpAssistantInfo } from './useHelpAssistantAvailability';
 
+/**
+ * Selector for the drawer's root. The panel is portaled onto `document.body`,
+ * so `PortalHelpMenu`'s outside-click handler cannot tell it apart from the
+ * page by DOM containment; it uses this attribute instead (the literal
+ * `data-help-assistant-panel` on the root below must stay in step).
+ */
+export const HELP_ASSISTANT_PANEL_SELECTOR = '[data-help-assistant-panel]';
+
 interface PanelMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -135,6 +143,7 @@ export default function HelpAssistantPanel({
       aria-modal="true"
       aria-labelledby={titleId}
       data-testid="help-assistant-panel"
+      data-help-assistant-panel=""
       style={{
         position: 'fixed',
         top: 'calc(var(--wa-header-height, 3.25rem) + 0.5rem)',
