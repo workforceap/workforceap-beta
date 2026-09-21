@@ -19,6 +19,8 @@ import '@/css/portal.css';
 import '@/css/counselor.css';
 import '@/css/language-toggle.css';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
+import { getHomeTourForRole } from '@/lib/tours/registry';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,12 +48,15 @@ export default async function AdminLayout({
     if (!scope.ok) redirect('/dashboard');
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
-    const [branding, portalRoles] = await Promise.all([
+    const adminTour = getHomeTourForRole('admin');
+    const [branding, portalRoles, tour] = await Promise.all([
       getDefaultOrgBranding({ readOnlyAudit }),
       getPortalSwitcherRoles(user.id, {
         superAdmin: scope.superAdmin,
         hasAdmin: true,
       }),
+      // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
+      adminTour ? getTourOffer(user.id, adminTour.key) : Promise.resolve(null),
     ]);
 
     return (
@@ -86,6 +91,7 @@ export default async function AdminLayout({
           superAdmin={scope.superAdmin}
           portalRoles={portalRoles}
           readOnlyAudit={readOnlyAudit}
+          tour={tour}
         >
           {children}
         </AdminPortalShell>
