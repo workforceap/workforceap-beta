@@ -126,6 +126,11 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
  * `cleanupTable`, keyed on `received_at`, and only rows with
  * `matched_user_id IS NULL AND completion_status = 'unmatched'` are eligible
  * — matched, ignored and errored events keep their existing lifetime.
+ *
+ * Rows whose `LOWER(actor_email)` equals a live member's `LOWER(users.email)`
+ * are never purged: they are the replay handle `lib/xapi/reprocess.ts` uses
+ * to credit a learner who enrolled after the Coursera work happened (see the
+ * note on DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS in ./config.ts).
  */
 export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResult> {
   const cutoff = getCutoffDate(UNMATCHED_XAPI_EVENT_RETENTION_DAYS);
@@ -151,6 +156,13 @@ export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResul
           WHERE matched_user_id IS NULL
             AND completion_status = 'unmatched'
             AND received_at < ${cutoff}
+            AND NOT EXISTS (
+              SELECT 1
+              FROM users u
+              WHERE u.deleted_at IS NULL
+                AND coursera_xapi_events.actor_email IS NOT NULL
+                AND LOWER(u.email) = LOWER(coursera_xapi_events.actor_email)
+            )
           ORDER BY received_at ASC
           LIMIT ${RETENTION_BATCH_SIZE}
         )

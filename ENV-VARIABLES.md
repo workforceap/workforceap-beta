@@ -97,6 +97,14 @@ All default to the Workforce Advancement Project identity printed on the officia
 | `NEXT_PUBLIC_GA_ID` | (optional) | (optional) | Google Analytics |
 | `NEXT_PUBLIC_VERCEL_ANALYTICS_ID` | (auto-set by Vercel) | — | Vercel |
 
+### Optional: Data retention windows (`lib/retention/config.ts`)
+Retention rules for log-like tables are listed in `RETENTION_TABLES` in `lib/retention/config.ts` and run daily by `/api/cron/data-cleanup`. Two windows are env-overridable; anything that is not a positive integer falls back to the default so a typo can never widen a purge.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `WORKFLOW_DIAGNOSTIC_RETENTION_DAYS` | `90` | `workflow_diagnostics` window (WAP-17; target 60 once the email-failure snapshot has run) |
+| `UNMATCHED_XAPI_EVENT_RETENTION_DAYS` | `365` | `coursera_xapi_events` rows with `matched_user_id IS NULL` and `completion_status = 'unmatched'` (WAP-33). Same window as `xapi_statements`; rows whose `actor_email` matches a live member are never purged, because `lib/xapi/reprocess.ts` replays them to credit late-enrolling learners. Raw-SQL rule, so it is not in `RETENTION_TABLES` or on `/admin/data-retention`. |
+
 ---
 
 ## Historical Vercel Production Status Snapshot

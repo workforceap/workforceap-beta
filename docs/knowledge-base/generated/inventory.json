@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e1b438615495f7cf73905561d904118c48214f78c371ce2568be951f24034163",
+  "inputTreeSha256": "dec9f58c7356576fd2f71af1198c944e76e0c02ff27166c5a02d4955a7fb014c",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3346,9 +3346,9 @@
       "path": "ENV-VARIABLES.md",
       "area": "root",
       "domain": "root",
-      "bytes": 9387,
-      "lines": 158,
-      "sha256": "c85656aa12a849ae7c8b7001e660cfceb106a1c57b39e4ff4320a34cdf1c1b58",
+      "bytes": 10353,
+      "lines": 166,
+      "sha256": "42eb14ca743fe170c9ede0c97b12025b83bf63598073755d64507dce192cd14f",
       "binary": false
     },
     {
@@ -21415,9 +21415,9 @@
       "path": "app/admin/wioa-screening/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 15214,
-      "lines": 402,
-      "sha256": "6ad368669780ffbebee5dac5a789ad146d82e6da96feecfc725e7f41df9232db",
+      "bytes": 15367,
+      "lines": 404,
+      "sha256": "675517c5cf898790f8348614790935b35ad30a441eb3404b594aaebb5ea82121",
       "binary": false,
       "exports": [
         {
@@ -138672,9 +138672,9 @@
       "path": "lib/retention/cleanup.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 18430,
-      "lines": 466,
-      "sha256": "f5bcc6500ae82f29dd5a24a9e75c5efa2e37f704c8a8d1a17a59feed7bae471c",
+      "bytes": 18763,
+      "lines": 469,
+      "sha256": "dec569c86f232b42937ba094eca4c68d1bf05afe0afe8aaf73c987cd1913e238",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -138725,9 +138725,9 @@
       "path": "lib/retention/cleanup.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 12716,
-      "lines": 358,
-      "sha256": "4096706d35a294967a15ebc19108802f1b0625cfa712f47e8b00868fe456b735",
+      "bytes": 13301,
+      "lines": 370,
+      "sha256": "05a103e2ee506a79ade78e2d19848c919c2aafeeb8e64887ad1d1cb8c7050b47",
       "binary": false,
       "exports": [
         {
@@ -138747,32 +138747,32 @@
         },
         {
           "name": "cleanupUnmatchedCourseraXapiEvents",
-          "line": 130,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 169,
+          "line": 181,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 174,
+          "line": 186,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 192,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 230,
+          "line": 242,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 290,
+          "line": 302,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138794,37 +138794,37 @@
         },
         {
           "name": "cleanupUnmatchedCourseraXapiEvents",
-          "line": 130,
+          "line": 135,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "BlockedAccount",
-          "line": 169,
+          "line": 181,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "DeletedAccountsResult",
-          "line": 174,
+          "line": 186,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "SELF_SERVICE_AUDIT_ACTOR_ROLE",
-          "line": 185,
+          "line": 197,
           "kind": "Variable"
         },
         {
           "name": "foreignKeyConstraintName",
-          "line": 192,
+          "line": 204,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 230,
+          "line": 242,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 290,
+          "line": 302,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138834,9 +138834,9 @@
       "path": "lib/retention/config.test.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 3696,
-      "lines": 81,
-      "sha256": "c16c251db6062996119e82a5f7001af43812575724046f4b994127a283902a79",
+      "bytes": 4033,
+      "lines": 85,
+      "sha256": "35efc0ab8e253a97a86e8a6ea57b0c6d26b175a7753ec39628be72abfa855d46",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -138852,9 +138852,9 @@
       "path": "lib/retention/config.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 8688,
-      "lines": 226,
-      "sha256": "a9a8640ac0c7300c4e11fde1fd3ef3a6d46f16e67dadffc47283b485d91b5803",
+      "bytes": 9258,
+      "lines": 235,
+      "sha256": "80c3acfed0a2abdc6dec573aa6d782e564414298df5a62b81fd1be2bdf735ce3",
       "binary": false,
       "exports": [
         {
@@ -138904,37 +138904,37 @@
         },
         {
           "name": "DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 136,
+          "line": 145,
           "kind": "Variable"
         },
         {
           "name": "resolveUnmatchedXapiEventRetentionDays",
-          "line": 138,
+          "line": 147,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 147,
+          "line": 156,
           "kind": "Variable"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_LABEL",
-          "line": 150,
+          "line": 159,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 152,
+          "line": 161,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 218,
+          "line": 227,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 221,
+          "line": 230,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -138986,37 +138986,37 @@
         },
         {
           "name": "DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 136,
+          "line": 145,
           "kind": "Variable"
         },
         {
           "name": "resolveUnmatchedXapiEventRetentionDays",
-          "line": 138,
+          "line": 147,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_DAYS",
-          "line": 147,
+          "line": 156,
           "kind": "Variable"
         },
         {
           "name": "UNMATCHED_XAPI_EVENT_RETENTION_LABEL",
-          "line": 150,
+          "line": 159,
           "kind": "Variable"
         },
         {
           "name": "RETENTION_TABLES",
-          "line": 152,
+          "line": 161,
           "kind": "Variable"
         },
         {
           "name": "DELETED_ACCOUNT_RETENTION_DAYS",
-          "line": 218,
+          "line": 227,
           "kind": "Variable"
         },
         {
           "name": "getCutoffDate",
-          "line": 221,
+          "line": 230,
           "kind": "FunctionDeclaration"
         }
       ],

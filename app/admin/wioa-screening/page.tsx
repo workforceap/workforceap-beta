@@ -306,10 +306,12 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
           deletedAt: null,
           wioaQualificationJson: { not: Prisma.DbNull },
         },
-        // Unreviewed rows first so the capped page always carries the whole
-        // pending queue; `sortWioaQueueOldestFirst` below orders that block by
-        // wait (WAP-166 item 2) once the JSON `submittedAt` has been parsed.
-        orderBy: { wioaReviewedAt: { sort: 'asc', nulls: 'first' } },
+        // Never-reviewed rows first so the capped page always carries the whole
+        // pending queue, then the most recent decisions (`in_review` also
+        // stamps wioaReviewedAt, so a recent claim must not be cut by the cap);
+        // `sortWioaQueueOldestFirst` below orders the waiting block by wait
+        // (WAP-166 item 2) once the JSON `submittedAt` has been parsed.
+        orderBy: { wioaReviewedAt: { sort: 'desc', nulls: 'first' } },
         select: {
           id: true,
           fullName: true,

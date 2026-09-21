@@ -6773,24 +6773,29 @@
         "line": 94
       },
       {
+        "level": 3,
+        "title": "Optional: Data retention windows (`lib/retention/config.ts`)",
+        "line": 100
+      },
+      {
         "level": 2,
         "title": "Historical Vercel Production Status Snapshot",
-        "line": 102
+        "line": 110
       },
       {
         "level": 2,
         "title": "Security Notes",
-        "line": 118
+        "line": 126
       },
       {
         "level": 2,
         "title": "Launch Checklist (May 1)",
-        "line": 131
+        "line": 139
       },
       {
         "level": 2,
         "title": "Related Files",
-        "line": 148
+        "line": 156
       }
     ],
     "datedFilename": false,

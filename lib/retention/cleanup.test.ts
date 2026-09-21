@@ -339,7 +339,7 @@ describe('cleanupUnmatchedCourseraXapiEvents (WAP-33)', () => {
     expect(mockExecuteRaw).not.toHaveBeenCalled();
   });
 
-  it('deletes only unmatched, never-matched rows past the cutoff, in batches, until a short batch', async () => {
+  it('deletes only unmatched, never-matched rows past the cutoff that no live member can still claim, in batches, until a short batch', async () => {
     mockQueryRaw.mockResolvedValue([{ present: true }]);
     mockExecuteRaw.mockResolvedValueOnce(1000).mockResolvedValueOnce(211);
 
@@ -353,11 +353,14 @@ describe('cleanupUnmatchedCourseraXapiEvents (WAP-33)', () => {
     expect(sql).toContain("completion_status = 'unmatched'");
     expect(sql).toContain('received_at <');
     expect(sql).toContain('LIMIT');
+    // A live member with the actor's address can still be credited by
+    // lib/xapi/reprocess.ts, so that row must survive the purge.
+    expect(sql).toMatch(/NOT EXISTS \([\s\S]*FROM users u[\s\S]*u\.deleted_at IS NULL[\s\S]*LOWER\(u\.email\) = LOWER\(coursera_xapi_events\.actor_email\)/);
     const cutoff = mockExecuteRaw.mock.calls[0][1] as Date;
     expect(cutoff).toBeInstanceOf(Date);
     const ageDays = (Date.now() - cutoff.getTime()) / (24 * 60 * 60 * 1000);
-    expect(ageDays).toBeGreaterThanOrEqual(89);
-    expect(ageDays).toBeLessThanOrEqual(91);
+    expect(ageDays).toBeGreaterThanOrEqual(364);
+    expect(ageDays).toBeLessThanOrEqual(366);
   });
 
   it('stops after an empty first batch', async () => {

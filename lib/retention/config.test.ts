@@ -66,16 +66,20 @@ test('getCutoffDate returns a midnight boundary the configured number of days ba
   assert.ok(cutoff.getTime() < Date.now());
 });
 
-test('WAP-33: unmatched Coursera xAPI events default to a 90-day window', () => {
-  assert.equal(DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS, 90);
-  assert.equal(resolveUnmatchedXapiEventRetentionDays(undefined), 90);
+test('WAP-33: unmatched Coursera xAPI events keep the same window as the xapi_statements they came from', () => {
+  // They are the only replay handle for a late-enrolling learner (the
+  // statement row is marked processed on unmatched ingest), so the window
+  // must not be shorter than the source statements' 365 days.
+  assert.equal(DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS, 365);
+  assert.equal(DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS, byModel('xapiStatement').days);
+  assert.equal(resolveUnmatchedXapiEventRetentionDays(undefined), 365);
   assert.equal(UNMATCHED_XAPI_EVENT_RETENTION_DAYS, resolveUnmatchedXapiEventRetentionDays(process.env.UNMATCHED_XAPI_EVENT_RETENTION_DAYS));
 });
 
-test('UNMATCHED_XAPI_EVENT_RETENTION_DAYS overrides the window; invalid values fall back to 90', () => {
+test('UNMATCHED_XAPI_EVENT_RETENTION_DAYS overrides the window; invalid values fall back to 365', () => {
   assert.equal(resolveUnmatchedXapiEventRetentionDays('120'), 120);
   assert.equal(resolveUnmatchedXapiEventRetentionDays(' 45 '), 45);
   for (const bad of ['', '0', '-5', '60.5', 'ninety', '1e2', ' ']) {
-    assert.equal(resolveUnmatchedXapiEventRetentionDays(bad), 90, JSON.stringify(bad));
+    assert.equal(resolveUnmatchedXapiEventRetentionDays(bad), 365, JSON.stringify(bad));
   }
 });
