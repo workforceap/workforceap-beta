@@ -23471,6 +23471,42 @@
     "boundaryReferences": []
   },
   {
+    "file": "app/api/csp-report/route.ts",
+    "kind": "route",
+    "path": "/api/csp-report",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "POST",
+        "line": 34,
+        "kind": "FunctionDeclaration"
+      },
+      {
+        "name": "GET",
+        "line": 84,
+        "kind": "FunctionDeclaration"
+      }
+    ],
+    "methods": [
+      "POST",
+      "GET"
+    ],
+    "configuration": {},
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/security/cspReportRateLimit",
+        "line": 4,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/security/cspReport",
+        "line": 5,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/api/employer/applications/[id]/messages/route.ts",
     "kind": "route",
     "path": "/api/employer/applications/[id]/messages",
@@ -32794,17 +32830,17 @@
     "exports": [
       {
         "name": "viewport",
-        "line": 60,
+        "line": 61,
         "kind": "Variable"
       },
       {
         "name": "metadata",
-        "line": 66,
+        "line": 67,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 91,
+        "line": 92,
         "kind": "FunctionDeclaration",
         "localName": "RootLayout"
       }
@@ -32813,33 +32849,38 @@
     "configuration": {},
     "boundaryReferences": [
       {
-        "specifier": "@/lib/db/gucContext",
+        "specifier": "@/lib/security/csp",
         "line": 19,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/roles",
-        "line": 24,
+        "specifier": "@/lib/db/gucContext",
+        "line": 20,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/layoutUserId",
+        "specifier": "@/lib/auth/roles",
         "line": 25,
         "kind": "import"
       },
       {
-        "specifier": "@/lib/auth/server",
+        "specifier": "@/lib/auth/layoutUserId",
         "line": 26,
         "kind": "import"
       },
       {
+        "specifier": "@/lib/auth/server",
+        "line": 27,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/tenant/resolveOrgFromRequest",
-        "line": 30,
+        "line": 31,
         "kind": "import"
       },
       {
         "specifier": "@/lib/db/gucContext",
-        "line": 115,
+        "line": 116,
         "kind": "type"
       }
     ]

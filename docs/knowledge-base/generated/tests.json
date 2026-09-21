@@ -14432,6 +14432,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/api/csp-report-route.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/api/csp-report/route.ts",
+        "line": 14
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/api/donate-page.spec.ts",
     "area": "tests",
     "domain": "partners-funding",
@@ -16442,6 +16466,34 @@
       {
         "file": "lib/db/prisma.ts",
         "line": 46
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/api/middleware-csp-report-only.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "middleware.ts",
+        "line": 14
+      },
+      {
+        "file": "lib/security/csp.ts",
+        "line": 15
       }
     ],
     "kind": "test-candidate",
@@ -20513,6 +20565,34 @@
       {
         "file": "components/DeferredRootChrome.tsx",
         "line": 37
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "app/layout.tsx",
+        "line": 23
+      },
+      {
+        "file": "components/theme/ThemeInitScript.tsx",
+        "line": 25
       }
     ],
     "kind": "test-candidate",
@@ -26919,6 +26999,38 @@
       {
         "file": "lib/cron/withCronLogging.ts",
         "line": 75
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/lib/csp-policy.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "next.config.ts",
+        "line": 3
+      },
+      {
+        "file": "lib/security/csp.ts",
+        "line": 4
+      },
+      {
+        "file": "lib/security/cspReport.ts",
+        "line": 13
       }
     ],
     "kind": "test-candidate",

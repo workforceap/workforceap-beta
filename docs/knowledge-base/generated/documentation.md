@@ -83,7 +83,7 @@
 | [docs/SECURITY-AND-HEALTH.md](../../../docs/SECURITY-AND-HEALTH.md) | 142 | documentation |  |
 | [docs/SECURITY-AUDIT-RAW.md](../../../docs/SECURITY-AUDIT-RAW.md) | 99 | documentation |  |
 | [docs/SECURITY-CHECKLIST.md](../../../docs/SECURITY-CHECKLIST.md) | 126 | documentation |  |
-| [docs/SECURITY-HARDENING.md](../../../docs/SECURITY-HARDENING.md) | 811 | documentation |  |
+| [docs/SECURITY-HARDENING.md](../../../docs/SECURITY-HARDENING.md) | 865 | documentation |  |
 | [docs/SESSION-2026-05-07.md](../../../docs/SESSION-2026-05-07.md) | 83 | documentation |  |
 | [docs/SLO-AND-STATUS.md](../../../docs/SLO-AND-STATUS.md) | 270 | documentation |  |
 | [docs/STAGING_ENV.md](../../../docs/STAGING_ENV.md) | 96 | documentation |  |

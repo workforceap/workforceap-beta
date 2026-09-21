@@ -714,6 +714,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /api/cron/weekly-recap-email | route | GET, POST | [app/api/cron/weekly-recap-email/route.ts](../../../app/api/cron/weekly-recap-email/route.ts) |  |
 | /api/cron/weekly-recap | route | GET, POST | [app/api/cron/weekly-recap/route.ts](../../../app/api/cron/weekly-recap/route.ts) |  |
 | /api/cron/wioa-report | route | GET, POST | [app/api/cron/wioa-report/route.ts](../../../app/api/cron/wioa-report/route.ts) |  |
+| /api/csp-report | route | POST, GET | [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | @/lib/security/cspReportRateLimit:4, @/lib/security/cspReport:5 |
 | /api/employer/applications/\[id\]/messages | route | GET, POST, PATCH | [app/api/employer/applications/\[id\]/messages/route.ts](../../../app/api/employer/applications/%5Bid%5D/messages/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/messages/rateLimit:6, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\]/resume | route | GET | [app/api/employer/applications/\[id\]/resume/route.ts](../../../app/api/employer/applications/%5Bid%5D/resume/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:11 |
 | /api/employer/applications/\[id\] | route | PATCH | [app/api/employer/applications/\[id\]/route.ts](../../../app/api/employer/applications/%5Bid%5D/route.ts) | @/lib/auth/server:2, @/lib/auth/roles:3, @/lib/db/withRequestGuc:10 |
@@ -1018,7 +1019,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | / | global-error |  | [app/global-error.tsx](../../../app/global-error.tsx) |  |
 | /invite | layout |  | [app/invite/layout.tsx](../../../app/invite/layout.tsx) |  |
 | /invite | page |  | [app/invite/page.tsx](../../../app/invite/page.tsx) | @/lib/auth/safeRedirectPath:9 |
-| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/db/gucContext:19, @/lib/auth/roles:24, @/lib/auth/layoutUserId:25, @/lib/auth/server:26, @/lib/tenant/resolveOrgFromRequest:30, @/lib/db/gucContext:115 |
+| / | layout |  | [app/layout.tsx](../../../app/layout.tsx) | @/lib/security/csp:19, @/lib/db/gucContext:20, @/lib/auth/roles:25, @/lib/auth/layoutUserId:26, @/lib/auth/server:27, @/lib/tenant/resolveOrgFromRequest:31, @/lib/db/gucContext:116 |
 | /mentor/apply | layout |  | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) |  |
 | /mentor/apply | page |  | [app/mentor/apply/page.tsx](../../../app/mentor/apply/page.tsx) |  |
 | / | not-found |  | [app/not-found.tsx](../../../app/not-found.tsx) |  |

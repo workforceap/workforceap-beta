@@ -92,6 +92,7 @@
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
+| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 122 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
 | [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 282 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |
@@ -140,6 +141,7 @@
 | [tests/api/member-wioa-voice-session.spec.ts](../../../tests/api/member-wioa-voice-session.spec.ts) | 89 | tests |  |
 | [tests/api/mentor-letter-route.spec.ts](../../../tests/api/mentor-letter-route.spec.ts) | 80 | tests |  |
 | [tests/api/mentor-session-topic.spec.ts](../../../tests/api/mentor-session-topic.spec.ts) | 109 | tests |  |
+| [tests/api/middleware-csp-report-only.spec.ts](../../../tests/api/middleware-csp-report-only.spec.ts) | 102 | tests |  |
 | [tests/api/milestone-approve-reliability.spec.ts](../../../tests/api/milestone-approve-reliability.spec.ts) | 65 | member-counselor |  |
 | [tests/api/notifications.spec.ts](../../../tests/api/notifications.spec.ts) | 510 | communications |  |
 | [tests/api/onboarding-complete.spec.ts](../../../tests/api/onboarding-complete.spec.ts) | 117 | tests |  |
@@ -240,6 +242,7 @@
 | [tests/app/public-icon-font-free.spec.ts](../../../tests/app/public-icon-font-free.spec.ts) | 120 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
+| [tests/app/root-layout-csp-nonce.spec.tsx](../../../tests/app/root-layout-csp-nonce.spec.tsx) | 67 | tests |  |
 | [tests/app/skill-missions-page.spec.tsx](../../../tests/app/skill-missions-page.spec.tsx) | 97 | tests |  |
 | [tests/billing/stripe-checkout-dead-letter.spec.ts](../../../tests/billing/stripe-checkout-dead-letter.spec.ts) | 171 | partners-funding |  |
 | [tests/certifications/self-report-pending.spec.ts](../../../tests/certifications/self-report-pending.spec.ts) | 166 | tests |  |
@@ -453,6 +456,7 @@
 | [tests/lib/coursera-tenant-index-migration.spec.ts](../../../tests/lib/coursera-tenant-index-migration.spec.ts) | 71 | learning-coursera |  |
 | [tests/lib/coursera-unmatched-learners-learning-paths.spec.ts](../../../tests/lib/coursera-unmatched-learners-learning-paths.spec.ts) | 157 | learning-coursera |  |
 | [tests/lib/cron-diagnostics-visibility.spec.ts](../../../tests/lib/cron-diagnostics-visibility.spec.ts) | 205 | tests |  |
+| [tests/lib/csp-policy.spec.ts](../../../tests/lib/csp-policy.spec.ts) | 150 | tests |  |
 | [tests/lib/curriculum-versioned-read-surfaces.spec.ts](../../../tests/lib/curriculum-versioned-read-surfaces.spec.ts) | 136 | tests |  |
 | [tests/lib/dashboard-white-pill-contrast.spec.tsx](../../../tests/lib/dashboard-white-pill-contrast.spec.tsx) | 64 | tests |  |
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
