@@ -112,7 +112,7 @@
 | [scripts/prisma-resolve-benign.test.cjs](../../../scripts/prisma-resolve-benign.test.cjs) | 43 | operations |  |
 | [scripts/prod-paid-funnel-smoke.mjs](../../../scripts/prod-paid-funnel-smoke.mjs) | 176 | operations |  |
 | [scripts/prove-b4b-identity-link.ts](../../../scripts/prove-b4b-identity-link.ts) | 173 | operations |  |
-| [scripts/repair-member-program-progress.ts](../../../scripts/repair-member-program-progress.ts) | 223 | operations |  |
+| [scripts/repair-member-program-progress.ts](../../../scripts/repair-member-program-progress.ts) | 291 | operations |  |
 | [scripts/resolve-failed-migration-in-db.cjs](../../../scripts/resolve-failed-migration-in-db.cjs) | 72 | operations |  |
 | [scripts/resolve-failed-migration.cjs](../../../scripts/resolve-failed-migration.cjs) | 74 | operations |  |
 | [scripts/resolve-migration.mjs](../../../scripts/resolve-migration.mjs) | 49 | operations |  |

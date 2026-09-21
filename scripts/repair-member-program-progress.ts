@@ -30,7 +30,20 @@
  * Run 20260921220000_wap76_course_progress_slug_remap BEFORE this script. That
  * migration moves stored course rows onto the course keys #2421/#2425
  * introduced; recomputing first would bake the pre-migration undercount into
- * every rollup it touches.
+ * every rollup it touches. `--apply` enforces this rather than trusting the
+ * operator: it refuses to start while any row still sits on a remapped source
+ * key. A dry run is always allowed, so the plan can be read either way.
+ *
+ * Two properties worth knowing before running it against production:
+ *
+ *   - Duplicate rollups are DELETED without a journal, unlike the migration,
+ *     which copies every preimage into wap_migration_backup first. That is
+ *     acceptable because a rollup is derived data -- re-running this script
+ *     rebuilds it from course_progress, which is never written here -- but it
+ *     does mean there is no row-level undo for the rollup half.
+ *   - Each group is its own transaction, so the run is re-runnable but NOT
+ *     atomic. A failure part-way through leaves a partially repaired set;
+ *     re-run it and the plan simply shrinks to what is left.
  */
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -38,6 +51,7 @@ import { pathToFileURL } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 
 import { getProgramBySlug } from '../lib/content/programs';
+import { REMAPPED_SOURCE_SLUGS } from '../lib/content/coursera/courseSlugRemap';
 import { canonicalizeProgramSlug, programSlugReadCandidates } from '../lib/content/programSlug';
 import { loadValidatedProgramCourses } from '../lib/coursera/programCourseList';
 import { reconcileProgramProgress } from '../lib/coursera/progressReconciliation';
@@ -102,6 +116,37 @@ async function recomputeProgram(
 }
 
 /**
+ * Refuse `--apply` until the slug-remap migration has run. Recomputing first
+ * would read a member's completion as missing and write that undercount into
+ * the rollup, which is exactly the damage this whole change exists to undo.
+ */
+async function assertSlugRemapHasRun(): Promise<void> {
+  const stranded = await prisma.courseProgress.findMany({
+    where: { courseSlug: { in: [...REMAPPED_SOURCE_SLUGS] } },
+    select: { programSlug: true, courseSlug: true },
+  });
+  if (stranded.length === 0) return;
+
+  const byKey = new Map<string, number>();
+  for (const row of stranded) {
+    const key = `${row.programSlug} / ${row.courseSlug}`;
+    byKey.set(key, (byKey.get(key) ?? 0) + 1);
+  }
+  const detail = [...byKey.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, count]) => `    ${key}: ${count} row(s)`)
+    .join('\n');
+
+  throw new Error(
+    `Refusing to write: ${stranded.length} course_progress row(s) still sit on a course key that\n` +
+      `20260921220000_wap76_course_progress_slug_remap has not moved yet. Recomputing now would\n` +
+      `store those completions as missing.\n\n${detail}\n\n` +
+      `Run the migration first (npm run db:migrate:deploy), then re-run this script.\n` +
+      `A dry run (no --apply) is allowed at any time.`,
+  );
+}
+
+/**
  * Read-only: course rows whose key matches no course in their program. After
  * the slug-remap migration this should be empty for the remapped programs; a
  * non-empty list is a completion the portal still cannot render, and it needs
@@ -113,26 +158,39 @@ async function reportOrphanedCourseKeys(): Promise<void> {
     orderBy: [{ programSlug: 'asc' }, { courseSlug: 'asc' }],
   });
 
-  const liveKeys = new Map<string, Set<string>>();
-  const orphans: { programSlug: string; courseSlug: string; users: number; completed: number }[] = [];
-  const grouped = new Map<string, { programSlug: string; courseSlug: string; users: Set<string>; completed: number }>();
+  const liveKeys = new Map<string, Set<string> | null>();
+  const grouped = new Map<
+    string,
+    { programSlug: string; courseSlug: string; users: Set<string>; completed: number; kind: 'unknown_program' | 'remapped' | 'unexplained' }
+  >();
 
   for (const row of rows) {
     const canonical = canonicalizeProgramSlug(row.programSlug);
     if (!liveKeys.has(canonical)) {
-      liveKeys.set(canonical, new Set(getProgramBySlug(canonical)?.courses.map((course) => course.slug) ?? []));
+      const program = getProgramBySlug(canonical);
+      // null means "no such WAP program", which is NOT the same as "a program
+      // with no courses" and must not be silently skipped.
+      liveKeys.set(canonical, program ? new Set(program.courses.map((course) => course.slug)) : null);
     }
     const keys = liveKeys.get(canonical)!;
-    if (keys.size === 0 || keys.has(row.courseSlug)) continue;
+    if (keys !== null && keys.has(row.courseSlug)) continue;
+
+    const kind = keys === null
+      ? 'unknown_program'
+      : REMAPPED_SOURCE_SLUGS.includes(row.courseSlug)
+        ? 'remapped'
+        : 'unexplained';
     const key = `${canonical}\u0000${row.courseSlug}`;
-    const bucket = grouped.get(key) ?? { programSlug: canonical, courseSlug: row.courseSlug, users: new Set<string>(), completed: 0 };
+    const bucket = grouped.get(key)
+      ?? { programSlug: canonical, courseSlug: row.courseSlug, users: new Set<string>(), completed: 0, kind };
     bucket.users.add(row.userId);
     if (row.status === 'COMPLETED') bucket.completed += 1;
     grouped.set(key, bucket);
   }
-  for (const bucket of grouped.values()) {
-    orphans.push({ programSlug: bucket.programSlug, courseSlug: bucket.courseSlug, users: bucket.users.size, completed: bucket.completed });
-  }
+
+  const orphans = [...grouped.values()].sort(
+    (a, b) => a.programSlug.localeCompare(b.programSlug) || a.courseSlug.localeCompare(b.courseSlug),
+  );
 
   console.log('');
   console.log('COURSE KEYS WITH NO COURSE (read-only; this script never writes course_progress)');
@@ -140,13 +198,22 @@ async function reportOrphanedCourseKeys(): Promise<void> {
     console.log('  none - every course_progress row matches a course in its program');
     return;
   }
+  const label: Record<(typeof orphans)[number]['kind'], string> = {
+    remapped: 'the slug-remap migration moves this one',
+    unknown_program: 'NO SUCH WAP PROGRAM - needs a decision',
+    unexplained: 'not in the remap mapping - needs a decision',
+  };
   for (const orphan of orphans) {
     console.log(
-      `  ${orphan.programSlug} / ${orphan.courseSlug}: ${orphan.users} user(s), ${orphan.completed} completed`,
+      `  ${orphan.programSlug} / ${orphan.courseSlug}: ${orphan.users.size} user(s), ` +
+        `${orphan.completed} completed  [${label[orphan.kind]}]`,
     );
   }
-  console.log('  Run prisma/migrations/20260921220000_wap76_course_progress_slug_remap first if these are');
-  console.log('  the #2421 / #2425 keys; anything left after that needs a decision, not this script.');
+  if (orphans.some((orphan) => orphan.kind !== 'remapped')) {
+    console.log('');
+    console.log('  Rows not marked as remapped are progress the portal still cannot render.');
+    console.log('  They need a human decision, not this script.');
+  }
 }
 
 async function main() {
@@ -154,6 +221,7 @@ async function main() {
   if (apply && process.argv.includes('--dry-run')) {
     throw new Error('Choose exactly one mode: --dry-run (the default) or --apply');
   }
+  if (apply) await assertSlugRemapHasRun();
 
   const rollupRows = await prisma.memberProgramProgress.findMany({
     select: { id: true, userId: true, programSlug: true, coursesCompleted: true, averagePercent: true },

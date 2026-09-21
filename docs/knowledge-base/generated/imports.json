@@ -100994,7 +100994,7 @@
   {
     "from": "lib/content/coursera/courseSlugRemap.ts",
     "specifier": "@/lib/content/programSlug",
-    "line": 29,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -120418,7 +120418,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "node:path",
-    "line": 35,
+    "line": 48,
     "kind": "import",
     "external": true,
     "package": "node:path"
@@ -120426,7 +120426,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "node:url",
-    "line": 36,
+    "line": 49,
     "kind": "import",
     "external": true,
     "package": "node:url"
@@ -120434,7 +120434,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "@prisma/client",
-    "line": 38,
+    "line": 51,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -120442,15 +120442,23 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "../lib/content/programs",
-    "line": 40,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
   },
   {
     "from": "scripts/repair-member-program-progress.ts",
+    "specifier": "../lib/content/coursera/courseSlugRemap",
+    "line": 54,
+    "kind": "import",
+    "external": false,
+    "target": "lib/content/coursera/courseSlugRemap.ts"
+  },
+  {
+    "from": "scripts/repair-member-program-progress.ts",
     "specifier": "../lib/content/programSlug",
-    "line": 41,
+    "line": 55,
     "kind": "import",
     "external": false,
     "target": "lib/content/programSlug.ts"
@@ -120458,7 +120466,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "../lib/coursera/programCourseList",
-    "line": 42,
+    "line": 56,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/programCourseList.ts"
@@ -120466,7 +120474,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "../lib/coursera/progressReconciliation",
-    "line": 43,
+    "line": 57,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressReconciliation.ts"
@@ -120474,7 +120482,7 @@
   {
     "from": "scripts/repair-member-program-progress.ts",
     "specifier": "../lib/member/programProgressRepair",
-    "line": 44,
+    "line": 58,
     "kind": "import",
     "external": false,
     "target": "lib/member/programProgressRepair.ts"

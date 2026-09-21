@@ -19,26 +19,49 @@ const migration = readFileSync(`${migrationDir}/migration.sql`, 'utf8');
 const rollback = readFileSync(`${migrationDir}/down.sql`, 'utf8');
 
 /**
- * Every pair 20260921220000 must move, mirroring
- * lib/content/coursera/courseSlugRemap.ts (which its own suite re-derives from
- * `PROGRAMS`). Seeding one row per pair proves the SQL covers exactly the same
- * thirteen re-keys and nothing else -- checked against the journal below.
+ * The mapping is NOT re-typed here. It is loaded from
+ * lib/content/coursera/courseSlugRemap.ts -- the same table the migration's
+ * inline VALUES list is generated from, and the one whose own suite re-derives
+ * every pair from `PROGRAMS`. Driving the fixtures from it means a pair that
+ * exists in TypeScript but not in the SQL leaves a seeded row unmoved, and the
+ * set-equality check below catches the reverse. Re-typing it here is what let
+ * an earlier version of this proof stay green while both copies were wrong.
+ *
+ * `tsx` is spawned rather than imported because this proof runs under bare
+ * `node`, which strips types but does not resolve the `@/` path alias.
  */
-const EXPECTED_REMAP = [
-  ['software-developer-professional-certificate-ibm', 'software-developer-professional-certificate-ibm-course-2', 'introduction-to-ai'],
-  ['software-developer-professional-certificate-ibm', 'software-developer-professional-certificate-ibm-course-4', 'generative-ai-prompt-engineering-for-everyone'],
-  ['comptia-a-professional-certificate', 'comptia-a-professional-certificate-course-5', 'packt-operating-systems-and-networking-fundamentals-bokjh'],
-  ['comptia-a-professional-certificate', 'comptia-a-professional-certificate-course-9', 'practice-exam-for-comptia-a'],
-  ['digital-marketing-e-commerce-google', 'digital-marketing-e-commerce-google-course-5', 'assess-for-success'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-3', 'revenue-cycle-billing-and-coding'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-4', 'the-billing-and-collection-process'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-5', 'medical-billing-coding-essentials'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-11', 'data-and-electronic-health-records'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-12', 'health-it-fundamentals'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-13', 'telehealth'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-14', 'medical-administrative-assistants-and-office-procedures'],
-  ['health-information-technology-mchit', 'health-information-technology-mchit-course-15', 'introduction-to-certified-professional-biller'],
-];
+function loadRemapTable() {
+  const result = spawnSync(
+    'npx',
+    ['tsx', '-e', `import { COURSE_SLUG_REMAP } from '@/lib/content/coursera/courseSlugRemap';
+       process.stdout.write(JSON.stringify(COURSE_SLUG_REMAP.map((row) => ({
+         programSlug: row.programSlug,
+         from: row.from,
+         to: row.to,
+         candidates: [...row.programSlugCandidates],
+       }))));`],
+    { encoding: 'utf8', timeout: 120_000 },
+  );
+  assert.equal(result.status, 0, `could not load COURSE_SLUG_REMAP: ${(result.stderr ?? '').trim()}`);
+  const table = JSON.parse(result.stdout.trim());
+  assert.ok(table.length > 0, 'COURSE_SLUG_REMAP is empty; the proof would assert nothing');
+  return table;
+}
+
+const EXPECTED_REMAP = loadRemapTable();
+
+/**
+ * Parse a `(...)` VALUES list out of the migration. Tuples are indented six
+ * spaces and the list closes with four, which is what bounds the slice.
+ */
+function sqlTuples(header) {
+  const start = migration.indexOf(header);
+  assert.notEqual(start, -1, `${header} is missing from the migration`);
+  const end = migration.slice(start).search(/\n {4}\)/);
+  assert.notEqual(end, -1, `${header} is not terminated as expected`);
+  return [...migration.slice(start, start + end).matchAll(/^\s*\(('(?:[^']|'')*'(?:\s*,\s*'(?:[^']|'')*')*)\)/gm)]
+    .map((match) => [...match[1].matchAll(/'((?:[^']|'')*)'/g)].map((cell) => cell[1].replaceAll("''", "'")));
+}
 
 const sourceUrl = process.env.WAP76_SLUG_REMAP_PROOF_DATABASE_URL ?? process.env.SHADOW_DATABASE_URL ?? '';
 const target = new URL(sourceUrl);
@@ -171,6 +194,22 @@ function journal() {
   `));
 }
 
+// The SQL carries the mapping inline so the migration can be audited on its
+// own. That makes it a second copy, so it is pinned to the first here.
+assert.deepEqual(
+  sqlTuples('WITH remap(program_slug').map(([program, from, to]) => [program, from, to]).sort(),
+  EXPECTED_REMAP.map((row) => [row.programSlug, row.from, row.to]).sort(),
+  'the migration VALUES list has drifted from lib/content/coursera/courseSlugRemap.ts',
+);
+assert.deepEqual(
+  sqlTuples('program_alias(canonical, stored)').sort(),
+  [...new Map(EXPECTED_REMAP.map((row) => [row.programSlug, row.candidates])).entries()]
+    .flatMap(([canonical, candidates]) => candidates.map((stored) => [canonical, stored]))
+    .sort(),
+  'the migration would miss, or over-reach into, a stored program key',
+);
+console.log(`PASS the migration's inline mapping is set-equal to COURSE_SLUG_REMAP (${EXPECTED_REMAP.length} pairs)`);
+
 try {
   if (createsDatabase) {
     assert.equal(
@@ -265,9 +304,9 @@ try {
   sql(`DELETE FROM public.course_progress;`);
   sql(`INSERT INTO public.users(id, email) VALUES ('u-all', 'all@example.com') ON CONFLICT DO NOTHING;`);
   sql(
-    EXPECTED_REMAP.map(([program, from], index) =>
+    EXPECTED_REMAP.map((pair, index) =>
       `INSERT INTO public.course_progress (id, user_id, program_slug, course_slug, status, last_updated_at)
-       VALUES ('cp-all-${index}', 'u-all', '${program}', '${from}', 'COMPLETED', now());`,
+       VALUES ('cp-all-${index}', 'u-all', '${pair.programSlug}', '${pair.from}', 'COMPLETED', now());`,
     ).join('\n') +
     // A control row that no pair names.
     `\nINSERT INTO public.course_progress (id, user_id, program_slug, course_slug, status, last_updated_at)
@@ -276,11 +315,11 @@ try {
 
   sql(migration);
   const moved = byId(rows());
-  for (const [index, [program, from, to]] of EXPECTED_REMAP.entries()) {
+  for (const [index, pair] of EXPECTED_REMAP.entries()) {
     assert.equal(
       moved[`cp-all-${index}`].course_slug,
-      to,
-      `${program}: ${from} should have moved to ${to}`,
+      pair.to,
+      `${pair.programSlug}: ${pair.from} should have moved to ${pair.to}`,
     );
   }
   assert.equal(moved['cp-all-control'].course_slug, 'technical-support-fundamentals');
@@ -290,6 +329,63 @@ try {
     'the migration remaps exactly the documented pairs -- no more, no fewer',
   );
   console.log(`PASS all ${EXPECTED_REMAP.length} documented pairs move, and nothing else does`);
+
+  // 8. The merge ladder's non-completed branch. Every earlier fixture had a
+  //    COMPLETED row, so GREATEST/LEAST and the IN_PROGRESS rung were never
+  //    exercised: two IN_PROGRESS rows at different percentages pin all of it.
+  resetTables();
+  sql(`DELETE FROM public.course_progress;`);
+  sql(`
+    INSERT INTO public.course_progress
+      (id, user_id, program_slug, course_id, course_slug, status, percent_complete, progress_pct,
+       score_scaled, score_raw, started_at, last_activity_at, statement_count, last_updated_at)
+    VALUES
+      ('cp-ip-old', 'u-both', 'health-information-technology-mchit', 'course-id-old',
+       'health-information-technology-mchit-course-13', 'IN_PROGRESS', 65, 65,
+       0.65, 13, '2026-06-01 09:00:00', '2026-07-01 09:00:00', 21, '2026-07-01 09:00:00'),
+      ('cp-ip-new', 'u-both', 'health-information-technology-mchit', NULL,
+       'telehealth', 'IN_PROGRESS', 30, 30,
+       0.30, 6, '2026-09-10 09:00:00', '2026-09-18 09:00:00', 4, '2026-09-18 09:00:00');
+  `);
+
+  sql(migration);
+  const ip = byId(rows());
+  assert.equal(ip['cp-ip-old'], undefined, 'the synthetic row is folded in');
+  assert.deepEqual(
+    {
+      slug: ip['cp-ip-new'].course_slug,
+      status: ip['cp-ip-new'].status,
+      percent: ip['cp-ip-new'].percent_complete,
+      progressPct: ip['cp-ip-new'].progress_pct,
+      completed: ip['cp-ip-new'].completed_at,
+      started: ip['cp-ip-new'].started_at,
+      lastActivity: ip['cp-ip-new'].last_activity_at,
+      statements: ip['cp-ip-new'].statement_count,
+      courseId: ip['cp-ip-new'].course_id,
+    },
+    {
+      slug: 'telehealth',
+      // Neither row is complete, so the merged row must not become COMPLETED
+      // (and must not fall back to NOT_STARTED either).
+      status: 'IN_PROGRESS',
+      // The furthest-along figure wins: GREATEST, not LEAST.
+      percent: 65,
+      progressPct: 65,
+      completed: null,
+      // The earliest start survives: LEAST, not GREATEST.
+      started: '2026-06-01T09:00:00',
+      lastActivity: '2026-09-18T09:00:00',
+      statements: 25,
+      // The destination's id is null here, so the source's is adopted.
+      courseId: 'course-id-old',
+    },
+  );
+  assert.equal(
+    Number(sql(`SELECT score_scaled FROM public.course_progress WHERE id='cp-ip-new';`)),
+    0.65,
+    'the better score survives the merge',
+  );
+  console.log('PASS two in-progress rows merge on the ladder without being marked complete');
 } finally {
   if (proofDatabaseCreated) {
     runSql(`DROP DATABASE ${ident(proofDatabase)};`, 'postgres');

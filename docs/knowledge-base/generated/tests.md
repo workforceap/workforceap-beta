@@ -567,7 +567,7 @@
 | [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |
 | [tests/migrations/chapter-members-user-cascade.mjs](../../../tests/migrations/chapter-members-user-cascade.mjs) | 144 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
-| [tests/migrations/wap76-course-slug-remap.mjs](../../../tests/migrations/wap76-course-slug-remap.mjs) | 297 | tests |  |
+| [tests/migrations/wap76-course-slug-remap.mjs](../../../tests/migrations/wap76-course-slug-remap.mjs) | 393 | tests |  |
 | [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |
 | [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |
 | [tests/pdf-deployment.test.ts](../../../tests/pdf-deployment.test.ts) | 53 | tests |  |

@@ -58,6 +58,23 @@ test('every mapped destination now carries a Coursera id, which is why the key m
   }
 });
 
+test('the mapping still covers all thirteen re-keys #2421 and #2425 introduced', () => {
+  // Without this, every other assertion in this file passes on an empty table.
+  assert.equal(COURSE_SLUG_REMAP.length, 13);
+  assert.equal(REMAPPED_SOURCE_SLUGS.length, 13);
+  assert.deepEqual(
+    [...new Set(COURSE_SLUG_REMAP.map((row) => row.programSlug))].sort(),
+    [
+      'comptia-a-professional-certificate',
+      'digital-marketing-e-commerce-google',
+      'health-information-technology-mchit',
+      'software-developer-professional-certificate-ibm',
+    ],
+  );
+  assert.equal(COURSE_SLUG_REMAP.filter((row) => row.source === '#2421').length, 2);
+  assert.equal(COURSE_SLUG_REMAP.filter((row) => row.source === '#2425').length, 11);
+});
+
 test('the mapping is unambiguous: one destination per (program, source)', () => {
   const keys = COURSE_SLUG_REMAP.map((row) => `${row.programSlug}\u0000${row.from}`);
   assert.equal(new Set(keys).size, keys.length, 'duplicate source key');

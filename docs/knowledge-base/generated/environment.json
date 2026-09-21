@@ -3693,7 +3693,7 @@
         },
         {
           "file": "tests/migrations/wap76-course-slug-remap.mjs",
-          "line": 43
+          "line": 66
         }
       ]
     },
@@ -4712,7 +4712,7 @@
       "references": [
         {
           "file": "tests/migrations/wap76-course-slug-remap.mjs",
-          "line": 43
+          "line": 66
         }
       ]
     },

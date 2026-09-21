@@ -17,9 +17,9 @@
 -- which lib/content/coursera/courseSlugRemap.test.ts re-derives from `PROGRAMS`
 -- (position N in the regulated syllabus, the slug and name mkProgram produces
 -- for it today). tests/migrations/wap76-course-slug-remap.mjs proves the
--- behaviour below on a disposable database, and
--- lib/content/coursera/courseSlugRemapSql.test.ts proves this file and the TS
--- table still agree.
+-- behaviour below on a disposable database AND parses the VALUES list out of
+-- this file to assert it is set-equal to that TS table, so the two cannot be
+-- edited apart.
 --
 -- IDEMPOTENT
 -- ----------

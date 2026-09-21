@@ -53,12 +53,6 @@ const UNBOUND_PROVIDER_ROWS: ReadonlyArray<{ program: string; name: string; reas
     reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',
   },
   {
-    program: 'ux-design-professional-certificate-google',
-    name: 'Build Dynamic User Interfaces (UI) for Websites',
-    reason:
-      'Coursera dropped it: the 2026-09-17 Curriculum download\'s UX Design collection (h0Rk9) carries six courses and no longer lists it (WAP-76), so there is no id left to bind. The regulated syllabus still names the course and keeps its own courseraSlug, so the WAP course key and the eight-course denominator are unchanged and progress already stored on responsive-web-design-adobe-xd still credits by slug; only new provider-reported completions are impossible, and Coursera can no longer report any.',
-  },
-  {
     program: 'data-science-professional-certificate-ibm',
     name: 'Introduction to Data Engineering',
     reason: 'no course by this title in lib/content/courseraDiscoveredCatalog.ts for this program (regenerate with scripts/backfill-coursera-courseids.cjs before binding)',

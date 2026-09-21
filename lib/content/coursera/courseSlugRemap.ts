@@ -23,8 +23,13 @@
  * and `courseSlugRemap.test.ts` re-derives it from `PROGRAMS` so it cannot
  * drift from the code that produced it.
  *
- * Pure and dependency-light on purpose: the repair script, the unit test and
- * the migration proof all read it.
+ * Pure and dependency-light on purpose. Three things read it: the repair
+ * script (`scripts/repair-member-program-progress.ts`, for its ordering guard
+ * and its orphaned-key report), this module's own suite, and the migration
+ * proof `tests/migrations/wap76-course-slug-remap.mjs`, which drives its
+ * fixtures from this table and asserts the migration's inline VALUES list is
+ * set-equal to it -- so the SQL cannot be edited away from this table, and
+ * this table cannot be edited away from `PROGRAMS`.
  */
 import { canonicalizeProgramSlug, programSlugReadCandidates } from '@/lib/content/programSlug';
 
