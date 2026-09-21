@@ -3704,7 +3704,7 @@
         },
         "settings": {
           "title": "Settings",
-          "body": "Organization settings sit at the bottom of the rail under Advanced / System, with Users, Exports and Feature flags. Most days you will not need this group."
+          "body": "Organization settings sit at the bottom of the rail under Advanced, with Users, Exports and Feature flags. Most days you will not need this group."
         },
         "help": {
           "title": "Come back any time",

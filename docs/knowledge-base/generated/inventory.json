@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "0c2a57963181002295ca166e05c3f36098222a245e4036b7ba7751c11fe5328d",
+  "inputTreeSha256": "8f2c0d514853f6d19ba55b414311012c44fa4f304e7c446813cef9659aec998b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -141177,9 +141177,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 9699,
+      "bytes": 9696,
       "lines": 227,
-      "sha256": "477c689bc9085c772999d99d1f55eb19c8bb7bab8cfb49ae6c68826f3f5153c9",
+      "sha256": "69cc96bb3bee9795ef99f5c01dba9f17b173e8f7e0dd795947f6d9f48cf85ef3",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -146914,18 +146914,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 223164,
+      "bytes": 223155,
       "lines": 3716,
-      "sha256": "6e9aed20e2c1290c99c5638abdb89b8672b3080c81e6fecb0f365e8a3af10863",
+      "sha256": "5a9666acc6c187e6378abd7990ccf47c0ee96f9dc23b60d3748813fc942e0ab2",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 247358,
+      "bytes": 247348,
       "lines": 3716,
-      "sha256": "4228fb92260b59ded1f7ac41c4ab48904dc453c9a16905c1d971d097a62aba78",
+      "sha256": "b88937cc804ba5bb5e8b1e3c8eca1ca16fad977f93c7d5e3f6d5dfc568c6d4b4",
       "binary": false
     },
     {
