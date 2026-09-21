@@ -221,6 +221,10 @@ function recordEmailFailure(args: SendBrandedEmailArgs, error: unknown) {
     provider: 'resend',
     failureReason: error instanceof Error ? error.message : typeof error === 'string' ? error : 'Send threw',
     metadata: { ...metadata },
+    // The payload is what the admin resend route replays; keep it verbatim.
+    // Whether this snapshot should keep recipient / subject is an open
+    // retention decision (Mike, 20 Sep), not one for the diagnostics writer.
+    retainTemplateParams: true,
   });
 }
 

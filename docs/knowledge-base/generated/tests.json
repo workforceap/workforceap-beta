@@ -24929,6 +24929,46 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/db/prisma.ts",
+        "line": 15
+      },
+      {
+        "file": "lib/diagnostics.ts",
+        "line": 16
+      },
+      {
+        "file": "lib/security/redactMetadata.ts",
+        "line": 17
+      },
+      {
+        "file": "lib/admin/memberActivity.ts",
+        "line": 18
+      },
+      {
+        "file": "lib/email/failureRecord.ts",
+        "line": 19
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/e2e/admin-login-search.spec.ts",
     "area": "tests",
     "domain": "tests",

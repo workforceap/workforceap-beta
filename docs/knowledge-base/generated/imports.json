@@ -45105,8 +45105,16 @@
   },
   {
     "from": "app/api/apply/signup/route.ts",
-    "specifier": "@/lib/apply/publicAssistance",
+    "specifier": "@/lib/apply/eligibilityScreeningFields",
     "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "lib/apply/eligibilityScreeningFields.ts"
+  },
+  {
+    "from": "app/api/apply/signup/route.ts",
+    "specifier": "@/lib/apply/publicAssistance",
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "lib/apply/publicAssistance.ts"
@@ -95248,6 +95256,14 @@
     "target": "lib/observability/captureApiError.ts"
   },
   {
+    "from": "lib/admin/memberActivity.ts",
+    "specifier": "@/lib/security/redactMetadata",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/redactMetadata.ts"
+  },
+  {
     "from": "lib/admin/memberMerge.test.ts",
     "specifier": "vitest",
     "line": 1,
@@ -96914,7 +96930,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -96922,7 +96938,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/coach/memory",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/coach/memory.ts"
@@ -96930,7 +96946,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/content/programs",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -96938,7 +96954,7 @@
   {
     "from": "lib/ai/elevenlabsPortalContext.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -98499,7 +98515,7 @@
     "from": "lib/apply/saveEligibilityScreening.ts",
     "specifier": "./eligibilityScreeningFields",
     "line": 2,
-    "kind": "type",
+    "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
   },
@@ -106009,11 +106025,27 @@
   },
   {
     "from": "lib/diagnostics.ts",
-    "specifier": "@/lib/db/prisma",
+    "specifier": "@prisma/client",
     "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/diagnostics.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 2,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/diagnostics.ts",
+    "specifier": "@/lib/security/redactMetadata",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/redactMetadata.ts"
   },
   {
     "from": "lib/elevenlabs-agent-dynamic-defaults.test.ts",
@@ -140158,6 +140190,54 @@
     "kind": "import",
     "external": false,
     "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "vitest",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/diagnostics",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/diagnostics.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/security/redactMetadata",
+    "line": 17,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/redactMetadata.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/admin/memberActivity",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberActivity.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "tests/e2e/admin-login-search.spec.ts",
