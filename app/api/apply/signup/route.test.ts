@@ -907,7 +907,7 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     expect(state.screeningUpserts[0].update).toMatchObject({ qualifies: false, yesCount: 0 });
   });
 
-  it('preserves the existing null result fallback and skips incomplete triads', async () => {
+  it('preserves the existing null result fallback and stores an incomplete triad as given', async () => {
     const res = await POST(makeRequest({
       eligibilityQualifies: null, eligibilityYesCount: null,
       eligibilityQ1: 'yes', eligibilityQ2: 'yes', eligibilityQ3: null,
@@ -917,7 +917,50 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     resetState();
     const incomplete = await POST(makeRequest({ eligibilityQ1: null, eligibilityQ2: 'yes' }));
     expect(incomplete.status).toBe(200);
-    expect(state.screeningUpserts).toEqual([]);
+    expect(state.screeningUpserts).toHaveLength(1);
+    expect(state.screeningUpserts[0].create).toMatchObject({ q1: null, q2: 'yes' });
+  });
+
+  it('persists unemployment / SNAP answers given without the triad, and keeps them out of the notes', async () => {
+    // Before WAP-170/172 these answers survived only as lines in
+    // Application.notes; the notes now carry a pointer, so the screening row
+    // has to be written even when q1/q2 were skipped.
+    const res = await POST(
+      makeRequest({
+        eligibilityQ1: null,
+        eligibilityQ2: null,
+        eligibilityQ3: null,
+        eligibilityQualifies: null,
+        eligibilityYesCount: null,
+        receivingUnemployment: 'yes',
+        exhaustedUnemployment: 'no',
+        layoffCompany: 'Acme Logistics',
+        snapWic: 'yes',
+        publicAssistancePrograms: ['snap'],
+        publicAssistanceHelpRequested: 'yes',
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(state.screeningUpserts).toHaveLength(1);
+    expect(state.screeningUpserts[0].create).toMatchObject({
+      q1: null,
+      q2: null,
+      q3: null,
+      qualifies: false,
+      yesCount: 0,
+      receivingUnemployment: 'yes',
+      exhaustedUnemployment: 'no',
+      layoffCompany: 'Acme Logistics',
+      snapWic: 'yes',
+      publicAssistancePrograms: ['snap'],
+      publicAssistanceHelpRequested: 'yes',
+    });
+    const notes = state.applicationCreates[0]?.data.notes ?? '';
+    expect(notes).toContain('Eligibility screening: on file');
+    expect(notes).not.toContain('Receiving unemployment');
+    expect(notes).not.toContain('SNAP/WIC');
+    expect(notes).not.toContain('Acme Logistics');
+    expect(notes).not.toContain('Benefit programs');
   });
 
   it('persists unemployment / SNAP / hear-about / ambassador fields on screening upsert', async () => {

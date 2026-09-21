@@ -784,7 +784,10 @@ export const POST = withApiGuc(async (request: NextRequest) => {
         // Upsert keyed on the unique user_id so a returning applicant who
         // re-runs the screener updates their row instead of violating the
         // unique constraint (which would roll back the whole signup).
-        if (!isSchoolSignup && eligibilityQ1 && eligibilityQ2) {
+        // Written whenever any screening answer is present (the helper skips
+        // an empty set): the notes no longer carry answers, so an applicant
+        // who answered unemployment / SNAP but not the triad must land here.
+        if (!isSchoolSignup) {
           await saveEligibilityScreening(tx, {
             userId: user.id, organizationId,
             qualifies: eligibilityQualifies ?? (eligibilityYesCount ?? 0) >= 1,

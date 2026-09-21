@@ -24644,19 +24644,23 @@
     "localReferences": [
       {
         "file": "lib/db/prisma.ts",
-        "line": 13
-      },
-      {
-        "file": "lib/diagnostics.ts",
-        "line": 14
-      },
-      {
-        "file": "lib/security/redactMetadata.ts",
         "line": 15
       },
       {
-        "file": "lib/admin/memberActivity.ts",
+        "file": "lib/diagnostics.ts",
         "line": 16
+      },
+      {
+        "file": "lib/security/redactMetadata.ts",
+        "line": 17
+      },
+      {
+        "file": "lib/admin/memberActivity.ts",
+        "line": 18
+      },
+      {
+        "file": "lib/email/failureRecord.ts",
+        "line": 19
       }
     ],
     "kind": "test-candidate",

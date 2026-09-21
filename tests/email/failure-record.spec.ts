@@ -54,7 +54,7 @@ describe('classifyEmailSendFailure', () => {
 describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
   const now = new Date('2026-09-20T12:00:00Z');
 
-  it('stores the template and a redacted param shape, hashes the recipient, and marks the row not replayable', () => {
+  it('stores template and params so the row is replayable, and hashes the recipient', () => {
     const meta = buildEmailFailureMetadata(
       { to: 'Ada@Example.org', subject: 'Hello', template: { name: 'applicant_followup', params: { to: 'Ada@Example.org', fullName: 'Ada' } } },
       new Error(CRLF),
@@ -65,43 +65,19 @@ describe('buildEmailFailureMetadata / parseEmailFailureMetadata', () => {
       subject: '',
       recipientDomain: 'example.org',
       template: 'applicant_followup',
-      // Personal-data keys are redacted before the row is written; a payload
-      // that lost a value cannot be replayed verbatim, so it is not resendable.
-      templateParams: { to: '[redacted]', fullName: '[redacted]' },
+      templateParams: { to: 'Ada@Example.org', fullName: 'Ada' },
       errorClass: 'header_invalid',
       retryable: true,
-      resendable: false,
+      resendable: true,
       failedAt: '2026-09-20T12:00:00.000Z',
     });
     expect(meta.recipientHash).toBe(recipientHash('ada@example.org'));
     expect(meta.recipientHash).toHaveLength(16);
     expect(meta.recipientHash).not.toContain('example');
-    // Nothing in the row names the person: not the address, not the name, not the subject.
-    const serialized = JSON.stringify(meta);
-    expect(serialized).not.toContain('Ada@Example.org');
-    expect(serialized).not.toContain('"Ada"');
-    expect(serialized).not.toContain('Hello');
-  });
-
-  it('keeps a payload with no personal-data keys replayable', () => {
-    const meta = buildEmailFailureMetadata(
-      { to: 'staff@example.org', subject: 'Pending', template: { name: 'admin_pending_applicants', params: { pendingCount: 4 } } },
-      new Error('x'),
-      now,
-    );
-    expect(meta.templateParams).toEqual({ pendingCount: 4 });
-    expect(meta.resendable).toBe(true);
-  });
-
-  it('reads a stored row with redacted params back as not resendable', () => {
-    const meta = parseEmailFailureMetadata({
-      template: 'applicant_followup',
-      templateParams: { to: '[redacted]', fullName: '[redacted]' },
-      errorClass: 'header_invalid',
-      resendable: true,
-    });
-    expect(meta.resendable).toBe(false);
-    expect(meta.templateParams).toEqual({ to: '[redacted]', fullName: '[redacted]' });
+    // The raw address and subject are never written; templateParams is the
+    // resend payload and is the only place the address may remain.
+    expect(JSON.stringify({ ...meta, templateParams: undefined })).not.toContain('Ada@Example.org');
+    expect(JSON.stringify(meta)).not.toContain('Hello');
   });
 
   it('marks a send without a template as not resendable and stores no params', () => {
@@ -173,13 +149,11 @@ describe('sendBrandedEmail failure diagnostic', () => {
       recipientHash: recipientHash('ada@example.org'),
       recipientDomain: 'example.org',
       template: 'applicant_followup',
-      templateParams: { to: '[redacted]', fullName: '[redacted]' },
+      templateParams: { to: 'ada@example.org', fullName: 'Ada Lovelace' },
       errorClass: 'header_invalid',
       retryable: true,
-      resendable: false,
+      resendable: true,
     });
-    expect(JSON.stringify(row.metadata)).not.toContain('ada@example.org');
-    expect(JSON.stringify(row.metadata)).not.toContain('Lovelace');
     expect(typeof row.metadata?.failedAt).toBe('string');
   });
 

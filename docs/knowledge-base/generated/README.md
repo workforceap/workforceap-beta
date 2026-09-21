@@ -16,7 +16,7 @@ Start with [the human guide](../README.md), [summary](summary.json), [routes](ro
 | communications | 72 | [Open](communications.md) |
 | components | 619 | [Open](components.md) |
 | content | 14 | [Open](content.md) |
-| database | 210 | [Open](database.md) |
+| database | 211 | [Open](database.md) |
 | delivery | 10 | [Open](delivery.md) |
 | documentation | 358 | [Open](documentation.md) |
 | libraries | 1083 | [Open](libraries.md) |

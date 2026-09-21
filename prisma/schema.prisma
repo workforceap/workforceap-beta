@@ -2264,8 +2264,11 @@ model ApplyEligibilityScreening {
   id             String   @id @default(uuid())
   userId         String   @unique @map("user_id")
   organizationId String   @map("organization_id")
-  q1             String   @map("q1") // yes | no — unemployed / underemployed
-  q2             String   @map("q2") // yes | no — household income < $60k
+  /// yes | no — unemployed / underemployed. Null when the applicant answered
+  /// the WS4/WS5 screening (unemployment, layoff, SNAP/WIC) but not the triad.
+  q1             String?  @map("q1")
+  /// yes | no — household income < $60k. Null with q1, see above.
+  q2             String?  @map("q2")
   q3             String?  @map("q3") // yes | no — work authorization
   qualifies      Boolean  @map("qualifies")
   yesCount       Int      @map("yes_count")

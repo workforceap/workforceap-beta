@@ -60,12 +60,6 @@ export const POST = withApiGuc(async (
         { status: 422 },
       );
     }
-    if (!failure.resendable) {
-      return NextResponse.json(
-        { error: 'The stored payload was redacted before it was written and cannot be replayed. Re-send it from the original workflow.' },
-        { status: 422 },
-      );
-    }
     const missing = validateResendParams(template, failure.templateParams);
     if (missing) {
       return NextResponse.json({ error: 'The stored template payload is incomplete and cannot be replayed.' }, { status: 422 });

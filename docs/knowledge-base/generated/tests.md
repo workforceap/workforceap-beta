@@ -356,7 +356,7 @@
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/cron/onboarding-stalls-digest.spec.ts](../../../tests/cron/onboarding-stalls-digest.spec.ts) | 151 | communications |  |
-| [tests/diagnostics/workflow-diagnostic-redaction.spec.ts](../../../tests/diagnostics/workflow-diagnostic-redaction.spec.ts) | 111 | tests |  |
+| [tests/diagnostics/workflow-diagnostic-redaction.spec.ts](../../../tests/diagnostics/workflow-diagnostic-redaction.spec.ts) | 127 | tests |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -391,8 +391,8 @@
 | [tests/e2e/visual-regression-smoke.spec.ts](../../../tests/e2e/visual-regression-smoke.spec.ts) | 144 | tests |  |
 | [tests/e2e/workspace-shell-layout.spec.ts](../../../tests/e2e/workspace-shell-layout.spec.ts) | 246 | tests |  |
 | [tests/email/failure-alert.spec.ts](../../../tests/email/failure-alert.spec.ts) | 99 | communications |  |
-| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 204 | communications |  |
-| [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 208 | communications |  |
+| [tests/email/failure-record.spec.ts](../../../tests/email/failure-record.spec.ts) | 178 | communications |  |
+| [tests/email/resend-route.spec.ts](../../../tests/email/resend-route.spec.ts) | 196 | communications |  |
 | [tests/email/send-hardening.spec.ts](../../../tests/email/send-hardening.spec.ts) | 183 | communications |  |
 | [tests/empty-module.cjs](../../../tests/empty-module.cjs) | 1 | tests |  |
 | [tests/find-your-path-recommendations.test.ts](../../../tests/find-your-path-recommendations.test.ts) | 27 | tests |  |

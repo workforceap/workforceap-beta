@@ -11,10 +11,10 @@ const REDACTED_VALUE = '[redacted]';
 export const CONTACT_AND_SECRET_KEY = /email|phone|token|password/i;
 
 /**
- * Personal data that must not sit in a diagnostics store: contact details,
- * names, postal addresses, recipients and secrets.
+ * Contact details, postal addresses and secrets — what the generic
+ * `workflow_diagnostics` writer strips from a template payload.
  */
-export const PERSONAL_DATA_KEY = /email|phone|name|address|token|password|^to$|^cc$|^bcc$/i;
+export const PERSONAL_DATA_KEY = /email|phone|address|token|password/i;
 
 /**
  * Deep copy of `value` with every object key matching `keyPattern` replaced by
@@ -31,14 +31,4 @@ export function redactMetadataKeys(value: unknown, keyPattern: RegExp): unknown 
     return out;
   }
   return value;
-}
-
-/** True when any value inside `value` (at any depth) is the redaction marker. */
-export function containsRedactedValue(value: unknown): boolean {
-  if (value === REDACTED_VALUE) return true;
-  if (Array.isArray(value)) return value.some(containsRedactedValue);
-  if (value && typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).some(containsRedactedValue);
-  }
-  return false;
 }

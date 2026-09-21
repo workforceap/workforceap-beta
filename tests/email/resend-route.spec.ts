@@ -130,18 +130,6 @@ describe('POST /api/admin/email-failures/[id]/resend', () => {
     expect(auditLog).not.toHaveBeenCalled();
   });
 
-  it('refuses a row whose stored payload was redacted at write time (422, nothing sent)', async () => {
-    vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(
-      failedRow({ ...replayable, templateParams: { to: '[redacted]', fullName: '[redacted]' } }) as never,
-    );
-    const res = await call();
-    expect(res.status).toBe(422);
-    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/redacted/) });
-    expect(sendApplicantFollowupEmail).not.toHaveBeenCalled();
-    expect(prisma.workflowDiagnostic.create).not.toHaveBeenCalled();
-    expect(auditLog).not.toHaveBeenCalled();
-  });
-
   it('refuses a row whose stored payload is incomplete', async () => {
     vi.mocked(prisma.workflowDiagnostic.findFirst).mockResolvedValue(failedRow({ ...replayable, templateParams: { to: 'ada@example.org' } }) as never);
     expect((await call()).status).toBe(422);

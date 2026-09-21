@@ -98027,7 +98027,7 @@
     "from": "lib/apply/saveEligibilityScreening.ts",
     "specifier": "./eligibilityScreeningFields",
     "line": 2,
-    "kind": "type",
+    "kind": "import",
     "external": false,
     "target": "lib/apply/eligibilityScreeningFields.ts"
   },
@@ -105862,14 +105862,6 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/rateLimitError.ts"
-  },
-  {
-    "from": "lib/email/failureRecord.ts",
-    "specifier": "@/lib/security/redactMetadata",
-    "line": 20,
-    "kind": "import",
-    "external": false,
-    "target": "lib/security/redactMetadata.ts"
   },
   {
     "from": "lib/email/failureSnapshot.test.ts",
@@ -139266,7 +139258,7 @@
   {
     "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
     "specifier": "vitest",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": true,
     "package": "vitest"
@@ -139274,7 +139266,7 @@
   {
     "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 13,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -139282,7 +139274,7 @@
   {
     "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
     "specifier": "@/lib/diagnostics",
-    "line": 14,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/diagnostics.ts"
@@ -139290,7 +139282,7 @@
   {
     "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
     "specifier": "@/lib/security/redactMetadata",
-    "line": 15,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/security/redactMetadata.ts"
@@ -139298,10 +139290,18 @@
   {
     "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
     "specifier": "@/lib/admin/memberActivity",
-    "line": 16,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/admin/memberActivity.ts"
+  },
+  {
+    "from": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+    "specifier": "@/lib/email/failureRecord",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/failureRecord.ts"
   },
   {
     "from": "tests/e2e/admin-login-search.spec.ts",

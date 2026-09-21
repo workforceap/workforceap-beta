@@ -1524,7 +1524,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 296
+          "line": 300
         }
       ]
     },
@@ -1551,7 +1551,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 259
+          "line": 263
         }
       ]
     },
@@ -1658,7 +1658,7 @@
         },
         {
           "file": "lib/email/send.ts",
-          "line": 280
+          "line": 284
         },
         {
           "file": "lib/notifications/partner-notify.ts",

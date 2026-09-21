@@ -121,7 +121,7 @@ export function eligibilityDatasheetCells(
  * flag, unemployment / layoff / benefit answers. Referral fields (hear-about,
  * ambassador) are not screening answers.
  */
-function hasEligibilityScreeningAnswers(
+export function hasEligibilityScreeningAnswers(
   fields: EligibilityScreeningFields | null | undefined,
 ): boolean {
   if (!fields) return false;
