@@ -9309,17 +9309,17 @@
     "exports": [
       {
         "name": "dynamic",
-        "line": 23,
-        "kind": "Variable"
-      },
-      {
-        "name": "metadata",
         "line": 25,
         "kind": "Variable"
       },
       {
+        "name": "metadata",
+        "line": 27,
+        "kind": "Variable"
+      },
+      {
         "name": "default",
-        "line": 32,
+        "line": 34,
         "kind": "FunctionDeclaration",
         "localName": "AdminLayout"
       }

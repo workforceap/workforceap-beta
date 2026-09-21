@@ -56,7 +56,8 @@ describe('TourAutoStart (?tour=<key>)', () => {
   });
 
   it('ignores unknown keys and never writes state', async () => {
-    search = 'tour=admin.home';
+    // A key no wave will ever register (admin.home became a real tour in wave 4).
+    search = 'tour=nobody.home';
     render(<Page />);
     await new Promise((r) => setTimeout(r, TOUR_DEEP_LINK_DELAY_MS + 100));
     expect(screen.queryByRole('dialog')).toBeNull();

@@ -364,8 +364,9 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // /admin IS the Command Center (renders CommandCenterKit); the old separate
   // /admin/command-center entry was redundant (same view) so it's dropped from
   // the rail — the route still exists and is reachable directly.
-  { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap },
-  { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3 },
+  // `tourTarget`s are the admin.home guided-tour anchors (lib/tours/registry.ts).
+  { href: '/admin', label: 'Command Center', group: 'runTheOrg', Icon: Zap, tourTarget: 'tour-command-center' },
+  { href: '/admin/overview', label: 'Detailed overview', group: 'runTheOrg', Icon: BarChart3, tourTarget: 'tour-overview' },
 
   // ── Students — the people you manage day to day ──
   // Single entry → the full-kit roster (StudentsRosterKit) at /admin/students,
@@ -373,7 +374,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // hub (/admin/members) remains reachable via /admin/students?ui=legacy and the
   // flavored sub-lists (Interview ready, Job ready, Duplicates, Applications
   // funnel) in Advanced / System below. All underlying page.tsx routes preserved.
-  { href: '/admin/students', label: 'Students', group: 'students', Icon: Users },
+  { href: '/admin/students', label: 'Students', group: 'students', Icon: Users, tourTarget: 'tour-students' },
   {
     href: '/admin/messages',
     label: 'Messages',
@@ -383,17 +384,18 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     // WAP-168: the badge is every member message awaiting a staff reply, not
     // only the ones already 48h overdue, so someone is pushed to look today.
     badgeKey: 'member_messages_unanswered',
+    tourTarget: 'tour-messages',
   },
 
   // ── Programs & Training ──
-  { href: '/admin/programs', label: 'Programs', group: 'programs', Icon: BookOpen },
+  { href: '/admin/programs', label: 'Programs', group: 'programs', Icon: BookOpen, tourTarget: 'tour-programs' },
   {
     href: '/admin/program-change-requests',
     label: 'Program requests',
     group: 'programs',
     Icon: ArrowLeftRight,
   },
-  { href: '/admin/training-progress', label: 'Training progress', group: 'programs', Icon: Table2 },
+  { href: '/admin/training-progress', label: 'Training progress', group: 'programs', Icon: Table2, tourTarget: 'tour-training-progress' },
   { href: '/admin/assessments', label: 'Assessments', group: 'programs', Icon: ClipboardCheck },
   { href: '/admin/certifications', label: 'Certificates', group: 'programs', Icon: Award },
   { href: '/admin/career-mappings', label: 'Career paths', group: 'programs', Icon: Target },
@@ -450,7 +452,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/feature-flags', label: 'Feature flags', group: 'advanced', Icon: Flag, requiresSuperAdminContext: true },
   { href: '/admin/agent-inbox', label: 'Agent inbox', group: 'advanced', Icon: ListChecks, requiresSuperAdminContext: true },
   { href: '/admin/data-retention', label: 'Data retention', group: 'advanced', Icon: Shield, requiresSuperAdminContext: true },
-  { href: '/admin/settings', label: 'Settings', group: 'advanced', Icon: Settings, requiresSuperAdminContext: true },
+  { href: '/admin/settings', label: 'Settings', group: 'advanced', Icon: Settings, requiresSuperAdminContext: true, tourTarget: 'tour-settings' },
 ];
 
 export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [

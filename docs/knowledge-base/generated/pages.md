@@ -409,7 +409,7 @@
 | [app/admin/jobs/\[id\]/page.tsx](../../../app/admin/jobs/%5Bid%5D/page.tsx) | 73 | jobs-employers | generateMetadata:13, default:35 |
 | [app/admin/jobs/loading.tsx](../../../app/admin/jobs/loading.tsx) | 6 | jobs-employers | default:3 |
 | [app/admin/jobs/page.tsx](../../../app/admin/jobs/page.tsx) | 416 | jobs-employers | generateMetadata:27, default:103 |
-| [app/admin/layout.tsx](../../../app/admin/layout.tsx) | 121 | administration | dynamic:23, metadata:25, default:32 |
+| [app/admin/layout.tsx](../../../app/admin/layout.tsx) | 127 | administration | dynamic:25, metadata:27, default:34 |
 | [app/admin/loading.tsx](../../../app/admin/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/members/\[id\]/AdminMemberAiMatches.tsx](../../../app/admin/members/%5Bid%5D/AdminMemberAiMatches.tsx) | 57 | administration | default:6 |
 | [app/admin/members/\[id\]/AdminMemberNotesPanel.tsx](../../../app/admin/members/%5Bid%5D/AdminMemberNotesPanel.tsx) | 188 | administration | default:31 |
