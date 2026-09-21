@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
 import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
 import { HELP_MAX_HISTORY_TURNS, HELP_MAX_QUESTION_CHARS, type HelpLink } from '@/lib/help/assistant';
@@ -33,6 +34,15 @@ interface ChatResponse {
  *
  * Chrome on `--wa-*` tokens and kit classes; `role="dialog"` with a focus trap
  * and Escape to close, like the Help menu it opens from.
+ *
+ * Rendered through a portal onto `document.body`, not in place under the Help
+ * menu: the menu lives inside `header.workspace-shell-header`, whose
+ * `backdrop-filter` makes it the containing block for `position: fixed`
+ * descendants, so an in-place panel resolved against the header (a few px
+ * tall) and was clipped by `.workspace-shell-root { overflow: hidden }`. The
+ * portal keeps the drawer fixed to the viewport below the header. The panel
+ * only mounts after a click, so it never renders on the server; the
+ * `document` guard is belt and braces for that.
  */
 export default function HelpAssistantPanel({
   info,
@@ -116,7 +126,9 @@ export default function HelpAssistantPanel({
     key === 'whereAmI' || key === 'howToMessage' || key === 'whatCanIDo',
   );
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <div
       ref={trapRef}
       role="dialog"
@@ -302,6 +314,7 @@ export default function HelpAssistantPanel({
       <p className="wa-kit-lede" style={{ margin: 0, padding: '0 var(--wa-pad-sm) var(--wa-pad-sm)', color: 'var(--wa-muted)', fontSize: '0.8125rem' }}>
         {t('assistant.disclaimer')}
       </p>
-    </div>
+    </div>,
+    document.body,
   );
 }

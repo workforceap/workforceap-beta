@@ -112,6 +112,39 @@ describe('PortalHelpMenu with help_assistant_v1', () => {
     expect(screen.queryByTestId('help-assistant-panel')).toBeNull();
   });
 
+  it('portals the drawer onto document.body so the header backdrop-filter cannot clip it', async () => {
+    fetchMock.mockResolvedValue(jsonResponse(ON));
+    // The real shell renders the menu inside `header.workspace-shell-header`,
+    // whose `backdrop-filter` makes it the containing block for fixed descendants.
+    render(
+      <header className="workspace-shell-header" data-testid="shell-header">
+        <PortalHelpMenu tourKey="counselor.home" guideHref="/counselor/guide" />
+      </header>,
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const header = screen.getByTestId('shell-header');
+    const trigger = screen.getByTestId('portal-help-trigger');
+    // The `tour-help` anchor stays in the header for the tour engine.
+    expect(trigger).toHaveAttribute('data-tour', 'tour-help');
+    expect(header.contains(trigger)).toBe(true);
+
+    fireEvent.click(trigger);
+    fireEvent.click(await screen.findByTestId('portal-help-ask-assistant'));
+    const panel = await screen.findByTestId('help-assistant-panel');
+
+    expect(document.body.contains(panel)).toBe(true);
+    expect(header.contains(panel)).toBe(false);
+    expect(panel.parentElement).toBe(document.body);
+    expect(panel).toHaveAttribute('aria-modal', 'true');
+    expect(panel).toHaveAttribute('aria-labelledby', panel.querySelector('h2')?.id);
+    expect(panel.style.position).toBe('fixed');
+
+    // Escape still closes the drawer and hands focus back to the header trigger.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByTestId('help-assistant-panel')).toBeNull());
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('keeps the draft and shows an alert when the server answers 429', async () => {
     fetchMock.mockImplementation(async (_input, init) =>
       init?.method === 'POST' ? jsonResponse({ error: 'Too many' }, 429) : jsonResponse(ON),

@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "a38fee19a2383695e067631177d8817c4b173ffaf636264ad4e48329c9d7d09c",
+  "inputTreeSha256": "6fbda2f748e87800d949dd90df68d75dafb9c825d785e2c1cfdd98c320152f85",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -64508,14 +64508,14 @@
       "path": "components/portal/help/HelpAssistantPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 11233,
-      "lines": 307,
-      "sha256": "f3adf3f9ddfccd9752319b7c5fd541d7458316d0400989c280d348c39af1034a",
+      "bytes": 11933,
+      "lines": 320,
+      "sha256": "519dd87732336095b413373839b6d277ec52d729aa42c2d6e63b1986f06bc0af",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 37,
+          "line": 47,
           "kind": "FunctionDeclaration",
           "localName": "HelpAssistantPanel"
         }
@@ -64523,17 +64523,17 @@
       "declarations": [
         {
           "name": "PanelMessage",
-          "line": 11,
+          "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "ChatResponse",
-          "line": 20,
+          "line": 21,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "HelpAssistantPanel",
-          "line": 37,
+          "line": 47,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -167269,9 +167269,9 @@
       "path": "tests/components/help-assistant-menu.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5410,
-      "lines": 133,
-      "sha256": "b9ff2ef0693916c50fe7f07d9dfd4293f2b054585eb489327350d2bea731b605",
+      "bytes": 7098,
+      "lines": 166,
+      "sha256": "c3d0a83520886f1f31d5f4435e4ec920add1c0b5fa93cf703ea183fb5e543660",
       "binary": false,
       "exports": [],
       "declarations": [

@@ -427,7 +427,7 @@
 | [components/portal/counselor/TriageNudgePanel.tsx](../../../components/portal/counselor/TriageNudgePanel.tsx) | 176 | member-counselor | default:31 |
 | [components/portal/counselor/labReviews.module.css](../../../components/portal/counselor/labReviews.module.css) | 38 | member-counselor |  |
 | [components/portal/forms/RequiredFieldsHint.tsx](../../../components/portal/forms/RequiredFieldsHint.tsx) | 30 | components | RequiredFieldsHint:12 |
-| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 307 | components | default:37 |
+| [components/portal/help/HelpAssistantPanel.tsx](../../../components/portal/help/HelpAssistantPanel.tsx) | 320 | components | default:47 |
 | [components/portal/help/useHelpAssistantAvailability.ts](../../../components/portal/help/useHelpAssistantAvailability.ts) | 63 | components | HelpAssistantInfo:7, HelpAssistantAvailability:15, useHelpAssistantAvailability:26 |
 | [components/portal/jobs/LogExternalApplicationButton.tsx](../../../components/portal/jobs/LogExternalApplicationButton.tsx) | 327 | jobs-employers | default:53 |
 | [components/portal/kit/AppShellMember.tsx](../../../components/portal/kit/AppShellMember.tsx) | 113 | components | MemberTab:3, AppShellMember:26 |

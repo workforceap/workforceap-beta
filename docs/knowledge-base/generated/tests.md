@@ -285,7 +285,7 @@
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/heading-outline-wap123.spec.tsx](../../../tests/components/heading-outline-wap123.spec.tsx) | 47 | tests |  |
-| [tests/components/help-assistant-menu.spec.tsx](../../../tests/components/help-assistant-menu.spec.tsx) | 133 | tests |  |
+| [tests/components/help-assistant-menu.spec.tsx](../../../tests/components/help-assistant-menu.spec.tsx) | 166 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |

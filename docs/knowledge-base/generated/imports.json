@@ -82793,8 +82793,16 @@
   },
   {
     "from": "components/portal/help/HelpAssistantPanel.tsx",
-    "specifier": "next-intl",
+    "specifier": "react-dom",
     "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "next-intl",
+    "line": 7,
     "kind": "import",
     "external": true,
     "package": "next-intl"
@@ -82802,7 +82810,7 @@
   {
     "from": "components/portal/help/HelpAssistantPanel.tsx",
     "specifier": "@/components/portal/kit/hooks/useFocusTrap",
-    "line": 7,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/hooks/useFocusTrap.ts"
@@ -82810,7 +82818,7 @@
   {
     "from": "components/portal/help/HelpAssistantPanel.tsx",
     "specifier": "@/lib/help/assistant",
-    "line": 8,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/help/assistant.ts"
@@ -82818,7 +82826,7 @@
   {
     "from": "components/portal/help/HelpAssistantPanel.tsx",
     "specifier": "./useHelpAssistantAvailability",
-    "line": 9,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "components/portal/help/useHelpAssistantAvailability.ts"
