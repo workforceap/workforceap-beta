@@ -3285,6 +3285,10 @@
     }
   },
   "memberApproval": {
+    "dismiss": "Ocultar",
+    "dismissLabel": "Ocultar o status da sua aprovação",
+    "restore": "Mostrar o status da sua aprovação",
+    "summaryAllApproved": "Todas as etapas salvas estão aprovadas.",
     "title": "Status da sua aprovação",
     "intro": "Confira as últimas etapas salvas. Sua equipe pode explicar o que ainda falta.",
     "application": "Inscrição",

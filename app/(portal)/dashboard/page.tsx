@@ -72,6 +72,7 @@ import MobileRecentActivity from './_components/MobileRecentActivity';
 import DesktopDashboard from './_components/DesktopDashboard';
 import { MemberDashboardKit } from '@/components/portal/kit';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
+import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import SkillMissionTeaserCard, {
   type SkillMissionTeaserData,
@@ -176,9 +177,20 @@ async function renderMemberDashboard(
       fallbackDisplayName: user.email,
       provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
     });
+    // Presentation only: a pathway with a live next step keeps the approval
+    // card above the dashboard; a finished or closed one drops below the
+    // content as a single collapsed line (memberApprovalCardPlacement).
+    const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
+    const approvalCard = (
+      <MemberApprovalStatusCard
+        status={home.approvalStatus}
+        storageUserId={user.id}
+        placement={approvalPlacement}
+      />
+    );
     return (
       <>
-      <MemberApprovalStatusCard status={home.approvalStatus} />
+      {approvalPlacement === 'primary' ? approvalCard : null}
       <MemberHomeKit
         firstName={home.firstName}
         coursePercent={home.coursePercent}
@@ -211,6 +223,7 @@ async function renderMemberDashboard(
         doThisNext={home.doThisNext}
         ungatedDigitalBasicsHref={home.programTitle ? null : home.ungatedDigitalBasicsHref}
       />
+      {approvalPlacement === 'demoted' ? approvalCard : null}
       </>
     );
   }

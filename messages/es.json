@@ -3345,6 +3345,10 @@
     }
   },
   "memberApproval": {
+    "dismiss": "Ocultar",
+    "dismissLabel": "Ocultar el estado de tu aprobación",
+    "restore": "Mostrar el estado de tu aprobación",
+    "summaryAllApproved": "Todos los pasos guardados están aprobados.",
     "title": "Estado de tu aprobación",
     "intro": "Consulta los últimos pasos guardados. Tu equipo puede explicarte qué falta.",
     "application": "Solicitud",

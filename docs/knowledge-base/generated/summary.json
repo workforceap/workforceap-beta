@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "2236f042506d747b0d6e2171c706fa3f61b722bcf43d4b9e3dd3b1245f562d23",
+  "inputTreeSha256": "f4c00ab72f92813433008a4f1babf93fed361033f6b7a61fbc9eeb50298b8cf3",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5044,
-    "sourceModules": 3685,
-    "importReferences": 18414,
-    "resolvedLocalReferences": 12383,
+    "files": 5046,
+    "sourceModules": 3687,
+    "importReferences": 18427,
+    "resolvedLocalReferences": 12392,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1008,
-    "testCandidates": 997,
+    "testFiles": 1009,
+    "testCandidates": 998,
     "testHelpers": 11,
-    "staticallySelectedTests": 995,
+    "staticallySelectedTests": 996,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1092
+      "files": 1094
     },
     {
       "area": "localization",
@@ -357,12 +357,12 @@
       "lines": 1235
     },
     {
-      "file": "app/dev/astryx/table/page.tsx",
-      "lines": 1216
+      "file": "app/(portal)/dashboard/page.tsx",
+      "lines": 1223
     },
     {
-      "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1210
+      "file": "app/dev/astryx/table/page.tsx",
+      "lines": 1216
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",

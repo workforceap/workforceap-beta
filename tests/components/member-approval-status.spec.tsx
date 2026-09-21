@@ -1,17 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
 import MemberFirstCertProgressBar from '@/components/portal/MemberFirstCertProgressBar';
 import { buildMemberApprovalStatus } from '@/lib/member/memberApprovalStatus';
+import {
+  approvalDismissStorageKey,
+  approvalStatusSignature,
+  memberApprovalCardPlacement,
+} from '@/lib/member/memberApprovalCardPlacement';
 import { formatPortalDate } from '@/lib/formatDate';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import es from '@/messages/es.json';
 
-function show(status: ReturnType<typeof buildMemberApprovalStatus>) {
+const MEMBER_ID = 'member-1';
+
+function show(
+  status: ReturnType<typeof buildMemberApprovalStatus>,
+  placement: 'primary' | 'demoted' = 'primary',
+) {
   return render(<NextIntlClientProvider locale="en" messages={messages}>
-    <MemberApprovalStatusCard status={status} />
+    <MemberApprovalStatusCard status={status} storageUserId={MEMBER_ID} placement={placement} />
   </NextIntlClientProvider>);
 }
 
@@ -95,7 +106,10 @@ describe('truthful member status surfaces', () => {
   it.each([['en', messages], ['es', es]] as const)('renders from the sliced %s portal payload without leaking memberApproval.* keys', (locale, catalog) => {
     const text = catalog.memberApproval;
     const view = render(<NextIntlClientProvider locale={locale} messages={pickPortalClientMessages(catalog)}>
-      <MemberApprovalStatusCard status={buildMemberApprovalStatus({ applications: [], wioaReviewStatus: null })} />
+      <MemberApprovalStatusCard
+        status={buildMemberApprovalStatus({ applications: [], wioaReviewStatus: null })}
+        storageUserId={MEMBER_ID}
+      />
     </NextIntlClientProvider>);
     expect(screen.getByRole('heading', { name: text.title })).toBeInTheDocument();
     expect(screen.getByText(text.intro)).toBeInTheDocument();
@@ -111,5 +125,93 @@ describe('truthful member status surfaces', () => {
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getByText('1 of 2 courses complete')).toBeInTheDocument();
     expect(screen.queryByText(/certification earned/i)).not.toBeInTheDocument();
+  });
+});
+
+// Presentation follow-up: the card fills the first screen of /dashboard even
+// when the pathway is closed and there is nothing for the member to do.
+describe('approval card placement and dismissal', () => {
+  const closed = buildMemberApprovalStatus({
+    applications: [{ status: 'DENIED', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+    wioaReviewStatus: 'verified',
+    wioaReviewedAt: new Date('2026-09-03T12:00:00Z'),
+    courseraEnrollmentApproved: true,
+    courseraEnrollmentApprovedAt: new Date('2026-09-05T12:00:00Z'),
+  });
+  const live = buildMemberApprovalStatus({
+    applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-01T12:00:00Z') }],
+    wioaReviewStatus: null,
+    courseraEnrollmentApproved: false,
+  });
+
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('collapses a closed pathway to one summary line and keeps the steps reachable', () => {
+    expect(memberApprovalCardPlacement(closed)).toBe('demoted');
+    const { container } = show(closed, 'demoted');
+    expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'demoted');
+    expect(screen.getByRole('heading', { name: messages.memberApproval.title })).toBeInTheDocument();
+    expect(container.querySelector('[data-approval-summary]')?.textContent)
+      .toBe(messages.memberApproval.applicationStatus.denied);
+    // Collapsed, not gone: the three saved steps sit inside the disclosure.
+    const disclosure = container.querySelector('details') as HTMLDetailsElement;
+    expect(disclosure.open).toBe(false);
+    expect(within(stage(container, 'application')).getByText(messages.memberApproval.applicationStatus.denied)).toBeInTheDocument();
+    expect(within(stage(container, 'training')).getByText(messages.memberApproval.trainingStatus.approved)).toBeInTheDocument();
+    expect(disclosure.contains(stage(container, 'application'))).toBe(true);
+  });
+
+  it('leaves an actionable card at full prominence', () => {
+    expect(memberApprovalCardPlacement(live)).toBe('primary');
+    const { container } = show(live, 'primary');
+    expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'primary');
+    expect(container.querySelector('details')).toBeNull();
+    expect(screen.getByText('Current step')).toBeInTheDocument();
+  });
+
+  it('persists a dismissal against the member and the status it was dismissed at', async () => {
+    const user = userEvent.setup();
+    const key = approvalDismissStorageKey(MEMBER_ID);
+    const view = show(closed, 'demoted');
+
+    await user.click(screen.getByRole('button', { name: messages.memberApproval.dismissLabel }));
+    expect(window.localStorage.getItem(key)).toBe(approvalStatusSignature(closed));
+    expect(screen.queryByRole('heading', { name: messages.memberApproval.title })).not.toBeInTheDocument();
+    // Still reachable: a quiet link puts the member's own status back.
+    expect(screen.getByRole('button', { name: messages.memberApproval.restore })).toBeInTheDocument();
+    view.unmount();
+
+    // Same member, same status, new page load: it stays dismissed.
+    const reload = show(closed, 'demoted');
+    expect(reload.container.querySelector('[data-approval-card]'))
+      .toHaveAttribute('data-approval-card', 'dismissed');
+    expect(screen.queryByRole('heading', { name: messages.memberApproval.title })).not.toBeInTheDocument();
+    reload.unmount();
+
+    // Another member on the same device is unaffected.
+    const other = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <MemberApprovalStatusCard status={closed} storageUserId="member-2" placement="demoted" />
+    </NextIntlClientProvider>);
+    expect(screen.getByRole('heading', { name: messages.memberApproval.title })).toBeInTheDocument();
+    other.unmount();
+
+    // The status moves: the dismissal no longer matches, so the card returns.
+    const moved = show(live, 'primary');
+    expect(window.localStorage.getItem(key)).toBe(approvalStatusSignature(closed));
+    expect(screen.getByRole('heading', { name: messages.memberApproval.title })).toBeInTheDocument();
+    moved.unmount();
+  });
+
+  it('restores the card and clears the stored dismissal', async () => {
+    const user = userEvent.setup();
+    const key = approvalDismissStorageKey(MEMBER_ID);
+    window.localStorage.setItem(key, approvalStatusSignature(closed));
+    show(closed, 'demoted');
+
+    await user.click(screen.getByRole('button', { name: messages.memberApproval.restore }));
+    expect(window.localStorage.getItem(key)).toBeNull();
+    expect(screen.getByRole('heading', { name: messages.memberApproval.title })).toBeInTheDocument();
   });
 });
