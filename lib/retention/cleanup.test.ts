@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cleanupTable, cleanupDeletedAccounts, foreignKeyConstraintName, runDataCleanup } from './cleanup';
+import { cleanupTable, cleanupDeletedAccounts, cleanupUnmatchedCourseraXapiEvents, foreignKeyConstraintName, runDataCleanup } from './cleanup';
 import {
   RETENTION_TABLES,
+  UNMATCHED_XAPI_EVENT_RETENTION_LABEL,
   CRITICAL_AUDIT_ACTION_PREFIXES,
   RETENTION_AUDIT_DAYS as CRITICAL_AUDIT_RETENTION_DAYS,
   PUBLIC_LEAD_RETENTION_DAYS,
@@ -13,6 +14,8 @@ const mockFindMany = vi.fn();
 const mockCount = vi.fn();
 const mockAuditEventDeleteMany = vi.fn();
 const mockAnonymizeMember = vi.fn();
+const mockQueryRaw = vi.fn();
+const mockExecuteRaw = vi.fn();
 
 vi.mock('@/lib/member/anonymizeMember', () => ({
   anonymizeMember: (...args: unknown[]) => mockAnonymizeMember(...args),
@@ -29,6 +32,8 @@ function foreignKeyError(constraint: string) {
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $queryRawUnsafe: vi.fn(),
+    $queryRaw: (...args: unknown[]) => mockQueryRaw(...args),
+    $executeRaw: (...args: unknown[]) => mockExecuteRaw(...args),
     $transaction: async (arg: unknown) => {
       const { prisma } = await import('@/lib/db/prisma');
       return typeof arg === 'function'
@@ -320,9 +325,87 @@ describe('foreignKeyConstraintName', () => {
   });
 });
 
+describe('cleanupUnmatchedCourseraXapiEvents (WAP-33)', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('reports zero and issues no DELETE when the runtime table does not exist yet', async () => {
+    mockQueryRaw.mockResolvedValue([{ present: false }]);
+
+    const result = await cleanupUnmatchedCourseraXapiEvents();
+
+    expect(result).toEqual({ model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: 0, batchCount: 0 });
+    expect(mockExecuteRaw).not.toHaveBeenCalled();
+  });
+
+  it('deletes only unmatched, never-matched rows past the cutoff that no live member can still claim, in batches, until a short batch', async () => {
+    mockQueryRaw.mockResolvedValue([{ present: true }]);
+    mockExecuteRaw.mockResolvedValueOnce(1000).mockResolvedValueOnce(211);
+
+    const result = await cleanupUnmatchedCourseraXapiEvents();
+
+    expect(result).toEqual({ model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: 1211, batchCount: 2 });
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(2);
+    const sql = (mockExecuteRaw.mock.calls[0][0] as TemplateStringsArray).join('?');
+    expect(sql).toContain('DELETE FROM coursera_xapi_events');
+    expect(sql).toContain('matched_user_id IS NULL');
+    expect(sql).toContain("completion_status = 'unmatched'");
+    expect(sql).toContain('received_at <');
+    expect(sql).toContain('LIMIT');
+    // A live member with the actor's address can still be credited by
+    // lib/xapi/reprocess.ts, so that row must survive the purge.
+    expect(sql).toMatch(/NOT EXISTS \([\s\S]*FROM users u[\s\S]*u\.deleted_at IS NULL[\s\S]*LOWER\(u\.email\) = LOWER\(coursera_xapi_events\.actor_email\)/);
+    const cutoff = mockExecuteRaw.mock.calls[0][1] as Date;
+    expect(cutoff).toBeInstanceOf(Date);
+    const ageDays = (Date.now() - cutoff.getTime()) / (24 * 60 * 60 * 1000);
+    expect(ageDays).toBeGreaterThanOrEqual(364);
+    expect(ageDays).toBeLessThanOrEqual(366);
+  });
+
+  it('stops after an empty first batch', async () => {
+    mockQueryRaw.mockResolvedValue([{ present: true }]);
+    mockExecuteRaw.mockResolvedValue(0);
+
+    const result = await cleanupUnmatchedCourseraXapiEvents();
+
+    expect(result.deleted).toBe(0);
+    expect(result.batchCount).toBe(0);
+    expect(mockExecuteRaw).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('runDataCleanup', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockQueryRaw.mockResolvedValue([{ present: true }]);
+    mockExecuteRaw.mockResolvedValue(0);
+  });
+
+  it('includes the unmatched xAPI event purge in the report', async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockDeleteMany.mockResolvedValue({ count: 0 });
+    mockExecuteRaw.mockResolvedValueOnce(42);
+
+    const report = await runDataCleanup();
+
+    const entry = report.results.find((r) => r.model === UNMATCHED_XAPI_EVENT_RETENTION_LABEL);
+    expect(entry).toEqual({ model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: 42, batchCount: 1 });
+    expect(report.totalDeleted).toBe(42);
+  });
+
+  it('records a failed unmatched xAPI purge without failing the sweep', async () => {
+    mockFindMany.mockResolvedValue([]);
+    mockDeleteMany.mockResolvedValue({ count: 0 });
+    mockQueryRaw.mockRejectedValue(new Error('relation probe failed'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const report = await runDataCleanup();
+
+    const entry = report.results.find((r) => r.model === UNMATCHED_XAPI_EVENT_RETENTION_LABEL);
+    expect(entry?.error).toContain('relation probe failed');
+    expect(report.totalDeleted).toBe(0);
+    errorSpy.mockRestore();
   });
 
   it('runs all retention tables and deleted accounts', async () => {

@@ -262,6 +262,7 @@ Lilley's member prompt contains no browser-supplied text placeholders. The sessi
 | `ADMIN_MATCH_SUGGESTIONS_TEST_EMAIL` | 🛠️ 🔒 | Redirect match suggestion emails to test inbox | `test@workforceap.org` | `lib/admin/matchSuggestionsConfig.ts` |
 | `ADMIN_MATCH_SUGGESTIONS_DRY_RUN` | 🛠️ 🔒 | Skip Resend send, record audit only | `1` | `lib/admin/matchSuggestionsConfig.ts` |
 | `DEFAULT_GREETING_TZ` | 🟢 🔒 | Timezone for greeting calculations | `America/Chicago` | `lib/time/greeting.ts` |
+| `MEMBER_STALL_NUDGES_ENABLED` | 🛠️ 🔒 | Onboarding-stalls cron also emails the stalled member (`true`/`1`); default off keeps the staff digest only | `false` | `lib/cron/onboardingStallNudges.ts` |
 
 ---
 

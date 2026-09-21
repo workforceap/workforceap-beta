@@ -18961,8 +18961,16 @@
   },
   {
     "from": "app/admin/coursera/page.tsx",
-    "specifier": "@/lib/xapi/mappings",
+    "specifier": "@/lib/coursera/replayPendingXapi",
     "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "lib/coursera/replayPendingXapi.ts"
+  },
+  {
+    "from": "app/admin/coursera/page.tsx",
+    "specifier": "@/lib/xapi/mappings",
+    "line": 42,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -18970,7 +18978,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/lib/coursera/progressQueries",
-    "line": 46,
+    "line": 47,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/progressQueries.ts"
@@ -18978,7 +18986,7 @@
   {
     "from": "app/admin/coursera/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/CourseraSyncKit",
-    "line": 52,
+    "line": 53,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/CourseraSyncKit.tsx"
@@ -20582,6 +20590,70 @@
     "kind": "type",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next",
+    "line": 1,
+    "kind": "type",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next/link",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "next/navigation",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/app/seo",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "app/seo.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/components/portal/PortalPageFrame",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalPageFrame.tsx"
+  },
+  {
+    "from": "app/admin/guide/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PageHeader.tsx"
   },
   {
     "from": "app/admin/health/page.tsx",
@@ -27465,8 +27537,16 @@
   },
   {
     "from": "app/admin/wioa-screening/page.tsx",
-    "specifier": "@/components/portal/PageHeader",
+    "specifier": "@/lib/wioa/wioaQueueAge",
     "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
+    "from": "app/admin/wioa-screening/page.tsx",
+    "specifier": "@/components/portal/PageHeader",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "components/portal/PageHeader.tsx"
@@ -27474,7 +27554,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/PortalPageFrame",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalPageFrame.tsx"
@@ -27482,7 +27562,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/PortalRouteFallback",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalRouteFallback.tsx"
@@ -27490,7 +27570,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/ui/DataTable",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "components/portal/ui/DataTable.tsx"
@@ -27498,7 +27578,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/admin/WioaReviewFilterBar",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "components/admin/WioaReviewFilterBar.tsx"
@@ -27506,7 +27586,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/admin/ApplicantTriageChip",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "components/admin/ApplicantTriageChip.tsx"
@@ -27514,7 +27594,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/lib/admin/applicantTriage",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriage.ts"
@@ -27522,7 +27602,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/lib/admin/applicantTriageLoad",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/admin/applicantTriageLoad.ts"
@@ -27530,7 +27610,7 @@
   {
     "from": "app/admin/wioa-screening/page.tsx",
     "specifier": "@/components/portal/kit/pages/admin-subviews/WioaScreeningKit",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx"
@@ -49696,6 +49776,30 @@
     "target": "lib/cron/cronExecution.ts"
   },
   {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/cron/onboardingStallNudges",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/onboardingStallNudges.ts"
+  },
+  {
+    "from": "app/api/cron/onboarding-stalls/route.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "app/api/cron/partner-outcome-digest/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -50222,6 +50326,46 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/cronExecution.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/http/clientIp",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/http/clientIp.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/security/cspReportRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReportRateLimit.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/security/cspReport",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
   },
   {
     "from": "app/api/employer/applications/[id]/messages/route.ts",
@@ -68905,8 +69049,16 @@
   },
   {
     "from": "app/layout.tsx",
-    "specifier": "@/lib/db/gucContext",
+    "specifier": "@/lib/security/csp",
     "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
+  },
+  {
+    "from": "app/layout.tsx",
+    "specifier": "@/lib/db/gucContext",
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -68914,7 +69066,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/roles",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -68922,7 +69074,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/layoutUserId",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/auth/layoutUserId.ts"
@@ -68930,7 +69082,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 26,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -68938,7 +69090,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/member/ensureAppUser",
-    "line": 27,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/member/ensureAppUser.ts"
@@ -68946,7 +69098,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -68954,7 +69106,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -68962,7 +69114,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/tenant/resolveOrgFromRequest",
-    "line": 30,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/resolveOrgFromRequest.ts"
@@ -68970,7 +69122,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/main.css",
-    "line": 31,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "css/main.css"
@@ -68978,7 +69130,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing.css",
-    "line": 32,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "css/marketing.css"
@@ -68986,7 +69138,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing-depth.css",
-    "line": 33,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "css/marketing-depth.css"
@@ -68994,7 +69146,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/language-toggle.css",
-    "line": 34,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "css/language-toggle.css"
@@ -69002,7 +69154,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing-a11y.css",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "css/marketing-a11y.css"
@@ -69010,7 +69162,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/marketing/heroPhotos",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/heroPhotos.ts"
@@ -69018,14 +69170,6 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@astryxdesign/core/reset.css",
-    "line": 44,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "app/layout.tsx",
-    "specifier": "@astryxdesign/core/astryx.css",
     "line": 45,
     "kind": "import",
     "external": true,
@@ -69033,8 +69177,16 @@
   },
   {
     "from": "app/layout.tsx",
+    "specifier": "@astryxdesign/core/astryx.css",
+    "line": 46,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "app/layout.tsx",
     "specifier": "@/css/wa-brand-tokens.css",
-    "line": 47,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "css/wa-brand-tokens.css"
@@ -69042,7 +69194,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/astryx-brand-bridge.css",
-    "line": 48,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "css/astryx-brand-bridge.css"
@@ -69050,7 +69202,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/DeferredRootChrome",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
@@ -69058,7 +69210,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/observability/SentrySetUser",
-    "line": 50,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "components/observability/SentrySetUser.tsx"
@@ -69066,7 +69218,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/gucContext",
-    "line": 115,
+    "line": 116,
     "kind": "type",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -72872,6 +73024,14 @@
     "package": "next"
   },
   {
+    "from": "components/admin/MemberPartnerSection.tsx",
+    "specifier": "./memberAssignmentSection.module.css",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/memberAssignmentSection.module.css"
+  },
+  {
     "from": "components/admin/MemberSubgroupSection.tsx",
     "specifier": "react",
     "line": 3,
@@ -72886,6 +73046,14 @@
     "kind": "import",
     "external": true,
     "package": "next"
+  },
+  {
+    "from": "components/admin/MemberSubgroupSection.tsx",
+    "specifier": "./memberAssignmentSection.module.css",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/memberAssignmentSection.module.css"
   },
   {
     "from": "components/admin/MembersListNav.tsx",
@@ -82425,16 +82593,48 @@
   },
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
-    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "specifier": "@astryxdesign/core/Dialog",
     "line": 7,
     "kind": "import",
-    "external": false,
-    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Layout",
+    "line": 8,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Button",
+    "line": 9,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Heading",
+    "line": 10,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "components/portal/counselor/AtRiskDetailModal.tsx",
+    "specifier": "@astryxdesign/core/Text",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
   },
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
     "specifier": "lucide-react",
-    "line": 8,
+    "line": 12,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -82442,7 +82642,7 @@
   {
     "from": "components/portal/counselor/AtRiskDetailModal.tsx",
     "specifier": "@/components/portal/PortalInlineSpinner",
-    "line": 21,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "components/portal/PortalInlineSpinner.tsx"
@@ -86942,6 +87142,14 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "components/portal/kit/pages/admin-subviews/WioaScreeningKit.tsx",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
   },
   {
     "from": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
@@ -91998,6 +92206,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/email/escapeHtml.ts"
+  },
+  {
+    "from": "emails/onboarding-stalls-digest.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
   },
   {
     "from": "emails/partner-referral-invite.test.ts",
@@ -104152,6 +104368,78 @@
     "target": "lib/db/scanCaps.ts"
   },
   {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/db/scanCaps",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/scanCaps.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email/pacing",
+    "line": 4,
+    "kind": "type",
+    "external": false,
+    "target": "lib/email/pacing.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/email/send",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email/send.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/cron/nudgeThrottle",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/nudgeThrottle.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/observability/captureApiError",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "lib/cron/onboardingStallNudges.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
     "from": "lib/cron/placement-surveys.ts",
     "specifier": "node:crypto",
     "line": 8,
@@ -114114,7 +114402,7 @@
   {
     "from": "lib/retention/cleanup.test.ts",
     "specifier": "@/lib/db/prisma",
-    "line": 33,
+    "line": 38,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -114198,6 +114486,22 @@
     "kind": "import",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@upstash/ratelimit",
+    "line": 19,
+    "kind": "import",
+    "external": true,
+    "package": "@upstash/ratelimit"
+  },
+  {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@upstash/redis",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "@upstash/redis"
   },
   {
     "from": "lib/seo/activeProgramSlugs.ts",
@@ -115856,6 +116160,14 @@
     "target": "lib/apply/publicAssistance.ts"
   },
   {
+    "from": "lib/wioa/wioaQueueAge.ts",
+    "specifier": "@/lib/wioa/wioaQualification",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQualification.ts"
+  },
+  {
     "from": "lib/workflows/careerOS.ts",
     "specifier": "../db/prisma",
     "line": 1,
@@ -116081,8 +116393,24 @@
   },
   {
     "from": "lib/xapi/mappings.ts",
-    "specifier": "@/lib/db/exactEmailMatch",
+    "specifier": "@/lib/db/withRequestGuc",
     "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "lib/xapi/mappings.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
+    "from": "lib/xapi/mappings.ts",
+    "specifier": "@/lib/db/exactEmailMatch",
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/db/exactEmailMatch.ts"
@@ -116090,7 +116418,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/email",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/email.ts"
@@ -116098,7 +116426,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/email/pacing",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/email/pacing.ts"
@@ -116106,7 +116434,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/coursera/testAccountHeuristic",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/testAccountHeuristic.ts"
@@ -116114,7 +116442,7 @@
   {
     "from": "lib/xapi/mappings.ts",
     "specifier": "@/lib/coursera/mapIdentityAndProgress.server",
-    "line": 437,
+    "line": 465,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/coursera/mapIdentityAndProgress.server.ts"
@@ -116161,8 +116489,24 @@
   },
   {
     "from": "lib/xapi/reprocess.ts",
-    "specifier": "@/lib/db/exactEmailMatch",
+    "specifier": "@/lib/db/withRequestGuc",
     "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "lib/xapi/reprocess.ts",
+    "specifier": "@/lib/tenant/withTenantScope",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/withTenantScope.ts"
+  },
+  {
+    "from": "lib/xapi/reprocess.ts",
+    "specifier": "@/lib/db/exactEmailMatch",
+    "line": 6,
     "kind": "import",
     "external": false,
     "target": "lib/db/exactEmailMatch.ts"
@@ -116170,7 +116514,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/inboundStatementPipeline",
-    "line": 5,
+    "line": 7,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/inboundStatementPipeline.ts"
@@ -116178,7 +116522,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/statements",
-    "line": 6,
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/statements.ts"
@@ -116186,7 +116530,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/coursera/mapIdentityAndProgress.server",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/mapIdentityAndProgress.server.ts"
@@ -116194,7 +116538,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/coursera/replayPendingXapi",
-    "line": 8,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/replayPendingXapi.ts"
@@ -116202,7 +116546,7 @@
   {
     "from": "lib/xapi/reprocess.ts",
     "specifier": "@/lib/xapi/persistedOrganization",
-    "line": 12,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/persistedOrganization.ts"
@@ -116734,6 +117078,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "middleware.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
   },
   {
     "from": "next.config.ts",
@@ -117378,7 +117730,7 @@
   {
     "from": "scripts/audit-tenant-scoping.cjs",
     "specifier": "node:fs",
-    "line": 19,
+    "line": 23,
     "kind": "require",
     "external": true,
     "package": "node:fs"
@@ -117386,10 +117738,34 @@
   {
     "from": "scripts/audit-tenant-scoping.cjs",
     "specifier": "node:path",
-    "line": 20,
+    "line": 24,
     "kind": "require",
     "external": true,
     "package": "node:path"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "node:test",
+    "line": 8,
+    "kind": "require",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "node:assert/strict",
+    "line": 9,
+    "kind": "require",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "scripts/audit-tenant-scoping.test.cjs",
+    "specifier": "./audit-tenant-scoping.cjs",
+    "line": 11,
+    "kind": "require",
+    "external": false,
+    "target": "scripts/audit-tenant-scoping.cjs"
   },
   {
     "from": "scripts/backfill-coursera-courseids.cjs",
@@ -124400,6 +124776,54 @@
     "target": "lib/observability/captureApiError.ts"
   },
   {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/app/api/cron/onboarding-stalls/route",
+    "line": 49,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/onboarding-stalls/route.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/cron/onboardingStallNudges",
+    "line": 50,
+    "kind": "import",
+    "external": false,
+    "target": "lib/cron/onboardingStallNudges.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 61,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/admin/memberOnlyWhere",
+    "line": 62,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberOnlyWhere.ts"
+  },
+  {
+    "from": "tests/api/cron-onboarding-stalls.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 63,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
     "from": "tests/api/cron-settings-namespace.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -124646,6 +125070,22 @@
     "kind": "import",
     "external": false,
     "target": "lib/observability/captureApiError.ts"
+  },
+  {
+    "from": "tests/api/csp-report-route.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/csp-report-route.spec.ts",
+    "specifier": "@/app/api/csp-report/route",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/csp-report/route.ts"
   },
   {
     "from": "tests/api/donate-page.spec.ts",
@@ -127534,6 +127974,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "next/server",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "@/middleware",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "middleware.ts"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
   },
   {
     "from": "tests/api/milestone-approve-reliability.spec.ts",
@@ -130864,6 +131336,54 @@
     "target": "app/admin/exports/page.tsx"
   },
   {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/app/admin/guide/page",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/guide/page.tsx"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 20,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 21,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/app/admin-guide-page.spec.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/nav/portalNav.ts"
+  },
+  {
     "from": "tests/app/admin-job-ready-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -133296,6 +133816,54 @@
     "target": "components/DeferredRootChrome.tsx"
   },
   {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "@/app/layout",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "app/layout.tsx"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "next/script",
+    "line": 24,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "@/components/theme/ThemeInitScript",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "components/theme/ThemeInitScript.tsx"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "next/headers",
+    "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
     "from": "tests/app/skill-missions-page.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -133800,6 +134368,38 @@
     "target": "tests/helpers/nativeDialogStub.ts"
   },
   {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@/components/admin/MemberPartnerSection",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/MemberPartnerSection.tsx"
+  },
+  {
+    "from": "tests/components/admin-member-assignment-sections.spec.tsx",
+    "specifier": "@/components/admin/MemberSubgroupSection",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/admin/MemberSubgroupSection.tsx"
+  },
+  {
     "from": "tests/components/admin-member-notes-panel.spec.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -134190,6 +134790,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/portal/memberRequestFailure.ts"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/at-risk-detail-modal-dialog.spec.tsx",
+    "specifier": "@/components/portal/counselor/AtRiskDetailModal",
+    "line": 29,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/counselor/AtRiskDetailModal.tsx"
   },
   {
     "from": "tests/components/at-risk-search-label.spec.tsx",
@@ -134710,6 +135342,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/admin/commandCenterHealth.ts"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@/components/portal/kit",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/components/counselor-home-on-track-caption.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/counselor/CounselorHomeKit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx"
   },
   {
     "from": "tests/components/counselor-note-saves.spec.tsx",
@@ -138272,6 +138936,62 @@
     "target": "emails/applicant-chase.ts"
   },
   {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/app/api/cron/onboarding-stalls/route",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/cron/onboarding-stalls/route.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/email",
+    "line": 34,
+    "kind": "import",
+    "external": false,
+    "target": "lib/email.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/notifications/create",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/notifications/create.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/emails/onboarding-stalls-digest",
+    "line": 36,
+    "kind": "import",
+    "external": false,
+    "target": "emails/onboarding-stalls-digest.ts"
+  },
+  {
+    "from": "tests/cron/onboarding-stalls-digest.spec.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "tests/e2e/admin-login-search.spec.ts",
     "specifier": "@playwright/test",
     "line": 1,
@@ -139954,7 +140674,7 @@
   {
     "from": "tests/lib/counselor-thread-assign-flag.spec.ts",
     "specifier": "@/lib/messages/counselorThread",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/messages/counselorThread.ts"
@@ -140465,8 +141185,16 @@
   },
   {
     "from": "tests/lib/coursera-stage-a-direct-email-resolution.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 19,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/coursera-stage-a-direct-email-resolution.spec.ts",
     "specifier": "@/lib/xapi/mappings",
-    "line": 27,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -140630,6 +141358,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "../../next.config",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "@/lib/security/cspReport",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
   },
   {
     "from": "tests/lib/curriculum-versioned-read-surfaces.spec.ts",
@@ -143200,6 +143960,22 @@
     "target": "lib/recap/weekLabel.ts"
   },
   {
+    "from": "tests/lib/wioa-queue-age.spec.ts",
+    "specifier": "vitest",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/wioa-queue-age.spec.ts",
+    "specifier": "@/lib/wioa/wioaQueueAge",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/wioa/wioaQueueAge.ts"
+  },
+  {
     "from": "tests/lib/wioa-review-snapshot.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -143273,8 +144049,16 @@
   },
   {
     "from": "tests/lib/xapi-exact-email-match.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 22,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/xapi-exact-email-match.spec.ts",
     "specifier": "@/lib/xapi/mappings",
-    "line": 45,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/mappings.ts"
@@ -143282,7 +144066,7 @@
   {
     "from": "tests/lib/xapi-exact-email-match.spec.ts",
     "specifier": "@/lib/xapi/reprocess",
-    "line": 46,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/reprocess.ts"
@@ -143314,7 +144098,7 @@
   {
     "from": "tests/lib/xapi-replay-tenant-boundary.spec.ts",
     "specifier": "@/lib/coursera/replayPendingXapi",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/coursera/replayPendingXapi.ts"
@@ -143329,8 +144113,16 @@
   },
   {
     "from": "tests/lib/xapi-reprocess-tenant-boundary.spec.ts",
+    "specifier": "@/lib/db/prisma",
+    "line": 18,
+    "kind": "dynamic-import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/lib/xapi-reprocess-tenant-boundary.spec.ts",
     "specifier": "@/lib/xapi/reprocess",
-    "line": 32,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "lib/xapi/reprocess.ts"

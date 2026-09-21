@@ -123,7 +123,7 @@ The `/api/health` endpoint will report `captcha_turnstile: ok` once enabled and 
 | CSP-DEBT-002 | Remove `'unsafe-inline'` from `script-src` and `style-src` via nonces | Medium | 2–3 days |
 | SEC-001 | Enable CAPTCHA in production (env-var flip) | Low | 5 min |
 | SEC-002 | Lifecycle / retention rules for `member-resumes` and `voice-interview-recordings/*` storage buckets | Low | 1 day, gate on legal review |
-| SEC-003 | CSP `report-uri` / `report-to` for violation telemetry | Low | half day |
+| SEC-003 | CSP `report-uri` / `report-to` for violation telemetry — **phase 1 shipped 2026-09-21** (`Content-Security-Policy-Report-Only` + `/api/csp-report`, WAP-36; see `docs/SECURITY-HARDENING.md` §13). Enforce flip pending soak. | Low | done (observe) |
 | SEC-004 | Apply CAPTCHA to `/apply/create-account` after measuring drop-off | Low | half day |
 
 Missing production secrets no longer appear as `not_configured` rows on `/api/health` (that payload is liveness-only). Confirm env presence from `.env.example` / Vercel — not the public probe.

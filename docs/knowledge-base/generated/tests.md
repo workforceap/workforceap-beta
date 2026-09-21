@@ -87,11 +87,13 @@
 | [tests/api/cron-deploy-health.spec.ts](../../../tests/api/cron-deploy-health.spec.ts) | 117 | tests |  |
 | [tests/api/cron-inactive-nudge.spec.ts](../../../tests/api/cron-inactive-nudge.spec.ts) | 216 | tests |  |
 | [tests/api/cron-interview-reminders.spec.ts](../../../tests/api/cron-interview-reminders.spec.ts) | 124 | tests |  |
+| [tests/api/cron-onboarding-stalls.spec.ts](../../../tests/api/cron-onboarding-stalls.spec.ts) | 430 | tests |  |
 | [tests/api/cron-settings-namespace.spec.ts](../../../tests/api/cron-settings-namespace.spec.ts) | 53 | tests |  |
 | [tests/api/cron-settings-persistence.spec.ts](../../../tests/api/cron-settings-persistence.spec.ts) | 122 | tests |  |
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
+| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 122 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
 | [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 282 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |
@@ -142,6 +144,7 @@
 | [tests/api/member-wioa-voice-session.spec.ts](../../../tests/api/member-wioa-voice-session.spec.ts) | 89 | tests |  |
 | [tests/api/mentor-letter-route.spec.ts](../../../tests/api/mentor-letter-route.spec.ts) | 80 | tests |  |
 | [tests/api/mentor-session-topic.spec.ts](../../../tests/api/mentor-session-topic.spec.ts) | 109 | tests |  |
+| [tests/api/middleware-csp-report-only.spec.ts](../../../tests/api/middleware-csp-report-only.spec.ts) | 102 | tests |  |
 | [tests/api/milestone-approve-reliability.spec.ts](../../../tests/api/milestone-approve-reliability.spec.ts) | 65 | member-counselor |  |
 | [tests/api/notifications.spec.ts](../../../tests/api/notifications.spec.ts) | 510 | communications |  |
 | [tests/api/onboarding-complete.spec.ts](../../../tests/api/onboarding-complete.spec.ts) | 117 | tests |  |
@@ -189,6 +192,7 @@
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 219 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
+| [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
 | [tests/app/admin-member-detail-tabs.spec.tsx](../../../tests/app/admin-member-detail-tabs.spec.tsx) | 420 | tests |  |
@@ -242,6 +246,7 @@
 | [tests/app/public-icon-font-free.spec.ts](../../../tests/app/public-icon-font-free.spec.ts) | 120 | tests |  |
 | [tests/app/record-placement-connection-copy.spec.tsx](../../../tests/app/record-placement-connection-copy.spec.tsx) | 71 | tests |  |
 | [tests/app/root-auth-bootstrap.spec.tsx](../../../tests/app/root-auth-bootstrap.spec.tsx) | 107 | tests |  |
+| [tests/app/root-layout-csp-nonce.spec.tsx](../../../tests/app/root-layout-csp-nonce.spec.tsx) | 67 | tests |  |
 | [tests/app/skill-missions-page.spec.tsx](../../../tests/app/skill-missions-page.spec.tsx) | 97 | tests |  |
 | [tests/billing/stripe-checkout-dead-letter.spec.ts](../../../tests/billing/stripe-checkout-dead-letter.spec.ts) | 171 | partners-funding |  |
 | [tests/certifications/self-report-pending.spec.ts](../../../tests/certifications/self-report-pending.spec.ts) | 166 | tests |  |
@@ -252,6 +257,7 @@
 | [tests/components/admin-functional-audit-fixes.spec.tsx](../../../tests/components/admin-functional-audit-fixes.spec.tsx) | 123 | tests |  |
 | [tests/components/admin-hydration-hardening.test.ts](../../../tests/components/admin-hydration-hardening.test.ts) | 34 | tests |  |
 | [tests/components/admin-legacy-dialogs.spec.tsx](../../../tests/components/admin-legacy-dialogs.spec.tsx) | 125 | tests |  |
+| [tests/components/admin-member-assignment-sections.spec.tsx](../../../tests/components/admin-member-assignment-sections.spec.tsx) | 59 | tests |  |
 | [tests/components/admin-member-notes-panel.spec.tsx](../../../tests/components/admin-member-notes-panel.spec.tsx) | 81 | tests |  |
 | [tests/components/admin-overview-page.spec.tsx](../../../tests/components/admin-overview-page.spec.tsx) | 149 | tests |  |
 | [tests/components/admin-pipeline-funnel-order.spec.tsx](../../../tests/components/admin-pipeline-funnel-order.spec.tsx) | 68 | tests |  |
@@ -263,6 +269,7 @@
 | [tests/components/analytics-kit-tabs-empty.spec.tsx](../../../tests/components/analytics-kit-tabs-empty.spec.tsx) | 102 | tests |  |
 | [tests/components/astro-consent-banner.spec.ts](../../../tests/components/astro-consent-banner.spec.ts) | 120 | tests |  |
 | [tests/components/at-risk-dashboard-states.spec.tsx](../../../tests/components/at-risk-dashboard-states.spec.tsx) | 140 | tests |  |
+| [tests/components/at-risk-detail-modal-dialog.spec.tsx](../../../tests/components/at-risk-detail-modal-dialog.spec.tsx) | 121 | tests |  |
 | [tests/components/at-risk-search-label.spec.tsx](../../../tests/components/at-risk-search-label.spec.tsx) | 17 | tests |  |
 | [tests/components/audit-ui-fixes.spec.tsx](../../../tests/components/audit-ui-fixes.spec.tsx) | 152 | tests |  |
 | [tests/components/auth-connection-failure.spec.tsx](../../../tests/components/auth-connection-failure.spec.tsx) | 145 | tests |  |
@@ -273,6 +280,7 @@
 | [tests/components/board-outcomes-exports-link.spec.tsx](../../../tests/components/board-outcomes-exports-link.spec.tsx) | 40 | tests |  |
 | [tests/components/bulk-action-dialogs.spec.tsx](../../../tests/components/bulk-action-dialogs.spec.tsx) | 218 | tests |  |
 | [tests/components/command-center-system-health.spec.tsx](../../../tests/components/command-center-system-health.spec.tsx) | 228 | tests |  |
+| [tests/components/counselor-home-on-track-caption.spec.tsx](../../../tests/components/counselor-home-on-track-caption.spec.tsx) | 39 | tests |  |
 | [tests/components/counselor-note-saves.spec.tsx](../../../tests/components/counselor-note-saves.spec.tsx) | 87 | tests |  |
 | [tests/components/counselor-notes-panels-load.spec.tsx](../../../tests/components/counselor-notes-panels-load.spec.tsx) | 115 | tests |  |
 | [tests/components/counselor-priority-queue-tones.spec.tsx](../../../tests/components/counselor-priority-queue-tones.spec.tsx) | 103 | tests |  |
@@ -348,6 +356,7 @@
 | [tests/coursera/learner-detail-learning-paths.spec.ts](../../../tests/coursera/learner-detail-learning-paths.spec.ts) | 39 | learning-coursera |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
+| [tests/cron/onboarding-stalls-digest.spec.ts](../../../tests/cron/onboarding-stalls-digest.spec.ts) | 151 | communications |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -425,7 +434,7 @@
 | [tests/lib/counselor-at-risk-page-data.spec.ts](../../../tests/lib/counselor-at-risk-page-data.spec.ts) | 155 | tests |  |
 | [tests/lib/counselor-booking-email.spec.ts](../../../tests/lib/counselor-booking-email.spec.ts) | 59 | tests |  |
 | [tests/lib/counselor-roster-stats.spec.ts](../../../tests/lib/counselor-roster-stats.spec.ts) | 127 | tests |  |
-| [tests/lib/counselor-thread-assign-flag.spec.ts](../../../tests/lib/counselor-thread-assign-flag.spec.ts) | 153 | tests |  |
+| [tests/lib/counselor-thread-assign-flag.spec.ts](../../../tests/lib/counselor-thread-assign-flag.spec.ts) | 178 | tests |  |
 | [tests/lib/counselor-thread-authorization.spec.ts](../../../tests/lib/counselor-thread-authorization.spec.ts) | 82 | tests |  |
 | [tests/lib/course-enrollment-email-copy.spec.ts](../../../tests/lib/course-enrollment-email-copy.spec.ts) | 77 | tests |  |
 | [tests/lib/course-progress-completion-lock.spec.ts](../../../tests/lib/course-progress-completion-lock.spec.ts) | 158 | tests |  |
@@ -445,7 +454,7 @@
 | [tests/lib/coursera-raw-progress-keys.spec.ts](../../../tests/lib/coursera-raw-progress-keys.spec.ts) | 40 | learning-coursera |  |
 | [tests/lib/coursera-resolve-email-mapping-tenant-ownership.spec.ts](../../../tests/lib/coursera-resolve-email-mapping-tenant-ownership.spec.ts) | 76 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-attachment.spec.ts](../../../tests/lib/coursera-stage-a-attachment.spec.ts) | 103 | learning-coursera |  |
-| [tests/lib/coursera-stage-a-direct-email-resolution.spec.ts](../../../tests/lib/coursera-stage-a-direct-email-resolution.spec.ts) | 220 | learning-coursera |  |
+| [tests/lib/coursera-stage-a-direct-email-resolution.spec.ts](../../../tests/lib/coursera-stage-a-direct-email-resolution.spec.ts) | 224 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-legacy-writer.spec.ts](../../../tests/lib/coursera-stage-a-legacy-writer.spec.ts) | 206 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-mapping-ownership.spec.ts](../../../tests/lib/coursera-stage-a-mapping-ownership.spec.ts) | 102 | learning-coursera |  |
 | [tests/lib/coursera-stage-a-mapping-transaction.spec.ts](../../../tests/lib/coursera-stage-a-mapping-transaction.spec.ts) | 147 | learning-coursera |  |
@@ -453,6 +462,7 @@
 | [tests/lib/coursera-tenant-index-migration.spec.ts](../../../tests/lib/coursera-tenant-index-migration.spec.ts) | 71 | learning-coursera |  |
 | [tests/lib/coursera-unmatched-learners-learning-paths.spec.ts](../../../tests/lib/coursera-unmatched-learners-learning-paths.spec.ts) | 157 | learning-coursera |  |
 | [tests/lib/cron-diagnostics-visibility.spec.ts](../../../tests/lib/cron-diagnostics-visibility.spec.ts) | 205 | tests |  |
+| [tests/lib/csp-policy.spec.ts](../../../tests/lib/csp-policy.spec.ts) | 150 | tests |  |
 | [tests/lib/curriculum-versioned-read-surfaces.spec.ts](../../../tests/lib/curriculum-versioned-read-surfaces.spec.ts) | 136 | tests |  |
 | [tests/lib/dashboard-white-pill-contrast.spec.tsx](../../../tests/lib/dashboard-white-pill-contrast.spec.tsx) | 64 | tests |  |
 | [tests/lib/diagnose-member-coursera-tenant.spec.ts](../../../tests/lib/diagnose-member-coursera-tenant.spec.ts) | 119 | learning-coursera |  |
@@ -538,12 +548,13 @@
 | [tests/lib/unassigned-notify.spec.ts](../../../tests/lib/unassigned-notify.spec.ts) | 99 | tests |  |
 | [tests/lib/voice-studio-card-contrast.spec.ts](../../../tests/lib/voice-studio-card-contrast.spec.ts) | 52 | tests |  |
 | [tests/lib/weekly-recap-label.spec.ts](../../../tests/lib/weekly-recap-label.spec.ts) | 28 | tests |  |
+| [tests/lib/wioa-queue-age.spec.ts](../../../tests/lib/wioa-queue-age.spec.ts) | 115 | partners-funding |  |
 | [tests/lib/wioa-review-snapshot.spec.ts](../../../tests/lib/wioa-review-snapshot.spec.ts) | 86 | partners-funding |  |
 | [tests/lib/with-cron-logging.spec.ts](../../../tests/lib/with-cron-logging.spec.ts) | 61 | tests |  |
-| [tests/lib/xapi-exact-email-match.spec.ts](../../../tests/lib/xapi-exact-email-match.spec.ts) | 318 | tests |  |
+| [tests/lib/xapi-exact-email-match.spec.ts](../../../tests/lib/xapi-exact-email-match.spec.ts) | 322 | tests |  |
 | [tests/lib/xapi-first-completion-side-effects.spec.ts](../../../tests/lib/xapi-first-completion-side-effects.spec.ts) | 274 | tests |  |
-| [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 121 | tests |  |
-| [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 121 | tests |  |
+| [tests/lib/xapi-replay-tenant-boundary.spec.ts](../../../tests/lib/xapi-replay-tenant-boundary.spec.ts) | 185 | tests |  |
+| [tests/lib/xapi-reprocess-tenant-boundary.spec.ts](../../../tests/lib/xapi-reprocess-tenant-boundary.spec.ts) | 125 | tests |  |
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 86 | tests |  |
 | [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |

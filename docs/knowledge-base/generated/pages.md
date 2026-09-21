@@ -369,7 +369,7 @@
 | [app/admin/coursera/learners/\[userId\]/page.tsx](../../../app/admin/coursera/learners/%5BuserId%5D/page.tsx) | 431 | learning-coursera | metadata:27, dynamic:33, default:79 |
 | [app/admin/coursera/learners/unmatched/\[externalEmail\]/events/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/events/page.tsx) | 250 | learning-coursera | metadata:18, dynamic:24, default:46 |
 | [app/admin/coursera/learners/unmatched/\[externalEmail\]/page.tsx](../../../app/admin/coursera/learners/unmatched/%5BexternalEmail%5D/page.tsx) | 463 | learning-coursera | metadata:26, dynamic:32, default:45 |
-| [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | 1478 | learning-coursera | generateMetadata:335, dynamic:343, default:358 |
+| [app/admin/coursera/page.tsx](../../../app/admin/coursera/page.tsx) | 1484 | learning-coursera | generateMetadata:336, dynamic:344, default:359 |
 | [app/admin/coursera/provisioning/page.tsx](../../../app/admin/coursera/provisioning/page.tsx) | 102 | learning-coursera | generateMetadata:17, dynamic:26, default:37 |
 | [app/admin/crons/loading.tsx](../../../app/admin/crons/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/crons/page.tsx](../../../app/admin/crons/page.tsx) | 269 | administration | generateMetadata:16, default:91 |
@@ -399,6 +399,7 @@
 | [app/admin/feedback/loading.tsx](../../../app/admin/feedback/loading.tsx) | 5 | administration | default:3 |
 | [app/admin/feedback/page.tsx](../../../app/admin/feedback/page.tsx) | 165 | administration | dynamic:16, generateMetadata:18, default:124 |
 | [app/admin/growth/page.tsx](../../../app/admin/growth/page.tsx) | 406 | administration | dynamic:39, generateMetadata:50, default:142 |
+| [app/admin/guide/page.tsx](../../../app/admin/guide/page.tsx) | 252 | administration | generateMetadata:22, default:114 |
 | [app/admin/health/page.tsx](../../../app/admin/health/page.tsx) | 703 | administration | default:660 |
 | [app/admin/invites/InvitesLegacyClient.tsx](../../../app/admin/invites/InvitesLegacyClient.tsx) | 202 | administration | default:196 |
 | [app/admin/invites/layout.tsx](../../../app/admin/invites/layout.tsx) | 14 | administration | generateMetadata:4, default:12 |
@@ -505,7 +506,7 @@
 | [app/admin/weekly-recap/page.tsx](../../../app/admin/weekly-recap/page.tsx) | 313 | administration | generateMetadata:16, default:49 |
 | [app/admin/what-workforceap-does/page.tsx](../../../app/admin/what-workforceap-does/page.tsx) | 223 | administration | generateMetadata:10, default:65 |
 | [app/admin/wioa-screening/loading.tsx](../../../app/admin/wioa-screening/loading.tsx) | 6 | partners-funding | default:3 |
-| [app/admin/wioa-screening/page.tsx](../../../app/admin/wioa-screening/page.tsx) | 386 | partners-funding | generateMetadata:25, default:91 |
+| [app/admin/wioa-screening/page.tsx](../../../app/admin/wioa-screening/page.tsx) | 404 | partners-funding | generateMetadata:26, default:92 |
 | [app/api-docs/page.tsx](../../../app/api-docs/page.tsx) | 24 | pages | dynamic:9, generateMetadata:11, default:19 |
 | [app/apply/ApplyEligibilityClient.tsx](../../../app/apply/ApplyEligibilityClient.tsx) | 1143 | applications-enrollment | default:47, APPLY_STORAGE_KEY:1143 |
 | [app/apply/ApplyPageSkeleton.tsx](../../../app/apply/ApplyPageSkeleton.tsx) | 21 | applications-enrollment | default:1 |
@@ -625,7 +626,7 @@
 | [app/global-error.tsx](../../../app/global-error.tsx) | 56 | pages | default:7 |
 | [app/invite/layout.tsx](../../../app/invite/layout.tsx) | 20 | pages | generateMetadata:7, default:17 |
 | [app/invite/page.tsx](../../../app/invite/page.tsx) | 415 | pages | default:408 |
-| [app/layout.tsx](../../../app/layout.tsx) | 316 | pages | viewport:60, metadata:66, default:91 |
+| [app/layout.tsx](../../../app/layout.tsx) | 324 | pages | viewport:61, metadata:67, default:92 |
 | [app/mentor/apply/MentorApplyForm.tsx](../../../app/mentor/apply/MentorApplyForm.tsx) | 187 | applications-enrollment | default:25 |
 | [app/mentor/apply/layout.tsx](../../../app/mentor/apply/layout.tsx) | 13 | applications-enrollment | metadata:4, default:11 |
 | [app/mentor/apply/mentor-apply.module.css](../../../app/mentor/apply/mentor-apply.module.css) | 111 | applications-enrollment |  |

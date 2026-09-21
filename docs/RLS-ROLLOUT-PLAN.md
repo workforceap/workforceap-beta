@@ -78,6 +78,23 @@ gate), not by Postgres.
   connects as `wap_app`, all 251 policies enforce. Stage 1 therefore cannot
   ship alone; it lands *together with* stage 2's coverage work, behind a
   canary (stage 3).
+  - **Stage 1 checklist (recorded 2026-09-21, WAP-24; from the Supabase
+    performance advisors — do not fix before Stage 1, none of it matters
+    while the app connects as the BYPASSRLS `postgres` role):**
+    1. Every policy (269 at last count) is bound `TO public`, which is why
+       the advisor reports 510 `multiple_permissive_policies` lints: every
+       role evaluates every permissive policy on a table. Rebind the
+       policies to `wap_app` (and `service_role` where a policy is meant for
+       it), and collapse same-command permissive policies on one table into
+       a single policy with an `OR` predicate.
+    2. 13 policies call `current_setting('app.current_…')` per row. Rewrite
+       each predicate as `(select current_setting(...))` so PostgreSQL
+       evaluates the GUC once per statement (initPlan) instead of once per
+       row; verify with `EXPLAIN` on a P0 table before and after.
+    3. Only after 1-2: grant `wap_app` its table privileges + helper-function
+       EXECUTE, then proceed to the Stage 2 GUC-coverage measurement with
+       the nightly FORCE RLS shadow ledger (`docs/runbooks/force-rls-shadow-ledger.md`)
+       at 30 consecutive clean runs.
 - **Stage 2 — GUC coverage completion, measured not assumed:** telemetry mode
   first (log every query lacking GUC context in prod for a week — the
   fail-open `console.error` already exists; aggregate in Sentry), burn the

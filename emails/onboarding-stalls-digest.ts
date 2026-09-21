@@ -4,6 +4,7 @@
  */
 
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import { WIOA_QUEUE_AGE_ALERT_DAYS } from '@/lib/wioa/wioaQueueAge';
 
 type NamedMember = { id: string; fullName: string | null; email: string | null };
 
@@ -25,6 +26,19 @@ function memberList(members: NamedMember[], adminBaseUrl: string): string {
   return `<ul style="margin:0;padding-left:1.1rem;font-size:0.85rem;color:#584144;">${rows}</ul>`;
 }
 
+/**
+ * "Oldest pending WIOA screening: N days" — the queue-age line WAP-166 asks
+ * for. Red once the wait passes WIOA_QUEUE_AGE_ALERT_DAYS. Empty when no
+ * screening is waiting (so the section reads the same as before).
+ */
+export function oldestPendingLine(days: number | null | undefined): string {
+  if (days === null || days === undefined || !Number.isFinite(days)) return '';
+  const overdue = days >= WIOA_QUEUE_AGE_ALERT_DAYS;
+  const color = overdue ? '#dc2626' : '#584144';
+  const suffix = overdue ? ` — over the ${n(WIOA_QUEUE_AGE_ALERT_DAYS)}-day threshold` : '';
+  return `<p style="margin:0 0 0.75rem;font-size:0.9rem;color:${color};font-weight:${overdue ? 700 : 600};">Oldest pending WIOA screening: ${n(days)} day${days === 1 ? '' : 's'}${suffix}</p>`;
+}
+
 export function onboardingStallsDigestHtml(params: {
   interviewCount: number;
   wioaCount: number;
@@ -32,6 +46,8 @@ export function onboardingStallsDigestHtml(params: {
   interviewMembers: NamedMember[];
   wioaMembers: NamedMember[];
   noProgramMembers: NamedMember[];
+  /** WAP-166 item 2: whole days the oldest pending/in_review screening has waited; null when none. */
+  wioaOldestPendingDays?: number | null;
   interviewQueueLink: string;
   wioaQueueLink: string;
   membersQueueLink: string;
@@ -44,6 +60,7 @@ export function onboardingStallsDigestHtml(params: {
     interviewMembers,
     wioaMembers,
     noProgramMembers,
+    wioaOldestPendingDays = null,
     interviewQueueLink,
     wioaQueueLink,
     membersQueueLink,
@@ -84,6 +101,7 @@ export function onboardingStallsDigestHtml(params: {
         <strong>WIOA screening pending review</strong>
       </div>
       <div style="padding:0.75rem 1rem;">
+        ${oldestPendingLine(wioaOldestPendingDays)}
         ${memberList(wioaMembers, memberAdminBaseUrl)}
         <p style="margin:0.75rem 0 0;"><a href="${escapeHtml(wioaQueueLink)}" style="display:inline-block;padding:0.5rem 0.75rem;background:#231f20;color:#fff;text-decoration:none;border-radius:6px;font-size:0.85rem;">Open WIOA screening queue</a></p>
       </div>
