@@ -29468,6 +29468,95 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "tests/tours/admin-overview-anchors.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 6
+      },
+      {
+        "file": "app/admin/page.tsx",
+        "line": 51
+      },
+      {
+        "file": "lib/auth/server.ts",
+        "line": 52
+      },
+      {
+        "file": "lib/tenant/adminPageScope.ts",
+        "line": 53
+      },
+      {
+        "file": "lib/admin/commandCenter.ts",
+        "line": 54
+      },
+      {
+        "file": "lib/attention/admin.ts",
+        "line": 55
+      },
+      {
+        "file": "lib/attention/evaluate.ts",
+        "line": 56
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 57
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/tours/admin-tour.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "components/portal/AdminPortalShell.tsx",
+        "line": 5
+      },
+      {
+        "file": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
+        "line": 6
+      },
+      {
+        "file": "lib/tours/registry.ts",
+        "line": 7
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "tests/tours/counselor-tour.spec.tsx",
     "area": "tests",
     "domain": "tests",

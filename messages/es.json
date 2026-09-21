@@ -3687,6 +3687,46 @@
           "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a la guía del portal."
         }
       }
+    },
+    "admin": {
+      "home": {
+        "offer": {
+          "title": "¿Nuevo aquí? Haz un recorrido de dos minutos",
+          "body": "Descubre quién te necesita hoy, dónde están tus estudiantes y programas, cómo se sigue el progreso de la formación y dónde esperan respuesta los mensajes."
+        },
+        "commandCenter": {
+          "title": "Centro de mando",
+          "body": "Tu base de operaciones. Arriba, estudiantes activos, colocaciones del año y quién necesita atención; después, Qué necesita tu atención hoy: respuestas pendientes, solicitudes y certificaciones por revisar y preparación de entrevistas. Cada fila enlaza a la página donde actuar."
+        },
+        "overview": {
+          "title": "Vista detallada",
+          "body": "El panorama completo detrás del Centro de mando: total de miembros, evaluaciones completadas, quién está activo en formación, programas inscritos y completados, además de altas y colocaciones recientes. Ven aquí por las cifras, no solo por la cola."
+        },
+        "students": {
+          "title": "Estudiantes",
+          "body": "Todos los estudiantes en una sola lista: estado, programa y quién necesita atención. Abre un estudiante para ver su ficha completa o exporta la lista. Progreso de formación es la misma lista ordenada por formación."
+        },
+        "messages": {
+          "title": "Mensajes",
+          "body": "Todas las conversaciones de miembros, empleadores y socios con el equipo. La insignia cuenta los mensajes que aún esperan respuesta, para que alguien los mire hoy."
+        },
+        "programs": {
+          "title": "Programas",
+          "body": "Los programas de formación que ofreces, una tarjeta por programa con inscritos y finalización. Solicitudes de programa, estudiantes que piden cambiar, está justo debajo."
+        },
+        "trainingProgress": {
+          "title": "Progreso de formación",
+          "body": "Progreso curso a curso de cada estudiante inscrito, ordenable, en el plan de estudios y en Coursera. Evaluaciones y Certificados están en el mismo grupo."
+        },
+        "settings": {
+          "title": "Configuración",
+          "body": "La configuración de la organización está al final del menú, en Avanzado, junto a Usuarios, Exportaciones y Banderas de funciones. La mayoría de los días no necesitarás este grupo."
+        },
+        "help": {
+          "title": "Vuelve cuando quieras",
+          "body": "Ayuda reabre este recorrido siempre que lo necesites."
+        }
+      }
     }
   }
 }

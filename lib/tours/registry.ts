@@ -37,7 +37,7 @@ export interface TourDefinition {
   steps: readonly TourStepDefinition[];
 }
 
-export const TOUR_KEYS = ['member.home', 'employer.home', 'partner.home', 'counselor.home'] as const;
+export const TOUR_KEYS = ['member.home', 'employer.home', 'partner.home', 'counselor.home', 'admin.home'] as const;
 export type TourKey = (typeof TOUR_KEYS)[number];
 
 /** Step shape consumed by the tour engine (`components/portal/kit/GuidedTour`). */
@@ -143,6 +143,34 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
       step('counselor.home', 'atRisk', 'tour-nav-at-risk'),
       step('counselor.home', 'messages', 'tour-nav-messages'),
       step('counselor.home', 'help', 'tour-help', 'bottom'),
+    ],
+  },
+  /**
+   * Admin wave (tours wave 4, v1). Written for the /admin Command Center (the
+   * default admin home, `CommandCenterKit`), but every anchor is shell chrome
+   * that `AdminPortalShell` renders on every admin page: the seven `tour-*`
+   * nav anchors are `tourTarget`s on `ADMIN_PORTAL_NAV_ITEMS` (admin rail
+   * groups never collapse, so each row is visible at desktop) and `tour-help`
+   * is the header Help menu that reopens the tour (`PortalHelpMenu`).
+   * Messages and Settings are `requiresSuperAdminContext` rows: an org admin
+   * without that context has no such anchors and the engine skips those two
+   * steps. Command Center → detailed overview → students → messages →
+   * programs → training progress → settings → help.
+   */
+  'admin.home': {
+    key: 'admin.home',
+    version: 1,
+    role: 'admin',
+    route: '/admin',
+    steps: [
+      step('admin.home', 'commandCenter', 'tour-command-center'),
+      step('admin.home', 'overview', 'tour-overview'),
+      step('admin.home', 'students', 'tour-students'),
+      step('admin.home', 'messages', 'tour-messages'),
+      step('admin.home', 'programs', 'tour-programs'),
+      step('admin.home', 'trainingProgress', 'tour-training-progress'),
+      step('admin.home', 'settings', 'tour-settings'),
+      step('admin.home', 'help', 'tour-help', 'bottom'),
     ],
   },
 };
