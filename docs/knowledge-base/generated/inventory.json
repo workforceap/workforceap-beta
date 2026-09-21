@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "2236f042506d747b0d6e2171c706fa3f61b722bcf43d4b9e3dd3b1245f562d23",
+  "inputTreeSha256": "ceb26b7594a889295e2c60868dbb9199183f15b593c6a2cc332b524371c014f0",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -15251,9 +15251,9 @@
       "path": "app/admin/command-center/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 11710,
-      "lines": 272,
-      "sha256": "567baf3fba3d11bc21d977f6e4827c7160d46daf1032a59464b0d0a23ce6d41c",
+      "bytes": 11790,
+      "lines": 273,
+      "sha256": "2e7839e9b363a10720cbaeee60abf492a0eeb96b34dcf70fea1b47178c59e6ba",
       "binary": false,
       "exports": [
         {
@@ -19445,19 +19445,19 @@
       "path": "app/admin/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 19876,
-      "lines": 485,
-      "sha256": "24b537484c7462a89d95a83960f3190b28c105b0618d7494661df920dceeef30",
+      "bytes": 20007,
+      "lines": 487,
+      "sha256": "81eb61807e131150bb53f058be83c7878f4276c52e79f3ecf39ba52288b801af",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 32,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 47,
+          "line": 48,
           "kind": "FunctionDeclaration",
           "localName": "AdminTodayPage"
         }
@@ -19465,12 +19465,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 32,
+          "line": 33,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AdminTodayPage",
-          "line": 47,
+          "line": 48,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -44970,19 +44970,19 @@
       "path": "app/dev/staff/admin-command/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 5653,
-      "lines": 165,
-      "sha256": "b0b715c19859be46c483ac4f1979f73209b3d5f4a05fee753307e54cd51c1816",
+      "bytes": 6270,
+      "lines": 175,
+      "sha256": "189a7456568f9d6a6a1a9a3224261b0b01d155ac7e7280e30b08304a385e26e6",
       "binary": false,
       "exports": [
         {
           "name": "dynamic",
-          "line": 20,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 149,
+          "line": 158,
           "kind": "FunctionDeclaration",
           "localName": "DevStaffAdminCommandPage"
         }
@@ -44990,42 +44990,42 @@
       "declarations": [
         {
           "name": "dynamic",
-          "line": 20,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "KPIS",
-          "line": 22,
+          "line": 23,
           "kind": "Variable"
         },
         {
           "name": "QUEUE_ITEMS",
-          "line": 56,
+          "line": 57,
           "kind": "Variable"
         },
         {
           "name": "PROGRAM_HEALTH",
-          "line": 115,
+          "line": 124,
           "kind": "Variable"
         },
         {
           "name": "PLACEMENTS_BY_MONTH",
-          "line": 123,
+          "line": 132,
           "kind": "Variable"
         },
         {
           "name": "SYSTEM_HEALTH",
-          "line": 133,
+          "line": 142,
           "kind": "Variable"
         },
         {
           "name": "MEMBERS",
-          "line": 141,
+          "line": 150,
           "kind": "Variable"
         },
         {
           "name": "DevStaffAdminCommandPage",
-          "line": 149,
+          "line": 158,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -69423,9 +69423,9 @@
       "path": "components/portal/kit/pages/admin-subviews/EnrollmentOutcomesPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2724,
-      "lines": 58,
-      "sha256": "bb67769d0244f26fa98d6314e5e22aa34a4786ace09d6af0b20d9ed589e22106",
+      "bytes": 3426,
+      "lines": 81,
+      "sha256": "fbb51ece0cb19d2d0ed92ca307636ffcb3b6d2a4ccf7d7834f19fffb43e7f5a5",
       "binary": false,
       "exports": [
         {
@@ -69442,7 +69442,7 @@
         },
         {
           "name": "PanelLink",
-          "line": 52,
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71042,9 +71042,9 @@
       "path": "components/portal/kit/pages/admin/CommandCenterKit.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 16847,
-      "lines": 432,
-      "sha256": "8431fbefe7422df82535a26d555f8bc7d5cb05ed57ca07d9d194b98c42711330",
+      "bytes": 17439,
+      "lines": 444,
+      "sha256": "4150434b96249ff3a3ca2cf70353146fb5b7a5a5897251f81fdef1ce445e2426",
       "binary": false,
       "exports": [
         {
@@ -71079,7 +71079,7 @@
         },
         {
           "name": "CommandCenterKit",
-          "line": 314,
+          "line": 322,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71116,52 +71116,52 @@
         },
         {
           "name": "DEFAULT_KPIS",
-          "line": 147,
-          "kind": "Variable"
-        },
-        {
-          "name": "DEFAULT_QUEUE",
           "line": 155,
           "kind": "Variable"
         },
         {
+          "name": "DEFAULT_QUEUE",
+          "line": 163,
+          "kind": "Variable"
+        },
+        {
           "name": "DEFAULT_PLACEMENTS_BY_MONTH",
-          "line": 196,
+          "line": 204,
           "kind": "Variable"
         },
         {
           "name": "DEFAULT_PROGRAM_HEALTH",
-          "line": 205,
+          "line": 213,
           "kind": "Variable"
         },
         {
           "name": "clampPct",
-          "line": 215,
+          "line": 223,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HeaderProps",
-          "line": 221,
+          "line": 229,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "CommandCenterHeader",
-          "line": 227,
+          "line": 235,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WorkQueueRow",
-          "line": 243,
+          "line": 251,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "memberColumns",
-          "line": 269,
+          "line": 277,
           "kind": "Variable"
         },
         {
           "name": "CommandCenterKit",
-          "line": 314,
+          "line": 322,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -71858,151 +71858,146 @@
       "path": "components/portal/kit/pages/member/MemberHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 37367,
-      "lines": 943,
-      "sha256": "1e9aed2b346377668c688daf89c59ba36f28ccd285b0cd90a36275e24126f78b",
+      "bytes": 39310,
+      "lines": 994,
+      "sha256": "c88508dee7a78d7c5e2b3b9f7b43d4eea7e32994896ede9a375b3226b8433e29",
       "binary": false,
       "exports": [
         {
           "name": "StatSpark",
-          "line": 85,
+          "line": 94,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "WeeklyActivityPoint",
-          "line": 95,
+          "line": 104,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PointsLedgerEntry",
-          "line": 101,
+          "line": 110,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKitProps",
-          "line": 107,
+          "line": 116,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKit",
-          "line": 556,
+          "line": 574,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "JobStageTone",
-          "line": 63,
+          "line": 72,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PipelineRow",
-          "line": 65,
+          "line": 74,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "GoalSummary",
-          "line": 78,
+          "line": 87,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "StatSpark",
-          "line": 85,
+          "line": 94,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "WeeklyActivityPoint",
-          "line": 95,
+          "line": 104,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "PointsLedgerEntry",
-          "line": 101,
+          "line": 110,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberHomeKitProps",
-          "line": 107,
+          "line": 116,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "clampPct",
-          "line": 176,
+          "line": 185,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultStageIndex",
-          "line": 180,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "stageTrackColor",
-          "line": 186,
+          "line": 189,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "LOGO_COLORS",
-          "line": 193,
+          "line": 196,
           "kind": "Variable"
         },
         {
           "name": "logoColorFor",
-          "line": 194,
+          "line": 197,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sparklinePoints",
-          "line": 200,
+          "line": 203,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "HOME_TEXT_LINK",
-          "line": 221,
+          "line": 224,
           "kind": "Variable"
         },
         {
           "name": "KitCardHead",
-          "line": 234,
+          "line": 237,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DeltaChip",
-          "line": 251,
+          "line": 259,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "StatSparkTile",
-          "line": 275,
+          "line": 291,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PipelineStageTrack",
-          "line": 344,
+          "line": 348,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SegmentedProgress",
-          "line": 360,
+          "line": 372,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "WeeklyActivityChart",
-          "line": 394,
+          "line": 412,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "pipelineColumns",
-          "line": 451,
+          "line": 469,
           "kind": "Variable"
         },
         {
           "name": "pipelineCard",
-          "line": 507,
+          "line": 525,
           "kind": "Variable"
         },
         {
           "name": "MemberHomeKit",
-          "line": 556,
+          "line": 574,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83506,9 +83501,9 @@
       "path": "lib/admin/analyticsTabs.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2849,
-      "lines": 64,
-      "sha256": "b0ea718c55731078915cda78aacb66049c3e646816bfbac938cc40a0a6f71ca7",
+      "bytes": 5022,
+      "lines": 110,
+      "sha256": "dc055580b8b68d1f46e9a616d058007891919fef9100304100641f8c574989ff",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -83518,9 +83513,9 @@
       "path": "lib/admin/analyticsTabs.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 4169,
-      "lines": 96,
-      "sha256": "57114b541754c5ecd3f4e5204e1f608ddc37f561c08dcac100826ba09753028c",
+      "bytes": 6321,
+      "lines": 137,
+      "sha256": "f58c7596c3e3249c82530cf9cac3d95ffa3b1ae165fbe60e9e522807a6a529b9",
       "binary": false,
       "exports": [
         {
@@ -83550,12 +83545,27 @@
         },
         {
           "name": "EnrollmentOutcomesPanelData",
-          "line": 46,
+          "line": 53,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "DAILY_ACTIVITY_BUCKET_NOTE",
+          "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEGRADED_SLICES_NOTE_PREFIX",
+          "line": 87,
+          "kind": "Variable"
+        },
+        {
+          "name": "degradedSlicesNote",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildEnrollmentOutcomesPanel",
-          "line": 61,
+          "line": 100,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83587,17 +83597,32 @@
         },
         {
           "name": "EnrollmentOutcomesPanelData",
-          "line": 46,
+          "line": 53,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "fmt",
-          "line": 54,
+          "line": 68,
           "kind": "Variable"
         },
         {
+          "name": "DAILY_ACTIVITY_BUCKET_NOTE",
+          "line": 79,
+          "kind": "Variable"
+        },
+        {
+          "name": "DEGRADED_SLICES_NOTE_PREFIX",
+          "line": 87,
+          "kind": "Variable"
+        },
+        {
+          "name": "degradedSlicesNote",
+          "line": 90,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "buildEnrollmentOutcomesPanel",
-          "line": 61,
+          "line": 100,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85117,9 +85142,9 @@
       "path": "lib/admin/commandCenterHelpers.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 7584,
-      "lines": 201,
-      "sha256": "9847fe6776a06f9b6e79900d4b15d5cbf8565bd307e6f85ea7967855c7145869",
+      "bytes": 8334,
+      "lines": 213,
+      "sha256": "e7ea35d71acd7a84dac63f4d6901b740a456e3f35d70b4442045dea020a9bf0f",
       "binary": false,
       "exports": [
         {
@@ -85168,43 +85193,48 @@
           "kind": "Variable"
         },
         {
+          "name": "PROGRAM_HEALTH_CAPTION",
+          "line": 96,
+          "kind": "Variable"
+        },
+        {
           "name": "buildProgramHealthRows",
-          "line": 93,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 114,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 115,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "normalizeAdminQueueRequest",
-          "line": 116,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "adminQueueHref",
-          "line": 123,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "AdminCommandCenter",
           "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "normalizeAdminQueueRequest",
+          "line": 128,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "adminQueueHref",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AdminCommandCenter",
+          "line": 139,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "buildApplicationEmailPacket",
-          "line": 137,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 186,
+          "line": 198,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -85255,43 +85285,48 @@
           "kind": "Variable"
         },
         {
+          "name": "PROGRAM_HEALTH_CAPTION",
+          "line": 96,
+          "kind": "Variable"
+        },
+        {
           "name": "buildProgramHealthRows",
-          "line": 93,
+          "line": 105,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ADMIN_QUEUE_KEYS",
-          "line": 114,
+          "line": 126,
           "kind": "Variable"
         },
         {
           "name": "AdminQueueKey",
-          "line": 115,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "normalizeAdminQueueRequest",
-          "line": 116,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "adminQueueHref",
-          "line": 123,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "AdminCommandCenter",
           "line": 127,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "normalizeAdminQueueRequest",
+          "line": 128,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "adminQueueHref",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "AdminCommandCenter",
+          "line": 139,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "buildApplicationEmailPacket",
-          "line": 137,
+          "line": 149,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "bucketCommandCenterTotals",
-          "line": 186,
+          "line": 198,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -171899,6 +171934,24 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/number-audit-followon-captions.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 9835,
+      "lines": 207,
+      "sha256": "f2f1e52a7a3cd9e56e605455ea8d733d88d8b0bd4ee678fcfd75b342ab3401b4",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "METRICS",
+          "line": 35,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {

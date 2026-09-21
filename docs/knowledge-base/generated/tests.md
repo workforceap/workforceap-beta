@@ -325,6 +325,7 @@
 | [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 117 | tests |  |
 | [tests/components/mfa-status-banner.spec.tsx](../../../tests/components/mfa-status-banner.spec.tsx) | 31 | tests |  |
 | [tests/components/notification-bell.spec.tsx](../../../tests/components/notification-bell.spec.tsx) | 201 | communications |  |
+| [tests/components/number-audit-followon-captions.spec.tsx](../../../tests/components/number-audit-followon-captions.spec.tsx) | 207 | tests |  |
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
 | [tests/components/partner-overview-density.spec.tsx](../../../tests/components/partner-overview-density.spec.tsx) | 41 | tests |  |
 | [tests/components/partner-referral-share.spec.tsx](../../../tests/components/partner-referral-share.spec.tsx) | 56 | tests |  |

@@ -26,8 +26,11 @@ import {
   ProgressRing,
   StatusTag,
   colorVar,
+  cx,
+  toneClass,
   type Column,
   type KitColor,
+  type KitTone,
 } from '@/components/portal/kit';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
@@ -60,7 +63,13 @@ import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memb
  * Surface: warm (member-facing).
  */
 
-type JobStageTone = 'warn' | 'muted' | 'info';
+/**
+ * A pipeline row's stage tone. Declared as a subset of `KitTone` so the stage
+ * track can hand it straight to `toneClass()` and paint from
+ * `--wa-kit-tone`, instead of mapping it to `var(--wa-gold)` /
+ * `var(--wa-info)` by hand (#2434).
+ */
+type JobStageTone = Extract<KitTone, 'warn' | 'muted' | 'info'>;
 
 interface PipelineRow {
   role: string;
@@ -183,12 +192,6 @@ function defaultStageIndex(tone: JobStageTone): number {
   return 1;
 }
 
-function stageTrackColor(tone: JobStageTone): string {
-  if (tone === 'warn') return 'var(--wa-gold)';
-  if (tone === 'info') return 'var(--wa-info)';
-  return 'var(--wa-muted)';
-}
-
 /** Deterministic brand-safe color for a company-initial avatar (no arbitrary hex). */
 const LOGO_COLORS = ['var(--wa-accent)', 'var(--wa-info)', 'var(--wa-gold)', 'var(--wa-success)', 'var(--wa-accent-dark)'];
 function logoColorFor(name: string): string {
@@ -248,11 +251,16 @@ function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?
   );
 }
 
+/**
+ * Trend pill. The direction IS the state, so it declares its own tone hook
+ * (`ok` up / `danger` down) and paints from `--wa-kit-tone`; it never names
+ * `var(--wa-success)` / `var(--wa-danger)` inline (#2434, WAP-99).
+ */
 function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up' | 'down' }) {
-  const color = direction === 'down' ? 'var(--wa-danger)' : 'var(--wa-success)';
   const Icon = direction === 'down' ? ArrowDown : ArrowUp;
   return (
     <span
+      className={toneClass(direction === 'down' ? 'danger' : 'ok')}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -261,8 +269,8 @@ function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up
         fontWeight: 700,
         padding: '4px 8px',
         borderRadius: 999,
-        color,
-        background: `color-mix(in srgb, ${color} 12%, transparent)`,
+        color: 'var(--wa-kit-tone)',
+        background: 'var(--wa-kit-tone-soft)',
         fontVariantNumeric: 'tabular-nums',
       }}
     >
@@ -272,37 +280,33 @@ function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up
   );
 }
 
+/**
+ * Member home KPI tile, on the same tone contract as the kit's
+ * `StatSparkTile` (components/portal/kit/CommandCenter.tsx): the value is
+ * always neutral `--wa-text`, and a `tone` — a state derived from the value,
+ * never the column it sits in (WAP-99) — declares `.wa-kit-tone--<tone>` so
+ * the icon chip and the trend line paint from `--wa-kit-tone`. Untoned, the
+ * chip is the neutral surface pair and the line is the brand accent.
+ */
 function StatSparkTile({
   icon: Icon,
   label,
   value,
-  color,
+  tone,
   spark,
 }: {
   icon: LucideIcon;
   label: string;
   value: string | number;
-  color: string;
+  /** Semantic state derived from the value; paints the icon chip and trend line only. */
+  tone?: KitTone;
   spark?: StatSpark;
 }) {
   return (
     <div className="wa-kit-card">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className={cx(toneClass(tone))} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div className="wa-flex wa-items-start wa-justify-between">
-        <div
-          aria-hidden
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 'var(--wa-radius-sm)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            background: `color-mix(in srgb, ${color} 12%, transparent)`,
-            color,
-          }}
-        >
+        <div aria-hidden className="wa-kit-tone-icon">
           <Icon size={16} />
         </div>
         {spark?.delta ? <DeltaChip delta={spark.delta} direction={spark.direction} /> : null}
@@ -329,7 +333,7 @@ function StatSparkTile({
           <polyline
             points={sparklinePoints(spark.series)}
             fill="none"
-            stroke={color}
+            stroke={tone ? 'var(--wa-kit-tone)' : 'var(--wa-accent)'}
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -344,28 +348,37 @@ function StatSparkTile({
 function PipelineStageTrack({ row }: { row: PipelineRow }) {
   const total = row.stageTotal ?? 3;
   const filled = Math.max(0, Math.min(total, row.stageIndex ?? defaultStageIndex(row.tone)));
-  const color = stageTrackColor(row.tone);
   return (
-    <div aria-hidden className="wa-flex wa-items-center wa-gap-1" style={{ width: 84 }}>
+    <div
+      aria-hidden
+      className={cx('wa-flex wa-items-center wa-gap-1', toneClass(row.tone))}
+      style={{ width: 84 }}
+    >
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          style={{ height: 5, flex: 1, borderRadius: 3, background: i < filled ? color : 'var(--wa-track)' }}
+          style={{ height: 5, flex: 1, borderRadius: 3, background: i < filled ? 'var(--wa-kit-tone)' : 'var(--wa-track)' }}
         />
       ))}
     </div>
   );
 }
 
+/**
+ * Segmented progress bar. Takes a `tone` (#2434's `StageTrack` contract) and
+ * paints the filled segments from `--wa-kit-tone`; untoned it falls back to
+ * the brand accent, so no categorical hue is named inline.
+ */
 function SegmentedProgress({
   pct,
   segments,
-  color,
+  tone,
   label,
 }: {
   pct: number;
   segments: number;
-  color: string;
+  /** Semantic state of the filled segments; omit for the accent bar. */
+  tone?: KitTone;
   label: string;
 }) {
   const clamped = clampPct(pct);
@@ -377,13 +390,18 @@ function SegmentedProgress({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
-      className="wa-flex wa-items-center wa-gap-1"
+      className={cx('wa-flex wa-items-center wa-gap-1', toneClass(tone))}
     >
       {Array.from({ length: segments }).map((_, i) => (
         <span
           key={i}
           aria-hidden
-          style={{ flex: 1, height: 6, borderRadius: 3, background: i < filled ? color : 'var(--wa-track)' }}
+          style={{
+            flex: 1,
+            height: 6,
+            borderRadius: 3,
+            background: i < filled ? 'var(--wa-kit-tone, var(--wa-accent))' : 'var(--wa-track)',
+          }}
         />
       ))}
     </div>
@@ -595,11 +613,42 @@ export function MemberHomeKit({
 }: MemberHomeKitProps) {
   const pct = clampPct(coursePercent);
 
-  const statTiles: Array<{ key: string; icon: LucideIcon; label: string; value: string | number; color: string; spark?: StatSpark }> = [
-    { key: 'course', icon: BookOpen, label: 'Course', value: `${pct}%`, color: 'var(--wa-accent)', spark: courseSpark },
-    { key: 'jobs', icon: Briefcase, label: 'Active jobs', value: activeJobs, color: 'var(--wa-info)', spark: activeJobsSpark },
-    { key: 'certs', icon: Medal, label: 'Certs', value: certs, color: 'var(--wa-gold)', spark: certsSpark },
-    { key: 'points', icon: Star, label: 'Points', value: points.toLocaleString(), color: 'var(--wa-success)', spark: pointsSpark },
+  /**
+   * Only a state paints a tile (WAP-99). These four used to be magenta /
+   * blue / gold / green by column, which told the member nothing: the hue
+   * was the tile's position, not its value. Each now derives a kit tone
+   * (#2434) from what the number says, and a plain running total stays
+   * neutral. No number, threshold or definition changes here — the same
+   * counts render, in the palette the admin kits already use.
+   */
+  const statTiles: Array<{ key: string; icon: LucideIcon; label: string; value: string | number; tone?: KitTone; spark?: StatSpark }> = [
+    {
+      key: 'course',
+      icon: BookOpen,
+      label: 'Course',
+      value: `${pct}%`,
+      // Finished the course; nothing started while enrolled is worth a nudge.
+      tone: pct >= 100 ? 'ok' : pct === 0 && programTitle ? 'warn' : undefined,
+      spark: courseSpark,
+    },
+    {
+      key: 'jobs',
+      icon: Briefcase,
+      label: 'Active jobs',
+      value: activeJobs,
+      tone: activeJobs > 0 ? 'ok' : undefined,
+      spark: activeJobsSpark,
+    },
+    {
+      key: 'certs',
+      icon: Medal,
+      label: 'Certs',
+      value: certs,
+      tone: certs > 0 ? 'ok' : undefined,
+      spark: certsSpark,
+    },
+    // A running score with no good/bad state of its own.
+    { key: 'points', icon: Star, label: 'Points', value: points.toLocaleString(), spark: pointsSpark },
   ];
 
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
@@ -675,7 +724,7 @@ export function MemberHomeKit({
         {/* 3. Stat tiles — icon + delta chip + value/label + optional sparkline. */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {statTiles.map((t) => (
-            <StatSparkTile key={t.key} icon={t.icon} label={t.label} value={t.value} color={t.color} spark={t.spark} />
+            <StatSparkTile key={t.key} icon={t.icon} label={t.label} value={t.value} tone={t.tone} spark={t.spark} />
           ))}
         </div>
 
@@ -685,7 +734,7 @@ export function MemberHomeKit({
           <div className="wa-kit-card wa-kit-cert-path">
             <KitCardHead title="Certification path" linkLabel="Open plan" linkHref={programHref} />
             <div className="wa-kit-cert-path-body">
-              <ProgressRing pct={pct} size={112} color="accent" label="Course completion" />
+              <ProgressRing pct={pct} size={112} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
               <div className="wa-kit-cert-path-copy">
                 {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
                 <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', marginTop: programStatus ? 8 : 0 }}>
@@ -885,7 +934,9 @@ export function MemberHomeKit({
                 ) : null}
               </div>
             </div>
-            <SegmentedProgress pct={nextBadgePercent} segments={7} color="var(--wa-gold)" label={`${nextBadgeName} badge progress`} />
+            {/* Progress toward the next badge is neutral: there is no good or bad
+                value, only how far along it is (WAP-99). */}
+            <SegmentedProgress pct={nextBadgePercent} segments={7} label={`${nextBadgeName} badge progress`} />
             {goals.length > 0 ? (
               <div style={{ marginTop: 2, paddingTop: 14, borderTop: '1px solid var(--wa-border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--wa-muted)' }} className="wa-flex wa-items-center wa-gap-2">
