@@ -115,9 +115,9 @@ function Showcase({ surface }: { surface: SurfaceMode }) {
           <div className="wa-kit-card">
             <RankBars
               data={[
-                { label: 'Cloud & IT', value: 82, pct: 100, color: 'info' },
-                { label: 'Healthcare', value: 61, pct: 74, color: 'info' },
-                { label: 'Data & AI', value: 38, pct: 46, color: 'info' },
+                { label: 'Cloud & IT', value: 82, pct: 100, tone: 'info' },
+                { label: 'Healthcare', value: 61, pct: 74, tone: 'info' },
+                { label: 'Data & AI', value: 38, pct: 46, tone: 'info' },
               ]}
             />
           </div>

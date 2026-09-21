@@ -190,7 +190,7 @@ export default function PartnerMilestonesView() {
                   <StageTrack
                     index={track.index}
                     total={track.total}
-                    color={m.kind === 'placement' ? 'success' : 'info'}
+                    tone={m.kind === 'placement' ? 'ok' : 'info'}
                     width={72}
                   />
                 ) : null}

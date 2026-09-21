@@ -79,7 +79,8 @@ export interface PartnerFunnelStage {
   value: number | string;
   /** 0–100 bar width, relative to the top of the funnel. */
   pct: number;
-  color?: KitColor;
+  /** Semantic state of the stage bar (`ok` for placed); omit for the accent fill. */
+  tone?: KitTone;
 }
 
 export function PartnerReferralFunnel({ stages }: { stages: PartnerFunnelStage[] }) {
@@ -89,7 +90,7 @@ export function PartnerReferralFunnel({ stages }: { stages: PartnerFunnelStage[]
       <section className={styles.stages} aria-label="Referral stages">
         {stages.map(stage => <section key={stage.label} className={styles.stage} aria-label={stage.label}>
           <p><span>{stage.label}</span><strong>{stage.value}</strong></p>
-          <ProgressBar pct={stage.pct} color={stage.color ?? 'accent'} aria-label={`${stage.label} as a share of referrals`} />
+          <ProgressBar pct={stage.pct} tone={stage.tone} aria-label={`${stage.label} as a share of referrals`} />
         </section>)}
       </section>
     </section>

@@ -181,7 +181,7 @@ export default async function AdminGrowthPage({
       label: source,
       value: count,
       pct: Math.round((count / sourceMax) * 100),
-      color: 'success',
+      tone: 'ok',
     }));
 
     const kpis: KpiItem[] = [

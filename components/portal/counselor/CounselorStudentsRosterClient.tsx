@@ -257,7 +257,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ width: 72 }}>
-          <ProgressBar pct={pct} color={row.riskLevel === 'LOW' ? 'success' : 'accent'} aria-label={`${row.fullName} progress ${pct}%`} />
+          <ProgressBar pct={pct} tone={row.riskLevel === 'LOW' ? 'ok' : 'alert'} aria-label={`${row.fullName} progress ${pct}%`} />
         </div>
         <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 13, color: 'var(--wa-muted)' }}>{pct}%</span>
       </div>
@@ -416,7 +416,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
                   </span>
                 </div>
                 {pct !== null ? (
-                  <ProgressBar pct={pct} color={row.riskLevel === 'LOW' ? 'success' : 'accent'} aria-label={`${row.fullName} progress ${pct}%`} />
+                  <ProgressBar pct={pct} tone={row.riskLevel === 'LOW' ? 'ok' : 'alert'} aria-label={`${row.fullName} progress ${pct}%`} />
                 ) : null}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
                   <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>

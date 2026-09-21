@@ -122,7 +122,7 @@ The member dashboard is the primary experience for enrolled members. It adapts b
 
 - `members` — Member list with filters
 - `members/[id]` — Member detail page
-- `members/[id]/lifecycle` — Member lifecycle view
+- `members/[id]/lifecycle` — Redirects to the member record's Activity tab (`members/[id]?tab=activity`)
 - `members/[id]/readiness` — Readiness assessment
 - `members/[id]/stakeholder` — Stakeholder view
 - `members/new` — Add new member wizard

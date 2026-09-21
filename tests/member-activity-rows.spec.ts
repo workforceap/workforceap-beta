@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   MEMBER_ACTIVITY_CAP,
+  MEMBER_EVENT_LOAD_CAP,
   buildMemberActivityRows,
+  formatActivityMetadata,
   humanizeActivityName,
+  redactActivityMetadata,
 } from '@/lib/admin/memberActivity';
 
 /**
@@ -82,5 +85,47 @@ describe('buildMemberActivityRows', () => {
     expect(rows.slice(15).map((r) => r.id)).toEqual(['audit:a14', 'audit:a13', 'audit:a12', 'audit:a11', 'audit:a10']);
 
     expect(buildMemberActivityRows({ auditRows, eventRows, limit: 3 })).toHaveLength(3);
+  });
+});
+
+describe('event details (entity + redacted metadata)', () => {
+  it('redacts email / phone / token / password keys at any depth and formats pretty JSON', () => {
+    const json = formatActivityMetadata({
+      employerName: 'Acme',
+      contactEmail: 'hr@acme.example',
+      nested: { phone: '555-0100', ok: 1 },
+      list: [{ accessToken: 'abc' }, 'plain'],
+      PASSWORD: 'x',
+    });
+    expect(json).toContain('"employerName": "Acme"');
+    expect(json).toContain('"contactEmail": "[redacted]"');
+    expect(json).toContain('"phone": "[redacted]"');
+    expect(json).toContain('"accessToken": "[redacted]"');
+    expect(json).toContain('"PASSWORD": "[redacted]"');
+    expect(json).toContain('"ok": 1');
+    expect(json).not.toContain('hr@acme.example');
+    expect(redactActivityMetadata(['a', { email: 'x' }])).toEqual(['a', { email: '[redacted]' }]);
+  });
+
+  it('returns null for missing or empty metadata', () => {
+    expect(formatActivityMetadata(null)).toBeNull();
+    expect(formatActivityMetadata(undefined)).toBeNull();
+    expect(formatActivityMetadata({})).toBeNull();
+    expect(formatActivityMetadata(7)).toBe('7');
+  });
+
+  it('attaches a detail block to member events that carry entity or metadata, never to staff rows', () => {
+    const rows = buildMemberActivityRows({
+      auditRows: [{ id: 'a1', action: 'admin_program_change', createdAt: new Date('2026-09-18T10:00:00Z'), actorName: 'Staff' }],
+      eventRows: [
+        { id: 'e1', eventName: 'placement_recorded', createdAt: new Date('2026-09-19T10:00:00Z'), entityType: 'PlacementRecord', entityId: 'pl-1', metadata: { employer: 'Acme' } },
+        { id: 'e2', eventName: 'career_plan_saved', createdAt: new Date('2026-09-17T10:00:00Z'), entityType: null, entityId: null, metadata: {} },
+      ],
+    });
+    expect(rows.map((r) => r.id)).toEqual(['event:e1', 'audit:a1', 'event:e2']);
+    expect(rows[0].detail).toEqual({ entityType: 'PlacementRecord', entityId: 'pl-1', metadata: '{\n  "employer": "Acme"\n}' });
+    expect(rows[1].detail).toBeUndefined();
+    expect(rows[2].detail).toBeUndefined();
+    expect(MEMBER_EVENT_LOAD_CAP).toBe(100);
   });
 });

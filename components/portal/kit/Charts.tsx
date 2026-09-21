@@ -1,4 +1,5 @@
-import { colorVar, type KitColor } from './tokens';
+import { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';
+import { cx } from './base';
 
 export interface ChartDatum {
   label: string;
@@ -177,6 +178,9 @@ export interface RankDatum {
   label: string;
   value: string | number;
   pct: number;
+  /** Semantic state of the row (`ok` on track, `warn` lagging, …); paints the bar through the tone hook. Omit for a plain accent bar. */
+  tone?: KitTone;
+  /** @deprecated Categorical fill — use `tone`. Ignored when `tone` is set. */
   color?: KitColor;
 }
 
@@ -187,17 +191,20 @@ export interface RankDatum {
 export function RankBars({ data }: { data: RankDatum[] }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {data.map((d) => (
-        <div key={d.label}>
+      {data.map((d) => {
+        const fill = tonePaint(d.tone, d.color);
+        return (
+        <div key={d.label} className={cx(toneClass(d.tone))}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13 }}>
             <span style={{ fontWeight: 700 }}>{d.label}</span>
             <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--wa-muted)' }}>{d.value}</span>
           </div>
           <div className="wa-kit-bar-track">
-            <div className="wa-kit-bar-fill" style={{ width: `${d.pct}%`, background: colorVar(d.color ?? 'accent') }} />
+            <div className="wa-kit-bar-fill" style={{ width: `${d.pct}%`, ...(fill ? { background: fill } : null) }} />
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

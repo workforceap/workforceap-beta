@@ -76,7 +76,7 @@
 | [lib/admin/jobsBoardSort.ts](../../../lib/admin/jobsBoardSort.ts) | 65 | administration | JOB_SORT_KEYS:3, JobSortKey:4, JobSortDirection:5, DEFAULT_JOB_SORT_KEY:7, DEFAULT_JOB_SORT_DIRECTION:8, sortJobRows:45 |
 | [lib/admin/logCronRun.ts](../../../lib/admin/logCronRun.ts) | 29 | administration | logCronRun:7 |
 | [lib/admin/matchSuggestionsConfig.ts](../../../lib/admin/matchSuggestionsConfig.ts) | 16 | administration | getMatchSuggestionsTestRecipient:8, isMatchSuggestionsDryRun:13 |
-| [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 91 | administration | MemberActivityKind:11, MemberActivityAuditInput:13, MemberActivityEventInput:22, MemberActivityRow:28, MEMBER_ACTIVITY_CAP:38, humanizeActivityName:45, buildMemberActivityRows:68 |
+| [lib/admin/memberActivity.ts](../../../lib/admin/memberActivity.ts) | 143 | administration | MemberActivityKind:11, MemberActivityAuditInput:13, MemberActivityEventInput:22, MemberActivityDetail:33, MemberActivityRow:40, MEMBER_ACTIVITY_CAP:53, MEMBER_EVENT_LOAD_CAP:55, redactActivityMetadata:64, formatActivityMetadata:77, humanizeActivityName:96, buildMemberActivityRows:119 |
 | [lib/admin/memberMerge.test.ts](../../../lib/admin/memberMerge.test.ts) | 289 | administration |  |
 | [lib/admin/memberMerge.ts](../../../lib/admin/memberMerge.ts) | 613 | administration | MergeConflict:5, MergePreview:12, MergeResult:20, assertNoCourseraOwnershipForMemberMerge:40, checkMergeConflicts:103, buildMergePreview:168, executeMemberMerge:326 |
 | [lib/admin/memberOnlyWhere.test.ts](../../../lib/admin/memberOnlyWhere.test.ts) | 198 | administration |  |

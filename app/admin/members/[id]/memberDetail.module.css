@@ -23,12 +23,6 @@
   flex: 1 1 10rem;
 }
 
-.actionIcon {
-  font-size: 1.125rem;
-  margin-right: 0.25rem;
-  vertical-align: middle;
-}
-
 .strip {
   max-width: 800px;
   margin-bottom: 1.5rem;
@@ -418,4 +412,41 @@
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   margin-top: 0.875rem;
+}
+
+.activityOrigin {
+  margin: 0 0 0.75rem;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.activityNotice {
+  margin: 0 0 0.875rem;
+}
+
+.activityDetails {
+  margin-top: 0.375rem;
+}
+
+.activitySummary {
+  cursor: pointer;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-accent);
+}
+
+.activityJson {
+  margin: 0.375rem 0 0;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: var(--wa-type-meta);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.activityMore {
+  margin-top: 0.75rem;
 }

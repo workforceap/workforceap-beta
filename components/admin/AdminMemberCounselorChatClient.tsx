@@ -227,6 +227,13 @@ function MemberCounselorConversation({
           {error}
         </p>
       ) : null}
+      {messages.length === 0 ? (
+        // An empty thread renders a line, not the bordered log box: with no bubbles
+        // the box collapsed to a stray empty pill above the composer.
+        <p className="member-counselor-chat__empty" role="status">
+          No messages in this thread yet. The first reply below starts the conversation.
+        </p>
+      ) : (
       <div className="member-counselor-chat__scroll admin-member-counselor-chat__scroll" role="log" aria-live="polite">
         {messages.map((m) => {
           const fromMember = m.authorId === member.id;
@@ -245,6 +252,7 @@ function MemberCounselorConversation({
         })}
         <div ref={bottomRef} />
       </div>
+      )}
       {sendStatus && <p role="status" style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>{sendStatus}</p>}
       <form className="member-counselor-chat__form" onSubmit={send}>
         <label htmlFor={inputId} className="wa-sr-only">

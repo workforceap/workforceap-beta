@@ -357,7 +357,7 @@ export default async function AdminDiagnosticsPage({
                     header: 'Member',
                     cell: (u) => (
                       <a
-                        href={`/admin/members/${u.id}/lifecycle`}
+                        href={`/admin/members/${u.id}?tab=activity`}
                         style={{ color: 'var(--color-accent)', textDecoration: 'none', fontWeight: 600 }}
                       >
                         {u.fullName ?? u.id}

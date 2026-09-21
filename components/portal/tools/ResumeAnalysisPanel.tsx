@@ -160,7 +160,7 @@ export default function ResumeAnalysisPanel({
         ) : null}
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, margin: '20px 0' }}>
-          <ProgressRing pct={clamped} size={120} color="accent" label={gaugeLabel} />
+          <ProgressRing pct={clamped} size={120} label={gaugeLabel} />
           <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-muted)' }}>{gaugeLabel}</span>
         </div>
 

@@ -159,10 +159,10 @@ export default async function LearningPage() {
               {learningStatusLabel} · {ACTIVE_PATHWAY.steps.length} modules
             </p>
           </div>
-          <ProgressRing pct={overallPct} size={80} color="gold" label="Pathway progress" />
+          <ProgressRing pct={overallPct} size={80} tone="warn" label="Pathway progress" />
         </div>
         <div style={{ marginTop: '1rem' }}>
-          <ProgressBar pct={overallPct} color="accent" aria-label="Pathway progress" />
+          <ProgressBar pct={overallPct} aria-label="Pathway progress" />
         </div>
       </section>
       )}
