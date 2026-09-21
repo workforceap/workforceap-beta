@@ -118,6 +118,13 @@ html.dark .auth-depth,
 .auth-depth textarea::placeholder {
   color: #a8a19b;
 }
+/* WAP-108: no browser-default (Chrome-blue) control colour on the auth
+   group. One rule covers the login "stay signed in" and MFA "remember this
+   device" checkboxes and any future auth checkbox/radio. */
+.auth-depth input[type='checkbox'],
+.auth-depth input[type='radio'] {
+  accent-color: var(--color-accent, #ad2c4d);
+}
 .auth-depth input:focus,
 .auth-depth select:focus,
 .auth-depth textarea:focus,

@@ -34,6 +34,17 @@ describe('MFA control presentation preserves the verification contract', () => {
     expect(container.querySelector('svg[aria-hidden="true"]')).toBeTruthy();
   });
 
+  it('explains what enables Verify until all six digits are entered (WAP-108)', () => {
+    mount();
+    const code = screen.getByLabelText(en.auth.mfaVerify.codeLabel);
+    const helper = screen.getByText(en.auth.mfaVerify.codeHelper);
+    expect(code).toHaveAttribute('aria-describedby', helper.id);
+    fireEvent.change(code, { target: { value: '123456' } });
+    expect(screen.queryByText(en.auth.mfaVerify.codeHelper)).toBeNull();
+    expect(code).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('button', { name: en.auth.mfaVerify.verifyButton })).toBeEnabled();
+  });
+
   it('preserves the chosen trust-device value and disables submission while pending', async () => {
     api.fetchAuth.mockImplementationOnce(() => new Promise(() => {}));
     mount();
