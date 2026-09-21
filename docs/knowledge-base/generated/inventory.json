@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "68216865810cdffeef95433ebe1402699e6903b9b895e3306b37a857c054ae1b",
+  "inputTreeSha256": "23e9be1e304571071887c6ede33991d35d04dac1594df4c138e9efd33906c003",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -5553,7 +5553,7 @@
       "domain": "member-counselor",
       "bytes": 6417,
       "lines": 144,
-      "sha256": "6a920f37adf521a4ffd1fd78c78b4e111e86d140d3f9f51a974dc856cd849c70",
+      "sha256": "0b7070a0483bfee825c2a7574047e83ae70f7680fa431bf0ff360f84e9fa6396",
       "binary": false,
       "exports": [
         {
@@ -17331,19 +17331,19 @@
       "path": "app/admin/guide/page.tsx",
       "area": "pages",
       "domain": "administration",
-      "bytes": 12552,
-      "lines": 252,
-      "sha256": "a2b8dc90db69dc73003dafa3b17203f0e4cf061f10d7501e8376f557dc6f793d",
+      "bytes": 12512,
+      "lines": 250,
+      "sha256": "16490fa07d49b0235140973797ccd109a0c068b4a85f7e202d89295a8f682a91",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 22,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 114,
+          "line": 112,
           "kind": "FunctionDeclaration",
           "localName": "AdminGuidePage"
         }
@@ -17351,32 +17351,32 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 22,
+          "line": 20,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "CAPABILITIES",
-          "line": 30,
+          "line": 28,
           "kind": "Variable"
         },
         {
           "name": "WORKSPACE",
-          "line": 39,
+          "line": 37,
           "kind": "Variable"
         },
         {
           "name": "QUICK_ACTIONS",
-          "line": 84,
+          "line": 82,
           "kind": "Variable"
         },
         {
           "name": "FAQS",
-          "line": 91,
+          "line": 89,
           "kind": "Variable"
         },
         {
           "name": "AdminGuidePage",
-          "line": 114,
+          "line": 112,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -57549,22 +57549,32 @@
       "path": "components/portal/AdminPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 2158,
-      "lines": 60,
-      "sha256": "6773cf0826c644635a849fb28bc3d2fc6d78714e918638fa3ab40b51b15a8564",
+      "bytes": 2352,
+      "lines": 64,
+      "sha256": "85e1ebb74f132af27f22353de8c0449f80164fd2edc5e6d643d34297125c03e3",
       "binary": false,
       "exports": [
         {
+          "name": "ADMIN_GUIDE_HREF",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 13,
+          "line": 16,
           "kind": "FunctionDeclaration",
           "localName": "AdminPortalShell"
         }
       ],
       "declarations": [
         {
+          "name": "ADMIN_GUIDE_HREF",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
           "name": "AdminPortalShell",
-          "line": 13,
+          "line": 16,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64674,9 +64684,9 @@
       "path": "components/portal/help/HelpAssistantPanel.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 11933,
+      "bytes": 11934,
       "lines": 320,
-      "sha256": "519dd87732336095b413373839b6d277ec52d729aa42c2d6e63b1986f06bc0af",
+      "sha256": "a9a2c74d5f08e4dd51eac23ed1c9f3ffab2573aa73c46cc41574e2a33b7865b9",
       "binary": false,
       "exports": [
         {
@@ -70581,9 +70591,9 @@
       "path": "components/portal/kit/pages/counselor/CounselorHomeKit.tsx",
       "area": "components",
       "domain": "member-counselor",
-      "bytes": 16819,
-      "lines": 430,
-      "sha256": "25e5b62c16633ebed0d026851e16e186af53ea505a127794542fea4818728468",
+      "bytes": 17112,
+      "lines": 434,
+      "sha256": "157e9ad581548ba6329223668f21606a46d874f32ecd4ffeafbf9a1c925e0992",
       "binary": false,
       "exports": [
         {
@@ -74939,9 +74949,9 @@
       "path": "css/main.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 240833,
-      "lines": 8809,
-      "sha256": "8fd6740d7f1319ed0ec62d36dcbbafead083f8bfd330551c23bfc9a17d66c220",
+      "bytes": 240562,
+      "lines": 8799,
+      "sha256": "e7e220aed6035f32953e16d3f7d54054be66c603b02eb7633fbbafffa0781c2b",
       "binary": false
     },
     {
@@ -75002,9 +75012,9 @@
       "path": "css/portal-main-extracted.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 272950,
-      "lines": 10069,
-      "sha256": "8d2bd847aa8daf95312b571dda2a92c944f114fbe1368f3f80a17388438c5a44",
+      "bytes": 273261,
+      "lines": 10075,
+      "sha256": "f74876b103809d2fb835cea919978a9076d98482dac4224f78b5b7ae792e88c1",
       "binary": false
     },
     {
@@ -75020,9 +75030,9 @@
       "path": "css/portal-ui-kit.css",
       "area": "styles",
       "domain": "styles",
-      "bytes": 7651,
-      "lines": 282,
-      "sha256": "c6f81b76770271cf21aae771dd36bfcbca00cc1b4852cbd36ecafd0518654c18",
+      "bytes": 7380,
+      "lines": 272,
+      "sha256": "cd9edd97cddd694b4cc90039449929bac62953ae415472864d3799bf9ad3a0b4",
       "binary": false
     },
     {
@@ -140295,9 +140305,9 @@
       "path": "lib/security/cspReport.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 6482,
-      "lines": 151,
-      "sha256": "825304af4c18fc224db03a03036b6d9fc35c3ef0a88fbbba289a4b708b75833d",
+      "bytes": 8163,
+      "lines": 189,
+      "sha256": "5127003ebd6df124301e4140dd4e3637d5f80be9833d9067a283085d27691858",
       "binary": false,
       "exports": [
         {
@@ -140341,18 +140351,23 @@
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "collapseDynamicPathSegments",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "summarizeDocumentUri",
-          "line": 75,
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "extractCspViolations",
-          "line": 124,
+          "line": 162,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countCspViolations",
-          "line": 142,
+          "line": 180,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -140418,43 +140433,68 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "summarizeDocumentUri",
+          "name": "UUID_SEGMENT",
+          "line": 74,
+          "kind": "Variable"
+        },
+        {
+          "name": "NUMERIC_SEGMENT",
           "line": 75,
+          "kind": "Variable"
+        },
+        {
+          "name": "OPAQUE_SEGMENT",
+          "line": 81,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOKEN_PARENT_SEGMENTS",
+          "line": 84,
+          "kind": "Variable"
+        },
+        {
+          "name": "collapseDynamicPathSegments",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "summarizeDocumentUri",
+          "line": 113,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "summarizeDisposition",
-          "line": 86,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "summarizeDirective",
-          "line": 90,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "fromLegacyReport",
-          "line": 97,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "fromReportingApiBody",
-          "line": 106,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "isRecord",
-          "line": 115,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "extractCspViolations",
           "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "summarizeDirective",
+          "line": 128,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fromLegacyReport",
+          "line": 135,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fromReportingApiBody",
+          "line": 144,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isRecord",
+          "line": 153,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "extractCspViolations",
+          "line": 162,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "countCspViolations",
-          "line": 142,
+          "line": 180,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142764,9 +142804,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 14515,
+      "bytes": 14529,
       "lines": 319,
-      "sha256": "6d86d4690acf995ae0a1e7ecdd6a290e439218c1debbc87709df870153f9f9ad",
+      "sha256": "175556ca98f5d54e697620ded9802677ebaa7497b9b479bf91a5a57342604e50",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -148612,7 +148652,7 @@
       "domain": "localization",
       "bytes": 227613,
       "lines": 3785,
-      "sha256": "a9755d7b5eccc28cb8cacc2be861dc11dac8ef9de088e37cc22a9997c2a4fcad",
+      "sha256": "3d962c1451839a980bbcf495d85257fd54e8676bbf49fd7e1004bc2b7396c28a",
       "binary": false
     },
     {
@@ -158643,9 +158683,9 @@
       "path": "scripts/test-unit.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 6857,
-      "lines": 189,
-      "sha256": "73020d4501d74f95bd096402b4ccd1c6ff55f3f05a423d5b3e64aff8ac55b58f",
+      "bytes": 7341,
+      "lines": 201,
+      "sha256": "790514d815de8f88fb6eb76b0b081e07dfd590c9fa9bddbd22139f9c8368ecbb",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -158697,6 +158737,49 @@
         {
           "name": "main",
           "line": 111,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/test-unit.test.cjs",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 1468,
+      "lines": 31,
+      "sha256": "31b646eb1ca493ef8fd7a46c3a6593238346d6a80d13bf8a4ba99e663eae9a31",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "test",
+          "line": 1,
+          "kind": "Variable"
+        },
+        {
+          "name": "assert",
+          "line": 2,
+          "kind": "Variable"
+        },
+        {
+          "name": "path",
+          "line": 3,
+          "kind": "Variable"
+        },
+        {
+          "name": "spawnSync",
+          "line": 4,
+          "kind": "Variable"
+        },
+        {
+          "name": "runner",
+          "line": 6,
+          "kind": "Variable"
+        },
+        {
+          "name": "run",
+          "line": 8,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -168192,9 +168275,9 @@
       "path": "tests/components/counselor-home-on-track-caption.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 1946,
-      "lines": 39,
-      "sha256": "7ef1aa960e93dba3dada35120a754b7b5a545492f94a8e3fb417840195123963",
+      "bytes": 2207,
+      "lines": 42,
+      "sha256": "ebb1456c280944296ff7514f296a806aeb185e7334473e1ae843a8f3cb520a07",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -172973,30 +173056,30 @@
       "path": "tests/lib/csp-policy.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7626,
-      "lines": 150,
-      "sha256": "c492014017697b620302b34fc77b3671f52ef10cd0b77f1b314f0c6d591b0c20",
+      "bytes": 9162,
+      "lines": 166,
+      "sha256": "bca4a3c205f1c700f8d924cc50b213c7642927e43b2de38f1166b4c1a42ec007",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "Header",
-          "line": 22,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "HeaderRule",
           "line": 23,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "HeaderRule",
+          "line": 24,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
           "name": "NEXT_NONCE_SOURCE",
-          "line": 26,
+          "line": 27,
           "kind": "Variable"
         },
         {
           "name": "directive",
-          "line": 28,
+          "line": 29,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -176473,9 +176556,9 @@
       "path": "tests/tours/admin-tour.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 14359,
-      "lines": 272,
-      "sha256": "f54fcecf025c84dfab54acae6f57dd9f820fb08eaafc9f3a107cef3d143bd81e",
+      "bytes": 14435,
+      "lines": 273,
+      "sha256": "2619b06200b999af941d9ac9f17134d3b9eed6c5d69e7d1cf31a6611120b01a0",
       "binary": false,
       "exports": [],
       "declarations": [

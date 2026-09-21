@@ -12,11 +12,9 @@ import PageHeader from '@/components/portal/PageHeader';
  * workspace is for, where each part of it lives, and the questions staff ask
  * in their first week. Static copy; the live numbers stay on the pages that
  * own them (Command Center, Detailed overview) so this page never disagrees
- * with them.
- *
- * Follow-up (not here): wire `helpGuideHref="/admin/guide"` into
- * `AdminPortalShell` so the help menu links to it, the way
- * `CounselorPortalShell` does for /counselor/guide.
+ * with them. `AdminPortalShell` links here from the header Help menu
+ * (`ADMIN_GUIDE_HREF`), the way `CounselorPortalShell` does for
+ * /counselor/guide.
  */
 
 export async function generateMetadata(): Promise<Metadata> {

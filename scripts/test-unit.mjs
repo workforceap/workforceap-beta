@@ -155,6 +155,18 @@ async function main() {
     console.log('');
   }
 
+  if (runnable.length === 0) {
+    // `node --test` with no file arguments runs its default patterns over the
+    // whole tree, which would silently turn a filtered run into a full one.
+    console.error(
+      ONLY.size
+        ? `--only matched no runnable file: every named file is skipped here (see the skip list above). ` +
+            `Run the Vitest-owned suites with npm run test:vitest.`
+        : 'No runnable test files were discovered.',
+    );
+    process.exit(1);
+  }
+
   console.log(`Running ${runnable.length} test file(s) via \`node --test\`...`);
 
   // Stub Prisma env vars so schema.prisma validates without a real DB.

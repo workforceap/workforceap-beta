@@ -291,9 +291,13 @@ export function CounselorHomeKit({
       value: onTrackCount,
       tone: 'ok',
       spark: onTrackSpark,
-      // Says what the count is (members without an open risk alert), so the
-      // tile does not read as "everyone else" (counselor audit gap map, 1).
-      caption: 'No risk alert',
+      // Says what the count is, so the tile does not read as "everyone else"
+      // (counselor audit gap map, 1). Matches the rule in
+      // lib/attention/evaluate.ts: on track = evaluateMemberAttention returned
+      // nothing, i.e. neither a critical alert nor a warning (no counselor
+      // contact 7+ days, stalled, awaiting reply...). A member in the Warning
+      // bucket is therefore NOT on track even without a risk alert.
+      caption: 'No alert or warning',
     },
   ];
 

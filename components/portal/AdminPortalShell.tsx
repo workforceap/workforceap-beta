@@ -10,6 +10,9 @@ import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { TourOffer } from '@/lib/tours/getTourOffer';
 
+/** Guide page the Help menu links beside "Take the tour" (app/admin/guide). */
+export const ADMIN_GUIDE_HREF = '/admin/guide';
+
 export default function AdminPortalShell({
   children,
   superAdmin = false,
@@ -46,6 +49,7 @@ export default function AdminPortalShell({
       readOnlyAudit={readOnlyAudit}
       footer={<AdminFooter />}
       helpTourKey={helpTourKey}
+      helpGuideHref={helpTourKey ? ADMIN_GUIDE_HREF : undefined}
     >
       {tour?.enabled && tour.offer && !readOnlyAudit ? <TourOfferStrip tourKey={tour.key} /> : null}
       {children}
