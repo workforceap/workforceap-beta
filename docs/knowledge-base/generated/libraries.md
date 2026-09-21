@@ -813,7 +813,7 @@
 | [lib/nav/mobileBottomNavLayout.ts](../../../lib/nav/mobileBottomNavLayout.ts) | 21 | public-experience | WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER:5, shouldReserveMobileBottomNavClearance:11 |
 | [lib/nav/portalNav.i18n.ts](../../../lib/nav/portalNav.i18n.ts) | 136 | public-experience | MEMBER_PORTAL_NAV_ITEMS_I18N:42 |
 | [lib/nav/portalNav.test.ts](../../../lib/nav/portalNav.test.ts) | 81 | public-experience |  |
-| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 517 | public-experience | PortalRole:49, NavGroup:51, NavTab:67, NavBadgeKey:69, PortalNavItem:89, NAV_TAB_META:112, NAV_TAB_ORDER:119, NAV_GROUP_LABELS:121, GROUP_ORDER:138, MEMBER_PORTAL_NAV_ITEMS:159, EMPLOYER_PORTAL_NAV_ITEMS:271, PARTNER_PORTAL_NAV_ITEMS:313, GROUP_PORTAL_NAV_ITEMS:354, ADMIN_PORTAL_NAV_ITEMS:362, COUNSELOR_PORTAL_NAV_ITEMS:456, PORTAL_NAV:477, navItemsForActiveRoute:486, getActiveTab:491, badgeTotalForItem:508 |
+| [lib/nav/portalNav.ts](../../../lib/nav/portalNav.ts) | 519 | public-experience | PortalRole:49, NavGroup:51, NavTab:67, NavBadgeKey:69, PortalNavItem:89, NAV_TAB_META:112, NAV_TAB_ORDER:119, NAV_GROUP_LABELS:121, GROUP_ORDER:138, MEMBER_PORTAL_NAV_ITEMS:159, EMPLOYER_PORTAL_NAV_ITEMS:271, PARTNER_PORTAL_NAV_ITEMS:313, GROUP_PORTAL_NAV_ITEMS:354, ADMIN_PORTAL_NAV_ITEMS:362, COUNSELOR_PORTAL_NAV_ITEMS:458, PORTAL_NAV:479, navItemsForActiveRoute:488, getActiveTab:493, badgeTotalForItem:510 |
 | [lib/nav/resumeUploadHint.test.ts](../../../lib/nav/resumeUploadHint.test.ts) | 33 | public-experience |  |
 | [lib/nav/resumeUploadHint.ts](../../../lib/nav/resumeUploadHint.ts) | 31 | public-experience | shouldShowResumeUploadHint:26 |
 | [lib/nav/workspaceCopy.ts](../../../lib/nav/workspaceCopy.ts) | 42 | public-experience | PRODUCT_COPY:1, EMPLOYER_PORTAL_NAV:11, PARTNER_PORTAL_NAV:18, GROUP_PORTAL_NAV:24, ADMIN_NAV:26 |
@@ -995,8 +995,8 @@
 | [lib/tours/getTourOffer.ts](../../../lib/tours/getTourOffer.ts) | 38 | libraries | TourOffer:6, getTourOffer:21 |
 | [lib/tours/offer.test.ts](../../../lib/tours/offer.test.ts) | 26 | libraries |  |
 | [lib/tours/offer.ts](../../../lib/tours/offer.ts) | 27 | libraries | TourStateSnapshot:4, shouldOfferTour:23 |
-| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 176 | libraries |  |
-| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 180 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:136, LEGACY_PORTAL_TOUR_KEY:138, LEGACY_TOUR_VERSION:145, isTourKey:147, isTourStatus:151, getTour:155, listTours:159, getHomeTourForRole:168, toTourSteps:173 |
+| [lib/tours/registry.test.ts](../../../lib/tours/registry.test.ts) | 227 | libraries |  |
+| [lib/tours/registry.ts](../../../lib/tours/registry.ts) | 208 | libraries | TourPlacement:14, TourRole:17, TOUR_STATUSES:19, TourStatus:20, TourStepDefinition:22, TourDefinition:31, TOUR_KEYS:40, TourKey:41, TourStep:44, TOUR_REGISTRY:65, LegacyTourPortal:164, LEGACY_PORTAL_TOUR_KEY:166, LEGACY_TOUR_VERSION:173, isTourKey:175, isTourStatus:179, getTour:183, listTours:187, getHomeTourForRole:196, toTourSteps:201 |
 | [lib/turnstile/verifyTurnstile.ts](../../../lib/turnstile/verifyTurnstile.ts) | 20 | libraries | verifyTurnstileResponse:2 |
 | [lib/ui/adminSemanticTokens.test.ts](../../../lib/ui/adminSemanticTokens.test.ts) | 92 | libraries |  |
 | [lib/ui/brandTokens.test.ts](../../../lib/ui/brandTokens.test.ts) | 143 | libraries |  |

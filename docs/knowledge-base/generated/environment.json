@@ -4043,6 +4043,10 @@
         {
           "file": "tests/lib/weekly-recap-label.spec.ts",
           "line": 19
+        },
+        {
+          "file": "tests/tours/admin-overview-anchors.spec.tsx",
+          "line": 1
         }
       ]
     },

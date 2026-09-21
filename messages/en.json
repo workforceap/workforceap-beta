@@ -3671,6 +3671,46 @@
           "body": "Help reopens this tour whenever you want it and links to the portal guide."
         }
       }
+    },
+    "admin": {
+      "home": {
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See who needs you today, where your students and programs live, how training progress is tracked and where member messages wait for a reply."
+        },
+        "commandCenter": {
+          "title": "Command Center",
+          "body": "Your home base. Active Students, Placements YTD and who needs attention sit at the top, then What needs you today: replies owed, applications and certifications awaiting review, interview prep. Every row links to the page that acts on it."
+        },
+        "overview": {
+          "title": "Detailed overview",
+          "body": "The full picture behind the Command Center: total members, assessments completed, who is active in training, programs enrolled and completed, plus recent signups and placements. Come here for the numbers, not just the queue."
+        },
+        "students": {
+          "title": "Students",
+          "body": "Every student in one roster: status, program and who needs attention. Open a student for the full record or export the list. Training progress is the same roster sorted by training."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Every conversation members, employers and partners are having with staff. The badge counts messages still waiting on a reply, so someone looks today."
+        },
+        "programs": {
+          "title": "Programs",
+          "body": "The training programs you offer, one card per program with learners enrolled and completion. Program requests, students asking to switch, sit right below it."
+        },
+        "trainingProgress": {
+          "title": "Training progress",
+          "body": "Course-by-course progress for every enrolled student, sortable, across the curriculum and Coursera. Assessments and Certificates live in the same group."
+        },
+        "settings": {
+          "title": "Settings",
+          "body": "Organization settings sit at the bottom of the rail under Advanced, with Users, Exports and Feature flags. Most days you will not need this group."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it."
+        }
+      }
     }
   }
 }

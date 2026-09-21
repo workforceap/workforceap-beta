@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "2219d884f79f3ce9099ea34596e336f6a287c13007d59a0c493221e80066cb6e",
+  "inputTreeSha256": "618cb70366b1f296e658c9044fd409d240327175254c3ecec439ad339790aee5",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4952,
-    "sourceModules": 3600,
-    "importReferences": 17910,
-    "resolvedLocalReferences": 12021,
+    "files": 4954,
+    "sourceModules": 3602,
+    "importReferences": 17933,
+    "resolvedLocalReferences": 12038,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 963,
-    "testCandidates": 953,
+    "testFiles": 965,
+    "testCandidates": 955,
     "testHelpers": 10,
-    "staticallySelectedTests": 951,
+    "staticallySelectedTests": 953,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -106,7 +106,7 @@
     },
     {
       "area": "tests",
-      "files": 567
+      "files": 569
     }
   ],
   "mostReferenced": [
@@ -116,7 +116,7 @@
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 750
+      "references": 751
     },
     {
       "file": "lib/auth/roles.ts",
@@ -172,7 +172,7 @@
     },
     {
       "file": "lib/tenant/adminPageScope.ts",
-      "references": 103
+      "references": 104
     },
     {
       "file": "lib/tenant/withTenantScope.ts",
@@ -223,15 +223,15 @@
       "references": 49
     },
     {
+      "file": "messages/en.json",
+      "references": 46
+    },
+    {
       "file": "lib/analytics/events.ts",
       "references": 45
     },
     {
       "file": "lib/ai/groq.ts",
-      "references": 44
-    },
-    {
-      "file": "messages/en.json",
       "references": 44
     },
     {

@@ -21176,6 +21176,22 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/admin/layout.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 22,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/admin/layout.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/admin/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -76337,8 +76353,24 @@
   },
   {
     "from": "components/portal/AdminPortalShell.tsx",
-    "specifier": "@/lib/nav/portalNav",
+    "specifier": "@/components/onboarding/TourOfferStrip",
     "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
+  },
+  {
+    "from": "components/portal/AdminPortalShell.tsx",
+    "specifier": "@/components/onboarding/TourProviderWrapper",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourProviderWrapper.tsx"
+  },
+  {
+    "from": "components/portal/AdminPortalShell.tsx",
+    "specifier": "@/lib/nav/portalNav",
+    "line": 8,
     "kind": "import",
     "external": false,
     "target": "lib/nav/portalNav.ts"
@@ -76346,7 +76378,7 @@
   {
     "from": "components/portal/AdminPortalShell.tsx",
     "specifier": "@/lib/nav/workspaceCopy",
-    "line": 7,
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/nav/workspaceCopy.ts"
@@ -76354,10 +76386,18 @@
   {
     "from": "components/portal/AdminPortalShell.tsx",
     "specifier": "@/lib/auth/portalRoleSwitcher",
-    "line": 8,
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/auth/portalRoleSwitcher.ts"
+  },
+  {
+    "from": "components/portal/AdminPortalShell.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 11,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
   },
   {
     "from": "components/portal/AiResultRenderer.tsx",
@@ -142638,6 +142678,150 @@
     "kind": "import",
     "external": false,
     "target": "scripts/vitest-library-specs.mjs"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "react-dom/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "next-intl",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "vitest",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/app/admin/page",
+    "line": 51,
+    "kind": "import",
+    "external": false,
+    "target": "app/admin/page.tsx"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 52,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/tenant/adminPageScope",
+    "line": 53,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tenant/adminPageScope.ts"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/admin/commandCenter",
+    "line": 54,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/commandCenter.ts"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/attention/admin",
+    "line": 55,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/admin.ts"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/attention/evaluate",
+    "line": 56,
+    "kind": "import",
+    "external": false,
+    "target": "lib/attention/evaluate.ts"
+  },
+  {
+    "from": "tests/tours/admin-overview-anchors.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 57,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "@/components/portal/AdminPortalShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/AdminPortalShell.tsx"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/admin/CommandCenterKit",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/admin/CommandCenterKit.tsx"
+  },
+  {
+    "from": "tests/tours/admin-tour.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "tests/tours/counselor-tour.spec.tsx",
