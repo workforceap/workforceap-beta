@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "ecdbb46c4fa343c883d195ac744a2c1be38829d113859beb0911121f74412ef8",
+  "inputTreeSha256": "16a9f0ec10d8e2b62cbc9ca0610d6aa2b5d0b514111bc6eea1aff56f345cf787",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -30345,9 +30345,9 @@
       "path": "app/api/apply/signup/route.test.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 50893,
-      "lines": 1369,
-      "sha256": "65b75bea04ce5edecf8b8bf5bd89e8a5f5db4fb6dad7b7c2722895eb4aa544dd",
+      "bytes": 54009,
+      "lines": 1443,
+      "sha256": "a12b81ca92f3c7436d28a168883bb582ece29676095087eec39c77a0b2ed985e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -30393,9 +30393,9 @@
       "path": "app/api/apply/signup/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 48440,
-      "lines": 1087,
-      "sha256": "cd0731245223088d36aa2c9e1ceee8c99b07360e6ced1bcf70d9e099be2dd7a6",
+      "bytes": 48197,
+      "lines": 1085,
+      "sha256": "b77962495fa5cc3b9554fa2c5bda30ae68420ebea0cab4eaf8775184e7be282b",
       "binary": false,
       "exports": [
         {
@@ -40723,26 +40723,26 @@
       "path": "app/api/public/wioa-qualification/voice-session/route.ts",
       "area": "api",
       "domain": "partners-funding",
-      "bytes": 2559,
-      "lines": 66,
-      "sha256": "56f1e768e549b406d3b8e9812a46f92785593e14dd4f7bbe12589428c3b1c428",
+      "bytes": 2640,
+      "lines": 68,
+      "sha256": "835a61ebbf2fc51f135e48e4e0ff1795751e99ab489db6034ab770dbd80ef6ee",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "payloadSchema",
-          "line": 8,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87212,105 +87212,43 @@
       "path": "lib/admin/memberActivity.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 5270,
-      "lines": 143,
-      "sha256": "f1643f458e546ecfa517cab696a5633ca233555a65c28486e2a4429ef05f2d8c",
+      "bytes": 4998,
+      "lines": 135,
+      "sha256": "a74f22c5c3bcae737161eb0f9e3d3cf08387263b1dd4370987426c0e407c9e87",
       "binary": false,
       "exports": [
         {
           "name": "MemberActivityKind",
-          "line": 11,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MemberActivityAuditInput",
-          "line": 13,
+          "line": 15,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityEventInput",
-          "line": 22,
+          "line": 24,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityDetail",
-          "line": 33,
+          "line": 35,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MemberActivityRow",
-          "line": 40,
+          "line": 42,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "MEMBER_ACTIVITY_CAP",
-          "line": 53,
-          "kind": "Variable"
-        },
-        {
-          "name": "MEMBER_EVENT_LOAD_CAP",
           "line": 55,
           "kind": "Variable"
         },
         {
-          "name": "redactActivityMetadata",
-          "line": 64,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "formatActivityMetadata",
-          "line": 77,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "humanizeActivityName",
-          "line": 96,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "buildMemberActivityRows",
-          "line": 119,
-          "kind": "FunctionDeclaration"
-        }
-      ],
-      "declarations": [
-        {
-          "name": "MemberActivityKind",
-          "line": 11,
-          "kind": "TypeAliasDeclaration"
-        },
-        {
-          "name": "MemberActivityAuditInput",
-          "line": 13,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityEventInput",
-          "line": 22,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityDetail",
-          "line": 33,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MemberActivityRow",
-          "line": 40,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MEMBER_ACTIVITY_CAP",
-          "line": 53,
-          "kind": "Variable"
-        },
-        {
           "name": "MEMBER_EVENT_LOAD_CAP",
-          "line": 55,
-          "kind": "Variable"
-        },
-        {
-          "name": "REDACTED_KEY",
           "line": 57,
           "kind": "Variable"
         },
@@ -87321,27 +87259,84 @@
         },
         {
           "name": "formatActivityMetadata",
-          "line": 77,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "eventDetail",
-          "line": 83,
+          "line": 69,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "humanizeActivityName",
-          "line": 96,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "auditActor",
-          "line": 109,
+          "line": 88,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMemberActivityRows",
-          "line": 119,
+          "line": 111,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MemberActivityKind",
+          "line": 13,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MemberActivityAuditInput",
+          "line": 15,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityEventInput",
+          "line": 24,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityDetail",
+          "line": 35,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MemberActivityRow",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MEMBER_ACTIVITY_CAP",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_EVENT_LOAD_CAP",
+          "line": 57,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactActivityMetadata",
+          "line": 64,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "formatActivityMetadata",
+          "line": 69,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "eventDetail",
+          "line": 75,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "humanizeActivityName",
+          "line": 88,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "auditActor",
+          "line": 101,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildMemberActivityRows",
+          "line": 111,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -91900,81 +91895,86 @@
       "path": "lib/ai/elevenlabsPortalContext.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 7134,
-      "lines": 189,
-      "sha256": "efa81f9c5438e097425ea38395b7a313cfa22a640001cddd1fe296bb9ce3dbc9",
+      "bytes": 7496,
+      "lines": 195,
+      "sha256": "30676e569fe879acd608dd0e38c8c6cd69f11059138dcf316fa01f37071c774c",
       "binary": false,
       "exports": [
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 65,
+          "line": 73,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 88,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 116,
+          "line": 122,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 138,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 165,
+          "line": 171,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "VOICE_DEFAULTS",
-          "line": 23,
+          "line": 24,
           "kind": "Variable"
         },
         {
           "name": "withVoiceDefaults",
-          "line": 29,
+          "line": 30,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchMemberPortalDynamicVariables",
-          "line": 34,
+          "line": 35,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildPublicWioaPortalDynamicVariables",
-          "line": 65,
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "firstNameOnly",
+          "line": 84,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchWioaPortalDynamicVariables",
-          "line": 88,
+          "line": 94,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchCounselorPortalDynamicVariables",
-          "line": 116,
+          "line": 122,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchEmployerPortalDynamicVariables",
-          "line": 138,
+          "line": 144,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fetchPartnerPortalDynamicVariables",
-          "line": 165,
+          "line": 171,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96722,9 +96722,9 @@
       "path": "lib/apply/eligibilityScreeningFields.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 5495,
-      "lines": 150,
-      "sha256": "db3193db420ccc4746c8a498ce40d6f572051553abc9a14da83528c78eac4994",
+      "bytes": 5378,
+      "lines": 157,
+      "sha256": "fe23291cb035f1abae64dc243b09ee66317ad489e2159489602a41ec9fd11fff",
       "binary": false,
       "exports": [
         {
@@ -96758,8 +96758,13 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "eligibilityFieldsPlainLines",
-          "line": 120,
+          "name": "hasEligibilityScreeningAnswers",
+          "line": 124,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "eligibilityScreeningNotesPointer",
+          "line": 153,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -96795,8 +96800,18 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "eligibilityFieldsPlainLines",
-          "line": 120,
+          "name": "hasEligibilityScreeningAnswers",
+          "line": 124,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ELIGIBILITY_SCREENING_NOTES_POINTER",
+          "line": 150,
+          "kind": "Variable"
+        },
+        {
+          "name": "eligibilityScreeningNotesPointer",
+          "line": 153,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -97299,21 +97314,21 @@
       "path": "lib/apply/saveEligibilityScreening.ts",
       "area": "libraries",
       "domain": "applications-enrollment",
-      "bytes": 1514,
-      "lines": 37,
-      "sha256": "b0890071f4a22ac4fb6d2f2575796b32156ba1fd96eeb04baf67cf887081b356",
+      "bytes": 1793,
+      "lines": 42,
+      "sha256": "da85dba3da4b8cfb818bea40750e3c5c1b5221e69ef2677a68a911f3914c6741",
       "binary": false,
       "exports": [
         {
           "name": "saveEligibilityScreening",
-          "line": 6,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "saveEligibilityScreening",
-          "line": 6,
+          "line": 11,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116954,31 +116969,41 @@
       "path": "lib/diagnostics.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 1232,
-      "lines": 37,
-      "sha256": "dd4d38ea26194f3d2cef4b5c82f0c3adf4097c84053be0a941cd3832a079970e",
+      "bytes": 2692,
+      "lines": 69,
+      "sha256": "11a5e04e57756ef41f212ff81afb76cf752ec07b70e90a5c9f413910ed2b66cb",
       "binary": false,
       "exports": [
         {
           "name": "WorkflowDiagnosticParams",
-          "line": 3,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "redactDiagnosticMetadata",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "recordWorkflowDiagnostic",
-          "line": 17,
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "WorkflowDiagnosticParams",
-          "line": 3,
+          "line": 5,
           "kind": "TypeAliasDeclaration"
         },
         {
+          "name": "redactDiagnosticMetadata",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "recordWorkflowDiagnostic",
-          "line": 17,
+          "line": 45,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -116988,9 +117013,9 @@
       "path": "lib/elevenlabs-agent-dynamic-defaults.test.ts",
       "area": "libraries",
       "domain": "ai-voice",
-      "bytes": 8574,
-      "lines": 188,
-      "sha256": "44a4e32a0063480e04079523e08c48029b3fc389f9d21cd86829359a0ff61985",
+      "bytes": 8561,
+      "lines": 186,
+      "sha256": "0ce10bc8ca2af5a19c8a057aadc948dc698e06ea6dae84bcb29ac931c725170d",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -119105,9 +119130,9 @@
       "path": "lib/email/send.ts",
       "area": "libraries",
       "domain": "communications",
-      "bytes": 25377,
-      "lines": 601,
-      "sha256": "b9ff24635c3fea36590273064a529f359ce847a60037722a9adb8ad754d4e006",
+      "bytes": 25636,
+      "lines": 605,
+      "sha256": "3a937446e5c048d400dc06b60632b5ddf7c15b65c4da686e868cfb520bfa031c",
       "binary": false,
       "exports": [
         {
@@ -119162,42 +119187,42 @@
         },
         {
           "name": "sendingDomain",
-          "line": 284,
+          "line": 288,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 302,
+          "line": 306,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTransientProviderError",
-          "line": 325,
+          "line": 329,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 353,
+          "line": 357,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 364,
+          "line": 368,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 434,
+          "line": 438,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 445,
+          "line": 449,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 590,
+          "line": 594,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -119274,112 +119299,112 @@
         },
         {
           "name": "asRecord",
-          "line": 227,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "readHeader",
           "line": 231,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "readHeader",
+          "line": 235,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "parseRetryAfterMs",
-          "line": 239,
+          "line": 243,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "parseRateLimitResetMs",
-          "line": 250,
+          "line": 254,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientDomain",
-          "line": 258,
+          "line": 262,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fixtureDomains",
-          "line": 263,
+          "line": 267,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "normalizedRecipientAddress",
-          "line": 271,
+          "line": 275,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "recipientLocalPart",
-          "line": 277,
+          "line": 281,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendingDomain",
-          "line": 284,
+          "line": 288,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "fixtureAddresses",
-          "line": 293,
+          "line": 297,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isFixtureEmailRecipient",
-          "line": 302,
+          "line": 306,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "TRANSIENT_NETWORK_CODES",
-          "line": 313,
-          "kind": "Variable"
-        },
-        {
-          "name": "TRANSIENT_PROVIDER_ERROR_NAMES",
           "line": 317,
           "kind": "Variable"
         },
         {
+          "name": "TRANSIENT_PROVIDER_ERROR_NAMES",
+          "line": 321,
+          "kind": "Variable"
+        },
+        {
           "name": "isTransientProviderError",
-          "line": 325,
+          "line": 329,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "attachmentsFingerprint",
-          "line": 353,
+          "line": 357,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "defaultIdempotencyKey",
-          "line": 364,
+          "line": 368,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "RecipientField",
-          "line": 387,
+          "line": 391,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "withoutRecipients",
-          "line": 390,
+          "line": 394,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resendRetryDelayMs",
-          "line": 399,
+          "line": 403,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "FixtureRecipientSkippedError",
-          "line": 434,
+          "line": 438,
           "kind": "ClassDeclaration"
         },
         {
           "name": "sendBrandedEmail",
-          "line": 445,
+          "line": 449,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "sendBrandedEmailOrThrowOnSkip",
-          "line": 590,
+          "line": 594,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -142758,6 +142783,55 @@
       "directive": null
     },
     {
+      "path": "lib/security/redactMetadata.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 1359,
+      "lines": 34,
+      "sha256": "3e12b3e9a6971c12be3418e281587718b98c91fca23e4179c0ec400798267896",
+      "binary": false,
+      "exports": [
+        {
+          "name": "CONTACT_AND_SECRET_KEY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "PERSONAL_DATA_KEY",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactMetadataKeys",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "REDACTED_VALUE",
+          "line": 8,
+          "kind": "Variable"
+        },
+        {
+          "name": "CONTACT_AND_SECRET_KEY",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "PERSONAL_DATA_KEY",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "redactMetadataKeys",
+          "line": 24,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/seo/activeProgramSlugs.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -152838,6 +152912,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260921160000_wap170_nullable_screening_triad/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 907,
+      "lines": 13,
+      "sha256": "aa8ff9f3a4dfbdddffb3b115582b874a40f32d01078872b3f4ec81cf82c2cc6a",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -152850,9 +152933,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 142490,
-      "lines": 3335,
-      "sha256": "54dcb6dd1724871f168fd99fec28b4095607b469678aefe2b90701fad57a8fce",
+      "bytes": 142636,
+      "lines": 3338,
+      "sha256": "1601660e9178d9787a70b8b6ba0a00fc10d5039e57e362b05b357f1641766bbc",
       "binary": false
     },
     {
@@ -172855,6 +172938,24 @@
       "directive": null
     },
     {
+      "path": "tests/diagnostics/workflow-diagnostic-redaction.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5481,
+      "lines": 127,
+      "sha256": "006779ed9967e1fcbb6b280627439cc1b6ccc8646c1387021a122331a3a94484",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "writtenMetadata",
+          "line": 21,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/e2e/README.md",
       "area": "tests",
       "domain": "tests",
@@ -178719,9 +178820,9 @@
       "path": "tests/privacy/voice-context-minimisation.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 3328,
-      "lines": 75,
-      "sha256": "8f878221f0b0a81c61679a74fbb1271553963cb723e0532ee040353d8109e343",
+      "bytes": 4529,
+      "lines": 110,
+      "sha256": "9eb210b832f73f57a79573638d480b653a5fb77abadc7c08418f9aa287d65f04",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -178732,12 +178833,12 @@
         },
         {
           "name": "ANSWER_KEY",
-          "line": 45,
+          "line": 49,
           "kind": "Variable"
         },
         {
           "name": "ANSWER_VALUES",
-          "line": 47,
+          "line": 51,
           "kind": "Variable"
         }
       ],

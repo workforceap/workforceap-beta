@@ -360,6 +360,7 @@
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
 | [tests/cron/applicant-chase.spec.ts](../../../tests/cron/applicant-chase.spec.ts) | 275 | communications |  |
 | [tests/cron/onboarding-stalls-digest.spec.ts](../../../tests/cron/onboarding-stalls-digest.spec.ts) | 151 | communications |  |
+| [tests/diagnostics/workflow-diagnostic-redaction.spec.ts](../../../tests/diagnostics/workflow-diagnostic-redaction.spec.ts) | 127 | tests |  |
 | [tests/e2e/README.md](../../../tests/e2e/README.md) | 73 | tests |  |
 | [tests/e2e/SETUP.md](../../../tests/e2e/SETUP.md) | 44 | tests |  |
 | [tests/e2e/admin-login-search.spec.ts](../../../tests/e2e/admin-login-search.spec.ts) | 55 | tests |  |
@@ -575,7 +576,7 @@
 | [tests/privacy/partner-export-columns.spec.ts](../../../tests/privacy/partner-export-columns.spec.ts) | 64 | tests |  |
 | [tests/privacy/partner-referral-bundle-select.spec.ts](../../../tests/privacy/partner-referral-bundle-select.spec.ts) | 27 | tests |  |
 | [tests/privacy/public-eligibility-lead.spec.ts](../../../tests/privacy/public-eligibility-lead.spec.ts) | 129 | tests |  |
-| [tests/privacy/voice-context-minimisation.spec.ts](../../../tests/privacy/voice-context-minimisation.spec.ts) | 75 | tests |  |
+| [tests/privacy/voice-context-minimisation.spec.ts](../../../tests/privacy/voice-context-minimisation.spec.ts) | 110 | tests |  |
 | [tests/rls/member-message-assignment.mjs](../../../tests/rls/member-message-assignment.mjs) | 175 | tests |  |
 | [tests/scripts/portal-qa-provisioning.spec.ts](../../../tests/scripts/portal-qa-provisioning.spec.ts) | 113 | tests |  |
 | [tests/scripts/preview-approved-curriculum-schema.test.ts](../../../tests/scripts/preview-approved-curriculum-schema.test.ts) | 491 | tests |  |

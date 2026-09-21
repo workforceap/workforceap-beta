@@ -5,11 +5,13 @@ import { buildPublicWioaPortalDynamicVariables } from '@/lib/ai/elevenlabsPortal
 import { checkPublicVoiceSessionRateLimit } from '@/lib/rate-limit';
 import { getClientIpFromRequest } from '@/lib/http/clientIp';
 
+/**
+ * Only the name is read: the client still posts email / phone / county for
+ * the written screening, but none of it is forwarded to the voice vendor, so
+ * the schema drops the keys before they reach the context builder.
+ */
 const payloadSchema = z.object({
   fullName: z.string().trim().max(120).optional(),
-  email: z.string().trim().max(200).optional(),
-  phone: z.string().trim().max(40).optional(),
-  countyOrZip: z.string().trim().max(120).optional(),
 });
 
 export async function POST(request: NextRequest) {

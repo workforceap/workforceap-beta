@@ -1,8 +1,13 @@
 import type { Prisma } from '@prisma/client';
-import type { EligibilityScreeningFields } from './eligibilityScreeningFields';
+import { hasEligibilityScreeningAnswers, type EligibilityScreeningFields } from './eligibilityScreeningFields';
 import { normalizePublicAssistanceFollowUp } from './publicAssistance';
 
-/** Shared persistence only: each caller retains its existing qualification policy. */
+/**
+ * Shared persistence only: each caller retains its existing qualification
+ * policy. Writes whenever any screening answer is present — a partial triad
+ * (or none) is stored as null q1/q2, because `Application.notes` no longer
+ * carries answers and this row is their only home (WAP-170/172).
+ */
 export async function saveEligibilityScreening(
   tx: Prisma.TransactionClient,
   input: {
@@ -14,9 +19,9 @@ export async function saveEligibilityScreening(
   },
 ) {
   const { userId, organizationId, answers, qualifies, yesCount } = input;
-  if (!answers.q1 || !answers.q2) return null;
+  if (!hasEligibilityScreeningAnswers(answers)) return null;
   const screening = {
-    organizationId, q1: answers.q1, q2: answers.q2, q3: answers.q3 ?? null,
+    organizationId, q1: answers.q1 ?? null, q2: answers.q2 ?? null, q3: answers.q3 ?? null,
     qualifies, yesCount,
     receivingUnemployment: answers.receivingUnemployment ?? null,
     exhaustedUnemployment: answers.exhaustedUnemployment ?? null,
