@@ -190,7 +190,7 @@
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
 | [tests/app/admin-csp-report-page.spec.tsx](../../../tests/app/admin-csp-report-page.spec.tsx) | 137 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 215 | tests |  |
-| [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
+| [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 168 | tests |  |
 | [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
 | [tests/app/admin-job-ready-page.spec.tsx](../../../tests/app/admin-job-ready-page.spec.tsx) | 82 | tests |  |
 | [tests/app/admin-member-detail-numbers.spec.tsx](../../../tests/app/admin-member-detail-numbers.spec.tsx) | 311 | tests |  |
@@ -261,7 +261,8 @@
 | [tests/components/admin-overview-page.spec.tsx](../../../tests/components/admin-overview-page.spec.tsx) | 149 | tests |  |
 | [tests/components/admin-pipeline-funnel-order.spec.tsx](../../../tests/components/admin-pipeline-funnel-order.spec.tsx) | 68 | tests |  |
 | [tests/components/admin-pipeline-member-count.spec.tsx](../../../tests/components/admin-pipeline-member-count.spec.tsx) | 53 | tests |  |
-| [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 172 | tests |  |
+| [tests/components/admin-reporting-hub.spec.tsx](../../../tests/components/admin-reporting-hub.spec.tsx) | 240 | tests |  |
+| [tests/components/admin-roster-routes.spec.tsx](../../../tests/components/admin-roster-routes.spec.tsx) | 179 | tests |  |
 | [tests/components/admin-subgroup-members-table.test.tsx](../../../tests/components/admin-subgroup-members-table.test.tsx) | 108 | tests |  |
 | [tests/components/admin-users-self-guard.spec.tsx](../../../tests/components/admin-users-self-guard.spec.tsx) | 165 | tests |  |
 | [tests/components/agent-inbox-retry.spec.tsx](../../../tests/components/agent-inbox-retry.spec.tsx) | 79 | tests |  |
@@ -349,7 +350,7 @@
 | [tests/components/wioa-review-revision.spec.tsx](../../../tests/components/wioa-review-revision.spec.tsx) | 64 | partners-funding |  |
 | [tests/components/workflow-timelines-portal-time.spec.tsx](../../../tests/components/workflow-timelines-portal-time.spec.tsx) | 27 | tests |  |
 | [tests/components/workforce-ap-module-lessons.test.tsx](../../../tests/components/workforce-ap-module-lessons.test.tsx) | 53 | tests |  |
-| [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 555 | tests |  |
+| [tests/components/workspace-sidebar.test.tsx](../../../tests/components/workspace-sidebar.test.tsx) | 691 | tests |  |
 | [tests/counselor-notifications-nav-badge.spec.ts](../../../tests/counselor-notifications-nav-badge.spec.ts) | 128 | communications |  |
 | [tests/coursera/learner-detail-learning-paths.spec.ts](../../../tests/coursera/learner-detail-learning-paths.spec.ts) | 39 | learning-coursera |  |
 | [tests/cron/applicant-aging-digest.spec.ts](../../../tests/cron/applicant-aging-digest.spec.ts) | 186 | communications |  |
@@ -561,7 +562,7 @@
 | [tests/pdf-deployment.test.ts](../../../tests/pdf-deployment.test.ts) | 53 | tests |  |
 | [tests/portal-audit-auth.test.ts](../../../tests/portal-audit-auth.test.ts) | 44 | tests |  |
 | [tests/portal-audit-classify.test.ts](../../../tests/portal-audit-classify.test.ts) | 119 | tests |  |
-| [tests/portal-audit-five-role.test.ts](../../../tests/portal-audit-five-role.test.ts) | 1282 | tests |  |
+| [tests/portal-audit-five-role.test.ts](../../../tests/portal-audit-five-role.test.ts) | 1284 | tests |  |
 | [tests/portal-audit-health-gate.test.ts](../../../tests/portal-audit-health-gate.test.ts) | 397 | tests |  |
 | [tests/portal-hub-smoke-paths.test.ts](../../../tests/portal-hub-smoke-paths.test.ts) | 40 | tests |  |
 | [tests/privacy/partner-export-columns.spec.ts](../../../tests/privacy/partner-export-columns.spec.ts) | 64 | tests |  |

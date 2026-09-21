@@ -72,21 +72,18 @@ export const STATIC_PATHS = {
     '/admin',
     '/admin/agent-inbox',
     '/admin/ai-tools',
-    '/admin/analytics',
     '/admin/analytics/ai-efficacy',
     '/admin/assessments',
     '/admin/audit-logs',
     '/admin/blog',
     '/admin/blog/ai',
     '/admin/blog/new',
-    '/admin/board',
     '/admin/board/print',
     '/admin/career-mappings',
     '/admin/certifications',
     '/admin/chapters',
     '/admin/command-center',
     '/admin/counselors',
-    '/admin/coursera',
     '/admin/coursera/csv-import',
     '/admin/coursera/enrollment',
     '/admin/coursera/health',
@@ -100,7 +97,6 @@ export const STATIC_PATHS = {
     '/admin/email-templates',
     '/admin/employer-screening-packs',
     '/admin/employers',
-    '/admin/exports',
     '/admin/feature-flags',
     '/admin/feedback',
     '/admin/guide',
@@ -117,8 +113,6 @@ export const STATIC_PATHS = {
     '/admin/members/new',
     '/admin/mentors',
     '/admin/messages',
-    '/admin/metrics',
-    '/admin/outcomes',
     '/admin/outcomes/methodology',
     '/admin/overview',
     '/admin/partners',
@@ -130,6 +124,12 @@ export const STATIC_PATHS = {
     '/admin/placements/retention',
     '/admin/program-change-requests',
     '/admin/programs',
+    // The reporting hub: one page, server-driven tabs (admin audit 2026-09-19, §6.1).
+    '/admin/reporting',
+    '/admin/reporting?tab=outcomes',
+    '/admin/reporting?tab=training',
+    '/admin/reporting?tab=coursera',
+    '/admin/reporting?tab=exports',
     '/admin/reports/quarterly-outcomes',
     '/admin/sessions',
     '/admin/sessions/walk-in',
@@ -138,7 +138,6 @@ export const STATIC_PATHS = {
     '/admin/subgroups',
     '/admin/subgroups/new',
     '/admin/testimonials',
-    '/admin/training-progress',
     '/admin/users',
     '/admin/users/deleted',
     '/admin/webhook-events',
@@ -457,9 +456,50 @@ export const REDIRECT_ONLY_PATHS = {
       // Members → Training progress listed the same members a fourth time.
       // The training preset of the one admin roster owns that view now
       // (admin audit 2026-09-20, §7 item 2); the legacy dashboard table stays
-      // behind /admin/members/training?ui=legacy.
+      // behind /admin/members/training?ui=legacy. It hops through
+      // /admin/training-progress, which itself forwards to the reporting
+      // hub's Training tab; Playwright follows both hops, so assert the final URL.
       path: '/admin/members/training',
-      target: '/admin/training-progress',
+      target: '/admin/reporting?tab=training',
+      reason: 'consolidated_experience',
+    },
+      // The admin reporting cluster (analytics, metrics, board, outcomes,
+      // training progress, Coursera, exports) is one hub with server-driven
+      // tabs (admin audit 2026-09-19, §6.1). Each legacy route forwards to its
+      // tab; the pre-kit view of each stays behind `?ui=legacy` only.
+    {
+      path: '/admin/analytics',
+      target: '/admin/reporting',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/metrics',
+      target: '/admin/reporting',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/board',
+      target: '/admin/reporting?tab=outcomes',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/outcomes',
+      target: '/admin/reporting?tab=outcomes',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/training-progress',
+      target: '/admin/reporting?tab=training',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/coursera',
+      target: '/admin/reporting?tab=coursera',
+      reason: 'consolidated_experience',
+    },
+    {
+      path: '/admin/exports',
+      target: '/admin/reporting?tab=exports',
       reason: 'consolidated_experience',
     },
   ],

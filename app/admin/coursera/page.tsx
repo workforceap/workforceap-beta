@@ -22,7 +22,6 @@ import { CourseraCatalogHealthSection } from '@/components/admin/CourseraCatalog
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { prisma } from '@/lib/db/prisma';
-import { deriveCourseraOverviewHealth } from '@/lib/admin/courseraDiagnostics';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
@@ -38,7 +37,6 @@ import {
   listXapiStatementsNeedingAttention,
   loadMemberProgressAuditByEmail,
 } from '@/lib/admin/courseraOps';
-import { countUnresolvedXapiOrganizations } from '@/lib/coursera/replayPendingXapi';
 import {
   getCourseraSkillsetProgressSummary,
   getCourseraUnmatchedActorAlertStats,
@@ -50,10 +48,7 @@ import {
   loadBadgeProgressSummary,
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
-import {
-  CourseraSyncKit,
-  type UnmatchedLearnerRow,
-} from '@/components/portal/kit/pages/admin-subviews/CourseraSyncKit';
+import { reportingRedirectHref, wantsLegacyView } from '@/lib/admin/reportingHub';
 
 type CourseProgressSummary = {
   totalRows: number;
@@ -343,24 +338,18 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const dynamic = 'force-dynamic';
 
-function fmtRelative(value: Date | null): string {
-  if (!value) return '—';
-  const diffMs = Date.now() - value.getTime();
-  if (diffMs < 0) return value.toLocaleString();
-  const mins = Math.round(diffMs / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs} hr${hrs === 1 ? '' : 's'} ago`;
-  const days = Math.round(hrs / 24);
-  return `${days} day${days === 1 ? '' : 's'} ago`;
-}
 
 export default async function AdminCourseraPage({
   searchParams,
 }: {
   searchParams?: Promise<{ auditEmail?: string; showTest?: string; ui?: string }>;
 }) {
+  // The kit overview (sync status, unmatched learners, catalog health) is the
+  // Coursera tab of the reporting hub now (admin audit 2026-09-19, §6.1); this
+  // route keeps the full mapping / CSV / audit tooling behind ?ui=legacy only.
+  const sp = (await searchParams) ?? {};
+  if (!wantsLegacyView(sp)) redirect(reportingRedirectHref('/admin/coursera', sp));
+
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/coursera');
   const scope = await resolveAdminPageTenant(user.id);
@@ -392,152 +381,7 @@ export default async function AdminCourseraPage({
       return { rows: [] as ValidatedProgramCatalogEntry[], loadFailed: true };
     });
 
-  const sp = (await searchParams) ?? {};
-  const requestedUi = typeof sp.ui === 'string' ? sp.ui : null;
-
-  // --- DEFAULT: design-kit treatment (lean) ---
-  // A focused Sync Status card + Unmatched Learners list, mirroring the
-  // "coursera" mockup view. The full mapping / CSV tooling lives under
-  // ?ui=legacy. One batched contents audit powers catalog health; when B4B
-  // credentials are unavailable (for example in preview), that state is shown
-  // explicitly instead of treating an unavailable provider as an empty list.
-  if (requestedUi !== 'legacy') {
-    let kitSyncStatus = {
-      lastXapiReceivedAt: null as Date | null,
-      distinctMembersWithCourseProgress: 0,
-      attentionStatementCount: 0,
-    };
-    let kitSyncOk = true;
-    try {
-      kitSyncStatus = await getCourseraSyncStatus({ organizationId });
-    } catch (error) {
-      kitSyncOk = false;
-      console.error('[admin/coursera] kit sync status failed:', error);
-    }
-
-    const [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult, unresolvedOrgResult] = await Promise.allSettled([
-      loadUnmatchedLearners(organizationId, 500, { includeTestAccounts: false, strict: true }),
-      countHiddenTestAccountUnmatchedLearners(organizationId, { strict: true }),
-      countUnmatchedLearners(organizationId, { includeTestAccounts: false, strict: true }),
-      withAdminPageScope(scope, (db) => db.user.count({
-        where: { organizationId, deletedAt: null, courseraEnrollmentApproved: true },
-      })),
-      prisma.$queryRaw<Array<{ count: bigint }>>`
-        SELECT COUNT(DISTINCT u.id)::bigint AS count
-        FROM coursera_xapi_events cxe
-        JOIN users u ON u.id = cxe.matched_user_id
-        WHERE cxe.received_at >= ${new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
-          AND cxe.organization_id = ${organizationId}
-          AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
-      `,
-      // WAP-33: statements still carrying an 'unresolved-%' sentinel org. They
-      // belong to no tenant yet, so this is a platform-wide count by definition.
-      countUnresolvedXapiOrganizations(),
-    ]);
-    const kitUnmatched = unmatchedResult.status === 'fulfilled' ? unmatchedResult.value : [];
-    const kitHiddenTest = hiddenTestResult.status === 'fulfilled' ? hiddenTestResult.value : null;
-    const kitUnmatchedTotal = unmatchedCountResult.status === 'fulfilled' ? unmatchedCountResult.value : null;
-    const kitUnmatchedLoaded = unmatchedResult.status === 'fulfilled' && unmatchedCountResult.status === 'fulfilled';
-    const kitApprovedForEnrollment = approvedResult.status === 'fulfilled' ? String(approvedResult.value) : '—';
-    const kitActiveLast30Days = activityResult.status === 'fulfilled' ? String(activityResult.value[0]?.count ?? 0) : '—';
-    const kitUnresolvedOrgSentinels = unresolvedOrgResult.status === 'fulfilled' ? String(unresolvedOrgResult.value) : '—';
-    for (const result of [unmatchedResult, hiddenTestResult, unmatchedCountResult, approvedResult, activityResult, unresolvedOrgResult]) {
-      if (result.status === 'rejected') console.error('[admin/coursera] overview evidence unavailable:', result.reason);
-    }
-
-    const unmatchedRows: UnmatchedLearnerRow[] = kitUnmatched.map((learner) => {
-      const topBadge = learner.badges[0];
-      const gradeCaption =
-        learner.latestGradePercent != null
-          ? `Grade ${Math.round(learner.latestGradePercent * 100) / 100}%`
-          : null;
-      const caption = [
-        gradeCaption,
-        topBadge
-          ? `${topBadge.badgeTitle} · ${Math.round(topBadge.progressPercent)}%`
-          : [
-              learner.courseCount > 0 ? `${learner.courseCount} course${learner.courseCount === 1 ? '' : 's'}` : null,
-              learner.badgeCount > 0 ? `${learner.badgeCount} badge${learner.badgeCount === 1 ? '' : 's'}` : null,
-              learner.xapiCount > 0 ? `${learner.xapiCount} event${learner.xapiCount === 1 ? '' : 's'}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ') || null,
-      ]
-        .filter(Boolean)
-        .join(' · ') || 'No matched member';
-      return {
-        email: learner.externalEmail,
-        name: learner.externalName,
-        caption,
-        href: `/admin/coursera/learners/unmatched/${encodeURIComponent(learner.externalEmail)}`,
-        gradePercent: learner.latestGradePercent,
-      };
-    });
-
-    const health = deriveCourseraOverviewHealth({
-      loaded: kitSyncOk && kitUnmatchedLoaded && approvedResult.status === 'fulfilled' && activityResult.status === 'fulfilled',
-      unmatchedTotal: kitUnmatchedTotal,
-      attentionStatements: kitSyncStatus.attentionStatementCount,
-      lastXapiReceivedAt: kitSyncStatus.lastXapiReceivedAt,
-      now: new Date(),
-    });
-    const healthLabel = health === 'unavailable'
-      ? 'Evidence unavailable'
-      : health === 'attention'
-        ? 'Review needed'
-        : health === 'idle'
-          ? 'Awaiting events'
-          : 'Recent events received';
-    const catalogHealth = await catalogHealthPromise;
-
-    return (
-      <PortalPageFrame>
-        <CourseraSyncKit
-          health={health}
-          healthLabel={healthLabel}
-          lastSync={kitSyncOk ? fmtRelative(kitSyncStatus.lastXapiReceivedAt) : '—'}
-          learnersSynced={kitSyncOk ? String(kitSyncStatus.distinctMembersWithCourseProgress) : '—'}
-          // Catalog health verifies contents, but it is not a latency probe.
-          // Honest null keeps the sync card from fabricating a duration.
-          b4bLatency={null}
-          errors={kitSyncOk ? String(kitSyncStatus.attentionStatementCount) : '—'}
-          unmatched={unmatchedRows}
-          unmatchedTotal={kitUnmatchedTotal}
-          unmatchedLoaded={kitUnmatchedLoaded}
-          hiddenTestCount={kitHiddenTest}
-          approvedForEnrollment={kitApprovedForEnrollment}
-          activeLast30Days={kitActiveLast30Days}
-          unresolvedOrgSentinels={kitUnresolvedOrgSentinels}
-          forceSyncHref="/admin/coursera?ui=legacy"
-          headerAction={
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <Link
-                href="/admin/coursera/enrollment"
-                style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-info)' }}
-              >
-                Enrollment pipeline →
-              </Link>
-              <Link
-                href="/admin/coursera/provisioning"
-                style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-info)' }}
-              >
-                Provisioning queue →
-              </Link>
-              <Link
-                href="/admin/coursera/health"
-                style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--wa-info)' }}
-              >
-                Coursera health →
-              </Link>
-            </div>
-          }
-        />
-        <CourseraCatalogHealthSection {...catalogHealth} />
-      </PortalPageFrame>
-    );
-  }
-
-  // --- LEGACY (?ui=legacy): full interactive mapping / audit / sync tooling ---
+  // Legacy view: full interactive mapping / audit / sync tooling.
   const auditEmailRaw = typeof sp.auditEmail === 'string' ? sp.auditEmail : '';
   const showTestAccounts = sp.showTest === '1' || sp.showTest === 'true';
 

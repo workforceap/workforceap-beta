@@ -7493,12 +7493,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 22,
+        "line": 11,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 214,
+        "line": 27,
         "kind": "FunctionDeclaration",
         "localName": "AnalyticsPage"
       }
@@ -7514,11 +7514,6 @@
       {
         "specifier": "@/lib/tenant/adminPageScope",
         "line": 5,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/organization",
-        "line": 11,
         "kind": "import"
       }
     ]
@@ -7824,7 +7819,7 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 21,
+        "line": 15,
         "kind": "FunctionDeclaration"
       },
       {
@@ -7839,22 +7834,22 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
-        "line": 6,
+        "line": 5,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/adminPageScope",
-        "line": 7,
+        "line": 6,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/roles",
-        "line": 8,
+        "line": 7,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 9,
+        "line": 8,
         "kind": "import"
       }
     ]
@@ -8390,17 +8385,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 336,
+        "line": 331,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 344,
+        "line": 339,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 359,
+        "line": 342,
         "kind": "FunctionDeclaration",
         "localName": "AdminCourseraPage"
       }
@@ -8422,7 +8417,7 @@
       },
       {
         "specifier": "@/lib/tenant/organization",
-        "line": 29,
+        "line": 28,
         "kind": "import"
       }
     ]
@@ -8931,12 +8926,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 23,
+        "line": 19,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 31,
+        "line": 34,
         "kind": "FunctionDeclaration",
         "localName": "AdminExportsPage"
       }
@@ -10058,12 +10053,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 17,
+        "line": 16,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 26,
+        "line": 33,
         "kind": "FunctionDeclaration",
         "localName": "AdminMetricsPage"
       }
@@ -10216,12 +10211,12 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 13,
+        "line": 12,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "default",
-        "line": 22,
+        "line": 26,
         "kind": "FunctionDeclaration",
         "localName": "OutcomesPage"
       }
@@ -10873,6 +10868,47 @@
     ]
   },
   {
+    "file": "app/admin/reporting/page.tsx",
+    "kind": "page",
+    "path": "/admin/reporting",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "generateMetadata",
+        "line": 21,
+        "kind": "FunctionDeclaration"
+      },
+      {
+        "name": "dynamic",
+        "line": 29,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 38,
+        "kind": "FunctionDeclaration",
+        "localName": "AdminReportingPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": [
+      {
+        "specifier": "@/lib/auth/server",
+        "line": 5,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/tenant/adminPageScope",
+        "line": 6,
+        "kind": "import"
+      }
+    ]
+  },
+  {
     "file": "app/admin/reports/quarterly-outcomes/page.tsx",
     "kind": "page",
     "path": "/admin/reports/quarterly-outcomes",
@@ -11327,17 +11363,17 @@
     "exports": [
       {
         "name": "generateMetadata",
-        "line": 28,
+        "line": 23,
         "kind": "FunctionDeclaration"
       },
       {
         "name": "dynamic",
-        "line": 37,
+        "line": 32,
         "kind": "Variable"
       },
       {
         "name": "default",
-        "line": 45,
+        "line": 41,
         "kind": "FunctionDeclaration",
         "localName": "AdminTrainingProgressPage"
       }
@@ -11349,17 +11385,17 @@
     "boundaryReferences": [
       {
         "specifier": "@/lib/auth/server",
+        "line": 4,
+        "kind": "import"
+      },
+      {
+        "specifier": "@/lib/tenant/adminPageScope",
         "line": 5,
         "kind": "import"
       },
       {
         "specifier": "@/lib/tenant/adminPageScope",
-        "line": 6,
-        "kind": "import"
-      },
-      {
-        "specifier": "@/lib/tenant/adminPageScope",
-        "line": 86,
+        "line": 58,
         "kind": "type"
       }
     ]
@@ -32083,6 +32119,54 @@
     "boundaryReferences": []
   },
   {
+    "file": "app/dev/staff/admin-shell/layout.tsx",
+    "kind": "layout",
+    "path": "/dev/staff/admin-shell",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "metadata",
+        "line": 13,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 15,
+        "kind": "FunctionDeclaration",
+        "localName": "DevStaffAdminShellLayout"
+      }
+    ],
+    "methods": [],
+    "configuration": {},
+    "boundaryReferences": []
+  },
+  {
+    "file": "app/dev/staff/admin-shell/page.tsx",
+    "kind": "page",
+    "path": "/dev/staff/admin-shell",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 13,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 15,
+        "kind": "FunctionDeclaration",
+        "localName": "DevStaffAdminShellPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": []
+  },
+  {
     "file": "app/dev/staff/counselor-atrisk/page.tsx",
     "kind": "page",
     "path": "/dev/staff/counselor-atrisk",
@@ -32560,6 +32644,31 @@
         "line": 83,
         "kind": "FunctionDeclaration",
         "localName": "DevStaffPlacementsPage"
+      }
+    ],
+    "methods": [],
+    "configuration": {
+      "dynamic": "force-dynamic"
+    },
+    "boundaryReferences": []
+  },
+  {
+    "file": "app/dev/staff/reporting/page.tsx",
+    "kind": "page",
+    "path": "/dev/staff/reporting",
+    "groups": [],
+    "routing": "filesystem",
+    "exports": [
+      {
+        "name": "dynamic",
+        "line": 30,
+        "kind": "Variable"
+      },
+      {
+        "name": "default",
+        "line": 197,
+        "kind": "FunctionDeclaration",
+        "localName": "DevStaffReportingPage"
       }
     ],
     "methods": [],

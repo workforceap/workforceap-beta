@@ -41,13 +41,31 @@ vi.mock('@astryxdesign/core/Token', () => ({
 vi.mock('@astryxdesign/core/EmptyState', () => ({ EmptyState: () => null }));
 
 import AdminExportsPage from '@/app/admin/exports/page';
+import { ReportingExportsSection } from '@/app/admin/reporting/sections/ExportsSection';
 
+/**
+ * `?ui=legacy` renders the export workspace on /admin/exports itself; the kit
+ * card grid is the Exports tab of the reporting hub (admin audit 2026-09-19,
+ * §6.1), so the grid assertions render that moved section.
+ */
 async function renderPage(ui?: string): Promise<Document> {
-  const html = renderToStaticMarkup(await AdminExportsPage({ searchParams: Promise.resolve(ui ? { ui } : {}) }));
+  const html = renderToStaticMarkup(
+    ui
+      ? await AdminExportsPage({ searchParams: Promise.resolve({ ui }) })
+      : await ReportingExportsSection(),
+  );
   const doc = document.implementation.createHTMLDocument('exports');
   doc.body.innerHTML = html;
   return doc;
 }
+
+describe('/admin/exports forwards to the reporting hub', () => {
+  it('redirects the default view to the Exports tab and keeps ?ui=legacy on the route', async () => {
+    await expect(AdminExportsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow('REDIRECT:/admin/reporting?tab=exports');
+    const doc = await renderPage('legacy');
+    expect(doc.querySelector('[data-export-form]')).not.toBeNull();
+  });
+});
 
 function assertKitTokensOnly(doc: Document) {
   expect(doc.querySelector('.material-symbols-outlined')).toBeNull();
@@ -102,7 +120,7 @@ describe('/admin/exports?ui=legacy — one verb, one icon treatment', () => {
   });
 });
 
-describe('/admin/exports kit grid — verb follows the row type', () => {
+describe('reporting hub Exports tab (kit grid) — verb follows the row type', () => {
   it('says Open for in-portal pages and Download for file endpoints, with matching icons', async () => {
     const doc = await renderPage();
     const tiles = Array.from(doc.querySelectorAll<HTMLAnchorElement>('a.wa-kit-card'));

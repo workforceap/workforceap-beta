@@ -471,9 +471,17 @@ html.dark [data-surface] .wa-kit-card,
   color: var(--wa-text);
   background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
 }
-.wa-kit-tab[aria-selected='true'] {
+.wa-kit-tab[aria-selected='true'],
+.wa-kit-tab[aria-current='page'] {
   color: var(--wa-accent);
   border-bottom-color: var(--wa-accent);
+}
+/* Server-driven tabs (the admin reporting hub): the same tab row rendered as
+   links, one request per tab. `aria-current="page"` is the selected state. */
+a.wa-kit-tab {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 .wa-kit-tab:focus-visible {
   outline: 2px solid transparent;

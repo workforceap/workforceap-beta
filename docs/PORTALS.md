@@ -108,6 +108,28 @@ The member dashboard is the primary experience for enrolled members. It adapts b
 
 ## Admin Portal (`/admin/*`)
 
+### Sidebar sections (2026-09-21 consolidation)
+
+The admin rail (`lib/nav/portalNav.ts` → `ADMIN_PORTAL_NAV_ITEMS`, rendered by
+`components/portal/WorkspaceSidebarSections.tsx` inside `WorkspaceShell`) groups every admin
+destination into seven collapsible sections. Daily pages are top-level rows; related pages nest
+under a top-level row (`parentHref`) and open on demand or when one of them is the current page.
+Section and nested-row open state persists per browser (`localStorage` `wa_nav_sections_admin`);
+the current page's section always opens on arrival. Rows marked ⚿ are `requiresSuperAdminContext`.
+
+| Section | Top-level rows (nested rows) |
+|---|---|
+| Run the org | Command Center · Detailed overview · Messages ⚿ (Feedback ⚿) |
+| Students | Students (Subgroups · In-office sessions ⚿ · Applications funnel ⚿ · Find duplicate students ⚿) · Invites |
+| Programs | Programs (Career paths · Funding eligibility) · Program requests · Training progress (Assessments · Certificates · Coursera ⚿) |
+| Partners & Employers | Employers (Jobs · Employer screening) · Partners · Placements (Placement surveys) · Counselors · Mentors |
+| Reporting | Reporting → `/admin/reporting` hub (Analytics · Placement outcomes · Board outcomes · Metrics ⚿ · Weekly recap ⚿ · Growth ⚿ · AI tools ⚿ · AI Efficacy ⚿) |
+| Content | Blog (Email templates ⚿ · What WorkforceAP does ⚿) |
+| Security & system ⚿ (closed by default) | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
+
+The collapsed icon rail lists every row flat. `/dev/staff/admin-shell` renders this chrome without
+auth or a database for screenshots.
+
 ### Dashboard & Analytics
 
 - `dashboard` — Overview with key metrics

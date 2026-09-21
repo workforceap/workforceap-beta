@@ -525,7 +525,9 @@ describe('read-only portal action contracts', () => {
       [['app', 'admin', 'mentors', 'page.tsx'], 'admin-mentors-aggregate-load'],
       [['app', 'admin', 'students', 'page.tsx'], 'admin-students-secondary-load'],
       [['app', 'admin', 'subgroups', 'page.tsx'], 'admin-subgroups-aggregate-load'],
-      [['app', 'admin', 'training-progress', 'page.tsx'], 'admin-training-progress-secondary-load'],
+      // The training roster renders on the reporting hub's Training tab now;
+      // /admin/training-progress forwards there (admin audit 2026-09-19, §6.1).
+      [['app', 'admin', 'reporting', 'sections', 'TrainingSection.tsx'], 'admin-reporting-training-secondary-load'],
     ];
 
     for (const [relativePath, marker] of expectedMarkers) {
