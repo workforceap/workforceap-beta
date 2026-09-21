@@ -12,7 +12,8 @@ import {
 /**
  * Metrics — the raw platform metrics workspace (dense).
  * Mockup: workforceap-admin-full.html "Metrics" view.
- * Target route: /admin/metrics
+ * Target route: /admin/metrics?ui=legacy (the bare path redirects to
+ * /admin/reporting since the reporting hub landed)
  *
  * Pure read view — no interactivity, so no 'use client'.
  *

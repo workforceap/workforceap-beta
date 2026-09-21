@@ -59,4 +59,4 @@ export { AppShellSidebar, type NavItem, type NavGroup } from './AppShellSidebar'
 export { AppShellMember, type MemberTab } from './AppShellMember';
 export { UniversalSearch } from './UniversalSearch';
 export { MemberDashboardKit, type MemberDashboardKitProps } from './MemberDashboardKit';
-export { colorVar, toneClass, type KitColor, type KitTone } from './tokens';
+export { colorVar, toneClass, tonePaint, type KitColor, type KitTone } from './tokens';

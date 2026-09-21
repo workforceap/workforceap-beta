@@ -1,11 +1,14 @@
 /**
- * Tabs of the admin analytics page (`/admin/analytics`).
+ * Panels of the reporting hub's Overview section (`/admin/reporting`).
  *
  * Engagement (the kit analytics view) and "Enrollment and outcomes" (the
- * numbers `/admin/metrics` prints) live on one page as kit Tabs, so admins
- * stop hunting across two routes for the same story (admin audit
- * 2026-09-20, Analytics). Pure so the tab list, the `?tab=` parsing and the
- * metrics → kit projection are testable without React or Prisma.
+ * numbers `/admin/metrics` used to print) live on one page, so admins stop
+ * hunting across two routes for the same story (admin audit 2026-09-20,
+ * Analytics). `/admin/analytics` and `/admin/metrics` both redirect into the
+ * hub now unless `?ui=legacy` is set; the `ANALYTICS_TABS` list and `?tab=`
+ * parsing are kept because the hub still reads those values. Pure so the tab
+ * list, the `?tab=` parsing and the metrics → kit projection are testable
+ * without React or Prisma.
  */
 
 import type { KitTabItem } from '@/components/portal/kit/Tabs';
