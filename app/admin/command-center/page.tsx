@@ -227,11 +227,17 @@ export default async function AdminCommandCenterPage({
     // students) drives the bar width but is never printed beside the count,
     // where "10 · 100%" read as a health or completion score (number audit
     // 2026-09-20, S21).
+    //
+    // No `tone` and no `color`: the bars take the kit's neutral accent. `pct`
+    // is PROGRAM_HEALTH_SHARE_LABEL — a share of enrolled students, not a
+    // state — so there is nothing here to be `ok` or `warn` about. The old
+    // `color: 'success'` painted every bar green under a heading that reads
+    // "Program health", which is the completion-score misread S21 removed
+    // from the printed numbers, re-told in colour.
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,
       value: `${row.count} enrolled`,
       pct: row.pct,
-      color: 'success',
     }));
 
     const dateLabel = new Intl.DateTimeFormat('en-US', {
