@@ -7,6 +7,8 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
+import { createBulkEmailCronPacer } from '@/lib/email/pacing';
+import { sendMemberStallNudges } from '@/lib/cron/onboardingStallNudges';
 
 // WAP-177 fix 4: bound the function so a hung run is killed and swept to FAILED
 // by data-cleanup instead of pinning a RUNNING row forever.
@@ -46,6 +48,11 @@ function toNamedMember(m: { id: string; fullName: string | null; email: string |
  * One digest notification (type 'task_assigned') per admin + one staff
  * email listing counts and up to 10 named members per bucket, linking to
  * the relevant admin queue.
+ *
+ * WAP-92: after the staff digest, the same buckets feed the member-side
+ * nudges in lib/cron/onboardingStallNudges.ts (one email per member per
+ * bucket, ever; shared 7-day cross-cron cooldown). That path is OFF unless
+ * `MEMBER_STALL_NUDGES_ENABLED=true` — see the module for the guard rails.
  */
 async function handle(_request: Request) {
   const now = new Date();
@@ -178,6 +185,18 @@ async function handle(_request: Request) {
     }
   }
 
+  // Member-side nudges run after the staff digest so a slow or paced member
+  // batch can never delay the digest. Flag-gated inside; counts only.
+  const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
+  const memberNudges = await sendMemberStallNudges(
+    {
+      interview: interviewStalled.map(toNamedMember),
+      no_program: noProgramStalled.map(toNamedMember),
+      wioa: wioaStalled.map(toNamedMember),
+    },
+    pacer,
+  );
+
   const runResult = {
     ok: true,
     checkedAt: now.toISOString(),
@@ -187,6 +206,7 @@ async function handle(_request: Request) {
     totalStalled,
     notificationsSent,
     emailSent,
+    memberNudges,
   };
   await setCronRecordsProcessed(totalStalled);
   await logCronRun(JOB_NAME, runResult);

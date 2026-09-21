@@ -19,7 +19,7 @@ const scheduledEmailInventory = {
   '/api/cron/inactive-nudge': { kind: 'bulk', helpers: [] },
   '/api/cron/inactivity-nudge': { kind: 'bulk', helpers: [] },
   '/api/cron/interview-reminders': { kind: 'bulk', helpers: [] },
-  '/api/cron/onboarding-stalls': { kind: 'single', helpers: [], reason: 'one admin digest request with a recipient array' },
+  '/api/cron/onboarding-stalls': { kind: 'bulk', helpers: ['lib/cron/onboardingStallNudges.ts'] },
   '/api/cron/employer-pending-applicants': { kind: 'bulk', helpers: [] },
   '/api/cron/job-expiry': { kind: 'bulk', helpers: [] },
   '/api/cron/job-alerts': { kind: 'bulk', helpers: [] },

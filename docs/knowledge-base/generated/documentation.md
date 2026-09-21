@@ -36,7 +36,7 @@
 | [docs/DIGITAL-LITERACY-COURSE.md](../../../docs/DIGITAL-LITERACY-COURSE.md) | 78 | documentation |  |
 | [docs/EMAIL-PDF-VOICE-AUDIT.md](../../../docs/EMAIL-PDF-VOICE-AUDIT.md) | 136 | communications |  |
 | [docs/EMAIL_SETUP.md](../../../docs/EMAIL_SETUP.md) | 67 | communications |  |
-| [docs/ENVIRONMENT-VARIABLES.md](../../../docs/ENVIRONMENT-VARIABLES.md) | 476 | documentation |  |
+| [docs/ENVIRONMENT-VARIABLES.md](../../../docs/ENVIRONMENT-VARIABLES.md) | 477 | documentation |  |
 | [docs/FLAGS_ASSESSMENT_REVIEW.md](../../../docs/FLAGS_ASSESSMENT_REVIEW.md) | 15 | documentation |  |
 | [docs/FUNDING-COPY-MIGRATION.md](../../../docs/FUNDING-COPY-MIGRATION.md) | 133 | documentation |  |
 | [docs/GAMEPLAN.md](../../../docs/GAMEPLAN.md) | 45 | documentation |  |

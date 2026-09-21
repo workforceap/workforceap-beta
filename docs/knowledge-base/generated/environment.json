@@ -1967,6 +1967,12 @@
       ]
     },
     {
+      "name": "MEMBER_STALL_NUDGES_ENABLED",
+      "publicPrefix": false,
+      "declaredInRootExample": true,
+      "references": []
+    },
+    {
       "name": "NEXT_PHASE",
       "publicPrefix": false,
       "declaredInRootExample": false,
@@ -2204,7 +2210,7 @@
         },
         {
           "file": "app/api/cron/onboarding-stalls/route.ts",
-          "line": 16
+          "line": 18
         },
         {
           "file": "app/api/cron/smoke-test/route.ts",
@@ -2313,6 +2319,10 @@
         {
           "file": "lib/cron/at-risk-alerts.ts",
           "line": 44
+        },
+        {
+          "file": "lib/cron/onboardingStallNudges.ts",
+          "line": 120
         },
         {
           "file": "lib/cron/placement-surveys.ts",
@@ -5148,6 +5158,7 @@
     "ENABLE_ANALYTICS_LOGS",
     "GEMINI_API_KEY",
     "GROQ_API_KEY",
+    "MEMBER_STALL_NUDGES_ENABLED",
     "NEXT_PUBLIC_CAPTCHA_ENABLED",
     "NEXT_PUBLIC_GTM_ID",
     "NEXT_PUBLIC_PARTNER_PLACEMENT_PAYOUT_USD",
