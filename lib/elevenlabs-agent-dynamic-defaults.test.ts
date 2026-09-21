@@ -120,20 +120,18 @@ test('Interview substitutes a fixed greeting without unsupported first-message c
 
 test('public WIOA subset resolves without inventing missing screening answers or outcomes', () => {
   // Representative buildPublicWioaPortalDynamicVariables output: the public
-  // form supplies contact/location context, not a completed screening snapshot.
+  // form hands the vendor a first name only (no email, phone or county), not
+  // a completed screening snapshot; the agent's own defaults cover the rest.
   const runtime = {
-    member_name: '',
-    member_email: '',
-    member_phone: '',
-    wioa_county_or_zip: 'Fulton County',
+    member_name: 'Jamie',
     wioa_public_screening: 'true',
     wioa_program_name: 'Workforce Innovation and Opportunity Act (WIOA)',
     wioa_pronunciation: 'W. I. O. A.',
   };
   const resolved = resolveReferences(readAgent(agents.wioa), runtime);
-  assert.equal(resolved.wioa_county_or_zip, 'Fulton County');
+  assert.equal(resolved.member_name, 'Jamie');
   for (const key of [
-    'member_name', 'wioa_age_bracket', 'wioa_primary_barrier',
+    'wioa_county_or_zip', 'wioa_age_bracket', 'wioa_primary_barrier',
     'wioa_dislocated_worker', 'wioa_low_income_self_report',
     'wioa_training_interest', 'wioa_completed_intake_self_report', 'wioa_signal',
   ]) {

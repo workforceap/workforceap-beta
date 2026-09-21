@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "0631fd7abbfe02c5d002f79d8128d97fc1cd3fd51c26392830ff56affa9f8153",
+  "inputTreeSha256": "24f30372bee36e4b1085c10c1fb897090863519a65b24a5fbe5df0b55aa2e1c2",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5041,
-    "sourceModules": 3683,
-    "importReferences": 18404,
-    "resolvedLocalReferences": 12375,
+    "files": 5044,
+    "sourceModules": 3685,
+    "importReferences": 18414,
+    "resolvedLocalReferences": 12383,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,10 +22,10 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1007,
-    "testCandidates": 996,
+    "testFiles": 1008,
+    "testCandidates": 997,
     "testHelpers": 11,
-    "staticallySelectedTests": 994,
+    "staticallySelectedTests": 995,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 211
+      "files": 212
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1091
+      "files": 1092
     },
     {
       "area": "localization",
@@ -106,13 +106,13 @@
     },
     {
       "area": "tests",
-      "files": 599
+      "files": 600
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 940
+      "references": 941
     },
     {
       "file": "lib/auth/server.ts",
@@ -305,16 +305,16 @@
       "lines": 1454
     },
     {
+      "file": "app/api/apply/signup/route.test.ts",
+      "lines": 1443
+    },
+    {
       "file": "app/(portal)/partner/page.tsx",
       "lines": 1391
     },
     {
       "file": "app/admin/coursera/health/page.tsx",
       "lines": 1386
-    },
-    {
-      "file": "app/api/apply/signup/route.test.ts",
-      "lines": 1369
     },
     {
       "file": "lib/admin/boardOutcomes.ts",

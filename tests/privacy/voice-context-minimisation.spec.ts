@@ -39,7 +39,11 @@ vi.mock('@/lib/coach/memory', () => ({ getCoachMemoryDynamicVariables: async () 
 vi.mock('@/lib/content/programs', () => ({ getProgramBySlug: () => null }));
 vi.mock('@/lib/auth/roles', () => ({ getCounselorForUser: async () => null, getEmployerForUser: async () => null, getPartnerForUser: async () => null }));
 
-import { fetchMemberPortalDynamicVariables, fetchWioaPortalDynamicVariables } from '@/lib/ai/elevenlabsPortalContext';
+import {
+  buildPublicWioaPortalDynamicVariables,
+  fetchMemberPortalDynamicVariables,
+  fetchWioaPortalDynamicVariables,
+} from '@/lib/ai/elevenlabsPortalContext';
 
 /** Any key that would carry a screening answer or its derived signal. */
 const ANSWER_KEY = /barrier|dislocated|income|assistance|signal|age_bracket|county|intake|training_interest|reasons/i;
@@ -71,5 +75,36 @@ describe('WIOA prequal voice context (WAP-173)', () => {
     expect(Object.keys(vars).filter((key) => key.startsWith('wioa_'))).toEqual([]);
     expect(Object.keys(vars).filter((key) => ANSWER_KEY.test(key))).toEqual([]);
     expect(vars.member_name).toBe('Fixture Member');
+  });
+});
+
+describe('public WIOA prequal voice context', () => {
+  const form = {
+    fullName: 'Jamie Lee Student',
+    email: 'jamie@example.test',
+    phone: '512-555-0199',
+    countyOrZip: 'Travis County',
+  };
+
+  it('hands the vendor a first name only: no email, phone or county', () => {
+    const vars = buildPublicWioaPortalDynamicVariables(form);
+    expect(vars).toEqual({
+      site_name: 'WorkforceAP',
+      support_context: expect.any(String),
+      member_name: 'Jamie',
+      wioa_public_screening: 'true',
+      wioa_program_name: 'Workforce Innovation and Opportunity Act (WIOA)',
+      wioa_pronunciation: 'W. I. O. A.',
+    });
+    const serialized = JSON.stringify(vars);
+    for (const value of ['jamie@example.test', '512-555-0199', 'Travis', 'Lee Student']) {
+      expect(serialized).not.toContain(value);
+    }
+    for (const key of Object.keys(vars)) expect(key).not.toMatch(/email|phone|county|zip/i);
+  });
+
+  it('tolerates a missing or blank name', () => {
+    expect(buildPublicWioaPortalDynamicVariables().member_name).toBe('');
+    expect(buildPublicWioaPortalDynamicVariables({ fullName: '   ' }).member_name).toBe('');
   });
 });

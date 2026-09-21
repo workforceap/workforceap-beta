@@ -235,8 +235,8 @@
 | [app/api/ai/salary-negotiation/route.ts](../../../app/api/ai/salary-negotiation/route.ts) | 112 | ai-voice | POST:16 |
 | [app/api/ai/skill-mapper/route.ts](../../../app/api/ai/skill-mapper/route.ts) | 207 | ai-voice | GET:24 |
 | [app/api/apply/confirmation-email/route.ts](../../../app/api/apply/confirmation-email/route.ts) | 94 | applications-enrollment | POST:94 |
-| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1369 | applications-enrollment |  |
-| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1087 | applications-enrollment | POST:192 |
+| [app/api/apply/signup/route.test.ts](../../../app/api/apply/signup/route.test.ts) | 1443 | applications-enrollment |  |
+| [app/api/apply/signup/route.ts](../../../app/api/apply/signup/route.ts) | 1085 | applications-enrollment | POST:192 |
 | [app/api/apply/status-lookup/route.ts](../../../app/api/apply/status-lookup/route.ts) | 55 | applications-enrollment | POST:28 |
 | [app/api/auth/check-mfa-required/route.ts](../../../app/api/auth/check-mfa-required/route.ts) | 120 | identity-tenancy | GET:14 |
 | [app/api/auth/forgot-password/route.ts](../../../app/api/auth/forgot-password/route.ts) | 78 | identity-tenancy | POST:10 |
@@ -503,7 +503,7 @@
 | [app/api/public/interest-profiler/questions/route.ts](../../../app/api/public/interest-profiler/questions/route.ts) | 43 | api | GET:9 |
 | [app/api/public/interest-profiler/score/route.ts](../../../app/api/public/interest-profiler/score/route.ts) | 82 | api | POST:20 |
 | [app/api/public/wioa-qualification/route.ts](../../../app/api/public/wioa-qualification/route.ts) | 113 | partners-funding | POST:113 |
-| [app/api/public/wioa-qualification/voice-session/route.ts](../../../app/api/public/wioa-qualification/voice-session/route.ts) | 66 | partners-funding | POST:15 |
+| [app/api/public/wioa-qualification/voice-session/route.ts](../../../app/api/public/wioa-qualification/voice-session/route.ts) | 68 | partners-funding | POST:17 |
 | [app/api/push/subscribe/route.ts](../../../app/api/push/subscribe/route.ts) | 65 | communications | POST:64, DELETE:65 |
 | [app/api/q/\[token\]/submit/route.ts](../../../app/api/q/%5Btoken%5D/submit/route.ts) | 361 | api | POST:89 |
 | [app/api/recommend/route.ts](../../../app/api/recommend/route.ts) | 35 | api | GET:15 |
