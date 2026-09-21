@@ -846,6 +846,7 @@
     "errZipFormat": "Veuillez entrer un code postal valide",
     "errPasswordShort": "Utilisez au moins 8 caractères.",
     "errPasswordMismatch": "Les mots de passe ne correspondent pas.",
+    "errPasswordWeak": "Choisissez un mot de passe plus robuste : au moins 8 caractères, et pas un mot de passe couramment utilisé.",
     "errContactConsent": "Veuillez confirmer que vous acceptez d'être contacté au sujet de votre candidature pour qu'un conseiller puisse faire un suivi.",
     "errSummaryPhone": "Veuillez ajouter un numéro de téléphone pour continuer.",
     "errSummaryGeneric": "Veuillez corriger les champs surlignés et réessayer.",
@@ -2698,6 +2699,7 @@
       "commsConsent": "I agree to receive program updates and communications via email",
       "captchaRequired": "Veuillez compléter la vérification de sécurité avant de continuer.",
       "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+      "weakPassword": "Choisissez un mot de passe plus robuste : au moins 8 caractères, et pas un mot de passe couramment utilisé.",
       "networkError": "Erreur réseau. Veuillez réessayer.",
       "termsOfService": "Conditions d'utilisation",
       "privacyPolicy": "Politique de Confidentialité",
@@ -2755,6 +2757,7 @@
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "updateFailed": "Could not update password. Please try again.",
+      "weakPassword": "Choisissez un mot de passe plus robuste : au moins 8 caractères, et pas un mot de passe couramment utilisé.",
       "submit": "Save new password",
       "saving": "Saving…",
       "backToLogin": "Back to login"

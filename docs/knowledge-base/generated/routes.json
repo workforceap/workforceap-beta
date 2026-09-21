@@ -233,7 +233,7 @@
     "exports": [
       {
         "name": "default",
-        "line": 296,
+        "line": 300,
         "kind": "FunctionDeclaration",
         "localName": "ResetPasswordPage"
       }
@@ -242,13 +242,18 @@
     "configuration": {},
     "boundaryReferences": [
       {
+        "specifier": "@/lib/auth/authProviderError",
+        "line": 8,
+        "kind": "import"
+      },
+      {
         "specifier": "@/lib/auth/client",
-        "line": 9,
+        "line": 10,
         "kind": "import"
       },
       {
         "specifier": "@/lib/auth/postLoginRedirect",
-        "line": 10,
+        "line": 11,
         "kind": "import"
       }
     ]

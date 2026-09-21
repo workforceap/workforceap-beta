@@ -2005,7 +2005,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 27
+          "line": 28
         },
         {
           "file": "app/api/apply/signup/route.test.ts",
@@ -2037,7 +2037,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 31
+          "line": 32
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",
@@ -2591,7 +2591,7 @@
       "references": [
         {
           "file": "app/(auth)/signup/SignupForm.tsx",
-          "line": 28
+          "line": 29
         },
         {
           "file": "app/api/apply/signup/route.ts",
@@ -2619,7 +2619,7 @@
         },
         {
           "file": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-          "line": 32
+          "line": 33
         },
         {
           "file": "app/careers/CareersInterestForm.tsx",

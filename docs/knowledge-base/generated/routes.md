@@ -15,7 +15,7 @@ Next groups are removed from URL patterns; bracketed parameters remain. Intercep
 | /login | page |  | [app/(auth)/login/page.tsx](../../../app/%28auth%29/login/page.tsx) | @/lib/auth/postLoginRedirect:4, @/lib/auth/server:5, @/lib/auth/roles:6 |
 | / | not-found |  | [app/(auth)/not-found.tsx](../../../app/%28auth%29/not-found.tsx) |  |
 | /reset-password | layout |  | [app/(auth)/reset-password/layout.tsx](../../../app/%28auth%29/reset-password/layout.tsx) |  |
-| /reset-password | page |  | [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | @/lib/auth/client:9, @/lib/auth/postLoginRedirect:10 |
+| /reset-password | page |  | [app/(auth)/reset-password/page.tsx](../../../app/%28auth%29/reset-password/page.tsx) | @/lib/auth/authProviderError:8, @/lib/auth/client:10, @/lib/auth/postLoginRedirect:11 |
 | /setup-mfa | layout |  | [app/(auth)/setup-mfa/layout.tsx](../../../app/%28auth%29/setup-mfa/layout.tsx) |  |
 | /setup-mfa | loading |  | [app/(auth)/setup-mfa/loading.tsx](../../../app/%28auth%29/setup-mfa/loading.tsx) |  |
 | /setup-mfa | page |  | [app/(auth)/setup-mfa/page.tsx](../../../app/%28auth%29/setup-mfa/page.tsx) | @/lib/auth/safeRedirectPath:10 |

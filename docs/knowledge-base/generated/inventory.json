@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "23e9be1e304571071887c6ede33991d35d04dac1594df4c138e9efd33906c003",
+  "inputTreeSha256": "2009e2d43d3bfccc3dbd868c29a157f55eb99e278b0e66235d2b44652308eef3",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -3778,14 +3778,14 @@
       "path": "app/(auth)/reset-password/page.tsx",
       "area": "pages",
       "domain": "pages",
-      "bytes": 12081,
-      "lines": 302,
-      "sha256": "0ea87deaa5d3c51425bbe2f79120810c97e1cf4a643dffb9ddb2fd73778f51bf",
+      "bytes": 12329,
+      "lines": 306,
+      "sha256": "543eedecdf5a4cb21990987b9d82047c7687aa500ab6964814567ee3ec8e2c65",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 296,
+          "line": 300,
           "kind": "FunctionDeclaration",
           "localName": "ResetPasswordPage"
         }
@@ -3793,22 +3793,22 @@
       "declarations": [
         {
           "name": "Stage",
-          "line": 12,
+          "line": 13,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "ResetPasswordForm",
-          "line": 14,
+          "line": 15,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ResetPasswordLoadingFallback",
-          "line": 287,
+          "line": 291,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ResetPasswordPage",
-          "line": 296,
+          "line": 300,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -3908,14 +3908,14 @@
       "path": "app/(auth)/signup/SignupForm.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 24591,
-      "lines": 612,
-      "sha256": "48c70083d89a97355727ffe04504aa0732ae83c6e158fad20892c29865644ef0",
+      "bytes": 24856,
+      "lines": 618,
+      "sha256": "a39a7eaabaf200c3174db6f66afc5bc196182b67e9f795e516b206f3fe7f1863",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 223,
+          "line": 224,
           "kind": "FunctionDeclaration",
           "localName": "SignupForm"
         }
@@ -3923,62 +3923,62 @@
       "declarations": [
         {
           "name": "Turnstile",
-          "line": 25,
+          "line": 26,
           "kind": "Variable"
         },
         {
           "name": "CAPTCHA_ENABLED",
-          "line": 27,
-          "kind": "Variable"
-        },
-        {
-          "name": "TURNSTILE_SITE_KEY",
           "line": 28,
           "kind": "Variable"
         },
         {
+          "name": "TURNSTILE_SITE_KEY",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
           "name": "EMPLOYMENT_OPTIONS",
-          "line": 34,
+          "line": 35,
           "kind": "Variable"
         },
         {
           "name": "EMPLOYMENT_OPTION_KEYS",
-          "line": 42,
+          "line": 43,
           "kind": "Variable"
         },
         {
           "name": "VETERAN_OPTIONS",
-          "line": 50,
-          "kind": "Variable"
-        },
-        {
-          "name": "VETERAN_OPTION_KEYS",
           "line": 51,
           "kind": "Variable"
         },
         {
+          "name": "VETERAN_OPTION_KEYS",
+          "line": 52,
+          "kind": "Variable"
+        },
+        {
           "name": "SignupFormProps",
-          "line": 57,
+          "line": 58,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "s",
-          "line": 62,
+          "line": 63,
           "kind": "Variable"
         },
         {
           "name": "getPasswordStrength",
-          "line": 206,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "strengthColor",
-          "line": 216,
+          "line": 217,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "SignupForm",
-          "line": 223,
+          "line": 224,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -30175,9 +30175,9 @@
       "path": "app/api/apply/signup/route.test.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 50196,
-      "lines": 1353,
-      "sha256": "dd2047885675b99d9e9082185689e8f16bb2fd93c8278da235de1588de6262f8",
+      "bytes": 50893,
+      "lines": 1369,
+      "sha256": "65b75bea04ce5edecf8b8bf5bd89e8a5f5db4fb6dad7b7c2722895eb4aa544dd",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -30223,51 +30223,51 @@
       "path": "app/api/apply/signup/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 48080,
-      "lines": 1082,
-      "sha256": "a4923cdee4ce83416ce8b9a6b24e863abd8b5c03e79251f71773ab54e440aeff",
+      "bytes": 48440,
+      "lines": 1087,
+      "sha256": "cd0731245223088d36aa2c9e1ceee8c99b07360e6ced1bcf70d9e099be2dd7a6",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 191,
+          "line": 192,
           "kind": "Variable"
         }
       ],
       "declarations": [
         {
           "name": "seatCapNote",
-          "line": 74,
+          "line": 75,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getClientIp",
-          "line": 78,
+          "line": 79,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "accountRecoveryRequiredResponse",
-          "line": 86,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "isAppEmailCollision",
-          "line": 95,
+          "line": 96,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "compensateFreshApplySignupAuthIdentity",
-          "line": 107,
+          "line": 108,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "applySignupSchema",
-          "line": 132,
+          "line": 133,
           "kind": "Variable"
         },
         {
           "name": "POST",
-          "line": 191,
+          "line": 192,
           "kind": "Variable"
         }
       ],
@@ -38559,26 +38559,26 @@
       "path": "app/api/member/signup/route.ts",
       "area": "api",
       "domain": "applications-enrollment",
-      "bytes": 11148,
-      "lines": 284,
-      "sha256": "adc9b58d86d82fa5fc89ed0b451a354fc6271fe65e03387a6d2ea788e4be3d9d",
+      "bytes": 11536,
+      "lines": 292,
+      "sha256": "7d9d1daae82a3f9fd583e7bdab7affb2cb80abd75dee366928cc244729b63660",
       "binary": false,
       "exports": [
         {
           "name": "POST",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "getClientIp",
-          "line": 16,
+          "line": 17,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "POST",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -41661,14 +41661,14 @@
       "path": "app/apply/create-account/ApplyCreateAccountForm.tsx",
       "area": "pages",
       "domain": "applications-enrollment",
-      "bytes": 44101,
-      "lines": 1039,
-      "sha256": "dcfddd2a482fd391b75e353715bf0e847b8a8e9ff03e7a5712df7554c6667748",
+      "bytes": 44543,
+      "lines": 1047,
+      "sha256": "511cad5e544fe8c58f542b59c60ab7bc3a1dcde5b62d7a1aebd8891adf117015",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 55,
+          "line": 56,
           "kind": "FunctionDeclaration",
           "localName": "ApplyCreateAccountForm"
         }
@@ -41676,32 +41676,32 @@
       "declarations": [
         {
           "name": "Turnstile",
-          "line": 29,
+          "line": 30,
           "kind": "Variable"
         },
         {
           "name": "CAPTCHA_ENABLED",
-          "line": 31,
-          "kind": "Variable"
-        },
-        {
-          "name": "TURNSTILE_SITE_KEY",
           "line": 32,
           "kind": "Variable"
         },
         {
+          "name": "TURNSTILE_SITE_KEY",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
           "name": "getPasswordStrengthScore",
-          "line": 38,
+          "line": 39,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "formatPhoneInput",
-          "line": 47,
+          "line": 48,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ApplyCreateAccountForm",
-          "line": 55,
+          "line": 56,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87280,9 +87280,9 @@
       "path": "lib/admin/roleLabels.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 2048,
-      "lines": 51,
-      "sha256": "da0cef000397d927acf3bdc098a098b15344dd13b295c2e4345a432253cab42f",
+      "bytes": 1987,
+      "lines": 46,
+      "sha256": "36f56e797823ae46a3587361a8c354af0ca74d771cb1d99446b4286c292215fe",
       "binary": false,
       "exports": [
         {
@@ -87292,7 +87292,7 @@
         },
         {
           "name": "resolveDirectoryRole",
-          "line": 40,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -87314,7 +87314,7 @@
         },
         {
           "name": "resolveDirectoryRole",
-          "line": 40,
+          "line": 35,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -98194,9 +98194,9 @@
       "path": "lib/auth/authProviderError.test.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 2944,
-      "lines": 53,
-      "sha256": "ee58c25dff5c2063c6ac8080b55e8faf8fc1068ea4aba2ede3365ceaa2a4464d",
+      "bytes": 4346,
+      "lines": 72,
+      "sha256": "52732b26a0e356374ef32108fbd80278c51032acce634af10fdf609b4dcf0429",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -98206,29 +98206,44 @@
       "path": "lib/auth/authProviderError.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 4091,
-      "lines": 110,
-      "sha256": "ebf20190fb54a2cd60e4122211372b5bb1b2d66db9ddab8dda9bfbd121254669",
+      "bytes": 5611,
+      "lines": 139,
+      "sha256": "2e0f4a8f6e28b7a09b3b697fccbb7ccd40a9805e5d4fb9a36820c6307796b3eb",
       "binary": false,
       "exports": [
         {
+          "name": "WEAK_PASSWORD_MESSAGE",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "WEAK_PASSWORD_REASON",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
           "name": "isAuthProviderConfigError",
-          "line": 38,
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isWeakPasswordError",
+          "line": 57,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyAuthProviderError",
-          "line": 43,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "authProviderFailureStatus",
-          "line": 76,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "describeAuthProviderFailure",
-          "line": 94,
+          "line": 119,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -98239,53 +98254,68 @@
           "kind": "TypeAliasDeclaration"
         },
         {
-          "name": "ProviderErrorShape",
-          "line": 14,
-          "kind": "TypeAliasDeclaration"
+          "name": "WEAK_PASSWORD_MESSAGE",
+          "line": 20,
+          "kind": "Variable"
         },
         {
-          "name": "DUPLICATE_CODES",
+          "name": "WEAK_PASSWORD_REASON",
           "line": 21,
           "kind": "Variable"
         },
         {
-          "name": "VALIDATION_CODES",
-          "line": 22,
+          "name": "ProviderErrorShape",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "DUPLICATE_CODES",
+          "line": 30,
           "kind": "Variable"
         },
         {
-          "name": "UNAVAILABLE_STATUSES",
+          "name": "VALIDATION_CODES",
           "line": 31,
           "kind": "Variable"
         },
         {
+          "name": "UNAVAILABLE_STATUSES",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
           "name": "readString",
-          "line": 33,
+          "line": 42,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isAuthProviderConfigError",
-          "line": 38,
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isWeakPasswordError",
+          "line": 57,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "classifyAuthProviderError",
-          "line": 43,
+          "line": 66,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "AuthProviderAction",
-          "line": 73,
+          "line": 97,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "authProviderFailureStatus",
-          "line": 76,
+          "line": 100,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "describeAuthProviderFailure",
-          "line": 94,
+          "line": 119,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99129,9 +99159,9 @@
       "path": "lib/auth/roleAccess.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 520,
-      "lines": 13,
-      "sha256": "3e4f82017c5ba28b837541b9990ff8e6036a3d9bc253343eec089140ec233f3c",
+      "bytes": 3724,
+      "lines": 90,
+      "sha256": "65b91e77553d81c3cca2211652bf14fc1a270bf180c0cade4c8e05351dd92c8e",
       "binary": false,
       "exports": [
         {
@@ -99142,6 +99172,31 @@
         {
           "name": "hasAdminAccess",
           "line": 6,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ROLE_PRECEDENCE",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "normalizeRoleName",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RoleResolutionInput",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RoleResolution",
+          "line": 47,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "resolveEffectiveRole",
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99154,6 +99209,36 @@
         {
           "name": "hasAdminAccess",
           "line": 6,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ROLE_PRECEDENCE",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "KNOWN_ROLES",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "normalizeRoleName",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RoleResolutionInput",
+          "line": 38,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "RoleResolution",
+          "line": 47,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "resolveEffectiveRole",
+          "line": 75,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99214,321 +99299,326 @@
       "path": "lib/auth/roles.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 20586,
-      "lines": 589,
-      "sha256": "3a38b8cad7ca7b2157ce6e2852116732400bf615727f1d60287982abb442b69c",
+      "bytes": 22341,
+      "lines": 625,
+      "sha256": "7c4f077ef1e323b11e4612a6c2bcf947c04d74952d17b4d5cde7ad16bd67fd6b",
       "binary": false,
       "exports": [
         {
           "name": "hasAdminAccess",
-          "line": 10,
+          "line": 12,
           "kind": "ReExport"
         },
         {
           "name": "hasSuperAdminAccess",
-          "line": 10,
+          "line": 12,
           "kind": "ReExport"
         },
         {
           "name": "SUPER_ADMIN_EMPLOYER_COOKIE",
-          "line": 12,
+          "line": 14,
           "kind": "Variable"
         },
         {
           "name": "SUPER_ADMIN_PARTNER_COOKIE",
-          "line": 13,
+          "line": 15,
           "kind": "Variable"
         },
         {
           "name": "getUserRoles",
-          "line": 19,
+          "line": 21,
           "kind": "Variable"
         },
         {
           "name": "getProfileRole",
-          "line": 29,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "isSuperAdmin",
-          "line": 39,
+          "line": 75,
           "kind": "Variable"
         },
         {
           "name": "isAdmin",
-          "line": 46,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isAdminInOrg",
-          "line": 63,
+          "line": 99,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isStaff",
-          "line": 73,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "canBypassMemberAssessment",
-          "line": 93,
-          "kind": "Variable"
-        },
-        {
-          "name": "isCaseManager",
-          "line": 102,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "requireAdmin",
           "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "canBypassMemberAssessment",
+          "line": 129,
+          "kind": "Variable"
+        },
+        {
+          "name": "isCaseManager",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "requireAdmin",
+          "line": 145,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isCounselor",
-          "line": 116,
+          "line": 152,
           "kind": "Variable"
         },
         {
           "name": "isPartner",
-          "line": 125,
+          "line": 161,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PartnerPortalContext",
-          "line": 134,
+          "line": 170,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getPartnerForUser",
-          "line": 177,
+          "line": 213,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCounselorForUser",
-          "line": 254,
+          "line": 290,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hasMultiplePortalRoles",
-          "line": 269,
+          "line": 305,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isSubgroupLeader",
-          "line": 291,
+          "line": 327,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getSubgroupsForUser",
-          "line": 300,
+          "line": 336,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireSubgroupLeader",
-          "line": 328,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isEmployer",
-          "line": 337,
+          "line": 373,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerForUser",
-          "line": 458,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerAccountForNav",
-          "line": 529,
+          "line": 565,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMentor",
-          "line": 555,
+          "line": 591,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdminOrCounselor",
-          "line": 569,
+          "line": 605,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "SUPER_ADMIN_EMPLOYER_COOKIE",
-          "line": 12,
-          "kind": "Variable"
-        },
-        {
-          "name": "SUPER_ADMIN_PARTNER_COOKIE",
-          "line": 13,
-          "kind": "Variable"
-        },
-        {
-          "name": "SUPER_ADMIN_FALLBACK_PARTNER_SLUG",
           "line": 14,
           "kind": "Variable"
         },
         {
-          "name": "SUPER_ADMIN_FALLBACK_PARTNER_NAME",
+          "name": "SUPER_ADMIN_PARTNER_COOKIE",
           "line": 15,
           "kind": "Variable"
         },
         {
-          "name": "SUPER_ADMIN_FALLBACK_EMPLOYER_EMAIL",
+          "name": "SUPER_ADMIN_FALLBACK_PARTNER_SLUG",
           "line": 16,
           "kind": "Variable"
         },
         {
-          "name": "SUPER_ADMIN_FALLBACK_EMPLOYER_NAME",
+          "name": "SUPER_ADMIN_FALLBACK_PARTNER_NAME",
           "line": 17,
           "kind": "Variable"
         },
         {
-          "name": "getUserRoles",
+          "name": "SUPER_ADMIN_FALLBACK_EMPLOYER_EMAIL",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "SUPER_ADMIN_FALLBACK_EMPLOYER_NAME",
           "line": 19,
           "kind": "Variable"
         },
         {
+          "name": "getUserRoles",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "profileRoleFallbackLogged",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
           "name": "getProfileRole",
-          "line": 29,
+          "line": 46,
           "kind": "Variable"
         },
         {
           "name": "isSuperAdmin",
-          "line": 39,
+          "line": 75,
           "kind": "Variable"
         },
         {
           "name": "isAdmin",
-          "line": 46,
+          "line": 82,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isAdminInOrg",
-          "line": 63,
+          "line": 99,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isStaff",
-          "line": 73,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "canBypassMemberAssessment",
-          "line": 93,
-          "kind": "Variable"
-        },
-        {
-          "name": "isCaseManager",
-          "line": 102,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "requireAdmin",
           "line": 109,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "canBypassMemberAssessment",
+          "line": 129,
+          "kind": "Variable"
+        },
+        {
+          "name": "isCaseManager",
+          "line": 138,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "requireAdmin",
+          "line": 145,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isCounselor",
-          "line": 116,
+          "line": 152,
           "kind": "Variable"
         },
         {
           "name": "isPartner",
-          "line": 125,
+          "line": 161,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PartnerPortalContext",
-          "line": 134,
+          "line": 170,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PARTNER_BRANDING_SELECT",
-          "line": 155,
+          "line": 191,
           "kind": "Variable"
         },
         {
           "name": "getOrgBranding",
-          "line": 165,
+          "line": 201,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getPartnerForUser",
-          "line": 177,
+          "line": 213,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCounselorForUser",
-          "line": 254,
+          "line": 290,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "hasMultiplePortalRoles",
-          "line": 269,
+          "line": 305,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isSubgroupLeader",
-          "line": 291,
+          "line": 327,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getSubgroupsForUser",
-          "line": 300,
+          "line": 336,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireSubgroupLeader",
-          "line": 328,
+          "line": 364,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isEmployer",
-          "line": 337,
+          "line": 373,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolvePreviewFallbackOrganizationId",
-          "line": 345,
+          "line": 381,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ensureSuperAdminFallbackPartner",
-          "line": 353,
+          "line": 389,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ensureSuperAdminFallbackEmployer",
-          "line": 384,
+          "line": 420,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapEmployerRow",
-          "line": 429,
+          "line": 465,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerForUser",
-          "line": 458,
+          "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerAccountForNav",
-          "line": 529,
+          "line": 565,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMentor",
-          "line": 555,
+          "line": 591,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdminOrCounselor",
-          "line": 569,
+          "line": 605,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -148650,27 +148740,27 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 227613,
-      "lines": 3785,
-      "sha256": "3d962c1451839a980bbcf495d85257fd54e8676bbf49fd7e1004bc2b7396c28a",
+      "bytes": 227932,
+      "lines": 3788,
+      "sha256": "de7926d17d8be4835c7ae851a6f5e1441a6707aff8c4e407f68fe8c0c6c83be2",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 252421,
-      "lines": 3785,
-      "sha256": "ded1f275138156d7f4a898a7459eb64379cf762a63888bcf51c9aa1783f96e91",
+      "bytes": 252800,
+      "lines": 3788,
+      "sha256": "8f0857e17b324ff6057756762b3be7317b510ab44759d032e5aa6d12bc892971",
       "binary": false
     },
     {
       "path": "messages/fr.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 239102,
-      "lines": 3472,
-      "sha256": "c4934566a9df86f2c80cdf8251f5b256f28791ee0724b015e2237078b936b5e7",
+      "bytes": 239508,
+      "lines": 3475,
+      "sha256": "5d7528765839311eccd89b3ad5809e9b308a3cc8be8ac4564a6f20ab3778a785",
       "binary": false
     },
     {
@@ -148686,9 +148776,9 @@
       "path": "messages/pt.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 229327,
-      "lines": 3472,
-      "sha256": "079286b6666263f0457fd114e704551f274de1098b075edfd7df6e2a82b395c0",
+      "bytes": 229685,
+      "lines": 3475,
+      "sha256": "4da6cb5f13f67fc5b5f9217d0748e8399011ca6eed50a9f0abf1eb1633100220",
       "binary": false
     },
     {
@@ -148868,9 +148958,9 @@
       "path": "package.json",
       "area": "root",
       "domain": "root",
-      "bytes": 7973,
-      "lines": 149,
-      "sha256": "318faac0faa31e7496f3358134fc4e225b08582e73ae292bb4926ed111a853db",
+      "bytes": 8085,
+      "lines": 150,
+      "sha256": "b1c8a18710f817d09ae25da87dec0fa832e5bbbb7e8060878531bf1e5a636593",
       "binary": false
     },
     {
@@ -152994,6 +153084,87 @@
         {
           "name": "main",
           "line": 23,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "scripts/backfill-user-roles-from-profile.test.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 2297,
+      "lines": 53,
+      "sha256": "f657bfdee9e95a3719bf6a294da660048ea138c606bf7f270ad16fb1afba9e70",
+      "binary": false,
+      "exports": [],
+      "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "scripts/backfill-user-roles-from-profile.ts",
+      "area": "operations",
+      "domain": "operations",
+      "bytes": 5837,
+      "lines": 146,
+      "sha256": "5454d3be6edab6353746cb56bbeec32850e3b0968262bf582dcec00e076ff442",
+      "binary": false,
+      "exports": [
+        {
+          "name": "UserRoleSnapshot",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "BackfillPlan",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "planUserRoleBackfill",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "countByRole",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "UserRoleSnapshot",
+          "line": 26,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "BackfillPlan",
+          "line": 32,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "planUserRoleBackfill",
+          "line": 43,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "countByRole",
+          "line": 65,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "DRY_RUN_ID_PREVIEW",
+          "line": 71,
+          "kind": "Variable"
+        },
+        {
+          "name": "main",
+          "line": 73,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "isDirectInvocation",
+          "line": 136,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -164382,9 +164553,9 @@
       "path": "tests/api/member-signup.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7179,
-      "lines": 161,
-      "sha256": "14f2fcbf584f1d70c6b334bafb09878408dad4f77987871c0548fe35d1fd6694",
+      "bytes": 7890,
+      "lines": 177,
+      "sha256": "36164b590d3196403e7d3cb475ed41dd7ac74561eaa7eed2cd154aacf447670f",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -167993,9 +168164,9 @@
       "path": "tests/components/auth-connection-failure.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 7090,
-      "lines": 145,
-      "sha256": "f6c6a4effe6907858253a25c2cc9c6ced8b3194ff74f791dc46bbcf6ac7a7385",
+      "bytes": 7860,
+      "lines": 154,
+      "sha256": "847a8287293aaf06a6fbef5eb200d2b45bf7964114eb3cf4bea1b849afa6f43e",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -169276,9 +169447,9 @@
       "path": "tests/components/member-signup-form.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 6483,
-      "lines": 147,
-      "sha256": "701df8b61bc5499095d2fed08d1d843ca028f541a14a7200a46e234a4f6189e9",
+      "bytes": 7197,
+      "lines": 160,
+      "sha256": "03d1ccacf7a1c37916310c032b1ea5807d1cf9c10d178e8aeab6e05535306c91",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172131,6 +172302,39 @@
           "name": "mocks",
           "line": 3,
           "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/lib/auth-role-resolution.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 5690,
+      "lines": 108,
+      "sha256": "dab097265761e3922c643f555c7df28b9878e8dd71233e81f3359e4ae773faf7",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "db",
+          "line": 7,
+          "kind": "Variable"
+        },
+        {
+          "name": "log",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "Row",
+          "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "user",
+          "line": 23,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null

@@ -917,6 +917,7 @@
     "errZipFormat": "Please enter a valid ZIP or postal code",
     "errPasswordShort": "Use at least 8 characters.",
     "errPasswordMismatch": "Passwords do not match.",
+    "errPasswordWeak": "Choose a stronger password: at least 8 characters, not a commonly used password.",
     "errContactConsent": "Please confirm you agree to be contacted about your application so an advisor can follow up.",
     "errSummaryPhone": "Please add a phone number to continue.",
     "errSummaryGeneric": "Please fix the highlighted fields and try again.",
@@ -2758,6 +2759,7 @@
       "commsConsent": "I agree to receive program updates and communications via email",
       "captchaRequired": "Please complete the security check before continuing.",
       "genericError": "Something went wrong. Please try again.",
+      "weakPassword": "Choose a stronger password: at least 8 characters, not a commonly used password.",
       "networkError": "Network error. Please try again.",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy",
@@ -2815,6 +2817,7 @@
       "passwordTooShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "updateFailed": "Could not update password. Please try again.",
+      "weakPassword": "Choose a stronger password: at least 8 characters, not a commonly used password.",
       "submit": "Save new password",
       "saving": "Saving…",
       "backToLogin": "Back to login"

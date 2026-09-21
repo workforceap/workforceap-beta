@@ -497,8 +497,16 @@
   },
   {
     "from": "app/(auth)/reset-password/page.tsx",
-    "specifier": "@/components/LocalizedLink",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/(auth)/reset-password/page.tsx",
+    "specifier": "@/components/LocalizedLink",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "components/LocalizedLink.tsx"
@@ -506,7 +514,7 @@
   {
     "from": "app/(auth)/reset-password/page.tsx",
     "specifier": "@/lib/auth/client",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/auth/client.ts"
@@ -514,7 +522,7 @@
   {
     "from": "app/(auth)/reset-password/page.tsx",
     "specifier": "@/lib/auth/postLoginRedirect",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/auth/postLoginRedirect.ts"
@@ -689,8 +697,16 @@
   },
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
-    "specifier": "@/components/LocalizedLink",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/(auth)/signup/SignupForm.tsx",
+    "specifier": "@/components/LocalizedLink",
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "components/LocalizedLink.tsx"
@@ -698,7 +714,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/validation/member",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/validation/member.ts"
@@ -706,7 +722,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/analytics/events",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/events.ts"
@@ -714,7 +730,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -722,7 +738,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/marketing/utmCapture",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/utmCapture.ts"
@@ -730,7 +746,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/auth/safeRedirectPath",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "lib/auth/safeRedirectPath.ts"
@@ -738,7 +754,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/i18n/config",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": false,
     "target": "lib/i18n/config.ts"
@@ -746,7 +762,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@/lib/consent/reserve",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/consent/reserve.ts"
@@ -754,7 +770,7 @@
   {
     "from": "app/(auth)/signup/SignupForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 25,
+    "line": 26,
     "kind": "dynamic-import",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -64329,8 +64345,16 @@
   },
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
-    "specifier": "@/lib/analytics/events",
+    "specifier": "@/lib/auth/authProviderError",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/authProviderError.ts"
+  },
+  {
+    "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
+    "specifier": "@/lib/analytics/events",
+    "line": 9,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/events.ts"
@@ -64338,7 +64362,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/validation/postalCode",
-    "line": 9,
+    "line": 10,
     "kind": "import",
     "external": false,
     "target": "lib/validation/postalCode.ts"
@@ -64346,7 +64370,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/analytics/conversionValue",
-    "line": 10,
+    "line": 11,
     "kind": "import",
     "external": false,
     "target": "lib/analytics/conversionValue.ts"
@@ -64354,7 +64378,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyReferralCapture",
-    "line": 11,
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyReferralCapture.ts"
@@ -64362,7 +64386,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/paidApplyUtm",
-    "line": 12,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/apply/paidApplyUtm.ts"
@@ -64370,7 +64394,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/usStates",
-    "line": 13,
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/apply/usStates.ts"
@@ -64378,7 +64402,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/marketing/utmCapture",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/utmCapture.ts"
@@ -64386,7 +64410,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyProgramStorage",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyProgramStorage.ts"
@@ -64394,7 +64418,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyBrowserState",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyBrowserState.ts"
@@ -64402,7 +64426,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/applyRecoveryHref",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/apply/applyRecoveryHref.ts"
@@ -64410,7 +64434,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/components/apply/ApplyReadiness",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": false,
     "target": "components/apply/ApplyReadiness.tsx"
@@ -64418,7 +64442,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/components/forms/PasswordToggle",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/forms/PasswordToggle.tsx"
@@ -64426,7 +64450,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "lucide-react",
-    "line": 22,
+    "line": 23,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -64434,7 +64458,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/content/programs",
-    "line": 23,
+    "line": 24,
     "kind": "import",
     "external": false,
     "target": "lib/content/programs.ts"
@@ -64442,7 +64466,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/marketing/buttonClasses",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/buttonClasses.ts"
@@ -64450,7 +64474,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/a11y/scrollBehavior",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/a11y/scrollBehavior.ts"
@@ -64458,7 +64482,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@/lib/apply/schoolCollection",
-    "line": 26,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/apply/schoolCollection.ts"
@@ -64466,7 +64490,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 27,
+    "line": 28,
     "kind": "type",
     "external": true,
     "package": "@marsidev/react-turnstile"
@@ -64474,7 +64498,7 @@
   {
     "from": "app/apply/create-account/ApplyCreateAccountForm.tsx",
     "specifier": "@marsidev/react-turnstile",
-    "line": 29,
+    "line": 30,
     "kind": "dynamic-import",
     "external": true,
     "package": "@marsidev/react-turnstile"
