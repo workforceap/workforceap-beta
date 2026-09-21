@@ -315,6 +315,7 @@
 | [app/api/cron/weekly-recap/route.test.ts](../../../app/api/cron/weekly-recap/route.test.ts) | 10 | communications |  |
 | [app/api/cron/weekly-recap/route.ts](../../../app/api/cron/weekly-recap/route.ts) | 148 | communications | maxDuration:12, GET:147, POST:148 |
 | [app/api/cron/wioa-report/route.ts](../../../app/api/cron/wioa-report/route.ts) | 62 | communications | maxDuration:10, GET:61, POST:62 |
+| [app/api/csp-report/route.ts](../../../app/api/csp-report/route.ts) | 86 | api | POST:34, GET:84 |
 | [app/api/employer/applications/\[id\]/messages/route.ts](../../../app/api/employer/applications/%5Bid%5D/messages/route.ts) | 206 | communications | GET:69, POST:166, PATCH:205 |
 | [app/api/employer/applications/\[id\]/resume/route.ts](../../../app/api/employer/applications/%5Bid%5D/resume/route.ts) | 128 | jobs-employers | GET:25 |
 | [app/api/employer/applications/\[id\]/route.ts](../../../app/api/employer/applications/%5Bid%5D/route.ts) | 98 | jobs-employers | PATCH:16 |

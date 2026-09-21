@@ -602,7 +602,7 @@
 | [components/public/PublicInterestProfilerClient.tsx](../../../components/public/PublicInterestProfilerClient.tsx) | 439 | components | default:36 |
 | [components/pwa/PWAInstallPrompt.tsx](../../../components/pwa/PWAInstallPrompt.tsx) | 144 | components | default:16 |
 | [components/super-admin-view-switcher.tsx](../../../components/super-admin-view-switcher.tsx) | 132 | components | useIsSuperAdmin:31, default:36 |
-| [components/theme/ThemeInitScript.tsx](../../../components/theme/ThemeInitScript.tsx) | 9 | components | default:1 |
+| [components/theme/ThemeInitScript.tsx](../../../components/theme/ThemeInitScript.tsx) | 15 | components | default:6 |
 | [components/theme/ThemeSelector.tsx](../../../components/theme/ThemeSelector.tsx) | 29 | components | default:19 |
 | [components/theme/ThemeToggle.tsx](../../../components/theme/ThemeToggle.tsx) | 69 | components | default:25 |
 | [components/ui/Button.tsx](../../../components/ui/Button.tsx) | 118 | components | Button:27 |

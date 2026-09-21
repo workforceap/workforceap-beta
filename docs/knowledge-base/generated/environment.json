@@ -2073,7 +2073,7 @@
       "references": [
         {
           "file": "app/layout.tsx",
-          "line": 58
+          "line": 59
         }
       ]
     },
@@ -2447,7 +2447,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 280
+          "line": 318
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -2530,7 +2530,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 279
+          "line": 317
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -2812,7 +2812,7 @@
         },
         {
           "file": "middleware.ts",
-          "line": 269
+          "line": 298
         },
         {
           "file": "scripts/check-supabase-env.mjs",
@@ -3214,7 +3214,7 @@
       "references": [
         {
           "file": "middleware.ts",
-          "line": 164
+          "line": 173
         },
         {
           "file": "scripts/audit-portal-routes.mjs",
@@ -4095,6 +4095,10 @@
           "line": 14
         },
         {
+          "file": "lib/security/cspReportRateLimit.ts",
+          "line": 29
+        },
+        {
           "file": "tests/api/admin-health-debug.spec.ts",
           "line": 52
         },
@@ -4152,6 +4156,10 @@
         {
           "file": "lib/rate-limit.ts",
           "line": 13
+        },
+        {
+          "file": "lib/security/cspReportRateLimit.ts",
+          "line": 28
         },
         {
           "file": "tests/api/admin-health-debug.spec.ts",

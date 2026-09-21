@@ -81,7 +81,7 @@
 | 38 | **Audit logging for sensitive actions** | ⚠️ Partial | `lib/audit.ts` writes to `audit_logs` table. Needs broader coverage across admin mutations. |
 | 39 | **Incident response plan** | ✅ | `docs/INCIDENT-RESPONSE-PLAN.md` created with severity levels, escalation paths, runbooks, communication templates, and rollback procedures. |
 | 40 | **Backup and recovery tested** | ⚠️ Partial | Supabase manages automated backups. No documented recovery drill. |
-| 41 | **CSP violation reporting** | ❌ **GAP** | No `report-uri` or `report-to` directive. Tracked as `SEC-003`. |
+| 41 | **CSP violation reporting** | ⚠️ Partial | `Content-Security-Policy-Report-Only` with nonce + `'strict-dynamic'` and `report-uri`/`report-to` → `/api/csp-report` (WAP-36 phase 1, 2026-09-21). Enforced header unchanged until the soak is triaged (`SEC-003`). |
 
 ---
 

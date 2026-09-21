@@ -49856,6 +49856,46 @@
     "target": "lib/cron/cronExecution.ts"
   },
   {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/http/clientIp",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/http/clientIp.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/observability/logger",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/observability/logger.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/security/cspReportRateLimit",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReportRateLimit.ts"
+  },
+  {
+    "from": "app/api/csp-report/route.ts",
+    "specifier": "@/lib/security/cspReport",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
+  },
+  {
     "from": "app/api/employer/applications/[id]/messages/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -68449,8 +68489,16 @@
   },
   {
     "from": "app/layout.tsx",
-    "specifier": "@/lib/db/gucContext",
+    "specifier": "@/lib/security/csp",
     "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
+  },
+  {
+    "from": "app/layout.tsx",
+    "specifier": "@/lib/db/gucContext",
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -68458,7 +68506,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/roles",
-    "line": 24,
+    "line": 25,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -68466,7 +68514,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/layoutUserId",
-    "line": 25,
+    "line": 26,
     "kind": "import",
     "external": false,
     "target": "lib/auth/layoutUserId.ts"
@@ -68474,7 +68522,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/auth/server",
-    "line": 26,
+    "line": 27,
     "kind": "import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -68482,7 +68530,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/member/ensureAppUser",
-    "line": 27,
+    "line": 28,
     "kind": "import",
     "external": false,
     "target": "lib/member/ensureAppUser.ts"
@@ -68490,7 +68538,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/prisma",
-    "line": 28,
+    "line": 29,
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
@@ -68498,7 +68546,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/withDbRetry",
-    "line": 29,
+    "line": 30,
     "kind": "import",
     "external": false,
     "target": "lib/db/withDbRetry.ts"
@@ -68506,7 +68554,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/tenant/resolveOrgFromRequest",
-    "line": 30,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/tenant/resolveOrgFromRequest.ts"
@@ -68514,7 +68562,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/main.css",
-    "line": 31,
+    "line": 32,
     "kind": "import",
     "external": false,
     "target": "css/main.css"
@@ -68522,7 +68570,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing.css",
-    "line": 32,
+    "line": 33,
     "kind": "import",
     "external": false,
     "target": "css/marketing.css"
@@ -68530,7 +68578,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing-depth.css",
-    "line": 33,
+    "line": 34,
     "kind": "import",
     "external": false,
     "target": "css/marketing-depth.css"
@@ -68538,7 +68586,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/language-toggle.css",
-    "line": 34,
+    "line": 35,
     "kind": "import",
     "external": false,
     "target": "css/language-toggle.css"
@@ -68546,7 +68594,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/marketing-a11y.css",
-    "line": 35,
+    "line": 36,
     "kind": "import",
     "external": false,
     "target": "css/marketing-a11y.css"
@@ -68554,7 +68602,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/marketing/heroPhotos",
-    "line": 36,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "lib/marketing/heroPhotos.ts"
@@ -68562,14 +68610,6 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@astryxdesign/core/reset.css",
-    "line": 44,
-    "kind": "import",
-    "external": true,
-    "package": "@astryxdesign/core"
-  },
-  {
-    "from": "app/layout.tsx",
-    "specifier": "@astryxdesign/core/astryx.css",
     "line": 45,
     "kind": "import",
     "external": true,
@@ -68577,8 +68617,16 @@
   },
   {
     "from": "app/layout.tsx",
+    "specifier": "@astryxdesign/core/astryx.css",
+    "line": 46,
+    "kind": "import",
+    "external": true,
+    "package": "@astryxdesign/core"
+  },
+  {
+    "from": "app/layout.tsx",
     "specifier": "@/css/wa-brand-tokens.css",
-    "line": 47,
+    "line": 48,
     "kind": "import",
     "external": false,
     "target": "css/wa-brand-tokens.css"
@@ -68586,7 +68634,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/css/astryx-brand-bridge.css",
-    "line": 48,
+    "line": 49,
     "kind": "import",
     "external": false,
     "target": "css/astryx-brand-bridge.css"
@@ -68594,7 +68642,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/DeferredRootChrome",
-    "line": 49,
+    "line": 50,
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
@@ -68602,7 +68650,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/components/observability/SentrySetUser",
-    "line": 50,
+    "line": 51,
     "kind": "import",
     "external": false,
     "target": "components/observability/SentrySetUser.tsx"
@@ -68610,7 +68658,7 @@
   {
     "from": "app/layout.tsx",
     "specifier": "@/lib/db/gucContext",
-    "line": 115,
+    "line": 116,
     "kind": "type",
     "external": false,
     "target": "lib/db/gucContext.ts"
@@ -113096,6 +113144,22 @@
     "package": "node:path"
   },
   {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@upstash/ratelimit",
+    "line": 19,
+    "kind": "import",
+    "external": true,
+    "package": "@upstash/ratelimit"
+  },
+  {
+    "from": "lib/security/cspReportRateLimit.ts",
+    "specifier": "@upstash/redis",
+    "line": 20,
+    "kind": "import",
+    "external": true,
+    "package": "@upstash/redis"
+  },
+  {
     "from": "lib/seo/activeProgramSlugs.ts",
     "specifier": "@/lib/content/programs",
     "line": 1,
@@ -115630,6 +115694,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "middleware.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 48,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
   },
   {
     "from": "next.config.ts",
@@ -123432,6 +123504,22 @@
     "target": "lib/observability/captureApiError.ts"
   },
   {
+    "from": "tests/api/csp-report-route.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/csp-report-route.spec.ts",
+    "specifier": "@/app/api/csp-report/route",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/csp-report/route.ts"
+  },
+  {
     "from": "tests/api/donate-page.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -126214,6 +126302,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "vitest",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "next/server",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "@/middleware",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "middleware.ts"
+  },
+  {
+    "from": "tests/api/middleware-csp-report-only.spec.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 15,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
   },
   {
     "from": "tests/api/milestone-approve-reliability.spec.ts",
@@ -131798,6 +131918,54 @@
     "kind": "import",
     "external": false,
     "target": "components/DeferredRootChrome.tsx"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "@/app/layout",
+    "line": 23,
+    "kind": "import",
+    "external": false,
+    "target": "app/layout.tsx"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "next/script",
+    "line": 24,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "@/components/theme/ThemeInitScript",
+    "line": 25,
+    "kind": "import",
+    "external": false,
+    "target": "components/theme/ThemeInitScript.tsx"
+  },
+  {
+    "from": "tests/app/root-layout-csp-nonce.spec.tsx",
+    "specifier": "next/headers",
+    "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "next"
   },
   {
     "from": "tests/app/skill-missions-page.spec.tsx",
@@ -138966,6 +139134,38 @@
     "kind": "import",
     "external": false,
     "target": "lib/cron/withCronLogging.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "vitest",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "../../next.config",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "next.config.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "@/lib/security/csp",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/csp.ts"
+  },
+  {
+    "from": "tests/lib/csp-policy.spec.ts",
+    "specifier": "@/lib/security/cspReport",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/security/cspReport.ts"
   },
   {
     "from": "tests/lib/curriculum-versioned-read-surfaces.spec.ts",

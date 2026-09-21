@@ -20767,347 +20767,347 @@
       {
         "level": 3,
         "title": "14. Security Headers",
-        "line": 451
+        "line": 505
       },
       {
         "level": 1,
         "title": "In another terminal:",
-        "line": 471
+        "line": 525
       },
       {
         "level": 1,
         "title": "Headers should appear (except HSTS which requires HTTPS)",
-        "line": 473
+        "line": 527
       },
       {
         "level": 3,
         "title": "15. Secrets Management",
-        "line": 478
+        "line": 532
       },
       {
         "level": 3,
         "title": "16. CAPTCHA Configuration",
-        "line": 510
+        "line": 564
       },
       {
         "level": 1,
         "title": "Should show: captcha_turnstile: ok",
-        "line": 523
+        "line": 577
       },
       {
         "level": 2,
         "title": "Monitoring & Incident Response",
-        "line": 536
+        "line": 590
       },
       {
         "level": 3,
         "title": "17. Sentry Configuration",
-        "line": 538
+        "line": 592
       },
       {
         "level": 1,
         "title": "Trigger test error",
-        "line": 548
+        "line": 602
       },
       {
         "level": 1,
         "title": "Check Sentry dashboard for the error (should appear within 1 minute)",
-        "line": 550
+        "line": 604
       },
       {
         "level": 1,
         "title": "Check Sentry issues for email addresses, phone numbers, SSN patterns",
-        "line": 555
+        "line": 609
       },
       {
         "level": 1,
         "title": "Should find NO member PII in error contexts",
-        "line": 557
+        "line": 611
       },
       {
         "level": 3,
         "title": "18. Audit Logging",
-        "line": 566
+        "line": 620
       },
       {
         "level": 3,
         "title": "19. Incident Response Plan",
-        "line": 604
+        "line": 658
       },
       {
         "level": 3,
         "title": "20. Backup & Recovery",
-        "line": 638
+        "line": 692
       },
       {
         "level": 1,
         "title": "Using Supabase CLI",
-        "line": 657
+        "line": 711
       },
       {
         "level": 2,
         "title": "Recommended Tools",
-        "line": 667
+        "line": 721
       },
       {
         "level": 3,
         "title": "Dependency Scanning",
-        "line": 669
+        "line": 723
       },
       {
         "level": 3,
         "title": "Penetration Testing",
-        "line": 691
+        "line": 745
       },
       {
         "level": 1,
         "title": "Download from https://www.zaproxy.org/download/",
-        "line": 695
+        "line": 749
       },
       {
         "level": 1,
         "title": "Quick start: point ZAP at https://www.workforceap.org",
-        "line": 696
+        "line": 750
       },
       {
         "level": 1,
         "title": "Run automated scan, review alerts",
-        "line": 697
+        "line": 751
       },
       {
         "level": 3,
         "title": "CSP Testing",
-        "line": 704
+        "line": 758
       },
       {
         "level": 1,
         "title": "Google CSP Evaluator",
-        "line": 707
+        "line": 761
       },
       {
         "level": 1,
         "title": "Paste your CSP header value, review warnings",
-        "line": 709
-      },
-      {
-        "level": 1,
-        "title": "Mozilla Observatory",
-        "line": 711
-      },
-      {
-        "level": 1,
-        "title": "Scan https://www.workforceap.org for header grades",
-        "line": 713
-      },
-      {
-        "level": 3,
-        "title": "SSL/TLS Testing",
-        "line": 716
-      },
-      {
-        "level": 1,
-        "title": "SSL Labs",
-        "line": 719
-      },
-      {
-        "level": 1,
-        "title": "Command line",
-        "line": 722
-      },
-      {
-        "level": 1,
-        "title": "Check certificate expiry",
-        "line": 725
-      },
-      {
-        "level": 2,
-        "title": "Quick Reference Commands",
-        "line": 731
-      },
-      {
-        "level": 1,
-        "title": "============================================================",
-        "line": 734
-      },
-      {
-        "level": 1,
-        "title": "SECURITY VERIFICATION COMMANDS",
-        "line": 735
-      },
-      {
-        "level": 1,
-        "title": "============================================================",
-        "line": 736
-      },
-      {
-        "level": 1,
-        "title": "--- Headers ---",
-        "line": 738
-      },
-      {
-        "level": 1,
-        "title": "--- Cookie security ---",
-        "line": 741
-      },
-      {
-        "level": 1,
-        "title": "--- Rate limit test (login) ---",
-        "line": 744
-      },
-      {
-        "level": 1,
-        "title": "--- Find unguarded API routes ---",
-        "line": 752
-      },
-      {
-        "level": 1,
-        "title": "--- Find auditLog coverage ---",
-        "line": 755
-      },
-      {
-        "level": 1,
-        "title": "--- Find SQL injection risk ---",
-        "line": 760
-      },
-      {
-        "level": 1,
-        "title": "--- Find dangerouslySetInnerHTML ---",
         "line": 763
       },
       {
         "level": 1,
-        "title": "--- Find SVG upload risk ---",
-        "line": 766
+        "title": "Mozilla Observatory",
+        "line": 765
       },
       {
         "level": 1,
-        "title": "--- Check RLS status (requires psql) ---",
-        "line": 769
+        "title": "Scan https://www.workforceap.org for header grades",
+        "line": 767
+      },
+      {
+        "level": 3,
+        "title": "SSL/TLS Testing",
+        "line": 770
       },
       {
         "level": 1,
-        "title": "Then check each P0 table for RLS:",
-        "line": 771
+        "title": "SSL Labs",
+        "line": 773
       },
       {
         "level": 1,
-        "title": "--- Sentry test ---",
-        "line": 774
+        "title": "Command line",
+        "line": 776
       },
       {
         "level": 1,
-        "title": "--- Dependency audit ---",
-        "line": 777
+        "title": "Check certificate expiry",
+        "line": 779
       },
       {
-        "level": 1,
-        "title": "--- Environment variable review ---",
-        "line": 780
-      },
-      {
-        "level": 1,
-        "title": "Ensure no NEXT_PUBLIC_ prefix on secrets:",
-        "line": 781
-      },
-      {
-        "level": 1,
-        "title": "Should only show intentionally public values",
-        "line": 783
-      },
-      {
-        "level": 1,
-        "title": "============================================================",
+        "level": 2,
+        "title": "Quick Reference Commands",
         "line": 785
       },
       {
         "level": 1,
-        "title": "PRODUCTION DEPLOY CHECKLIST (copy into PR)",
-        "line": 786
-      },
-      {
-        "level": 1,
         "title": "============================================================",
-        "line": 787
-      },
-      {
-        "level": 1,
-        "title": "[ ] STAFF_MFA_ENFORCEMENT=1 in production env",
         "line": 788
       },
       {
         "level": 1,
-        "title": "[ ] NEXT_PUBLIC_CAPTCHA_ENABLED=true + Turnstile keys set",
+        "title": "SECURITY VERIFICATION COMMANDS",
         "line": 789
       },
       {
         "level": 1,
-        "title": "[ ] CRON_SECRET is set and >= 32 hex chars",
+        "title": "============================================================",
         "line": 790
       },
       {
         "level": 1,
-        "title": "[ ] AUTH_TRUST_COOKIE_SECRET is set and >= 32 hex chars",
-        "line": 791
-      },
-      {
-        "level": 1,
-        "title": "[ ] PLACEMENT_SURVEY_TOKEN_SECRET is set and >= 32 hex chars",
+        "title": "--- Headers ---",
         "line": 792
       },
       {
         "level": 1,
-        "title": "[ ] UPSTASH_REDIS_REST_URL + TOKEN set (rate limiting)",
-        "line": 793
-      },
-      {
-        "level": 1,
-        "title": "[ ] SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN set",
-        "line": 794
-      },
-      {
-        "level": 1,
-        "title": "[ ] All COURSERA_* secrets set (if using learning integration)",
+        "title": "--- Cookie security ---",
         "line": 795
       },
       {
         "level": 1,
-        "title": "[ ] STRIPE_* secrets set (if using payments)",
-        "line": 796
-      },
-      {
-        "level": 1,
-        "title": "[ ] RESEND_API_KEY + EMAIL_FROM set",
-        "line": 797
-      },
-      {
-        "level": 1,
-        "title": "[ ] ELEVENLABS_API_KEY set (if using voice features)",
+        "title": "--- Rate limit test (login) ---",
         "line": 798
       },
       {
         "level": 1,
+        "title": "--- Find unguarded API routes ---",
+        "line": 806
+      },
+      {
+        "level": 1,
+        "title": "--- Find auditLog coverage ---",
+        "line": 809
+      },
+      {
+        "level": 1,
+        "title": "--- Find SQL injection risk ---",
+        "line": 814
+      },
+      {
+        "level": 1,
+        "title": "--- Find dangerouslySetInnerHTML ---",
+        "line": 817
+      },
+      {
+        "level": 1,
+        "title": "--- Find SVG upload risk ---",
+        "line": 820
+      },
+      {
+        "level": 1,
+        "title": "--- Check RLS status (requires psql) ---",
+        "line": 823
+      },
+      {
+        "level": 1,
+        "title": "Then check each P0 table for RLS:",
+        "line": 825
+      },
+      {
+        "level": 1,
+        "title": "--- Sentry test ---",
+        "line": 828
+      },
+      {
+        "level": 1,
+        "title": "--- Dependency audit ---",
+        "line": 831
+      },
+      {
+        "level": 1,
+        "title": "--- Environment variable review ---",
+        "line": 834
+      },
+      {
+        "level": 1,
+        "title": "Ensure no NEXT_PUBLIC_ prefix on secrets:",
+        "line": 835
+      },
+      {
+        "level": 1,
+        "title": "Should only show intentionally public values",
+        "line": 837
+      },
+      {
+        "level": 1,
+        "title": "============================================================",
+        "line": 839
+      },
+      {
+        "level": 1,
+        "title": "PRODUCTION DEPLOY CHECKLIST (copy into PR)",
+        "line": 840
+      },
+      {
+        "level": 1,
+        "title": "============================================================",
+        "line": 841
+      },
+      {
+        "level": 1,
+        "title": "[ ] STAFF_MFA_ENFORCEMENT=1 in production env",
+        "line": 842
+      },
+      {
+        "level": 1,
+        "title": "[ ] NEXT_PUBLIC_CAPTCHA_ENABLED=true + Turnstile keys set",
+        "line": 843
+      },
+      {
+        "level": 1,
+        "title": "[ ] CRON_SECRET is set and >= 32 hex chars",
+        "line": 844
+      },
+      {
+        "level": 1,
+        "title": "[ ] AUTH_TRUST_COOKIE_SECRET is set and >= 32 hex chars",
+        "line": 845
+      },
+      {
+        "level": 1,
+        "title": "[ ] PLACEMENT_SURVEY_TOKEN_SECRET is set and >= 32 hex chars",
+        "line": 846
+      },
+      {
+        "level": 1,
+        "title": "[ ] UPSTASH_REDIS_REST_URL + TOKEN set (rate limiting)",
+        "line": 847
+      },
+      {
+        "level": 1,
+        "title": "[ ] SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN set",
+        "line": 848
+      },
+      {
+        "level": 1,
+        "title": "[ ] All COURSERA_* secrets set (if using learning integration)",
+        "line": 849
+      },
+      {
+        "level": 1,
+        "title": "[ ] STRIPE_* secrets set (if using payments)",
+        "line": 850
+      },
+      {
+        "level": 1,
+        "title": "[ ] RESEND_API_KEY + EMAIL_FROM set",
+        "line": 851
+      },
+      {
+        "level": 1,
+        "title": "[ ] ELEVENLABS_API_KEY set (if using voice features)",
+        "line": 852
+      },
+      {
+        "level": 1,
         "title": "[ ] Security headers verified via curl",
-        "line": 799
+        "line": 853
       },
       {
         "level": 1,
         "title": "[ ] SSL Labs A+ rating confirmed",
-        "line": 800
+        "line": 854
       },
       {
         "level": 1,
         "title": "[ ] Rate limit tested on auth endpoints",
-        "line": 801
+        "line": 855
       },
       {
         "level": 1,
         "title": "[ ] No secrets in client bundle (npm run build + check .next/static)",
-        "line": 802
+        "line": 856
       },
       {
         "level": 1,
         "title": "[ ] RLS migration NOT deployed yet (wait for GUC middleware)",
-        "line": 803
+        "line": 857
       }
     ],
     "datedFilename": false,

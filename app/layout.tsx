@@ -16,6 +16,7 @@ import { Suspense } from 'react';
 import { getRequestOrgBranding } from '@/lib/platform/defaultOrgTheme';
 import { WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER } from '@/lib/nav/mobileBottomNavLayout';
 import { WAP_PAID_APPLY_HEADER } from '@/lib/apply/paidApplyUtm';
+import { CSP_NONCE_HEADER } from '@/lib/security/csp';
 import {
   gucContextStorage,
   buildGucContext,
@@ -193,6 +194,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const reserveMobileBottomNav = h.get(WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER) === '1';
   const hidePaidApplyMarketingNav = Boolean(h.get(WAP_PAID_APPLY_HEADER));
   const htmlClassName = reserveMobileBottomNav ? 'wap-reserve-mobile-bottom-nav' : undefined;
+  // Per-request CSP nonce minted in middleware (WAP-36 phase 1). Stamped on
+  // every inline <script> this layout renders so the Report-Only policy does
+  // not flag our own bootstrap code; undefined on non-document renders.
+  const cspNonce = h.get(CSP_NONCE_HEADER) ?? undefined;
 
   return await gucContextStorage.run(gucCtx, async () => (
     <html
@@ -203,8 +208,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       data-portal-read-only-audit={readOnlyAudit ? '1' : undefined}
     >
       <head>
-        <ThemeInitScript />
+        <ThemeInitScript nonce={cspNonce} />
         <script
+          nonce={cspNonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var KEY='wap:chunk-reload-once';try{sessionStorage.removeItem(KEY);}catch(_s){}var shouldRecover=function(input){var text='';if(typeof input==='string')text=input;else if(input&&typeof input==='object'){text=[input.name,input.message,input.reason,input.request].filter(Boolean).join(' ');}text=String(text||'').toLowerCase();return text.includes('chunkloaderror')||text.includes('loading chunk')||text.includes('failed to fetch dynamically imported module');};var reloadOnce=function(){try{if(sessionStorage.getItem(KEY)==='1')return;sessionStorage.setItem(KEY,'1');}catch(_e){}window.location.reload();};window.addEventListener('error',function(event){var err=event&&event.error?event.error:null;var message=(event&&event.message)|| (err&&err.message) || err; if(shouldRecover(message)) reloadOnce();},{capture:true});window.addEventListener('unhandledrejection',function(event){var reason=event&&'reason' in event?event.reason:null; if(shouldRecover(reason)){if(event&&event.preventDefault)event.preventDefault();reloadOnce();}},{capture:true});}catch(_e){}})();`,
           }}
@@ -230,7 +236,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             portal pages and is preloaded from the (portal) and admin layouts. */}
         {/* Register service worker — updateViaCache:'none' ensures browser always fetches fresh sw.js */}
         {!readOnlyAudit ? (
-          <Script id="sw-register" strategy="lazyOnload">
+          <Script id="sw-register" strategy="lazyOnload" nonce={cspNonce}>
             {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(r){r.update()}).catch(function(){})}`}
           </Script>
         ) : null}
@@ -276,6 +282,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script
               id="gtm-consent-default"
               strategy="beforeInteractive"
+              nonce={cspNonce}
               dangerouslySetInnerHTML={{
                 __html: `(function(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=window.gtag||gtag;var stored=null;try{stored=JSON.parse(localStorage.getItem('wap-cookie-consent')||'null');}catch(_e){}var decision=stored&&(stored.decision||(stored.accepted===true?'accepted':stored.accepted===false?'declined':null));var v=decision==='accepted'?'granted':'denied';gtag('consent','default',{ad_storage:v,ad_user_data:v,ad_personalization:v,analytics_storage:v,wait_for_update:500});})();`,
               }}
@@ -283,6 +290,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script
               id="gtm"
               strategy="afterInteractive"
+              nonce={cspNonce}
               dangerouslySetInnerHTML={{
                 __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

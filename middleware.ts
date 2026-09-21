@@ -45,6 +45,15 @@ import {
   READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER,
   isValidReadOnlyPortalAuditToken,
 } from '@/lib/audit/readOnlyPortalAudit';
+import {
+  CSP_NONCE_HEADER,
+  CSP_REPORT_ONLY_HEADER,
+  CSP_REPORTING_ENDPOINTS_HEADER,
+  buildCspReportOnlyPolicy,
+  buildReportingEndpointsHeader,
+  generateCspNonce,
+  isCspNonceDocumentRequest,
+} from '@/lib/security/csp';
 
 /** Header forwarded to server components / API routes when middleware found a cached org. */
 const WAP_ORG_ID_HEADER = 'x-wap-org-id';
@@ -165,6 +174,11 @@ export async function middleware(request: NextRequest) {
   );
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_HEADER);
   requestHeaders.delete(READ_ONLY_PORTAL_AUDIT_TOKEN_HEADER);
+  // Same rule for the CSP nonce: Next.js reads the nonce back out of the
+  // forwarded CSP header to stamp its own bootstrap scripts, so a client must
+  // never be able to smuggle either header through to the app.
+  requestHeaders.delete(CSP_NONCE_HEADER);
+  requestHeaders.delete(CSP_REPORT_ONLY_HEADER);
 
   // Mint or forward an `x-request-id` for end-to-end correlation. We set
   // this on BOTH the forwarded request headers (so server components, API
@@ -173,6 +187,21 @@ export async function middleware(request: NextRequest) {
   // back when filing bug reports).
   const { requestId } = resolveRequestId(request.headers);
   requestHeaders.set(REQUEST_ID_HEADER, requestId);
+
+  // WAP-36 phase 1 (observe, never enforce): mint a per-document nonce and a
+  // Content-Security-Policy-Report-Only policy that mirrors the enforced
+  // header in next.config.ts plus `'nonce-…' 'strict-dynamic'`. The nonce
+  // travels on `x-nonce` so the root layout can stamp inline scripts, and the
+  // Report-Only header is ALSO forwarded on the request because Next.js
+  // (app-render) extracts the nonce from `content-security-policy[-report-only]`
+  // in the request headers to nonce its own framework `<script>` tags. API
+  // routes, RSC payloads and static files get no nonce (nothing to stamp).
+  const cspNonce = isCspNonceDocumentRequest(request) ? generateCspNonce() : null;
+  const cspReportOnlyPolicy = cspNonce ? buildCspReportOnlyPolicy(cspNonce) : null;
+  if (cspNonce && cspReportOnlyPolicy) {
+    requestHeaders.set(CSP_NONCE_HEADER, cspNonce);
+    requestHeaders.set(CSP_REPORT_ONLY_HEADER, cspReportOnlyPolicy);
+  }
 
   const { locale: prefixLocale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
   const effectivePath = prefixLocale ? pathnameWithoutLocale : pathname;
@@ -275,6 +304,15 @@ export async function middleware(request: NextRequest) {
   // Echo the request ID on the response so the client and intermediate
   // logs can correlate to server-side logs/Sentry events.
   response.headers.set(REQUEST_ID_HEADER, requestId);
+
+  // Report-Only CSP on the document response. The enforced header keeps
+  // coming from next.config.ts; this one only files reports at /api/csp-report.
+  // The rebuilt-response path below copies every non-x-middleware header, so
+  // it survives the user-id rebuild and the auth redirects.
+  if (cspReportOnlyPolicy) {
+    response.headers.set(CSP_REPORT_ONLY_HEADER, cspReportOnlyPolicy);
+    response.headers.set(CSP_REPORTING_ENDPOINTS_HEADER, buildReportingEndpointsHeader());
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

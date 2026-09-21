@@ -1,6 +1,6 @@
 flowchart LR
   agent_tooling["agent-tooling: 319 files"]
-  api["api: 524 files"]
+  api["api: 525 files"]
   assets["assets: 78 files"]
   astro_marketing["astro-marketing: 107 files"]
   audit_graph["audit-graph: 81 files"]
@@ -10,17 +10,17 @@ flowchart LR
   database["database: 208 files"]
   delivery["delivery: 9 files"]
   documentation["documentation: 357 files"]
-  libraries["libraries: 1064 files"]
+  libraries["libraries: 1067 files"]
   localization["localization: 6 files"]
   operations["operations: 141 files"]
   pages["pages: 644 files"]
   root["root: 56 files"]
   styles["styles: 17 files"]
   supporting_files["supporting-files: 74 files"]
-  tests["tests: 558 files"]
+  tests["tests: 562 files"]
   api -->|"8 static references"| communications
   api -->|"1 static references"| content
-  api -->|"3677 static references"| libraries
+  api -->|"3681 static references"| libraries
   astro_marketing -->|"3 static references"| libraries
   audit_graph -->|"2 static references"| api
   audit_graph -->|"1 static references"| root
@@ -47,17 +47,17 @@ flowchart LR
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
   pages -->|"1126 static references"| components
-  pages -->|"1379 static references"| libraries
+  pages -->|"1380 static references"| libraries
   pages -->|"39 static references"| styles
-  root -->|"24 static references"| libraries
+  root -->|"25 static references"| libraries
   root -->|"2 static references"| operations
   supporting_files -->|"2 static references"| libraries
-  tests -->|"401 static references"| api
+  tests -->|"402 static references"| api
   tests -->|"5 static references"| astro_marketing
   tests -->|"8 static references"| communications
-  tests -->|"182 static references"| components
-  tests -->|"1171 static references"| libraries
+  tests -->|"183 static references"| components
+  tests -->|"1174 static references"| libraries
   tests -->|"53 static references"| localization
   tests -->|"29 static references"| operations
-  tests -->|"114 static references"| pages
-  tests -->|"9 static references"| root
+  tests -->|"115 static references"| pages
+  tests -->|"11 static references"| root
