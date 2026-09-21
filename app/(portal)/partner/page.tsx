@@ -57,6 +57,7 @@ import {
   type PartnerPayoutLedgerRow,
 } from '@/components/portal/kit/pages/PartnerOverviewKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { getTourOffer } from '@/lib/tours/getTourOffer';
 import { eventNameReadCandidates } from '@/lib/events/names';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -352,7 +353,10 @@ export default async function PartnerDashboardPage({
             lede={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
-          <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />
+          {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
+          <div data-tour="tour-referral-link">
+            <PartnerReferralShare url={referralApplyUrl} referralCode={refParam} />
+          </div>
 
           <PartnerKpiGrid
             items={[
@@ -488,7 +492,8 @@ export default async function PartnerDashboardPage({
           </div>
 
           {showPayouts ? (
-            <div className="wa-flex wa-flex-col wa-gap-3">
+            /* `tour-payouts`: partner tour step 4; referral partners only, skipped otherwise. */
+            <div className="wa-flex wa-flex-col wa-gap-3" data-tour="tour-payouts">
               <KitSectionHeader
                 title="Payout history"
                 goal="Verified placements that generated a payout to your organization."
@@ -694,8 +699,12 @@ export default async function PartnerDashboardPage({
   const nearCompletion = pipelineMembers.filter((p) => p.stage === 'in_training' && p.progress >= 70);
 
   const showPartnerOnboarding = partnerRow.onboardingCompletedAt == null;
+  // Guided tours v2 (flag `guided_tours_v2`): when it is on for this user the
+  // shell's first-login strip and Help menu own the tour, so the legacy
+  // 1.5 s auto-start stays off. Flag row absent → pre-flag behaviour.
+  const guidedToursV2 = (await getTourOffer(user.id, 'partner.home'))?.enabled === true;
   const showPartnerTour =
-    partnerRow.onboardingCompletedAt != null && partnerRow.tourCompletedAt == null;
+    !guidedToursV2 && partnerRow.onboardingCompletedAt != null && partnerRow.tourCompletedAt == null;
 
   /** Share of referred members who reached a placed outcome (placements / total referrals). */
   const conversionRate = total > 0 ? Math.round((placements / total) * 100) : 0;
@@ -826,7 +835,7 @@ export default async function PartnerDashboardPage({
       )}
 
       {!isPendingApproval && (
-        <div className="portal-pad-x" style={{ paddingBottom: '1rem' }} data-tour="tour-referral-link">
+        <div className="portal-pad-x" style={{ paddingBottom: '1rem' }}>
           <PortalCard
             title={t('referralLink')}
             subtitle={t('appliedViaYourLink', { count: referredMembersAppliedViaLink })}
@@ -1085,7 +1094,7 @@ export default async function PartnerDashboardPage({
 
       {/* Desktop Connect payout section — referral partners only */}
       {showPayouts && (
-        <section style={{ marginBottom: '1.5rem' }}>
+        <section style={{ marginBottom: '1.5rem' }} data-tour="tour-payouts">
           <PortalCard title={t('payouts')} subtitle={t('getPaidToBankWhenVerified')}>
             {partnerRow.stripeConnectStatus === 'active' ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>

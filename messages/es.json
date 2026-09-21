@@ -3582,8 +3582,8 @@
     "employer": {
       "home": {
         "overview": {
-          "title": "Tu panel",
-          "body": "Consulta de un vistazo las estadísticas de empleos activos, el trabajo pendiente y las alertas."
+          "title": "Tu panel de contratación",
+          "body": "Puestos activos, candidatos en revisión y ofertas abiertas de un vistazo. Cola de trabajo, en el menú, enumera las acciones de hoy: candidatos por revisar, entrevistas por programar y publicaciones sin actividad."
         },
         "workQueue": {
           "title": "Cola de trabajo",
@@ -3594,12 +3594,12 @@
           "body": "Publica nuevos puestos, importa desde tu bolsa de trabajo o LinkedIn y gestiona las publicaciones activas."
         },
         "applicants": {
-          "title": "Candidatos",
-          "body": "Revisa a cada persona que se postuló. Filtra por programa, estado o puntuación de compatibilidad."
+          "title": "Revisa candidatos",
+          "body": "Todas las personas que se postularon, con programa, estado y puntuación de compatibilidad. Abre un candidato para ver su progreso de formación y su perfil, y luego avánzalo o descártalo."
         },
         "pipeline": {
-          "title": "Proceso de contratación",
-          "body": "Sigue a los candidatos de revisado → entrevistado → con oferta en un tablero visual."
+          "title": "Sigue tu proceso de contratación",
+          "body": "Revisado, en entrevista, con oferta, contratado: un tablero para cada puesto abierto. Historial de coincidencias guarda los miembros sugeridos por IA para cada publicación."
         },
         "matches": {
           "title": "Coincidencias de IA",
@@ -3607,11 +3607,23 @@
         },
         "messages": {
           "title": "Mensajes",
-          "body": "Habla con el equipo de WorkforceAP sobre publicaciones, candidatos y contratación."
+          "body": "Habla con el equipo de WorkforceAP sobre una publicación, un candidato o una entrevista. Los hilos sin leer muestran una insignia aquí."
         },
         "postJob": {
-          "title": "Publica tu primer empleo",
-          "body": "Toma unos 2 minutos. Te conectaremos automáticamente con candidatos calificados."
+          "title": "Publica un empleo",
+          "body": "Toma unos dos minutos: título, salario, horario y las habilidades que necesitas. Importaciones trae puestos desde tu bolsa de trabajo o LinkedIn. Los miembros calificados del programa se conectan automáticamente con cada puesto activo."
+        },
+        "offer": {
+          "title": "¿Nuevo aquí? Haz un recorrido de dos minutos",
+          "body": "Descubre dónde publicar un empleo, revisar candidatos, seguir tu proceso de contratación, escribir al equipo y gestionar el perfil de tu empresa."
+        },
+        "settings": {
+          "title": "Configuración de la empresa",
+          "body": "El perfil de tu empresa, el logotipo y los datos de contacto. Los candidatos ven en cada publicación los datos de la empresa que configures aquí."
+        },
+        "help": {
+          "title": "Vuelve cuando quieras",
+          "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a Cómo funciona, la guía para empleadores."
         }
       }
     },
@@ -3622,12 +3634,12 @@
           "body": "Los miembros que has referido y su estado actual, todo en una sola vista."
         },
         "members": {
-          "title": "Tus miembros",
-          "body": "Todas las personas que has referido. Haz clic en cualquier miembro para ver su recorrido completo."
+          "title": "Miembros referidos",
+          "body": "Todas las personas que has referido, con su etapa, progreso de formación y última actividad. Abre un miembro para ver su recorrido completo."
         },
         "attention": {
-          "title": "Necesitan atención",
-          "body": "Miembros que pueden necesitar un empujón: solicitudes estancadas, inactividad o riesgo."
+          "title": "Cola de atención",
+          "body": "Miembros que pueden necesitar un empujón: solicitudes estancadas, estudiantes inactivos y alertas de riesgo, cada uno con el motivo y un siguiente paso."
         },
         "outcomes": {
           "title": "Resultados",
@@ -3635,18 +3647,35 @@
         },
         "messages": {
           "title": "Mensajes",
-          "body": "Contacta al equipo de WorkforceAP sobre referidos, hitos y apoyo para socios."
+          "body": "Contacta al equipo de WorkforceAP sobre un referido, un hito o apoyo para socios. Los hilos sin leer muestran una insignia aquí."
         },
         "referralLink": {
           "title": "Tu enlace de referido",
-          "body": "Comparte este enlace con miembros de la comunidad para seguir su recorrido hasta ti."
+          "body": "Comparte este enlace o código con las personas a las que atiendes. Cualquiera que se postule a través de él queda vinculado a tu organización desde la solicitud hasta la colocación."
+        },
+        "offer": {
+          "title": "¿Nuevo aquí? Haz un recorrido de dos minutos",
+          "body": "Descubre dónde está tu enlace de referido, cómo seguir a los miembros referidos, dónde están los pagos y las exportaciones y cómo contactar al equipo."
+        },
+        "payouts": {
+          "title": "Pagos",
+          "body": "Los socios de referidos reciben un pago por cada colocación verificada. Conecta una cuenta bancaria aquí una sola vez; los pagos se envían cuando se verifica una colocación."
+        },
+        "exports": {
+          "title": "Exportaciones",
+          "body": "Descarga tus miembros referidos, hitos y resultados en CSV para informes de subvenciones y actualizaciones para la junta. Resumen de resultados muestra las mismas cifras en pantalla."
+        },
+        "help": {
+          "title": "Vuelve cuando quieras",
+          "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a la Guía de referidos."
         }
       }
     },
     "help": {
       "label": "Ayuda",
       "takeTour": "Hacer el recorrido",
-      "guide": "Guía del portal"
+      "guide": "Guía del portal",
+      "askAssistant": "Pedir ayuda"
     },
     "offer": {
       "take": "Hacer el recorrido",
@@ -3686,6 +3715,30 @@
           "title": "Vuelve cuando quieras",
           "body": "Ayuda reabre este recorrido siempre que lo necesites y enlaza a la guía del portal."
         }
+      }
+    },
+    "assistant": {
+      "title": "Pedir ayuda",
+      "intro": "Pregunta cómo usar este portal: dónde está una página, para qué sirve o los pasos para hacer algo. Solo respondo sobre tu propio portal y nunca veo tus datos.",
+      "placeholder": "Pregunta cómo hacer algo aquí…",
+      "send": "Enviar",
+      "thinking": "Buscando…",
+      "error": "Algo salió mal. Inténtalo de nuevo en un momento.",
+      "tooMany": "Has hecho muchas preguntas en poco tiempo. Inténtalo de nuevo más tarde.",
+      "links": "Páginas relacionadas",
+      "close": "Cerrar ayuda",
+      "disclaimer": "Solo orientación sobre el portal. Nada de lo que escribas aquí cambia tu cuenta.",
+      "scope": {
+        "member": "Cómo usar tu portal de miembro",
+        "counselor": "Cómo usar el portal de consejeros",
+        "employer": "Cómo usar el portal de empleadores",
+        "partner": "Cómo usar el portal de socios",
+        "admin": "Cómo usar el espacio de administración"
+      },
+      "starters": {
+        "whereAmI": "¿Para qué sirve esta página?",
+        "howToMessage": "¿Cómo envío un mensaje?",
+        "whatCanIDo": "¿Qué puedo hacer en este portal?"
       }
     },
     "admin": {

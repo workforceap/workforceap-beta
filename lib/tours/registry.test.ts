@@ -190,12 +190,56 @@ test('member.home (wave 3) is written for the /dashboard overview and walks home
   assert.equal(getHomeTourForRole('member')?.key, 'member.home');
 });
 
+test('employer.home (wave 3) is written for the overview and walks post → review → pipeline → messages → settings', () => {
+  const tour = TOUR_REGISTRY['employer.home'];
+  assert.equal(tour.role, 'employer');
+  assert.equal(tour.route, '/employer');
+  assert.equal(tour.version, 3, 'v3 re-tours everyone who finished the v2 rail walk-through');
+  assert.deepEqual(
+    tour.steps.map((s) => s.target),
+    ['tour-overview', 'tour-post-job', 'tour-applicants', 'tour-pipeline', 'tour-messages', 'tour-settings', 'tour-help'],
+  );
+  assert.ok(tour.steps.length >= 5 && tour.steps.length <= 7);
+  assert.equal(getHomeTourForRole('employer')?.key, 'employer.home');
+});
+
+test('partner.home (wave 3) is written for the overview and walks referrals → members → attention → payouts → exports → messages', () => {
+  const tour = TOUR_REGISTRY['partner.home'];
+  assert.equal(tour.role, 'partner');
+  assert.equal(tour.route, '/partner');
+  assert.equal(tour.version, 3);
+  assert.deepEqual(
+    tour.steps.map((s) => s.target),
+    ['tour-referral-link', 'tour-members', 'tour-attention', 'tour-payouts', 'tour-exports', 'tour-messages', 'tour-help'],
+  );
+  assert.ok(tour.steps.length >= 5 && tour.steps.length <= 7);
+  assert.equal(getHomeTourForRole('partner')?.key, 'partner.home');
+});
+
+test('every persona home tour ends on the Help anchor that reopens it', () => {
+  for (const key of ['member.home', 'employer.home', 'partner.home', 'counselor.home'] as const) {
+    const steps = TOUR_REGISTRY[key].steps;
+    assert.equal(steps[steps.length - 1].target, 'tour-help', key);
+  }
+});
+
 for (const locale of REVIEWED_LOCALES) {
   test(`${locale}.json: member offer and step copy resolves`, () => {
     const tours = loadTours(locale);
     const keys = ['member.home.offer.title', 'member.home.offer.body'];
     for (const step of TOUR_REGISTRY['member.home'].steps) keys.push(step.titleKey, step.bodyKey);
     for (const key of keys) {
+      const value = resolve(tours, key);
+      assert.equal(typeof value, 'string', `tours.${key} missing in ${locale}.json`);
+      assert.ok((value as string).trim().length > 0, `tours.${key} empty in ${locale}.json`);
+    }
+  });
+}
+
+for (const locale of REVIEWED_LOCALES) {
+  test(`${locale}.json: employer and partner offer copy resolves`, () => {
+    const tours = loadTours(locale);
+    for (const key of ['employer.home.offer.title', 'employer.home.offer.body', 'partner.home.offer.title', 'partner.home.offer.body']) {
       const value = resolve(tours, key);
       assert.equal(typeof value, 'string', `tours.${key} missing in ${locale}.json`);
       assert.ok((value as string).trim().length > 0, `tours.${key} empty in ${locale}.json`);
@@ -210,6 +254,17 @@ test('member step copy names the surfaces the steps point at', () => {
   assert.match(resolve(en, 'member.home.jobs.body') as string, /Job board/);
   assert.match(resolve(en, 'member.home.profile.body') as string, /Profile & settings/);
   assert.match(resolve(en, 'member.home.help.body') as string, /reopens this tour/);
+});
+
+test('employer and partner step copy names the surfaces the steps point at', () => {
+  const en = loadTours('en');
+  assert.match(resolve(en, 'employer.home.postJob.body') as string, /two minutes/);
+  assert.match(resolve(en, 'employer.home.overview.body') as string, /Work queue/);
+  assert.match(resolve(en, 'employer.home.pipeline.body') as string, /Match history/);
+  assert.match(resolve(en, 'employer.home.help.body') as string, /reopens this tour/);
+  assert.match(resolve(en, 'partner.home.payouts.body') as string, /verified placement/);
+  assert.match(resolve(en, 'partner.home.exports.body') as string, /CSV/);
+  assert.match(resolve(en, 'partner.home.help.body') as string, /reopens this tour/);
 });
 
 test('admin.home (wave 4) is written for the /admin Command Center and walks command center → overview → students → messages → programs → training progress → settings → help', () => {

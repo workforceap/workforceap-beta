@@ -13184,6 +13184,22 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/(portal)/employer/layout.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/employer/layout.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/(portal)/employer/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -13654,6 +13670,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/audit/readOnlyPortalAudit.ts"
+  },
+  {
+    "from": "app/(portal)/employer/page.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 35,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
   },
   {
     "from": "app/(portal)/employer/pipeline/loading.tsx",
@@ -14648,6 +14672,22 @@
     "target": "lib/audit/readOnlyPortalAudit.ts"
   },
   {
+    "from": "app/(portal)/partner/layout.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 10,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/partner/layout.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 11,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "app/(portal)/partner/loading.tsx",
     "specifier": "@/components/portal/PortalRouteLoading",
     "line": 1,
@@ -15425,8 +15465,16 @@
   },
   {
     "from": "app/(portal)/partner/page.tsx",
-    "specifier": "@/lib/events/names",
+    "specifier": "@/lib/tours/getTourOffer",
     "line": 60,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "app/(portal)/partner/page.tsx",
+    "specifier": "@/lib/events/names",
+    "line": 61,
     "kind": "import",
     "external": false,
     "target": "lib/events/names.ts"
@@ -52432,6 +52480,94 @@
     "target": "lib/db/withRequestGuc.ts"
   },
   {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "next/server",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 2,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/db/withRequestGuc",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/withRequestGuc.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/ai/anthropicChat",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/anthropicChat.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/events/track",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/feature-flags/isFlagEnabledForUser",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/isFlagEnabledForUser.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/i18n/config",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/i18n/config.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/help/assistant",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/assistant.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/help/knowledge",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/knowledge.ts"
+  },
+  {
+    "from": "app/api/help/chat/route.ts",
+    "specifier": "@/lib/help/resolveAccess",
+    "line": 27,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/resolveAccess.ts"
+  },
+  {
     "from": "app/api/interview/history/route.ts",
     "specifier": "next/server",
     "line": 1,
@@ -77552,6 +77688,22 @@
     "target": "lib/auth/portalRoleSwitcher.ts"
   },
   {
+    "from": "components/portal/EmployerPortalShell.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 8,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "components/portal/EmployerPortalShell.tsx",
+    "specifier": "@/components/onboarding/TourOfferStrip",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
+  },
+  {
     "from": "components/portal/FindYourCareerSection.tsx",
     "specifier": "next/link",
     "line": 1,
@@ -79464,6 +79616,22 @@
     "target": "lib/auth/portalRoleSwitcher.ts"
   },
   {
+    "from": "components/portal/PartnerPortalShell.tsx",
+    "specifier": "@/lib/tours/getTourOffer",
+    "line": 8,
+    "kind": "type",
+    "external": false,
+    "target": "lib/tours/getTourOffer.ts"
+  },
+  {
+    "from": "components/portal/PartnerPortalShell.tsx",
+    "specifier": "@/components/onboarding/TourOfferStrip",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourOfferStrip.tsx"
+  },
+  {
     "from": "components/portal/PointsWidget.test.tsx",
     "specifier": "vitest",
     "line": 1,
@@ -79697,8 +79865,24 @@
   },
   {
     "from": "components/portal/PortalHelpMenu.tsx",
-    "specifier": "@/lib/tours/registry",
+    "specifier": "@/components/portal/help/HelpAssistantPanel",
     "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/help/HelpAssistantPanel.tsx"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "@/components/portal/help/useHelpAssistantAvailability",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/help/useHelpAssistantAvailability.ts"
+  },
+  {
+    "from": "components/portal/PortalHelpMenu.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 10,
     "kind": "type",
     "external": false,
     "target": "lib/tours/registry.ts"
@@ -82750,6 +82934,94 @@
     "kind": "import",
     "external": false,
     "target": "lib/forms/requiredFields.ts"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "next/link",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "next/navigation",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "react",
+    "line": 5,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "react-dom",
+    "line": 6,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "next-intl",
+    "line": 7,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "@/components/portal/kit/hooks/useFocusTrap",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/hooks/useFocusTrap.ts"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "@/lib/help/assistant",
+    "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/assistant.ts"
+  },
+  {
+    "from": "components/portal/help/HelpAssistantPanel.tsx",
+    "specifier": "./useHelpAssistantAvailability",
+    "line": 10,
+    "kind": "type",
+    "external": false,
+    "target": "components/portal/help/useHelpAssistantAvailability.ts"
+  },
+  {
+    "from": "components/portal/help/useHelpAssistantAvailability.ts",
+    "specifier": "react",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "components/portal/help/useHelpAssistantAvailability.ts",
+    "specifier": "next/navigation",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next"
+  },
+  {
+    "from": "components/portal/help/useHelpAssistantAvailability.ts",
+    "specifier": "@/lib/help/knowledge",
+    "line": 5,
+    "kind": "type",
+    "external": false,
+    "target": "lib/help/knowledge.ts"
   },
   {
     "from": "components/portal/jobs/LogExternalApplicationButton.tsx",
@@ -105960,6 +106232,118 @@
     "target": "lib/portal/memberProfilePhoto.ts"
   },
   {
+    "from": "lib/help/assistant.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/help/assistant.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/help/assistant.test.ts",
+    "specifier": "./assistant",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/assistant.ts"
+  },
+  {
+    "from": "lib/help/assistant.test.ts",
+    "specifier": "./knowledge",
+    "line": 18,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/knowledge.ts"
+  },
+  {
+    "from": "lib/help/assistant.ts",
+    "specifier": "@/lib/ai/responseLanguage",
+    "line": 12,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/responseLanguage.ts"
+  },
+  {
+    "from": "lib/help/assistant.ts",
+    "specifier": "./knowledge",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/knowledge.ts"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "node:fs",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "node:fs"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "node:path",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "node:path"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "./knowledge",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/knowledge.ts"
+  },
+  {
+    "from": "lib/help/knowledge.test.ts",
+    "specifier": "../tours/registry",
+    "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
+    "from": "lib/help/resolveAccess.ts",
+    "specifier": "@/lib/auth/roles",
+    "line": 1,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "lib/help/resolveAccess.ts",
+    "specifier": "./assistant",
+    "line": 2,
+    "kind": "type",
+    "external": false,
+    "target": "lib/help/assistant.ts"
+  },
+  {
     "from": "lib/hooks/useTheme.ts",
     "specifier": "react",
     "line": 3,
@@ -124600,6 +124984,70 @@
     "target": "lib/rate-limit.ts"
   },
   {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/app/api/help/chat/route",
+    "line": 41,
+    "kind": "import",
+    "external": false,
+    "target": "app/api/help/chat/route.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/auth/server",
+    "line": 42,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/feature-flags/isFlagEnabledForUser",
+    "line": 43,
+    "kind": "import",
+    "external": false,
+    "target": "lib/feature-flags/isFlagEnabledForUser.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/rate-limit",
+    "line": 44,
+    "kind": "import",
+    "external": false,
+    "target": "lib/rate-limit.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/ai/anthropicChat",
+    "line": 45,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ai/anthropicChat.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/events/track",
+    "line": 46,
+    "kind": "import",
+    "external": false,
+    "target": "lib/events/track.ts"
+  },
+  {
+    "from": "tests/api/help-chat.spec.ts",
+    "specifier": "@/lib/help/resolveAccess",
+    "line": 47,
+    "kind": "import",
+    "external": false,
+    "target": "lib/help/resolveAccess.ts"
+  },
+  {
     "from": "tests/api/impact-page.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -134536,6 +134984,30 @@
     "target": "components/portal/kit/MemberProfilePhotoEditor.tsx"
   },
   {
+    "from": "tests/components/help-assistant-menu.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/help-assistant-menu.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/help-assistant-menu.spec.tsx",
+    "specifier": "@/components/portal/PortalHelpMenu",
+    "line": 26,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PortalHelpMenu.tsx"
+  },
+  {
     "from": "tests/components/inbox-zero-reassignment-receipt.spec.tsx",
     "specifier": "@testing-library/react",
     "line": 1,
@@ -142968,6 +143440,118 @@
     "target": "lib/attention/counselorViews.ts"
   },
   {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "react-dom/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "@/app/(portal)/employer/page",
+    "line": 37,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/employer/page.tsx"
+  },
+  {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "@/lib/auth/server",
+    "line": 38,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/server.ts"
+  },
+  {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "@/lib/auth/roles",
+    "line": 39,
+    "kind": "import",
+    "external": false,
+    "target": "lib/auth/roles.ts"
+  },
+  {
+    "from": "tests/tours/employer-overview-anchors.spec.tsx",
+    "specifier": "@/lib/db/prisma",
+    "line": 40,
+    "kind": "import",
+    "external": false,
+    "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@/components/portal/EmployerPortalShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/EmployerPortalShell.tsx"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/employer-tour.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
+  },
+  {
     "from": "tests/tours/get-tour-offer.spec.ts",
     "specifier": "vitest",
     "line": 1,
@@ -143270,6 +143854,94 @@
     "kind": "import",
     "external": false,
     "target": "lib/db/prisma.ts"
+  },
+  {
+    "from": "tests/tours/partner-overview-anchors.spec.tsx",
+    "specifier": "react-dom/server",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "react-dom"
+  },
+  {
+    "from": "tests/tours/partner-overview-anchors.spec.tsx",
+    "specifier": "vitest",
+    "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/partner-overview-anchors.spec.tsx",
+    "specifier": "@/app/(portal)/partner/page",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/partner/page.tsx"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@/components/portal/PartnerPortalShell",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/PartnerPortalShell.tsx"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@/components/onboarding/TourContext",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "components/onboarding/TourContext.tsx"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@/components/portal/kit/GuidedTour",
+    "line": 7,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/GuidedTour.tsx"
+  },
+  {
+    "from": "tests/tours/partner-tour.spec.tsx",
+    "specifier": "@/lib/tours/registry",
+    "line": 8,
+    "kind": "import",
+    "external": false,
+    "target": "lib/tours/registry.ts"
   },
   {
     "from": "tests/tours/tour-auto-start.spec.tsx",

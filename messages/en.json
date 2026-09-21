@@ -3582,8 +3582,8 @@
     "employer": {
       "home": {
         "overview": {
-          "title": "Your dashboard",
-          "body": "See active job stats, pending work, and alerts at a glance."
+          "title": "Your hiring dashboard",
+          "body": "Active roles, candidates in review and open offers at a glance. Work queue in the menu lists today's actions: candidates to review, interviews to schedule and postings going stale."
         },
         "workQueue": {
           "title": "Work queue",
@@ -3594,12 +3594,12 @@
           "body": "Post new roles, import from your job board or LinkedIn, and manage live postings."
         },
         "applicants": {
-          "title": "Applicants",
-          "body": "Review every candidate who applied. Filter by program, status, or match score."
+          "title": "Review candidates",
+          "body": "Everyone who applied, with program, status and match score. Open a candidate to see training progress and their profile, then move them forward or pass."
         },
         "pipeline": {
-          "title": "Hiring pipeline",
-          "body": "Track candidates from reviewed → interviewed → offered on a visual board."
+          "title": "Track your pipeline",
+          "body": "Reviewed, interviewing, offered, hired: one board for every open role. Match history keeps the AI-suggested members for each posting."
         },
         "matches": {
           "title": "AI matches",
@@ -3607,11 +3607,23 @@
         },
         "messages": {
           "title": "Messages",
-          "body": "Chat with the WorkforceAP team about postings, applicants, and hiring."
+          "body": "Talk with the WorkforceAP team about a posting, a candidate or an interview. Unread threads show a badge here."
         },
         "postJob": {
-          "title": "Post your first job",
-          "body": "Takes about 2 minutes. We'll match you with qualified candidates automatically."
+          "title": "Post a job",
+          "body": "Takes about two minutes: title, pay, schedule and the skills you need. Imports pulls roles from your job board or LinkedIn. Qualified program members are matched to every live role automatically."
+        },
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See where to post a job, review candidates, track your pipeline, message the team and manage your company profile."
+        },
+        "settings": {
+          "title": "Company settings",
+          "body": "Your company profile, logo and contact details. Candidates see the company details you set here on every posting."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it and links to How it works, the employer guide."
         }
       }
     },
@@ -3622,12 +3634,12 @@
           "body": "Your referred members and their current status — all in one view."
         },
         "members": {
-          "title": "Your members",
-          "body": "Everyone you've referred. Click any member to see their full journey."
+          "title": "Referred members",
+          "body": "Everyone you have referred, with their stage, training progress and last activity. Open a member to see their full journey."
         },
         "attention": {
-          "title": "Needs attention",
-          "body": "Members who may need a nudge — stalled applications, inactive, at risk."
+          "title": "Attention queue",
+          "body": "Members who may need a nudge: stalled applications, inactive learners and at-risk flags, each with the reason and a next step."
         },
         "outcomes": {
           "title": "Outcomes",
@@ -3635,18 +3647,35 @@
         },
         "messages": {
           "title": "Messages",
-          "body": "Reach the WorkforceAP team about referrals, milestones, and partner support."
+          "body": "Reach the WorkforceAP team about a referral, a milestone or partner support. Unread threads show a badge here."
         },
         "referralLink": {
           "title": "Your referral link",
-          "body": "Share this link with community members to track their journey back to you."
+          "body": "Share this link or code with the people you serve. Anyone who applies through it is tracked back to your organization from application to placement."
+        },
+        "offer": {
+          "title": "New here? Take a two-minute tour",
+          "body": "See where your referral link lives, how to follow referred members, where payouts and exports are and how to reach the team."
+        },
+        "payouts": {
+          "title": "Payouts",
+          "body": "Referral partners earn a payout for each verified placement. Connect a bank account here once; payouts are sent when a placement is verified."
+        },
+        "exports": {
+          "title": "Exports",
+          "body": "Download your referred members, milestones and outcomes as CSV for grant reports and board updates. Outcomes snapshot shows the same numbers on screen."
+        },
+        "help": {
+          "title": "Come back any time",
+          "body": "Help reopens this tour whenever you want it and links to the Referral guide."
         }
       }
     },
     "help": {
       "label": "Help",
       "takeTour": "Take the tour",
-      "guide": "Portal guide"
+      "guide": "Portal guide",
+      "askAssistant": "Ask for help"
     },
     "offer": {
       "take": "Take the tour",
@@ -3686,6 +3715,30 @@
           "title": "Come back any time",
           "body": "Help reopens this tour whenever you want it and links to the portal guide."
         }
+      }
+    },
+    "assistant": {
+      "title": "Ask for help",
+      "intro": "Ask how to use this portal: where a page is, what it does, or the steps to get something done. I answer only about your own portal and never see your data.",
+      "placeholder": "Ask how to do something here…",
+      "send": "Send",
+      "thinking": "Looking that up…",
+      "error": "Something went wrong. Try again in a moment.",
+      "tooMany": "You have asked a lot of questions in a short time. Please try again in a little while.",
+      "links": "Related pages",
+      "close": "Close help",
+      "disclaimer": "Guidance about the portal only. Nothing you type here changes your account.",
+      "scope": {
+        "member": "How to use your member portal",
+        "counselor": "How to use the counselor portal",
+        "employer": "How to use the employer portal",
+        "partner": "How to use the partner portal",
+        "admin": "How to use the admin workspace"
+      },
+      "starters": {
+        "whereAmI": "What is this page for?",
+        "howToMessage": "How do I send a message?",
+        "whatCanIDo": "What can I do in this portal?"
       }
     },
     "admin": {

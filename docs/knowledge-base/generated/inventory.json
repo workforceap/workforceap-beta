@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "311ea756efd2628ac84c1ab8d27092e36d7ffaf8848508a9c539b6dc3d0dade1",
+  "inputTreeSha256": "a14ecce7c15d6bb05d260503558bdfabd54a1ada87f5642d07be405ecd8e99b9",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -12250,19 +12250,19 @@
       "path": "app/(portal)/employer/layout.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 1737,
-      "lines": 48,
-      "sha256": "2965b23a24e61c4c9cc666c9e49a11d393c3b8845360da7ecae2f102537b2199",
+      "bytes": 2137,
+      "lines": 56,
+      "sha256": "eb8a69b3ef67c05ae7c24ada9aa49dbfc883e213d928596e47c3f17d7ae7cab9",
       "binary": false,
       "exports": [
         {
           "name": "metadata",
-          "line": 11,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration",
           "localName": "EmployerPortalLayout"
         }
@@ -12270,12 +12270,12 @@
       "declarations": [
         {
           "name": "metadata",
-          "line": 11,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "EmployerPortalLayout",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -12460,19 +12460,19 @@
       "path": "app/(portal)/employer/page.tsx",
       "area": "pages",
       "domain": "jobs-employers",
-      "bytes": 37226,
-      "lines": 728,
-      "sha256": "28d21245ec33fcea155ee5dc902b55e39fdb3b465e3b618211a644fefc65ff84",
+      "bytes": 37616,
+      "lines": 733,
+      "sha256": "f827ebb71eaed5aaa4d0b8c5e48370aba9419d88cd43c77f5dea8c58c6f032d7",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration",
           "localName": "EmployerDashboardPage"
         }
@@ -12480,12 +12480,12 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 36,
+          "line": 37,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "EmployerDashboardPage",
-          "line": 45,
+          "line": 46,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -13115,19 +13115,19 @@
       "path": "app/(portal)/partner/layout.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 1855,
-      "lines": 46,
-      "sha256": "b551d574c3a4352b4addcffcb8d544d3fb1d98e6a5be61270277d697b0e184e7",
+      "bytes": 2251,
+      "lines": 54,
+      "sha256": "3a7ad9e27f1c1da088e088a8cc70bd46c62bb42dce227f9eac0b5e27710670cf",
       "binary": false,
       "exports": [
         {
           "name": "metadata",
-          "line": 11,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "default",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration",
           "localName": "PartnerPortalLayout"
         }
@@ -13135,12 +13135,12 @@
       "declarations": [
         {
           "name": "metadata",
-          "line": 11,
+          "line": 13,
           "kind": "Variable"
         },
         {
           "name": "PartnerPortalLayout",
-          "line": 15,
+          "line": 17,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -13450,19 +13450,19 @@
       "path": "app/(portal)/partner/page.tsx",
       "area": "pages",
       "domain": "partners-funding",
-      "bytes": 61831,
-      "lines": 1382,
-      "sha256": "c4e2bc81f150abf188a6d21e76f61d694ced85b629ea2ec51300a6cb73a3b3a2",
+      "bytes": 62502,
+      "lines": 1391,
+      "sha256": "9b7c6160c049e15bea085f0b03aeb22736960f0df195c8aeed4e3ec9131e67e8",
       "binary": false,
       "exports": [
         {
           "name": "generateMetadata",
-          "line": 62,
+          "line": 63,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "default",
-          "line": 73,
+          "line": 74,
           "kind": "FunctionDeclaration",
           "localName": "PartnerDashboardPage"
         }
@@ -13470,17 +13470,17 @@
       "declarations": [
         {
           "name": "generateMetadata",
-          "line": 62,
+          "line": 63,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "JOURNEY_STAGES",
-          "line": 71,
+          "line": 72,
           "kind": "Variable"
         },
         {
           "name": "PartnerDashboardPage",
-          "line": 73,
+          "line": 74,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -34998,6 +34998,70 @@
         {
           "name": "GET",
           "line": 388,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "app/api/help/chat/route.ts",
+      "area": "api",
+      "domain": "api",
+      "bytes": 7573,
+      "lines": 194,
+      "sha256": "65e38b002e9513bd2fc8a507fec39062aa930825053b1f489234017eba47244d",
+      "binary": false,
+      "exports": [
+        {
+          "name": "GET",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 100,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "MAX_BODY_BYTES",
+          "line": 30,
+          "kind": "Variable"
+        },
+        {
+          "name": "NOT_FOUND",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "PATHNAME_PATTERN",
+          "line": 39,
+          "kind": "Variable"
+        },
+        {
+          "name": "readPathname",
+          "line": 41,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sourcePageFor",
+          "line": 48,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "readLanguage",
+          "line": 53,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "GET",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "POST",
+          "line": 100,
           "kind": "Variable"
         }
       ],
@@ -58743,22 +58807,32 @@
       "path": "components/portal/EmployerPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1429,
-      "lines": 48,
-      "sha256": "ccd5ff2df6a90ebaf6f19ff2afe334290d84570ed33368fc3ef423ddd50f05da",
+      "bytes": 2239,
+      "lines": 64,
+      "sha256": "ea74be09fef4700e39bcf4bd69ba3c6cc9931dc7de381c57b0b114cce38cb6c6",
       "binary": false,
       "exports": [
         {
+          "name": "EMPLOYER_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration",
           "localName": "EmployerPortalShell"
         }
       ],
       "declarations": [
         {
+          "name": "EMPLOYER_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "EmployerPortalShell",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60648,22 +60722,32 @@
       "path": "components/portal/PartnerPortalShell.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 1656,
-      "lines": 54,
-      "sha256": "78f8e4ab59bf9ff8fd007b4209d9b3a177e0a2b5b75268e81046603d59ea77f5",
+      "bytes": 2464,
+      "lines": 70,
+      "sha256": "0bd517122777df410a5cb312775f455a3618c3bcdd7388c6892160b58c7b9404",
       "binary": false,
       "exports": [
         {
+          "name": "PARTNER_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "default",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration",
           "localName": "PartnerPortalShell"
         }
       ],
       "declarations": [
         {
+          "name": "PARTNER_GUIDE_HREF",
+          "line": 12,
+          "kind": "Variable"
+        },
+        {
           "name": "PartnerPortalShell",
-          "line": 9,
+          "line": 14,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -60880,14 +60964,14 @@
       "path": "components/portal/PortalHelpMenu.tsx",
       "area": "components",
       "domain": "components",
-      "bytes": 4005,
-      "lines": 116,
-      "sha256": "a7719b5add42ab3f6b3b3d5b48898c53b3aeb8620ff8c3ae9c7708308099fdc9",
+      "bytes": 5371,
+      "lines": 150,
+      "sha256": "da7766521b97c0960aee746f1814f4033d687f563db24f8a06611a853c79279d",
       "binary": false,
       "exports": [
         {
           "name": "default",
-          "line": 18,
+          "line": 24,
           "kind": "FunctionDeclaration",
           "localName": "PortalHelpMenu"
         }
@@ -60895,7 +60979,7 @@
       "declarations": [
         {
           "name": "PortalHelpMenu",
-          "line": 18,
+          "line": 24,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -64473,6 +64557,85 @@
         }
       ],
       "directive": null
+    },
+    {
+      "path": "components/portal/help/HelpAssistantPanel.tsx",
+      "area": "components",
+      "domain": "components",
+      "bytes": 11933,
+      "lines": 320,
+      "sha256": "519dd87732336095b413373839b6d277ec52d729aa42c2d6e63b1986f06bc0af",
+      "binary": false,
+      "exports": [
+        {
+          "name": "default",
+          "line": 47,
+          "kind": "FunctionDeclaration",
+          "localName": "HelpAssistantPanel"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "PanelMessage",
+          "line": 12,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "ChatResponse",
+          "line": 21,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAssistantPanel",
+          "line": 47,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
+    },
+    {
+      "path": "components/portal/help/useHelpAssistantAvailability.ts",
+      "area": "components",
+      "domain": "components",
+      "bytes": 2246,
+      "lines": 63,
+      "sha256": "f991aef644ae4cf11ff7d4ceeb739f9e41ef41be7c6c234f5771da62b2c0f9a9",
+      "binary": false,
+      "exports": [
+        {
+          "name": "HelpAssistantInfo",
+          "line": 7,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAssistantAvailability",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "useHelpAssistantAvailability",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "HelpAssistantInfo",
+          "line": 7,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAssistantAvailability",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "useHelpAssistantAvailability",
+          "line": 26,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": "use client"
     },
     {
       "path": "components/portal/jobs/LogExternalApplicationButton.tsx",
@@ -70479,9 +70642,9 @@
       "path": "components/portal/kit/pages/employer/EmployerHomeKit.tsx",
       "area": "components",
       "domain": "jobs-employers",
-      "bytes": 15553,
-      "lines": 387,
-      "sha256": "d771384859c509b0afad6741388a7a14a9ed5945f54181018d48d7dca4e03476",
+      "bytes": 15764,
+      "lines": 390,
+      "sha256": "0e1e2b4762aec3752e7c1e257c4b1cdbc28cc878aa4e231043dda1138edda4dd",
       "binary": false,
       "exports": [
         {
@@ -120461,6 +120624,529 @@
       "directive": null
     },
     {
+      "path": "lib/help/assistant.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 7286,
+      "lines": 145,
+      "sha256": "4010db719b8e9216c0192652fbb21270e055d12fbab5d92f3c7bb5326cf734b6",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "NONE",
+          "line": 20,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "COUNSELOR",
+          "line": 22,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/help/assistant.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 11387,
+      "lines": 243,
+      "sha256": "159a1f7bfc062998b1be25b112e5025348f729c1b88878ca023b2a9cc625b4d4",
+      "binary": false,
+      "exports": [
+        {
+          "name": "HELP_ASSISTANT_FLAG",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_QUESTION_CHARS",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_HISTORY_TURNS",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_PATHNAME_CHARS",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_ANSWER_CHARS",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MODEL_OPTIONS",
+          "line": 37,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_ASSISTANT_TOOL_TYPE",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpTurn",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpLink",
+          "line": 47,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAnswerSource",
+          "line": 52,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "HelpAnswer",
+          "line": 54,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAccess",
+          "line": 61,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "resolveHelpPersona",
+          "line": 77,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "canUsePersona",
+          "line": 87,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeQuestion",
+          "line": 103,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeHistory",
+          "line": 108,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildHelpSystemPrompt",
+          "line": 128,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildHelpUserContent",
+          "line": 164,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sanitizeAnswer",
+          "line": 171,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "linksForAnswer",
+          "line": 176,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "redirectAnswer",
+          "line": 213,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fallbackAnswer",
+          "line": 229,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HELP_STARTER_KEYS",
+          "line": 242,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpStarterKey",
+          "line": 243,
+          "kind": "TypeAliasDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "HELP_ASSISTANT_FLAG",
+          "line": 28,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_QUESTION_CHARS",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_HISTORY_TURNS",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_PATHNAME_CHARS",
+          "line": 33,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MAX_ANSWER_CHARS",
+          "line": 34,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_MODEL_OPTIONS",
+          "line": 37,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_ASSISTANT_TOOL_TYPE",
+          "line": 40,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpTurn",
+          "line": 42,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpLink",
+          "line": 47,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAnswerSource",
+          "line": 52,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "HelpAnswer",
+          "line": 54,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HelpAccess",
+          "line": 61,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "resolveHelpPersona",
+          "line": 77,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "canUsePersona",
+          "line": 87,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeQuestion",
+          "line": 103,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "normalizeHistory",
+          "line": 108,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "featureLines",
+          "line": 120,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildHelpSystemPrompt",
+          "line": 128,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "buildHelpUserContent",
+          "line": 164,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sanitizeAnswer",
+          "line": 171,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "linksForAnswer",
+          "line": 176,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "guideLabel",
+          "line": 188,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Copy",
+          "line": 192,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "REDIRECT_COPY",
+          "line": 194,
+          "kind": "Variable"
+        },
+        {
+          "name": "FALLBACK_COPY",
+          "line": 201,
+          "kind": "Variable"
+        },
+        {
+          "name": "redirectAnswer",
+          "line": 213,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "fallbackAnswer",
+          "line": 229,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "HELP_STARTER_KEYS",
+          "line": 242,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpStarterKey",
+          "line": 243,
+          "kind": "TypeAliasDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/help/knowledge.test.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 4561,
+      "lines": 93,
+      "sha256": "88843da1c1df819badbdb98e9f8728889b0d4cf7ffe4a73d82a0a82ca5917d7f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "auditManifest",
+          "line": 15,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/help/knowledge.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 24446,
+      "lines": 304,
+      "sha256": "f515d500c06be2ded7707b6888b564020ee75dac7695b3456fcd13b512d8c6e4",
+      "binary": false,
+      "exports": [
+        {
+          "name": "HELP_PERSONAS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpPersona",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "HelpFeature",
+          "line": 17,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "PersonaKnowledge",
+          "line": 28,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "HELP_KNOWLEDGE",
+          "line": 186,
+          "kind": "Variable"
+        },
+        {
+          "name": "isHelpPersona",
+          "line": 194,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getPersonaKnowledge",
+          "line": 198,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "personaForPathname",
+          "line": 206,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "tokenizeQuestion",
+          "line": 219,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findRelevantFeatures",
+          "line": 239,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "currentFeature",
+          "line": 266,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "detectOtherPersonas",
+          "line": 283,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "HELP_PERSONAS",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "HelpPersona",
+          "line": 15,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "HelpFeature",
+          "line": 17,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "PersonaKnowledge",
+          "line": 28,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "MEMBER",
+          "line": 44,
+          "kind": "Variable"
+        },
+        {
+          "name": "COUNSELOR",
+          "line": 82,
+          "kind": "Variable"
+        },
+        {
+          "name": "EMPLOYER",
+          "line": 110,
+          "kind": "Variable"
+        },
+        {
+          "name": "PARTNER",
+          "line": 134,
+          "kind": "Variable"
+        },
+        {
+          "name": "ADMIN",
+          "line": 156,
+          "kind": "Variable"
+        },
+        {
+          "name": "HELP_KNOWLEDGE",
+          "line": 186,
+          "kind": "Variable"
+        },
+        {
+          "name": "isHelpPersona",
+          "line": 194,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getPersonaKnowledge",
+          "line": 198,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "personaForPathname",
+          "line": 206,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "TOKEN_PATTERN",
+          "line": 216,
+          "kind": "Variable"
+        },
+        {
+          "name": "tokenizeQuestion",
+          "line": 219,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "keywordHits",
+          "line": 223,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "findRelevantFeatures",
+          "line": 239,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "currentFeature",
+          "line": 266,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "detectOtherPersonas",
+          "line": 283,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "PERSONA_WORDS",
+          "line": 298,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/help/resolveAccess.ts",
+      "area": "libraries",
+      "domain": "libraries",
+      "bytes": 821,
+      "lines": 19,
+      "sha256": "4106d485065a799779e98bd5f32f806c068d38917be9ad0b7f2611d5c4ffbe51",
+      "binary": false,
+      "exports": [
+        {
+          "name": "resolveHelpAccess",
+          "line": 10,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "resolveHelpAccess",
+          "line": 10,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "lib/hooks/useTheme.ts",
       "area": "libraries",
       "domain": "libraries",
@@ -130285,9 +130971,9 @@
       "path": "lib/nav/portalNav.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 22373,
+      "bytes": 22430,
       "lines": 519,
-      "sha256": "b0cf9285dc9d584d274ec4862cca3a92092359fd1d9dcb9a9a8acd662d913d04",
+      "sha256": "f5a05bbfd4fc707ecaee516dd4a0c4296cba2bd10a0274fb8117c1977d156101",
       "binary": false,
       "exports": [
         {
@@ -135754,9 +136440,9 @@
       "path": "lib/rate-limit.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 34208,
-      "lines": 753,
-      "sha256": "bac424c7c98f54ee6852f9f56587aab88899a264d7ae66b14027590dd1a4a113",
+      "bytes": 35131,
+      "lines": 769,
+      "sha256": "d316815d7c8e2fe392c70b03a31bfe844a35a199b53a9581e62c11c480d6268a",
       "binary": false,
       "exports": [
         {
@@ -135766,212 +136452,217 @@
         },
         {
           "name": "VOICE_SESSION_STARTS_PER_HOUR",
-          "line": 112,
+          "line": 118,
           "kind": "Variable"
         },
         {
           "name": "VOICE_SESSION_LIMIT_MESSAGE",
-          "line": 113,
+          "line": 119,
           "kind": "Variable"
         },
         {
           "name": "checkSignupRateLimit",
-          "line": 466,
+          "line": 477,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkApplySignupRateLimit",
-          "line": 470,
+          "line": 481,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkAuthRateLimit",
-          "line": 474,
+          "line": 485,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkAuthIpRateLimit",
-          "line": 483,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkVoiceSessionRateLimit",
           "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkSignupEmailRateLimit",
+          "name": "checkVoiceSessionRateLimit",
           "line": 505,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkSignupEmailRateLimit",
+          "line": 516,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkAIToolRateLimit",
-          "line": 511,
+          "line": 522,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkResumeUploadRateLimit",
-          "line": 517,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkResumeDraftSaveRateLimit",
-          "line": 523,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkContactRateLimit",
+          "name": "checkHelpAssistantRateLimit",
           "line": 529,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkPartnerSignupRateLimit",
-          "line": 534,
+          "name": "checkResumeUploadRateLimit",
+          "line": 533,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkAdminInviteRateLimit",
+          "name": "checkResumeDraftSaveRateLimit",
           "line": 539,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkContactRateLimit",
+          "line": 545,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkPartnerSignupRateLimit",
+          "line": 550,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkAdminInviteRateLimit",
+          "line": 555,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkBulkEmailRateLimit",
-          "line": 551,
+          "line": 567,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkEmployerJobImportRateLimit",
-          "line": 556,
+          "line": 572,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkConfirmationEmailRateLimit",
-          "line": 563,
+          "line": 579,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkConfirmationEmailEmailRateLimit",
-          "line": 569,
+          "line": 585,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkCareersRecommendRateLimit",
-          "line": 577,
+          "line": 593,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkInterestProfilerRateLimit",
-          "line": 584,
+          "line": 600,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkForgotPasswordRateLimit",
-          "line": 591,
+          "line": 607,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkForgotPasswordEmailRateLimit",
-          "line": 597,
+          "line": 613,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicCareersGetRateLimit",
-          "line": 603,
+          "line": 619,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicVoiceSessionRateLimit",
-          "line": 610,
+          "line": 626,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkInviteAcceptRateLimit",
-          "line": 617,
+          "line": 633,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicInviteValidateRateLimit",
-          "line": 624,
+          "line": 640,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicOrgOutcomesRateLimit",
-          "line": 631,
+          "line": 647,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicUnsubscribeRateLimit",
-          "line": 638,
+          "line": 654,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkVerifyMfaRateLimit",
-          "line": 645,
+          "line": 661,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicHealthRateLimit",
-          "line": 651,
+          "line": 667,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiConfigGetRateLimit",
-          "line": 658,
+          "line": 674,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiOAuthTokenRateLimit",
-          "line": 665,
+          "line": 681,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiStatementsPostRateLimit",
-          "line": 672,
+          "line": 688,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPlacementSurveyRateLimit",
-          "line": 679,
+          "line": 695,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicWioaQualificationRateLimit",
-          "line": 686,
+          "line": 702,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkWebhookRateLimit",
-          "line": 693,
+          "line": 709,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkOrgOnboardRateLimit",
-          "line": 700,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkPublicInterestProfilerRateLimit",
-          "line": 707,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkAdminTokenLinksRateLimit",
           "line": 716,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkPublicInterestProfilerRateLimit",
+          "line": 723,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkAdminTokenLinksRateLimit",
+          "line": 732,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkPublicQuestionnaireSubmitRateLimit",
-          "line": 727,
+          "line": 743,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkCourseraIdentityRateLimit",
-          "line": 734,
+          "line": 750,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkMessageSendRateLimit",
-          "line": 747,
+          "line": 763,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -136047,413 +136738,423 @@
           "kind": "Variable"
         },
         {
+          "name": "helpAssistantRateLimiter",
+          "line": 84,
+          "kind": "Variable"
+        },
+        {
           "name": "resumeUploadRateLimiter",
-          "line": 79,
+          "line": 85,
           "kind": "Variable"
         },
         {
           "name": "resumeDraftSaveRateLimiter",
-          "line": 80,
+          "line": 86,
           "kind": "Variable"
         },
         {
           "name": "contactRateLimiter",
-          "line": 81,
+          "line": 87,
           "kind": "Variable"
         },
         {
           "name": "adminInviteRateLimiter",
-          "line": 82,
+          "line": 88,
           "kind": "Variable"
         },
         {
           "name": "bulkEmailRateLimiter",
-          "line": 89,
+          "line": 95,
           "kind": "Variable"
         },
         {
           "name": "employerJobImportRateLimiter",
-          "line": 90,
+          "line": 96,
           "kind": "Variable"
         },
         {
           "name": "partnerSignupRateLimiter",
-          "line": 91,
+          "line": 97,
           "kind": "Variable"
         },
         {
           "name": "confirmationEmailRateLimiter",
-          "line": 92,
-          "kind": "Variable"
-        },
-        {
-          "name": "confirmationEmailEmailRateLimiter",
           "line": 98,
           "kind": "Variable"
         },
         {
-          "name": "careersRecommendRateLimiter",
-          "line": 99,
-          "kind": "Variable"
-        },
-        {
-          "name": "interestProfilerRateLimiter",
-          "line": 100,
-          "kind": "Variable"
-        },
-        {
-          "name": "forgotPasswordRateLimiter",
-          "line": 101,
-          "kind": "Variable"
-        },
-        {
-          "name": "forgotPasswordEmailRateLimiter",
-          "line": 102,
-          "kind": "Variable"
-        },
-        {
-          "name": "publicCareersGetRateLimiter",
-          "line": 103,
-          "kind": "Variable"
-        },
-        {
-          "name": "publicVoiceSessionRateLimiter",
+          "name": "confirmationEmailEmailRateLimiter",
           "line": 104,
           "kind": "Variable"
         },
         {
+          "name": "careersRecommendRateLimiter",
+          "line": 105,
+          "kind": "Variable"
+        },
+        {
+          "name": "interestProfilerRateLimiter",
+          "line": 106,
+          "kind": "Variable"
+        },
+        {
+          "name": "forgotPasswordRateLimiter",
+          "line": 107,
+          "kind": "Variable"
+        },
+        {
+          "name": "forgotPasswordEmailRateLimiter",
+          "line": 108,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicCareersGetRateLimiter",
+          "line": 109,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicVoiceSessionRateLimiter",
+          "line": 110,
+          "kind": "Variable"
+        },
+        {
           "name": "voiceSessionRateLimiter",
-          "line": 111,
-          "kind": "Variable"
-        },
-        {
-          "name": "VOICE_SESSION_STARTS_PER_HOUR",
-          "line": 112,
-          "kind": "Variable"
-        },
-        {
-          "name": "VOICE_SESSION_LIMIT_MESSAGE",
-          "line": 113,
-          "kind": "Variable"
-        },
-        {
-          "name": "inviteAcceptRateLimiter",
-          "line": 115,
-          "kind": "Variable"
-        },
-        {
-          "name": "publicInviteValidateRateLimiter",
-          "line": 116,
-          "kind": "Variable"
-        },
-        {
-          "name": "publicOrgOutcomesRateLimiter",
           "line": 117,
           "kind": "Variable"
         },
         {
-          "name": "publicUnsubscribeRateLimiter",
+          "name": "VOICE_SESSION_STARTS_PER_HOUR",
           "line": 118,
           "kind": "Variable"
         },
         {
-          "name": "verifyMfaRateLimiter",
+          "name": "VOICE_SESSION_LIMIT_MESSAGE",
           "line": 119,
           "kind": "Variable"
         },
         {
-          "name": "publicHealthRateLimiter",
-          "line": 120,
-          "kind": "Variable"
-        },
-        {
-          "name": "xapiConfigGetRateLimiter",
+          "name": "inviteAcceptRateLimiter",
           "line": 121,
           "kind": "Variable"
         },
         {
-          "name": "xapiOAuthTokenRateLimiter",
+          "name": "publicInviteValidateRateLimiter",
           "line": 122,
           "kind": "Variable"
         },
         {
-          "name": "xapiStatementsPostRateLimiter",
+          "name": "publicOrgOutcomesRateLimiter",
           "line": 123,
           "kind": "Variable"
         },
         {
-          "name": "placementSurveyRateLimiter",
+          "name": "publicUnsubscribeRateLimiter",
           "line": 124,
           "kind": "Variable"
         },
         {
-          "name": "publicWioaQualificationRateLimiter",
+          "name": "verifyMfaRateLimiter",
           "line": 125,
           "kind": "Variable"
         },
         {
-          "name": "webhookRateLimiter",
+          "name": "publicHealthRateLimiter",
           "line": 126,
           "kind": "Variable"
         },
         {
-          "name": "orgOnboardRateLimiter",
+          "name": "xapiConfigGetRateLimiter",
           "line": 127,
           "kind": "Variable"
         },
         {
-          "name": "publicInterestProfilerRateLimiter",
+          "name": "xapiOAuthTokenRateLimiter",
           "line": 128,
           "kind": "Variable"
         },
         {
-          "name": "courseraIdentityRateLimiter",
+          "name": "xapiStatementsPostRateLimiter",
           "line": 129,
           "kind": "Variable"
         },
         {
+          "name": "placementSurveyRateLimiter",
+          "line": 130,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicWioaQualificationRateLimiter",
+          "line": 131,
+          "kind": "Variable"
+        },
+        {
+          "name": "webhookRateLimiter",
+          "line": 132,
+          "kind": "Variable"
+        },
+        {
+          "name": "orgOnboardRateLimiter",
+          "line": 133,
+          "kind": "Variable"
+        },
+        {
+          "name": "publicInterestProfilerRateLimiter",
+          "line": 134,
+          "kind": "Variable"
+        },
+        {
+          "name": "courseraIdentityRateLimiter",
+          "line": 135,
+          "kind": "Variable"
+        },
+        {
           "name": "publicQuestionnaireSubmitRateLimiter",
-          "line": 137,
+          "line": 143,
           "kind": "Variable"
         },
         {
           "name": "adminTokenLinksRateLimiter",
-          "line": 138,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "messageSendRateLimiter",
-          "line": 145,
+          "line": 151,
           "kind": "Variable"
         },
         {
           "name": "isQaBypassEnabled",
-          "line": 167,
+          "line": 173,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getQaBypassSecret",
-          "line": 171,
+          "line": 177,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isQaBypassRequest",
-          "line": 175,
+          "line": 181,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runLimiter",
-          "line": 182,
+          "line": 188,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "failClosedLimit",
-          "line": 223,
+          "line": 229,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "failClosedApplyLimit",
-          "line": 232,
+          "line": 238,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkSignupRateLimit",
-          "line": 466,
+          "line": 477,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkApplySignupRateLimit",
-          "line": 470,
+          "line": 481,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkAuthRateLimit",
-          "line": 474,
+          "line": 485,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkAuthIpRateLimit",
-          "line": 483,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkVoiceSessionRateLimit",
           "line": 494,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkSignupEmailRateLimit",
+          "name": "checkVoiceSessionRateLimit",
           "line": 505,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkSignupEmailRateLimit",
+          "line": 516,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkAIToolRateLimit",
-          "line": 511,
+          "line": 522,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkResumeUploadRateLimit",
-          "line": 517,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkResumeDraftSaveRateLimit",
-          "line": 523,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkContactRateLimit",
+          "name": "checkHelpAssistantRateLimit",
           "line": 529,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkPartnerSignupRateLimit",
-          "line": 534,
+          "name": "checkResumeUploadRateLimit",
+          "line": 533,
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "checkAdminInviteRateLimit",
+          "name": "checkResumeDraftSaveRateLimit",
           "line": 539,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkContactRateLimit",
+          "line": 545,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkPartnerSignupRateLimit",
+          "line": 550,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkAdminInviteRateLimit",
+          "line": 555,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkBulkEmailRateLimit",
-          "line": 551,
+          "line": 567,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkEmployerJobImportRateLimit",
-          "line": 556,
+          "line": 572,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkConfirmationEmailRateLimit",
-          "line": 563,
+          "line": 579,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkConfirmationEmailEmailRateLimit",
-          "line": 569,
+          "line": 585,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkCareersRecommendRateLimit",
-          "line": 577,
+          "line": 593,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkInterestProfilerRateLimit",
-          "line": 584,
+          "line": 600,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkForgotPasswordRateLimit",
-          "line": 591,
+          "line": 607,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkForgotPasswordEmailRateLimit",
-          "line": 597,
+          "line": 613,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicCareersGetRateLimit",
-          "line": 603,
+          "line": 619,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicVoiceSessionRateLimit",
-          "line": 610,
+          "line": 626,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkInviteAcceptRateLimit",
-          "line": 617,
+          "line": 633,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicInviteValidateRateLimit",
-          "line": 624,
+          "line": 640,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicOrgOutcomesRateLimit",
-          "line": 631,
+          "line": 647,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicUnsubscribeRateLimit",
-          "line": 638,
+          "line": 654,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkVerifyMfaRateLimit",
-          "line": 645,
+          "line": 661,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicHealthRateLimit",
-          "line": 651,
+          "line": 667,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiConfigGetRateLimit",
-          "line": 658,
+          "line": 674,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiOAuthTokenRateLimit",
-          "line": 665,
+          "line": 681,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkXapiStatementsPostRateLimit",
-          "line": 672,
+          "line": 688,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPlacementSurveyRateLimit",
-          "line": 679,
+          "line": 695,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkPublicWioaQualificationRateLimit",
-          "line": 686,
+          "line": 702,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkWebhookRateLimit",
-          "line": 693,
+          "line": 709,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkOrgOnboardRateLimit",
-          "line": 700,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkPublicInterestProfilerRateLimit",
-          "line": 707,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "checkAdminTokenLinksRateLimit",
           "line": 716,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "checkPublicInterestProfilerRateLimit",
+          "line": 723,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "checkAdminTokenLinksRateLimit",
+          "line": 732,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "checkPublicQuestionnaireSubmitRateLimit",
-          "line": 727,
+          "line": 743,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkCourseraIdentityRateLimit",
-          "line": 734,
+          "line": 750,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkMessageSendRateLimit",
-          "line": 747,
+          "line": 763,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141271,9 +141972,9 @@
       "path": "lib/tours/registry.test.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 11670,
-      "lines": 264,
-      "sha256": "97a2559743cdb9aef9785d13b6aa0798d981534be86628cecbe64d16d662bb6f",
+      "bytes": 14515,
+      "lines": 319,
+      "sha256": "6d86d4690acf995ae0a1e7ecdd6a290e439218c1debbc87709df870153f9f9ad",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -141314,9 +142015,9 @@
       "path": "lib/tours/registry.ts",
       "area": "libraries",
       "domain": "libraries",
-      "bytes": 8794,
-      "lines": 223,
-      "sha256": "5e474648eb43c491767cfc6ff1597b379818aceaacd91a54796e9eb204e858bb",
+      "bytes": 9822,
+      "lines": 240,
+      "sha256": "ba3ae0124ec7f27f5ad0db37fe0c2276cb0b82e12367623d053a375053e1abbf",
       "binary": false,
       "exports": [
         {
@@ -141371,47 +142072,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 179,
+          "line": 196,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 181,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 188,
+          "line": 205,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 190,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 194,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "getTour",
-          "line": 198,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "listTours",
-          "line": 202,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "getHomeTourForRole",
           "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "getTour",
+          "line": 215,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listTours",
+          "line": 219,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getHomeTourForRole",
+          "line": 228,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "toTourSteps",
-          "line": 216,
+          "line": 233,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141473,47 +142174,47 @@
         },
         {
           "name": "LegacyTourPortal",
-          "line": 179,
+          "line": 196,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "LEGACY_PORTAL_TOUR_KEY",
-          "line": 181,
+          "line": 198,
           "kind": "Variable"
         },
         {
           "name": "LEGACY_TOUR_VERSION",
-          "line": 188,
+          "line": 205,
           "kind": "Variable"
         },
         {
           "name": "isTourKey",
-          "line": 190,
+          "line": 207,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isTourStatus",
-          "line": 194,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "getTour",
-          "line": 198,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "listTours",
-          "line": 202,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "getHomeTourForRole",
           "line": 211,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "getTour",
+          "line": 215,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "listTours",
+          "line": 219,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "getHomeTourForRole",
+          "line": 228,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "toTourSteps",
-          "line": 216,
+          "line": 233,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -147008,18 +147709,18 @@
       "path": "messages/en.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 224330,
-      "lines": 3732,
-      "sha256": "70803e1cd5eec439708a86eb9eb6dc618609fe686ae8b8dc1a25c31b0b1a94cb",
+      "bytes": 227613,
+      "lines": 3785,
+      "sha256": "a9755d7b5eccc28cb8cacc2be861dc11dac8ef9de088e37cc22a9997c2a4fcad",
       "binary": false
     },
     {
       "path": "messages/es.json",
       "area": "localization",
       "domain": "localization",
-      "bytes": 248681,
-      "lines": 3732,
-      "sha256": "7ac96fafda8ba72e98f7f70ae756835efad1acfd82a4a89be624514760c1b0bf",
+      "bytes": 252421,
+      "lines": 3785,
+      "sha256": "ded1f275138156d7f4a898a7459eb64379cf762a63888bcf51c9aa1783f96e91",
       "binary": false
     },
     {
@@ -161895,6 +162596,39 @@
       "directive": null
     },
     {
+      "path": "tests/api/help-chat.spec.ts",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 12650,
+      "lines": 268,
+      "sha256": "a4860ea55bcb5369a633782363b8624cf63b31fe4df2098d3529a6165c06ed1a",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "SECRET_QUESTION",
+          "line": 49,
+          "kind": "Variable"
+        },
+        {
+          "name": "post",
+          "line": 51,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "get",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MEMBER_ACCESS",
+          "line": 65,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/api/impact-page.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -166818,6 +167552,34 @@
       "binary": false,
       "exports": [],
       "declarations": [],
+      "directive": null
+    },
+    {
+      "path": "tests/components/help-assistant-menu.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7098,
+      "lines": 166,
+      "sha256": "c3d0a83520886f1f31d5f4435e4ec920add1c0b5fa93cf703ea183fb5e543660",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "start",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "jsonResponse",
+          "line": 28,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ON",
+          "line": 32,
+          "kind": "Variable"
+        }
+      ],
       "directive": null
     },
     {
@@ -174533,6 +175295,82 @@
       "directive": null
     },
     {
+      "path": "tests/tours/employer-overview-anchors.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 3596,
+      "lines": 71,
+      "sha256": "f54b86e1c8c2489f873e830cdf282a874611e88a04f8da93e32f4f2f3d5df0f7",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "anchors",
+          "line": 42,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/employer-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 12452,
+      "lines": 252,
+      "sha256": "7b61a10e2f85167270f3921aa70b1d0643b89193a4f9e8bcc0d2184c4eec10ee",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "Posted",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "Overview",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 84,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/get-tour-offer.spec.ts",
       "area": "tests",
       "domain": "tests",
@@ -174713,12 +175551,103 @@
       "directive": null
     },
     {
+      "path": "tests/tours/partner-overview-anchors.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 4058,
+      "lines": 77,
+      "sha256": "dd87636af9f24deedd02dc3b4203f106b1869dc00a09c5585c5815a9a98aceb3",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "mocks",
+          "line": 11,
+          "kind": "Variable"
+        },
+        {
+          "name": "anchors",
+          "line": 34,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "primePartner",
+          "line": 38,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/tours/partner-tour.spec.tsx",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 12231,
+      "lines": 248,
+      "sha256": "ad6791231d7ed49f288d81dceb8b4bd0a8dda23da1f6e84f1a1ce2a2a2f9cdb9",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "location",
+          "line": 10,
+          "kind": "Variable"
+        },
+        {
+          "name": "TOUR",
+          "line": 31,
+          "kind": "Variable"
+        },
+        {
+          "name": "STEP_TITLES",
+          "line": 32,
+          "kind": "Variable"
+        },
+        {
+          "name": "Posted",
+          "line": 42,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "fetchMock",
+          "line": 43,
+          "kind": "Variable"
+        },
+        {
+          "name": "posted",
+          "line": 45,
+          "kind": "Variable"
+        },
+        {
+          "name": "Overview",
+          "line": 59,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "Gate",
+          "line": 75,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "Portal",
+          "line": 78,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "openFromHelp",
+          "line": 91,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
       "path": "tests/tours/tour-auto-start.spec.tsx",
       "area": "tests",
       "domain": "tests",
-      "bytes": 2800,
-      "lines": 72,
-      "sha256": "420900b170f0c20c04b63bf373d55ff2482fdf6f1d1b5f5547c74132b92883db",
+      "bytes": 2884,
+      "lines": 73,
+      "sha256": "98122d243e6a930aea47d475d32ad4e2e2845d80bbc7b2d7c3ceb45f597a1cc5",
       "binary": false,
       "exports": [],
       "declarations": [

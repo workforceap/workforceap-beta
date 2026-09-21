@@ -107,6 +107,7 @@
 | [tests/api/get-member-resume-plain-text.spec.ts](../../../tests/api/get-member-resume-plain-text.spec.ts) | 99 | tests |  |
 | [tests/api/guardian-consent.spec.ts](../../../tests/api/guardian-consent.spec.ts) | 295 | tests |  |
 | [tests/api/health-check.spec.ts](../../../tests/api/health-check.spec.ts) | 257 | tests |  |
+| [tests/api/help-chat.spec.ts](../../../tests/api/help-chat.spec.ts) | 268 | tests |  |
 | [tests/api/impact-page.spec.ts](../../../tests/api/impact-page.spec.ts) | 485 | tests |  |
 | [tests/api/invite-validate.spec.ts](../../../tests/api/invite-validate.spec.ts) | 138 | tests |  |
 | [tests/api/job-application-resume-snapshot.spec.ts](../../../tests/api/job-application-resume-snapshot.spec.ts) | 451 | tests |  |
@@ -289,6 +290,7 @@
 | [tests/components/feature-tile-heading.spec.tsx](../../../tests/components/feature-tile-heading.spec.tsx) | 18 | tests |  |
 | [tests/components/form-a11y-sweep.spec.tsx](../../../tests/components/form-a11y-sweep.spec.tsx) | 281 | tests |  |
 | [tests/components/heading-outline-wap123.spec.tsx](../../../tests/components/heading-outline-wap123.spec.tsx) | 47 | tests |  |
+| [tests/components/help-assistant-menu.spec.tsx](../../../tests/components/help-assistant-menu.spec.tsx) | 166 | tests |  |
 | [tests/components/inbox-zero-reassignment-receipt.spec.tsx](../../../tests/components/inbox-zero-reassignment-receipt.spec.tsx) | 69 | tests |  |
 | [tests/components/interview-prep-bundle.spec.tsx](../../../tests/components/interview-prep-bundle.spec.tsx) | 69 | ai-voice |  |
 | [tests/components/job-form-expiry.spec.tsx](../../../tests/components/job-form-expiry.spec.tsx) | 59 | tests |  |
@@ -564,12 +566,16 @@
 | [tests/tours/admin-overview-anchors.spec.tsx](../../../tests/tours/admin-overview-anchors.spec.tsx) | 102 | tests |  |
 | [tests/tours/admin-tour.spec.tsx](../../../tests/tours/admin-tour.spec.tsx) | 272 | tests |  |
 | [tests/tours/counselor-tour.spec.tsx](../../../tests/tours/counselor-tour.spec.tsx) | 237 | tests |  |
+| [tests/tours/employer-overview-anchors.spec.tsx](../../../tests/tours/employer-overview-anchors.spec.tsx) | 71 | tests |  |
+| [tests/tours/employer-tour.spec.tsx](../../../tests/tours/employer-tour.spec.tsx) | 252 | tests |  |
 | [tests/tours/get-tour-offer.spec.ts](../../../tests/tours/get-tour-offer.spec.ts) | 78 | tests |  |
 | [tests/tours/guided-tour.spec.tsx](../../../tests/tours/guided-tour.spec.tsx) | 266 | tests |  |
 | [tests/tours/member-overview-anchors.spec.tsx](../../../tests/tours/member-overview-anchors.spec.tsx) | 100 | tests |  |
 | [tests/tours/member-tour.spec.tsx](../../../tests/tours/member-tour.spec.tsx) | 260 | tests |  |
 | [tests/tours/onboarding-reset-tour-state.spec.ts](../../../tests/tours/onboarding-reset-tour-state.spec.ts) | 95 | tests |  |
-| [tests/tours/tour-auto-start.spec.tsx](../../../tests/tours/tour-auto-start.spec.tsx) | 72 | tests |  |
+| [tests/tours/partner-overview-anchors.spec.tsx](../../../tests/tours/partner-overview-anchors.spec.tsx) | 77 | tests |  |
+| [tests/tours/partner-tour.spec.tsx](../../../tests/tours/partner-tour.spec.tsx) | 248 | tests |  |
+| [tests/tours/tour-auto-start.spec.tsx](../../../tests/tours/tour-auto-start.spec.tsx) | 73 | tests |  |
 | [tests/tours/tour-offer-strip.spec.tsx](../../../tests/tours/tour-offer-strip.spec.tsx) | 87 | tests |  |
 | [tests/tours/tours-key-route.spec.ts](../../../tests/tours/tours-key-route.spec.ts) | 162 | tests |  |
 | [tests/tours/tours-state-route.spec.ts](../../../tests/tours/tours-state-route.spec.ts) | 199 | tests |  |
