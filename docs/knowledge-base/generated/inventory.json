@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "717fb7ad39511e83c9876579a3f13082b26841579a471fff85ef8948ac742b80",
+  "inputTreeSha256": "9ea57358cdd9f7fedea833b651c042e1d788d924125521fe48ad9bf6c2983a10",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -141490,9 +141490,9 @@
       "path": "lib/retention/cleanup.ts",
       "area": "libraries",
       "domain": "member-counselor",
-      "bytes": 13301,
-      "lines": 370,
-      "sha256": "05a103e2ee506a79ade78e2d19848c919c2aafeeb8e64887ad1d1cb8c7050b47",
+      "bytes": 13441,
+      "lines": 372,
+      "sha256": "4ee143da01ea1fbc248ec99721dcf24be0d628098152058c90e1a82e46fd445a",
       "binary": false,
       "exports": [
         {
@@ -141532,12 +141532,12 @@
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 242,
+          "line": 244,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 302,
+          "line": 304,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -141584,12 +141584,12 @@
         },
         {
           "name": "cleanupDeletedAccounts",
-          "line": 242,
+          "line": 244,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "runDataCleanup",
-          "line": 302,
+          "line": 304,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -152726,6 +152726,15 @@
       "binary": false
     },
     {
+      "path": "prisma/migrations/20260921150000_chapter_members_user_fk_on_delete/migration.sql",
+      "area": "database",
+      "domain": "database",
+      "bytes": 1478,
+      "lines": 22,
+      "sha256": "4ab356a78a65d12fa6251362dedf577de7612e968473fe3a2edda50616734e4d",
+      "binary": false
+    },
+    {
       "path": "prisma/migrations/migration_lock.toml",
       "area": "database",
       "domain": "database",
@@ -152738,9 +152747,9 @@
       "path": "prisma/schema.prisma",
       "area": "database",
       "domain": "database",
-      "bytes": 142471,
+      "bytes": 142490,
       "lines": 3335,
-      "sha256": "d5321f90d45f48fae2417a4b054897e84c9bc286cd75d7071161caa615a0b018",
+      "sha256": "54dcb6dd1724871f168fd99fec28b4095607b469678aefe2b90701fad57a8fce",
       "binary": false
     },
     {
@@ -178111,6 +178120,89 @@
         {
           "name": "constraintState",
           "line": 85,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "tests/migrations/chapter-members-user-cascade.mjs",
+      "area": "tests",
+      "domain": "tests",
+      "bytes": 7070,
+      "lines": 144,
+      "sha256": "e665b32a2484d2bc2c523ee33d8c71d6f573c83a2791344985629e75eef99a7f",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "migrationPath",
+          "line": 14,
+          "kind": "Variable"
+        },
+        {
+          "name": "migration",
+          "line": 15,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceUrl",
+          "line": 17,
+          "kind": "Variable"
+        },
+        {
+          "name": "target",
+          "line": 18,
+          "kind": "Variable"
+        },
+        {
+          "name": "sourceDatabase",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabase",
+          "line": 26,
+          "kind": "Variable"
+        },
+        {
+          "name": "createsDatabase",
+          "line": 27,
+          "kind": "Variable"
+        },
+        {
+          "name": "env",
+          "line": 29,
+          "kind": "Variable"
+        },
+        {
+          "name": "runSql",
+          "line": 39,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "sql",
+          "line": 53,
+          "kind": "Variable"
+        },
+        {
+          "name": "ident",
+          "line": 54,
+          "kind": "Variable"
+        },
+        {
+          "name": "proofDatabaseCreated",
+          "line": 55,
+          "kind": "Variable"
+        },
+        {
+          "name": "resetTables",
+          "line": 58,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "constraintState",
+          "line": 86,
           "kind": "FunctionDeclaration"
         }
       ],

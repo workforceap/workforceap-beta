@@ -562,6 +562,7 @@
 | [tests/lib/xapi-token-configuration.spec.ts](../../../tests/lib/xapi-token-configuration.spec.ts) | 65 | tests |  |
 | [tests/member-activity-rows.spec.ts](../../../tests/member-activity-rows.spec.ts) | 131 | tests |  |
 | [tests/migrations/audit-events-actor-set-null.mjs](../../../tests/migrations/audit-events-actor-set-null.mjs) | 148 | tests |  |
+| [tests/migrations/chapter-members-user-cascade.mjs](../../../tests/migrations/chapter-members-user-cascade.mjs) | 144 | tests |  |
 | [tests/migrations/placement-survey-sent-state.mjs](../../../tests/migrations/placement-survey-sent-state.mjs) | 150 | tests |  |
 | [tests/next-config-csp-form-action.spec.ts](../../../tests/next-config-csp-form-action.spec.ts) | 28 | tests |  |
 | [tests/next-config-redirect-destinations.spec.ts](../../../tests/next-config-redirect-destinations.spec.ts) | 168 | tests |  |

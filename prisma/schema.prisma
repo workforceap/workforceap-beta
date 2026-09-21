@@ -94,7 +94,7 @@ model ChapterMember {
   notes      String?
 
   chapter    Chapter  @relation(fields: [chapterId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([chapterId, userId])
   // WAP-33: the unique index above covers chapter_id only; user_id needs its own.
