@@ -306,7 +306,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
 
   /* gold PILL — fully visible, never clipped */
   .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
-    background:linear-gradient(135deg,#e3bd6a,#a47f38);color:#3a2c10;font-weight:800;font-size:13px;
+    background:var(--grad-gold);color:var(--gold-ink);font-weight:800;font-size:13px;
     letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
     box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
   .pill__star{font-size:13px;opacity:.95}
@@ -314,7 +314,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
 
   .stage-inner h1{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:clamp(34px,5vw,56px);
     line-height:1.04;letter-spacing:-.025em;margin:22px 0 0}
-  .shimmer{background:linear-gradient(100deg,#fff 10%,#f3d28f 50%,#fff 90%);
+  .shimmer{background:var(--grad-gold-shimmer);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .stage-inner .sub{font-size:19px;line-height:1.6;color:rgba(255,255,255,.85);max-width:46em;margin:22px auto 0}
 
@@ -386,9 +386,9 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
   .close__veil{position:absolute;inset:0;
     background:var(--wap-hero-close-veil)}
   .close__inner{position:relative;z-index:2;color:#fff;text-align:center;padding:80px 24px 84px;max-width:var(--max)}
-  .qmark{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#f3d28f;display:grid;place-items:center;margin:0 auto 22px;backdrop-filter:blur(8px)}
+  .qmark{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:var(--gold-glow);display:grid;place-items:center;margin:0 auto 22px;backdrop-filter:blur(8px)}
   .close__inner blockquote{max-width:760px;margin:0 auto;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:clamp(22px,3vw,32px);line-height:1.3;letter-spacing:-.015em;text-shadow:0 2px 30px rgba(45,8,22,.45)}
-  .close__inner .by{margin-top:20px;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f3d28f}
+  .close__inner .by{margin-top:20px;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-glow)}
 
   /* ---------------- RESPONSIVE ---------------- */
   @media(max-width:880px){

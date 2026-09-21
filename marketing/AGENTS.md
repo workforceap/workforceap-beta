@@ -25,7 +25,11 @@ The root [Vercel build script](../scripts/vercel-build.cjs) validates its enviro
 
 There is no `src/components/ui/` kit at this baseline. Use [blend.css](src/styles/blend.css) and real page compositions such as [career-quiz.astro](src/pages/career-quiz.astro); do not copy imports from historical component recipes.
 
-`Layout` imports the shared [brand styles](src/styles/blend.css). Existing tokens include `--crimson`, `--accent-dark`, `--gold`, `--blue`, `--green`, `--bg`, `--surface`, `--text`, `--muted` and `--border`. Fonts are Inter for body text and Plus Jakarta Sans for headings. Reusable classes include `wrap`, `band`, `band--surface`, `sec-head` and `btn` with `btn--primary`, `btn--ghost`, `btn--light` or `btn--translucent`.
+`Layout` imports the canonical [design tokens](../css/wa-brand-tokens.css) and then the shared [brand styles](src/styles/blend.css). Existing tokens include `--crimson`, `--accent-dark`, `--gold`, `--gold-dark`, `--blue`, `--green`, `--bg`, `--surface`, `--text`, `--muted` and `--border`. Fonts are Inter for body text and Plus Jakarta Sans for headings. Reusable classes include `wrap`, `band`, `band--surface`, `sec-head` and `btn` with `btn--primary`, `btn--ghost`, `btn--light` or `btn--translucent`.
+
+**Where the brand colours come from.** The six brand hues are *not* defined in `blend.css` any more: `--crimson`, `--accent-dark`, `--gold`, `--gold-dark`, `--blue` and `--green` are aliases of the canonical `--wa-accent`, `--wa-accent-dark`, `--wa-gold`, `--wa-gold-dark`, `--wa-info` and `--wa-success` (WAP-106), so the public pages and the portals read one palette. Keep using the short marketing names in page CSS — don't reach for `--wa-*` directly, and don't reintroduce a hex literal for a colour that has a token. The gold ramp (`--gold-hi`, `--gold-lift`, `--gold-glow`, `--gold-ink`) and the `--grad-gold` / `--grad-gold-shimmer` gradients are also declared once in `blend.css`. `lib/marketing/publicUiRouteContract.test.ts` fails if a page hardcodes one of these again.
+
+Neutrals (`--bg`, `--surface`, `--text`, `--muted`, `--border`) and `--radius` stay marketing-local on purpose: the portal's neutral ramp is cooler and rounder, and WAP-106 deliberately keeps portal neutrals, `color-scheme`, density and motion out of the public layer. `blend.css` pins `color-scheme: light`, which is what keeps every `light-dark()` token on its light value — that is how rule 2 above ("no dark mode") is enforced, so don't remove it.
 
 ## Recipe: add a simple page
 
