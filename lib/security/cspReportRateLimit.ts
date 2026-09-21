@@ -1,16 +1,16 @@
 /**
  * Per-IP limiter for the public CSP report sink (`POST /api/csp-report`).
  *
- * Follows the pattern the other unauthenticated public POST sinks use in
- * `lib/rate-limit.ts` (`checkWebhookRateLimit`, `checkPlacementSurveyRateLimit`,
- * `checkPublicWioaQualificationRateLimit`): an Upstash sliding window keyed on
- * the proxy-trusted client IP, FAIL-OPEN when Upstash is not configured. The
- * sink writes nothing but a counted log line, so a missing limiter cannot
- * amplify into storage or email; the production boot assertion for missing
- * Upstash already lives in `lib/rate-limit.ts` and covers every deploy.
+ * Same Upstash sliding window the other unauthenticated public POST sinks in
+ * `lib/rate-limit.ts` use, keyed on the proxy-trusted client IP, and the SAME
+ * missing-Redis policy: importing `lib/rate-limit` here runs its production
+ * boot assertion (Upstash env required unless RATE_LIMIT_ALLOW_MISSING_UPSTASH=1),
+ * and `getRateLimiterMode()` decides what a null limiter means — `fail-closed`
+ * in production blocks (429), `fail-open` in dev / explicit opt-out allows.
+ * Since phase 2 the sink writes aggregate rows, so it must not run unmetered
+ * in production; the ceiling in `cspViolationStore.ts` is the backstop.
  *
- * Lives in its own module because `lib/rate-limit.ts` is owned by concurrent
- * branches at the time of WAP-36 phase 1; fold it in when that file is free.
+ * Lives in its own module for the prefix and window only.
  *
  * 60 reports / minute / IP: one page load can legitimately emit a dozen
  * reports during the soak (every un-nonced script is one), and browsers
@@ -18,6 +18,8 @@
  */
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
+import { logger } from '@/lib/observability/logger';
+import { getRateLimiterMode } from '@/lib/rate-limit';
 
 export const CSP_REPORTS_PER_MINUTE_PER_IP = 60;
 
@@ -37,15 +39,33 @@ function getLimiter(): Ratelimit | null {
   return limiter;
 }
 
-/** POST /api/csp-report — fail-open without Redis, like the other public sinks. */
+let missingLimiterLogged = false;
+
+/**
+ * POST /api/csp-report — Upstash when configured; otherwise the shared
+ * `lib/rate-limit` mode: `fail-closed` (production without the explicit
+ * opt-out) blocks, anything else allows. Logs the missing limiter once.
+ */
 export async function checkCspReportRateLimit(ip: string): Promise<{ success: boolean }> {
   const active = getLimiter();
-  if (!active) return { success: true };
-  const result = await active.limit(ip);
-  return { success: result.success };
+  if (active) {
+    const result = await active.limit(ip);
+    return { success: result.success };
+  }
+  const mode = getRateLimiterMode();
+  if (!missingLimiterLogged) {
+    missingLimiterLogged = true;
+    if (mode === 'fail-closed') {
+      logger.error('[RATE-LIMIT] csp-report limiter is null in production — blocking reports until Upstash is configured');
+    } else {
+      logger.warn('[RATE-LIMIT] csp-report limiter is null — allowing reports (fail-open)');
+    }
+  }
+  return { success: mode !== 'fail-closed' };
 }
 
 /** Test seam: forget the cached limiter so env changes take effect. */
 export function resetCspReportRateLimiterForTests(): void {
   limiter = undefined;
+  missingLimiterLogged = false;
 }

@@ -92,7 +92,7 @@
 | [tests/api/cron-smoke-test.spec.ts](../../../tests/api/cron-smoke-test.spec.ts) | 267 | tests |  |
 | [tests/api/cron-weekly-recap.spec.ts](../../../tests/api/cron-weekly-recap.spec.ts) | 172 | tests |  |
 | [tests/api/cron-wrapper-reliability.spec.ts](../../../tests/api/cron-wrapper-reliability.spec.ts) | 139 | tests |  |
-| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 122 | tests |  |
+| [tests/api/csp-report-route.spec.ts](../../../tests/api/csp-report-route.spec.ts) | 263 | tests |  |
 | [tests/api/donate-page.spec.ts](../../../tests/api/donate-page.spec.ts) | 73 | partners-funding |  |
 | [tests/api/eligibility-writers.spec.ts](../../../tests/api/eligibility-writers.spec.ts) | 282 | tests |  |
 | [tests/api/employer-checkout.spec.ts](../../../tests/api/employer-checkout.spec.ts) | 534 | tests |  |
@@ -188,6 +188,7 @@
 | [tests/app/add-member-wizard.spec.tsx](../../../tests/app/add-member-wizard.spec.tsx) | 247 | tests |  |
 | [tests/app/admin-ai-tools-page.spec.tsx](../../../tests/app/admin-ai-tools-page.spec.tsx) | 91 | tests |  |
 | [tests/app/admin-command-center-pagination.spec.tsx](../../../tests/app/admin-command-center-pagination.spec.tsx) | 83 | tests |  |
+| [tests/app/admin-csp-report-page.spec.tsx](../../../tests/app/admin-csp-report-page.spec.tsx) | 137 | tests |  |
 | [tests/app/admin-directory-search.spec.tsx](../../../tests/app/admin-directory-search.spec.tsx) | 215 | tests |  |
 | [tests/app/admin-exports-verbs.spec.tsx](../../../tests/app/admin-exports-verbs.spec.tsx) | 150 | tests |  |
 | [tests/app/admin-guide-page.spec.tsx](../../../tests/app/admin-guide-page.spec.tsx) | 72 | tests |  |
