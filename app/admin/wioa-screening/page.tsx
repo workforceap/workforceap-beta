@@ -8,6 +8,7 @@ import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPa
 import { ADMIN_SSR_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import { wioaReviewLabel, WIOA_REVIEW_STATUSES } from '@/lib/wioa/wioaReview';
+import { isWioaAwaitingReview, sortWioaQueueOldestFirst, wioaDaysWaiting } from '@/lib/wioa/wioaQueueAge';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalRouteFallback from '@/components/portal/PortalRouteFallback';
@@ -305,12 +306,19 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
           deletedAt: null,
           wioaQualificationJson: { not: Prisma.DbNull },
         },
-        orderBy: { wioaReviewedAt: { sort: 'desc', nulls: 'last' } },
+        // Never-reviewed rows first so the capped page always carries the whole
+        // pending queue, then the most recent decisions (`in_review` also
+        // stamps wioaReviewedAt, so a recent claim must not be cut by the cap);
+        // `sortWioaQueueOldestFirst` below orders the waiting block by wait
+        // (WAP-166 item 2) once the JSON `submittedAt` has been parsed.
+        orderBy: { wioaReviewedAt: { sort: 'desc', nulls: 'first' } },
         select: {
           id: true,
           fullName: true,
           wioaQualificationJson: true,
           wioaReviewStatus: true,
+          wioaReviewedAt: true,
+          updatedAt: true,
           wioaReviewer: { select: { fullName: true } },
         },
       }),
@@ -357,21 +365,31 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
     }
   }
 
-  const rows: WioaScreeningRow[] = rowsResult.value.map((r) => {
-    const snap = parseWioaQualificationSnapshot(r.wioaQualificationJson);
-    const name = r.fullName?.trim() || 'Unnamed member';
-    const { determination, docs, docsComplete } = determinationFrom(r.wioaReviewStatus);
-    return {
-      id: r.id,
-      name,
-      initials: initialsFrom(name),
-      category: categoryFrom(snap),
-      docs,
-      docsComplete,
-      determination,
-      reviewer: r.wioaReviewer?.fullName?.trim() || '—',
-    };
-  });
+  const now = new Date();
+  const rows: WioaScreeningRow[] = sortWioaQueueOldestFirst(
+    rowsResult.value.map((r) => {
+      const snap = parseWioaQualificationSnapshot(r.wioaQualificationJson);
+      const name = r.fullName?.trim() || 'Unnamed member';
+      const { determination, docs, docsComplete } = determinationFrom(r.wioaReviewStatus);
+      const awaitingReview = isWioaAwaitingReview(r.wioaReviewStatus);
+      return {
+        id: r.id,
+        name,
+        initials: initialsFrom(name),
+        category: categoryFrom(snap),
+        docs,
+        docsComplete,
+        determination,
+        reviewer: r.wioaReviewer?.fullName?.trim() || '—',
+        awaitingReview,
+        // Only a screening still waiting on staff has a "days waiting".
+        daysWaiting: awaitingReview
+          ? wioaDaysWaiting({ wioaQualificationJson: r.wioaQualificationJson, updatedAt: r.updatedAt }, now)
+          : null,
+        reviewedAt: r.wioaReviewedAt,
+      };
+    }),
+  );
 
   return (
     <WioaScreeningKit

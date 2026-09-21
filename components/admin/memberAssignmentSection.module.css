@@ -1,0 +1,72 @@
+/*
+ * Partner / Subgroup assignment cards on the admin member record (Overview
+ * tab). `.wa-kit-card` is the shell, matching the neighbouring Counselor
+ * assignment and Workspace email sections; these classes lay out the inside.
+ * `--wa-*` tokens only, 13px floor, no inline fontSize (KIT_GUIDE record panels).
+ */
+.title {
+  margin: 0 0 0.75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.lede {
+  margin: 0 0 0.75rem;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.select {
+  min-width: min(260px, 100%);
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--wa-radius-sm);
+  border: 1px solid var(--wa-control-border, var(--wa-border));
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+}
+
+.current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.note {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.message {
+  margin: 0.5rem 0 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+}
+
+.messageOk {
+  color: var(--wa-success);
+}
+
+.messageErr {
+  color: var(--wa-danger);
+}

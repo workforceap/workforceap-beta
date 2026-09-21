@@ -82,6 +82,12 @@ export interface CourseraSyncKitProps {
   approvedForEnrollment: string;
   /** Distinct resolved members with an xAPI receipt in 30 days; not learner activity time. */
   activeLast30Days: string;
+  /**
+   * WAP-33: `xapi_statements` rows still carrying an 'unresolved-%' sentinel
+   * organization — invisible to every tenant until a mapping resolves them or
+   * staff triage the actor. Platform-wide by definition. Omitted = not loaded.
+   */
+  unresolvedOrgSentinels?: string;
 }
 
 function healthColorVar(health: SyncHealth): string {
@@ -149,6 +155,7 @@ export function CourseraSyncKit({
   headerAction,
   approvedForEnrollment,
   activeLast30Days,
+  unresolvedOrgSentinels,
 }: CourseraSyncKitProps) {
   const color = healthColorVar(health);
   const HealthIcon = health === 'attention' ? TriangleAlert : health === 'healthy' ? CircleCheck : CircleHelp;
@@ -170,6 +177,16 @@ export function CourseraSyncKit({
     },
     { icon: <CircleCheck size={14} />, label: 'Approved for enrollment', value: approvedForEnrollment },
     { icon: <Activity size={14} />, label: 'Members with xAPI received (30d)', value: activeLast30Days },
+    ...(unresolvedOrgSentinels !== undefined
+      ? [
+          {
+            icon: <CircleSlash size={14} />,
+            label: 'Unresolved tenant (xAPI statements)',
+            value: unresolvedOrgSentinels,
+            alert: unresolvedOrgSentinels !== '0' && unresolvedOrgSentinels !== '—',
+          },
+        ]
+      : []),
   ];
 
   return (

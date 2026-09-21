@@ -6,6 +6,8 @@ import {
   DELETED_ACCOUNT_RETENTION_DAYS,
   CRITICAL_AUDIT_ACTION_PREFIXES,
   RETENTION_AUDIT_DAYS as CRITICAL_AUDIT_RETENTION_DAYS,
+  UNMATCHED_XAPI_EVENT_RETENTION_DAYS,
+  UNMATCHED_XAPI_EVENT_RETENTION_LABEL,
   getCutoffDate,
   type RetentionTableConfig,
 } from './config';
@@ -113,6 +115,66 @@ export async function cleanupTable(cfg: RetentionTableConfig): Promise<CleanupRe
     deleted: totalDeleted,
     batchCount,
   };
+}
+
+/**
+ * WAP-33: purge `coursera_xapi_events` rows that never matched a member and
+ * are older than UNMATCHED_XAPI_EVENT_RETENTION_DAYS. Raw SQL because the
+ * table has no Prisma model (created at runtime by lib/xapi/mappings.ts);
+ * the existence probe keeps a fresh environment, where the table has not
+ * been created yet, from erroring. Same batch-and-loop shape as
+ * `cleanupTable`, keyed on `received_at`, and only rows with
+ * `matched_user_id IS NULL AND completion_status = 'unmatched'` are eligible
+ * — matched, ignored and errored events keep their existing lifetime.
+ *
+ * Rows whose `LOWER(actor_email)` equals a live member's `LOWER(users.email)`
+ * are never purged: they are the replay handle `lib/xapi/reprocess.ts` uses
+ * to credit a learner who enrolled after the Coursera work happened (see the
+ * note on DEFAULT_UNMATCHED_XAPI_EVENT_RETENTION_DAYS in ./config.ts).
+ */
+export async function cleanupUnmatchedCourseraXapiEvents(): Promise<CleanupResult> {
+  const cutoff = getCutoffDate(UNMATCHED_XAPI_EVENT_RETENTION_DAYS);
+  let totalDeleted = 0;
+  let batchCount = 0;
+
+  const exists = await prisma.$transaction((tx) =>
+    tx.$queryRaw<Array<{ present: boolean }>>`
+      SELECT to_regclass('public.coursera_xapi_events') IS NOT NULL AS present
+    `,
+  );
+  if (!exists[0]?.present) {
+    return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: 0, batchCount: 0 };
+  }
+
+  while (true) {
+    const deleted = await prisma.$transaction((tx) =>
+      tx.$executeRaw`
+        DELETE FROM coursera_xapi_events
+        WHERE id IN (
+          SELECT id
+          FROM coursera_xapi_events
+          WHERE matched_user_id IS NULL
+            AND completion_status = 'unmatched'
+            AND received_at < ${cutoff}
+            AND NOT EXISTS (
+              SELECT 1
+              FROM users u
+              WHERE u.deleted_at IS NULL
+                AND coursera_xapi_events.actor_email IS NOT NULL
+                AND LOWER(u.email) = LOWER(coursera_xapi_events.actor_email)
+            )
+          ORDER BY received_at ASC
+          LIMIT ${RETENTION_BATCH_SIZE}
+        )
+      `,
+    );
+    if (deleted === 0) break;
+    totalDeleted += deleted;
+    batchCount += 1;
+    if (deleted < RETENTION_BATCH_SIZE) break;
+  }
+
+  return { model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: totalDeleted, batchCount };
 }
 
 /** A soft-deleted account the purge could not remove, and the constraint that stopped it. */
@@ -257,6 +319,16 @@ export async function runDataCleanup(): Promise<DataCleanupReport> {
         error,
       });
     }
+  }
+
+  try {
+    const result = await cleanupUnmatchedCourseraXapiEvents();
+    results.push(result);
+    totalDeleted += result.deleted;
+  } catch (err) {
+    const error = err instanceof Error ? err.message : String(err);
+    console.error(`[data-cleanup] Failed for ${UNMATCHED_XAPI_EVENT_RETENTION_LABEL}:`, error);
+    results.push({ model: UNMATCHED_XAPI_EVENT_RETENTION_LABEL, deleted: 0, batchCount: 0, error });
   }
 
   let deletedAccounts = 0;

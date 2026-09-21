@@ -740,14 +740,13 @@ export function AtRiskDashboardView({
           </div>
         )}
 
-        {/* Detail Modal */}
-        {detailMember && (
-          <AtRiskDetailModal
-            member={detailMember}
-            onClose={() => setDetailMember(null)}
-            onStatusChange={handleStatusChange}
-          />
-        )}
+        {/* Detail Modal — always mounted; `member={null}` closes it so the
+            kit dialog can hand focus back to the row that opened it. */}
+        <AtRiskDetailModal
+          member={detailMember}
+          onClose={() => setDetailMember(null)}
+          onStatusChange={handleStatusChange}
+        />
       </div>
     </DesignSurface>
   );

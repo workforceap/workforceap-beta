@@ -14,6 +14,10 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     $queryRaw: mocks.queryRaw,
     user: { findMany: mocks.findMany },
+    $transaction: async (fn: (tx: unknown) => unknown) => {
+      const { prisma } = await import('@/lib/db/prisma');
+      return fn(prisma);
+    },
   },
 }));
 vi.mock('@/lib/xapi/inboundStatementPipeline', () => ({

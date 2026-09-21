@@ -7,13 +7,17 @@
  * tenant-scoped models and reports whether the call site appears to be
  * scoped via `withTenantScope` or one of the explicit allowlist helpers.
  *
- * This is a **reporting** script today. After Sprint A.2 (migration) it
- * graduates to a CI gate that fails on new violations.
+ * Reporting by default. With `--max-unscoped <n>` it is a **ratchet**
+ * (WAP-24): the run fails when the UNSCOPED count exceeds `n`, so the number
+ * pinned in .github/workflows/ci-gate.yml can only fall. When the count drops
+ * below the pin the script says so and asks for the pin to be lowered in the
+ * same PR; it never fails for being better than the baseline.
  *
  * Usage:
- *   node scripts/audit-tenant-scoping.cjs                # full report to stdout
- *   node scripts/audit-tenant-scoping.cjs --json         # machine-readable
- *   node scripts/audit-tenant-scoping.cjs --summary      # counts only
+ *   node scripts/audit-tenant-scoping.cjs                     # full report to stdout
+ *   node scripts/audit-tenant-scoping.cjs --json              # machine-readable
+ *   node scripts/audit-tenant-scoping.cjs --summary           # counts only
+ *   node scripts/audit-tenant-scoping.cjs --max-unscoped 678  # CI gate: exit 1 above 678
  */
 
 const fs = require('node:fs');
@@ -183,10 +187,38 @@ function scanFile(filePath) {
   return violations;
 }
 
+/**
+ * Parse `--max-unscoped <n>` (or `--max-unscoped=<n>`). Returns null when
+ * absent; throws on a value that is not a non-negative integer so a typo in
+ * the workflow cannot silently disable the gate.
+ */
+function parseMaxUnscoped(args) {
+  const idx = args.findIndex((a) => a === '--max-unscoped' || a.startsWith('--max-unscoped='));
+  if (idx === -1) return null;
+  const raw = args[idx].includes('=') ? args[idx].split('=')[1] : args[idx + 1];
+  if (raw === undefined || !/^\d+$/.test(raw)) {
+    throw new Error(`--max-unscoped expects a non-negative integer, got ${JSON.stringify(raw)}`);
+  }
+  return Number(raw);
+}
+
+/**
+ * The ratchet verdict. Pure so the CLI and the test share it.
+ *   over  → fail: new unscoped call sites were added.
+ *   under → pass, but the pin is stale and should be lowered.
+ *   equal → pass.
+ */
+function evaluateRatchet(unscopedCount, maxUnscoped) {
+  if (unscopedCount > maxUnscoped) return { ok: false, verdict: 'over', delta: unscopedCount - maxUnscoped };
+  if (unscopedCount < maxUnscoped) return { ok: true, verdict: 'under', delta: maxUnscoped - unscopedCount };
+  return { ok: true, verdict: 'equal', delta: 0 };
+}
+
 function main() {
   const args = process.argv.slice(2);
   const wantJson = args.includes('--json');
   const wantSummary = args.includes('--summary');
+  const maxUnscoped = parseMaxUnscoped(args);
 
   const files = SCAN_DIRS.flatMap((d) => listSourceFiles(path.join(REPO_ROOT, d)));
   const allViolations = files.flatMap(scanFile);
@@ -194,6 +226,42 @@ function main() {
   const unscoped = allViolations.filter((v) => !v.scoped);
   const scoped = allViolations.filter((v) => v.scoped);
   const dynamic = allViolations.filter((v) => v.dynamic);
+
+  if (maxUnscoped !== null) {
+    const { ok, verdict, delta } = evaluateRatchet(unscoped.length, maxUnscoped);
+    console.log('tenant-scoping ratchet (WAP-24):');
+    console.log(`  files scanned:      ${files.length}`);
+    console.log(`  scoped:             ${scoped.length}`);
+    console.log(`  UNSCOPED:           ${unscoped.length}  (pin: ${maxUnscoped})`);
+    if (verdict === 'over') {
+      console.log('');
+      console.log(`✖ ${delta} more unscoped tenant-model Prisma call site(s) than the pinned baseline.`);
+      console.log('  Wrap the new read/write in withTenantScope(orgId, async (db) => …), or mark a');
+      console.log('  deliberately cross-tenant read with crossTenantOK(() => …) — see');
+      console.log('  docs/TENANT-ISOLATION.md "Allowlist". Never raise the pin to make CI pass.');
+      console.log('');
+      console.log('  Unscoped call sites (all; diff against master to find the new ones):');
+      const byFile = new Map();
+      for (const v of unscoped) {
+        if (!byFile.has(v.file)) byFile.set(v.file, []);
+        byFile.get(v.file).push(v);
+      }
+      for (const [file, vs] of [...byFile.entries()].sort()) {
+        console.log(`    ${file}: ${vs.map((v) => `L${v.line} ${v.symbol}`).join(', ')}`);
+      }
+      process.exitCode = 1;
+      return;
+    }
+    if (verdict === 'under') {
+      console.log('');
+      console.log(`✔ ${delta} fewer unscoped call site(s) than the pin. Lower --max-unscoped to ${unscoped.length}`);
+      console.log('  in .github/workflows/ci-gate.yml in this PR so the ratchet keeps the gain.');
+      return;
+    }
+    console.log('');
+    console.log('✔ Unscoped count matches the pinned baseline.');
+    return;
+  }
 
   if (wantJson) {
     process.stdout.write(
@@ -255,4 +323,8 @@ function main() {
   console.log('Each call site needs to be wrapped in withTenantScope(orgId, async (db) => { ... }).');
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { evaluateRatchet, parseMaxUnscoped };
