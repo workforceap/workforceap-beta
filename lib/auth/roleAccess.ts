@@ -58,17 +58,21 @@ export type RoleResolution = {
  *     deletion, whatever either store still says.
  *  2. `profiles.role === 'super_admin'` stays `super_admin` even when the
  *     rows name a lesser role. This is the one profile-first exception:
- *     nothing in the codebase writes `super_admin`
- *     into `user_roles` (`syncManagedUserRoles` manages only `admin` and
- *     `case_manager`, and the seed sets it on the profile only), so a
- *     user_roles-only rule would demote every platform super-admin to whatever
- *     row they happen to hold. The backfill script lists these accounts as
- *     conflicts for WAP-182 item 2; once a `super_admin` row exists this
- *     branch is a no-op.
- *  3. Otherwise `user_roles` decides. Exactly one recognised row is the role.
- *     Several rows pick the most privileged by `ROLE_PRECEDENCE`. Role names
- *     outside `ROLE_PRECEDENCE` are ignored (they carry no portal access).
- *  4. No recognised row: fall back to `profiles.role` (normalised), which
+ *     nothing in the codebase writes `super_admin` into `user_roles`
+ *     (`syncManagedUserRoles` manages only `admin` and `case_manager`, and
+ *     the seed sets it on the profile only), so a user_roles-only rule would
+ *     demote every platform super-admin to whatever row they happen to hold.
+ *     The backfill script lists these accounts as conflicts for WAP-182
+ *     item 2; once a `super_admin` row exists this branch is a no-op.
+ *  3. Otherwise the `user_roles` rows other than `member` decide. Every
+ *     account carries a baseline `member` row (`ensureAppUser`,
+ *     `createMember`, invite accept), and some promotions still write only
+ *     `profiles.role` (POST /api/admin/counselors), so a lone `member` row
+ *     says nothing about privilege and must not mask the profile. One
+ *     recognised non-member row is the role; several pick the most
+ *     privileged by `ROLE_PRECEDENCE`. Names outside `ROLE_PRECEDENCE` are
+ *     ignored (they carry no portal access).
+ *  4. No non-member row: fall back to `profiles.role` (normalised), which
  *     `getProfileRole` logs once at debug level.
  *  5. Nothing anywhere: `member`.
  */
@@ -76,7 +80,9 @@ export function resolveEffectiveRole(input: RoleResolutionInput): RoleResolution
   if (input.deletedAt) return { role: 'member', source: 'deleted' };
 
   const profileRole = normalizeRoleName(input.profileRole);
-  const rows = input.userRoleNames.map(normalizeRoleName).filter((name) => KNOWN_ROLES.has(name));
+  const rows = input.userRoleNames
+    .map(normalizeRoleName)
+    .filter((name) => KNOWN_ROLES.has(name) && name !== 'member');
 
   if (profileRole === 'super_admin' && !rows.includes('super_admin')) {
     return { role: 'super_admin', source: 'profile' };

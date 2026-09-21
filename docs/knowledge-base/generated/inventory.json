@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "2009e2d43d3bfccc3dbd868c29a157f55eb99e278b0e66235d2b44652308eef3",
+  "inputTreeSha256": "2c2dbb29bafba2789e8bc4e8541f07e89a9b8785de4f29e5c206aea9a6b4ba0f",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -99159,9 +99159,9 @@
       "path": "lib/auth/roleAccess.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 3724,
-      "lines": 90,
-      "sha256": "65b91e77553d81c3cca2211652bf14fc1a270bf180c0cade4c8e05351dd92c8e",
+      "bytes": 4066,
+      "lines": 96,
+      "sha256": "70f6571209c60089a8dfd7a69d0234499cebe3170b3e2fee652580eb69691387",
       "binary": false,
       "exports": [
         {
@@ -99196,7 +99196,7 @@
         },
         {
           "name": "resolveEffectiveRole",
-          "line": 75,
+          "line": 79,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99238,7 +99238,7 @@
         },
         {
           "name": "resolveEffectiveRole",
-          "line": 75,
+          "line": 79,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99299,9 +99299,9 @@
       "path": "lib/auth/roles.ts",
       "area": "libraries",
       "domain": "identity-tenancy",
-      "bytes": 22341,
-      "lines": 625,
-      "sha256": "7c4f077ef1e323b11e4612a6c2bcf947c04d74952d17b4d5cde7ad16bd67fd6b",
+      "bytes": 22944,
+      "lines": 640,
+      "sha256": "103aa686eab637c4951e8ca05aa9d1ad97eee4354b3caef4180590f1139ba7a8",
       "binary": false,
       "exports": [
         {
@@ -99326,117 +99326,117 @@
         },
         {
           "name": "getUserRoles",
-          "line": 21,
+          "line": 57,
           "kind": "Variable"
         },
         {
           "name": "getProfileRole",
-          "line": 46,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "isSuperAdmin",
-          "line": 75,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "isAdmin",
-          "line": 82,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isAdminInOrg",
-          "line": 99,
+          "line": 114,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isStaff",
-          "line": 109,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canBypassMemberAssessment",
-          "line": 129,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "isCaseManager",
-          "line": 138,
+          "line": 153,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdmin",
-          "line": 145,
+          "line": 160,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isCounselor",
-          "line": 152,
+          "line": 167,
           "kind": "Variable"
         },
         {
           "name": "isPartner",
-          "line": 161,
+          "line": 176,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PartnerPortalContext",
-          "line": 170,
+          "line": 185,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "getPartnerForUser",
-          "line": 213,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCounselorForUser",
-          "line": 290,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "hasMultiplePortalRoles",
           "line": 305,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "hasMultiplePortalRoles",
+          "line": 320,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isSubgroupLeader",
-          "line": 327,
+          "line": 342,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getSubgroupsForUser",
-          "line": 336,
+          "line": 351,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireSubgroupLeader",
-          "line": 364,
+          "line": 379,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isEmployer",
-          "line": 373,
+          "line": 388,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerForUser",
-          "line": 494,
+          "line": 509,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerAccountForNav",
-          "line": 565,
+          "line": 580,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMentor",
-          "line": 591,
+          "line": 606,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdminOrCounselor",
-          "line": 605,
+          "line": 620,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -99472,153 +99472,163 @@
           "kind": "Variable"
         },
         {
-          "name": "getUserRoles",
+          "name": "RoleContext",
           "line": 21,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "loadRoleContext",
+          "line": 35,
+          "kind": "Variable"
+        },
+        {
+          "name": "getUserRoles",
+          "line": 57,
           "kind": "Variable"
         },
         {
           "name": "profileRoleFallbackLogged",
-          "line": 33,
+          "line": 65,
           "kind": "Variable"
         },
         {
           "name": "getProfileRole",
-          "line": 46,
+          "line": 79,
           "kind": "Variable"
         },
         {
           "name": "isSuperAdmin",
-          "line": 75,
+          "line": 90,
           "kind": "Variable"
         },
         {
           "name": "isAdmin",
-          "line": 82,
+          "line": 97,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isAdminInOrg",
-          "line": 99,
+          "line": 114,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isStaff",
-          "line": 109,
+          "line": 124,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "canBypassMemberAssessment",
-          "line": 129,
+          "line": 144,
           "kind": "Variable"
         },
         {
           "name": "isCaseManager",
-          "line": 138,
+          "line": 153,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdmin",
-          "line": 145,
+          "line": 160,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isCounselor",
-          "line": 152,
+          "line": 167,
           "kind": "Variable"
         },
         {
           "name": "isPartner",
-          "line": 161,
+          "line": 176,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "PartnerPortalContext",
-          "line": 170,
+          "line": 185,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "PARTNER_BRANDING_SELECT",
-          "line": 191,
+          "line": 206,
           "kind": "Variable"
         },
         {
           "name": "getOrgBranding",
-          "line": 201,
+          "line": 216,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getPartnerForUser",
-          "line": 213,
+          "line": 228,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getCounselorForUser",
-          "line": 290,
-          "kind": "FunctionDeclaration"
-        },
-        {
-          "name": "hasMultiplePortalRoles",
           "line": 305,
           "kind": "FunctionDeclaration"
         },
         {
+          "name": "hasMultiplePortalRoles",
+          "line": 320,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "isSubgroupLeader",
-          "line": 327,
+          "line": 342,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getSubgroupsForUser",
-          "line": 336,
+          "line": 351,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireSubgroupLeader",
-          "line": 364,
+          "line": 379,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isEmployer",
-          "line": 373,
+          "line": 388,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "resolvePreviewFallbackOrganizationId",
-          "line": 381,
+          "line": 396,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ensureSuperAdminFallbackPartner",
-          "line": 389,
+          "line": 404,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "ensureSuperAdminFallbackEmployer",
-          "line": 420,
+          "line": 435,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "mapEmployerRow",
-          "line": 465,
+          "line": 480,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerForUser",
-          "line": 494,
+          "line": 509,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "getEmployerAccountForNav",
-          "line": 565,
+          "line": 580,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isMentor",
-          "line": 591,
+          "line": 606,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "requireAdminOrCounselor",
-          "line": 605,
+          "line": 620,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -153093,9 +153103,9 @@
       "path": "scripts/backfill-user-roles-from-profile.test.ts",
       "area": "operations",
       "domain": "operations",
-      "bytes": 2297,
-      "lines": 53,
-      "sha256": "f657bfdee9e95a3719bf6a294da660048ea138c606bf7f270ad16fb1afba9e70",
+      "bytes": 3490,
+      "lines": 79,
+      "sha256": "0a9ff77216f49063390cdb1bd1ec4a8a7173fc40000ba90ea2523860c8cfad3e",
       "binary": false,
       "exports": [],
       "declarations": [],
@@ -153105,66 +153115,66 @@
       "path": "scripts/backfill-user-roles-from-profile.ts",
       "area": "operations",
       "domain": "operations",
-      "bytes": 5837,
-      "lines": 146,
-      "sha256": "5454d3be6edab6353746cb56bbeec32850e3b0968262bf582dcec00e076ff442",
+      "bytes": 6846,
+      "lines": 165,
+      "sha256": "16d79ce93d9abcc7a8bf0431dcddab625964fa5dd8113638b57f05942f9b0fa6",
       "binary": false,
       "exports": [
         {
           "name": "UserRoleSnapshot",
-          "line": 26,
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BackfillPlan",
-          "line": 32,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "planUserRoleBackfill",
-          "line": 43,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countByRole",
-          "line": 65,
+          "line": 83,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "UserRoleSnapshot",
-          "line": 26,
+          "line": 33,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "BackfillPlan",
-          "line": 32,
+          "line": 39,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "planUserRoleBackfill",
-          "line": 43,
+          "line": 50,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "countByRole",
-          "line": 65,
+          "line": 83,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "DRY_RUN_ID_PREVIEW",
-          "line": 71,
+          "line": 89,
           "kind": "Variable"
         },
         {
           "name": "main",
-          "line": 73,
+          "line": 91,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "isDirectInvocation",
-          "line": 136,
+          "line": 155,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -172310,9 +172320,9 @@
       "path": "tests/lib/auth-role-resolution.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 5690,
-      "lines": 108,
-      "sha256": "dab097265761e3922c643f555c7df28b9878e8dd71233e81f3359e4ae773faf7",
+      "bytes": 6938,
+      "lines": 126,
+      "sha256": "14dc8465279d60b3d37978d5992df1ceaa0f844e22c334a8add29779f2b7e5f2",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -172323,17 +172333,17 @@
         },
         {
           "name": "log",
-          "line": 11,
+          "line": 10,
           "kind": "Variable"
         },
         {
           "name": "Row",
-          "line": 21,
+          "line": 20,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "user",
-          "line": 23,
+          "line": 22,
           "kind": "FunctionDeclaration"
         }
       ],

@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const db = vi.hoisted(() => ({
   user: { findUnique: vi.fn() },
-  userRole: { findMany: vi.fn() },
 }));
 const log = vi.hoisted(() => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() }));
 
@@ -30,7 +29,6 @@ function user(profileRole: string | null, roleNames: string[], deletedAt: Date |
 
 beforeEach(() => {
   vi.clearAllMocks();
-  db.userRole.findMany.mockResolvedValue([]);
 });
 
 describe('getProfileRole resolves from user_roles first', () => {
@@ -43,11 +41,11 @@ describe('getProfileRole resolves from user_roles first', () => {
 
   it('a promoted row grants access the profile never recorded', async () => {
     db.user.findUnique.mockResolvedValue(user('member', ['member', 'admin']));
-    db.userRole.findMany.mockResolvedValue([{ role: { name: 'member' } }, { role: { name: 'admin' } }]);
     expect(await getProfileRole('u-2')).toBe('admin');
     expect(await isAdmin('u-2')).toBe(true);
   });
 
+  // Runs before any other profile-sourced case: the debug log fires once per process.
   it('falls back to profiles.role when there is no row and logs once without PII', async () => {
     db.user.findUnique.mockResolvedValue(user('employer', []));
     expect(await getProfileRole('u-3')).toBe('employer');
@@ -57,6 +55,19 @@ describe('getProfileRole resolves from user_roles first', () => {
     const [message, context] = log.debug.mock.calls[0];
     expect(message).toMatch(/profiles\.role/);
     expect(JSON.stringify(context)).not.toMatch(/u-3|u-4|employer|counselor|@/);
+  });
+
+  it('the baseline member row does not mask a promotion recorded only on the profile', async () => {
+    db.user.findUnique.mockResolvedValue(user('counselor', ['member']));
+    expect(await getProfileRole('u-c')).toBe('counselor');
+    db.user.findUnique.mockResolvedValue(user('admin', ['member']));
+    expect(await getProfileRole('u-a')).toBe('admin');
+    expect(await isAdmin('u-a')).toBe(true);
+    db.user.findUnique.mockResolvedValue(user('partner', ['member']));
+    expect(await getProfileRole('u-p')).toBe('partner');
+    db.user.findUnique.mockResolvedValue(user('member', ['member']));
+    expect(await getProfileRole('u-m')).toBe('member');
+    expect(await isAdmin('u-m')).toBe(false);
   });
 
   it('several rows resolve to the most privileged by ROLE_PRECEDENCE', async () => {
@@ -88,12 +99,17 @@ describe('getProfileRole resolves from user_roles first', () => {
     expect(await getProfileRole('u-9')).toBe('super_admin');
   });
 
-  it('getUserRoles ignores rows of soft-deleted users', async () => {
-    db.userRole.findMany.mockResolvedValue([{ role: { name: 'admin' } }]);
-    expect(await getUserRoles('u-10')).toEqual(['admin']);
-    expect(db.userRole.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: 'u-10', user: { deletedAt: null } } }),
-    );
+  it('getUserRoles shares the single identity read and ignores rows of soft-deleted users', async () => {
+    db.user.findUnique.mockResolvedValue(user('member', ['member', 'admin']));
+    expect(await getUserRoles('u-10')).toEqual(['member', 'admin']);
+    db.user.findUnique.mockResolvedValue(user('admin', ['member', 'admin'], new Date('2026-09-01T00:00:00Z')));
+    expect(await getUserRoles('u-11')).toEqual([]);
+  });
+
+  it('isAdmin resolves profile and rows from one round-trip', async () => {
+    db.user.findUnique.mockResolvedValue(user('member', ['member', 'admin']));
+    expect(await isAdmin('u-12')).toBe(true);
+    expect(db.user.findUnique).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -101,6 +117,8 @@ describe('resolveEffectiveRole (pure)', () => {
   it('normalises names and ignores role names outside the vocabulary', () => {
     expect(resolveEffectiveRole({ deletedAt: null, profileRole: 'Case Manager', userRoleNames: [] })).toEqual({ role: 'case_manager', source: 'profile' });
     expect(resolveEffectiveRole({ deletedAt: null, profileRole: 'admin', userRoleNames: ['mentor'] })).toEqual({ role: 'admin', source: 'profile' });
+    expect(resolveEffectiveRole({ deletedAt: null, profileRole: 'counselor', userRoleNames: ['member'] })).toEqual({ role: 'counselor', source: 'profile' });
+    expect(resolveEffectiveRole({ deletedAt: null, profileRole: 'member', userRoleNames: ['member'] })).toEqual({ role: 'member', source: 'profile' });
     expect(resolveEffectiveRole({ deletedAt: null, profileRole: null, userRoleNames: ['Partner'] })).toEqual({ role: 'partner', source: 'user_roles' });
     expect(resolveEffectiveRole({ deletedAt: null, profileRole: null, userRoleNames: [] })).toEqual({ role: 'member', source: 'default' });
     expect(resolveEffectiveRole({ deletedAt: new Date(), profileRole: 'admin', userRoleNames: ['admin'] })).toEqual({ role: 'member', source: 'deleted' });

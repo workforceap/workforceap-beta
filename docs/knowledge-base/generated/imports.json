@@ -98666,7 +98666,7 @@
   {
     "from": "lib/auth/roles.ts",
     "specifier": "@/lib/auth/server",
-    "line": 609,
+    "line": 624,
     "kind": "dynamic-import",
     "external": false,
     "target": "lib/auth/server.ts"
@@ -117370,7 +117370,7 @@
   {
     "from": "scripts/backfill-user-roles-from-profile.ts",
     "specifier": "node:path",
-    "line": 20,
+    "line": 27,
     "kind": "import",
     "external": true,
     "package": "node:path"
@@ -117378,7 +117378,7 @@
   {
     "from": "scripts/backfill-user-roles-from-profile.ts",
     "specifier": "node:url",
-    "line": 21,
+    "line": 28,
     "kind": "import",
     "external": true,
     "package": "node:url"
@@ -117386,7 +117386,7 @@
   {
     "from": "scripts/backfill-user-roles-from-profile.ts",
     "specifier": "@prisma/client",
-    "line": 22,
+    "line": 29,
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
@@ -117394,7 +117394,7 @@
   {
     "from": "scripts/backfill-user-roles-from-profile.ts",
     "specifier": "../lib/auth/roleAccess",
-    "line": 24,
+    "line": 31,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roleAccess.ts"
@@ -139770,7 +139770,7 @@
   {
     "from": "tests/lib/auth-role-resolution.spec.ts",
     "specifier": "@/lib/auth/roles",
-    "line": 18,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roles.ts"
@@ -139778,7 +139778,7 @@
   {
     "from": "tests/lib/auth-role-resolution.spec.ts",
     "specifier": "@/lib/auth/roleAccess",
-    "line": 19,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/auth/roleAccess.ts"

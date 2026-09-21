@@ -418,7 +418,7 @@
 | [tests/lib/apply-metadata-image.spec.ts](../../../tests/lib/apply-metadata-image.spec.ts) | 24 | tests |  |
 | [tests/lib/apply-resume-gate-contrast.spec.ts](../../../tests/lib/apply-resume-gate-contrast.spec.ts) | 82 | tests |  |
 | [tests/lib/at-risk-curriculum-assignment.spec.ts](../../../tests/lib/at-risk-curriculum-assignment.spec.ts) | 89 | tests |  |
-| [tests/lib/auth-role-resolution.spec.ts](../../../tests/lib/auth-role-resolution.spec.ts) | 108 | tests |  |
+| [tests/lib/auth-role-resolution.spec.ts](../../../tests/lib/auth-role-resolution.spec.ts) | 126 | tests |  |
 | [tests/lib/auth-server.test.ts](../../../tests/lib/auth-server.test.ts) | 292 | tests |  |
 | [tests/lib/auth-user-lifecycle.spec.ts](../../../tests/lib/auth-user-lifecycle.spec.ts) | 99 | tests |  |
 | [tests/lib/board-outcomes-official-totals.spec.ts](../../../tests/lib/board-outcomes-official-totals.spec.ts) | 124 | tests |  |

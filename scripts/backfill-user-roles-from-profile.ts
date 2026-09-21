@@ -9,10 +9,17 @@
  *   npm run db:backfill:user-roles            # plan only (first 20 candidate ids)
  *   npm run db:backfill:user-roles -- --apply # insert the rows
  *
- * Never touches an account whose profile role and existing `user_roles`
+ * Every account carries a baseline `member` row (`ensureAppUser`,
+ * `createMember`, invite accept), so rows equal to just `member` count as
+ * "no row" and the profile role is inserted next to it (e.g. a counselor
+ * promoted through POST /api/admin/counselors, which writes the profile only).
+ *
+ * Never touches an account whose profile role and existing non-member rows
  * disagree: those are printed separately as "conflicts, needs Mike"
  * (WAP-182 item 2). A `member` profile is the column default and never
  * conflicts with rows that name a real role (demo partner / employer logins).
+ * `super_admin` is also item 2: this script never creates a `super_admin`
+ * Role row, so a profile-only super admin is listed as a conflict instead.
  *
  * Idempotent: after --apply every candidate has a row, so a re-run plans
  * nothing. Exit code 0 on success (conflicts are informational), 1 on error.
@@ -49,11 +56,22 @@ export function planUserRoleBackfill(users: readonly UserRoleSnapshot[]): Backfi
       continue;
     }
     const rows = user.userRoleNames.map(normalizeRoleName).filter(Boolean);
-    if (rows.length === 0) {
-      plan.inserts.push({ userId: user.id, role: profileRole });
+    const privilegedRows = rows.filter((name) => name !== 'member');
+    if (rows.includes(profileRole)) {
+      plan.consistent += 1;
       continue;
     }
-    if (rows.includes(profileRole) || profileRole === 'member') {
+    if (privilegedRows.length === 0) {
+      // No row, or only the baseline `member` row: the profile is the only
+      // record of the promotion, so seed it — except super_admin (item 2).
+      if (profileRole === 'super_admin') {
+        plan.conflicts.push({ userId: user.id, profileRole, userRoleNames: rows });
+      } else {
+        plan.inserts.push({ userId: user.id, role: profileRole });
+      }
+      continue;
+    }
+    if (profileRole === 'member') {
       plan.consistent += 1;
       continue;
     }
@@ -120,6 +138,7 @@ async function main() {
 
     const roleIds = new Map<string, string>();
     for (const role of Object.keys(countByRole(plan.inserts))) {
+      if (role === 'super_admin') throw new Error('refusing to create a super_admin role row (WAP-182 item 2)');
       const row = await prisma.role.upsert({ where: { name: role }, create: { name: role }, update: {}, select: { id: true } });
       roleIds.set(role, row.id);
     }

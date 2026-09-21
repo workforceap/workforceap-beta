@@ -18,32 +18,21 @@ const SUPER_ADMIN_FALLBACK_PARTNER_NAME = 'Workforce Solutions Capital Area';
 const SUPER_ADMIN_FALLBACK_EMPLOYER_EMAIL = 'employer-preview@example.com';
 const SUPER_ADMIN_FALLBACK_EMPLOYER_NAME = 'WorkforceAP Example Employer';
 
-export const getUserRoles = cache(async function getUserRoles(userId: string): Promise<string[]> {
-  const userRoles = await prisma.$transaction((tx) =>
-    tx.userRole.findMany({
-      // A soft-deleted account keeps its rows until the hard delete, but
-      // they grant nothing (WAP-182 item 1, matches getProfileRole).
-      where: { userId, user: { deletedAt: null } },
-      include: { role: true },
-    })
-  );
-  return userRoles.map((ur) => ur.role.name);
-});
-
-let profileRoleFallbackLogged = false;
+type RoleContext = {
+  deletedAt: Date | null;
+  profileRole: string | null;
+  userRoleNames: string[];
+};
 
 /**
- * The user's effective role, with `user_roles` as the source of truth
- * (WAP-182 item 1). Precedence lives in `resolveEffectiveRole`
- * (lib/auth/roleAccess.ts): soft-deleted -> member; a `super_admin` profile
- * stays super_admin; otherwise the most privileged `user_roles` row by
- * `ROLE_PRECEDENCE`; no row -> `profiles.role` (logged once, no PII);
- * nothing -> `member`. Signature and return type are unchanged so the ~20
- * callers (login redirect, /api/auth/me, feature flags, route guards) keep
- * working; `scripts/backfill-user-roles-from-profile.ts` seeds the missing
- * rows so the profile fallback becomes the exception.
+ * One identity read per request for everything role-related (WAP-182
+ * item 1): `users.deleted_at`, `profiles.role` and the `user_roles` names.
+ * `getProfileRole`, `getUserRoles` and the `is*` guards all consume it, so
+ * the hot path (`isAdmin` -> profile + rows) stays a single round-trip.
+ * React `cache()` scopes it to the request; a missing user reads as an
+ * account with nothing anywhere.
  */
-export const getProfileRole = cache(async function getProfileRole(userId: string): Promise<string> {
+const loadRoleContext = cache(async function loadRoleContext(userId: string): Promise<RoleContext> {
   // Identity lookup by auth user id: deliberately cross-tenant, the role is
   // not tenant data (super_admin in particular is platform-level).
   const user = await crossTenantOK(() =>
@@ -58,11 +47,37 @@ export const getProfileRole = cache(async function getProfileRole(userId: string
       })
     )
   );
-  const resolution = resolveEffectiveRole({
+  return {
     deletedAt: user?.deletedAt ?? null,
     profileRole: user?.profile?.role ?? null,
     userRoleNames: user?.userRoles.map((entry) => entry.role.name) ?? [],
-  });
+  };
+});
+
+export const getUserRoles = cache(async function getUserRoles(userId: string): Promise<string[]> {
+  const context = await loadRoleContext(userId);
+  // A soft-deleted account keeps its rows until the hard delete, but they
+  // grant nothing (WAP-182 item 1, matches getProfileRole).
+  if (context.deletedAt) return [];
+  return [...context.userRoleNames];
+});
+
+let profileRoleFallbackLogged = false;
+
+/**
+ * The user's effective role, with `user_roles` as the source of truth
+ * (WAP-182 item 1). Precedence lives in `resolveEffectiveRole`
+ * (lib/auth/roleAccess.ts): soft-deleted -> member; a `super_admin` profile
+ * stays super_admin; otherwise the most privileged non-`member` `user_roles`
+ * row by `ROLE_PRECEDENCE`; only the baseline `member` row or none ->
+ * `profiles.role` (logged once, no PII); nothing -> `member`. Signature and
+ * return type are unchanged so the ~20 callers (login redirect,
+ * /api/auth/me, feature flags, route guards) keep working;
+ * `scripts/backfill-user-roles-from-profile.ts` seeds the missing rows so
+ * the profile fallback becomes the exception.
+ */
+export const getProfileRole = cache(async function getProfileRole(userId: string): Promise<string> {
+  const resolution = resolveEffectiveRole(await loadRoleContext(userId));
   if (resolution.source === 'profile' && !profileRoleFallbackLogged) {
     profileRoleFallbackLogged = true;
     logger.debug('role resolution fell back to profiles.role; no matching user_roles row', {
