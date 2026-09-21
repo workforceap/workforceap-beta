@@ -3,7 +3,16 @@ import { prisma } from '@/lib/db/prisma';
 import { sqlCount } from '@/lib/db/scanCaps';
 import { CAREER_OS_WORKFLOW } from '@/lib/workflows/careerOS';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
-import { getCacheOrFetch } from '@/lib/cache';
+import { getCache, setCache } from '@/lib/cache';
+import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
+
+/**
+ * Every figure in this module counts member-role accounts only
+ * (`MEMBER_ONLY_WHERE` / `memberOnlySqlJoin`). Staff, admin, counselor and
+ * fixture accounts are excluded from totals, active users, placements and
+ * AI-tool usage alike, so a CEO-funnel numerator can never exceed its
+ * member-only denominator (number audit 2026-09-20, F1, F7, S22).
+ */
 
 function logMetricsReason(label: string, reason: unknown) {
   const msg = reason instanceof Error ? reason.message : String(reason);
@@ -18,16 +27,26 @@ const EVENT_ONLY_AI_TOOLS = [
   'partner_voice_session',
 ] as const;
 
-/** FK-scoped models: always pair tenant id with `user: { organizationId }`. */
+/** FK-scoped models: always pair tenant id with `user: { organizationId }`; members only. */
 function memberInOrg(orgId: string) {
-  return { user: { organizationId: orgId } };
+  return { user: { organizationId: orgId, ...MEMBER_ONLY_WHERE } };
 }
 
-async function countEventOnlyAiRunsBetween(orgId: string, start: Date, end: Date): Promise<number> {
+/** Optional-org twin for platform-wide (super-admin) reads. */
+function memberUserFilter(orgId: string | undefined) {
+  return orgId ? { organizationId: orgId, ...MEMBER_ONLY_WHERE } : { ...MEMBER_ONLY_WHERE };
+}
+
+function orgJoinSql(orgId: string | undefined): Prisma.Sql {
+  return orgId ? Prisma.sql`AND u.organization_id = ${orgId}` : Prisma.empty;
+}
+
+async function countEventOnlyAiRunsBetween(orgId: string | undefined, start: Date, end: Date): Promise<number> {
   const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
     SELECT COUNT(*)::bigint AS count
     FROM "member_events" me
-    INNER JOIN "users" u ON u.id = me.user_id AND u.organization_id = ${orgId}
+    INNER JOIN "users" u ON u.id = me.user_id ${orgJoinSql(orgId)}
+    ${memberOnlySqlJoin()}
     WHERE me.created_at >= ${start}
       AND me.created_at <= ${end}
       AND me.event_name = 'ai_tool_run_started'
@@ -39,15 +58,30 @@ async function countEventOnlyAiRunsBetween(orgId: string, start: Date, end: Date
   return typeof count === 'bigint' ? Number(count) : count;
 }
 
-async function countAiToolRunsBetween(orgId: string, start: Date, end: Date): Promise<number> {
+/**
+ * The one definition of an "AI tool run" for every admin surface: saved
+ * `AIToolResult` rows plus the voice sessions that only leave a member event,
+ * over member-role accounts. /admin/metrics ("AI tool runs"), the Executive
+ * Dashboard and /admin/analytics ("AI Tool Uses") all print this number, so
+ * they can no longer disagree (340 vs 291, two-thirds of it staff usage;
+ * number audit 2026-09-20, S22). `orgId` undefined = platform-wide.
+ */
+export async function countMemberAiToolRuns(
+  orgId: string | undefined,
+  range: { start: Date; end: Date },
+): Promise<number> {
   const [savedResults, eventOnlyRuns] = await Promise.all([
     prisma.aIToolResult.count({
-      where: { createdAt: { gte: start, lte: end }, user: { organizationId: orgId } },
+      where: { createdAt: { gte: range.start, lte: range.end }, user: memberUserFilter(orgId) },
     }),
-    countEventOnlyAiRunsBetween(orgId, start, end),
+    countEventOnlyAiRunsBetween(orgId, range.start, range.end),
   ]);
 
   return savedResults + eventOnlyRuns;
+}
+
+function countAiToolRunsBetween(orgId: string, start: Date, end: Date): Promise<number> {
+  return countMemberAiToolRuns(orgId, { start, end });
 }
 
 /** Get AI tool usage breakdown by tool type for the given period */
@@ -66,6 +100,7 @@ async function countSingleEventOnlyTool(
     SELECT COUNT(*)::bigint AS count
     FROM "member_events" me
     INNER JOIN "users" u ON u.id = me.user_id AND u.organization_id = ${orgId}
+    ${memberOnlySqlJoin()}
     WHERE me.created_at >= ${start}
       AND me.created_at <= ${end}
       AND me.event_name = 'ai_tool_run_started'
@@ -84,7 +119,7 @@ async function getAiToolUsageBreakdown(
   const [savedBreakdown, voiceCounts] = await Promise.all([
     prisma.aIToolResult.groupBy({
       by: ['toolType'],
-      where: { createdAt: { gte: start, lte: end }, user: { organizationId: orgId } },
+      where: { createdAt: { gte: start, lte: end }, ...memberInOrg(orgId) },
       _count: { id: true },
     }),
     Promise.all(
@@ -129,11 +164,17 @@ function mergeDayCounts(
   return m;
 }
 
-/** Generate daily activity for the last N days via SQL day buckets (exact counts). */
+export type DailyActivityPoint = { date: string; events: number; aiTools: number; applications: number };
+
+/**
+ * Daily activity for the last N calendar days (server-local midnight to
+ * midnight) via SQL day buckets, members only. `degraded` is true when any
+ * slice failed and was zero-filled, so the caller can decline to cache it.
+ */
 async function getDailyActivity(
   orgId: string,
   days: number,
-): Promise<{ date: string; events: number; aiTools: number; applications: number }[]> {
+): Promise<{ series: DailyActivityPoint[]; degraded: boolean }> {
   const now = new Date();
   const ranges = Array.from({ length: days }, (_, i) => {
     const start = new Date(now);
@@ -152,11 +193,12 @@ async function getDailyActivity(
   const rangeStart = ranges[0].start;
   const rangeEnd = ranges[ranges.length - 1].end;
 
-  const [eventsR, aiSavedR, aiEventsR, applicationsR] = await Promise.allSettled([
+  const results = await Promise.allSettled([
     prisma.$queryRaw<DailyCountRow[]>`
       SELECT date_trunc('day', me.created_at) AS bucket, COUNT(*)::bigint AS count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+      ${memberOnlySqlJoin()}
       WHERE me.created_at >= ${rangeStart} AND me.created_at <= ${rangeEnd}
       GROUP BY 1
     `,
@@ -164,6 +206,7 @@ async function getDailyActivity(
       SELECT date_trunc('day', r.created_at) AS bucket, COUNT(*)::bigint AS count
       FROM ai_tool_results r
       INNER JOIN users u ON u.id = r.user_id AND u.organization_id = ${orgId}
+      ${memberOnlySqlJoin()}
       WHERE r.created_at >= ${rangeStart} AND r.created_at <= ${rangeEnd}
       GROUP BY 1
     `,
@@ -171,6 +214,7 @@ async function getDailyActivity(
       SELECT date_trunc('day', me.created_at) AS bucket, COUNT(*)::bigint AS count
       FROM member_events me
       INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+      ${memberOnlySqlJoin()}
       WHERE me.created_at >= ${rangeStart}
         AND me.created_at <= ${rangeEnd}
         AND me.event_name = 'ai_tool_run_started'
@@ -182,12 +226,14 @@ async function getDailyActivity(
       SELECT date_trunc('day', ja.created_at) AS bucket, COUNT(*)::bigint AS count
       FROM job_applications ja
       INNER JOIN users u ON u.id = ja.user_id AND u.organization_id = ${orgId}
+      ${memberOnlySqlJoin()}
       WHERE ja.created_at >= ${rangeStart}
         AND ja.created_at <= ${rangeEnd}
         AND ja.status <> 'SAVED'
       GROUP BY 1
     `,
   ]);
+  const [eventsR, aiSavedR, aiEventsR, applicationsR] = results;
 
   const eventsByDay = mergeDayCounts(ranges, eventsR.status === 'fulfilled' ? eventsR.value : []);
   const aiByDay = mergeDayCounts(ranges, [
@@ -206,19 +252,22 @@ async function getDailyActivity(
     logMetricsReason('dailyActivity:applications:batch', applicationsR.reason);
   }
 
-  return ranges.map(({ date, dayKey }) => ({
+  const series = ranges.map(({ date, dayKey }) => ({
     date,
     events: eventsByDay.get(dayKey) ?? 0,
     aiTools: aiByDay.get(dayKey) ?? 0,
     applications: applicationsByDay.get(dayKey) ?? 0,
   }));
+  return { series, degraded: results.some((r) => r.status === 'rejected') };
 }
 
+/** Distinct member-role users with any event since `since` (staff activity never counts). */
 async function countDistinctActiveUsers(orgId: string, since: Date): Promise<number> {
   const rows = await prisma.$queryRaw<Array<{ count: bigint | number }>>`
     SELECT COUNT(DISTINCT me.user_id)::bigint AS count
     FROM member_events me
     INNER JOIN users u ON u.id = me.user_id AND u.organization_id = ${orgId}
+    ${memberOnlySqlJoin()}
     WHERE me.created_at >= ${since}
   `;
   return sqlCount(rows[0]?.count);
@@ -229,7 +278,7 @@ async function getEnrollmentByProgram(orgId: string): Promise<{ program: string;
   const rows = await withTenantScope(orgId, (db) =>
     db.user.groupBy({
       by: ['enrolledProgram'],
-      where: { enrolledProgram: { not: null }, deletedAt: null },
+      where: { enrolledProgram: { not: null }, deletedAt: null, ...MEMBER_ONLY_WHERE },
       _count: { id: true },
       orderBy: { _count: { id: 'desc' } },
       take: 8,
@@ -262,6 +311,7 @@ async function getCareerOsMetrics(orgId: string) {
       SELECT COUNT(DISTINCT nba.id)::bigint AS count
       FROM member_next_best_actions nba
       INNER JOIN users u_scope ON u_scope.id = nba.member_id AND u_scope.organization_id = ${orgId}
+      ${memberOnlySqlJoin('u_scope')}
       INNER JOIN member_events source_event
         ON source_event.entity_id = nba.id
       WHERE nba.status = 'COMPLETED'
@@ -272,6 +322,7 @@ async function getCareerOsMetrics(orgId: string) {
       SELECT COUNT(DISTINCT nba.id)::bigint AS count
       FROM member_next_best_actions nba
       INNER JOIN users u_scope ON u_scope.id = nba.member_id AND u_scope.organization_id = ${orgId}
+      ${memberOnlySqlJoin('u_scope')}
       INNER JOIN member_events source_event
         ON source_event.entity_id = nba.id
       WHERE nba.status = 'DISMISSED'
@@ -282,6 +333,7 @@ async function getCareerOsMetrics(orgId: string) {
       SELECT COUNT(DISTINCT nba.id)::bigint AS count
       FROM member_next_best_actions nba
       INNER JOIN users u_scope ON u_scope.id = nba.member_id AND u_scope.organization_id = ${orgId}
+      ${memberOnlySqlJoin('u_scope')}
       INNER JOIN member_events source_event
         ON source_event.entity_id = nba.id
       WHERE nba.status = 'PENDING'
@@ -310,17 +362,22 @@ async function getCareerOsMetrics(orgId: string) {
   };
 }
 
-/** Get placement rate: members with a placement record / total enrolled */
-async function getPlacementStats(orgId: string) {
-  const baseMember = { deletedAt: null };
+/**
+ * Placement rate: member-role users with a placement record / member-role
+ * users with an enrolled program. Numerator and denominator share one
+ * population, so a staff dogfood placement can never be the org's rate
+ * (number audit 2026-09-20, F1). Credentials are approved records only.
+ */
+export async function getPlacementStats(orgId: string) {
+  const baseMember = { deletedAt: null, ...MEMBER_ONLY_WHERE };
   const [enrolled, placed, certifications] = await Promise.all([
     withTenantScope(orgId, (db) =>
       db.user.count({
         where: { ...baseMember, enrolledProgram: { not: null } },
       }),
     ),
-    prisma.placementRecord.count({ where: { user: { organizationId: orgId } } }),
-    prisma.userCertification.count({ where: { user: { organizationId: orgId } } }),
+    prisma.placementRecord.count({ where: memberInOrg(orgId) }),
+    prisma.userCertification.count({ where: { status: 'approved', ...memberInOrg(orgId) } }),
   ]);
   return { enrolled, placed, certifications, placementRate: enrolled > 0 ? Math.round((placed / enrolled) * 100) : 0 };
 }
@@ -354,12 +411,28 @@ async function getAiToolStats(orgId: string, days: number) {
   };
 }
 
+export type AdminMetrics = Awaited<ReturnType<typeof _getAdminMetricsUncached>>;
+
+export const ADMIN_METRICS_CACHE_TTL_SECONDS = 300;
+
+/**
+ * Cached for 5 minutes per org. A result with any failed slice
+ * (`degradedSlices` non-empty) is returned to the caller but NOT written to
+ * the cache: the slices are settled independently and zero-filled, so caching
+ * a partial result would print zeros for 300 s after a transient error
+ * (number audit 2026-09-20, S29).
+ */
 export async function getAdminMetrics(
   orgId: string,
   opts: { readOnlyAudit?: boolean } = {},
-) {
+): Promise<AdminMetrics> {
   if (opts.readOnlyAudit) return _getAdminMetricsUncached(orgId);
-  return getCacheOrFetch(`admin:metrics:${orgId}`, () => _getAdminMetricsUncached(orgId), 300);
+  const key = `admin:metrics:${orgId}`;
+  const cached = await getCache<AdminMetrics>(key);
+  if (cached !== null) return cached;
+  const value = await _getAdminMetricsUncached(orgId);
+  if (value.degradedSlices.length === 0) await setCache(key, value, ADMIN_METRICS_CACHE_TTL_SECONDS);
+  return value;
 }
 
 async function _getAdminMetricsUncached(orgId: string) {
@@ -380,7 +453,7 @@ async function _getAdminMetricsUncached(orgId: string) {
     pathwayStartsResult,
     aiToolStatsResult,
   ] = await Promise.allSettled([
-    withTenantScope(orgId, (db) => db.user.count({ where: { deletedAt: null } })),
+    withTenantScope(orgId, (db) => db.user.count({ where: { deletedAt: null, ...MEMBER_ONLY_WHERE } })),
     countDistinctActiveUsers(orgId, sevenDaysAgo),
     countDistinctActiveUsers(orgId, fourteenDaysAgo),
     prisma.goal.count({ where: { status: 'ACTIVE', ...userScope } }),
@@ -390,14 +463,20 @@ async function _getAdminMetricsUncached(orgId: string) {
     getAiToolStats(orgId, 7),
   ]);
 
-  if (totalMembersResult.status === 'rejected') logMetricsReason('totalMembers', totalMembersResult.reason);
-  if (activeUserIds7dResult.status === 'rejected') logMetricsReason('activeUserIds7d', activeUserIds7dResult.reason);
-  if (activeUserIds14dResult.status === 'rejected') logMetricsReason('activeUserIds14d', activeUserIds14dResult.reason);
-  if (goalsCountResult.status === 'rejected') logMetricsReason('goalsCount', goalsCountResult.reason);
-  if (applicationsCountResult.status === 'rejected') logMetricsReason('applicationsCount', applicationsCountResult.reason);
-  if (resourceCompletionsResult.status === 'rejected') logMetricsReason('resourceCompletions', resourceCompletionsResult.reason);
-  if (pathwayStartsResult.status === 'rejected') logMetricsReason('pathwayStarts', pathwayStartsResult.reason);
-  if (aiToolStatsResult.status === 'rejected') logMetricsReason('aiToolStats', aiToolStatsResult.reason);
+  const degradedSlices: string[] = [];
+  const noteFailure = (label: string, result: PromiseSettledResult<unknown>) => {
+    if (result.status !== 'rejected') return;
+    degradedSlices.push(label);
+    logMetricsReason(label, result.reason);
+  };
+  noteFailure('totalMembers', totalMembersResult);
+  noteFailure('activeUserIds7d', activeUserIds7dResult);
+  noteFailure('activeUserIds14d', activeUserIds14dResult);
+  noteFailure('goalsCount', goalsCountResult);
+  noteFailure('applicationsCount', applicationsCountResult);
+  noteFailure('resourceCompletions', resourceCompletionsResult);
+  noteFailure('pathwayStarts', pathwayStartsResult);
+  noteFailure('aiToolStats', aiToolStatsResult);
 
   const totalMembers = totalMembersResult.status === 'fulfilled' ? totalMembersResult.value : 0;
   const activeUserIds7d = activeUserIds7dResult.status === 'fulfilled' ? activeUserIds7dResult.value : 0;
@@ -414,7 +493,7 @@ async function _getAdminMetricsUncached(orgId: string) {
 
   const inactiveSampleResult = await withTenantScope(orgId, (db) =>
     db.user.findMany({
-      where: { deletedAt: null, memberEvents: { none: { createdAt: { gte: fourteenDaysAgo } } } },
+      where: { deletedAt: null, ...MEMBER_ONLY_WHERE, memberEvents: { none: { createdAt: { gte: fourteenDaysAgo } } } },
       select: { id: true },
       orderBy: { updatedAt: 'asc' },
       take: 50,
@@ -423,9 +502,7 @@ async function _getAdminMetricsUncached(orgId: string) {
     .then((value) => ({ status: 'fulfilled' as const, value }))
     .catch((reason) => ({ status: 'rejected' as const, reason }));
 
-  if (inactiveSampleResult.status === 'rejected') {
-    logMetricsReason('inactiveUserIds', inactiveSampleResult.reason);
-  }
+  noteFailure('inactiveUserIds', inactiveSampleResult);
 
   const inactiveUserIds =
     inactiveSampleResult.status === 'fulfilled' ? inactiveSampleResult.value.map((u) => u.id) : [];
@@ -438,12 +515,13 @@ async function _getAdminMetricsUncached(orgId: string) {
       getCareerOsMetrics(orgId),
     ]);
 
-  if (dailyActivityResult.status === 'rejected') logMetricsReason('dailyActivity', dailyActivityResult.reason);
-  if (enrollmentByProgramResult.status === 'rejected') logMetricsReason('enrollmentByProgram', enrollmentByProgramResult.reason);
-  if (placementStatsResult.status === 'rejected') logMetricsReason('placementStats', placementStatsResult.reason);
-  if (careerOsMetricsResult.status === 'rejected') logMetricsReason('careerOsMetrics', careerOsMetricsResult.reason);
+  noteFailure('dailyActivity', dailyActivityResult);
+  noteFailure('enrollmentByProgram', enrollmentByProgramResult);
+  noteFailure('placementStats', placementStatsResult);
+  noteFailure('careerOsMetrics', careerOsMetricsResult);
 
-  const dailyActivity = dailyActivityResult.status === 'fulfilled' ? dailyActivityResult.value : [];
+  const dailyActivity = dailyActivityResult.status === 'fulfilled' ? dailyActivityResult.value.series : [];
+  if (dailyActivityResult.status === 'fulfilled' && dailyActivityResult.value.degraded) degradedSlices.push('dailyActivity');
   const enrollmentByProgram = enrollmentByProgramResult.status === 'fulfilled' ? enrollmentByProgramResult.value : [];
   const placementStats = placementStatsResult.status === 'fulfilled'
     ? placementStatsResult.value
@@ -474,5 +552,7 @@ async function _getAdminMetricsUncached(orgId: string) {
     enrollmentByProgram,
     placementStats,
     careerOsMetrics,
+    /** Labels of the slices that failed and were zero-filled; empty when every number is real. */
+    degradedSlices,
   };
 }

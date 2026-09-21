@@ -150,7 +150,9 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Operating Systems and Network Fundamentals",
         "hours": 11,
-        "description": "Comprehensive understanding of operating systems and networking essentials, including installations across Windows 10/11, macOS, and Linux."
+        "description": "Comprehensive understanding of operating systems and networking essentials, including installations across Windows 10/11, macOS, and Linux.",
+        "courseraSlug": "packt-operating-systems-and-networking-fundamentals-bokjh",
+        "courseraCourseId": "RP5nqGeBEe-ZVAr_5CUYPw"
       },
       {
         "name": "Networking, Peripherals, and Wireless Technologies",
@@ -170,7 +172,9 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Practice Exams for CompTIA A+ Certification",
         "hours": 9,
-        "description": "Comprehensively prepare for the exam with expert-designed cheat sheets and two simulated mock exams."
+        "description": "Comprehensively prepare for the exam with expert-designed cheat sheets and two simulated mock exams.",
+        "courseraSlug": "practice-exam-for-comptia-a",
+        "courseraCourseId": "bbLUnmLQEe66xBLRCmM3Cw"
       },
       {
         "name": "Lab, Project, and Test Preparation",
@@ -782,7 +786,9 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Assess for Success: Market Analytics and Measurement",
         "hours": 17,
-        "description": "Use marketing analytics tools and practices. Analyze data from websites, marketing channels, and online stores to understand customer behavior."
+        "description": "Use marketing analytics tools and practices. Analyze data from websites, marketing channels, and online stores to understand customer behavior.",
+        "courseraSlug": "assess-for-success",
+        "courseraCourseId": "FOu5AXsIEeynSxJpnIcphQ"
       },
       {
         "name": "Make the Sale: Build, Launch, and Manage E-commerce Stores",
@@ -940,17 +946,23 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Revenue Cycle, Billing, and Coding (Johns Hopkins)",
         "hours": 6,
-        "description": "Explore the revenue cycle in ambulatory healthcare. Covers registration, insurance (Medicare, Medicaid, managed care, commercial), CPT and ICD-10-CM and HCPCS coding fundamentals, denials, collections, estimates, and price transparency."
+        "description": "Explore the revenue cycle in ambulatory healthcare. Covers registration, insurance (Medicare, Medicaid, managed care, commercial), CPT and ICD-10-CM and HCPCS coding fundamentals, denials, collections, estimates, and price transparency.",
+        "courseraSlug": "revenue-cycle-billing-and-coding",
+        "courseraCourseId": "jb0fG5ClEe-KjBKlSS1PLQ"
       },
       {
         "name": "The Billing and Collection Process (AAPC)",
         "hours": 30,
-        "description": "Comprehensive introduction to medical billing, claim forms, and accounts receivable management. Complete and submit CMS-1500 and UB-04 forms, manage A/R and collections, handle claim adjudication and denial management, and ensure HIPAA."
+        "description": "Comprehensive introduction to medical billing, claim forms, and accounts receivable management. Complete and submit CMS-1500 and UB-04 forms, manage A/R and collections, handle claim adjudication and denial management, and ensure HIPAA.",
+        "courseraSlug": "the-billing-and-collection-process",
+        "courseraCourseId": "4vJ2DufMEe-ccQr_xjRSew"
       },
       {
         "name": "Medical Billing and Coding Essentials (MedCerts)",
         "hours": 8,
-        "description": "Foundational knowledge of the Insurance Billing Specialist role. The revenue cycle, basic insurance terminology, HIPAA/HITECH/ACA, the medical record, patient registration,and an introduction to ICD-10-CM, CPT, and HCPCS Level II coding."
+        "description": "Foundational knowledge of the Insurance Billing Specialist role. The revenue cycle, basic insurance terminology, HIPAA/HITECH/ACA, the medical record, patient registration,and an introduction to ICD-10-CM, CPT, and HCPCS Level II coding.",
+        "courseraSlug": "medical-billing-coding-essentials",
+        "courseraCourseId": "ORD0I55eEe2a0hItqNBhjQ"
       },
       {
         "name": "Medical Billing: Code, Claim, Collect",
@@ -980,27 +992,37 @@ export const PROGRAM_SYLLABI = {
       {
         "name": "Data and Electronic Health Records (Johns Hopkins)",
         "hours": 6,
-        "description": "Explore how data flows through ambulatory healthcare via Electronic Health Records (EHRs). Covers EHR structure, data entry standards, interoperability, reporting, quality measures, and using EHR data to support clinical and operational decisions."
+        "description": "Explore how data flows through ambulatory healthcare via Electronic Health Records (EHRs). Covers EHR structure, data entry standards, interoperability, reporting, quality measures, and using EHR data to support clinical and operational decisions.",
+        "courseraSlug": "data-and-electronic-health-records",
+        "courseraCourseId": "dj1_WJClEe-jlw4NkAElrw"
       },
       {
         "name": "Health Information Technology Fundamentals (Johns Hopkins)",
         "hours": 6,
-        "description": "Foundational health IT — practice management systems, clinical decision support, patient portals, health information exchange, cybersecurity in healthcare, and the regulatory framework that governs healthcare technology adoption."
+        "description": "Foundational health IT — practice management systems, clinical decision support, patient portals, health information exchange, cybersecurity in healthcare, and the regulatory framework that governs healthcare technology adoption.",
+        "courseraSlug": "health-it-fundamentals",
+        "courseraCourseId": "Z1XEYB-eEeulXwp2iaqDJw"
       },
       {
         "name": "Foundations of Telehealth (Johns Hopkins)",
         "hours": 6,
-        "description": "Understand the modalities, workflows, and regulatory considerations of telehealth — synchronous video visits, asynchronous store-and-forward, remote patient monitoring, billing and coding for telehealth services, and patient experience considerations."
+        "description": "Understand the modalities, workflows, and regulatory considerations of telehealth — synchronous video visits, asynchronous store-and-forward, remote patient monitoring, billing and coding for telehealth services, and patient experience considerations.",
+        "courseraSlug": "telehealth",
+        "courseraCourseId": "1-6HgCIEEey-7g6YTy-Atw"
       },
       {
         "name": "Medical Administrative Assistants and Office Procedures (MedCerts)",
         "hours": 10,
-        "description": "Front-office workflows for medical practices — scheduling, patient communication, phone triage etiquette, mail and correspondence, recordkeeping, office equipment, supply management, and supporting the clinical team."
+        "description": "Front-office workflows for medical practices — scheduling, patient communication, phone triage etiquette, mail and correspondence, recordkeeping, office equipment, supply management, and supporting the clinical team.",
+        "courseraSlug": "medical-administrative-assistants-and-office-procedures",
+        "courseraCourseId": "CUOh2pFrEe-KjBKlSS1PLQ"
       },
       {
         "name": "Introduction to Certified Professional Biller (AAPC)",
         "hours": 30,
-        "description": "Comprehensive introduction to the U.S. healthcare system and the medical biller role. Examines private, government, and managed care insurance models, patient registration, eligibility verification, and how clean front-end processes support timely reimbursement — preparing learners for the AAPC CPB credential."
+        "description": "Comprehensive introduction to the U.S. healthcare system and the medical biller role. Examines private, government, and managed care insurance models, patient registration, eligibility verification, and how clean front-end processes support timely reimbursement — preparing learners for the AAPC CPB credential.",
+        "courseraSlug": "introduction-to-certified-professional-biller",
+        "courseraCourseId": "uDMpp-fMEe-mrRK-FPQYAw"
       },
       {
         "name": "Lab, Project, and Test Preparation",

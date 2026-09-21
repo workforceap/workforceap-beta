@@ -18,6 +18,7 @@ vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: h.org }));
 vi.mock('@/lib/admin/applicantTriageLoad', () => ({ loadApplicantTriageByUserIds: async () => new Map() }));
 
 import { loadPersistedAtRiskMembers, persistedRiskCommandRow, type PersistedAtRiskMember } from '@/lib/member/persistedAtRisk';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS } from '@/lib/admin/memberOnlyWhere';
 import { getAdminCommandCenter } from '@/lib/admin/commandCenter';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 
@@ -47,7 +48,9 @@ describe('persisted risk selection contract', () => {
     const result = await loadPersistedAtRiskMembers({ organizationId: 'org-1' }, { limit: 25, offset: 25 });
     expect(result).toEqual({ total: 43, rows: [row()] });
     const query = riskQueries()[0];
-    expect(query.values).toEqual(['open', 'acknowledged', 'escalated', 0, 'org-1', 25, 25]);
+    expect(query.values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'open', 'acknowledged', 'escalated', 0, 'org-1', 25, 25]);
+    // Member-role accounts only: the KPI must agree with the /admin attention tile (number audit S2).
+    expect(query.sql).toContain("INNER JOIN profiles member_profile ON member_profile.user_id = u.id AND member_profile.role = 'member' AND u.email NOT IN (?,?,?,?) AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ? AND u.email NOT LIKE ?");
     expect(query.sql).toMatch(/PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC/);
     expect(query.sql).toMatch(/WHERE member_rank = 1/);
     expect(query.sql).toMatch(/SELECT \* FROM members ORDER BY score DESC, updated_at DESC, id ASC LIMIT \? OFFSET \?/);
@@ -57,8 +60,11 @@ describe('persisted risk selection contract', () => {
     expect(query.sql).not.toContain('COALESCE(last_event');
     expect(query.sql).not.toContain('stale_training');
     expect(query.sql).not.toContain('coursera_enrollment_approved');
-    // A saved old case remains visible: no synthetic expiry or enrollment filter.
-    expect(query.sql).not.toMatch(/created_at\s*[<>]|enrolled_program IS NOT NULL/);
+    // A saved old case remains visible: no synthetic expiry.
+    expect(query.sql).not.toMatch(/created_at\s*[<>]/);
+    // At risk = not active lately AND in a program (Mike, 2026-09-20): a saved
+    // alert on a member with no program is not a member at risk.
+    expect(query.sql).toContain('u.enrolled_program IS NOT NULL');
   });
 
   it('uses a current active assignment and same-organization actor for counselors', async () => {
@@ -81,7 +87,7 @@ describe('persisted risk selection contract', () => {
 
   it('only includes resolved cases when explicitly requesting history', async () => {
     await loadPersistedAtRiskMembers({ organizationId: 'org-1' }, { limit: 20, threshold: 50, status: 'resolved' });
-    expect(riskQueries()[0].values).toEqual(['resolved', 50, 'org-1', 20, 0]);
+    expect(riskQueries()[0].values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'resolved', 50, 'org-1', 20, 0]);
   });
 
   it('retains the full member total for an empty page and propagates read failures', async () => {

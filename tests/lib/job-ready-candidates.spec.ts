@@ -10,7 +10,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 }));
 
 import { loadJobReadyProgressPage } from '@/lib/admin/jobReadyCandidates';
-import { MEMBER_ONLY_EXCLUDED_EMAILS } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS } from '@/lib/admin/memberOnlyWhere';
 import { prisma } from '@/lib/db/prisma';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
@@ -48,8 +48,11 @@ describe('loadJobReadyProgressPage SQL paging', () => {
     expect(page.sql).toContain('AND u.organization_id = ?');
     // Paging is applied last, after every filter and a deterministic ORDER BY.
     expect(page.sql).toMatch(/WHERE[\s\S]*ORDER BY mpp\.average_percent DESC, u\.created_at DESC, u\.id ASC LIMIT \? OFFSET \?$/);
+    // Fixture accounts and seeded QA patterns are parameters, never inlined (Mike, 2026-09-20: test members cut out).
+    expect(page.sql).toContain('AND u.email NOT IN (?,?,?,?) AND u.email NOT LIKE ?');
     expect(page.values).toEqual([
-      [...MEMBER_ONLY_EXCLUDED_EMAILS],
+      ...MEMBER_ONLY_EXCLUDED_EMAILS,
+      ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS,
       baseArgs.programStorageValues,
       70,
       'org-1',
@@ -61,7 +64,7 @@ describe('loadJobReadyProgressPage SQL paging', () => {
     expect(total.sql).toMatch(/^SELECT COUNT\(\*\)::int AS total/);
     expect(total.sql).toContain('AND u.enrolled_program = mpp.program_slug');
     expect(total.sql).toContain('AND u.organization_id = ?');
-    expect(total.values).toEqual([[...MEMBER_ONLY_EXCLUDED_EMAILS], baseArgs.programStorageValues, 70, 'org-1']);
+    expect(total.values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, baseArgs.programStorageValues, 70, 'org-1']);
     expect(crossTenantOK).not.toHaveBeenCalled();
   });
 

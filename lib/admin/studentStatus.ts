@@ -122,11 +122,13 @@ export function buildStatusWhere(status: StudentStatus): Prisma.UserWhereInput {
       };
 
     case 'stale': {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Currently flagged by the nightly stale-training check. The stamp is
+      // re-written every run while the member stays stale, so an "older than
+      // 7 days" bound on it was always false and this filter opened empty
+      // under a tile counting flagged members (number audit 2026-09-20, S6).
       return {
         deletedAt: null,
-        staleTrainingDetectedAt: { not: null, lte: sevenDaysAgo },
+        staleTrainingDetectedAt: { not: null },
       };
     }
 

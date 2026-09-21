@@ -162,7 +162,10 @@ export function evaluateMemberAttention(
   const isEnrolled = input.enrolledProgram !== null;
   const quietAnchor = input.enrolledAt ?? input.createdAt;
 
-  if (input.riskAlert) {
+  // At risk = not active lately AND in a program (Mike, 2026-09-20). The saved
+  // alert is the inactivity signal; a member with no program is not a risk
+  // alert here, matching the persisted at-risk loader the Command Center reads.
+  if (input.riskAlert && isEnrolled) {
     reasons.push('risk_alert');
     context.atRiskScore = input.riskAlert.score;
     context.atRiskLevel = riskLevelFromScore(input.riskAlert.score);

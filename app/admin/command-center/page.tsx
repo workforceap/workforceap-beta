@@ -7,6 +7,7 @@ import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemb
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { normalizeAdminQueueRequest, adminQueueHref } from '@/lib/admin/commandCenterHelpers';
 import type { ChartDatum } from '@/components/portal/kit';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
@@ -98,19 +99,23 @@ export default async function AdminCommandCenterPage({
     // Headline KPIs match the mockup ("Active Students / Placements YTD /
     // Completion Rate / At Risk"). Sourced from cheap, org-scoped real queries
     // — never fabricated. All wrapped in withAuthGuc so RLS sees the actor.
+    // Population is member-role accounts only (`MEMBER_ONLY_WHERE`), the same
+    // roster the Program health rows below and /admin count, so the 37 vs 35
+    // disagreement on one screen cannot recur (number audit 2026-09-20, F1/F2).
     const yearStart = new Date(new Date().getUTCFullYear(), 0, 1);
     const headline = await withAuthGuc(async () => {
       const orgId = await getActorOrganizationId(user.id);
+      const memberUser = { organizationId: orgId, deletedAt: null, ...MEMBER_ONLY_WHERE };
       const [activeStudents, placementsYtd, placementRows] = await Promise.all([
         prisma.user
-          .count({ where: { organizationId: orgId, deletedAt: null, enrolledProgram: { not: null } } })
+          .count({ where: { ...memberUser, enrolledProgram: { not: null } } })
           .catch((error) => {
             headlineLoadFailed = true;
             console.error('[admin/command-center] active student headline failed', error);
             return 0;
           }),
         prisma.placementRecord
-          .count({ where: { user: { organizationId: orgId, deletedAt: null }, placedAt: { gte: yearStart } } })
+          .count({ where: { user: memberUser, placedAt: { gte: yearStart } } })
           .catch((error) => {
             headlineLoadFailed = true;
             console.error('[admin/command-center] placement count headline failed', error);
@@ -118,7 +123,7 @@ export default async function AdminCommandCenterPage({
           }),
         prisma.placementRecord
           .findMany({
-            where: { user: { organizationId: orgId, deletedAt: null }, placedAt: { gte: yearStart } },
+            where: { user: memberUser, placedAt: { gte: yearStart } },
             select: { placedAt: true },
           })
           .catch((error) => {
@@ -172,8 +177,8 @@ export default async function AdminCommandCenterPage({
         id: 'at-risk',
         icon: <TriangleAlert size={14} aria-hidden />,
         iconColor: 'var(--wa-accent)',
-        title: `${totals.atRiskCount} ${totals.atRiskCount === 1 ? 'student' : 'students'} need a check-in`,
-        detail: 'Approved training has gone quiet or course activity is flagged',
+        title: `${totals.atRiskCount} enrolled ${totals.atRiskCount === 1 ? 'member needs' : 'members need'} a check-in`,
+        detail: 'In a program and not active lately (saved risk alert)',
         actionLabel: countLabel(totals.atRiskCount),
         urgent: totals.atRiskCount > 0,
         href: '/admin/command-center?queue=at-risk',
@@ -218,11 +223,13 @@ export default async function AdminCommandCenterPage({
     ];
 
     // Program Health — real per-program enrollment, scoped to this org.
-    // `value` mirrors the mockup ("<count> · <pct>%"); `pct` is the share
-    // relative to the top program so the leading bar reads full-width.
+    // The printed value is the enrolled count only; `pct` (share of enrolled
+    // students) drives the bar width but is never printed beside the count,
+    // where "10 · 100%" read as a health or completion score (number audit
+    // 2026-09-20, S21).
     const programHealth: ProgramHealthDatum[] = data.programHealth.map((row) => ({
       label: row.label,
-      value: `${row.count} · ${row.pct}%`,
+      value: `${row.count} enrolled`,
       pct: row.pct,
       color: 'success',
     }));

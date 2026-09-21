@@ -135,7 +135,7 @@ describe('NotificationBell', () => {
     });
   });
 
-  it('fetches with limit=5 for member role', async () => {
+  it('fetches unread-first with the dropdown list limit for member role', async () => {
     const mockFetch = vi.fn();
     global.fetch = mockFetch;
 
@@ -148,7 +148,7 @@ describe('NotificationBell', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/member/notifications?limit=5',
+        '/api/member/notifications?limit=20&unreadFirst=1',
         expect.any(Object)
       );
     });

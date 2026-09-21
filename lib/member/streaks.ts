@@ -1,5 +1,8 @@
 import 'server-only';
 import { prisma } from '@/lib/db/prisma';
+import { effectiveStreak } from '@/lib/member/streakDisplay';
+
+export { effectiveStreak, daysSinceLastActive } from '@/lib/member/streakDisplay';
 
 /**
  * Daily-habit streak tracking.
@@ -141,7 +144,9 @@ export async function getStreak(userId: string): Promise<StreakState> {
     });
     if (!mp) return EMPTY_STREAK;
     return {
-      currentStreak: mp.currentStreak ?? 0,
+      // Read-side: a counter whose last activity is older than yesterday is a
+      // streak the member has already lost, so it reads as 0 (see streakDisplay).
+      currentStreak: effectiveStreak(mp),
       longestStreak: mp.longestStreak ?? 0,
       lastActiveDate: mp.lastActiveDate ?? null,
     };

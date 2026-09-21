@@ -166,9 +166,11 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
    * Admin wave (tours wave 4, v1). Written for the /admin Command Center (the
    * default admin home, `CommandCenterKit`), but every anchor is shell chrome
    * that `AdminPortalShell` renders on every admin page: the seven `tour-*`
-   * nav anchors are `tourTarget`s on `ADMIN_PORTAL_NAV_ITEMS` (admin rail
-   * groups never collapse, so each row is visible at desktop) and `tour-help`
-   * is the header Help menu that reopens the tour (`PortalHelpMenu`).
+   * nav anchors are `tourTarget`s on top-level `ADMIN_PORTAL_NAV_ITEMS` rows.
+   * The admin rail's sections collapse (sidebar consolidation, 2026-09-21) but
+   * collapsed rows stay in the DOM under `hidden`, and `WorkspaceShell` opens
+   * every section while a tour runs, so each anchor is found and lit.
+   * `tour-help` is the header Help menu that reopens the tour (`PortalHelpMenu`).
    * Messages and Settings are `requiresSuperAdminContext` rows: an org admin
    * without that context has no such anchors and the engine skips those two
    * steps. Command Center → detailed overview → students → messages →

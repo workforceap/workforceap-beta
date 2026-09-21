@@ -14,11 +14,17 @@ async function _GET(request: Request) {
     const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') ?? '20', 10) || 20));
     const skip = (page - 1) * limit;
+    // `unreadFirst=1` lists every unread row before any read one (newest first
+    // within each group) so a short dropdown can never hide unread rows behind
+    // newer read ones while the badge still counts them.
+    const unreadFirst = url.searchParams.get('unreadFirst') === '1';
 
     const [notifications, unreadCount, total] = await Promise.all([
       prisma.notification.findMany({
         where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
+        orderBy: unreadFirst
+          ? [{ readAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'desc' }]
+          : { createdAt: 'desc' },
         skip,
         take: limit,
       }),

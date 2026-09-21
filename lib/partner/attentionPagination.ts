@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { MEMBER_ONLY_EXCLUDED_EMAILS } from '@/lib/admin/memberOnlyWhere';
+import { memberOnlyEmailSql } from '@/lib/admin/memberOnlyWhere';
 
 export const ATTENTION_TIERS = ['all', 'high', 'medium', 'low', 'watch'] as const;
 export type AttentionTier = typeof ATTENTION_TIERS[number];
@@ -68,7 +68,7 @@ export function buildAttentionPageQuery(
       JOIN users u ON u.id = r.member_id JOIN profiles profile ON profile.user_id = u.id
       WHERE r.partner_id = ${partnerId} AND p.organization_id = ${organizationId} AND p.active = true
         AND u.organization_id = ${organizationId} AND u.deleted_at IS NULL
-        AND profile.role = 'member' AND u.email NOT IN (${Prisma.join([...MEMBER_ONLY_EXCLUDED_EMAILS])})
+        AND profile.role = 'member' AND ${memberOnlyEmailSql('u')}
         AND (r.referred_at AT TIME ZONE 'UTC') <= ${asOf}::timestamptz
         AND NOT EXISTS (SELECT 1 FROM placement_records placement WHERE placement.user_id = u.id)
         AND NOT EXISTS (SELECT 1 FROM user_certifications certification WHERE certification.user_id = u.id)

@@ -39,6 +39,11 @@ import {
 import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import { currentBulkEmailDeadlineAtMs } from '@/lib/email/pacing';
 import {
+  FIXTURE_EMAIL_DOMAINS,
+  FIXTURE_LOCAL_PART_SUFFIX,
+  hasFixtureLocalPart,
+} from '@/lib/email/fixtureEmailPatterns';
+import {
   createEmailSendLogWriter,
   prismaEmailSendLogStore,
   type EmailSendLogStore,
@@ -260,7 +265,7 @@ function fixtureDomains(): string[] {
     .split(',')
     .map((domain) => domain.trim().toLowerCase().replace(/^@/, '').replace(/^\./, '').replace(/\.$/, ''))
     .filter(Boolean);
-  return ['example.com', 'test', 'invalid', 'localhost', ...configured];
+  return [...FIXTURE_EMAIL_DOMAINS, ...configured];
 }
 
 function normalizedRecipientAddress(address: string): string {
@@ -285,12 +290,6 @@ export function sendingDomain(): string {
  * with real-looking domains (2026-09-20 audit: 13 such accounts received
  * every cron and produced 41 of 57 suppressed/bounced deliveries).
  */
-const FIXTURE_LOCAL_PART_PATTERNS: readonly RegExp[] = [
-  /^test-smoke-/,
-  /^referral-member-/,
-  /^match-candidate/,
-];
-
 function fixtureAddresses(): Set<string> {
   return new Set(
     (process.env.EMAIL_FIXTURE_ADDRESSES ?? '')
@@ -307,8 +306,8 @@ export function isFixtureEmailRecipient(address: string): boolean {
   if (fixtureAddresses().has(normalizedRecipientAddress(address))) return true;
   const local = recipientLocalPart(address);
   if (!local) return false;
-  if (local.endsWith('-test') && domain === sendingDomain()) return true;
-  return FIXTURE_LOCAL_PART_PATTERNS.some((pattern) => pattern.test(local));
+  if (local.endsWith(FIXTURE_LOCAL_PART_SUFFIX) && domain === sendingDomain()) return true;
+  return hasFixtureLocalPart(local);
 }
 
 const TRANSIENT_NETWORK_CODES = new Set([

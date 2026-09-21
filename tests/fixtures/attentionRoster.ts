@@ -1,5 +1,5 @@
 /**
- * Shared fixture roster for the attention-model specs. Ten members, each
+ * Shared fixture roster for the attention-model specs. Eleven members, each
  * exercising one rule, so agreement tests can assert exact member sets.
  */
 
@@ -45,6 +45,8 @@ export const FIXTURE_EXPECTED = {
   'm-celebrate': ['milestone_reached'],
   'm-ok': [],
   'm-ok2': [],
+  /** Active saved alert but no program: not "at risk" (at risk = not active lately AND in a program). */
+  'm-alert-noprog': [],
 } as const;
 
 export const FIXTURE_FLAGGED_IDS = ['m-risk', 'm-quiet30', 'm-sla', 'm-warn', 'm-reply24', 'm-app', 'm-new'];
@@ -97,5 +99,11 @@ export function fixtureRoster(): MemberAttentionInput[] {
     }),
     member({ memberId: 'm-ok' }),
     member({ memberId: 'm-ok2', lastActivityAt: ago(5 * DAY), lastStaffMessageAt: ago(6 * DAY) }),
+    member({
+      memberId: 'm-alert-noprog',
+      enrolledProgram: null,
+      enrolledAt: null,
+      riskAlert: { alertId: 'alert-noprog', score: 80, status: 'open' },
+    }),
   ];
 }

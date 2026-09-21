@@ -6,6 +6,7 @@ import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { PipelineFunnelKit } from '@/components/portal/kit/pages/admin-subviews/PipelineFunnelKit';
 import { buildPipelineFunnel, pipelineFunnelSubtitle } from '@/lib/admin/pipelineFunnel';
 import PipelineLegacyView from './PipelineLegacyView';
@@ -52,21 +53,25 @@ export default async function PipelinePage({
   // Funnel cohort: members who STARTED their application in the last 90 days,
   // so every stage measures the same cohort and the bars read as a true
   // drop-off funnel (no learner from an older cohort inflating a later stage).
+  // "Member" is `profile.role`, the same predicate every roster uses
+  // (`MEMBER_ONLY_WHERE`); the old `user_roles` join missed 29 of 49 sign-ups
+  // that have no user_roles row (number audit 2026-09-20, F8).
   const windowStart = new Date(Date.now() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const cohortFilter = {
     deletedAt: null,
-    userRoles: { some: { role: { name: 'member' } } },
+    ...MEMBER_ONLY_WHERE,
     createdAt: { gte: windowStart },
   } as const;
 
   const funnel = await withAdminPageScope(scope, async (db) => {
     // Stage 1 (top of funnel): every member in the cohort "started application".
     // Stage 2: intake/assessment complete.
-    // Side count: WIOA eligibility screened — `wioaReviewStatus` set. A lean
-    //   proxy for "reviewed" (a precise "cleared" determination would need to
-    //   scan the qualification JSON per member, a heavy row scan we avoid).
-    //   Screening runs alongside enrollment and is not a gate, so it is a
-    //   labelled KPI tile, not a funnel bar (`lib/admin/pipelineFunnel`).
+    // Side count: WIOA eligibility verified — `wioaReviewStatus = 'verified'`,
+    //   the value the review flow writes when eligibility is confirmed. Rows
+    //   still 'pending' / 'in_review' are not cleared and must not print as
+    //   such (number audit 2026-09-20, F8 companion). Screening runs
+    //   alongside enrollment and is not a gate, so it is a labelled KPI tile,
+    //   not a funnel bar (`lib/admin/pipelineFunnel`).
     // Stage 3: enrolled in at least one course.
     // Stage 4 (success): actively training — has course progress that is
     //   in-progress or completed.
@@ -74,7 +79,7 @@ export default async function PipelinePage({
     const [started, intake, eligibility, enrolled, active] = await Promise.all([
       db.user.count({ where: cohortFilter }),
       db.user.count({ where: { ...cohortFilter, assessmentCompleted: true } }),
-      db.user.count({ where: { ...cohortFilter, wioaReviewStatus: { not: null } } }),
+      db.user.count({ where: { ...cohortFilter, wioaReviewStatus: 'verified' } }),
       db.user.count({ where: { ...cohortFilter, courseEnrollments: { some: {} } } }),
       db.user.count({
         where: {

@@ -1,4 +1,5 @@
 import { getMemberState } from '@/lib/member/getMemberState';
+import { effectiveStreak } from '@/lib/member/streakDisplay';
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -253,7 +254,8 @@ export default async function DashboardProfilePage({
     //   • Certs earned   → UserCertification count
     //   • Readiness score → same getScoreBreakdownSafe helper the readiness
     //                       page uses (overallScore = capped sum of earned).
-    //   • Daily streak    → MemberPoints.currentStreak (single denormalized row).
+    //   • Daily streak    → MemberPoints.currentStreak gated by lastActiveDate
+    //                       (effectiveStreak; the stored counter alone is stale).
     // Each badge is only shown when its value is meaningful (> 0), so a brand-new
     // member with no signal doesn't see "0 Certs / 0 Readiness / 0-day streak".
     const [certCount, readinessResult, pointsRow, profilePhotoUrl] = await Promise.all([
@@ -261,7 +263,7 @@ export default async function DashboardProfilePage({
       getScoreBreakdownSafeResult(user.id),
       prisma.memberPoints.findUnique({
         where: { userId: user.id },
-        select: { currentStreak: true },
+        select: { currentStreak: true, lastActiveDate: true },
       }),
       dbUser.profile?.profilePhotoPath
         ? getMemberProfilePhotoSignedUrl(user.id)
@@ -272,7 +274,12 @@ export default async function DashboardProfilePage({
       100,
       Object.values(readinessBreakdown).reduce((sum, b) => sum + b.earned, 0),
     );
-    const currentStreak = pointsRow?.currentStreak ?? 0;
+    // Same rule as the home chip and the points page: a counter whose last
+    // activity is older than yesterday is a lost streak and reads 0.
+    const currentStreak = effectiveStreak({
+      currentStreak: pointsRow?.currentStreak,
+      lastActiveDate: pointsRow?.lastActiveDate,
+    });
 
     const profileBadges: { label: string; bg: string; color: string }[] = [];
     if (certCount > 0) {
