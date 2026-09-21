@@ -94,6 +94,46 @@ export function Sparkline({
 }
 
 /**
+ * Stand-in for the sparkline slot on a tile whose series is empty — a member
+ * with no history yet, which on the member home is every tile today (nothing
+ * upstream loads a per-tile series; see loadMemberDashboardHome).
+ *
+ * Deliberately NOT a chart. A flat rule here would read as a real trend
+ * sitting at zero, and inventing a series to draw is worse. Instead it uses
+ * the kit's existing empty-chart vocabulary — a short muted caption where the
+ * plot would be, the same move the weekly-activity card makes with "No study
+ * minutes this week".
+ *
+ * It reserves the sparkline's own height so a row of tiles keeps one baseline
+ * whether or not a given member has history, which is what makes the absence
+ * read as deliberate rather than as a graph that failed to paint.
+ *
+ * OPT-IN, and `label` is required and must already be translated. This slot
+ * only belongs on a tile that would plot a trend once one exists; on a pure
+ * count ("Jobs Posted 12") it would promise a trend nothing will ever compute
+ * and cost 28px for the privilege. The kit holds no copy of its own, so the
+ * caller passes the string from its own catalogue.
+ */
+export function TrendPlaceholder({
+  label,
+  height = 28,
+}: {
+  /** Already-translated copy, e.g. next-intl `t('noTrendYet')`. */
+  label: string;
+  height?: number;
+}) {
+  return (
+    <div
+      className="wa-kit-meta"
+      data-testid="stat-trend-empty"
+      style={{ minHeight: height, display: 'flex', alignItems: 'center', lineHeight: 1.2 }}
+    >
+      {label}
+    </div>
+  );
+}
+
+/**
  * Dependency-free area chart with a faint gridline set and an emphasized
  * endpoint dot — the "weekly activity" look, generalized for any portal
  * (caseload touchpoints, enrollment trend, referral velocity…).

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "846de4b45fa6f2cc5de52e07e04a76cf0989f3bce45732b74c6451b22ecc23ed",
+  "inputTreeSha256": "002ce0ebf087f91455928189d5be3e3469dcef7e08b064768a1c5ee482ed24cd",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 5053,
-    "sourceModules": 3692,
-    "importReferences": 18447,
-    "resolvedLocalReferences": 12403,
+    "files": 5048,
+    "sourceModules": 3689,
+    "importReferences": 18448,
+    "resolvedLocalReferences": 12404,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1071,
     "nextRouteFiles": 1037,
@@ -22,14 +22,14 @@
     "prismaModels": 115,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 1012,
+    "testFiles": 1011,
     "testCandidates": 1000,
-    "testHelpers": 12,
+    "testHelpers": 11,
     "staticallySelectedTests": 998,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 416,
-    "environmentNames": 205
+    "environmentNames": 204
   },
   "areas": [
     {
@@ -66,7 +66,7 @@
     },
     {
       "area": "database",
-      "files": 214
+      "files": 212
     },
     {
       "area": "delivery",
@@ -78,7 +78,7 @@
     },
     {
       "area": "libraries",
-      "files": 1096
+      "files": 1094
     },
     {
       "area": "localization",
@@ -86,7 +86,7 @@
     },
     {
       "area": "operations",
-      "files": 146
+      "files": 145
     },
     {
       "area": "pages",
@@ -128,7 +128,7 @@
     },
     {
       "file": "lib/content/programs.ts",
-      "references": 250
+      "references": 248
     },
     {
       "file": "lib/tenant/organization.ts",
@@ -188,7 +188,7 @@
     },
     {
       "file": "lib/content/programSlug.ts",
-      "references": 77
+      "references": 73
     },
     {
       "file": "components/portal/PortalPageFrame.tsx",
@@ -216,7 +216,7 @@
     },
     {
       "file": "messages/en.json",
-      "references": 53
+      "references": 54
     },
     {
       "file": "components/portal/ui/DataTable.tsx",
@@ -357,12 +357,12 @@
       "lines": 1235
     },
     {
-      "file": "app/dev/astryx/table/page.tsx",
-      "lines": 1216
+      "file": "app/(portal)/dashboard/page.tsx",
+      "lines": 1223
     },
     {
-      "file": "app/(portal)/dashboard/page.tsx",
-      "lines": 1210
+      "file": "app/dev/astryx/table/page.tsx",
+      "lines": 1216
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",

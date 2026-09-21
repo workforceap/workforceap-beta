@@ -743,6 +743,8 @@
 | [lib/member/loadTrainingWorkspace.ts](../../../lib/member/loadTrainingWorkspace.ts) | 112 | member-counselor | TrainingWorkspaceError:14, loadTrainingWorkspace:81, saveTrainingWorkspace:85 |
 | [lib/member/memberApplicationStatus.test.ts](../../../lib/member/memberApplicationStatus.test.ts) | 98 | member-counselor |  |
 | [lib/member/memberApplicationStatus.ts](../../../lib/member/memberApplicationStatus.ts) | 165 | member-counselor | MemberApplicationStage:3, MEMBER_APPLICATION_PROGRESS_STEPS:11, MemberApplicationStatusView:19, buildMemberApplicationStatusView:47, applicationStatusForPublicLookup:160 |
+| [lib/member/memberApprovalCardPlacement.test.ts](../../../lib/member/memberApprovalCardPlacement.test.ts) | 105 | member-counselor |  |
+| [lib/member/memberApprovalCardPlacement.ts](../../../lib/member/memberApprovalCardPlacement.ts) | 50 | member-counselor | MemberApprovalCardPlacement:16, hasLiveApprovalNextStep:26, memberApprovalCardPlacement:34, approvalStatusSignature:43, approvalDismissStorageKey:48 |
 | [lib/member/memberApprovalStatus.test.ts](../../../lib/member/memberApprovalStatus.test.ts) | 116 | member-counselor |  |
 | [lib/member/memberApprovalStatus.ts](../../../lib/member/memberApprovalStatus.ts) | 177 | member-counselor | MemberApprovalFacts:9, ApprovalStageKey:22, ApprovalStageState:23, ApprovalOwner:24, MemberApprovalStage:26, MemberApprovalStatus:37, buildMemberApprovalStatus:65 |
 | [lib/member/memberEngagementSignals.ts](../../../lib/member/memberEngagementSignals.ts) | 60 | member-counselor | MemberEngagementSignals:3, getMemberEngagementSignals:14 |

@@ -7,12 +7,12 @@ flowchart LR
   communications["communications: 72 files"]
   components["components: 621 files"]
   content["content: 14 files"]
-  database["database: 214 files"]
+  database["database: 212 files"]
   delivery["delivery: 10 files"]
   documentation["documentation: 358 files"]
-  libraries["libraries: 1096 files"]
+  libraries["libraries: 1094 files"]
   localization["localization: 6 files"]
-  operations["operations: 146 files"]
+  operations["operations: 145 files"]
   pages["pages: 656 files"]
   root["root: 56 files"]
   styles["styles: 17 files"]
@@ -25,7 +25,7 @@ flowchart LR
   audit_graph -->|"2 static references"| api
   audit_graph -->|"1 static references"| root
   communications -->|"67 static references"| libraries
-  components -->|"503 static references"| libraries
+  components -->|"504 static references"| libraries
   components -->|"11 static references"| localization
   components -->|"11 static references"| pages
   components -->|"1 static references"| root
@@ -43,11 +43,11 @@ flowchart LR
   libraries -->|"2 static references"| supporting_files
   libraries -->|"3 static references"| tests
   localization -->|"1 static references"| libraries
-  operations -->|"55 static references"| libraries
+  operations -->|"50 static references"| libraries
   operations -->|"1 static references"| tests
   pages -->|"2 static references"| api
-  pages -->|"1133 static references"| components
-  pages -->|"1433 static references"| libraries
+  pages -->|"1134 static references"| components
+  pages -->|"1436 static references"| libraries
   pages -->|"39 static references"| styles
   root -->|"25 static references"| libraries
   root -->|"2 static references"| operations
@@ -55,9 +55,9 @@ flowchart LR
   tests -->|"409 static references"| api
   tests -->|"5 static references"| astro_marketing
   tests -->|"9 static references"| communications
-  tests -->|"207 static references"| components
-  tests -->|"1271 static references"| libraries
-  tests -->|"61 static references"| localization
+  tests -->|"209 static references"| components
+  tests -->|"1272 static references"| libraries
+  tests -->|"62 static references"| localization
   tests -->|"29 static references"| operations
   tests -->|"135 static references"| pages
   tests -->|"11 static references"| root
