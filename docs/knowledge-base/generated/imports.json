@@ -88593,8 +88593,16 @@
   },
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
-    "specifier": "lucide-react",
+    "specifier": "next-intl",
     "line": 4,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
+    "specifier": "lucide-react",
+    "line": 5,
     "kind": "import",
     "external": true,
     "package": "lucide-react"
@@ -88602,7 +88610,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "lucide-react",
-    "line": 19,
+    "line": 20,
     "kind": "type",
     "external": true,
     "package": "lucide-react"
@@ -88610,7 +88618,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "next/link",
-    "line": 20,
+    "line": 21,
     "kind": "import",
     "external": true,
     "package": "next"
@@ -88618,7 +88626,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/kit",
-    "line": 21,
+    "line": 22,
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
@@ -88626,7 +88634,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/components/portal/MemberDoThisNextCard",
-    "line": 35,
+    "line": 37,
     "kind": "import",
     "external": false,
     "target": "components/portal/MemberDoThisNextCard.tsx"
@@ -88634,7 +88642,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 36,
+    "line": 38,
     "kind": "type",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -88642,7 +88650,7 @@
   {
     "from": "components/portal/kit/pages/member/MemberHomeKit.tsx",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 37,
+    "line": 39,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -139566,6 +139574,70 @@
     "kind": "import",
     "external": false,
     "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "vitest",
+    "line": 26,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 27,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "next-intl",
+    "line": 28,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "react",
+    "line": 29,
+    "kind": "type",
+    "external": true,
+    "package": "react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "lucide-react",
+    "line": 30,
+    "kind": "import",
+    "external": true,
+    "package": "lucide-react"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 31,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/components/portal/kit/pages/member/MemberHomeKit",
+    "line": 32,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+  },
+  {
+    "from": "tests/components/stat-tile-trend-slot.spec.tsx",
+    "specifier": "@/components/portal/kit/CommandCenter",
+    "line": 33,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/CommandCenter.tsx"
   },
   {
     "from": "tests/components/students-roster-identity.spec.tsx",

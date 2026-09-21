@@ -344,6 +344,7 @@
 | [tests/components/skill-mission-close-guard.test.tsx](../../../tests/components/skill-mission-close-guard.test.tsx) | 103 | tests |  |
 | [tests/components/staff-shell-auth-reads.spec.tsx](../../../tests/components/staff-shell-auth-reads.spec.tsx) | 115 | tests |  |
 | [tests/components/stat-tile-tones.spec.tsx](../../../tests/components/stat-tile-tones.spec.tsx) | 111 | tests |  |
+| [tests/components/stat-tile-trend-slot.spec.tsx](../../../tests/components/stat-tile-trend-slot.spec.tsx) | 178 | tests |  |
 | [tests/components/students-roster-identity.spec.tsx](../../../tests/components/students-roster-identity.spec.tsx) | 66 | tests |  |
 | [tests/components/students-roster-kit-views.spec.tsx](../../../tests/components/students-roster-kit-views.spec.tsx) | 274 | tests |  |
 | [tests/components/students-roster-needs-link.spec.tsx](../../../tests/components/students-roster-needs-link.spec.tsx) | 143 | tests |  |
