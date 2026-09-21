@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "inputTreeSha256": "64e11755aa8cd5413a23c1c71e477d49d1968419bf9d3e8611ea3c5b0cd89850",
+  "inputTreeSha256": "5a4e94a1da7e128741266f1369d05fc364afc328ee41d56a251a9afc789827c7",
   "auditBaseline": {
     "repository": "mabrown040/workforceap-beta",
     "reviewedCommit": "36eed25a8c7d58d629f8bac2319e0ad5b039cce4",
@@ -8,10 +8,10 @@
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
   "counts": {
-    "files": 4959,
-    "sourceModules": 3607,
-    "importReferences": 17998,
-    "resolvedLocalReferences": 12098,
+    "files": 4969,
+    "sourceModules": 3617,
+    "importReferences": 18046,
+    "resolvedLocalReferences": 12134,
     "unresolvedLocalReferences": 0,
     "routeFiles": 1063,
     "nextRouteFiles": 1029,
@@ -22,10 +22,10 @@
     "prismaModels": 114,
     "prismaEnums": 33,
     "relationFields": 308,
-    "testFiles": 965,
-    "testCandidates": 955,
+    "testFiles": 974,
+    "testCandidates": 964,
     "testHelpers": 10,
-    "staticallySelectedTests": 953,
+    "staticallySelectedTests": 962,
     "unselectedTestCandidates": 2,
     "metadataOnlyFiles": 0,
     "documentFiles": 415,
@@ -90,7 +90,7 @@
     },
     {
       "area": "pages",
-      "files": 644
+      "files": 645
     },
     {
       "area": "root",
@@ -106,17 +106,17 @@
     },
     {
       "area": "tests",
-      "files": 566
+      "files": 575
     }
   ],
   "mostReferenced": [
     {
       "file": "lib/db/prisma.ts",
-      "references": 931
+      "references": 932
     },
     {
       "file": "lib/auth/server.ts",
-      "references": 751
+      "references": 752
     },
     {
       "file": "lib/auth/roles.ts",
@@ -180,18 +180,18 @@
     },
     {
       "file": "lib/content/programTitle.ts",
-      "references": 81
+      "references": 82
     },
     {
       "file": "lib/events/track.ts",
       "references": 81
     },
     {
-      "file": "components/portal/PortalPageFrame.tsx",
-      "references": 71
+      "file": "lib/content/programSlug.ts",
+      "references": 73
     },
     {
-      "file": "lib/content/programSlug.ts",
+      "file": "components/portal/PortalPageFrame.tsx",
       "references": 71
     },
     {
@@ -236,7 +236,7 @@
     },
     {
       "file": "lib/ai/groq.ts",
-      "references": 43
+      "references": 44
     },
     {
       "file": "lib/admin/logCronRun.ts",
@@ -297,12 +297,12 @@
       "lines": 1552
     },
     {
-      "file": "app/admin/coursera/page.tsx",
-      "lines": 1478
+      "file": "app/admin/members/[id]/page.tsx",
+      "lines": 1519
     },
     {
-      "file": "app/admin/members/[id]/page.tsx",
-      "lines": 1467
+      "file": "app/admin/coursera/page.tsx",
+      "lines": 1478
     },
     {
       "file": "tests/api/placement-survey.spec.ts",
@@ -349,6 +349,10 @@
       "lines": 1282
     },
     {
+      "file": "components/admin/MembersTable.tsx",
+      "lines": 1238
+    },
+    {
       "file": "components/portal/SkillMissionChallenge.tsx",
       "lines": 1235
     },
@@ -359,10 +363,6 @@
     {
       "file": "app/(portal)/dashboard/page.tsx",
       "lines": 1210
-    },
-    {
-      "file": "components/admin/MembersTable.tsx",
-      "lines": 1208
     },
     {
       "file": "components/employer/EmployerJobsBoard.tsx",

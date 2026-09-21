@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import { calculateHealthStatus } from '@/lib/admin/healthScore';
+import { calculateHealthStatus, MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import type {
   StudentRow,
@@ -112,14 +112,18 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
           },
         }),
         db.user.count({ where: whereClause }),
+        // Nudge emails / recap digests are written *to* the member, so they
+        // are excluded here exactly as on /admin/members — otherwise Health
+        // (and the "At Risk" chip derived from it) reads our own outbound
+        // mail as learner activity (audit 2026-09-20, S1).
         db.memberEvent.groupBy({
           by: ['userId'],
-          where: { createdAt: { gte: thirtyDaysAgo }, ...userOrg },
+          where: { createdAt: { gte: thirtyDaysAgo }, ...userOrg, ...MEMBER_ACTIVITY_EVENT_WHERE },
           _max: { createdAt: true },
         }),
         db.memberEvent.groupBy({
           by: ['userId'],
-          where: { createdAt: { gte: thirtyDaysAgo }, ...userOrg },
+          where: { createdAt: { gte: thirtyDaysAgo }, ...userOrg, ...MEMBER_ACTIVITY_EVENT_WHERE },
           _count: { _all: true },
         }),
       ]),
@@ -225,6 +229,15 @@ export async function loadStudentsRoster(scope: AdminPageTenantOk): Promise<Stud
           lastEventAt: lastEventMap.get(m.id) ?? null,
           recentEventCount: recentEventMap.get(m.id) ?? 0,
           enrolledAt: m.enrolledAt,
+          // Login + Coursera/course work, the other two signals Mike counts
+          // as member activity (2026-09-20). Same evidence the roster's
+          // "Last active" column already prints.
+          lastLoginAt: m.lastLoginAt,
+          lastCourseActivityAt:
+            resolveStudentRosterActivity({
+              courseraActivityAt: enrichment?.courseraActivityAt,
+              courseActivityAt: enrichment?.courseActivityAt,
+            }).at,
         })
       : 'green';
 

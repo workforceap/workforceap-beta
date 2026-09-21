@@ -8,8 +8,11 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { calculateHealthStatus, MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 import { formatPhone } from '@/lib/formatPhone';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { buildDirectorySearchWhere, normalizeDirectorySearch } from '@/lib/admin/directorySearch';
 import { buildStatusWhere, type StudentStatus } from '@/lib/admin/studentStatus';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -43,6 +46,11 @@ async function _GET(request: NextRequest) {
     const healthFilter = searchParams.get('health') ?? '';
     const notInCourse = searchParams.get('notInCourse') === '1';
     const needsAttention = searchParams.get('needsAttention') === '1';
+    // Same population as the screen: members only unless the roster's
+    // "Include staff accounts" box is ticked (audit S3; Mike: "remove staff
+    // in count"). The export and the page must not disagree about who is on
+    // the roster — that drift is what S13/S14/S17 were about.
+    const includeStaff = searchParams.get('staff') === '1';
     const startDate = searchParams.get('startDate') ?? '';
     const endDate = searchParams.get('endDate') ?? '';
 
@@ -64,12 +72,12 @@ async function _GET(request: NextRequest) {
     // Apply directory filters before the export bound, so a matching member
     // outside the first 5,000 unfiltered records is still included.
     const where: Prisma.UserWhereInput = {
-      ...MEMBER_OR_DOGFOOD_WHERE,
+      ...(includeStaff ? MEMBER_OR_DOGFOOD_WHERE : MEMBER_ONLY_WHERE),
       ...dateWhere,
       deletedAt: statusFilter === 'dropped' ? { not: null } : null,
       AND: [
         buildDirectorySearchWhere(search),
-        buildStatusWhere(statusFilter as StudentStatus) as Prisma.UserWhereInput,
+        buildStatusWhere(statusFilter as StudentStatus),
       ],
       ...(programFilter ? { courseEnrollments: { some: { programSlug: programFilter } } } : {}),
       ...(partnerFilter ? {
@@ -88,6 +96,7 @@ async function _GET(request: NextRequest) {
           phone: true,
           enrolledProgram: true,
           enrolledAt: true,
+          memberStatus: true,
           staleTrainingDetectedAt: true,
           assessmentScorePct: true,
           assessmentCompleted: true,
@@ -103,7 +112,7 @@ async function _GET(request: NextRequest) {
             },
           },
           courseEnrollments: {
-            select: { programSlug: true, isPrimary: true },
+            select: { programSlug: true, curriculumVersion: true, isPrimary: true },
           },
           partnerReferrals: {
             take: 1,
@@ -126,7 +135,11 @@ async function _GET(request: NextRequest) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const lastEvents = await prisma.memberEvent.groupBy({
       by: ['userId'],
-      where: { userId: { in: members.map((m) => m.id) }, createdAt: { gte: thirtyDaysAgo } },
+      where: {
+        userId: { in: members.map((m) => m.id) },
+        createdAt: { gte: thirtyDaysAgo },
+        ...MEMBER_ACTIVITY_EVENT_WHERE,
+      },
       _max: { createdAt: true },
     });
     const lastEventMap = new Map<string, Date>();
@@ -136,12 +149,28 @@ async function _GET(request: NextRequest) {
 
     const recentEvents = await prisma.memberEvent.groupBy({
       by: ['userId'],
-      where: { userId: { in: members.map((m) => m.id) }, createdAt: { gte: thirtyDaysAgo } },
+      where: {
+        userId: { in: members.map((m) => m.id) },
+        createdAt: { gte: thirtyDaysAgo },
+        ...MEMBER_ACTIVITY_EVENT_WHERE,
+      },
       _count: { _all: true },
     });
     const recentEventMap = new Map<string, number>();
     for (const e of recentEvents) {
       recentEventMap.set(e.userId, e._count._all);
+    }
+
+    // Coursera / course work writes no member_events row (Mike, 2026-09-20:
+    // activity is "login, any Coursera action, any tools skills etc.").
+    const courseActivity = await prisma.courseProgress.groupBy({
+      by: ['userId'],
+      where: { userId: { in: members.map((m) => m.id) } },
+      _max: { lastActivityAt: true },
+    });
+    const courseActivityMap = new Map<string, Date>();
+    for (const row of courseActivity) {
+      if (row._max.lastActivityAt) courseActivityMap.set(row.userId, row._max.lastActivityAt);
     }
 
     // Derived health and attention filters retain the existing bounded behavior.
@@ -151,20 +180,17 @@ async function _GET(request: NextRequest) {
         ...m.courseEnrollments.map((e) => e.programSlug),
       ];
 
-      // Health calculation (mirrors calculateHealthStatus in lib/admin/healthScore)
-      let healthStatus: 'green' | 'yellow' | 'red' | undefined;
-      const lastEventAt = lastEventMap.get(m.id) ?? null;
-      const recentEventCount = recentEventMap.get(m.id) ?? 0;
-      const enrolledAt = m.enrolledAt;
-      if (lastEventAt || recentEventCount > 0) {
-        healthStatus = 'green';
-      } else if (enrolledAt) {
-        const enrolledTime = typeof enrolledAt === 'string' ? new Date(enrolledAt).getTime() : enrolledAt.getTime();
-        const daysSinceEnrollment = (Date.now() - enrolledTime) / (1000 * 60 * 60 * 24);
-        healthStatus = daysSinceEnrollment > 14 ? 'red' : 'yellow';
-      } else {
-        healthStatus = 'red';
-      }
+      // The one Health rule, shared with the screen. This used to be a
+      // hand-rolled copy that keyed off enrollment age instead of activity
+      // recency, so the roster's "At Risk" filter showed 2 rows and its CSV
+      // returned 0 (audit 2026-09-20, S13).
+      const healthStatus = calculateHealthStatus({
+        lastEventAt: lastEventMap.get(m.id) ?? null,
+        recentEventCount: recentEventMap.get(m.id) ?? 0,
+        enrolledAt: m.enrolledAt,
+        lastLoginAt: m.lastLoginAt,
+        lastCourseActivityAt: courseActivityMap.get(m.id) ?? null,
+      });
       const matchHealth = !healthFilter || healthStatus === healthFilter;
 
       const isNotInCourse = !m.enrolledProgram && enrollmentSlugs.length === 0;
@@ -175,7 +201,7 @@ async function _GET(request: NextRequest) {
       const reasons: string[] = [];
       if (healthStatus === 'red') reasons.push('Inactive');
       if (m.staleTrainingDetectedAt) reasons.push('Stale training');
-      if (isNotInCourse) reasons.push('No course');
+      if (isNotInCourse) reasons.push('No assigned program');
       if (isNew) reasons.push('New');
       const matchAttention = !needsAttention || reasons.length > 0;
 
@@ -187,14 +213,26 @@ async function _GET(request: NextRequest) {
       'Email',
       'Program',
       'Status',
+      'Pipeline Stage',
       'Enrollment Date',
       'Last Login',
       'Placement Status',
     ];
 
     const rows = filtered.map((m) => {
-      const programTitle = m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '';
-      const status = m.pipelineBoardStage ?? 'Active';
+      // Same assignment the roster row resolves (primary enrollment first,
+      // then an alias-equivalent legacy pointer). Reading the raw
+      // `enrolledProgram` blanked Program for members whose program lives on a
+      // CourseEnrollment row (audit 2026-09-20, S17).
+      const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments);
+      const programTitle = assignment.programSlug
+        ? programDisplayTitle(canonicalizeProgramSlug(assignment.programSlug))
+        : '';
+      // The "Status" column is the member status the roster's Status chip
+      // prints. It used to export `pipeline_board_stage`, so a placed member
+      // exported "Active" and an active member exported "in_training"
+      // (audit 2026-09-20, S14). The pipeline stage keeps its own column.
+      const status = m.memberStatus ?? 'active';
       const placementStatus = m.placementRecord
         ? `Placed at ${m.placementRecord.employerName} — ${m.placementRecord.jobTitle}`
         : 'Not placed';
@@ -204,6 +242,7 @@ async function _GET(request: NextRequest) {
         m.email,
         programTitle,
         status,
+        m.pipelineBoardStage ?? '',
         formatDate(m.enrolledAt),
         formatDate(m.lastLoginAt),
         placementStatus,
@@ -229,6 +268,7 @@ async function _GET(request: NextRequest) {
           health: healthFilter || null,
           notInCourse,
           needsAttention,
+          includeStaff,
         },
       },
     });
@@ -250,6 +290,7 @@ async function _GET(request: NextRequest) {
             health: healthFilter || null,
             notInCourse,
             needsAttention,
+            includeStaff,
           },
         },
       },
@@ -261,7 +302,7 @@ async function _GET(request: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="students-export-${new Date().toISOString().slice(0, 10)}.csv"`,
+        'Content-Disposition': `attachment; filename="members-export-${new Date().toISOString().slice(0, 10)}.csv"`,
       },
     });
   } catch (error) {

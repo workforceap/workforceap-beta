@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/db/prisma';
-import type { User, CourseProgress, UserCertification, MemberEvent } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
+import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
 
 export type StudentStatus = 'enrolled' | 'active' | 'completed' | 'dropped' | 'stale';
 
@@ -51,8 +51,15 @@ export function getStudentStatus(ctx: StudentStatusContext): StudentStatus {
  * user_certifications, member_events), we use EXISTS sub-queries via
  * the `some` / `none` relation filters where possible, and fall back to
  * field-level checks for the simpler cases.
+ *
+ * Typed `Prisma.UserWhereInput` on purpose: the previous
+ * `Record<string, unknown>` return let callers cast it into a user query, and
+ * hid a `courseProgress.updatedAt` reference that does not exist on the model
+ * (the column is `lastUpdatedAt`). The "Active (recent activity)" filter threw
+ * PrismaClientValidationError in production because of it — the roster showed
+ * AdminDataLoadError and the CSV returned 500 (audit 2026-09-20, S18).
  */
-export function buildStatusWhere(status: StudentStatus): Record<string, unknown> {
+export function buildStatusWhere(status: StudentStatus): Prisma.UserWhereInput {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -71,20 +78,27 @@ export function buildStatusWhere(status: StudentStatus): Record<string, unknown>
           { updatedAt: { gte: thirtyDaysAgo } },
           {
             memberEvents: {
-              some: { createdAt: { gte: thirtyDaysAgo } },
+              // Nudge emails and recap digests are sent *to* the member; they
+              // are not the member doing something (S1, shared with Health).
+              some: { createdAt: { gte: thirtyDaysAgo }, ...MEMBER_ACTIVITY_EVENT_WHERE },
             },
           },
           {
             courseProgress: {
               some: {
                 status: { in: ['IN_PROGRESS', 'COMPLETED'] },
-                updatedAt: { gte: thirtyDaysAgo },
+                lastUpdatedAt: { gte: thirtyDaysAgo },
               },
             },
           },
         ],
       };
 
+    // NOTE: this matches any member with a certification OR at least one
+    // completed course — it is not "certified". The filter is labelled
+    // "Completed a course" in the UI to say so (audit 2026-09-20, S19: 3 of
+    // the 5 rows it returned held no certification). Narrowing it to
+    // certifications only is open with Mike (Needs Mike 7).
     case 'completed':
       return {
         deletedAt: null,
