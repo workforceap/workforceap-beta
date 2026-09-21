@@ -51,13 +51,20 @@ describe('program-health bars carry no status colour', () => {
 
   it('never paints a program-health bar green', () => {
     const { container } = render(<CommandCenterKit programHealth={ROWS} />);
-    for (const fill of barFills(container)) {
+    const fills = barFills(container);
+    // Assert the selector matched before iterating: a loop over an empty
+    // NodeList asserts nothing, and this repo has shipped that twice.
+    expect(fills.length).toBeGreaterThanOrEqual(ROWS.length);
+    for (const fill of fills) {
       expect(fill.getAttribute('style') ?? '').not.toMatch(/--wa-success/);
     }
   });
 
   it('puts no tone hook on a program-health row', () => {
     const { container } = render(<CommandCenterKit programHealth={ROWS} />);
+    // Same guard: without this, the absence assertions below would hold
+    // trivially if the bars stopped rendering altogether.
+    expect(barFills(container).length).toBeGreaterThanOrEqual(ROWS.length);
     for (const tone of ['ok', 'warn', 'alert', 'danger', 'info', 'muted'] as const) {
       expect(container.querySelector(`.${toneClass(tone)!} .wa-kit-bar-fill`)).toBeNull();
     }
