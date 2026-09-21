@@ -1,8 +1,47 @@
   /* ===== WorkforceAP blend tokens (light, premium) — improved from the Astro SaaS mock:
-     truth-locked copy, nonprofit positioning, on-brand crimson/gold palette ===== */
+     truth-locked copy, nonprofit positioning, on-brand crimson/gold palette =====
+
+     Brand hues are NOT defined here any more: they resolve through the canonical
+     `--wa-*` design tokens of css/wa-brand-tokens.css, which Layout.astro imports
+     ahead of this file (the same file app/layout.tsx loads on every Next route,
+     WAP-106). Before this, the Astro marketing package was the one public surface
+     with no `--wa-*` reference at all, so the brand existed twice: once as tokens
+     and once as these hex literals. The literal stays as the `var()` fallback —
+     the idiom css/astryx-brand-bridge.css already uses — so a page still renders
+     correctly if the token layer is ever absent.
+     lib/marketing/publicUiRouteContract.test.ts guards this wiring;
+     lib/ui/brandTokens.test.ts owns the css/wa-brand-tokens.css side.
+
+     The light value of each pair is identical to the hex it replaces, so this is
+     a provenance change, not a recolour.
+
+     Neutrals (--bg / --surface / --text / --muted / --border) and --radius stay
+     local on purpose. The portal's neutrals are a COOLER ramp (--wa-bg #f7f8fa,
+     --wa-text #1a1a1a, --wa-border #e8e8e8, --wa-radius 20px) than this warm
+     marketing one (#f7f4f1 / #1a1414 / #ece5e0 / 22px); aliasing them would
+     restyle every public page, and WAP-106 deliberately keeps portal neutrals,
+     `color-scheme`, density and motion out of the public layer. */
   :root{
-    --crimson:#ad2c4d; --accent-dark:#8c0f37; --plum:#6d1437;
-    --gold:#a47f38; --gold-dark:#7d5f26; --blue:#2b7bb9; --green:#4a9b4f;
+    /* marketing is light-only (marketing/AGENTS.md); pinning color-scheme keeps
+       every light-dark() token above resolving to its light value even if a dark
+       surface is ever introduced elsewhere on the page. */
+    color-scheme: light;
+    --crimson:var(--wa-accent,#ad2c4d); --accent-dark:var(--wa-accent-dark,#8c0f37); --plum:#6d1437;
+    --gold:var(--wa-gold,#a47f38); --gold-dark:var(--wa-gold-dark,#7d5f26);
+    --blue:var(--wa-info,#2b7bb9); --green:var(--wa-success,#4a9b4f);
+    /* Gold ramp for the hero and CTA treatments. These three values had no name
+       at all: they were repeated as raw hex 53, 33 and 32 times across 20 page
+       files, which is what "hardcoded colours on the public pages" mostly was.
+       Each is byte-identical to the literal it replaces — naming them is a
+       de-duplication, not a new palette. The token layer has no exact analog
+       (--wa-gold-soft is #fef3c7), so these stay marketing-local rather than
+       being force-fitted onto a portal token that would change the colour. */
+    --gold-lift:#e3bd6a;  /* lighter gold — gradient start on gold pills */
+    --gold-hi:#e9c879;    /* brightest gold — the Apply CTA gradient start */
+    --gold-glow:#f3d28f;  /* gold text / shimmer over the crimson hero art */
+    --gold-ink:#3a2c10;   /* readable ink on a gold fill */
+    --grad-gold:linear-gradient(135deg,var(--gold-lift),var(--gold));
+    --grad-gold-shimmer:linear-gradient(100deg,#fff 10%,var(--gold-glow) 50%,#fff 90%);
     --bg:#f7f4f1; --surface:#ffffff; --surface-2:#fbf8f6;
     --text:#1a1414; --muted:#6e6a66; --border:#ece5e0;
     --radius:22px; --max:1180px;
@@ -31,7 +70,7 @@
   .btn--primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px -8px rgba(173,44,77,.5)}
   /* Gold "start here" CTA — the single persistent gold signal in the chrome
      (nav + mobile Apply). Keeps Apply the lone standout; hierarchy unchanged. */
-  .btn--apply{background:linear-gradient(135deg,#e9c879,#a47f38);color:#3a2c10;font-weight:800;box-shadow:0 10px 28px -8px rgba(164,127,56,.55),0 1px 0 rgba(255,255,255,.45) inset}
+  .btn--apply{background:linear-gradient(135deg,var(--gold-hi),var(--gold));color:var(--gold-ink);font-weight:800;box-shadow:0 10px 28px -8px rgba(164,127,56,.55),0 1px 0 rgba(255,255,255,.45) inset}
   .btn--apply:hover{box-shadow:0 14px 36px -8px rgba(164,127,56,.62),0 1px 0 rgba(255,255,255,.55) inset}
   .btn--ghost{background:var(--surface);border-color:var(--border);color:var(--text)}
   .btn--ghost:hover{border-color:var(--crimson);color:var(--crimson)}

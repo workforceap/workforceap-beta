@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "da612613ff8f10f0682cd90a7ddeb6a3cdcb54cf5c55d71fdd48ff4d09f5d3b0",
+  "inputTreeSha256": "0631fd7abbfe02c5d002f79d8128d97fc1cd3fd51c26392830ff56affa9f8153",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -125079,9 +125079,9 @@
       "path": "lib/marketing/publicUiRouteContract.test.ts",
       "area": "libraries",
       "domain": "public-experience",
-      "bytes": 1434,
-      "lines": 33,
-      "sha256": "e33ab5eb9cbec799d9781925b9e455a95d0386ae9677abf86785cf1277551d05",
+      "bytes": 6018,
+      "lines": 143,
+      "sha256": "8e89993fc1d37df2fcdbfa551ce059543c23d811d363ea0aff38e4e72156c43b",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -125089,6 +125089,21 @@
           "name": "source",
           "line": 6,
           "kind": "Variable"
+        },
+        {
+          "name": "MARKETING_BRAND_ALIASES",
+          "line": 51,
+          "kind": "Variable"
+        },
+        {
+          "name": "RETIRED_MARKETING_LITERALS",
+          "line": 65,
+          "kind": "Variable"
+        },
+        {
+          "name": "routedMarketingAstroFiles",
+          "line": 75,
+          "kind": "FunctionDeclaration"
         }
       ],
       "directive": null
@@ -148880,9 +148895,9 @@
       "path": "marketing/AGENTS.md",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 7397,
-      "lines": 74,
-      "sha256": "668c1ccdad5b7e00bffa1f7e11eba608481c2623b2136be7a0a34f51bf0fda61",
+      "bytes": 8719,
+      "lines": 78,
+      "sha256": "4e06ef5fde7cbb20da30ddcd8871ecf719ffee66fc9e1ad2dbacaa8ef1d189fa",
       "binary": false
     },
     {
@@ -150378,9 +150393,9 @@
       "path": "marketing/src/layouts/Layout.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 14372,
-      "lines": 255,
-      "sha256": "5ece8e48a40c7200dbe43d94e393701c6423bdc93045116a3d5e10420eda122b",
+      "bytes": 14782,
+      "lines": 261,
+      "sha256": "509d925271c7dc5421a21601ccb92aea5a26fd81f83f18e2a971185b181878f4",
       "binary": false
     },
     {
@@ -150444,81 +150459,81 @@
       "path": "marketing/src/pages/about.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 9501,
+      "bytes": 9495,
       "lines": 189,
-      "sha256": "3c26b3370a13d361bc093a4ab49047aa5acbda534a4658e7194f18d6d7453bca",
+      "sha256": "4e70d14fdbdb1fd6706826af5dfa881c2ded8a0fd3b78eaca5f2b1397eb9b44c",
       "binary": false
     },
     {
       "path": "marketing/src/pages/accessibility.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 16152,
+      "bytes": 16153,
       "lines": 254,
-      "sha256": "811a8b68d2c4c2a67ec2e57955d7c53d36ecb6cccfbbb5e73110937cf49bf579",
+      "sha256": "da6b925715a5fffda1de50f854725f51315d1a7328b12528b0a01704930b6729",
       "binary": false
     },
     {
       "path": "marketing/src/pages/blog.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 15512,
+      "bytes": 15468,
       "lines": 295,
-      "sha256": "1f0ede3fc34d3492da32137487075814d5e689e85866897dac9f5002124e3f13",
+      "sha256": "7ef4f35d3f5d7dc60e608f1d56c40f99ad5233541bf07ce8f82a4a361da5a58e",
       "binary": false
     },
     {
       "path": "marketing/src/pages/blog/[slug].astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 11126,
+      "bytes": 11111,
       "lines": 256,
-      "sha256": "64557759f6267f0cf647add08b28a69c0cac286c7e88d1309044e2f7488dd17a",
+      "sha256": "00d244deef0df05ad296c50e819d1f971e40fc93aa7610b1d917a3e19ab63d46",
       "binary": false
     },
     {
       "path": "marketing/src/pages/career-quiz.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 8655,
+      "bytes": 8640,
       "lines": 127,
-      "sha256": "db396035234eb408f6dce794e6b60d830b7f0de4af2880ae3aa08cc44fc8c7f7",
+      "sha256": "b56c36e27792a267116f1728011022913c3dae3872649fb1ed66fff955e5f3bf",
       "binary": false
     },
     {
       "path": "marketing/src/pages/careers.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 18598,
+      "bytes": 18554,
       "lines": 381,
-      "sha256": "e9e22b98913e9f49cfb78510996b3b97c6d93ccec7b08a666ea9c05ccf62616d",
+      "sha256": "33272ddfbde6c2c449050d6b71732cf97734815aa9deb7a0338c7edcd4efff06",
       "binary": false
     },
     {
       "path": "marketing/src/pages/careers/thank-you.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 9333,
+      "bytes": 9289,
       "lines": 177,
-      "sha256": "0cfe7a8d85ea9c7f1144316ec5c064dd45e357dc91a4e83153df5410cbee71cb",
+      "sha256": "d6fb478402e1ff36ad88b08845824dd808fb844f2cf6d86bb9042c376658d22b",
       "binary": false
     },
     {
       "path": "marketing/src/pages/contact.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 21934,
+      "bytes": 21908,
       "lines": 399,
-      "sha256": "87af1fa9533cf831a52f730b4deb4a73269bbf61b40acb6bdda0f67b1f517176",
+      "sha256": "2ebc88ec7cc9f5a84d5ba4dc2ec2ed1af3ac2937d3632a0bd5f447fc265bf018",
       "binary": false
     },
     {
       "path": "marketing/src/pages/contact/thanks.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 1924,
+      "bytes": 1945,
       "lines": 36,
-      "sha256": "f7c2d7f77978c2818a4b5beb12009dc47e64d6a9d40335a59d714e23b0de2288",
+      "sha256": "9110e6548e8779ac037c3c9b18819bf5aef6fd04b27be8a3feebd113b42b66aa",
       "binary": false
     },
     {
@@ -150534,36 +150549,36 @@
       "path": "marketing/src/pages/employers.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 36087,
+      "bytes": 36028,
       "lines": 583,
-      "sha256": "d4ed4d1829cc686a69f03c657714ba75aa36c45ce6201b081a86c6369888cc71",
+      "sha256": "4dbcd164eacd14196761f3ce834070aa8727a373d50826eb8792986c7dbb0ab7",
       "binary": false
     },
     {
       "path": "marketing/src/pages/faq.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 29065,
+      "bytes": 29021,
       "lines": 422,
-      "sha256": "d6fd539715831b371a9c5837a4da231471e8ad25e539d912483a997c67a85eef",
+      "sha256": "5947e246638de223352b48bda052ddc05240a0163d3a18b27b4b2750b4b2f69b",
       "binary": false
     },
     {
       "path": "marketing/src/pages/find-your-path.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 13995,
+      "bytes": 13980,
       "lines": 193,
-      "sha256": "d1d033d6de23f4bd3df61d7e23ded378ca68c57d811a4f4f0237abb39981dca3",
+      "sha256": "da459dcf4e576730737bd881db62c8e8172a7b69dae122b3c9a81db889009e13",
       "binary": false
     },
     {
       "path": "marketing/src/pages/how-it-works.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 24449,
+      "bytes": 24432,
       "lines": 443,
-      "sha256": "5c71023e080e41cca1fd4ab11fca693f646e1980664f9a8ed68bddfa06a9a7ab",
+      "sha256": "f39e6fee14f7485c57157cf8f7392f5a60dde8211f9cb963f0a309acf2c28825",
       "binary": false
     },
     {
@@ -150579,126 +150594,126 @@
       "path": "marketing/src/pages/index.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 26237,
+      "bytes": 26243,
       "lines": 456,
-      "sha256": "3ecef6995b206acfe437628bcba76981643edabcbdab620b5a6d023b43d3fa11",
+      "sha256": "76f9568a96dfadd25df1f0a33007ae787e29580e23d9a21ecee1943c992711ac",
       "binary": false
     },
     {
       "path": "marketing/src/pages/insights/empowering-nonprofits-through-skill.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 8849,
+      "bytes": 8843,
       "lines": 105,
-      "sha256": "c3d266a2c8e451f319490cd64cfbb3a57dff8d517fbe14507e57877a7bfeddd9",
+      "sha256": "40280f7dbce71d95202be3ebc71ba6cc3b7f6c738ca9ad2a81addde516b367e4",
       "binary": false
     },
     {
       "path": "marketing/src/pages/interest-profiler.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 12475,
+      "bytes": 12478,
       "lines": 207,
-      "sha256": "22651d8c53d5ced1ead45ddb961de5f9a76bca9b2182e39193856aa3ddf142ae",
+      "sha256": "8ca58d47b196d7193813cc59c130594762f2a8c2f7dd8108ef3744ff44acb966",
       "binary": false
     },
     {
       "path": "marketing/src/pages/leadership.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 14485,
+      "bytes": 14468,
       "lines": 266,
-      "sha256": "bc793e539f09749f3d157523459591183c0756555890b5c4daf7457bfbc14e6d",
+      "sha256": "4ef234baa0be39617ef1ffe716e91954d62b8f6bffeabe9b72ab1af2032c9d80",
       "binary": false
     },
     {
       "path": "marketing/src/pages/leadership/[slug].astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 20824,
+      "bytes": 20830,
       "lines": 416,
-      "sha256": "c80a8f21bc42be528b5efd36c492ecf4acf9958cc5c4062b9a78f8b2b4c520e9",
+      "sha256": "f51fa4e83663de03ab0f8574d83a05b35aeba5dda405dce7e4d1124520c626e3",
       "binary": false
     },
     {
       "path": "marketing/src/pages/lp/google-it-automation.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 22878,
+      "bytes": 22843,
       "lines": 367,
-      "sha256": "694bf49ac6b9c86f64945369dd92407157ba840bac10fcf486293dc80f5cc3c2",
+      "sha256": "4530c79f88c9532d5d35e52e5bbfab7e877569be5ae440d6cf43b66be67d736f",
       "binary": false
     },
     {
       "path": "marketing/src/pages/mentor.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 12943,
+      "bytes": 12915,
       "lines": 259,
-      "sha256": "5d1fd6ec664c545e10538fcae6cfadd1fcda7c3f7e5591cc0a0cb46de0f1015e",
+      "sha256": "19df9a97aa4916cf866fa56efb03ca075c600681d34f44c08ef7ee3db31b1040",
       "binary": false
     },
     {
       "path": "marketing/src/pages/partners.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 36414,
+      "bytes": 36399,
       "lines": 642,
-      "sha256": "7352ec91383668febc9849cb5c298ac57e8c167829944f0614c6cee16e6a89a5",
+      "sha256": "7d15ebf5ffec143c37e7a99e3a286cc8fff3ed79f2e8e81c277b4915ebf16e96",
       "binary": false
     },
     {
       "path": "marketing/src/pages/partners/thank-you.astro",
       "area": "astro-marketing",
       "domain": "partners-funding",
-      "bytes": 11486,
+      "bytes": 11469,
       "lines": 214,
-      "sha256": "272327e69234170a5784c3fba1580e96b2815405f4e77759ed0477c58bb12564",
+      "sha256": "70b8ff94221ad9ff6923cc41f997f492378689c10db656f0af5d523e6eb4aa71",
       "binary": false
     },
     {
       "path": "marketing/src/pages/privacy.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 31615,
+      "bytes": 31598,
       "lines": 621,
-      "sha256": "e0027c34bf646e844ce8a0289049ca5183dab7c4eb9a234767ed878f608938fa",
+      "sha256": "12084b88cc3216b5d64f099dff1a967285cd985a7469cd573a4947510c4e7711",
       "binary": false
     },
     {
       "path": "marketing/src/pages/program-comparison.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 37052,
+      "bytes": 37017,
       "lines": 699,
-      "sha256": "38bf8273b5b182b7310a595cdc292db633bbdeb27441a6d569fa7fc39501b015",
+      "sha256": "14b09c01ef963a2164e916feea4e528d23eca6587e68e8427d0e614abf6e54aa",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 34622,
+      "bytes": 34587,
       "lines": 623,
-      "sha256": "964e0e7382248beaea7df3bcaac06c29af960c6cc3f6c7355d8be122c58a2ee0",
+      "sha256": "3f8fc98fd3be75bdbb4a944f5b04cf26a3ed6647d0d5152409fbd0a8bd9ae06a",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs/[slug].astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 28654,
+      "bytes": 28648,
       "lines": 577,
-      "sha256": "82cf4df41bc90e2dccb30c51dcc15273684020c1fc788abf774c92c6e548fcd6",
+      "sha256": "52a806adab804bd12ee069c7355893bdb935e8f420f57a6ecd717df35cc03df5",
       "binary": false
     },
     {
       "path": "marketing/src/pages/programs/google-it-support.astro",
       "area": "astro-marketing",
       "domain": "public-experience",
-      "bytes": 18177,
+      "bytes": 18198,
       "lines": 327,
-      "sha256": "b12c37adfcd87d6cb847d3f8881943099b0c3b66864581af4cffa675624c6af6",
+      "sha256": "db4341fd230e38d7a629ec5a460191b14e8ad4ca15375071192b32c1dfc7f96e",
       "binary": false
     },
     {
@@ -150723,27 +150738,27 @@
       "path": "marketing/src/pages/terms.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 21294,
+      "bytes": 21288,
       "lines": 386,
-      "sha256": "ccd6cc6ad4ecacd9db8023d5bb5f399141c9b0927a13fb29606a7cbc72e51214",
+      "sha256": "a6cde9d1c17a3c6b00ff153765512664ffbbd22b230a190f65c545eacb823cc4",
       "binary": false
     },
     {
       "path": "marketing/src/pages/what-we-do.astro",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 17276,
+      "bytes": 17232,
       "lines": 281,
-      "sha256": "542921e3cd40e52741f1583db0ebaaac773e098510c2573151004abb5bb58e60",
+      "sha256": "ca8d362ce7700daa3d98d2bd495f6ab86a4c42bcd9d02f55e133c07ecc04d16f",
       "binary": false
     },
     {
       "path": "marketing/src/styles/blend.css",
       "area": "astro-marketing",
       "domain": "astro-marketing",
-      "bytes": 28260,
-      "lines": 379,
-      "sha256": "9cd749c7bfaecca74abcecadb28c4ed7bf28d3999451bd6bc10ad8d1631be9b6",
+      "bytes": 31004,
+      "lines": 418,
+      "sha256": "0518182b0283c4eb9cb1972cdc99085625cf74328b7883fc7c840d18fcd71e3c",
       "binary": false
     },
     {
