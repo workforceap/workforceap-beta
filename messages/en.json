@@ -3555,10 +3555,6 @@
           "title": "AI Career Tools",
           "body": "Resume help, cover letters, interview practice and a voice career advisor in one studio. Start with the resume so your applications go out ready."
         },
-        "learning": {
-          "title": "Learning",
-          "body": "Access your courses, training materials, and skill-building resources."
-        },
         "messages": {
           "title": "Messages",
           "body": "Your counselor and the WorkforceAP team write to you here. Unread threads show a badge; reply from the same page."
@@ -3591,14 +3587,6 @@
           "title": "Your hiring dashboard",
           "body": "Active roles, candidates in review and open offers at a glance. Work queue in the menu lists today's actions: candidates to review, interviews to schedule and postings going stale."
         },
-        "workQueue": {
-          "title": "Work queue",
-          "body": "Daily action items — candidates to review, interviews to schedule, stale postings."
-        },
-        "jobs": {
-          "title": "Job postings",
-          "body": "Post new roles, import from your job board or LinkedIn, and manage live postings."
-        },
         "applicants": {
           "title": "Review candidates",
           "body": "Everyone who applied, with program, status and match score. Open a candidate to see training progress and their profile, then move them forward or pass."
@@ -3606,10 +3594,6 @@
         "pipeline": {
           "title": "Track your pipeline",
           "body": "Reviewed, interviewing, offered, hired: one board for every open role. Match history keeps the AI-suggested members for each posting."
-        },
-        "matches": {
-          "title": "AI matches",
-          "body": "AI-suggested candidates for your open roles based on skills and program fit."
         },
         "messages": {
           "title": "Messages",
@@ -3635,10 +3619,6 @@
     },
     "partner": {
       "home": {
-        "overview": {
-          "title": "Partner dashboard",
-          "body": "Your referred members and their current status — all in one view."
-        },
         "members": {
           "title": "Referred members",
           "body": "Everyone you have referred, with their stage, training progress and last activity. Open a member to see their full journey."
@@ -3646,10 +3626,6 @@
         "attention": {
           "title": "Attention queue",
           "body": "Members who may need a nudge: stalled applications, inactive learners and at-risk flags, each with the reason and a next step."
-        },
-        "outcomes": {
-          "title": "Outcomes",
-          "body": "Track placements and employment outcomes for your referrals."
         },
         "messages": {
           "title": "Messages",

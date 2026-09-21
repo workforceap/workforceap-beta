@@ -13,6 +13,7 @@
  * user identifier. Everything is length-capped so a hostile report cannot
  * bloat the log stream.
  */
+import { isIPv6 } from 'node:net';
 
 export const CSP_REPORT_MAX_BYTES = 16 * 1024;
 export const CSP_REPORT_MAX_VIOLATIONS_PER_BATCH = 20;
@@ -111,19 +112,26 @@ function capPath(value: string): string {
 
 /**
  * RFC 1123 hostname (labels of letters, digits and hyphens, not starting or
- * ending with a hyphen, dot-separated, optional trailing dot), an IPv4
- * literal, or a bracketed IPv6 literal (`[::1]`) — each with an optional
- * `:port`. Exactly the shape `URL#host` yields for a real network origin.
+ * ending with a hyphen, dot-separated, optional trailing dot) or an IPv4
+ * literal, with an optional `:port`. Exactly the shape `URL#host` yields for
+ * a real network origin. Bracketed IPv6 literals take the second pattern.
  */
 const HOSTNAME_LABEL = '[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?';
-const HOST_PATTERN = new RegExp(
-  `^(?:${HOSTNAME_LABEL}(?:\\.${HOSTNAME_LABEL})*\\.?|\\[[0-9a-f:.]+\\])(?::\\d{1,5})?$`,
-  'i',
-);
+const HOST_PATTERN = new RegExp(`^${HOSTNAME_LABEL}(?:\\.${HOSTNAME_LABEL})*\\.?(?::\\d{1,5})?$`, 'i');
+/**
+ * `[<address>]` with an optional `:port`. The bracket shape alone would accept
+ * any hex/colon soup (`[abc]`, `[:::]`, nine groups), so the captured address
+ * is handed to `net.isIPv6`, which checks the real structure (group count,
+ * one `::` at most, embedded IPv4 tail). WHATWG URL never yields a zone id.
+ */
+const IPV6_LITERAL_PATTERN = /^\[([0-9a-f:.]+)\](?::\d{1,5})?$/i;
 
 /** True when `host` is a well-formed hostname / IP literal (with optional port) of at most 253 characters. */
 export function isValidBlockedHost(host: string): boolean {
-  return host.length > 0 && host.length <= CSP_REPORT_MAX_HOST_LENGTH && HOST_PATTERN.test(host);
+  if (host.length === 0 || host.length > CSP_REPORT_MAX_HOST_LENGTH) return false;
+  const ipv6 = IPV6_LITERAL_PATTERN.exec(host);
+  if (ipv6) return isIPv6(ipv6[1]);
+  return HOST_PATTERN.test(host);
 }
 
 function asString(value: unknown): string | null {

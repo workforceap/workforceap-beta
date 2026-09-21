@@ -18,8 +18,12 @@ import {
 
 type Messages = Record<string, unknown>;
 
-/** Reviewed locales (lib/i18n/config.ts REVIEWED_LOCALES); fr/pt fall back to en at runtime. */
-const REVIEWED_LOCALES = ['en', 'es'] as const;
+/**
+ * Every locale file carrying a `tours` namespace. en/es are the reviewed
+ * locales (lib/i18n/config.ts REVIEWED_LOCALES); fr/pt fall back to en at
+ * runtime but ship full tour copy, so their keys are held to the same parity.
+ */
+const TOUR_LOCALES = ['en', 'es', 'fr', 'pt'] as const;
 
 function loadTours(locale: string): Messages {
   const raw = readFileSync(path.join(process.cwd(), 'messages', `${locale}.json`), 'utf8');
@@ -62,7 +66,7 @@ test('registry keys are unique, well-formed and self-describing', () => {
   }
 });
 
-for (const locale of REVIEWED_LOCALES) {
+for (const locale of TOUR_LOCALES) {
   test(`${locale}.json: every registry step and chrome key resolves to a non-empty string`, () => {
     const tours = loadTours(locale);
     for (const chrome of CHROME_KEYS) {
@@ -83,7 +87,7 @@ for (const locale of REVIEWED_LOCALES) {
 }
 
 test('interpolated chrome strings keep their placeholders in every reviewed locale', () => {
-  for (const locale of REVIEWED_LOCALES) {
+  for (const locale of TOUR_LOCALES) {
     const tours = loadTours(locale);
     const stepOf = resolve(tours, 'chrome.stepOf') as string;
     const announce = resolve(tours, 'chrome.announceStep') as string;
@@ -156,7 +160,7 @@ test('counselor.home (wave 2) is written for Today and walks the path a new coun
   assert.equal(getHomeTourForRole('__proto__'), null);
 });
 
-for (const locale of REVIEWED_LOCALES) {
+for (const locale of TOUR_LOCALES) {
   test(`${locale}.json: Help menu, offer strip and counselor offer copy resolve`, () => {
     const tours = loadTours(locale);
     for (const key of ['help.label', 'help.takeTour', 'help.guide', 'offer.take', 'offer.dismiss', 'counselor.home.offer.title', 'counselor.home.offer.body']) {
@@ -223,7 +227,7 @@ test('every persona home tour ends on the Help anchor that reopens it', () => {
   }
 });
 
-for (const locale of REVIEWED_LOCALES) {
+for (const locale of TOUR_LOCALES) {
   test(`${locale}.json: member offer and step copy resolves`, () => {
     const tours = loadTours(locale);
     const keys = ['member.home.offer.title', 'member.home.offer.body'];
@@ -236,7 +240,7 @@ for (const locale of REVIEWED_LOCALES) {
   });
 }
 
-for (const locale of REVIEWED_LOCALES) {
+for (const locale of TOUR_LOCALES) {
   test(`${locale}.json: employer and partner offer copy resolves`, () => {
     const tours = loadTours(locale);
     for (const key of ['employer.home.offer.title', 'employer.home.offer.body', 'partner.home.offer.title', 'partner.home.offer.body']) {
@@ -293,7 +297,7 @@ test('admin.home (wave 4) is written for the /admin Command Center and walks com
   assert.equal(getTour('admin.home'), tour);
 });
 
-for (const locale of REVIEWED_LOCALES) {
+for (const locale of TOUR_LOCALES) {
   test(`${locale}.json: admin offer and step copy resolves`, () => {
     const tours = loadTours(locale);
     const keys = ['admin.home.offer.title', 'admin.home.offer.body'];

@@ -3474,5 +3474,234 @@
       "legacy": "Explication enregistrée (langue d’origine) : {text}",
       "unavailable": "Aucune explication n’a été enregistrée avec cette évaluation."
     }
+  },
+  "tours": {
+    "chrome": {
+      "close": "Fermer la visite",
+      "stepOf": "Étape {current} sur {total}",
+      "back": "Retour",
+      "skip": "Passer la visite",
+      "next": "Suivant",
+      "done": "Terminé",
+      "announceStep": "Étape {current} sur {total} de la visite : {title}"
+    },
+    "member": {
+      "home": {
+        "dashboard": {
+          "title": "Votre point de départ",
+          "body": "Votre vue d'ensemble : parcours de certification, candidatures en cours, activité d'étude hebdomadaire et points. À faire maintenant, en haut, est l'action qui vous fait avancer aujourd'hui ; Mon programme, dans le menu, contient la liste complète de vos cours."
+        },
+        "aiTools": {
+          "title": "AI Career Tools",
+          "body": "Aide au CV, lettres de motivation, entraînement aux entretiens et conseiller de carrière vocal dans un seul studio. Commencez par le CV pour que vos candidatures partent prêtes."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Votre conseiller et l'équipe WorkforceAP vous écrivent ici. Les fils non lus affichent un badge ; répondez depuis la même page."
+        },
+        "profile": {
+          "title": "Profil et paramètres",
+          "body": "Votre nom ouvre Profil et paramètres : coordonnées, photo, notifications et langue. Gardez-les à jour pour que votre conseiller et les employeurs puissent vous joindre."
+        },
+        "program": {
+          "title": "Progression de la formation",
+          "body": "Mon programme est votre liste de cours et votre progression : modules terminés, prochaine étape, Coursera et vos certificats. Enregistrez ici une certification dès que vous réussissez l'examen."
+        },
+        "jobs": {
+          "title": "Trouver un emploi",
+          "body": "Les Offres d'emploi listent les postes correspondant à votre programme et à vos compétences. Postulez en un clic et suivez chaque candidature dans Candidatures ; les entretiens et les offres apparaissent dans le pipeline de votre accueil."
+        },
+        "help": {
+          "title": "Revenez quand vous voulez",
+          "body": "Aide rouvre cette visite à tout moment et renvoie au Guide du membre."
+        },
+        "offer": {
+          "title": "Nouveau ici ? Faites une visite de deux minutes",
+          "body": "Découvrez où se trouve votre progression de formation, comment trouver un emploi et postuler, où sont vos messages et comment mettre votre profil à jour."
+        }
+      }
+    },
+    "employer": {
+      "home": {
+        "overview": {
+          "title": "Votre tableau de bord de recrutement",
+          "body": "Postes actifs, candidats en cours d'examen et offres ouvertes en un coup d'œil. File de travail, dans le menu, liste les actions du jour : candidats à examiner, entretiens à planifier et annonces qui s'essoufflent."
+        },
+        "applicants": {
+          "title": "Examiner les candidats",
+          "body": "Toutes les personnes qui ont postulé, avec programme, statut et score de correspondance. Ouvrez un candidat pour voir sa progression de formation et son profil, puis faites-le avancer ou passez."
+        },
+        "pipeline": {
+          "title": "Suivre votre pipeline",
+          "body": "Examinés, en entretien, offre envoyée, embauchés : un seul tableau pour chaque poste ouvert. L'historique des correspondances conserve les membres suggérés par l'IA pour chaque annonce."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Échangez avec l'équipe WorkforceAP au sujet d'une annonce, d'un candidat ou d'un entretien. Les fils non lus affichent un badge ici."
+        },
+        "postJob": {
+          "title": "Publier une offre",
+          "body": "Environ deux minutes : titre, rémunération, horaires et compétences recherchées. Importations récupère des postes depuis votre site d'offres ou LinkedIn. Les membres qualifiés du programme sont automatiquement mis en correspondance avec chaque poste actif."
+        },
+        "offer": {
+          "title": "Nouveau ici ? Faites une visite de deux minutes",
+          "body": "Découvrez où publier une offre, examiner les candidats, suivre votre pipeline, écrire à l'équipe et gérer le profil de votre entreprise."
+        },
+        "settings": {
+          "title": "Paramètres de l'entreprise",
+          "body": "Le profil, le logo et les coordonnées de votre entreprise. Les candidats voient sur chaque annonce les informations que vous définissez ici."
+        },
+        "help": {
+          "title": "Revenez quand vous voulez",
+          "body": "Aide rouvre cette visite à tout moment et renvoie à Comment ça marche, le guide de l'employeur."
+        }
+      }
+    },
+    "partner": {
+      "home": {
+        "members": {
+          "title": "Membres orientés",
+          "body": "Toutes les personnes que vous avez orientées, avec leur étape, leur progression de formation et leur dernière activité. Ouvrez un membre pour voir l'ensemble de son parcours."
+        },
+        "attention": {
+          "title": "File d'attention",
+          "body": "Les membres qui pourraient avoir besoin d'un coup de pouce : candidatures au point mort, apprenants inactifs et signalements à risque, chacun avec la raison et une prochaine étape."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Contactez l'équipe WorkforceAP au sujet d'une orientation, d'un jalon ou du soutien aux partenaires. Les fils non lus affichent un badge ici."
+        },
+        "referralLink": {
+          "title": "Votre lien de parrainage",
+          "body": "Partagez ce lien ou ce code avec les personnes que vous accompagnez. Toute personne qui postule par ce biais est rattachée à votre organisation, de la candidature au placement."
+        },
+        "offer": {
+          "title": "Nouveau ici ? Faites une visite de deux minutes",
+          "body": "Découvrez où se trouve votre lien de parrainage, comment suivre les membres orientés, où sont les versements et les exports et comment joindre l'équipe."
+        },
+        "payouts": {
+          "title": "Versements",
+          "body": "Les partenaires de parrainage reçoivent un versement pour chaque placement vérifié. Connectez un compte bancaire ici une seule fois ; les versements sont envoyés dès qu'un placement est vérifié."
+        },
+        "exports": {
+          "title": "Exports",
+          "body": "Téléchargez vos membres orientés, jalons et résultats en CSV pour vos rapports de subvention et vos points au conseil. Aperçu des résultats affiche les mêmes chiffres à l'écran."
+        },
+        "help": {
+          "title": "Revenez quand vous voulez",
+          "body": "Aide rouvre cette visite à tout moment et renvoie au Guide du parrainage."
+        }
+      }
+    },
+    "help": {
+      "label": "Aide",
+      "takeTour": "Faire la visite",
+      "guide": "Guide du portail",
+      "askAssistant": "Demander de l'aide"
+    },
+    "offer": {
+      "take": "Faire la visite",
+      "dismiss": "Pas maintenant"
+    },
+    "counselor": {
+      "home": {
+        "offer": {
+          "title": "Nouveau ici ? Faites une visite de deux minutes",
+          "body": "Découvrez ce qui demande votre attention aujourd'hui, comment ouvrir un membre, comment lui écrire et où se trouvent les notes."
+        },
+        "attention": {
+          "title": "Ce qui demande votre attention aujourd'hui",
+          "body": "Trois chiffres, une règle chacun : les membres signalés urgents ou à surveiller, les réponses que vous devez après 24 heures et toutes les personnes en bonne voie. Aujourd'hui ne liste que les personnes qui ont besoin de vous."
+        },
+        "queue": {
+          "title": "Une seule liste, chaque membre une fois",
+          "body": "Les membres sont regroupés selon le type de contact dont ils ont besoin — à risque, réponse due, silence, suivis, nouveaux, à féliciter — et chaque ligne en donne la raison. Les lignes urgentes s'affichent en premier."
+        },
+        "openMember": {
+          "title": "Ouvrir un membre",
+          "body": "Utilisez Voir le membre sur n'importe quelle ligne, ou Tous les membres pour la liste complète. Les cartes de statistiques de la liste expliquent pourquoi un membre a besoin d'attention et chacune renvoie à la page où agir."
+        },
+        "memberRecord": {
+          "title": "La fiche du membre",
+          "body": "Chaque membre s'ouvre sur quatre onglets : Profil, Formation, Notes et Messages. Les notes se trouvent dans l'onglet Notes — notes du conseiller et notes de séance — et l'action Message est en haut de la page."
+        },
+        "atRisk": {
+          "title": "Membres à risque",
+          "body": "Le modèle de risque classe votre portefeuille selon l'inactivité, la formation au point mort et les messages sans réponse. Commencez ici les jours chargés."
+        },
+        "messages": {
+          "title": "Écrire à un membre",
+          "body": "Messages regroupe toutes les conversations avec vos membres. Ouvrir le fil sur une ligne d'Aujourd'hui vous mène directement à la personne qui attend."
+        },
+        "help": {
+          "title": "Revenez quand vous voulez",
+          "body": "Aide rouvre cette visite à tout moment et renvoie au guide du portail."
+        }
+      }
+    },
+    "assistant": {
+      "title": "Demander de l'aide",
+      "intro": "Demandez comment utiliser ce portail : où se trouve une page, à quoi elle sert ou les étapes pour accomplir une tâche. Je ne réponds qu'au sujet de votre propre portail et je ne vois jamais vos données.",
+      "placeholder": "Demandez comment faire quelque chose ici…",
+      "send": "Envoyer",
+      "thinking": "Je cherche…",
+      "error": "Un problème est survenu. Réessayez dans un instant.",
+      "tooMany": "Vous avez posé beaucoup de questions en peu de temps. Veuillez réessayer dans quelques instants.",
+      "links": "Pages associées",
+      "close": "Fermer l'aide",
+      "disclaimer": "Conseils sur le portail uniquement. Rien de ce que vous écrivez ici ne modifie votre compte.",
+      "scope": {
+        "member": "Comment utiliser votre portail membre",
+        "counselor": "Comment utiliser le portail conseiller",
+        "employer": "Comment utiliser le portail employeur",
+        "partner": "Comment utiliser le portail partenaire",
+        "admin": "Comment utiliser l'espace d'administration"
+      },
+      "starters": {
+        "whereAmI": "À quoi sert cette page ?",
+        "howToMessage": "Comment envoyer un message ?",
+        "whatCanIDo": "Que puis-je faire dans ce portail ?"
+      }
+    },
+    "admin": {
+      "home": {
+        "offer": {
+          "title": "Nouveau ici ? Faites une visite de deux minutes",
+          "body": "Découvrez qui a besoin de vous aujourd'hui, où se trouvent vos étudiants et vos programmes, comment la progression de la formation est suivie et où les messages des membres attendent une réponse."
+        },
+        "commandCenter": {
+          "title": "Centre de commandement",
+          "body": "Votre point de départ. Étudiants actifs, placements de l'année et qui a besoin d'attention en haut, puis Ce qui vous attend aujourd'hui : réponses dues, candidatures et certifications à examiner, préparation d'entretiens. Chaque ligne renvoie à la page où agir."
+        },
+        "overview": {
+          "title": "Vue détaillée",
+          "body": "Le tableau complet derrière le Centre de commandement : total des membres, évaluations terminées, qui est actif en formation, programmes suivis et terminés, plus les inscriptions et placements récents. Venez ici pour les chiffres, pas seulement pour la file."
+        },
+        "students": {
+          "title": "Étudiants",
+          "body": "Tous les étudiants dans une seule liste : statut, programme et qui a besoin d'attention. Ouvrez un étudiant pour la fiche complète ou exportez la liste. Progression de la formation est la même liste triée par formation."
+        },
+        "messages": {
+          "title": "Messages",
+          "body": "Toutes les conversations que les membres, employeurs et partenaires ont avec le personnel. Le badge compte les messages encore en attente de réponse, pour que quelqu'un s'en occupe aujourd'hui."
+        },
+        "programs": {
+          "title": "Programmes",
+          "body": "Les programmes de formation que vous proposez, une carte par programme avec les apprenants inscrits et le taux d'achèvement. Demandes de programme, les étudiants qui souhaitent changer, se trouve juste en dessous."
+        },
+        "trainingProgress": {
+          "title": "Progression de la formation",
+          "body": "La progression cours par cours de chaque étudiant inscrit, triable, sur l'ensemble du cursus et de Coursera. Évaluations et Certificats sont dans le même groupe."
+        },
+        "settings": {
+          "title": "Paramètres",
+          "body": "Les paramètres de l'organisation se trouvent en bas du menu, sous Avancé, avec Utilisateurs, Exports et Indicateurs de fonctionnalités. La plupart des jours, vous n'aurez pas besoin de ce groupe."
+        },
+        "help": {
+          "title": "Revenez quand vous voulez",
+          "body": "Aide rouvre cette visite à tout moment."
+        }
+      }
+    }
   }
 }

@@ -96,3 +96,33 @@ test('extractCspViolations applies the allowlists end to end', () => {
   assert.deepEqual(row, { blockedHost: 'invalid', directive: 'other', documentPath: '/members/:id/profile', disposition: 'report' });
   assert.equal(CSP_VIOLATION_MAX_BUCKETS_PER_HOUR, 2000);
 });
+
+test('isValidBlockedHost checks bracketed IPv6 literals structurally, not just their alphabet', () => {
+  assert.ok(isValidBlockedHost('[::1]'));
+  assert.ok(isValidBlockedHost('[::1]:3134'));
+  assert.ok(isValidBlockedHost('[2001:db8::1]:443'));
+  assert.ok(isValidBlockedHost('[2001:0db8:85a3:0000:0000:8a2e:0370:7334]'));
+  assert.ok(isValidBlockedHost('[::ffff:192.0.2.128]'));
+  // Same alphabet, not an address: the old `\[[0-9a-f:.]+\]` accepted every one of these.
+  assert.equal(isValidBlockedHost('[abc]'), false);
+  assert.equal(isValidBlockedHost('[:::]'), false);
+  assert.equal(isValidBlockedHost('[1:2:3:4:5:6:7:8:9]'), false);
+  assert.equal(isValidBlockedHost('[dead:beef]'), false);
+  assert.equal(isValidBlockedHost('[1.2.3.4]'), false);
+  assert.equal(isValidBlockedHost('[::1::2]'), false);
+  assert.equal(isValidBlockedHost('[]'), false);
+  assert.equal(isValidBlockedHost('[::1'), false);
+  assert.equal(isValidBlockedHost('[::1]:'), false);
+  assert.equal(isValidBlockedHost('[::1]:999999'), false);
+  // Zone ids and other characters never pass the bracket shape, whatever net.isIPv6 would say.
+  assert.equal(isValidBlockedHost('[fe80::1%25eth0]'), false);
+  assert.equal(isValidBlockedHost('[::1]extra'), false);
+});
+
+test('summarizeBlockedUri stores malformed bracketed hosts as invalid, real IPv6 origins as their host', () => {
+  assert.equal(summarizeBlockedUri('https://[2001:db8::2]:8443/asset.js?token=abc'), '[2001:db8::2]:8443');
+  assert.equal(summarizeBlockedUri('http://[::1]/x'), '[::1]');
+  // WHATWG URL rejects these outright; either way nothing attacker-shaped reaches the host column.
+  assert.equal(summarizeBlockedUri('https://[abc]/x'), 'invalid');
+  assert.equal(summarizeBlockedUri('https://[1:2:3:4:5:6:7:8:9]/x'), 'invalid');
+});
