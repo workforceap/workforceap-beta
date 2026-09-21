@@ -211,7 +211,7 @@
 | [app/(portal)/dashboard/messages/page.tsx](../../../app/%28portal%29/dashboard/messages/page.tsx) | 221 | communications | generateMetadata:21, default:30 |
 | [app/(portal)/dashboard/missions/page.tsx](../../../app/%28portal%29/dashboard/missions/page.tsx) | 79 | member-counselor | generateMetadata:14, default:23 |
 | [app/(portal)/dashboard/not-found.tsx](../../../app/%28portal%29/dashboard/not-found.tsx) | 20 | member-counselor | default:3 |
-| [app/(portal)/dashboard/page.tsx](../../../app/%28portal%29/dashboard/page.tsx) | 1210 | member-counselor | maxDuration:99, generateMetadata:101, default:110 |
+| [app/(portal)/dashboard/page.tsx](../../../app/%28portal%29/dashboard/page.tsx) | 1223 | member-counselor | maxDuration:100, generateMetadata:102, default:111 |
 | [app/(portal)/dashboard/placementAction.ts](../../../app/%28portal%29/dashboard/placementAction.ts) | 76 | member-counselor | confirmPlacement:11 |
 | [app/(portal)/dashboard/points/ReferralShareCard.module.css](../../../app/%28portal%29/dashboard/points/ReferralShareCard.module.css) | 31 | applications-enrollment |  |
 | [app/(portal)/dashboard/points/ReferralShareCard.tsx](../../../app/%28portal%29/dashboard/points/ReferralShareCard.tsx) | 114 | applications-enrollment | default:14 |
@@ -573,7 +573,7 @@
 | [app/dev/member/cover-letter/page.tsx](../../../app/dev/member/cover-letter/page.tsx) | 46 | member-counselor | dynamic:10, default:29 |
 | [app/dev/member/elevator-pitch/page.tsx](../../../app/dev/member/elevator-pitch/page.tsx) | 42 | member-counselor | dynamic:11, default:24 |
 | [app/dev/member/gap-analyzer/page.tsx](../../../app/dev/member/gap-analyzer/page.tsx) | 41 | member-counselor | dynamic:10, default:24 |
-| [app/dev/member/home/page.tsx](../../../app/dev/member/home/page.tsx) | 110 | member-counselor | dynamic:9, default:11 |
+| [app/dev/member/home/page.tsx](../../../app/dev/member/home/page.tsx) | 157 | member-counselor | dynamic:18, default:42 |
 | [app/dev/member/interview-coach/page.tsx](../../../app/dev/member/interview-coach/page.tsx) | 37 | member-counselor | dynamic:11, default:18 |
 | [app/dev/member/interview-practice/page.tsx](../../../app/dev/member/interview-practice/page.tsx) | 58 | member-counselor | dynamic:10, default:40 |
 | [app/dev/member/interview-prep/page.tsx](../../../app/dev/member/interview-prep/page.tsx) | 52 | ai-voice | dynamic:10, default:36 |
