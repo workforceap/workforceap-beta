@@ -117,11 +117,11 @@ describe('employer mobile applications status pill', () => {
   it('is the kit StatusTag with the §4 tones: rejected → danger, hired → ok, pending → alert, interview → info', () => {
     render(<MobileApplicationsClient initialRows={[row('r', 'rejected'), row('h', 'hired'), row('p', 'pending'), row('i', 'interview'), row('v', 'reviewing')]} />);
     const tagFor = (label: string) => screen.getByText(label, { selector: '.wa-kit-tag' });
-    expect(tagFor('Declined')).toHaveClass('wa-kit-tag--danger');
+    expect(tagFor('Not selected')).toHaveClass('wa-kit-tag--danger');
     expect(tagFor('Hired')).toHaveClass('wa-kit-tag--ok');
     expect(tagFor('New')).toHaveClass('wa-kit-tag--alert');
-    expect(tagFor('Interview')).toHaveClass('wa-kit-tag--info');
-    expect(tagFor('Under Review')).toHaveClass('wa-kit-tag--warn');
+    expect(tagFor('Interviewing')).toHaveClass('wa-kit-tag--info');
+    expect(tagFor('Reviewing')).toHaveClass('wa-kit-tag--warn');
     for (const tag of document.querySelectorAll<HTMLElement>('.wa-kit-tag')) {
       expect(tag.style.background).toBe('');
       expect(tag.style.color).toBe('');

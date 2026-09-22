@@ -42,10 +42,8 @@ import WioaScreeningReadonly from '@/components/admin/WioaScreeningReadonly';
 import AssessmentAnswersReadonly from '@/components/admin/AssessmentAnswersReadonly';
 import { buildAssessmentReviewRows } from '@/lib/assessment/reviewRows';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
-import {
-  employerJobPostingApplicationStatusBadgeVariant,
-  employerJobPostingApplicationStatusLabel,
-} from '@/lib/employer/jobPostingApplicationStatus';
+import { employerJobPostingApplicationStatusBadgeVariant } from '@/lib/employer/jobPostingApplicationStatus';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import {
   employerAiMatchStatusBadgeVariant,
   employerMatchPipelineLabel,
@@ -671,8 +669,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                             <p className={styles.rowTitle}>{app.job.title}</p>
                             <p className={styles.rowMeta}>{app.job.employer.companyName}</p>
                           </div>
+                          {/* A counselor reads the member's journey, not the employer's queue. */}
                           <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(app.status))}>
-                            {employerJobPostingApplicationStatusLabel(app.status)}
+                            {jobApplicationStatusLabel(app.status, 'member')}
                           </StatusTag>
                         </li>
                       ))}

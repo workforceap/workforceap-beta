@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
 
 import EmployerOutcomesDashboard from '@/components/employer/EmployerOutcomesDashboard';
-import { statusLabel } from '@/lib/employer/statusLabel';
 
 const payload = {
   employer: { companyName: 'Fixture Co', hiringPipelineActive: true },
@@ -31,13 +30,5 @@ describe('EmployerOutcomesDashboard job status labels', () => {
     expect(screen.getByText('Filled')).toBeInTheDocument();
     expect(screen.queryByText('live')).toBeNull();
     expect(screen.queryByText('filled')).toBeNull();
-  });
-});
-
-describe('statusLabel', () => {
-  it('title-cases snake_case and kebab-case tokens', () => {
-    expect(statusLabel('live')).toBe('Live');
-    expect(statusLabel('under_review')).toBe('Under Review');
-    expect(statusLabel('on-hold')).toBe('On Hold');
   });
 });

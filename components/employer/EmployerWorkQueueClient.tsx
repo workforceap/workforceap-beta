@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Briefcase, UserRound, TriangleAlert, Clock, CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { statusLabel } from '@/lib/employer/statusLabel';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import { employerJobStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { QueueRow, WorkQueueItem, StatusTag, type QueueTone, type KitTone } from '@/components/portal/kit';
 
@@ -276,7 +276,7 @@ export default function EmployerWorkQueueClient({
                       className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap"
                       style={{ minWidth: 0, flexShrink: 1, justifyContent: 'flex-end' }}
                     >
-                      <StatusTag tone={SECTION_STATUS_TONE[sec.id]}>{statusLabel(a.status)}</StatusTag>
+                      <StatusTag tone={SECTION_STATUS_TONE[sec.id]}>{jobApplicationStatusLabel(a.status, 'employer')}</StatusTag>
                       {pillLink({ label: 'Table view', href: '/employer/applications', variant: 'outline' })}
                       {sec.id === 'review' && a.status === 'pending'
                         ? pillButton({

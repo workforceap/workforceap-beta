@@ -3,8 +3,8 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { statusLabel } from '@/lib/employer/statusLabel';
 import { employerJobStatusLabel } from '@/lib/employer/jobStatusDisplay';
+import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import DataTable from '@/components/portal/ui/DataTable';
@@ -151,10 +151,10 @@ export default function EmployerOutcomesDashboard() {
         <h2 className="wa-text-lg wa-font-bold wa-text-slate-900 wa-mb-4">Application Funnel</h2>
         <div className="wa-grid wa-gap-4 md:wa-grid-cols-5">
           {[
-            { label: 'New', value: metrics.newApplications, color: 'wa-bg-slate-100 wa-text-slate-700' },
+            { label: jobApplicationStatusLabel('pending', 'employer'), value: metrics.newApplications, color: 'wa-bg-slate-100 wa-text-slate-700' },
             { label: 'Reviewed', value: metrics.reviewedApplications, color: 'wa-bg-blue-100 wa-text-blue-700' },
-            { label: 'Hired', value: metrics.hiredApplications, color: 'wa-bg-emerald-100 wa-text-emerald-700' },
-            { label: 'Rejected', value: metrics.rejectedApplications, color: 'wa-bg-red-100 wa-text-red-700' },
+            { label: jobApplicationStatusLabel('hired', 'employer'), value: metrics.hiredApplications, color: 'wa-bg-emerald-100 wa-text-emerald-700' },
+            { label: jobApplicationStatusLabel('rejected', 'employer'), value: metrics.rejectedApplications, color: 'wa-bg-red-100 wa-text-red-700' },
           ].map((stage) => (
             <div key={stage.label} className={`wa-rounded-lg wa-p-4 wa-text-center ${stage.color}`}>
               <div className="wa-text-2xl wa-font-bold">{stage.value}</div>

@@ -4,15 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
+import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 
-const STATUS_OPTIONS = [
-  { value: 'pending', label: 'Pending' },
-  { value: 'reviewing', label: 'Reviewing' },
-  { value: 'interview', label: 'Interview' },
-  { value: 'offered', label: 'Offered' },
-  { value: 'hired', label: 'Hired' },
-  { value: 'rejected', label: 'Rejected' },
-] as const;
+const STATUS_OPTIONS = JOB_APPLICATION_STATUS_KEYS.map((value) => ({
+  value,
+  label: jobApplicationStatusLabel(value, 'employer'),
+}));
 
 export default function ApplicationStatusUpdater({
   applicationId,
