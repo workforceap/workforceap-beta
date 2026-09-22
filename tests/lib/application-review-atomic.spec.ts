@@ -279,6 +279,23 @@ describe('training approval when an application closes', () => {
     expect(vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked')).toHaveLength(0);
   });
 
+  it('does not re-clear or re-audit when only the notes change on an already denied application', async () => {
+    // The `statusChanged &&` conjunct. Without it, an admin fixing the wording
+    // of an old denial silently re-clears the flag and writes a second
+    // revocation — undoing an admin who had deliberately re-granted this
+    // member Coursera access after the denial.
+    fixture.state.application.status = 'DENIED';
+    fixture.state.member.courseraEnrollmentApproved = true;
+
+    const result = await changeApplicationStatus({ ...args, status: 'DENIED' as const, notes: 'Corrected wording of the reason.' });
+
+    expect(result.ok).toBe(true);
+    expect(fixture.state.application.notes).toBe('Corrected wording of the reason.');
+    expect(fixture.tx.user.updateMany).not.toHaveBeenCalled();
+    expect(fixture.state.member.courseraEnrollmentApproved).toBe(true);
+    expect(vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked')).toHaveLength(0);
+  });
+
   it('rolls the cleared flag back with the decision when the evidence write fails', async () => {
     fixture.state.snapshotFails = true;
 
