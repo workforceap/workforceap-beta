@@ -95,8 +95,13 @@ jobs:
 
       # Vitest is release-blocking. Playwright e2e and node:test files are
       # excluded by vitest.config.ts and run in their own lanes.
+      # Wall-clock guard: measured 2026-09-22 over the last 20 green runs the
+      # step took median 442 s / max 477 s on the hosted 4-vCPU runner, and
+      # PR #2498 was killed by `timeout 480` at exactly 480 s (exit 124) with
+      # no failing test. 570 s keeps ~90 s of headroom over the slow-runner
+      # cluster while staying inside the 10-minute step ceiling below.
       - name: Vitest
-        run: timeout 480 pnpm run test:vitest
+        run: timeout 570 pnpm run test:vitest
         timeout-minutes: 10
 
       # Dead-code detection — required gate (WAP-37). `knip.json` tunes the
