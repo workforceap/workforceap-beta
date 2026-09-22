@@ -36,7 +36,7 @@
 | [scripts/check-migration-history.test.cjs](../../../scripts/check-migration-history.test.cjs) | 101 | operations |  |
 | [scripts/check-public-surface-icons.mjs](../../../scripts/check-public-surface-icons.mjs) | 157 | operations | ROOT:29, ENTRY_POINTS:32, ALLOWED:55, isCommentLine:65, findLigatureRenders:74, collectModules:92, check:123 |
 | [scripts/check-public-surface-icons.test.cjs](../../../scripts/check-public-surface-icons.test.cjs) | 101 | operations |  |
-| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 133 | operations |  |
+| [scripts/check-supabase-env.mjs](../../../scripts/check-supabase-env.mjs) | 134 | operations |  |
 | [scripts/clawpatch-pre-push.sh](../../../scripts/clawpatch-pre-push.sh) | 50 | operations |  |
 | [scripts/cleanup-fixtures.ts](../../../scripts/cleanup-fixtures.ts) | 46 | operations |  |
 | [scripts/coursera-integration-test.ts](../../../scripts/coursera-integration-test.ts) | 605 | learning-coursera |  |
