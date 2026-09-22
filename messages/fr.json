@@ -3353,22 +3353,6 @@
         "unknown": "Aucune approbation de formation n’est encore enregistrée. Le personnel met cette étape à jour une fois la décision prise."
       }
     },
-    "applicationStatus": {
-      "not_submitted": "Aucune candidature enregistrée",
-      "pending": "En attente d’examen",
-      "needs_info": "Informations supplémentaires demandées",
-      "approved": "Candidature approuvée",
-      "denied": "Candidature close",
-      "unknown": "État non enregistré"
-    },
-    "intakeStatus": {
-      "pending": "Examen en attente",
-      "in_review": "En cours d’examen",
-      "verified": "Dossier d’admission vérifié par le personnel",
-      "not_eligible": "Le personnel a enregistré une non-admissibilité",
-      "needs_info": "Informations supplémentaires demandées",
-      "unknown": "État non enregistré"
-    },
     "trainingStatus": {
       "approved": "Formation approuvée",
       "pending": "Pas encore approuvée",

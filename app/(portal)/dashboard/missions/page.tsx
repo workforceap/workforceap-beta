@@ -8,7 +8,7 @@ import { DesignSurface, KitEmptyState, PageOpener } from '@/components/portal/ki
 import SkillMissionPanel from '@/components/portal/SkillMissionPanel';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
 import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
-import { skillMissionEmptyState } from '@/lib/member/skillMissionEmptyState';
+import { skillMissionEmptyState, type SkillMissionEmptyState } from '@/lib/member/skillMissionEmptyState';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -18,6 +18,25 @@ export async function generateMetadata(): Promise<Metadata> {
       'Prove what you learned. Complete a mission after each course to earn resume bullets and interview-ready STAR stories.',
     path: '/dashboard/missions',
   });
+}
+
+/**
+ * No summary: `first` (no program — choose one) or `unavailable` (enrolled,
+ * no catalog missions yet). Titled at h2 directly under the opener (WAP-123).
+ */
+function MissionsEmpty({ empty }: { empty: SkillMissionEmptyState }) {
+  return (
+    <div className="wa-kit-card">
+      <KitEmptyState
+        kind={empty.kind}
+        tone={empty.tone}
+        headingAs="h2"
+        title={empty.title}
+        description={empty.description}
+        primaryAction={{ href: empty.primaryAction.href, label: empty.primaryAction.label }}
+      />
+    </div>
+  );
 }
 
 export default async function SkillMissionsPage() {
@@ -54,10 +73,6 @@ export default async function SkillMissionsPage() {
     curriculumVersion,
     completedCourseSlugs,
   });
-  // No summary: `first` (no program — choose one) or `unavailable` (enrolled,
-  // no catalog missions yet). Titled at h2 directly under the opener (WAP-123).
-  const empty = summary ? null : skillMissionEmptyState({ programSlug, programTitle: activeProgram.programTitle });
-
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
@@ -71,16 +86,7 @@ export default async function SkillMissionsPage() {
         {summary ? (
           <SkillMissionPanel summary={summary} hideTitle />
         ) : (
-          <div className="wa-kit-card">
-            <KitEmptyState
-              kind={empty!.kind}
-              tone={empty!.tone}
-              headingAs="h2"
-              title={empty!.title}
-              description={empty!.description}
-              primaryAction={{ href: empty!.primaryAction.href, label: empty!.primaryAction.label }}
-            />
-          </div>
+          <MissionsEmpty empty={skillMissionEmptyState({ programSlug, programTitle: activeProgram.programTitle })} />
         )}
       </div>
     </DesignSurface>

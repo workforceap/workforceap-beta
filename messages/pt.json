@@ -3353,22 +3353,6 @@
         "unknown": "Ainda não há aprovação de treinamento registrada. A equipe atualiza esta etapa quando a decisão é tomada."
       }
     },
-    "applicationStatus": {
-      "not_submitted": "Nenhuma inscrição registrada",
-      "pending": "Análise pendente",
-      "needs_info": "Mais informações solicitadas",
-      "approved": "Inscrição aprovada",
-      "denied": "Inscrição encerrada",
-      "unknown": "Status não registrado"
-    },
-    "intakeStatus": {
-      "pending": "Análise pendente",
-      "in_review": "Em análise",
-      "verified": "Admissão verificada pela equipe",
-      "not_eligible": "A equipe registrou que não atende aos requisitos",
-      "needs_info": "Mais informações solicitadas",
-      "unknown": "Status não registrado"
-    },
     "trainingStatus": {
       "approved": "Capacitação aprovada",
       "pending": "Ainda não aprovada",
