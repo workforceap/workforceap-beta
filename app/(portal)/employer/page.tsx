@@ -14,7 +14,7 @@ import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { EMPLOYER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
-import { employerVoiceSurface } from '@/lib/portal/voice';
+import { employerVoiceSurface, employerVoiceSessionAccent } from '@/lib/portal/voice';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import StatusBadge from '@/components/portal/StatusBadge';
 import PortalCard from '@/components/portal/ui/PortalCard';
@@ -154,8 +154,7 @@ export default async function EmployerDashboardPage({
               sessionEndpoint="/api/employer/voice-session"
               title={kitT('employerVoiceAssistant')}
               description={kitT('askAboutPostingRoles')}
-              accent="var(--color-blue)"
-              accentDark="var(--color-blue)"
+              {...employerVoiceSessionAccent}
               speakingLabel={kitT('assistantIsSpeaking')}
               listeningLabel={kitT('listeningAskYourQuestion')}
             />
@@ -446,8 +445,7 @@ export default async function EmployerDashboardPage({
               sessionEndpoint="/api/employer/voice-session"
               title={t('employerVoiceAssistant')}
               description={t('askAboutPostingRoles')}
-              accent="var(--color-blue)"
-              accentDark="var(--color-blue)"
+              {...employerVoiceSessionAccent}
               speakingLabel={t('assistantIsSpeaking')}
               listeningLabel={t('listeningAskYourQuestion')}
             />
@@ -555,8 +553,7 @@ export default async function EmployerDashboardPage({
             sessionEndpoint="/api/employer/voice-session"
             title={t('employerVoiceAssistant')}
             description={t('askAboutPostingRoles')}
-            accent="var(--color-blue)"
-            accentDark="var(--color-blue)"
+            {...employerVoiceSessionAccent}
             speakingLabel={t('assistantIsSpeaking')}
             listeningLabel={t('listeningAskYourQuestion')}
           />
