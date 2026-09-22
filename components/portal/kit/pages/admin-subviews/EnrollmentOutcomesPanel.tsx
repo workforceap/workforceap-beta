@@ -4,10 +4,15 @@ import { KitEmptyState, KpiStrip, RankBars } from '@/components/portal/kit';
 import type { EnrollmentOutcomesPanelData } from '@/lib/admin/analyticsTabs';
 
 /**
- * "Enrollment and outcomes" tab of /admin/analytics: the numbers the
- * `/admin/metrics` page prints (members, weekly active, placements,
- * certificates, AI tool runs, enrollment by program, Career OS loop) on kit
- * tiles and bars. Pure read view, server-rendered inside the analytics Tabs.
+ * "Enrollment and outcomes" — part of the Overview section of
+ * `/admin/reporting` (`app/admin/reporting/sections/OverviewSection.tsx`).
+ *
+ * The numbers `/admin/metrics` used to print (members, weekly active,
+ * placements, certificates, AI tool runs, enrollment by program, Career OS
+ * loop) on kit tiles and bars. Both `/admin/analytics` and `/admin/metrics`
+ * now redirect to the reporting hub unless `?ui=legacy` is set, which is why
+ * `chartsHref` still points at the legacy charts view. Pure read view,
+ * server-rendered inside the hub's sections.
  */
 export function EnrollmentOutcomesPanel({ data, chartsHref = '/admin/metrics?ui=legacy' }: { data: EnrollmentOutcomesPanelData; chartsHref?: string }) {
   return (

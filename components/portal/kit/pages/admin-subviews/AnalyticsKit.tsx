@@ -17,7 +17,8 @@ import { EmbeddableFrame } from './EmbeddableFrame';
 /**
  * Analytics — engagement & funnel analytics workspace.
  * Mockup: workforceap-admin-full.html "analytics" view.
- * Target route: /admin/analytics
+ * Target route: /admin/analytics?ui=legacy (the bare path redirects to
+ * /admin/reporting since the reporting hub landed)
  *
  * Pure read view — no interactivity, so no 'use client'.
  *

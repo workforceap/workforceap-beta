@@ -1803,7 +1803,7 @@
       "references": [
         {
           "file": "app/admin/growth/page.tsx",
-          "line": 46
+          "line": 47
         }
       ]
     },
@@ -3690,6 +3690,10 @@
         {
           "file": "tests/migrations/placement-survey-sent-state.mjs",
           "line": 13
+        },
+        {
+          "file": "tests/migrations/wap76-course-slug-remap.mjs",
+          "line": 66
         }
       ]
     },
@@ -4412,7 +4416,7 @@
         },
         {
           "file": "app/dev/staff/admin-command/page.tsx",
-          "line": 159
+          "line": 163
         },
         {
           "file": "app/dev/staff/admin-shell/page.tsx",
@@ -4698,6 +4702,17 @@
         {
           "file": "lib/email.ts",
           "line": 160
+        }
+      ]
+    },
+    {
+      "name": "WAP76_SLUG_REMAP_PROOF_DATABASE_URL",
+      "publicPrefix": false,
+      "declaredInRootExample": false,
+      "references": [
+        {
+          "file": "tests/migrations/wap76-course-slug-remap.mjs",
+          "line": 66
         }
       ]
     },

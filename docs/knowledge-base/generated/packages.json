@@ -127,6 +127,7 @@
       "db:migrate:resolve-failed",
       "db:migrate:resolve-failed-in-db",
       "db:push",
+      "db:repair:program-progress",
       "db:seed",
       "db:seed:blog",
       "db:seed:demo",

@@ -65,7 +65,17 @@ export interface CommandCenterQueueItem {
   count?: number;
 }
 
-/** A program health row in the right-hand breakdown. */
+/**
+ * A program health row in the right-hand breakdown.
+ *
+ * `pct` is the row's share of enrolled students (`PROGRAM_HEALTH_SHARE_LABEL`),
+ * never a completion or health score — so leave `tone` unset and let the bar
+ * paint the kit's neutral accent. Deriving ok/warn/alert from a share would
+ * invent a health threshold this number does not carry, and would contradict
+ * `programHealthCaption`, which is printed directly above the bars and says in
+ * words that they are not a health score. `tone` stays available for a future
+ * caller whose rows really do have a state.
+ */
 export type ProgramHealthDatum = RankDatum;
 
 /** A KPI value and optional real trend caption. */
@@ -210,12 +220,17 @@ const DEFAULT_PLACEMENTS_BY_MONTH: ChartDatum[] = [
   { label: 'Jun', value: 90 },
 ];
 
+/**
+ * Demo-only fallback. Shaped like what the live pages pass: the enrolled
+ * count alone, with `pct` the share of enrolled students sizing the bar. No
+ * tone — a share is not a state (see `ProgramHealthDatum`).
+ */
 const DEFAULT_PROGRAM_HEALTH: ProgramHealthDatum[] = [
-  { label: 'Cloud & IT', value: '312 · 74%', pct: 74, tone: 'ok' },
-  { label: 'Data & AI', value: '198 · 68%', pct: 68, tone: 'ok' },
-  { label: 'Healthcare', value: '156 · 81%', pct: 81, tone: 'ok' },
-  { label: 'Skilled Trades', value: '81 · 52%', pct: 52, tone: 'alert' },
-  { label: 'Manufacturing', value: '100 · 70%', pct: 70, tone: 'ok' },
+  { label: 'Cloud & IT', value: '312 enrolled', pct: 37 },
+  { label: 'Data & AI', value: '198 enrolled', pct: 23 },
+  { label: 'Healthcare', value: '156 enrolled', pct: 18 },
+  { label: 'Manufacturing', value: '100 enrolled', pct: 12 },
+  { label: 'Skilled Trades', value: '81 enrolled', pct: 10 },
 ];
 
 /* ---- Small pure helpers ---------------------------------------------------- */

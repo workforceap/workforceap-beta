@@ -16,7 +16,7 @@
 | [lib/admin/analyticsOverview.ts](../../../lib/admin/analyticsOverview.ts) | 313 | administration | AnalyticsFunnel:15, AnalyticsEngagement:22, AnalyticsOutcomes:30, AnalyticsFundingRow:38, AnalyticsProgramRow:44, AnalyticsAcquisitionStep:50, AnalyticsAcquisition:59, AnalyticsOverview:65, loadAnalyticsOverview:89 |
 | [lib/admin/analyticsProgramProgress.test.ts](../../../lib/admin/analyticsProgramProgress.test.ts) | 28 | administration |  |
 | [lib/admin/analyticsTabs.test.ts](../../../lib/admin/analyticsTabs.test.ts) | 110 | administration |  |
-| [lib/admin/analyticsTabs.ts](../../../lib/admin/analyticsTabs.ts) | 143 | administration | ANALYTICS_TABS:15, AnalyticsTabId:20, ANALYTICS_TAB_PARAM:22, parseAnalyticsTab:25, EnrollmentOutcomesSource:31, EnrollmentOutcomesPanelData:53, DAILY_ACTIVITY_BUCKET_NOTE:85, DEGRADED_SLICES_NOTE_PREFIX:93, degradedSlicesNote:96, buildEnrollmentOutcomesPanel:106 |
+| [lib/admin/analyticsTabs.ts](../../../lib/admin/analyticsTabs.ts) | 146 | administration | ANALYTICS_TABS:18, AnalyticsTabId:23, ANALYTICS_TAB_PARAM:25, parseAnalyticsTab:28, EnrollmentOutcomesSource:34, EnrollmentOutcomesPanelData:56, DAILY_ACTIVITY_BUCKET_NOTE:88, DEGRADED_SLICES_NOTE_PREFIX:96, degradedSlicesNote:99, buildEnrollmentOutcomesPanel:109 |
 | [lib/admin/applicantTriage.ts](../../../lib/admin/applicantTriage.ts) | 373 | administration | ApplicantTriageBucket:20, APPLICANT_TRIAGE_BUCKETS:26, ApplicantTriageReasonCode:34, ApplicantTriageChecklistKey:52, ApplicantTriageChecklistItem:61, ApplicantTriageResult:68, YesNo:76, ApplicantTriageInput:78, APPLICANT_TRIAGE_REASON_TEXT:120, APPLICANT_TRIAGE_CHECKLIST_TEXT:139, APPLICANT_TRIAGE_BUCKET_TEXT:149, triageApplicant:195, ApplicantTriageDisplay:332, localizeApplicantTriage:344, APPLICANT_TRIAGE_BUCKET_RANK:368 |
 | [lib/admin/applicantTriageLoad.ts](../../../lib/admin/applicantTriageLoad.ts) | 142 | administration | ApplicantTriageLoaded:22, loadApplicantTriageByUserIds:28, ApplicantTriageDisplayLoaded:128, localizeApplicantTriageMap:133 |
 | [lib/admin/applicationReview.ts](../../../lib/admin/applicationReview.ts) | 170 | administration | ApplicationReviewResult:24, changeApplicationStatus:34 |
@@ -85,7 +85,7 @@
 | [lib/admin/memberOutcomesSummary.ts](../../../lib/admin/memberOutcomesSummary.ts) | 40 | administration | getMemberOutcomesSummary:11 |
 | [lib/admin/mentorStatusUpdate.ts](../../../lib/admin/mentorStatusUpdate.ts) | 49 | administration | MentorAdminAction:6, runMentorStatusUpdate:11 |
 | [lib/admin/metrics.test.ts](../../../lib/admin/metrics.test.ts) | 96 | administration |  |
-| [lib/admin/metrics.ts](../../../lib/admin/metrics.ts) | 558 | administration | countMemberAiToolRuns:69, DailyActivityPoint:167, getPlacementStats:371, AdminMetrics:414, ADMIN_METRICS_CACHE_TTL_SECONDS:416, getAdminMetrics:425 |
+| [lib/admin/metrics.ts](../../../lib/admin/metrics.ts) | 559 | administration | countMemberAiToolRuns:70, DailyActivityPoint:168, getPlacementStats:372, AdminMetrics:415, ADMIN_METRICS_CACHE_TTL_SECONDS:417, getAdminMetrics:426 |
 | [lib/admin/overviewOrgFilter.test.ts](../../../lib/admin/overviewOrgFilter.test.ts) | 47 | administration |  |
 | [lib/admin/overviewOrgFilter.ts](../../../lib/admin/overviewOrgFilter.ts) | 75 | administration | trainingDashboardMemberWhere:5, triageDigestMemberWhere:17, triageDigestNewApplicantWhere:27, triageDigestStaleTrainingWhere:38, triageDigestEventWhere:48, triageDigestAssignmentWhere:58, analyticsOverviewUserWhere:67 |
 | [lib/admin/pipelineFunnel.test.ts](../../../lib/admin/pipelineFunnel.test.ts) | 47 | administration |  |
@@ -340,6 +340,8 @@
 | [lib/content/coursera/catalog.json](../../../lib/content/coursera/catalog.json) | 769 | learning-coursera |  |
 | [lib/content/coursera/catalogCoverage.test.ts](../../../lib/content/coursera/catalogCoverage.test.ts) | 53 | learning-coursera |  |
 | [lib/content/coursera/catalogCoverage.ts](../../../lib/content/coursera/catalogCoverage.ts) | 167 | learning-coursera | CatalogCoverageIssue:19, CatalogCoverageRow:26, CatalogCoverageSummary:38, CatalogCoverageReport:46, buildCatalogCoverageRow:79, buildCatalogCoverageReport:117, catalogCoverageIssueLabel:150 |
+| [lib/content/coursera/courseSlugRemap.test.ts](../../../lib/content/coursera/courseSlugRemap.test.ts) | 117 | learning-coursera |  |
+| [lib/content/coursera/courseSlugRemap.ts](../../../lib/content/coursera/courseSlugRemap.ts) | 106 | learning-coursera | CourseSlugRemapEntry:36, COURSE_SLUG_REMAP:72, REMAPPED_SOURCE_SLUGS:96, remapCourseSlug:101 |
 | [lib/content/coursera/curatedCollections.generated.ts](../../../lib/content/coursera/curatedCollections.generated.ts) | 285 | learning-coursera | CURATED_COLLECTIONS_SOURCE:7, CURATED_COLLECTIONS:16 |
 | [lib/content/coursera/curatedCollections.test.ts](../../../lib/content/coursera/curatedCollections.test.ts) | 67 | learning-coursera |  |
 | [lib/content/coursera/curatedCollections.ts](../../../lib/content/coursera/curatedCollections.ts) | 64 | learning-coursera | CURATED_COLLECTIONS:15, CURATED_COLLECTIONS_SOURCE:15, CuratedCollection:16, CuratedCourse:16, findCuratedCollection:34, curatedCollectionsForCourse:40, uniqueCuratedCollectionForCourse:46, isCuratedCourseInCollection:51, SHARED_CURATED_COURSE_IDS:60 |
@@ -763,6 +765,8 @@
 | [lib/member/proactiveInsights.ts](../../../lib/member/proactiveInsights.ts) | 236 | member-counselor | ProactiveInsightTone:21, ProactiveInsight:23, ProactiveInsightsInput:39, buildProactiveInsights:70, buildInsightNotificationPayload:214 |
 | [lib/member/programCourseMatch.ts](../../../lib/member/programCourseMatch.ts) | 292 | member-counselor | CanonicalMappingHit:22, CanonicalMappingIndex:22, findCanonicalMappingForCourseraCourse:24, loadCanonicalMappingsForCourseraIds:25, resolveProgramCourse:51, resolveProgramCourseWithCatalogFallback:149 |
 | [lib/member/programCourseResolution.test.ts](../../../lib/member/programCourseResolution.test.ts) | 69 | member-counselor |  |
+| [lib/member/programProgressRepair.test.ts](../../../lib/member/programProgressRepair.test.ts) | 179 | member-counselor |  |
+| [lib/member/programProgressRepair.ts](../../../lib/member/programProgressRepair.ts) | 301 | member-counselor | StoredRollup:29, ProgramRecompute:39, RepairReason:52, RollupRepairAction:58, UnexplainedRollup:84, RollupRepairPlan:92, AVERAGE_PERCENT_TOLERANCE:114, recomputeKey:116, planProgramProgressRepair:141, formatRepairPlan:258 |
 | [lib/member/programStartEnrollment.test.ts](../../../lib/member/programStartEnrollment.test.ts) | 68 | member-counselor |  |
 | [lib/member/programStartEnrollment.ts](../../../lib/member/programStartEnrollment.ts) | 40 | member-counselor | ProgramStartAccess:6, resolveProgramStartAccess:19, programStartAccessFromDashboardView:32 |
 | [lib/member/recommendPrograms.ts](../../../lib/member/recommendPrograms.ts) | 54 | member-counselor | DEFAULT_RECOMMENDED_PROGRAM_SLUGS:6, RecommendedProgramSummary:8, resolveRecommendedProgramSlugs:19, resolveRecommendedProgramSummaries:35 |
