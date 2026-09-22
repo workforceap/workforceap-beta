@@ -417,6 +417,17 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
   );
 }
 
+/**
+ * Card shadows tint the card's own hue, never an rgba() literal, so they
+ * follow light-dark() (and the org accent where the fill is the accent):
+ * `--wa-accent` under the crimson / accent gradients, `--wa-gold` under the
+ * gold gradient, the panel chrome under the dark card and the kit's surface
+ * shadow token under the light-body cards (#2491 follow-up).
+ */
+const ACCENT_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-accent) 15%, transparent)';
+const GOLD_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-gold) 15%, transparent)';
+const DARK_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-sidebar-bg) 20%, transparent)';
+
 function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: SessionAgentConfig) => void }) {
   const { variant, Icon, badge, title, body, ctaIcon: Cta, cta } = card;
 
@@ -429,29 +440,29 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
 
   switch (variant) {
     case 'gold':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-gold), var(--wa-hero-gold-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,93,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-gold), var(--wa-hero-gold-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: GOLD_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       ctaColor = undefined;
       break;
     case 'crimson':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: ACCENT_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       break;
     case 'crimson-deep':
-      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson-dark), color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)' };
+      cardStyle = { background: 'linear-gradient(to bottom right, var(--wa-hero-crimson-dark), color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black))', color: 'var(--wa-on-hero)', border: '1px solid rgba(255,255,255,0.14)', boxShadow: ACCENT_CARD_SHADOW };
       iconChip = { background: 'rgba(255,255,255,0.22)' };
       bodyColor = 'rgba(255,255,255,0.92)';
       break;
     case 'counselor':
-      cardStyle = { background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+      cardStyle = { background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: 'var(--wa-shadow)' };
       iconChip = { background: 'var(--wa-info-soft)', color: 'var(--wa-info)', border: '1px solid var(--wa-border)' };
       bodyColor = 'var(--wa-muted)';
       ctaColor = 'var(--wa-info)';
       break;
     case 'dark':
-      cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.2)' };
+      cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: DARK_CARD_SHADOW };
       iconChip = { background: 'var(--wa-accent)' };
       bodyColor = 'rgba(255,255,255,0.9)';
       break;
@@ -461,7 +472,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
       // mode — the previous hardcoded cream + flipping text tokens made
       // this card unreadable in dark. CTA uses --wa-text for guaranteed AA;
       // the gold identity carries through the icon chip + badge.
-      cardStyle = { background: 'var(--wa-gold-soft)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' };
+      cardStyle = { background: 'var(--wa-gold-soft)', border: '1px solid var(--wa-border)', color: 'var(--wa-text)', boxShadow: 'var(--wa-shadow)' };
       iconChip = { background: 'var(--wa-gold-soft)', color: 'var(--wa-gold-dark)', border: '1px solid var(--wa-border)' };
       bodyColor = 'var(--wa-text)';
       ctaColor = 'var(--wa-text)';
@@ -1240,7 +1251,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: 16,
-          boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)',
+          boxShadow: ACCENT_CARD_SHADOW,
         }}
       >
         <div>
@@ -1384,7 +1395,7 @@ function StudioPanel({ data }: { data: ResumeStudioData }) {
                 justifyContent: 'space-between',
                 cursor: 'pointer',
                 border: 'none',
-                boxShadow: '0 10px 15px -3px rgba(120,20,38,0.15)',
+                boxShadow: ACCENT_CARD_SHADOW,
                 textDecoration: 'none',
               }}
             >

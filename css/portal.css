@@ -681,7 +681,7 @@ html.dark [data-surface] .astryx-card,
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 24px rgba(173, 44, 77, 0.3);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-accent) 30%, transparent);
     z-index: 45;
     border: none;
     cursor: pointer;
@@ -1634,7 +1634,7 @@ html.dark .job-app-card:hover {
 
 .job-app-card--editing {
   border: 2px solid var(--color-accent) !important;
-  box-shadow: 0 8px 28px rgba(173, 44, 77, 0.2);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--color-accent) 20%, transparent);
 }
 
 /* Employer — applicants table (glass card, token borders) */
@@ -1734,8 +1734,8 @@ html.dark .employer-applications-table.admin-table thead th {
 .portal-card--gradient-accent {
   background: linear-gradient(
     135deg,
-    rgba(173, 44, 77, 0.15) 0%,
-    rgba(139, 31, 56, 0.08) 100%
+    color-mix(in srgb, var(--color-accent) 15%, transparent) 0%,
+    color-mix(in srgb, var(--color-accent-dark) 8%, transparent) 100%
   );
   border: 1px solid rgba(173, 44, 77, 0.2);
 }
@@ -2150,7 +2150,7 @@ html.dark .employer-applications-table.admin-table thead th {
   align-items: center;
   gap: 1.5rem;
   padding: 1.75rem 2rem;
-  background: linear-gradient(135deg, rgba(173, 44, 77, 0.1), transparent 70%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 70%);
   border-radius: var(--radius-xl, 16px);
   border: 1px solid rgba(173, 44, 77, 0.12);
   margin-bottom: 1.5rem;
@@ -2172,7 +2172,7 @@ html.dark .employer-applications-table.admin-table thead th {
     var(--color-accent)
   );
   color: #fff;
-  box-shadow: 0 4px 16px rgba(173, 44, 77, 0.35);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
 @media (max-width: 767px) {
@@ -2483,7 +2483,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-progress-bar--gold .portal-progress-bar__fill {
-  background: linear-gradient(to right, var(--color-gold), #ffd54f);
+  background: linear-gradient(to right, var(--color-gold), var(--color-gold-light));
 }
 
 /* ── Application status progress dots (desktop) ── */
@@ -2514,7 +2514,7 @@ html.dark .employer-applications-table.admin-table thead th {
 
 .portal-app-progress__bar--current {
   background: var(--color-accent);
-  box-shadow: 0 0 6px rgba(173, 44, 77, 0.5);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
 
 .portal-app-progress__bar--locked {

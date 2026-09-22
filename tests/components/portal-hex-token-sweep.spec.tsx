@@ -411,14 +411,14 @@ describe('voiceAgentSurfaces crimson surfaces paint from the hero tokens', () =>
     },
   );
 
-  it('mockInterviewVoiceSurface: glow and CTA read the hero tokens; the ring keeps only its plum stop', async () => {
+  it('mockInterviewVoiceSurface: glow, CTA and both ring stops read the hero tokens (the plum stop is a color-mix of crimson-dark)', async () => {
     const { container, surface } = await renderSurface('mockInterviewVoiceSurface');
-    // The ring's deep-plum end stop (#5e1426) has no `--wa-*` token yet and is
-    // the one literal left on this surface; the crimson-dark start stop and
-    // everything else read the tokens.
-    expect(new Set(allLiterals(container))).toEqual(new Set(['#5e1426']));
+    // The ring's deep-plum end stop used to be the bare #5e1426 (the one
+    // literal left on this surface); it is now 70% --wa-hero-crimson-dark
+    // over black, the same mix VoiceStudioKit's crimson-deep card paints.
+    expect(allLiterals(container)).toEqual([]);
     const ring = styleOf(container.firstElementChild);
-    expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson-dark), #5e1426)');
+    expect(ring).toContain('background: linear-gradient(135deg, var(--wa-hero-crimson-dark), color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black))');
     expect(ring).toContain('box-shadow: 0 16px 48px color-mix(in srgb, var(--wa-hero-crimson) 16%, transparent)');
     // The badge sits on the card: the tone text token, since the constant hero crimson is 2.99:1 on the dark card.
     expect(styleOf(screen.getByText(surface.badge))).toContain('color: var(--wa-accent-text)');

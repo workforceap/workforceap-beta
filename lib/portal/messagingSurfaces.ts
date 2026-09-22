@@ -4,7 +4,9 @@
  * `glowColor` is always a `--wa-*` token: VoiceAgentSurface color-mixes it for
  * the ring shadow and icon tile, and it is the badge text where no `badgeColor`
  * is set, so it must follow light-dark(). The ring gradients are 1px
- * text-free bands and keep their literal stops.
+ * text-free bands (the surface also blurs them into the card's corner blob);
+ * their stops derive from the glow token with color-mix so the ring follows
+ * the theme too (#2491 follow-up; they used to be literal hex stops).
  */
 type MessagingSurface = {
   badge: string;
@@ -19,12 +21,24 @@ type MessagingSurface = {
   gradient: string;
 };
 
+/**
+ * Three-stop ring from one glow token: `deep` starts three quarters of the
+ * way to black and `hue` starts on the glow itself; both end in a 35% tint
+ * toward white. Approximates the former literal stops (#670024 → #8c0f37 →
+ * #e8a0b3 and friends) while tracking the token's light-dark() value.
+ */
+export function ringGradient(glow: string, start: 'deep' | 'hue'): string {
+  const first = start === 'deep' ? `color-mix(in srgb, ${glow} 75%, black)` : glow;
+  const middle = start === 'deep' ? glow : `color-mix(in srgb, ${glow} 80%, white)`;
+  return `linear-gradient(135deg, ${first}, ${middle}, color-mix(in srgb, ${glow} 35%, white))`;
+}
+
 export const memberMessagingSurface: MessagingSurface = {
   badge: 'Messages',
   subtext: 'Private thread with your counselor — replies in real time.',
   icon: '💬',
   glowColor: 'var(--wa-accent-text)',
-  gradient: 'linear-gradient(135deg, #670024, #8c0f37, #e8a0b3)',
+  gradient: ringGradient('var(--wa-accent-text)', 'deep'),
 };
 
 export const partnerMessagingSurface: MessagingSurface = {
@@ -34,7 +48,7 @@ export const partnerMessagingSurface: MessagingSurface = {
   glowColor: 'var(--wa-glow-ember)',
   // The ember glow on white measured 3.56:1; the text-on-gold token is the warm text hue.
   badgeColor: 'var(--wa-gold-dark)',
-  gradient: 'linear-gradient(135deg, #ea580c, #f97316, #fdba74)',
+  gradient: ringGradient('var(--wa-glow-ember)', 'hue'),
 };
 
 export const employerMessagingSurface: MessagingSurface = {
@@ -44,7 +58,7 @@ export const employerMessagingSurface: MessagingSurface = {
   glowColor: 'var(--wa-glow-indigo)',
   // The indigo glow on the dark card measured 3.08:1; the text-on-info token is the cool text hue.
   badgeColor: 'var(--wa-info-dark)',
-  gradient: 'linear-gradient(135deg, #4f46e5, #6366f1, #a5b4fc)',
+  gradient: ringGradient('var(--wa-glow-indigo)', 'hue'),
 };
 
 export const counselorStaffMessagingSurface: MessagingSurface = {
@@ -52,7 +66,7 @@ export const counselorStaffMessagingSurface: MessagingSurface = {
   subtext: 'Staff view — synced with the member inbox.',
   icon: '💬',
   glowColor: 'var(--wa-glow-fuchsia)',
-  gradient: 'linear-gradient(135deg, #86198f, #c026d3, #f0abfc)',
+  gradient: ringGradient('var(--wa-glow-fuchsia)', 'deep'),
 };
 
 export const adminMessagingSurface: MessagingSurface = {
@@ -60,5 +74,5 @@ export const adminMessagingSurface: MessagingSurface = {
   subtext: 'Admin view — use responsibly; members are notified on send.',
   icon: '🛡️',
   glowColor: 'var(--wa-glow-slate)',
-  gradient: 'linear-gradient(135deg, #1e293b, #475569, #94a3b8)',
+  gradient: ringGradient('var(--wa-glow-slate)', 'deep'),
 };
