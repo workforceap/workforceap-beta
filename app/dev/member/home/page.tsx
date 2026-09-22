@@ -27,12 +27,14 @@ const APPROVAL_FIXTURES: Record<string, MemberApprovalFacts> = {
     wioaReviewStatus: null,
     courseraEnrollmentApproved: false,
   },
+  // A denied application clears `courseraEnrollmentApproved` at the write
+  // (lib/admin/applicationReview.ts), so the training step reads pending here
+  // rather than telling a turned-down member their training is approved.
   closed: {
     applications: [{ status: 'DENIED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
     wioaReviewStatus: 'verified',
     wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
-    courseraEnrollmentApproved: true,
-    courseraEnrollmentApprovedAt: new Date('2026-09-02T15:00:00Z'),
+    courseraEnrollmentApproved: false,
   },
   complete: {
     applications: [{ status: 'APPROVED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
