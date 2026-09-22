@@ -80,7 +80,7 @@ describe('truthful member status surfaces', () => {
     const intake = stage(container, 'intake');
     expect(intake).toHaveAttribute('aria-current', 'step');
     expect(within(intake).getByText(`In this step since ${formatPortalDate(reviewed)}`)).toBeInTheDocument();
-    expect(within(intake).getByText("Who's on it: Your counselor, Jordan Lee")).toBeInTheDocument();
+    expect(within(intake).getByText("Who's on it: Your counselor, Jordan")).toBeInTheDocument();
     expect(within(intake).queryByText(/^Reviewed /)).not.toBeInTheDocument();
     expect(within(stage(container, 'training')).queryByText(/In this step since/)).not.toBeInTheDocument();
   });
