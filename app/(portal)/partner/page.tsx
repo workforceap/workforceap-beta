@@ -11,7 +11,9 @@ import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
 import { loadPartnerReferralBundle, toPartnerMembersListRows } from '@/lib/partner/referralBundle';
-import { PIPELINE_STAGE_LABELS } from '@/lib/pipeline/stage';
+import { PIPELINE_STAGE_LABELS, type PipelineStage } from '@/lib/pipeline/stage';
+import { programDisplayTitle } from '@/lib/content/programTitle';
+import PartnerReferredMembersMobile, { type PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
 import { formatPortalDate } from '@/lib/formatDate';
 import CopyReferralLink from '@/components/partner/CopyReferralLink';
 import PartnerReferralShare from '@/components/partner/PartnerReferralShare';
@@ -227,7 +229,15 @@ export default async function PartnerDashboardPage({
           select: {
             id: true,
             referredAt: true,
-            member: { select: { id: true, fullName: true, enrolledAt: true } },
+            member: {
+              select: {
+                id: true,
+                fullName: true,
+                enrolledAt: true,
+                enrolledProgram: true,
+                placementRecord: { select: { startDateVerified: true } },
+              },
+            },
           },
         }),
         prisma.memberEvent.findMany({
@@ -267,6 +277,29 @@ export default async function PartnerDashboardPage({
         };
       })
       .filter((row): row is ReferralKitRow => row !== null);
+
+    // Phone widths reuse the /partner/referred-members card list instead of
+    // the 600px table behind a horizontal drag (scout M9, 2026-09-22). This
+    // lean path loads no pipeline bundle, so the stage is the coarse
+    // referred -> enrolled -> placed ladder the funnel below already uses.
+    const referralMobileRows: PartnerMemberRow[] = recentReferrals.flatMap((r) => {
+      const m = r.member;
+      if (!m) return [];
+      const stage: PipelineStage = m.placementRecord ? 'placed' : m.enrolledAt ? 'enrolled' : 'applied';
+      return [
+        {
+          id: m.id,
+          fullName: m.fullName,
+          stage,
+          stageLabel: PIPELINE_STAGE_LABELS[stage],
+          progress: 0,
+          programTitle: m.enrolledProgram ? programDisplayTitle(m.enrolledProgram) : '—',
+          story: '',
+          referredAtLabel: formatPortalDate(r.referredAt),
+          placementVerified: m.placementRecord ? m.placementRecord.startDateVerified : null,
+        },
+      ];
+    });
 
     // Payout history — PARTNER_PAYOUT_SENT member events carry the paying
     // partnerId in `metadata`; the relation filter above narrows to this
@@ -474,29 +507,34 @@ export default async function PartnerDashboardPage({
                 </Link>
               }
             />
-            <KitDataTable<ReferralKitRow>
-              columns={[
-                {
-                  key: 'name',
-                  header: t('name'),
-                  render: (row) => (
-                    <Link
-                      href={`/partner/referred-members/${row.id}`}
-                      style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
-                    >
-                      {row.name}
-                    </Link>
-                  ),
-                },
-                { key: 'status', header: t('status') },
-                { key: 'referred', header: 'Referred' },
-              ]}
-              rows={referralRows}
-              rowKey={(row) => row.id}
-              mobile="scroll"
-              emptyTitle="No referred members yet"
-              emptyDescription="New referrals will appear here after members apply through this partner."
-            />
+            <div className="wa-block md:wa-hidden">
+              <PartnerReferredMembersMobile rows={referralMobileRows} />
+            </div>
+            <div className="wa-hidden md:wa-block">
+              <KitDataTable<ReferralKitRow>
+                columns={[
+                  {
+                    key: 'name',
+                    header: t('name'),
+                    render: (row) => (
+                      <Link
+                        href={`/partner/referred-members/${row.id}`}
+                        style={{ fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}
+                      >
+                        {row.name}
+                      </Link>
+                    ),
+                  },
+                  { key: 'status', header: t('status') },
+                  { key: 'referred', header: 'Referred' },
+                ]}
+                rows={referralRows}
+                rowKey={(row) => row.id}
+                mobile="scroll"
+                emptyTitle="No referred members yet"
+                emptyDescription="New referrals will appear here after members apply through this partner."
+              />
+            </div>
           </div>
 
           {showPayouts ? (

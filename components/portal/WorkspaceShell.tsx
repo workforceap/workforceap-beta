@@ -469,6 +469,13 @@ export default function WorkspaceShell({
     return Object.keys(style).length > 0 ? (style as React.CSSProperties) : undefined;
   })();
 
+  // Below the 769px rail breakpoint every staff shell (employer, partner,
+  // counselor, admin) takes the member's minimal header: wordmark + current
+  // page on the left, the role / super-admin switcher and the bell on the
+  // right. The tier badge moves into the drawer (see workspace-sidebar-meta)
+  // so the tagline can no longer wrap underneath it (scout M2, 2026-09-22).
+  const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
+
   return (
     <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
@@ -485,7 +492,7 @@ export default function WorkspaceShell({
       {badgeFetchError ? <span hidden data-portal-error-state="workspace-nav-badges" /> : null}
       <header
         ref={headerRef}
-        className={`workspace-shell-header${minimalMobileHeader ? ' workspace-shell-header--minimal-mobile' : ''}`}
+        className={`workspace-shell-header${minimalHeader ? ' workspace-shell-header--minimal-mobile' : ''}`}
       >
         <div className="workspace-shell-header__brand">
           <button
@@ -795,6 +802,12 @@ export default function WorkspaceShell({
                       {contextLabel}
                     </span>
                   )}
+                  {/* Phone header hides the tier pill (minimal staff header); keep it reachable here. */}
+                  {headerBadge ? (
+                    <span className="workspace-shell-tier-badge" title={headerBadge}>
+                      {headerBadge}
+                    </span>
+                  ) : null}
                   <SuperAdminViewSwitcher initialIsSuperAdmin={isSuperAdmin} />
                 </div>
               ) : null}
