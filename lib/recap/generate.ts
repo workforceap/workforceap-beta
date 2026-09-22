@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { trackEvent } from '@/lib/events/track';
 import { isExcludedPublicEmployerName, isExcludedPublicJobTitle } from '@/lib/jobs/publicJobFilters';
-import { computeReadinessScore, getScoreBreakdowns } from '@/lib/readiness/score';
+import { computeReadinessScore, getScoreBreakdowns, sumReadinessPoints } from '@/lib/readiness/score';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { buildNextBestActions, type NextBestActionsContext } from '@/lib/member/nextBestActions';
 
@@ -710,7 +710,7 @@ export async function generateWeeklyRecaps(
     ).length;
 
     const score = scoreBreakdowns.has(member.id)
-      ? Math.min(100, Object.values(scoreBreakdowns.get(member.id)!).reduce((sum, b) => sum + b.earned, 0))
+      ? sumReadinessPoints(scoreBreakdowns.get(member.id)!)
       : null;
 
     const recapData = {

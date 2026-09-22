@@ -2,14 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { ReadinessProgressSummary } from '@/components/portal/ReadinessProgressSummary';
 import { buildReadinessProgressView } from '@/lib/readiness/progressView';
-import { SCREENSHOT_86_BREAKDOWN, zeroScoreBreakdown } from '@/lib/readiness/progressView.fixtures';
+import { SCREENSHOT_MEMBER_BREAKDOWN, zeroScoreBreakdown } from '@/lib/readiness/progressView.fixtures';
 import {
   READINESS_SCORE_LOAD_ERROR,
   buildFactualReadinessRecap,
   buildReadinessRecapBreakdown,
 } from '@/lib/readiness/progressSummary';
 
-const view = buildReadinessProgressView(SCREENSHOT_86_BREAKDOWN);
+const view = buildReadinessProgressView(SCREENSHOT_MEMBER_BREAKDOWN);
 
 function renderCard(overrides: Partial<Parameters<typeof ReadinessProgressSummary>[0]> = {}) {
   return render(
@@ -27,14 +27,14 @@ describe('ReadinessProgressSummary (coach note)', () => {
   it('prints the breakdown from the score model: total, max, every area, lowest tagged', () => {
     renderCard();
     const breakdown = screen.getByTestId('readiness-recap-breakdown');
-    expect(breakdown).toHaveTextContent('86 of 105 points');
-    expect(breakdown).toHaveTextContent('score of 86');
+    expect(breakdown).toHaveTextContent('Your score is 82 out of 100.');
+    expect(breakdown).not.toHaveTextContent('105');
     const rows = within(breakdown).getAllByRole('listitem');
     expect(rows.map((r) => r.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'Resume & Profile 25/25 · 100%',
-      'Training & Certs Lowest 21/35 · 60%',
-      'Interview & Jobs 25/30 · 83%',
-      'Engagement 15/15 · 100%',
+      'Resume & Profile 24/24 · 100%',
+      'Training & Certs Lowest 20/33 · 61%',
+      'Interview & Jobs 24/29 · 83%',
+      'Engagement 14/14 · 100%',
     ]);
     expect(rows[1]).toHaveAttribute('data-lowest', 'true');
     expect(rows.filter((r) => r.hasAttribute('data-lowest'))).toHaveLength(1);
@@ -72,7 +72,7 @@ describe('ReadinessProgressSummary (coach note)', () => {
       nextAction: empty.priorityAction,
       breakdown: buildReadinessRecapBreakdown(empty),
     });
-    expect(screen.getByTestId('readiness-recap-breakdown')).toHaveTextContent('0 of 105 points');
+    expect(screen.getByTestId('readiness-recap-breakdown')).toHaveTextContent('Your score is 0 out of 100.');
     expect(screen.getByText(/No scored activity yet/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Open resume/ })).toHaveAttribute('href', '/dashboard/profile#resume');
   });

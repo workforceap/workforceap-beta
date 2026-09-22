@@ -20,7 +20,6 @@ export const READINESS_EMPTY_RECAP =
  */
 export type ReadinessRecapBreakdown = {
   overallScore: number;
-  overallEarned: number;
   overallMax: number;
   weakestKey: ReadinessCategoryKey | null;
   categories: {
@@ -35,7 +34,6 @@ export type ReadinessRecapBreakdown = {
 export function buildReadinessRecapBreakdown(view: ReadinessProgressView): ReadinessRecapBreakdown {
   return {
     overallScore: view.overallScore,
-    overallEarned: view.overallEarned,
     overallMax: view.overallMax,
     weakestKey: view.weakestCategory,
     categories: view.categories.map((cat) => ({
@@ -113,8 +111,7 @@ export function buildReadinessSummaryPrompt(view: ReadinessProgressView): {
   const weakest = view.categories.find((cat) => cat.key === view.weakestCategory) ?? null;
   const facts = {
     overallScore: view.overallScore,
-    pointsEarned: view.overallEarned,
-    pointsMax: view.overallMax,
+    scoreMax: view.overallMax,
     areas: view.categories.map((cat) => ({
       label: cat.label,
       pct: cat.pct,
@@ -131,7 +128,7 @@ export function buildReadinessSummaryPrompt(view: ReadinessProgressView): {
 
   return {
     system: `You write the short coach note under a WorkforceAP member's readiness score card.
-The card already prints the score, the point totals, and every area's percent. Do NOT repeat any score, percentage, or point total, and do not list the areas.
+The card already prints the score out of 100 and every area's points and percent. Do NOT repeat any score, percentage, or point total, and do not list the areas.
 Use ONLY the supplied JSON facts. Do not invent applications, certificates, interviews, employers, dates, or scores.
 Explain in plain words why the lowest area (lowestArea) is where it is, using only its openItems. Never suggest an item listed in doneItems.
 End with the fixed next step in nextAction. Do not propose a different first step.
@@ -147,7 +144,6 @@ export function allowedReadinessNumbers(view: ReadinessProgressView): Set<number
     0,
     100,
     view.overallScore,
-    view.overallEarned,
     view.overallMax,
     ...Object.values(READINESS_GOAL_COUNTS),
   ]);

@@ -49,23 +49,18 @@ function sourceLabel(source: ReadinessSummarySource, generating: boolean): strin
 
 /**
  * The numbers, printed by the card itself so no model can garble them:
- * points earned of max, the capped score, and one row per scored area with
- * the lowest area tagged. The AI text below only explains and points forward.
+ * the score out of 100 and one row per scored area (points earned of max,
+ * percent) with the lowest area tagged. The AI text below only explains and points forward.
  */
 function RecapBreakdown({ breakdown }: { breakdown: ReadinessRecapBreakdown }) {
-  const capped = breakdown.overallEarned > breakdown.overallScore;
   return (
     <div data-testid="readiness-recap-breakdown" className="wa-mb-3">
       <p className="wa-kit-lede" style={{ color: 'var(--wa-text)' }}>
+        Your score is{' '}
         <strong style={{ fontVariantNumeric: 'tabular-nums' }}>
-          {breakdown.overallEarned} of {breakdown.overallMax} points
+          {breakdown.overallScore} out of {breakdown.overallMax}
         </strong>
-        {' '}
-        <span style={{ color: 'var(--wa-muted)' }}>
-          {capped
-            ? `shows as a score of ${breakdown.overallScore} (capped at 100).`
-            : `is a score of ${breakdown.overallScore} out of 100.`}
-        </span>
+        .
       </p>
       <ul
         aria-label="Points by area"

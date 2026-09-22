@@ -57,7 +57,7 @@ export type ReadinessProgressView = {
 
 /**
  * Count goals behind the partial-credit items, matching `lib/readiness/score.ts`
- * (`done` at 2 resources, 3 pathway steps, 3 applications). Exported so the
+ * (`done` at 2 resources, 3 pathway steps, 3 applications; full points at 2 / 5 / 3). Exported so the
  * recap grounding gate can allow these small numbers in the coach note.
  */
 export const READINESS_GOAL_COUNTS = { resources: 2, pathwaySteps: 3, applications: 3 } as const;
@@ -276,11 +276,8 @@ export function overallReadinessScore(breakdown: ScoreBreakdown): {
   const values = Object.values(breakdown);
   const earned = values.reduce((sum, item) => sum + item.earned, 0);
   const max = values.reduce((sum, item) => sum + item.max, 0);
-  return {
-    earned,
-    max,
-    displayed: Math.min(100, earned),
-  };
+  // Weights sum to 100, so the displayed score is the points earned — no cap.
+  return { earned, max, displayed: earned };
 }
 
 export function buildReadinessProgressView(breakdown: ScoreBreakdown): ReadinessProgressView {

@@ -41,7 +41,7 @@ import { getUser } from '@/lib/auth/server';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { chatCompletion, isAIConfigured } from '@/lib/ai/groq';
 import { getScoreBreakdownSafeResult } from '@/lib/readiness/score';
-import { SCREENSHOT_86_BREAKDOWN } from '@/lib/readiness/progressView.fixtures';
+import { SCREENSHOT_MEMBER_BREAKDOWN } from '@/lib/readiness/progressView.fixtures';
 import { READINESS_SCORE_LOAD_ERROR } from '@/lib/readiness/progressSummary';
 
 describe('POST /api/member/readiness/summary', () => {
@@ -61,7 +61,7 @@ describe('POST /api/member/readiness/summary', () => {
   it('returns an honest error recap when score load fails', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
     vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
-      breakdown: SCREENSHOT_86_BREAKDOWN,
+      breakdown: SCREENSHOT_MEMBER_BREAKDOWN,
       loadFailed: true,
     });
 
@@ -75,7 +75,7 @@ describe('POST /api/member/readiness/summary', () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
     vi.mocked(isAIConfigured).mockReturnValue(false);
     vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
-      breakdown: SCREENSHOT_86_BREAKDOWN,
+      breakdown: SCREENSHOT_MEMBER_BREAKDOWN,
       loadFailed: false,
     });
 
@@ -85,14 +85,14 @@ describe('POST /api/member/readiness/summary', () => {
     expect(body.source).toBe('factual');
     expect(body.summary).toContain('Training & Certs is your lowest area');
     expect(body.summary).toContain('Next: Complete more pathway steps');
-    expect(body.summary).not.toContain('86');
+    expect(body.summary).not.toContain('82');
     expect(chatCompletion).not.toHaveBeenCalled();
   });
 
   it('returns grounded AI text when generation succeeds', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
     vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
-      breakdown: SCREENSHOT_86_BREAKDOWN,
+      breakdown: SCREENSHOT_MEMBER_BREAKDOWN,
       loadFailed: false,
     });
     vi.mocked(chatCompletion).mockResolvedValue(
@@ -112,7 +112,7 @@ describe('POST /api/member/readiness/summary', () => {
   it('falls back to factual recap when the model restates the numbers (the production garble)', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
     vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
-      breakdown: SCREENSHOT_86_BREAKDOWN,
+      breakdown: SCREENSHOT_MEMBER_BREAKDOWN,
       loadFailed: false,
     });
     vi.mocked(chatCompletion).mockResolvedValue(
@@ -131,7 +131,7 @@ describe('POST /api/member/readiness/summary', () => {
   it('falls back to factual recap when the model invents a score', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as never);
     vi.mocked(getScoreBreakdownSafeResult).mockResolvedValue({
-      breakdown: SCREENSHOT_86_BREAKDOWN,
+      breakdown: SCREENSHOT_MEMBER_BREAKDOWN,
       loadFailed: false,
     });
     vi.mocked(chatCompletion).mockResolvedValue('You are 99% ready and already placed at Acme.');
