@@ -35,6 +35,20 @@ type ToolState = {
 
 const initialToolState: ToolState = { status: 'idle', error: null, output: null, context: null };
 
+/**
+ * Colour vocabulary for the tool cards and the tool grid. Everything reads the
+ * `--wa-*` tokens (css/wa-brand-tokens.css) so both themes resolve; the two
+ * hex literals that remain each have a reason:
+ *  - LinkedIn's brand blue is a third-party identity colour with no token.
+ *  - PortalVoiceSession builds `${accent}44` / `${accent}88` alpha strings from
+ *    its `accent` prop, so it needs a 6-digit hex rather than a `var()`. The
+ *    card chrome around it (SectionCard, grid) reads the tokens.
+ */
+const TOOL_TEAL = 'color-mix(in srgb, var(--wa-info) 50%, var(--wa-success))';
+const LINKEDIN_BRAND_BLUE = '#0077b5';
+const VOICE_ACCENT = '#2563eb';
+const VOICE_ACCENT_DARK = '#1e40af';
+
 interface Props {
   memberId: string;
   memberFullName: string;
@@ -262,14 +276,14 @@ export default function SessionRunClient({
   const TOOL_GRID: Array<{ key: string; label: string; state: ToolState; accent: string }> = [
     { key: 'pitch', label: 'Elevator Pitch', state: pitchState, accent: 'var(--wa-gold)' },
     { key: 'resume', label: 'Resume Rewriter', state: resumeState, accent: 'var(--color-accent)' },
-    { key: 'gapAnalyzer', label: 'Gap Analysis', state: gapState, accent: '#0891b2' },
+    { key: 'gapAnalyzer', label: 'Gap Analysis', state: gapState, accent: TOOL_TEAL },
     { key: 'resumeAnalysis', label: 'Resume Analysis', state: resumeAnalysisState, accent: 'var(--wa-gold)' },
-    { key: 'jobMatch', label: 'Job Match Score', state: jobMatchState, accent: '#059669' },
-    { key: 'headline', label: 'LinkedIn Headline', state: headlineState, accent: '#0077b5' },
-    { key: 'about', label: 'LinkedIn About', state: aboutState, accent: '#0077b5' },
-    { key: 'cover', label: 'Cover Letter', state: coverState, accent: '#a47f38' },
-    { key: 'interview', label: 'Interview Prep', state: interviewState, accent: '#2b7bb9' },
-    { key: 'salary', label: 'Salary Script', state: salaryState, accent: '#d97706' },
+    { key: 'jobMatch', label: 'Job Match Score', state: jobMatchState, accent: 'var(--wa-success)' },
+    { key: 'headline', label: 'LinkedIn Headline', state: headlineState, accent: LINKEDIN_BRAND_BLUE },
+    { key: 'about', label: 'LinkedIn About', state: aboutState, accent: LINKEDIN_BRAND_BLUE },
+    { key: 'cover', label: 'Cover Letter', state: coverState, accent: 'var(--wa-gold)' },
+    { key: 'interview', label: 'Interview Prep', state: interviewState, accent: 'var(--wa-info)' },
+    { key: 'salary', label: 'Salary Script', state: salaryState, accent: 'var(--wa-gold-dark)' },
   ];
 
   const completedTools = TOOL_GRID.filter(t => t.state.output);
@@ -397,8 +411,8 @@ export default function SessionRunClient({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '960px' }}>
       {isFreshWalkIn ? (
-        <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(74,155,79,0.08)', borderLeft: '4px solid var(--color-green, #4a9b4f)' }}>
-          <CheckCircle2 size={20} style={{ color: 'var(--color-green, #4a9b4f)', flexShrink: 0 }} />
+        <div className="portal-card portal-card--flat" style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--wa-success-soft)', borderLeft: '4px solid var(--wa-success)' }}>
+          <CheckCircle2 size={20} style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--color-on-surface)' }}>
             Account created. <strong>{memberEmail}</strong> will get a welcome email with a sign-in link
             once you click <em>End session</em>.
@@ -437,11 +451,11 @@ export default function SessionRunClient({
               >
                 <span style={{
                   width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                  background: isDone ? '#4a9b4f' : isRunning ? t.accent : isError ? 'var(--color-error, #d32f2f)' : 'var(--surface-container-highest)'}} />
+                  background: isDone ? 'var(--wa-success)' : isRunning ? t.accent : isError ? 'var(--wa-danger)' : 'var(--surface-container-highest)'}} />
                 <span style={{ fontSize: '0.8125rem', fontWeight: isDone ? 700 : 500, color: isDone ? t.accent : 'var(--color-on-surface)', lineHeight: 1.3 }}>
                   {t.label}
                 </span>
-                {isDone && <CheckCircle2 size={12} style={{ color: '#4a9b4f', flexShrink: 0, marginLeft: 'auto' }} aria-hidden />}
+                {isDone && <CheckCircle2 size={12} style={{ color: 'var(--wa-success)', flexShrink: 0, marginLeft: 'auto' }} aria-hidden />}
               </button>
             );
           })}
@@ -462,7 +476,7 @@ export default function SessionRunClient({
         onToggle={() => toggleCard('voice')}
         title="Voice walk-through (full A→Z)"
         Icon={Mic}
-        accent="#2563eb"
+        accent="var(--wa-info)"
         statusBadge={
           voiceComplete.walkthrough
             ? 'Recorded'
@@ -496,8 +510,8 @@ export default function SessionRunClient({
               title={`Build ${memberFullName.split(' ')[0]}'s session out loud`}
               titleAs="h3"
               description="Resume coach + cover letter + interview prep, all in one voice session."
-              accent="#2563eb"
-              accentDark="#1e40af"
+              accent={VOICE_ACCENT}
+              accentDark={VOICE_ACCENT_DARK}
               speakingLabel="Coach is speaking…"
               listeningLabel="Listening — answer out loud"
               onTranscriptChunk={makeTranscriptHandler('walkthrough')}
@@ -539,7 +553,7 @@ export default function SessionRunClient({
         onToggle={() => toggleCard('profile')}
         title="Profile"
         Icon={User}
-        accent="#2b7bb9"
+        accent="var(--wa-info)"
         statusBadge={memberPhone ? 'On file' : 'Needs detail'}
       >
         <p style={{ margin: '0 0 0.75rem', color: 'var(--color-on-surface-variant)' }}>
@@ -604,8 +618,8 @@ export default function SessionRunClient({
                 title="Resume coach"
                 titleAs="h3"
                 description="Talk through experience, certifications, and framing for the target role."
-                accent="#2563eb"
-                accentDark="#1e40af"
+                accent={VOICE_ACCENT}
+                accentDark={VOICE_ACCENT_DARK}
                 speakingLabel="Coach is speaking…"
                 listeningLabel="Listening — answer out loud"
                 onTranscriptChunk={makeTranscriptHandler('resume')}
@@ -720,7 +734,7 @@ export default function SessionRunClient({
         onToggle={() => toggleCard('cover')}
         title="Cover letter"
         Icon={MessagesSquare}
-        accent="var(--color-gold, #a47f38)"
+        accent="var(--wa-gold)"
         statusBadge={
           coverState.status === 'running' ? 'Running' :
           coverState.output ? 'Done' :
@@ -756,8 +770,8 @@ export default function SessionRunClient({
                 title="Cover letter coach"
                 titleAs="h3"
                 description="Read or paraphrase the job posting out loud — coach helps frame the cover."
-                accent="#2563eb"
-                accentDark="#1e40af"
+                accent={VOICE_ACCENT}
+                accentDark={VOICE_ACCENT_DARK}
                 speakingLabel="Coach is speaking…"
                 listeningLabel="Listening — describe the role"
                 onTranscriptChunk={makeTranscriptHandler('cover')}
@@ -839,7 +853,7 @@ export default function SessionRunClient({
         onToggle={() => toggleCard('interview')}
         title="Interview prep"
         Icon={MessagesSquare}
-        accent="#2b7bb9"
+        accent="var(--wa-info)"
         statusBadge={
           interviewState.status === 'running' ? 'Running' :
           interviewState.output ? 'Done' :
@@ -944,7 +958,7 @@ export default function SessionRunClient({
       </SectionCard>
 
       {/* Card 6: Gap analyzer */}
-      <SectionCard id="session-card-gapAnalyzer" title="Gap Analyzer" Icon={FileText} accent="#0891b2"
+      <SectionCard id="session-card-gapAnalyzer" title="Gap Analyzer" Icon={FileText} accent={TOOL_TEAL}
         isOpen={openCards.has('gapAnalyzer')} onToggle={() => toggleCard('gapAnalyzer')}
         statusBadge={gapState.status === 'running' ? 'Running' : gapState.output ? 'Done' : gapState.error ? 'Failed' : 'Ready'}
         contextNote={resumeText.trim().length > 50 ? 'Uses resume from step 2.' : null}
@@ -963,7 +977,7 @@ export default function SessionRunClient({
       </SectionCard>
 
       {/* Card 7: Job match scorer */}
-      <SectionCard id="session-card-jobMatch" title="Job Match Scorer" Icon={Search} accent="#059669"
+      <SectionCard id="session-card-jobMatch" title="Job Match Scorer" Icon={Search} accent="var(--wa-success)"
         isOpen={openCards.has('jobMatch')} onToggle={() => toggleCard('jobMatch')}
         statusBadge={jobMatchState.status === 'running' ? 'Running' : jobMatchState.output ? 'Done' : jobMatchState.error ? 'Failed' : 'Ready'}
         contextNote={resumeText.trim().length > 50 ? 'Uses resume from step 2.' : null}
@@ -988,7 +1002,7 @@ export default function SessionRunClient({
       </SectionCard>
 
       {/* Card 8: LinkedIn headline */}
-      <SectionCard id="session-card-headline" title="LinkedIn Headline" Icon={PenLine} accent="#0077b5"
+      <SectionCard id="session-card-headline" title="LinkedIn Headline" Icon={PenLine} accent={LINKEDIN_BRAND_BLUE}
         isOpen={openCards.has('headline')} onToggle={() => toggleCard('headline')}
         statusBadge={headlineState.status === 'running' ? 'Running' : headlineState.output ? 'Done' : headlineState.error ? 'Failed' : 'Ready'}
       >
@@ -1016,7 +1030,7 @@ export default function SessionRunClient({
       </SectionCard>
 
       {/* Card 9: LinkedIn About */}
-      <SectionCard id="session-card-about" title="LinkedIn About" Icon={PenLine} accent="#0077b5"
+      <SectionCard id="session-card-about" title="LinkedIn About" Icon={PenLine} accent={LINKEDIN_BRAND_BLUE}
         isOpen={openCards.has('about')} onToggle={() => toggleCard('about')}
         statusBadge={aboutState.status === 'running' ? 'Running' : aboutState.output ? 'Done' : aboutState.error ? 'Failed' : 'Ready'}
         contextNote="Resume auto-loaded as context if on file."
@@ -1041,7 +1055,7 @@ export default function SessionRunClient({
       </SectionCard>
 
       {/* Card 10: Salary negotiation */}
-      <SectionCard id="session-card-salary" title="Salary Negotiation" Icon={MessagesSquare} accent="#d97706"
+      <SectionCard id="session-card-salary" title="Salary Negotiation" Icon={MessagesSquare} accent="var(--wa-gold-dark)"
         isOpen={openCards.has('salary')} onToggle={() => toggleCard('salary')}
         statusBadge={salaryState.status === 'running' ? 'Running' : salaryState.output ? 'Done' : salaryState.error ? 'Failed' : 'Ready'}
       >
@@ -1236,8 +1250,8 @@ function SectionCard({
         <span style={{
           fontSize: '0.8125rem', fontWeight: 600, padding: '0.25rem 0.5rem',
           borderRadius: '999px',
-          background: isDone ? 'color-mix(in srgb, #4a9b4f 12%, transparent)' : 'var(--surface-container)',
-          color: isDone ? '#4a9b4f' : 'var(--color-on-surface-variant)',
+          background: isDone ? 'var(--wa-success-soft)' : 'var(--surface-container)',
+          color: isDone ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)',
           textTransform: 'uppercase', letterSpacing: '0.04em'}}>
           {statusBadge}
         </span>
@@ -1276,7 +1290,7 @@ function OutputPanel({ label, body, savedTo }: { label: string; body: string; sa
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           {label}
         </strong>
-        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--wa-success-dark)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>
@@ -1300,7 +1314,7 @@ function InterviewOutput({ body, savedTo }: { body: string; savedTo: string }) {
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           {questions.length} interview questions
         </strong>
-        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--wa-success-dark)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>
@@ -1333,7 +1347,7 @@ function LinkedInHeadlinesOutput({ body, savedTo }: { body: string; savedTo: str
         <strong style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-on-surface-variant)' }}>
           LinkedIn Headlines
         </strong>
-        <span style={{ fontSize: '0.8125rem', color: 'var(--color-green, #4a9b4f)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+        <span style={{ fontSize: '0.8125rem', color: 'var(--wa-success-dark)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
           <CheckCircle2 size={14} aria-hidden /> Saved to {savedTo.split(' ')[0]}
         </span>
       </header>
