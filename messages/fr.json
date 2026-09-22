@@ -2474,11 +2474,6 @@
     "draft": "Brouillon",
     "filled": "Pourvu",
     "expired": "Expiré",
-    "nothingInThisView": "Rien dans cette vue",
-    "tryAnotherFilter": "Essayez un autre filtre ou consultez toutes les offres.",
-    "showAllPostings": "Afficher toutes les offres",
-    "noJobsYet": "Pas encore d'offres",
-    "postFirstRole": "Publiez votre première offre pour commencer à recevoir des candidats correspondants.",
     "postAJobBtn": "Publier une offre",
     "applications": "candidature{count, plural, =1 {} other {s}}",
     "postAJobTitle": "Publier une offre",
@@ -2564,8 +2559,6 @@
     "matchHistorySubtitleMobile": "Candidats suggérés pour vos rôles",
     "matchHistorySubtitleDesktop": "Suivez les membres suggérés et mettez à jour le statut de votre pipeline au fur et à mesure.",
     "allRoles": "Tous les rôles",
-    "noMatchesYet": "Aucune correspondance pour l'instant",
-    "noMatchesDesc": "Les correspondances de candidats par IA apparaîtront ici une fois vos offres actives.",
     "match": "correspondance",
     "possibleFit": "Ajustement possible",
     "viewProfile": "Voir le profil",
@@ -3936,6 +3929,72 @@
       "title": "Impossible de charger votre score de préparation",
       "body": "Actualisez la page. Si cela persiste, écrivez à votre conseiller.",
       "action": "Ouvrir le coach de préparation"
+    },
+    "employer": {
+      "postings": {
+        "title": "Aucune offre pour le moment",
+        "body": "Créez une offre pour commencer à recruter. Elle reste privée jusqu'à ce que vous la soumettiez à la relecture de WorkforceAP, et les candidats sont proposés une fois qu'elle est en ligne.",
+        "action": "Publier une offre",
+        "secondary": "Importer des offres"
+      },
+      "postingsFiltered": {
+        "title": "Aucune offre ne correspond à ce filtre",
+        "body": "Effacez le filtre pour voir toutes les offres.",
+        "action": "Afficher toutes les offres"
+      },
+      "pipelineNotLive": {
+        "title": "Aucune offre en ligne pour le moment",
+        "body": "Les candidats sont proposés pour une offre lorsque WorkforceAP l'approuve et qu'elle passe en ligne. Aucune de vos offres n'est en ligne actuellement.",
+        "action": "Voir vos offres"
+      },
+      "pipelineNoMatches": {
+        "title": "Aucun candidat suggéré pour le moment",
+        "body": "Lorsqu'une offre passe en ligne, WorkforceAP suggère des membres dont le profil lui correspond. Aucune de vos offres en ligne n'a encore de candidat suggéré.",
+        "action": "Voir vos offres"
+      },
+      "applications": {
+        "title": "Aucune candidature pour le moment",
+        "body": "Les membres postulent à vos offres en ligne ; chaque candidature apparaît ici avec son étape et sa messagerie.",
+        "action": "Publier une offre",
+        "secondary": "Voir vos offres"
+      },
+      "applicationsFiltered": {
+        "title": "Aucun candidat à l'étape {stage}",
+        "body": "Effacez le filtre d'étape pour voir tous les candidats.",
+        "action": "Afficher tous les candidats"
+      },
+      "applicationsPage": {
+        "title": "Aucun candidat sur cette page",
+        "body": "Cette page dépasse le dernier candidat. Reprenez depuis la première page.",
+        "action": "Afficher tous les candidats"
+      },
+      "homeCandidates": {
+        "title": "Aucun candidat pour le moment",
+        "body": "Les membres qui postulent à vos offres en ligne apparaissent ici avec leur score d'adéquation et leur étape.",
+        "action": "Publier un poste"
+      },
+      "homeOpenRoles": {
+        "title": "Aucune offre en ligne",
+        "body": "Publiez un poste ; il apparaîtra ici une fois approuvé par WorkforceAP.",
+        "action": "Publier un poste"
+      },
+      "workQueueReviewClear": {
+        "title": "Rien à examiner aujourd'hui",
+        "body": "Aucune candidature n'est arrivée aujourd'hui et aucune de vos offres n'attend d'approbation ou de mise en ligne."
+      },
+      "workQueueStaleClear": {
+        "title": "Aucune candidature en attente prolongée",
+        "body": "Chaque candidature à l'étape {newStage} ou {reviewingStage} a eu de l'activité au cours des deux derniers jours."
+      },
+      "workQueueInterviewClear": {
+        "title": "Aucun entretien en attente",
+        "body": "Aucune candidature n'est à l'étape {stage}."
+      },
+      "workQueueUnavailable": {
+        "title": "Impossible de charger la file de travail",
+        "body": "La file n'a pas répondu. Réessayez.",
+        "action": "Réessayer"
+      }
     }
   }
 }

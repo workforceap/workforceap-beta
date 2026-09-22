@@ -19,12 +19,17 @@ import pt from '@/messages/pt.json';
  * when that module's hardcoded sentences moved into messages.
  */
 
-type Leaf = Record<string, string>;
-type Namespace = Record<string, Leaf>;
-const LOCALES: Record<string, Namespace> = { en: en.empty, es: es.empty, fr: fr.empty, pt: pt.empty };
+/** A group is `{title, body, action…}`; a role (`counselor`) nests one level of groups. */
+type Tree = { [key: string]: string | Tree };
+const LOCALES: Record<string, Tree> = { en: en.empty, es: es.empty, fr: fr.empty, pt: pt.empty };
 
-function shape(ns: Namespace): string[] {
-  return Object.entries(ns).flatMap(([group, leaf]) => Object.keys(leaf).map((k) => `${group}.${k}`)).sort();
+function leaves(tree: Tree, prefix = ''): Array<[string, string]> {
+  return Object.entries(tree).flatMap(([k, v]) =>
+    typeof v === 'string' ? [[`${prefix}${k}`, v] as [string, string]] : leaves(v, `${prefix}${k}.`),
+  );
+}
+function shape(ns: Tree): string[] {
+  return leaves(ns).map(([k]) => k).sort();
 }
 
 describe('empty.* copy', () => {
@@ -33,9 +38,7 @@ describe('empty.* copy', () => {
     expect(reference.length).toBeGreaterThanOrEqual(104);
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(shape(ns), locale).toEqual(reference);
-      for (const [group, leaf] of Object.entries(ns)) {
-        for (const [k, v] of Object.entries(leaf)) expect(v.trim(), `${locale} empty.${group}.${k}`).not.toBe('');
-      }
+      for (const [k, v] of leaves(ns)) expect(v.trim(), `${locale} empty.${k}`).not.toBe('');
     }
   });
 
@@ -129,6 +132,43 @@ describe('empty.* copy', () => {
     expect(en.empty.resourcesFiltered.action).toBe('Clear filters');
     expect(en.empty.resourcesUnavailable.action.length).toBeGreaterThan(0);
     expect(en.empty.readinessUnavailable.title).toBe("Couldn't load your readiness score");
+  });
+
+  it('employer: first states end on posting, filtered states clear to the full list, pipeline states say when matching runs, queue zeros restate the rule', () => {
+    const e = en.empty.employer;
+    // First: the thing, what makes it appear, the first action (a route that exists).
+    expect(e.postings.title).toBe('No postings yet');
+    expect(e.postings.body).toMatch(/goes live/);
+    expect(e.postings.action).toBe('Post a job');
+    expect(e.postings.secondary).toBe('Import jobs');
+    expect(e.applications.title).toBe('No applications yet');
+    expect(e.applications.body).toMatch(/live postings/);
+    expect(e.applications.body).toMatch(/appears here/);
+    expect(e.homeCandidates.title).toBe('No candidates yet');
+    expect(e.homeOpenRoles.body).toMatch(/approves/);
+    // Filtered: the rule, then the whole list back.
+    expect(e.postingsFiltered.title).toBe('No postings match this filter');
+    expect(e.postingsFiltered.action).toBe('Show all postings');
+    expect(e.applicationsFiltered.title).toMatch(/\{stage\} stage$/);
+    expect(e.applicationsFiltered.action).toBe('Show all applicants');
+    expect(e.applicationsPage.action).toBe('Show all applicants');
+    // Unavailable (matching is WorkforceAP's step): say when it runs, never "AI will match" or "will appear".
+    for (const group of [e.pipelineNotLive, e.pipelineNoMatches]) {
+      expect(group.body).toMatch(/goes live/);
+      expect(group.body).not.toMatch(/will appear|AI will|admin runs/i);
+      expect(group.action).toBe('View your postings');
+    }
+    // Clear: zero is the goal; the body is the loader's rule with the vocabulary stage words interpolated.
+    expect(e.workQueueReviewClear.body).toMatch(/today/);
+    expect(e.workQueueStaleClear.body).toMatch(/\{newStage\}.*\{reviewingStage\}/);
+    expect(e.workQueueStaleClear.body).toMatch(/two days/);
+    expect(e.workQueueInterviewClear.body).toMatch(/\{stage\}/);
+    // Failed: what did not load + a retry verb.
+    expect(e.workQueueUnavailable.title).toMatch(/load/i);
+    expect(e.workQueueUnavailable.action).toBe('Try again');
+    for (const [locale, ns] of Object.entries(LOCALES)) {
+      expect(JSON.stringify((ns as { employer: Tree }).employer), locale).not.toMatch(/Nothing in this (queue|stage|view)|No pipeline yet/i);
+    }
   });
 
   it('never promises a reply time', () => {

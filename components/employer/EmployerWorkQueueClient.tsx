@@ -2,12 +2,14 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Briefcase, UserRound, TriangleAlert, Clock, CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import { employerJobStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { QueueRow, WorkQueueItem, StatusTag, type QueueTone, type KitTone } from '@/components/portal/kit';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 export type WqApp = {
   id: string;
@@ -41,6 +43,18 @@ const SECTION_STATUS_TONE: Record<SectionId, KitTone> = {
   review: 'alert',
   stale: 'danger',
   interview: 'info',
+};
+
+/**
+ * `empty.employer.*` group for each queue's zero. Zero is the goal in every
+ * queue (`clear`), and each body restates the rule lib/employer/workQueue.ts
+ * applies — "today", the two-day stale cutoff, the interviewing stage — with
+ * the stage words from lib/status/jobApplicationStatusVocabulary.ts.
+ */
+const SECTION_CLEAR_GROUP: Record<SectionId, string> = {
+  review: 'workQueueReviewClear',
+  stale: 'workQueueStaleClear',
+  interview: 'workQueueInterviewClear',
 };
 
 /** Small pill CTA, styled with kit tokens (mirrors EmployerHomeKit's "Post a role" action). */
@@ -121,18 +135,28 @@ export default function EmployerWorkQueueClient({
   staleApps,
   interviewPending,
   initialFocus = 'all',
+  loadFailed = false,
 }: {
   needsReviewTodayApps: WqApp[];
   jobsAwaitingPublish: WqJob[];
   staleApps: WqApp[];
   interviewPending: WqApp[];
   initialFocus?: Focus;
+  /** The page could not read the queue: render one failed-load state, never three clear queues. */
+  loadFailed?: boolean;
 }) {
+  const router = useRouter();
   const [focus, setFocus] = useState<Focus>(initialFocus);
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   const connectionCopy = tCommon('connectionError');
+  const stageValues = {
+    stage: jobApplicationStatusLabel('interview', 'employer'),
+    newStage: jobApplicationStatusLabel('pending', 'employer'),
+    reviewingStage: jobApplicationStatusLabel('reviewing', 'employer'),
+  };
 
   const patchApp = useCallback(async (appId: string, status: string) => {
     setBusy(appId);
@@ -189,6 +213,23 @@ export default function EmployerWorkQueueClient({
   );
 
   const visible = sections.filter((s) => focus === 'all' || focus === s.id);
+
+  if (loadFailed) {
+    return (
+      <KitEmptyState
+        framed
+        kind="unavailable"
+        tone="danger"
+        headingAs="h2"
+        data-testid="employer-work-queue-empty"
+        data-variant="workQueueUnavailable"
+        icon={<TriangleAlert size={13} aria-hidden="true" />}
+        title={tEmpty('employer.workQueueUnavailable.title')}
+        description={tEmpty('employer.workQueueUnavailable.body')}
+        primaryAction={{ label: tEmpty('employer.workQueueUnavailable.action'), onClick: () => router.refresh() }}
+      />
+    );
+  }
 
   return (
     <div className="wa-space-y-5">
@@ -309,10 +350,16 @@ export default function EmployerWorkQueueClient({
             })}
 
             {sec.apps.length === 0 && sec.jobs.length === 0 ? (
-              <div className="wa-kit-card wa-kit-card--sm" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Clock size={16} aria-hidden style={{ color: 'var(--wa-muted)', flexShrink: 0 }} />
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)' }}>Nothing in this queue right now.</p>
-              </div>
+              <KitEmptyState
+                framed
+                kind="clear"
+                headingAs="h3"
+                data-testid="employer-work-queue-empty"
+                data-variant={SECTION_CLEAR_GROUP[sec.id]}
+                icon={<Clock size={13} aria-hidden="true" />}
+                title={tEmpty(`employer.${SECTION_CLEAR_GROUP[sec.id]}.title`)}
+                description={tEmpty(`employer.${SECTION_CLEAR_GROUP[sec.id]}.body`, stageValues)}
+              />
             ) : null}
           </div>
         </section>

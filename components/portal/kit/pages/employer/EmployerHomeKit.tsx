@@ -3,12 +3,14 @@
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Users, CalendarClock, Award, ChevronRight, HeartHandshake, SquarePen } from 'lucide-react';
 import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DataTable,
   DesignSurface,
+  KitEmptyState,
   PageOpener,
   StatSparkTile,
   StageTrack,
@@ -273,6 +275,7 @@ export function EmployerHomeKit({
   jobsHref = '/employer/jobs',
   pipelineHref = '/employer/applications',
 }: EmployerHomeKitProps) {
+  const tEmpty = useTranslations('empty');
   const giveback = givebackFigure ?? illustrativeGiveback(hires);
 
   const kpiTiles: Array<{ key: string; icon: LucideIcon; label: string; value: number; spark?: SparkStat }> = [
@@ -332,8 +335,15 @@ export function EmployerHomeKit({
               mobile="cards"
               cardRender={candidateCard}
               minWidth={560}
-              emptyTitle="No candidates yet"
-              emptyDescription="New job applications will appear here as candidates enter the pipeline."
+              empty={{
+                kind: 'first',
+                icon: <Users size={13} aria-hidden="true" />,
+                title: tEmpty('employer.homeCandidates.title'),
+                description: tEmpty('employer.homeCandidates.body'),
+                primaryAction: { label: tEmpty('employer.homeCandidates.action'), href: postRoleHref },
+                'data-testid': 'employer-home-empty',
+                'data-variant': 'homeCandidates',
+              }}
             />
           </div>
 
@@ -341,9 +351,16 @@ export function EmployerHomeKit({
             <Card>
               <CardHead title="Open roles" linkLabel="Manage" linkHref={jobsHref} />
               {openRolesList.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                  Post a role to start building your pipeline.
-                </p>
+                <KitEmptyState
+                  kind="first"
+                  headingAs="h3"
+                  data-testid="employer-home-empty"
+                  data-variant="homeOpenRoles"
+                  icon={<Briefcase size={13} aria-hidden="true" />}
+                  title={tEmpty('employer.homeOpenRoles.title')}
+                  description={tEmpty('employer.homeOpenRoles.body')}
+                  primaryAction={{ label: tEmpty('employer.homeOpenRoles.action'), href: postRoleHref }}
+                />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {openRolesList.map((item) => (

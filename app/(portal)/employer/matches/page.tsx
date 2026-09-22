@@ -10,6 +10,7 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import EmployerMatchHistoryClient from '@/components/employer/EmployerMatchHistoryClient';
 import { getTranslations } from 'next-intl/server';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
+import { employerPipelineEmptyVariant } from '@/lib/employer/emptyState';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -30,7 +31,11 @@ export default async function EmployerMatchesPage() {
   const t = await getTranslations('employer');
 
   const matchWhere = { job: { employerId: ctx.employerId, status: 'live' as const } };
-  const [matchTotal, matches] = await Promise.all([
+  const [postingTotal, liveTotal, matchTotal, matches] = await Promise.all([
+    // Posting counts decide which empty state is honest: no posting at all,
+    // postings but none live (matching has not run), or live postings with no match.
+    prisma.job.count({ where: { employerId: ctx.employerId } }),
+    prisma.job.count({ where: { employerId: ctx.employerId, status: 'live' } }),
     prisma.aIJobMatch.count({ where: matchWhere }),
     prisma.aIJobMatch.findMany({
       take: EMPLOYER_LIST_CAP,
@@ -84,7 +89,10 @@ export default async function EmployerMatchesPage() {
           {showingFirstLabel(matches.length, matchTotal, 'matches')}
         </p>
       )}
-      <EmployerMatchHistoryClient initialRows={initialRows} />
+      <EmployerMatchHistoryClient
+        initialRows={initialRows}
+        emptyVariant={employerPipelineEmptyVariant({ postings: postingTotal, live: liveTotal, matches: matches.length }) ?? 'pipelineNoMatches'}
+      />
     </PortalPageFrame>
   );
 }

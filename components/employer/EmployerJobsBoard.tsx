@@ -20,7 +20,7 @@ import { EMPLOYER_JOB_SUBMIT_REVIEW_DRAFT_FLASH } from '@/lib/employer/employerJ
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
 import { DesignSurface, StatusTag, StatSparkTile, type KitTone } from '@/components/portal/kit';
-import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
 
 /**
  * Employer "My Jobs" board — Command Center visual language.
@@ -683,16 +683,7 @@ export default function EmployerJobsBoard({
     return (
       <DesignSurface surface="dense">
         <div className="wa-kit-card" role="status">
-          <KitEmptyState
-            headingAs="h2"
-            title="No postings yet"
-            description="Create a posting to start hiring. Everything stays private until you submit for WorkforceAP review — nothing goes live by surprise."
-            action={
-              <Link href="/employer/jobs/new" className="wa-kit-cta">
-                Create your first posting
-              </Link>
-            }
-          />
+          <EmployerEmptyState variant="postings" headingAs="h2" />
         </div>
       </DesignSurface>
     );
@@ -845,12 +836,7 @@ export default function EmployerJobsBoard({
       )}
 
       {totalInFilter === 0 ? (
-        <div className="wa-kit-card" style={{ textAlign: 'center' }}>
-          <p style={{ color: 'var(--wa-muted)', margin: '0 0 12px' }}>Nothing in this stage right now.</p>
-          <Link href={employerJobsListHref('all', 1, locationType)} className="btn btn-muted btn-sm">
-            Show all postings
-          </Link>
-        </div>
+        <EmployerEmptyState variant="postingsFiltered" headingAs="h2" framed showAllHref={employerJobsListHref('all', 1, locationType)} />
       ) : (
         <>
           <ul className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 xl:wa-grid-cols-3 wa-gap-4" style={{ listStyle: 'none', margin: 0, padding: 0 }}>

@@ -2534,11 +2534,6 @@
     "draft": "Borrador",
     "filled": "Cubierto",
     "expired": "Expirado",
-    "nothingInThisView": "Nada en esta vista",
-    "tryAnotherFilter": "Prueba otro filtro o ve todas las publicaciones.",
-    "showAllPostings": "Mostrar todas las publicaciones",
-    "noJobsYet": "Aún no hay empleos",
-    "postFirstRole": "Publica tu primer rol para empezar a recibir candidatos asignados.",
     "postAJobBtn": "Publicar un Empleo",
     "applications": "solicitud{count, plural, =1 {} other {es}}",
     "postAJobTitle": "Publicar un Empleo",
@@ -2624,8 +2619,6 @@
     "matchHistorySubtitleMobile": "Candidatos sugeridos para tus roles",
     "matchHistorySubtitleDesktop": "Rastrea miembros sugeridos y actualiza el estado de tu pipeline a medida que avanzas.",
     "allRoles": "Todos los roles",
-    "noMatchesYet": "Aún no hay coincidencias",
-    "noMatchesDesc": "Las coincidencias de candidatos por IA aparecerán aquí una vez que tus empleos estén activos.",
     "match": "coincidencia",
     "possibleFit": "Posible ajuste",
     "viewProfile": "Ver perfil",
@@ -3996,6 +3989,72 @@
       "title": "No se pudo cargar tu puntaje de preparación",
       "body": "Actualiza la página. Si esto sigue pasando, escribe a tu orientador.",
       "action": "Abrir el coach de preparación"
+    },
+    "employer": {
+      "postings": {
+        "title": "Aún no hay vacantes",
+        "body": "Crea una vacante para empezar a contratar. Se mantiene privada hasta que la envíes a revisión de WorkforceAP, y los candidatos se emparejan cuando se publica.",
+        "action": "Publicar un empleo",
+        "secondary": "Importar empleos"
+      },
+      "postingsFiltered": {
+        "title": "Ninguna vacante coincide con este filtro",
+        "body": "Borra el filtro para ver todas las vacantes.",
+        "action": "Mostrar todas las vacantes"
+      },
+      "pipelineNotLive": {
+        "title": "Aún no hay vacantes publicadas",
+        "body": "Los candidatos se emparejan con una vacante cuando WorkforceAP la aprueba y se publica. Ninguna de tus vacantes está publicada ahora.",
+        "action": "Ver tus vacantes"
+      },
+      "pipelineNoMatches": {
+        "title": "Aún no hay candidatos sugeridos",
+        "body": "Cuando una vacante se publica, WorkforceAP sugiere miembros cuyo perfil encaja con ella. Ninguna de tus vacantes publicadas tiene todavía un candidato sugerido.",
+        "action": "Ver tus vacantes"
+      },
+      "applications": {
+        "title": "Aún no hay solicitudes",
+        "body": "Los miembros se postulan a tus vacantes publicadas; cada solicitud aparece aquí con su etapa y mensajería.",
+        "action": "Publicar un empleo",
+        "secondary": "Ver tus vacantes"
+      },
+      "applicationsFiltered": {
+        "title": "No hay candidatos en la etapa {stage}",
+        "body": "Borra el filtro de etapa para ver a todos los candidatos.",
+        "action": "Mostrar todos los candidatos"
+      },
+      "applicationsPage": {
+        "title": "No hay candidatos en esta página",
+        "body": "Esta página está más allá del último candidato. Empieza de nuevo desde la primera página.",
+        "action": "Mostrar todos los candidatos"
+      },
+      "homeCandidates": {
+        "title": "Aún no hay candidatos",
+        "body": "Los miembros que se postulan a tus vacantes publicadas aparecen aquí con su puntuación de ajuste y su etapa.",
+        "action": "Publicar un puesto"
+      },
+      "homeOpenRoles": {
+        "title": "No hay vacantes publicadas",
+        "body": "Publica un puesto; aparecerá aquí cuando WorkforceAP lo apruebe.",
+        "action": "Publicar un puesto"
+      },
+      "workQueueReviewClear": {
+        "title": "Nada que revisar hoy",
+        "body": "No llegó ninguna solicitud hoy y ninguna de tus vacantes está esperando aprobación o publicación."
+      },
+      "workQueueStaleClear": {
+        "title": "No hay solicitudes estancadas",
+        "body": "Todas las solicitudes en la etapa {newStage} o {reviewingStage} han tenido actividad en los últimos dos días."
+      },
+      "workQueueInterviewClear": {
+        "title": "No hay entrevistas pendientes",
+        "body": "Ninguna solicitud está en la etapa {stage}."
+      },
+      "workQueueUnavailable": {
+        "title": "No se pudo cargar la cola de trabajo",
+        "body": "La cola no respondió. Intenta de nuevo.",
+        "action": "Intentar de nuevo"
+      }
     }
   }
 }

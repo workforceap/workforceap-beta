@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db/prisma';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import EmployerJobsBoard from '@/components/employer/EmployerJobsBoard';
 import EmployerJobQuickActions from '@/components/employer/EmployerJobQuickActions';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
 import { assessJobPostingReadiness } from '@/lib/employer/jobReadiness';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
@@ -187,21 +187,10 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
         {/* Job cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem', padding: '0 1rem' }}>
           {boardItems.length === 0 && totalInDb > 0 ? (
-            <PortalEmptyState
-              headingAs="h2"
-              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">filter_alt_off</span>}
-              title={t('nothingInThisView')}
-              description={t('tryAnotherFilter')}
-              primaryAction={{ label: t('showAllPostings'), href: `/employer/jobs${locationType ? `?locationType=${locationType}` : ''}` }}
-            />
+            // Postings exist, none match the status chip (a page past the last row redirects above).
+            <EmployerEmptyState variant="postingsFiltered" headingAs="h2" framed showAllHref={employerJobsListHref('all', 1, locationType)} />
           ) : boardItems.length === 0 ? (
-            <PortalEmptyState
-              headingAs="h2"
-              icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--outline-variant)' }} aria-hidden="true">work_outline</span>}
-              title={t('noJobsYet')}
-              description={t('postFirstRole')}
-              primaryAction={{ label: t('postAJobBtn'), href: '/employer/jobs/new' }}
-            />
+            <EmployerEmptyState variant="postings" headingAs="h2" framed />
           ) : (
             boardItems.map((job) => (
               <div
@@ -235,14 +224,7 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
       {/* ── Desktop section ── */}
       <div className="wa-hidden md:wa-block">
           {totalInDb === 0 ? (
-            <PortalEmptyState
-              headingAs="h2"
-              icon={<span className="material-symbols-outlined" style={{ fontSize: '3rem', color: 'var(--outline-variant)' }} aria-hidden="true">work_outline</span>}
-              title={t('noJobsYet')}
-              description={t('postFirstRole')}
-              primaryAction={{ label: t('postYourFirstJob'), href: '/employer/jobs/new' }}
-              secondaryAction={{ label: t('importJobsBtn'), href: '/employer/jobs/import' }}
-            />
+            <EmployerEmptyState variant="postings" headingAs="h2" framed />
           ) : (
             <>
               {totalInFilter > EMPLOYER_LIST_CAP && (
