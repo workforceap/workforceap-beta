@@ -204,7 +204,7 @@ export default function JobsTableClient({
             },
             {
               key: 'age',
-              header: header('Pending', 'age'),
+              header: header(jobPostingStatusLabel('pending', 'admin'), 'age'),
               cell: (j) => {
                 if (j.status !== 'pending') return <span style={{ color: 'var(--color-on-surface-variant)' }}>—</span>;
                 const days = daysSince(j.updatedAt);

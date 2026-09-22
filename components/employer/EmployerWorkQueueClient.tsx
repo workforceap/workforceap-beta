@@ -6,6 +6,7 @@ import { Briefcase, UserRound, TriangleAlert, Clock, CalendarClock } from 'lucid
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { statusLabel } from '@/lib/employer/statusLabel';
+import { employerJobStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { QueueRow, WorkQueueItem, StatusTag, type QueueTone, type KitTone } from '@/components/portal/kit';
 
 export type WqApp = {
@@ -256,7 +257,7 @@ export default function EmployerWorkQueueClient({
                 icon={<Briefcase size={16} aria-hidden />}
                 urgent
                 title={j.title}
-                detail={`Status: ${statusLabel(j.status)} · Updated ${new Date(j.updatedAt).toLocaleDateString()}`}
+                detail={`Status: ${employerJobStatusLabel(j.status)} · Updated ${new Date(j.updatedAt).toLocaleDateString()}`}
                 action={pillLink({ label: 'Open job', href: `/employer/jobs/${encodeURIComponent(j.id)}` })}
               />
             ))}

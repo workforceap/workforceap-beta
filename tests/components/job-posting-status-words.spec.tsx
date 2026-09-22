@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
@@ -34,6 +34,8 @@ vi.mock('@astryxdesign/core/Link', () => ({
 }));
 
 import EmployerJobsBoard, { type EmployerJobBoardItem } from '@/components/employer/EmployerJobsBoard';
+import EmployerWorkQueueClient from '@/components/employer/EmployerWorkQueueClient';
+import EmployerOutcomesDashboard from '@/components/employer/EmployerOutcomesDashboard';
 import JobsTableClient from '@/components/admin/JobsTableClient';
 import AdminJobReview from '@/components/admin/AdminJobReview';
 import { JobsBoardKit } from '@/components/portal/kit/pages/admin-subviews/JobsBoardKit';
@@ -92,6 +94,53 @@ describe('employer surface: a pending posting', () => {
     expect(screen.getAllByText('Awaiting approval').length).toBeGreaterThanOrEqual(2); // row tag + filter
     expect(screen.queryByText(OLD_WORDS)).toBeNull();
     expect(document.body.textContent).not.toMatch(/Awaiting review/);
+  });
+
+  it('reads "Awaiting approval" in the work queue\'s jobs-awaiting-publish row, not the title-cased enum', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages} timeZone="America/New_York">
+        <EmployerWorkQueueClient
+          needsReviewTodayApps={[]}
+          jobsAwaitingPublish={[
+            { id: 'job-1', title: 'Support Specialist', status: 'pending', updatedAt: '2026-08-29T12:00:00.000Z' },
+          ]}
+          staleApps={[]}
+          interviewPending={[]}
+        />
+      </NextIntlClientProvider>,
+    );
+    const row = screen.getByText('Support Specialist').closest('li, article, div') as HTMLElement;
+    expect(row).not.toBeNull();
+    expect(screen.getByText(/Status: Awaiting approval/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/\bPending\b|In review|Awaiting review/);
+  });
+
+  it('reads "Awaiting approval" on the outcomes dashboard job-postings pill, not the title-cased enum', async () => {
+    const payload = {
+      employer: { companyName: 'Fixture Co', hiringPipelineActive: true },
+      metrics: { totalJobs: 2, activeJobs: 1, totalApplications: 0, newApplications: 0, reviewedApplications: 0, hiredApplications: 0, rejectedApplications: 0, conversionRate: 0 },
+      jobs: [
+        { id: 'job-1', title: 'Fixture Submitted Role', status: 'pending', applications: 0 },
+        { id: 'job-2', title: 'Fixture Live Role', status: 'live', applications: 0 },
+      ],
+      programStats: [],
+    };
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => payload })));
+    try {
+      render(
+        <NextIntlClientProvider locale="en" messages={messages} timeZone="America/New_York">
+          <EmployerOutcomesDashboard />
+        </NextIntlClientProvider>,
+      );
+      await waitFor(() => expect(screen.getByText('Fixture Submitted Role')).toBeInTheDocument());
+      expect(screen.getByText('Awaiting approval')).toBeInTheDocument();
+      // The rest of the table keeps the shared enum words.
+      expect(screen.getByText('Live')).toBeInTheDocument();
+      expect(screen.queryByText(/\bPending\b/)).toBeNull();
+      expect(document.body.textContent).not.toMatch(/In review|Awaiting review/);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
