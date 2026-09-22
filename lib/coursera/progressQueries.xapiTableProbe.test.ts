@@ -119,6 +119,26 @@ describe('coursera_xapi_events absent (db push databases)', () => {
     expect(error).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);
   });
+
+  it('reports the gap to every caller through onXapiTableMissing off the one probe', async () => {
+    const { countHiddenTestAccountUnmatchedLearners, countUnmatchedLearners, loadUnmatchedLearners } = await freshQueries();
+    const onXapiTableMissing = vi.fn();
+
+    mockDatabase(false, [{ count: BigInt(2) }]);
+    await expect(countHiddenTestAccountUnmatchedLearners('org-A', { onXapiTableMissing })).resolves.toBe(2);
+    expect(onXapiTableMissing).toHaveBeenCalledTimes(1);
+    // One probe, one count: the callback did not cost a second to_regclass.
+    expect(probeCalls()).toHaveLength(1);
+    expect(nonProbeCalls()).toHaveLength(1);
+
+    db.$queryRaw.mockClear();
+    mockDatabase(false, [{ count: BigInt(0) }]);
+    await countUnmatchedLearners('org-A', { onXapiTableMissing });
+    db.$queryRaw.mockClear();
+    mockDatabase(false, []);
+    await loadUnmatchedLearners('org-A', 25, { onXapiTableMissing });
+    expect(onXapiTableMissing).toHaveBeenCalledTimes(3);
+  });
 });
 
 describe('coursera_xapi_events present (production)', () => {
@@ -143,6 +163,21 @@ describe('coursera_xapi_events present (production)', () => {
     expect(probes).toBe(1);
     expect(warn).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
+  });
+
+  it('never calls onXapiTableMissing while the table is present', async () => {
+    const { countHiddenTestAccountUnmatchedLearners, countUnmatchedLearners, loadUnmatchedLearners } = await freshQueries();
+    const onXapiTableMissing = vi.fn();
+    mockDatabase(true, []);
+
+    await countHiddenTestAccountUnmatchedLearners('org-A', { onXapiTableMissing });
+    await countUnmatchedLearners('org-A', { onXapiTableMissing });
+    await loadUnmatchedLearners('org-A', 25, { onXapiTableMissing });
+
+    expect(onXapiTableMissing).not.toHaveBeenCalled();
+    expect(probeCalls()).toHaveLength(1);
+    // The hidden-test count renders the same SQL master rendered.
+    expect(rendered(nonProbeCalls()[0])).toEqual(MASTER.countHidden);
   });
 
   it('a failing probe behaves like any other failed read: swallowed by default, thrown under strict', async () => {

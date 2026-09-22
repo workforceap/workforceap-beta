@@ -12,6 +12,7 @@ import {
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
 import { parseCourseGradeString } from '@/lib/coursera/courseGradeDisplay';
+import { COURSERA_XAPI_UNAVAILABLE_NOTICE, type CourseraXapiDegradation } from '@/lib/coursera/xapiUnavailableNotice';
 import { loadStudentRosterEnrichment } from '@/lib/admin/studentsRosterEnrichment';
 import { loadUnmatchedCourseraRoster } from '@/lib/admin/studentsUnmatchedCoursera';
 import { withSoftTimeout } from '@/lib/admin/withSoftTimeout';
@@ -43,12 +44,12 @@ export const STUDENTS_SECONDARY_LOAD_NOTICE =
 
 /**
  * Shown when `coursera_xapi_events` is absent (db:push environments; see
- * `courseraXapiEventsTablePresent`). Nothing failed and nothing will
- * recover on its own, so the wording states the gap and makes no time
- * promise.
+ * `courseraXapiEventsTablePresent`). One sentence shared with the reporting
+ * Coursera tab and the legacy /admin/coursera page
+ * (lib/coursera/xapiUnavailableNotice.ts); kept under this name for the
+ * roster callers.
  */
-export const STUDENTS_COURSERA_XAPI_UNAVAILABLE_NOTICE =
-  'Coursera unmatched-learner data is unavailable in this environment; the roster below excludes those rows.';
+export const STUDENTS_COURSERA_XAPI_UNAVAILABLE_NOTICE = COURSERA_XAPI_UNAVAILABLE_NOTICE;
 
 /**
  * Why a roster that loaded without error is still incomplete. Distinct from
@@ -56,7 +57,7 @@ export const STUDENTS_COURSERA_XAPI_UNAVAILABLE_NOTICE =
  * against a database that lacks a source, so the result is narrower than
  * production's by construction.
  */
-export type StudentsRosterDegradation = 'coursera-xapi-unavailable';
+export type StudentsRosterDegradation = CourseraXapiDegradation;
 
 /**
  * The kit takes one `notice` string; compose it from both states so a
