@@ -18,17 +18,16 @@ const CATALOGUES = [
 ];
 const KEPT = new Set(['marketing.accessibility.helpCopy', 'apply.confirmationHelpHeading', 'apply.confirmationTrust3Desc']);
 /**
- * Real promises the guard now catches but this lane could not rewrite:
- * `messages/{en,es,fr,pt}.json` are owned by the empty-state PR while it is open.
- * Each entry is a follow-up, not a policy line, and the staleness case below fails
- * once no catalogue still carries the promise: delete the entry when the value
- * (and its `marketing/src/**` mirrors plus the hardcoded copy in
- * `marketing/src/pages/mentor.astro` and `marketing/src/pages/partners.astro`)
- * is rewritten in the measured-wait / "we'll email you when" voice:
- *  - marketing.mentor.waitlistCopy: "Most pairings start 4–8 weeks after you apply"
- *  - marketing.partners.howSubtitle: "Most orgs are referring inside a week"
+ * Real promises the guard catches that a lane could not rewrite yet (for example
+ * because another open PR owns the catalogue). Each entry is a follow-up, not a
+ * policy line, and the staleness case below fails once no catalogue still carries
+ * the promise, so an entry is deleted with the rewrite. Empty since #2507's two
+ * entries (marketing.mentor.waitlistCopy "4–8 weeks after you apply" and
+ * marketing.partners.howSubtitle "inside a week") were rewritten in the
+ * "we'll email you when" voice across all nine catalogues and the hardcoded
+ * marketing/src/pages/mentor.astro and marketing/src/pages/partners.astro mirrors.
  */
-const DEFERRED = new Set(['marketing.mentor.waitlistCopy', 'marketing.partners.howSubtitle']);
+const DEFERRED = new Set<string>([]);
 /**
  * Out of this guard's reach on purpose: the counselor reply SLA "within 2 business
  * days" in components/portal/MemberCounselorChatClient.tsx,

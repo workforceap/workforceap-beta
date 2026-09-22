@@ -1764,7 +1764,7 @@
       "stat3Value": "340",
       "stat3Label": "Membres placés via partenaires",
       "howTitle": "Comment démarrer un partenariat",
-      "howSubtitle": "Trois étapes. La plupart des organisations réfèrent en moins d'une semaine.",
+      "howSubtitle": "Trois étapes. Commencez à référer dès que votre portail est actif ; nous vous le confirmons par e-mail.",
       "howStep1Title": "Écrivez-nous ou inscrivez-vous",
       "howStep1Desc": "Remplissez le formulaire ci-dessous ou écrivez à partners@workforceap.org avec une note rapide sur votre organisation.",
       "howStep2Title": "Obtenez l'accès au portail",
@@ -1892,7 +1892,7 @@
       "heroHeadline": "Partagez votre expertise. Changez une carrière.",
       "heroSubheadline": "Les mentors WorkforceAP sont des professionnels de l'industrie qui offrent bénévolement leur temps pour guider les chercheurs d'emploi. Votre expérience vaut plus que vous ne le pensez — et elle est déductible des impôts.",
       "title": "Devenir mentor",
-      "waitlistCopy": "Nous acceptons actuellement les candidatures de mentor et créons des paires au fur et à mesure que notre cohorte grandit. La plupart des jumelages commencent 4 à 8 semaines après votre candidature, lorsqu'un membre atteint l'étape de préparation à l'entretien de son programme dans votre domaine.",
+      "waitlistCopy": "Nous acceptons actuellement les candidatures de mentor et créons des paires au fur et à mesure que notre cohorte grandit. Nous vous enverrons un e-mail lorsqu'un jumelage sera prêt, une fois qu'un membre atteint l'étape de préparation à l'entretien de son programme dans votre domaine.",
       "waitlistCta": "Rejoindre la liste d'attente",
       "waitlistEyebrow": "Liste d'attente mentor · Pré-lancement"
     },
