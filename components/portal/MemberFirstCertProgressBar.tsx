@@ -79,7 +79,7 @@ export default function MemberFirstCertProgressBar({ progress, compact }: Props)
         style={{
           width: '100%',
           height: compact ? '0.5rem' : '0.625rem',
-          background: 'var(--surface-container-high, rgba(0,0,0,0.06))',
+          background: 'var(--surface-container-high)',
           borderRadius: '999px',
           overflow: 'hidden',
         }}

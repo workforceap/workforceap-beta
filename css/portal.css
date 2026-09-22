@@ -784,7 +784,7 @@ html.dark [data-surface] .astryx-card,
 }
 .portal-skeleton {
   border-radius: 14px;
-  background: var(--surface-container-high, rgba(255, 255, 255, 0.08));
+  background: var(--surface-container-high);
   animation: portal-skeleton-pulse 1.15s ease-in-out infinite;
 }
 .portal-skeleton--hero {
@@ -3361,7 +3361,7 @@ a.portal-card:active,
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-on-surface-variant, #57534e);
-  background: var(--surface-container-high, #f1efed);
+  background: var(--surface-container-high);
   border-bottom: 1px solid var(--outline-variant, #e5e1de);
 }
 .legacy-view-notice__icon {

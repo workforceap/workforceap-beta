@@ -166,7 +166,7 @@ export default async function SessionsIndexBody({
         <Link
           href={paths.walkInHref}
           className="portal-card portal-card--flat"
-          style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '2px solid var(--color-accent)', boxShadow: '0 8px 24px rgba(173,44,77,0.12)' }}
+          style={{ display: 'block', padding: '1.5rem', textDecoration: 'none', color: 'inherit', border: '2px solid var(--color-accent)', boxShadow: '0 8px 24px color-mix(in srgb, var(--color-accent) 12%, transparent)' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
             <span style={{ background: 'var(--wa-accent-soft)', color: 'var(--wa-accent)', borderRadius: 'var(--radius-md)', padding: '0.5rem', display: 'inline-flex' }}>

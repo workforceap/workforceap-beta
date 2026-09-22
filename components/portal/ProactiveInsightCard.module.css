@@ -12,8 +12,8 @@
   border: 1px solid color-mix(in srgb, var(--tone, var(--color-accent, #8c0f37)) 18%, var(--outline-variant, #e8e0dd));
   background: linear-gradient(
     140deg,
-    color-mix(in srgb, var(--tone, var(--color-accent, #8c0f37)) 9%, var(--surface-container-lowest, #fff)),
-    var(--surface-container-lowest, #fff) 78%
+    color-mix(in srgb, var(--tone, var(--color-accent, #8c0f37)) 9%, var(--surface-container-lowest)),
+    var(--surface-container-lowest) 78%
   );
   box-shadow: 0 6px 20px color-mix(in srgb, var(--tone, var(--color-accent, #8c0f37)) 7%, transparent);
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;

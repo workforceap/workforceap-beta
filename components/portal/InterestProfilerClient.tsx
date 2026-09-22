@@ -484,7 +484,7 @@ export default function InterestProfilerClient() {
                     width: '28px', height: '28px', borderRadius: '9999px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
-                    background: selected ? 'var(--color-accent-dark)' : 'var(--surface-container-highest, #e5e2e1)',
+                    background: selected ? 'var(--color-accent-dark)' : 'var(--surface-container-highest)',
                     color: selected ? '#fff' : 'var(--color-on-surface-variant)',
                     fontSize: '0.8125rem', fontWeight: 700,
                     transition: 'background 0.15s, color 0.15s',

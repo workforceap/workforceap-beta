@@ -349,7 +349,7 @@ function ExecutiveDashboardContent() {
               role="status"
               className="wa-kit-training-notice"
               data-testid="dashboard-coursera-notice"
-              style={{ gridColumn: '1 / -1', margin: 0 }}
+              style={{ gridColumn: '1 / -1' }}
             >
               {COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE}
             </p>
