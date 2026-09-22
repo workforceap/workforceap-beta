@@ -190,7 +190,7 @@ function OverrideDropdown({
             right: 0,
             top: '110%',
             zIndex: 20,
-            background: 'var(--color-surface)',
+            background: 'var(--wa-surface)',
             border: '1px solid var(--outline-variant)',
             borderRadius: '0.5rem',
             padding: '0.5rem',
@@ -254,7 +254,7 @@ function MissionCard({
       style={{
         borderRadius: '0.75rem',
         border: '1px solid var(--outline-variant)',
-        background: isLocked ? 'var(--surface-container-highest)' : 'var(--color-surface)',
+        background: isLocked ? 'var(--surface-container-highest)' : 'var(--wa-surface)',
         padding: '0.95rem',
         opacity: isLocked ? 0.55 : 1,
       }}

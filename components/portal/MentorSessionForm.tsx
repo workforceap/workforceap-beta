@@ -42,14 +42,14 @@ export default function MentorSessionForm({ mentorId }: { mentorId: string }) {
         id={scheduledAtId}
         type="datetime-local" required value={scheduledAt}
         onChange={(e) => setScheduledAt(e.target.value)}
-        style={{ border: '1px solid var(--surface-container-high)', borderRadius: '0.5rem', padding: '0.55rem', background: 'var(--color-surface)', color: 'var(--color-on-surface)', boxSizing: 'border-box' as const }}
+        style={{ border: '1px solid var(--surface-container-high)', borderRadius: '0.5rem', padding: '0.55rem', background: 'var(--wa-surface)', color: 'var(--color-on-surface)', boxSizing: 'border-box' as const }}
       />
       <label htmlFor={topicId} className="wa-sr-only">Topic or questions you&apos;d like to cover</label>
       <textarea
         id={topicId}
         placeholder="Topic or questions you'd like to cover" rows={3} required value={topic}
         onChange={(e) => setTopic(e.target.value)}
-        style={{ border: '1px solid var(--surface-container-high)', borderRadius: '0.5rem', padding: '0.55rem', background: 'var(--color-surface)', color: 'var(--color-on-surface)', resize: 'vertical' as const }}
+        style={{ border: '1px solid var(--surface-container-high)', borderRadius: '0.5rem', padding: '0.55rem', background: 'var(--wa-surface)', color: 'var(--color-on-surface)', resize: 'vertical' as const }}
       />
       {status === 'error' && (
         <p role="alert" style={{ color: 'var(--color-accent)', fontSize: '0.85rem' }}>Something went wrong. Please try again.</p>

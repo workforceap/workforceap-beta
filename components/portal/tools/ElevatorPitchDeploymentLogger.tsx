@@ -195,7 +195,7 @@ export default function ElevatorPitchDeploymentLogger() {
         >
           <div
             style={{
-              background: 'var(--color-surface)',
+              background: 'var(--wa-surface)',
               borderRadius: '1rem',
               padding: '2rem',
               width: '100%',
