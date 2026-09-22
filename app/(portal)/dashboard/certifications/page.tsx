@@ -21,6 +21,7 @@ import {
   CertificationViewButton,
 } from '@/components/portal/CertificationVaultActions';
 import CertificationAddForm from '@/components/portal/CertificationAddForm';
+import CertificationsEarnMoreCard from '@/components/portal/CertificationsEarnMoreCard';
 import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/MemberCertificatesKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
@@ -376,49 +377,7 @@ export default async function DashboardCertificationsPage({
 
         {/* Earn More CTA */}
         <div style={{ padding: '0 1rem', marginBottom: '1rem' }}>
-          <div
-            style={{
-              background: 'linear-gradient(135deg, var(--color-accent) 0%, rgba(173,44,77,0.8) 100%)',
-              borderRadius: '1rem',
-              padding: '1.25rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: '2rem', color: '#fff', '--ms-fill': 1 }}
-            >
-              emoji_events
-            </span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, color: '#fff', fontSize: '1rem', marginBottom: '0.25rem' }}>Earn More Credentials</div>
-              <div style={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.85)', marginBottom: '0.625rem' }}>
-                Browse available certificates in your program pathway.
-              </div>
-              <a
-                href="/dashboard/learning"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  background: '#fff',
-                  // White pill in both modes: pin the label to the light-mode crimson
-                  // (var(--color-accent) is #e0658a in dark mode, 3.28:1 on white).
-                  color: '#ad2c4d',
-                  borderRadius: '0.5rem',
-                  padding: '0.375rem 0.875rem',
-                  fontWeight: 700,
-                  fontSize: '0.8125rem',
-                  textDecoration: 'none',
-                }}
-              >
-                View Pathway
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">arrow_forward</span>
-              </a>
-            </div>
-          </div>
+          <CertificationsEarnMoreCard />
         </div>      </div>
 
       {/* ── DESKTOP ── */}
@@ -608,11 +567,11 @@ export default async function DashboardCertificationsPage({
                   alignItems: 'center',
                   gap: '0.375rem',
                   padding: '0.4rem 0.875rem',
-                  background: 'var(--color-accent)',
+                  background: 'var(--wa-accent)',
                   borderRadius: '999px',
                   fontSize: '0.8125rem',
                   fontWeight: 700,
-                  color: '#fff',
+                  color: 'var(--wa-on-accent-control)',
                   textDecoration: 'none',
                 }}
               >
