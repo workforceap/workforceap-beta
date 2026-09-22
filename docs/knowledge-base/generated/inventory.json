@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e2b7e59fd933936fb94016cd6197a4c2131146a57a5b21d0748b4e399dbbb820",
+  "inputTreeSha256": "9c4901a16cfde6569e63a54baeb83ce3ef0e468f53d13e1024244b74b2ac7677",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -52877,9 +52877,9 @@
       "path": "components/admin/MemberMergeClient.test.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 5176,
-      "lines": 128,
-      "sha256": "10368241c4fbfc55088ac4ef1fb91857d470e4a2025dc1ff16a54c590647ac61",
+      "bytes": 7064,
+      "lines": 164,
+      "sha256": "6df65e1ef03642138459219f20c1bd1e3c1a2cc0831724b3c7dcaa0320a94be2",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -52900,9 +52900,9 @@
       "path": "components/admin/MemberMergeClient.tsx",
       "area": "components",
       "domain": "administration",
-      "bytes": 17811,
-      "lines": 346,
-      "sha256": "143fb7215a01e926539329ef79aba6a6f3ddfbca4218fcccac4f0f2622f19f2c",
+      "bytes": 18697,
+      "lines": 356,
+      "sha256": "ba538ce73af7f438bee9ff42635095ee4cd2c99903998ed6b9d1299fdfde7d80",
       "binary": false,
       "exports": [
         {
@@ -87406,25 +87406,35 @@
       "path": "lib/admin/memberMerge.test.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 11845,
-      "lines": 289,
-      "sha256": "282095cccc50f4d624c493d54bbcc322d59e99c9de8be0ecf63f4a23460dfd49",
+      "bytes": 16728,
+      "lines": 400,
+      "sha256": "51a350e48045bfa1f08f51316d7cb3afa306e3dc6fccf1b3d6aa6a34cdfa7da6",
       "binary": false,
       "exports": [],
       "declarations": [
         {
           "name": "makeMockUser",
-          "line": 5,
+          "line": 6,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "MockRows",
+          "line": 51,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "planDelegates",
+          "line": 58,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "makeMockTx",
-          "line": 49,
+          "line": 86,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "MockTxExtras",
-          "line": 197,
+          "line": 208,
           "kind": "TypeAliasDeclaration"
         }
       ],
@@ -87434,92 +87444,262 @@
       "path": "lib/admin/memberMerge.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 29225,
-      "lines": 613,
-      "sha256": "35cc635a4192594298e55482d5128e3c647e73b32059c9872011b1cfbebb8cda",
+      "bytes": 28889,
+      "lines": 709,
+      "sha256": "a1609a74c1cef04301ae1d6eb841bea2fe31a3aff8fa01a3983445922d727da8",
       "binary": false,
       "exports": [
         {
           "name": "MergeConflict",
-          "line": 5,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MergePreview",
           "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
-          "name": "MergeResult",
-          "line": 20,
+          "name": "MergePreview",
+          "line": 19,
           "kind": "InterfaceDeclaration"
         },
         {
-          "name": "assertNoCourseraOwnershipForMemberMerge",
+          "name": "MergeResult",
           "line": 40,
+          "kind": "InterfaceDeclaration"
+        },
+        {
+          "name": "RepointOutcome",
+          "line": 78,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "repointRelation",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "previewRepoint",
+          "line": 156,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "assertNoCourseraOwnershipForMemberMerge",
+          "line": 214,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkMergeConflicts",
-          "line": 103,
+          "line": 277,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMergePreview",
-          "line": 168,
+          "line": 342,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "executeMemberMerge",
-          "line": 326,
+          "line": 446,
           "kind": "FunctionDeclaration"
         }
       ],
       "declarations": [
         {
           "name": "TxClient",
-          "line": 3,
+          "line": 10,
           "kind": "TypeAliasDeclaration"
         },
         {
           "name": "MergeConflict",
-          "line": 5,
-          "kind": "InterfaceDeclaration"
-        },
-        {
-          "name": "MergePreview",
           "line": 12,
           "kind": "InterfaceDeclaration"
         },
         {
+          "name": "MergePreview",
+          "line": 19,
+          "kind": "InterfaceDeclaration"
+        },
+        {
           "name": "MergeResult",
-          "line": 20,
+          "line": 40,
           "kind": "InterfaceDeclaration"
         },
         {
           "name": "STATUS_RANK",
-          "line": 27,
+          "line": 47,
           "kind": "Variable"
         },
         {
+          "name": "RepointDelegate",
+          "line": 54,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "repointDelegate",
+          "line": 60,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "uniqueKeyOf",
+          "line": 71,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "RepointOutcome",
+          "line": 78,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "repointRelation",
+          "line": 99,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "previewRepoint",
+          "line": 156,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "describeRepointFailure",
+          "line": 193,
+          "kind": "FunctionDeclaration"
+        },
+        {
           "name": "assertNoCourseraOwnershipForMemberMerge",
-          "line": 40,
+          "line": 214,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "checkMergeConflicts",
-          "line": 103,
+          "line": 277,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "buildMergePreview",
-          "line": 168,
+          "line": 342,
           "kind": "FunctionDeclaration"
         },
         {
           "name": "executeMemberMerge",
-          "line": 326,
+          "line": 446,
           "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/memberMergeRealDb.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 9711,
+      "lines": 239,
+      "sha256": "45d06f8f14480f922dd452a21e4f7f1d5fd9a2f346bddb34292d3368560f4a23",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "prisma",
+          "line": 21,
+          "kind": "Variable"
+        },
+        {
+          "name": "Fixture",
+          "line": 23,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "organizationId",
+          "line": 29,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "makeFixture",
+          "line": 39,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "cleanup",
+          "line": 52,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "merge",
+          "line": 63,
+          "kind": "FunctionDeclaration"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/memberMergeRepointPlan.test.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 6421,
+      "lines": 156,
+      "sha256": "312bd8386e07da2e14f658179d7cc598eb598a4b5c216998b98643c47139ec73",
+      "binary": false,
+      "exports": [],
+      "declarations": [
+        {
+          "name": "DmmfModel",
+          "line": 22,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MODELS_BY_DELEGATE",
+          "line": 25,
+          "kind": "Variable"
+        },
+        {
+          "name": "uniqueConstraintsContaining",
+          "line": 30,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "ALL_SPECS",
+          "line": 44,
+          "kind": "Variable"
+        }
+      ],
+      "directive": null
+    },
+    {
+      "path": "lib/admin/memberMergeRepointPlan.ts",
+      "area": "libraries",
+      "domain": "administration",
+      "bytes": 6242,
+      "lines": 118,
+      "sha256": "a57bc2097b381a69981aa91b87c605353be7e7a881e0a43bdde4baa2ad0873b0",
+      "binary": false,
+      "exports": [
+        {
+          "name": "RepointSpec",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_MERGE_REPOINT_PLAN",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_MERGE_PREVIEW_ONLY",
+          "line": 114,
+          "kind": "Variable"
+        }
+      ],
+      "declarations": [
+        {
+          "name": "RepointSpec",
+          "line": 31,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "MEMBER_MERGE_REPOINT_PLAN",
+          "line": 48,
+          "kind": "Variable"
+        },
+        {
+          "name": "MEMBER_MERGE_PREVIEW_ONLY",
+          "line": 114,
+          "kind": "Variable"
         }
       ],
       "directive": null
@@ -161098,9 +161278,9 @@
       "path": "scripts/run-db-contract-tests.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 4370,
+      "bytes": 4409,
       "lines": 89,
-      "sha256": "728f0073617cf0bf07d5e513849a3a1f01d2d3ee3882b458d73d2df065f04298",
+      "sha256": "8e1b001e472ce3f7da54788196e52c6ad8e0214b2bba870ecf48d839baeb7cca",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -161446,9 +161626,9 @@
       "path": "scripts/test-unit.mjs",
       "area": "operations",
       "domain": "operations",
-      "bytes": 7341,
-      "lines": 201,
-      "sha256": "790514d815de8f88fb6eb76b0b081e07dfd590c9fa9bddbd22139f9c8368ecbb",
+      "bytes": 7678,
+      "lines": 207,
+      "sha256": "226d38e374507c137a4405c990bd5a4aaa2c582f9abd4631c8fb12a96f5fb222",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -161499,7 +161679,7 @@
         },
         {
           "name": "main",
-          "line": 111,
+          "line": 117,
           "kind": "FunctionDeclaration"
         }
       ],

@@ -1,5 +1,12 @@
 import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
+import { getLevelForPoints } from '@/lib/member/pointsConfig';
+import {
+  MEMBER_MERGE_PREVIEW_ONLY,
+  MEMBER_MERGE_REPOINT_PLAN,
+  type RepointSpec,
+} from './memberMergeRepointPlan';
+
 type TxClient = Prisma.TransactionClient;
 
 export interface MergeConflict {
@@ -13,7 +20,20 @@ export interface MergePreview {
   primary: Pick<User, 'id' | 'fullName' | 'email' | 'phone' | 'enrolledProgram' | 'assessmentCompleted'>;
   secondary: Pick<User, 'id' | 'fullName' | 'email' | 'phone' | 'enrolledProgram' | 'assessmentCompleted'>;
   conflicts: MergeConflict[];
-  relationsToRepoint: { model: string; field: string; count: number }[];
+  /**
+   * Rows the secondary holds, and what will actually happen to each group.
+   * `count` is unchanged (every row on the secondary). `moving` and
+   * `keptOnSecondary` split it: a row whose unique key the primary already
+   * holds stays on the merged-away account instead of taking the merge down
+   * with a duplicate-key abort, and the admin is told so before they confirm.
+   */
+  relationsToRepoint: {
+    model: string;
+    field: string;
+    count: number;
+    moving: number;
+    keptOnSecondary: number;
+  }[];
   scalarFieldsToMerge: string[];
 }
 
@@ -29,6 +49,160 @@ const STATUS_RANK: Record<CourseProgressStatus, number> = {
   IN_PROGRESS: 1,
   COMPLETED: 2,
 };
+
+/** Prisma delegate shape the repoint planner needs from a transaction client. */
+type RepointDelegate = {
+  count: (args: { where: Record<string, unknown> }) => Promise<number>;
+  findMany: (args: { where: Record<string, unknown>; select: Record<string, true> }) => Promise<Array<Record<string, unknown>>>;
+  updateMany: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => Promise<{ count: number }>;
+};
+
+function repointDelegate(tx: TxClient, model: string): RepointDelegate {
+  const delegate = (tx as unknown as Record<string, RepointDelegate | undefined>)[model];
+  if (!delegate) {
+    // memberMergeRepointPlan.test.ts proves every planned model is a real
+    // delegate, so this can only fire if the plan and the client disagree.
+    throw new Error(`Member merge plan names "${model}", which is not a Prisma model.`);
+  }
+  return delegate;
+}
+
+/** Stable identity for a unique-key tuple, so two rows can be compared in JS. */
+function uniqueKeyOf(columns: string[], row: Record<string, unknown>): string {
+  return JSON.stringify(columns.map((column) => {
+    const value = row[column];
+    return value instanceof Date ? value.toISOString() : value;
+  }));
+}
+
+export type RepointOutcome = {
+  /** Rows moved onto the primary. */
+  moved: number;
+  /**
+   * Rows left on the merged-away account because the primary already holds a
+   * row with the same unique key. Nothing is deleted: the secondary is
+   * soft-deleted, so the row stays recoverable.
+   */
+  keptOnSecondary: number;
+};
+
+/**
+ * Work out which of the secondary's rows can move, then move exactly those.
+ *
+ * The naive `updateMany` this replaces let PostgreSQL discover duplicates,
+ * which is fatal rather than recoverable: a duplicate key aborts the whole
+ * transaction, and because the old caller swallowed the error every later
+ * statement failed with `25P02` and the merge died naming an unrelated table.
+ * The overlap is computed here instead, and it is usually empty — two reads
+ * and the same single `updateMany` as before.
+ */
+export async function repointRelation(
+  tx: TxClient,
+  spec: RepointSpec,
+  primaryId: string,
+  secondaryId: string,
+): Promise<RepointOutcome> {
+  const delegate = repointDelegate(tx, spec.model);
+  const moveAll = async (extraWhere: Record<string, unknown> = {}) => {
+    const { count } = await delegate.updateMany({
+      where: { [spec.field]: secondaryId, ...extraWhere },
+      data: { [spec.field]: primaryId },
+    });
+    return count;
+  };
+
+  // No unique constraint touches this column, so no row can collide.
+  if (!spec.uniqueWith) {
+    return { moved: await moveAll(), keptOnSecondary: 0 };
+  }
+
+  // Unique on the column alone: the secondary can hold at most one row, and it
+  // collides exactly when the primary already holds one.
+  if (spec.uniqueWith.length === 0) {
+    const [secondaryCount, primaryCount] = await Promise.all([
+      delegate.count({ where: { [spec.field]: secondaryId } }),
+      delegate.count({ where: { [spec.field]: primaryId } }),
+    ]);
+    if (secondaryCount === 0) return { moved: 0, keptOnSecondary: 0 };
+    if (primaryCount > 0) return { moved: 0, keptOnSecondary: secondaryCount };
+    return { moved: await moveAll(), keptOnSecondary: 0 };
+  }
+
+  const columns = spec.uniqueWith;
+  const select = Object.fromEntries(columns.map((column) => [column, true as const]));
+  const secondaryRows = await delegate.findMany({ where: { [spec.field]: secondaryId }, select });
+  if (secondaryRows.length === 0) return { moved: 0, keptOnSecondary: 0 };
+
+  const primaryRows = await delegate.findMany({ where: { [spec.field]: primaryId }, select });
+  const primaryKeys = new Set(primaryRows.map((row) => uniqueKeyOf(columns, row)));
+  const colliding = secondaryRows.filter((row) => primaryKeys.has(uniqueKeyOf(columns, row)));
+  if (colliding.length === 0) {
+    return { moved: await moveAll(), keptOnSecondary: 0 };
+  }
+
+  // The exclusion list is the size of the OVERLAP, not of either member's
+  // rows, so it stays small even when both sides have thousands.
+  const moved = await moveAll({
+    NOT: colliding.map((row) => Object.fromEntries(columns.map((column) => [column, row[column]]))),
+  });
+  return { moved, keptOnSecondary: colliding.length };
+}
+
+/**
+ * Read-only twin of {@link repointRelation}: what the merge would do, without
+ * doing it. Sharing the plan (and the collision rule) is what keeps the
+ * preview honest.
+ */
+export async function previewRepoint(
+  tx: TxClient,
+  spec: RepointSpec,
+  primaryId: string,
+  secondaryId: string,
+): Promise<{ count: number; moving: number; keptOnSecondary: number }> {
+  const delegate = repointDelegate(tx, spec.model);
+  const count = await delegate.count({ where: { [spec.field]: secondaryId } });
+  if (count === 0 || !spec.uniqueWith) {
+    return { count, moving: count, keptOnSecondary: 0 };
+  }
+  if (spec.uniqueWith.length === 0) {
+    const primaryCount = await delegate.count({ where: { [spec.field]: primaryId } });
+    return primaryCount > 0
+      ? { count, moving: 0, keptOnSecondary: count }
+      : { count, moving: count, keptOnSecondary: 0 };
+  }
+  const columns = spec.uniqueWith;
+  const select = Object.fromEntries(columns.map((column) => [column, true as const]));
+  const [secondaryRows, primaryRows] = await Promise.all([
+    delegate.findMany({ where: { [spec.field]: secondaryId }, select }),
+    delegate.findMany({ where: { [spec.field]: primaryId }, select }),
+  ]);
+  const primaryKeys = new Set(primaryRows.map((row) => uniqueKeyOf(columns, row)));
+  const keptOnSecondary = secondaryRows.filter((row) => primaryKeys.has(uniqueKeyOf(columns, row))).length;
+  return { count, moving: count - keptOnSecondary, keptOnSecondary };
+}
+
+/**
+ * Says what went wrong without pretending to know that it was a constraint.
+ *
+ * The blanket `catch` this replaces labelled every failure
+ * "constraint conflict", including two Prisma validation errors for columns
+ * that do not exist — which is precisely why those two went unnoticed. It also
+ * continued after a duplicate-key error had already aborted the transaction,
+ * turning a diagnosable fault into a `25P02` on an unrelated statement.
+ */
+function describeRepointFailure(spec: RepointSpec, error: unknown): string {
+  const where = `${spec.model}.${spec.field}`;
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return `Member merge cannot repoint ${where}: the plan does not match the Prisma schema (validation error). This is a code fault, not a data conflict.`;
+  }
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      return `Member merge hit a duplicate key repointing ${where}, which the collision planner should have prevented. The transaction is aborted.`;
+    }
+    return `Member merge failed repointing ${where} (Prisma ${error.code}).`;
+  }
+  return `Member merge failed repointing ${where}.`;
+}
 
 /**
  * Stage A deliberately blocks merging a member that owns any Coursera raw or
@@ -182,72 +356,18 @@ export async function buildMergePreview(
   const conflicts = await checkMergeConflicts(tx, primaryId, secondaryId);
 
   // Count relations that would be repointed (read-only check)
-  const relationsToRepoint: { model: string; field: string; count: number }[] = [];
+  const relationsToRepoint: MergePreview['relationsToRepoint'] = [];
 
-  const countQueries: Array<{ model: string; field: string; promise: Promise<number> }> = [
-    { model: 'applicationMessage', field: 'authorId', promise: tx.applicationMessage.count({ where: { authorId: secondaryId } }) },
-    { model: 'message', field: 'authorId', promise: tx.message.count({ where: { authorId: secondaryId } }) },
-    { model: 'memberEvent', field: 'userId', promise: tx.memberEvent.count({ where: { userId: secondaryId } }) },
-    { model: 'weeklyRecap', field: 'userId', promise: tx.weeklyRecap.count({ where: { userId: secondaryId } }) },
-    { model: 'aiToolResult', field: 'userId', promise: tx.aIToolResult.count({ where: { userId: secondaryId } }) },
-    { model: 'goal', field: 'userId', promise: tx.goal.count({ where: { userId: secondaryId } }) },
-    { model: 'resourceProgress', field: 'userId', promise: tx.resourceProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'pathwayStepProgress', field: 'userId', promise: tx.pathwayStepProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'trainingAccessRequest', field: 'userId', promise: tx.trainingAccessRequest.count({ where: { userId: secondaryId } }) },
-    { model: 'workflowDiagnostic', field: 'actorUserId', promise: tx.workflowDiagnostic.count({ where: { actorUserId: secondaryId } }) },
-    { model: 'emailSendLog', field: 'userId', promise: tx.emailSendLog.count({ where: { userId: secondaryId } }) },
-    { model: 'auditLog', field: 'actorUserId', promise: tx.auditLog.count({ where: { actorUserId: secondaryId } }) },
-    { model: 'invitation', field: 'invitedById', promise: tx.invitation.count({ where: { invitedById: secondaryId } }) },
-    { model: 'invitation', field: 'acceptedById', promise: tx.invitation.count({ where: { acceptedById: secondaryId } }) },
-    { model: 'programChangeRequest', field: 'userId', promise: tx.programChangeRequest.count({ where: { userId: secondaryId } }) },
-    { model: 'programChangeRequest', field: 'reviewedById', promise: tx.programChangeRequest.count({ where: { reviewedById: secondaryId } }) },
-    { model: 'partnerReferral', field: 'memberId', promise: tx.partnerReferral.count({ where: { memberId: secondaryId } }) },
-    { model: 'partnerReferral', field: 'assignedPartnerUserId', promise: tx.partnerReferral.count({ where: { assignedPartnerUserId: secondaryId } }) },
-    { model: 'partnerOutreachLog', field: 'memberId', promise: tx.partnerOutreachLog.count({ where: { memberId: secondaryId } }) },
-    { model: 'partnerOutreachLog', field: 'createdByUserId', promise: tx.partnerOutreachLog.count({ where: { createdByUserId: secondaryId } }) },
-    { model: 'portalWorkflowEvent', field: 'actorUserId', promise: tx.portalWorkflowEvent.count({ where: { actorUserId: secondaryId } }) },
-    { model: 'jobPostingApplication', field: 'studentId', promise: tx.jobPostingApplication.count({ where: { studentId: secondaryId } }) },
-    { model: 'aIJobMatch', field: 'studentId', promise: tx.aIJobMatch.count({ where: { studentId: secondaryId } }) },
-    { model: 'memberNextBestAction', field: 'memberId', promise: tx.memberNextBestAction.count({ where: { memberId: secondaryId } }) },
-    { model: 'jobApplication', field: 'userId', promise: tx.jobApplication.count({ where: { userId: secondaryId } }) },
-    { model: 'pointsTransaction', field: 'userId', promise: tx.pointsTransaction.count({ where: { userId: secondaryId } }) },
-    { model: 'pointsTransaction', field: 'awardedBy', promise: tx.pointsTransaction.count({ where: { awardedBy: secondaryId } }) },
-    { model: 'memberSubgroup', field: 'memberId', promise: tx.memberSubgroup.count({ where: { memberId: secondaryId } }) },
-    { model: 'memberSubgroup', field: 'assignedBy', promise: tx.memberSubgroup.count({ where: { assignedBy: secondaryId } }) },
-    { model: 'subgroupLeader', field: 'userId', promise: tx.subgroupLeader.count({ where: { userId: secondaryId } }) },
-    { model: 'messageThread', field: 'memberId', promise: tx.messageThread.count({ where: { memberId: secondaryId } }) },
-    { model: 'messageThread', field: 'counselorUserId', promise: tx.messageThread.count({ where: { counselorUserId: secondaryId } }) },
-    { model: 'application', field: 'userId', promise: tx.application.count({ where: { userId: secondaryId } }) },
-    { model: 'learningProgress', field: 'userId', promise: tx.learningProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'userCertification', field: 'userId', promise: tx.userCertification.count({ where: { userId: secondaryId } }) },
-    { model: 'readinessChecklist', field: 'userId', promise: tx.readinessChecklist.count({ where: { userId: secondaryId } }) },
-    { model: 'benefitRequest', field: 'userId', promise: tx.benefitRequest.count({ where: { userId: secondaryId } }) },
-    { model: 'counselorAssignment', field: 'memberId', promise: tx.counselorAssignment.count({ where: { memberId: secondaryId } }) },
-    { model: 'counselorNote', field: 'memberId', promise: tx.counselorNote.count({ where: { memberId: secondaryId } }) },
-    { model: 'counselorNote', field: 'authorId', promise: tx.counselorNote.count({ where: { authorId: secondaryId } }) },
-    { model: 'placementRecord', field: 'userId', promise: tx.placementRecord.count({ where: { userId: secondaryId } }) },
-    { model: 'placedOutcome', field: 'userId', promise: tx.placedOutcome.count({ where: { userId: secondaryId } }) },
-    { model: 'mentorSession', field: 'memberId', promise: tx.mentorSession.count({ where: { memberId: secondaryId } }) },
-    { model: 'userRole', field: 'userId', promise: tx.userRole.count({ where: { userId: secondaryId } }) },
-    { model: 'courseEnrollment', field: 'userId', promise: tx.courseEnrollment.count({ where: { userId: secondaryId } }) },
-    { model: 'courseEnrollment', field: 'enrolledByAdminId', promise: tx.courseEnrollment.count({ where: { enrolledByAdminId: secondaryId } }) },
-    { model: 'preScreeningResponse', field: 'userId', promise: tx.preScreeningResponse.count({ where: { userId: secondaryId } }) },
-    { model: 'preScreeningDraft', field: 'userId', promise: tx.preScreeningDraft.count({ where: { userId: secondaryId } }) },
-    { model: 'applicationAiFeedback', field: 'userId', promise: tx.applicationAiFeedback.count({ where: { userId: secondaryId } }) },
-    { model: 'atRiskAlert', field: 'userId', promise: tx.atRiskAlert.count({ where: { userId: secondaryId } }) },
-    { model: 'placementSurvey', field: 'userId', promise: tx.placementSurvey.count({ where: { userId: secondaryId } }) },
-    { model: 'testimonial', field: 'memberId', promise: tx.testimonial.count({ where: { memberId: secondaryId } }) },
-    { model: 'testimonial', field: 'reviewedBy', promise: tx.testimonial.count({ where: { reviewedBy: secondaryId } }) },
-    { model: 'courseraCourseProgress', field: 'userId', promise: tx.courseraCourseProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'courseraBadgeProgress', field: 'userId', promise: tx.courseraBadgeProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'courseraSkillsetProgress', field: 'userId', promise: tx.courseraSkillsetProgress.count({ where: { userId: secondaryId } }) },
-    { model: 'courseraIdentityMapping', field: 'userId', promise: tx.courseraIdentityMapping.count({ where: { userId: secondaryId } }) },
-  ];
-
-  const counts = await Promise.all(countQueries.map((q) => q.promise));
-  for (let i = 0; i < countQueries.length; i++) {
-    if (counts[i] > 0) {
-      relationsToRepoint.push({ model: countQueries[i].model, field: countQueries[i].field, count: counts[i] });
+  // Counted from the same plan the executor runs, so the preview can no
+  // longer promise a move the executor does not make (it used to name
+  // `invitation.invitedById` while the executor asked for a column that does
+  // not exist). Each entry also reports the split: a row whose unique key the
+  // primary already holds will stay on the merged-away account, which the
+  // admin now sees BEFORE confirming instead of discovering as a failed merge.
+  for (const spec of [...MEMBER_MERGE_REPOINT_PLAN, ...MEMBER_MERGE_PREVIEW_ONLY]) {
+    const outcome = await previewRepoint(tx, spec, primaryId, secondaryId);
+    if (outcome.count > 0) {
+      relationsToRepoint.push({ model: spec.model, field: spec.field, ...outcome });
     }
   }
 
@@ -361,83 +481,28 @@ export async function executeMemberMerge(
   const repointed: string[] = [];
   const mergedFields: string[] = [];
 
-  // Helper: update a model's FK from secondary → primary
-  async function repoint(model: string, field: string, extraWhere?: Record<string, unknown>) {
+  // 1. Repoint relations, leaf tables first, from the single plan the merge
+  // preview also reads. A relation whose unique key the primary already holds
+  // is left on the merged-away account rather than allowed to abort the
+  // transaction; nothing is deleted, because the secondary is soft-deleted and
+  // the row stays recoverable. Failures are no longer swallowed: a duplicate
+  // key has already poisoned the transaction, and a validation error means the
+  // plan disagrees with the schema, so both must stop the merge.
+  for (const spec of MEMBER_MERGE_REPOINT_PLAN) {
+    let outcome: RepointOutcome;
     try {
-      const delegate = (tx as any)[model] as { updateMany: (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => Promise<{ count: number }> };
-      const count = await delegate.updateMany({
-        where: { [field]: secondaryId, ...(extraWhere ?? {}) },
-        data: { [field]: primaryId },
-      });
-      if (count.count > 0) repointed.push(`${model}(${count.count})`);
-    } catch {
-      repointed.push(`${model}(skipped — constraint conflict)`);
+      outcome = await repointRelation(tx, spec, primaryId, secondaryId);
+    } catch (error) {
+      throw new Error(describeRepointFailure(spec, error), { cause: error });
+    }
+    if (outcome.moved > 0 && outcome.keptOnSecondary > 0) {
+      repointed.push(`${spec.model}.${spec.field}(${outcome.moved}, ${outcome.keptOnSecondary} kept on the merged account)`);
+    } else if (outcome.moved > 0) {
+      repointed.push(`${spec.model}.${spec.field}(${outcome.moved})`);
+    } else if (outcome.keptOnSecondary > 0) {
+      repointed.push(`${spec.model}.${spec.field}(0, ${outcome.keptOnSecondary} kept on the merged account)`);
     }
   }
-
-  // 1. Repoint relations (leaf tables first)
-  await repoint('applicationMessage', 'authorId');
-  await repoint('message', 'authorId');
-  await repoint('memberEvent', 'userId');
-  await repoint('weeklyRecap', 'userId');
-  await repoint('aIToolResult', 'userId');
-  await repoint('goal', 'userId');
-  await repoint('resourceProgress', 'userId');
-  await repoint('pathwayStepProgress', 'userId');
-  await repoint('trainingAccessRequest', 'userId');
-  await repoint('workflowDiagnostic', 'actorUserId');
-  await repoint('emailSendLog', 'userId');
-  await repoint('auditLog', 'actorUserId');
-  await repoint('invitation', 'inviterId');
-  await repoint('invitation', 'acceptedById');
-  await repoint('programChangeRequest', 'userId');
-  await repoint('programChangeRequest', 'reviewedById');
-  await repoint('partnerReferral', 'memberId');
-  await repoint('partnerReferral', 'assignedPartnerUserId');
-  await repoint('partnerOutreachLog', 'memberId');
-  await repoint('partnerOutreachLog', 'createdByUserId');
-  await repoint('portalWorkflowEvent', 'actorUserId');
-  await repoint('jobPostingApplication', 'studentId');
-  await repoint('aIJobMatch', 'studentId');
-  await repoint('memberNextBestAction', 'memberId');
-  await repoint('jobApplication', 'userId');
-  await repoint('pointsTransaction', 'userId');
-  await repoint('pointsTransaction', 'awardedBy');
-  await repoint('memberSubgroup', 'userId');
-  await repoint('memberSubgroup', 'assignedBy');
-  await repoint('subgroupLeader', 'userId');
-  await repoint('messageThread', 'memberId');
-  await repoint('messageThread', 'counselorUserId');
-  await repoint('messageThread', 'staffUserId');
-  await repoint('application', 'userId');
-  await repoint('learningProgress', 'userId');
-  await repoint('userCertification', 'userId');
-  await repoint('readinessChecklist', 'userId');
-  await repoint('benefitRequest', 'userId');
-  await repoint('counselorAssignment', 'memberId');
-  await repoint('counselorNote', 'memberId');
-  await repoint('counselorNote', 'authorId');
-  await repoint('placementRecord', 'userId');
-  await repoint('placedOutcome', 'userId');
-  await repoint('mentorSession', 'memberId');
-  await repoint('userRole', 'userId');
-  await repoint('courseEnrollment', 'userId');
-  await repoint('courseEnrollment', 'enrolledByAdminId');
-  await repoint('preScreeningResponse', 'userId');
-  await repoint('preScreeningDraft', 'userId');
-  await repoint('applicationAiFeedback', 'userId');
-  await repoint('atRiskAlert', 'userId');
-  await repoint('placementSurvey', 'userId');
-  await repoint('testimonial', 'memberId');
-  await repoint('testimonial', 'reviewedBy');
-  await repoint('courseraSkillsetProgress', 'userId');
-
-  // Subgroup leader / creator (unique constraints on leaderId / createdBy are not unique per se,
-  // but a Subgroup can only have one leader. Repoint is safe unless primary already leads the same
-  // subgroup name, which would create a logical conflict but not a DB constraint violation.
-  // We repoint and let the caller resolve semantics later.)
-  await repoint('subgroup', 'leaderId');
-  await repoint('subgroup', 'createdBy');
 
   // 2. CourseProgress — merge intelligently
   const secondaryCourseProgress = await tx.courseProgress.findMany({
@@ -532,6 +597,37 @@ export async function executeMemberMerge(
       });
       repointed.push(`${name}(1)`);
     }
+  }
+
+  // 4b. Recompute the points counter from the ledger.
+  //
+  // `member_points.total_points` is maintained by `awardPoints` as a running
+  // `increment`, never recomputed, and step 4 only moves the row when the
+  // primary has none. So a merge used to hand the primary every one of the
+  // secondary's `points_transactions` rows while leaving the counter alone —
+  // a permanent, silent undercount on the number `/dashboard` prints, with
+  // the trend line beneath it drawn from the ledger that did move.
+  //
+  // Recomputing rather than adding is also the only version that is correct
+  // if a merge is retried, and it repairs any drift the member already had.
+  const ledger = await tx.pointsTransaction.aggregate({
+    where: { userId: primaryId },
+    _sum: { points: true },
+  });
+  const ledgerTotal = ledger._sum.points ?? 0;
+  const existingPoints = await tx.memberPoints.findUnique({
+    where: { userId: primaryId },
+    select: { totalPoints: true },
+  });
+  if (!existingPoints || existingPoints.totalPoints !== ledgerTotal) {
+    await tx.memberPoints.upsert({
+      where: { userId: primaryId },
+      create: { userId: primaryId, totalPoints: ledgerTotal, level: getLevelForPoints(ledgerTotal).name },
+      update: { totalPoints: ledgerTotal, level: getLevelForPoints(ledgerTotal).name },
+    });
+    mergedFields.push(
+      `memberPoints.totalPoints (${existingPoints?.totalPoints ?? 0} -> ${ledgerTotal}, recomputed from the ledger)`,
+    );
   }
 
   // 5. Merge scalar fields (secondary fills gaps where primary is null)

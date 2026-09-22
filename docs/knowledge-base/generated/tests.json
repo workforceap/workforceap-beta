@@ -2615,6 +2615,10 @@
       {
         "file": "lib/admin/memberMerge.ts",
         "line": 2
+      },
+      {
+        "file": "lib/admin/memberMergeRepointPlan.ts",
+        "line": 3
       }
     ],
     "kind": "test-candidate",
@@ -2628,6 +2632,54 @@
       {
         "runner": "vitest",
         "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/admin/memberMergeRealDb.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/memberMerge.ts",
+        "line": 19
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "lib/admin/memberMergeRepointPlan.test.ts",
+    "area": "libraries",
+    "domain": "administration",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/admin/memberMergeRepointPlan.ts",
+        "line": 16
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
         "status": "selected"
       }
     ],

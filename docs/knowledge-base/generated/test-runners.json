@@ -3,7 +3,7 @@
   "sources": [
     {
       "file": "scripts/test-unit.mjs",
-      "sha256": "790514d815de8f88fb6eb76b0b081e07dfd590c9fa9bddbd22139f9c8368ecbb"
+      "sha256": "226d38e374507c137a4405c990bd5a4aaa2c582f9abd4631c8fb12a96f5fb222"
     },
     {
       "file": "scripts/vitest-library-specs.mjs",

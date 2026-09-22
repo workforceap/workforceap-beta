@@ -95353,8 +95353,16 @@
   },
   {
     "from": "lib/admin/memberMerge.test.ts",
-    "specifier": "@prisma/client",
+    "specifier": "./memberMergeRepointPlan",
     "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberMergeRepointPlan.ts"
+  },
+  {
+    "from": "lib/admin/memberMerge.test.ts",
+    "specifier": "@prisma/client",
+    "line": 4,
     "kind": "type",
     "external": true,
     "package": "@prisma/client"
@@ -95366,6 +95374,94 @@
     "kind": "import",
     "external": true,
     "package": "@prisma/client"
+  },
+  {
+    "from": "lib/admin/memberMerge.ts",
+    "specifier": "@/lib/member/pointsConfig",
+    "line": 3,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/pointsConfig.ts"
+  },
+  {
+    "from": "lib/admin/memberMerge.ts",
+    "specifier": "./memberMergeRepointPlan",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberMergeRepointPlan.ts"
+  },
+  {
+    "from": "lib/admin/memberMergeRealDb.test.ts",
+    "specifier": "node:test",
+    "line": 13,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/memberMergeRealDb.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/memberMergeRealDb.test.ts",
+    "specifier": "node:crypto",
+    "line": 15,
+    "kind": "import",
+    "external": true,
+    "package": "node:crypto"
+  },
+  {
+    "from": "lib/admin/memberMergeRealDb.test.ts",
+    "specifier": "@prisma/client",
+    "line": 17,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/admin/memberMergeRealDb.test.ts",
+    "specifier": "./memberMerge",
+    "line": 19,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberMerge.ts"
+  },
+  {
+    "from": "lib/admin/memberMergeRepointPlan.test.ts",
+    "specifier": "node:test",
+    "line": 11,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/admin/memberMergeRepointPlan.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 12,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/admin/memberMergeRepointPlan.test.ts",
+    "specifier": "@prisma/client",
+    "line": 14,
+    "kind": "import",
+    "external": true,
+    "package": "@prisma/client"
+  },
+  {
+    "from": "lib/admin/memberMergeRepointPlan.test.ts",
+    "specifier": "./memberMergeRepointPlan",
+    "line": 16,
+    "kind": "import",
+    "external": false,
+    "target": "lib/admin/memberMergeRepointPlan.ts"
   },
   {
     "from": "lib/admin/memberOnlyWhere.test.ts",

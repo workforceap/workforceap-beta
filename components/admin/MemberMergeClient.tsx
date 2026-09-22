@@ -11,7 +11,7 @@ type Preview = {
   primary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   secondary: { id: string; fullName: string; email: string; phone: string | null; enrolledProgram: string | null; assessmentCompleted: boolean };
   conflicts: { field: string; message: string }[];
-  relationsToRepoint: { model: string; field: string; count: number }[];
+  relationsToRepoint: { model: string; field: string; count: number; moving: number; keptOnSecondary: number }[];
   scalarFieldsToMerge: string[];
 };
 
@@ -289,15 +289,25 @@ export default function MemberMergeClient() {
 
             {preview.relationsToRepoint.length > 0 && (
               <div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.375rem' }}>Related records transferred ({preview.relationsToRepoint.reduce((s, r) => s + r.count, 0)} total)</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface-variant)', marginBottom: '0.375rem' }}>Related records transferred ({preview.relationsToRepoint.reduce((s, r) => s + r.moving, 0)} of {preview.relationsToRepoint.reduce((s, r) => s + r.count, 0)})</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(14rem, 1fr))', gap: '0.375rem', fontSize: '0.8125rem' }}>
                   {preview.relationsToRepoint.map((r) => (
                     <div key={`${r.model}-${r.field}`} style={{ padding: '0.35rem 0.5rem', borderRadius: '0.375rem', background: 'var(--surface-container-low)' }}>
                       <span style={{ fontWeight: 600 }}>{r.model}</span>{' '}
-                      <span style={{ color: 'var(--color-on-surface-variant)' }}>({r.count})</span>
+                      <span style={{ color: 'var(--color-on-surface-variant)' }}>({r.moving})</span>
+                      {r.keptOnSecondary > 0 && (
+                        <div data-merge-kept style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                          {r.keptOnSecondary} already on {preview.primary.fullName || 'the primary'} — kept on the duplicate
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
+                {preview.relationsToRepoint.some((r) => r.keptOnSecondary > 0) && (
+                  <div data-merge-kept-note style={{ marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                    Records the primary already has are left on the duplicate rather than moved. Nothing is deleted; the duplicate is archived, not removed.
+                  </div>
+                )}
               </div>
             )}
 
