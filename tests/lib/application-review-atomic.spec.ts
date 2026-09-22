@@ -226,7 +226,7 @@ describe('training approval when an application closes', () => {
     // pinned to the reviewing org (belt-and-braces under the transaction's
     // org-filtered lookup + member lock) so it can never cross a tenant.
     expect(fixture.tx.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'member-a', organizationId: 'org-a', courseraEnrollmentApproved: true },
+      where: { id: 'member-a', organizationId: 'org-a', deletedAt: null, courseraEnrollmentApproved: true },
       data: { courseraEnrollmentApproved: false },
     });
     const revokeCalls = vi.mocked(auditLog).mock.calls.filter(([entry]) => entry.action === 'coursera_enrollment_revoked');

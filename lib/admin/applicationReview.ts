@@ -81,10 +81,11 @@ async function clearTrainingApprovalOnClose(
   // primary tenant gate is upstream in that transaction: the application
   // lookup filters on `user.organizationId` and `lockMemberForReview` locks
   // the member `WHERE organization_id = orgId FOR UPDATE`. The explicit
-  // `organizationId` here is belt-and-braces so this write can never cross a
-  // tenant even if that gate is refactored.
+  // `organizationId` and `deletedAt: null` here are belt-and-braces, matching
+  // that gate's shape, so this write can never cross a tenant or touch a
+  // soft-deleted account even if the gate is refactored.
   const cleared = await tx.user.updateMany({
-    where: { id: args.userId, organizationId: args.orgId, courseraEnrollmentApproved: true },
+    where: { id: args.userId, organizationId: args.orgId, deletedAt: null, courseraEnrollmentApproved: true },
     data: { courseraEnrollmentApproved: false },
   });
   if (cleared.count === 0) return false;
