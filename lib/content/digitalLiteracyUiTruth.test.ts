@@ -54,7 +54,11 @@ describe('Digital Literacy provider and completion truth', () => {
     const learning = read('app/(portal)/dashboard/learning/page.tsx');
     const program = read('app/(portal)/dashboard/program/page.tsx');
     assert.match(learning, /digitalLiteracyFirstModuleHref/);
-    assert.match(learning, /Start digital basics, no application needed/);
+    // The label moved into messages (`empty.learningPathway.action`) with the
+    // empty-state consolidation; the page reads it through next-intl.
+    assert.match(learning, /learningPathway\.action/);
+    const en = JSON.parse(read('messages/en.json')) as { empty: { learningPathway: { action: string } } };
+    assert.equal(en.empty.learningPathway.action, 'Start digital basics, no application needed');
     assert.match(program, /workforceApProgram/);
     assert.match(program, /workforceApProgram \|\| isNext/);
   });

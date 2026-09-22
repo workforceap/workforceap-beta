@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { FileText, ChevronDown, ExternalLink, FolderOpen } from 'lucide-react';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 type Resource = {
   title: string;
@@ -12,14 +13,21 @@ type Resource = {
 
 export default function ResourcesClient({ resources }: { resources: Resource[] }) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const te = useTranslations('empty');
 
   if (resources.length === 0) {
+    // Same `empty.programResources` state as the page guard: the catalog has
+    // no resources for this program area yet; enrollment never gates it.
     return (
-      <PortalEmptyState
-        icon={<FolderOpen size={40} aria-hidden="true" style={{ color: 'var(--wa-accent)' }} />}
-        title="No resources yet"
-        description="Resources for your program will appear here once you're enrolled."
-        primaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
+      <KitEmptyState
+        kind="unavailable"
+        tone="info"
+        framed
+        icon={<FolderOpen size={40} aria-hidden="true" />}
+        title={te('programResources.title')}
+        description={te('programResources.body')}
+        primaryAction={{ href: '/dashboard/messages', label: te('programResources.action') }}
+        secondaryAction={{ href: '/dashboard/ai-tools', label: te('programResources.secondary') }}
       />
     );
   }

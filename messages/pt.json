@@ -522,8 +522,6 @@
     "jobApplicationsCount": "{count, plural, one {# candidatura} other {# candidaturas}}",
     "addApplication": "Adicionar candidatura",
     "browseJobs": "Ver empregos",
-    "jobApplicationsEmptyTitle": "Nenhuma candidatura ainda",
-    "jobApplicationsEmptyDesc": "Acompanhe as vagas às quais você se candidata—adicione uma manualmente ou candidate-se pelo quadro de empregos.",
     "jobApplicationsLoadError": "Não foi possível carregar suas candidaturas. Verifique sua conexão e tente de novo.",
     "jobApplicationsAddError": "Não foi possível adicionar esta candidatura. Verifique sua conexão e tente de novo.",
     "jobApplicationsUpdateError": "Não foi possível atualizar esta candidatura. Verifique sua conexão e tente de novo.",
@@ -1114,18 +1112,9 @@
     "salaryHighToLow": "Salário (maior para menor)",
     "salaryLowToHigh": "Salário (menor para maior)",
     "match": "compatível",
-    "noJobsMatchFilters": "Nenhuma vaga corresponde aos seus filtros",
-    "tryAdjustingFilters": "Tente ajustar seus filtros ou limpe-os para ver todas as vagas disponíveis.",
     "clearFilters": "Limpar filtros",
-    "noOpeningsListed": "Nenhuma vaga ativa no momento",
-    "newRolesAppear": "Os parceiros empregadores ainda não publicaram vagas ativas neste quadro. Atualize seu perfil para ficar pronto quando houver correspondências, envie uma mensagem ao seu conselheiro para indicações e volte depois que novas vagas forem publicadas.",
-    "updateProfile": "Atualizar perfil",
     "messageCounselor": "Mensagem ao conselheiro",
     "improveJobMatches": "Melhorar correspondências de vagas",
-    "noJobsAvailable": "Nenhuma vaga disponível no momento",
-    "newJobsAddedRegularly": "Os parceiros empregadores ainda não publicaram vagas ativas neste quadro. Explore os programas de treinamento enquanto espera e volte depois que novas vagas forem publicadas.",
-    "browsePrograms": "Explorar programas",
-    "applyForTraining": "Candidatar-se para treinamento",
     "searchJobs": "Pesquisar vagas",
     "sortBy": "Ordenar por",
     "allTypes": "Todos os tipos",
@@ -1528,7 +1517,6 @@
     "messagesSubtitle": "Linha direta com sua equipe de parceria WorkforceAP — indicações, marcos e recursos.",
     "messagesMetaDescription": "Envie uma mensagem à equipe WorkforceAP.",
     "noMessagesYetTitle": "Ainda não há mensagens",
-    "noMessagesYetDescription": "Sua conversa de parceria com a WorkforceAP aparecerá aqui após a primeira mensagem.",
     "messagesAuditPaused": "O acesso às mensagens está disponível. Conteúdo, confirmações de leitura e sincronização em tempo real estão pausados para esta auditoria.",
     "noMilestonesYet": "Ainda não há marcos",
     "noMilestonesYetDescription": "Os marcos aparecerão aqui conforme seus membros avançarem na capacitação.",
@@ -3879,6 +3867,75 @@
       "title": "Não foi possível carregar esta conversa",
       "body": "Tente novamente ou escolha outra conversa na lista.",
       "action": "Tentar novamente"
+    },
+    "certificates": {
+      "title": "Ainda não há certificados",
+      "body": "Ainda não há certificados registrados. Quando o Coursera informa um curso concluído, nós o adicionamos aqui como certificado pendente; nossa equipe o verifica antes que conte como obtido. Os cursos do Coursera concluídos aparecem em Meu programa, e você também pode adicionar abaixo um certificado obtido em outro lugar.",
+      "bodyKit": "Quando o Coursera informa um curso concluído, ele aparece aqui como certificado pendente; nossa equipe o verifica antes que conte como obtido. Os cursos do Coursera concluídos aparecem em Meu programa.",
+      "action": "Adicionar um certificado",
+      "secondary": "Meu programa",
+      "counselor": "Escrever ao conselheiro",
+      "continue": "Continuar o curso"
+    },
+    "learningPathway": {
+      "title": "Nenhuma trilha de aprendizagem ativa",
+      "body": "Comece agora com o básico digital, sem inscrição, ou escolha um programa financiado.",
+      "action": "Começar o básico digital, sem inscrição",
+      "secondary": "Escolher um programa"
+    },
+    "learningPathwayUnavailable": {
+      "title": "Seu programa ainda não tem uma trilha",
+      "body": "A lista de cursos do seu programa ainda não foi publicada, então não há nada para acompanhar aqui. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "enrolledCourses": {
+      "title": "Ainda não há aulas matriculadas",
+      "body": "Escolha um programa e a lista de cursos aparecerá aqui com seu progresso.",
+      "action": "Ir para Meu programa"
+    },
+    "enrolledCoursesUnavailable": {
+      "title": "Ainda não há cursos listados para o seu programa",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "modules": {
+      "title": "Ainda não há módulos nesta trilha",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Escreva ao seu conselheiro sobre no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "assignedCourses": {
+      "title": "Ainda não há cursos atribuídos",
+      "body": "A lista de cursos do seu programa ainda não foi publicada. Seu conselheiro pode dizer no que trabalhar.",
+      "action": "Escrever ao conselheiro"
+    },
+    "programResources": {
+      "title": "Ainda não há recursos para esta área do programa",
+      "body": "Ainda não adicionamos recursos para esta área do programa. Enquanto isso, seu conselheiro pode indicar materiais.",
+      "action": "Escrever ao conselheiro",
+      "secondary": "Todas as ferramentas de IA"
+    },
+    "resourcesFiltered": {
+      "title": "Nenhum recurso corresponde a estes filtros",
+      "body": "Limpe os filtros para ver tudo o que há na biblioteca.",
+      "action": "Limpar filtros"
+    },
+    "resourcesUnavailable": {
+      "title": "Nenhum recurso disponível no momento",
+      "body": "Ainda não há nada publicado na biblioteca de carreira. Suas outras ferramentas de carreira continuam disponíveis.",
+      "action": "Abrir ferramentas de IA"
+    },
+    "categoryScores": {
+      "title": "Ainda não há pontuações por categoria",
+      "body": "As pontuações são preenchidas a partir do seu perfil, currículo, treinamento e atividade de emprego."
+    },
+    "milestones": {
+      "title": "Ainda não há marcos",
+      "body": "Os marcos seguem as quatro áreas de prontidão à medida que perfil, treinamento, empregos e engajamento são preenchidos."
+    },
+    "readinessUnavailable": {
+      "title": "Não foi possível carregar sua pontuação de prontidão",
+      "body": "Atualize a página. Se isso continuar acontecendo, escreva ao seu conselheiro.",
+      "action": "Abrir o coach de prontidão"
     }
   }
 }

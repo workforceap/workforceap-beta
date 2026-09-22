@@ -25,11 +25,13 @@ const root = path.resolve(__dirname, '../..');
 describe('certificates page primary CTA', () => {
   it('is "Continue course" when a course is in progress, with Message counselor secondary', () => {
     render(
-      <MemberCertificatesKit
-        inProgress={[{ id: 'x', title: 'Intro to Software Engineering', percent: 20, note: '3 of 17 courses complete' }]}
-        inProgressCount={1}
-        continueHref="/dashboard/program"
-      />,
+      <NextIntlClientProvider locale="en" messages={en}>
+        <MemberCertificatesKit
+          inProgress={[{ id: 'x', title: 'Intro to Software Engineering', percent: 20, note: '3 of 17 courses complete' }]}
+          inProgressCount={1}
+          continueHref="/dashboard/program"
+        />
+      </NextIntlClientProvider>,
     );
     const primary = screen.getByRole('link', { name: 'Continue course' });
     expect(primary).toHaveAttribute('href', '/dashboard/program');
@@ -38,7 +40,7 @@ describe('certificates page primary CTA', () => {
   });
 
   it('keeps Message counselor primary when nothing is in progress', () => {
-    render(<MemberCertificatesKit />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberCertificatesKit /></NextIntlClientProvider>);
     expect(screen.queryByRole('link', { name: 'Continue course' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Message counselor' }).className).not.toContain('wa-kit-cta--ghost');
   });

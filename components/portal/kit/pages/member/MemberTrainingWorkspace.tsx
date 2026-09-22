@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, Clock3, FileCheck2, GraduationCap, MessageCircle, Save } from 'lucide-react';
 import { Button } from '@astryxdesign/core/Button';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
@@ -10,7 +11,7 @@ import { TextArea } from '@astryxdesign/core/TextArea';
 import { TextInput } from '@astryxdesign/core/TextInput';
 import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
-import { DesignSurface, PageOpener, useAnnounce } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, KitEmptyState, useAnnounce } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import SkillMissionChallenge from '@/components/portal/SkillMissionChallenge';
 import { logCourseraLaunchFromPortal } from '@/app/(portal)/dashboard/_actions/analyticsActions';
@@ -107,6 +108,7 @@ function addDays(date: string, days: number) {
 /** The member's assigned curriculum, study schedule, and durable work in one place. */
 export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
+  const te = useTranslations('empty');
   const [workspace, setWorkspace] = useState(initialWorkspace);
   const completed = new Set(completedSlugs);
   const nextCourse = workspace.courses.find((course) => !completed.has(course.slug));
@@ -329,7 +331,19 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                   <Link href="/dashboard/resume"><Save size={18} aria-hidden="true" /><span><strong>Build your resume</strong><small>Turn the work into a career story.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
                   <Link href={`/dashboard/messages?${new URLSearchParams({ program: workspace.programSlug, course: selected.slug, curriculum: workspace.curriculumVersion }).toString()}`}><MessageCircle size={18} aria-hidden="true" /><span><strong>Ask for feedback on this course</strong><small>Review a message with this course and your saved project link.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
                 </footer>
-              </VStack> : <p>Your assigned courses will appear here when your enrollment is ready.</p>}
+              </VStack> : (
+                // `empty.assignedCourses`: a workspace exists only for a pinned
+                // enrollment, so no selectable course means the curriculum has no
+                // published courses — unavailable, not "not ready yet".
+                <KitEmptyState
+                  kind="unavailable"
+                  tone="info"
+                  headingAs="h2"
+                  title={te('assignedCourses.title')}
+                  description={te('assignedCourses.body')}
+                  primaryAction={{ href: '/dashboard/messages', label: te('assignedCourses.action') }}
+                />
+              )}
             </section>
           </section>
         )}

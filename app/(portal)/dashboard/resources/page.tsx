@@ -11,8 +11,7 @@ import { getResourcesForCategory } from '@/lib/content/programResources';
 import { getCareerBriefContext } from '@/lib/content/careerBriefPersonalization';
 import ResourcesClient from './ResourcesClient';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
-import { DesignSurface, CardHead } from '@/components/portal/kit';
+import { DesignSurface, CardHead, KitEmptyState } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -77,6 +76,11 @@ export default async function DashboardResourcesPage() {
   }
 
   const programResources = getResourcesForCategory(category);
+  // `empty.programResources` (KIT_GUIDE §6): getResourcesForCategory falls
+  // back to the Digital Literacy list for members without a program, so an
+  // empty list is never an enrollment gate — it means the catalog has no
+  // resources for this program area yet (`unavailable`, info).
+  const te = await getTranslations('empty');
 
   return (
     <DesignSurface surface="warm">
@@ -152,11 +156,15 @@ export default async function DashboardResourcesPage() {
         <section style={{ marginBottom: '2rem' }}>
           <CardHead title={`${categoryLabel} resources`} />
           {programResources.length === 0 ? (
-            <PortalEmptyState
-              icon={<FolderOpen size={40} aria-hidden="true" style={{ color: 'var(--wa-accent)' }} />}
-              title="No resources yet"
-              description="Resources for your program will appear here once you're enrolled."
-              primaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
+            <KitEmptyState
+              kind="unavailable"
+              tone="info"
+              framed
+              icon={<FolderOpen size={40} aria-hidden="true" />}
+              title={te('programResources.title')}
+              description={te('programResources.body')}
+              primaryAction={{ href: '/dashboard/messages', label: te('programResources.action') }}
+              secondaryAction={{ href: '/dashboard/ai-tools', label: te('programResources.secondary') }}
             />
           ) : (
             <ResourcesClient resources={programResources} />

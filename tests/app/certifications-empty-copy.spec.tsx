@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 
 /**
  * Review 2026-09-22: both empty states on /dashboard/certifications?ui=legacy
@@ -21,6 +23,13 @@ vi.mock('next/link', () => ({
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async (input: unknown) => input) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/i18n/server', () => ({ getRequestLocale: vi.fn(async () => 'en') }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (ns: string) => (key: string) => {
+    let node: unknown = (en as Record<string, unknown>)[ns];
+    for (const part of key.split('.')) node = (node as Record<string, unknown> | undefined)?.[part];
+    return typeof node === 'string' ? node : `${ns}.${key}`;
+  }),
+}));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
 vi.mock('@/lib/member/memberProgramTrainingView', () => ({ loadMemberProgramTrainingView: vi.fn(async () => null) }));
 vi.mock('@/lib/db/prisma', () => ({
@@ -66,7 +75,8 @@ describe('/dashboard/certifications?ui=legacy empty states', () => {
   });
 
   it('tells a member with no certificates how records are actually created, in every layout', async () => {
-    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({ ui: 'legacy' }) }));
+    // The notice reads `empty.certificates` through next-intl, as the (portal) layout provides it.
+    render(<NextIntlClientProvider locale="en" messages={en}>{await DashboardCertificationsPage({ searchParams: Promise.resolve({ ui: 'legacy' }) })}</NextIntlClientProvider>);
 
     const notices = screen.getAllByText(/No certificates are recorded yet/);
     expect(notices).toHaveLength(3);
@@ -78,6 +88,21 @@ describe('/dashboard/certifications?ui=legacy empty states', () => {
     }
     expect(document.body).not.toHaveTextContent(/sync automatically/i);
     expect(document.body).not.toHaveTextContent(/not added here automatically/i);
-    expect(screen.getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program');
+    // Both legacy layouts (mobile row, desktop records panel) now render the one
+    // KitEmptyState: "My program" is its ghost link and "Add a certificate" its
+    // primary action, anchored to that layout's own add form.
+    // (The desktop records caption repeats the sentence as plain text; the two
+    // KitEmptyStates are the mobile row and the desktop records panel.)
+    const empties = document.querySelectorAll('.wa-kit-empty[data-kind="first"]');
+    expect(empties).toHaveLength(2);
+    for (const link of screen.getAllByRole('link', { name: 'My program' })) expect(link).toHaveAttribute('href', '/dashboard/program');
+    expect(screen.getAllByRole('link', { name: 'My program' })).toHaveLength(empties.length);
+    const addLinks = screen.getAllByRole('link', { name: 'Add a certificate' });
+    expect(addLinks).toHaveLength(empties.length);
+    for (const link of addLinks) {
+      const target = link.getAttribute('href')!.replace(/^#/, '');
+      expect(document.getElementById(target), target).not.toBeNull();
+    }
+    expect(notices.filter((notice) => notice.closest('.wa-kit-empty'))).toHaveLength(empties.length);
   });
 });

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import TrainingCourseList from '@/components/portal/TrainingCourseList';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 import type { LanguageSupport, ProgramCourse } from '@/lib/content/programs';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 
@@ -51,14 +52,35 @@ export default function LearningHubEnrolledCourses({
   eligibilityApproved = false,
   languagesSupported,
 }: LearningHubEnrolledCoursesProps) {
-  if (!programSlug || !programTitle || courses.length === 0) {
+  const te = useTranslations('empty');
+  const icon = <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }}>school</span>;
+  // `empty.*` (KIT_GUIDE §6): no program → `first` (choose one in My Program);
+  // an enrolled program whose curriculum has no published courses (or a slug
+  // the catalog no longer knows) → `unavailable`, message the counselor.
+  if (!programSlug) {
     return (
       <section className={ENROLLED_COURSES_WRAP_CLASS}>
-        <PortalEmptyState
-          title="No enrolled classes yet"
-          description="When you enroll in a program, your course list appears here with progress. Choose a track to get started."
-          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">school</span>}
-          primaryAction={{ label: 'Go to My Program', href: '/dashboard/program' }}
+        <KitEmptyState
+          kind="first"
+          framed
+          icon={icon}
+          title={te('enrolledCourses.title')}
+          description={te('enrolledCourses.body')}
+          primaryAction={{ label: te('enrolledCourses.action'), href: '/dashboard/program' }}
+        />
+      </section>
+    );
+  }
+  if (!programTitle || courses.length === 0) {
+    return (
+      <section className={ENROLLED_COURSES_WRAP_CLASS}>
+        <KitEmptyState
+          kind="unavailable"
+          framed
+          icon={icon}
+          title={te('enrolledCoursesUnavailable.title')}
+          description={te('enrolledCoursesUnavailable.body')}
+          primaryAction={{ label: te('enrolledCoursesUnavailable.action'), href: '/dashboard/messages' }}
         />
       </section>
     );

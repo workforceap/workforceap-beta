@@ -8,10 +8,10 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getPathwayForProgram } from '@/lib/content/learningPathways';
 import { buildPathwayMilestones } from '@/lib/content/pathwayStepDisplay';
+import { getTranslations } from 'next-intl/server';
 import { getRequestLocale } from '@/lib/i18n/server';
 import { formatLocalizedDate } from '@/lib/i18n/date';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import CertificationRoadmap from '@/components/portal/CertificationRoadmap';
 import CertificationReferenceSection from '@/components/portal/CertificationReferenceSection';
 import {
@@ -27,7 +27,7 @@ import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainingView';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
-import CertificationsEmptyNotice, { CERTIFICATES_EMPTY_DESCRIPTION } from '@/components/portal/CertificationsEmptyNotice';
+import CertificationsEmptyNotice, { CERTIFICATES_ADD_FORM_ID } from '@/components/portal/CertificationsEmptyNotice';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -47,6 +47,9 @@ export default async function DashboardCertificationsPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const locale = await getRequestLocale();
+  // `empty.certificates` (KIT_GUIDE §6): the one sentence for the empty vault,
+  // shared by the legacy records caption and every KitEmptyState on this page.
+  const te = await getTranslations('empty');
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
@@ -270,7 +273,9 @@ export default async function DashboardCertificationsPage({
           </div>
           <div style={{ paddingTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
             <DownloadAllCertificatesButton certs={certRows} />
-            <CertificationAddForm />
+            <div id={CERTIFICATES_ADD_FORM_ID}>
+              <CertificationAddForm />
+            </div>
           </div>
         </section>
 
@@ -514,7 +519,7 @@ export default async function DashboardCertificationsPage({
                 >
                   {certs.length > 0
                     ? 'Credentials saved to your WorkforceAP profile. Official PDF certificates come from the issuing organization (Coursera, CompTIA, etc.).'
-                    : CERTIFICATES_EMPTY_DESCRIPTION}
+                    : te('certificates.body')}
                 </div>
               </div>
             </div>
@@ -722,20 +727,10 @@ export default async function DashboardCertificationsPage({
                   ))}
                 </ul>
               ) : (
-                <PortalEmptyState
-                  icon={
-                    <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
-                      workspace_premium
-                    </span>
-                  }
-                  title="No certificates yet"
-                  description={CERTIFICATES_EMPTY_DESCRIPTION}
-                  primaryAction={{ href: '/dashboard/learning', label: 'Go to Learning Hub' }}
-                  secondaryAction={{ href: '/dashboard/ai-tools/career-business-coach', label: 'Talk to Career Coach' }}
-                />
+                <CertificationsEmptyNotice headingAs="h4" addFormId={`${CERTIFICATES_ADD_FORM_ID}-desktop`} />
               )}
               <DownloadAllCertificatesButton certs={certRows} />
-              <div style={{ marginTop: '0.75rem' }}>
+              <div style={{ marginTop: '0.75rem' }} id={`${CERTIFICATES_ADD_FORM_ID}-desktop`}>
                 <CertificationAddForm />
               </div>
             </div>

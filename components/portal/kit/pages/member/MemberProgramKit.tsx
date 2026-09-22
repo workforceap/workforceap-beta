@@ -2,7 +2,8 @@
 
 import { Play, Check, Lock, CalendarDays, Target, ArrowRight, GraduationCap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { DesignSurface, ProgressRing, PageOpener } from '@/components/portal/kit';
+import { useTranslations } from 'next-intl';
+import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
@@ -58,7 +59,12 @@ export interface MemberProgramKitProps {
   liveSessionStart?: string | number | Date;
   /** Optional duration in minutes for the calendar event (default 60). */
   liveSessionDurationMinutes?: number;
-  /** Summary line for the missions card. Honest empty-state copy if omitted. */
+  /**
+   * Summary line for the missions card. The live route does not load missions
+   * (see app/(portal)/dashboard/program/page.tsx), so when omitted the card
+   * says where missions are listed — never "No missions", which the kit
+   * cannot know.
+   */
   missionsSummary?: string;
   missionsHref?: string;
 }
@@ -117,6 +123,29 @@ export function MemberProgramKit({
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.
   if (trainingWorkspace) return <MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} />;
+  return <MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} />;
+}
+
+/** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */
+function MemberProgramOverview({
+  programTitle,
+  progressPercent,
+  modulesComplete,
+  modulesTotal,
+  modulesNote,
+  estRemaining,
+  resumeHref,
+  courseraLaunchHref,
+  modules,
+  liveSessionTitle,
+  liveSessionWhen,
+  liveSessionStart,
+  liveSessionDurationMinutes,
+  missionsSummary,
+  missionsHref,
+}: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
+  Pick<MemberProgramKitProps, 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
+  const te = useTranslations('empty');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
@@ -238,7 +267,17 @@ export function MemberProgramKit({
             </div>
             <div className="wa-space-y-2">
               {modules.length === 0 ? (
-                <p className="wa-kit-lede" style={{ margin: 0 }}>No modules on this path yet.</p>
+                // `empty.modules`: the route only reaches this card with a pinned
+                // enrollment, so an empty list is a curriculum not published yet —
+                // not a first step the member can take.
+                <KitEmptyState
+                  kind="unavailable"
+                  tone="info"
+                  headingAs="h4"
+                  title={te('modules.title')}
+                  description={te('modules.body')}
+                  primaryAction={{ href: '/dashboard/messages', label: te('modules.action') }}
+                />
               ) : null}
               {modules.map((m) => {
                 const meta = MODULE_META[m.state];
@@ -359,7 +398,7 @@ export function MemberProgramKit({
                 <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>Skill missions</h3>
               </div>
               <p className="wa-kit-lede">
-                {missionsSummary ?? 'No missions assigned.'}
+                {missionsSummary ?? 'Missions unlock as you finish courses. Open missions to see what is ready.'}
               </p>
               <a
                 href={missionsHref}

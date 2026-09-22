@@ -123,7 +123,9 @@ describe('JobsListingClient (/dashboard/jobs live listing)', () => {
     expect(filtered.closest('.wa-kit-card')).not.toBeNull();
     expect(within(filtered).getByText(m.empty.jobsFiltered.body)).toBeInTheDocument();
     expect(filtered.textContent).not.toMatch(RAW_KEY);
-    expect(screen.queryByText(m.jobs.noJobsMatchFilters)).toBeNull();
+    // PR 4 retired the pre-consolidation jobs.* empty keys; the filtered state has no other source.
+    expect((m.jobs as Record<string, unknown>).noJobsMatchFilters).toBeUndefined();
+    expect((m.jobs as Record<string, unknown>).tryAdjustingFilters).toBeUndefined();
 
     const clear = within(filtered).getByRole('button', { name: m.empty.jobsFiltered.action });
     expect(clear.className).toContain('wa-kit-cta');

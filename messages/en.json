@@ -533,8 +533,6 @@
     "jobApplicationsCount": "{count, plural, one {# application} other {# applications}}",
     "addApplication": "Add application",
     "browseJobs": "Browse jobs",
-    "jobApplicationsEmptyTitle": "No applications yet",
-    "jobApplicationsEmptyDesc": "Track roles you apply to—add one manually or apply from the job board.",
     "jobApplicationsLoadError": "We couldn't load your applications. Please check your connection and try again.",
     "jobApplicationsAddError": "We couldn't add this application. Please check your connection and try again.",
     "jobApplicationsUpdateError": "We couldn't update this application. Please check your connection and try again.",
@@ -1171,18 +1169,9 @@
     "salaryHighToLow": "Salary (high to low)",
     "salaryLowToHigh": "Salary (low to high)",
     "match": "match",
-    "noJobsMatchFilters": "No jobs match your filters",
-    "tryAdjustingFilters": "Try adjusting your filters or clear them to see all available jobs.",
     "clearFilters": "Clear filters",
-    "noOpeningsListed": "No live openings right now",
-    "newRolesAppear": "Employer partners have not posted live roles on this board yet. Update your profile so you are ready when matches appear, message your counselor for leads, and check back after new postings go live.",
-    "updateProfile": "Update profile",
     "messageCounselor": "Message your counselor",
     "improveJobMatches": "Improve job matches",
-    "noJobsAvailable": "No jobs available right now",
-    "newJobsAddedRegularly": "Employer partners have not posted live roles on this board yet. Explore training programs while you wait, and check back after new openings go live.",
-    "browsePrograms": "Browse programs",
-    "applyForTraining": "Apply for training",
     "searchJobs": "Search jobs",
     "sortBy": "Sort by",
     "allTypes": "All types",
@@ -1585,7 +1574,6 @@
     "messagesSubtitle": "Direct line to your WorkforceAP partnership team — referrals, milestones, and resources.",
     "messagesMetaDescription": "Message the WorkforceAP team.",
     "noMessagesYetTitle": "No messages yet",
-    "noMessagesYetDescription": "Your WorkforceAP partnership conversation will appear here after the first message.",
     "messagesAuditPaused": "Messaging access is available. Message content, read receipts, and realtime sync are paused for this audit.",
     "noMilestonesYet": "No milestones yet",
     "noMilestonesYetDescription": "Milestones will appear here as your members progress through training.",
@@ -3939,6 +3927,75 @@
       "title": "This conversation could not load",
       "body": "Try again, or pick another conversation from the list.",
       "action": "Try again"
+    },
+    "certificates": {
+      "title": "No certificates yet",
+      "body": "No certificates are recorded yet. When Coursera reports a completed course we add it here as a pending certificate; our team verifies it before it counts as earned. Completed Coursera courses show in My program, and you can also add a certificate you earned elsewhere below.",
+      "bodyKit": "When Coursera reports a completed course it appears here as a pending certificate; our team verifies it before it counts as earned. Completed Coursera courses show in My program.",
+      "action": "Add a certificate",
+      "secondary": "My program",
+      "counselor": "Message counselor",
+      "continue": "Continue course"
+    },
+    "learningPathway": {
+      "title": "No active learning pathway",
+      "body": "Start digital basics now — no application needed — or choose a funded program.",
+      "action": "Start digital basics, no application needed",
+      "secondary": "Choose a program"
+    },
+    "learningPathwayUnavailable": {
+      "title": "No pathway for your program yet",
+      "body": "The course list for your program is not published yet, so there is nothing to track here. Message your counselor about what to work on.",
+      "action": "Message counselor"
+    },
+    "enrolledCourses": {
+      "title": "No enrolled classes yet",
+      "body": "Choose a program and its course list appears here with your progress.",
+      "action": "Go to My Program"
+    },
+    "enrolledCoursesUnavailable": {
+      "title": "No courses listed for your program yet",
+      "body": "The course list for your program is not published yet. Message your counselor about what to work on.",
+      "action": "Message counselor"
+    },
+    "modules": {
+      "title": "No modules on this path yet",
+      "body": "The course list for your program is not published yet. Message your counselor about what to work on.",
+      "action": "Message counselor"
+    },
+    "assignedCourses": {
+      "title": "No courses assigned yet",
+      "body": "The course list for your program is not published yet. Your counselor can tell you what to work on.",
+      "action": "Message counselor"
+    },
+    "programResources": {
+      "title": "No resources for this program area yet",
+      "body": "We have not added resources for this program area yet. Your counselor can point you to materials in the meantime.",
+      "action": "Message counselor",
+      "secondary": "All AI tools"
+    },
+    "resourcesFiltered": {
+      "title": "No resources match these filters",
+      "body": "Clear the filters to see everything in the library.",
+      "action": "Clear filters"
+    },
+    "resourcesUnavailable": {
+      "title": "No resources available right now",
+      "body": "Nothing is published in the career library yet. Your other career tools are still available.",
+      "action": "Open AI tools"
+    },
+    "categoryScores": {
+      "title": "No category scores yet",
+      "body": "Scores fill in from your profile, resume, training, and job activity."
+    },
+    "milestones": {
+      "title": "No milestones yet",
+      "body": "Milestones follow the four readiness areas as profile, training, jobs, and engagement fill in."
+    },
+    "readinessUnavailable": {
+      "title": "Couldn't load your readiness score",
+      "body": "Refresh the page. If this keeps happening, message your counselor.",
+      "action": "Open readiness coach"
     }
   }
 }
