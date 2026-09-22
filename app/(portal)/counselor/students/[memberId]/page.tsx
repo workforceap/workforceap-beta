@@ -12,7 +12,7 @@ import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounse
 import Link from 'next/link';
 import { compactStringIds, getMessageAuthorName, getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
 import { counselorStudentStatusBadge, counselorStudentStatusBadgeVariant } from '@/lib/counselor/memberStatus';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
@@ -582,7 +582,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                     {memberTitle}
                   </p>
                   <p className={`wa-truncate ${styles.identityMeta}`}>{member.email ? `${program} · ${member.email}` : program}</p>
-                  <StatusBadge label={enrollmentBadge.label} variant={enrollmentBadgeVariant} />
+                  <StatusTag tone={badgeVariantToKitTone(enrollmentBadgeVariant)}>{enrollmentBadge.label}</StatusTag>
                 </div>
               </div>
               {barrierTypes.length > 0 ? (
@@ -671,10 +671,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                             <p className={styles.rowTitle}>{app.job.title}</p>
                             <p className={styles.rowMeta}>{app.job.employer.companyName}</p>
                           </div>
-                          <StatusBadge
-                            label={employerJobPostingApplicationStatusLabel(app.status)}
-                            variant={employerJobPostingApplicationStatusBadgeVariant(app.status)}
-                          />
+                          <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(app.status))}>
+                            {employerJobPostingApplicationStatusLabel(app.status)}
+                          </StatusTag>
                         </li>
                       ))}
                     </ul>
@@ -694,10 +693,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                           <div className={styles.rowEnd}>
                             <div className={styles.accentValue}>{matchScoreAsPercent(m.matchScore)}%</div>
                             <div>
-                              <StatusBadge
-                                label={employerMatchPipelineLabel(m.status)}
-                                variant={employerAiMatchStatusBadgeVariant(m.status)}
-                              />
+                              <StatusTag tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(m.status))}>
+                                {employerMatchPipelineLabel(m.status)}
+                              </StatusTag>
                             </div>
                           </div>
                         </li>

@@ -15,12 +15,11 @@ import {
   Avatar,
   FormField,
   KpiStrip,
-  colorVar,
   type Column,
-  type KitColor,
   type KpiItem,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
+import { KIT_TABLE_PAGE_SIZE } from '@/components/portal/kit/kitTableUrlState';
 import {
   DEFAULT_STUDENT_SORT_DIRECTION,
   DEFAULT_STUDENT_SORT_KEY,
@@ -216,17 +215,6 @@ function formatRosterGrade(pct: number | null | undefined): string {
   return `${String(rounded)}%`;
 }
 
-function readinessColor(score: number): KitColor {
-  if (score >= 70) return 'success';
-  if (score >= 50) return 'gold';
-  return 'accent';
-}
-
-/** Readiness score as a CSS var string (success ≥70, gold ≥50, else crimson). */
-function readinessVar(score: number): string {
-  return colorVar(readinessColor(score));
-}
-
 function NavButton({ href, label }: { href: string; label: string }) {
   return (
     <AstryxLink href={href} as={NextLink as never} isStandalone>
@@ -255,6 +243,7 @@ export function StudentsRosterKit({
     initialChip && chips.includes(initialChip) ? initialChip : 'All',
   );
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey | TrainingSortKey>(
     isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY,
     isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION,
@@ -285,6 +274,24 @@ export function StudentsRosterKit({
     () => (isTraining ? summarizeTrainingRows(visible.map(toTrainingRosterRow)) : null),
     [isTraining, visible],
   );
+
+  // Page the filtered roster at the kit page size (guide §6a) so a 130-row
+  // roster is not 130 stacked cards on a phone. A chip or search change
+  // drops back to page 1; an out-of-range page clamps to the last one.
+  const pageCount = Math.max(1, Math.ceil(visible.length / KIT_TABLE_PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () => visible.slice((currentPage - 1) * KIT_TABLE_PAGE_SIZE, currentPage * KIT_TABLE_PAGE_SIZE),
+    [visible, currentPage],
+  );
+  const selectChip = (chip: StudentFilter) => {
+    setActive(chip);
+    setPage(1);
+  };
+  const changeSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   const StudentCell = ({ row }: { row: StudentRow }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -387,6 +394,7 @@ export function StudentsRosterKit({
     key: 'courseraGrade',
     header: sortHeader('courseraGrade', 'Coursera grade'),
     align: 'right',
+    numeric: true,
     minWidth: 112,
     ariaSort: ariaSort('courseraGrade'),
     render: (row) => (
@@ -419,6 +427,7 @@ export function StudentsRosterKit({
       key: 'readiness',
       header: sortHeader('readiness', 'Readiness'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSort('readiness'),
       render: (row) => row.readiness == null ? <span>—</span> : (
@@ -426,7 +435,7 @@ export function StudentsRosterKit({
           style={{
             fontVariantNumeric: 'tabular-nums',
             fontWeight: 800,
-            color: readinessVar(row.readiness),
+            color: 'var(--wa-text)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -462,6 +471,7 @@ export function StudentsRosterKit({
       key: 'modules',
       header: sortHeader('modules', 'Modules'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSort('modules'),
       render: (row) => (
@@ -551,12 +561,12 @@ export function StudentsRosterKit({
           type="search"
           placeholder="Name, email or program"
           value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          onChange={(event) => changeSearch(event.target.value)}
         />
-        <div className="lg:wa-col-span-2">
+        <div className="lg:wa-col-span-2 wa-kit-view-chips">
           <SegmentedControl
             value={active}
-            onChange={(v) => setActive(v as StudentFilter)}
+            onChange={(v) => selectChip(v as StudentFilter)}
             label="Roster filters"
             size="sm"
             layout="hug"
@@ -570,8 +580,15 @@ export function StudentsRosterKit({
 
       <DataTable<StudentRow>
         columns={isTraining ? trainingColumns : rosterColumns}
-        rows={visible}
+        rows={pageRows}
         rowKey={(row) => row.id}
+        pagination={{
+          page: currentPage,
+          pageSize: KIT_TABLE_PAGE_SIZE,
+          totalItems: visible.length,
+          onChange: setPage,
+          label: 'Roster pagination',
+        }}
         onRowClick={(row) => router.push(row.href ?? `/admin/members/${row.id}`)}
         minWidth={isTraining ? 1080 : 1040}
         mobile="cards"
@@ -599,12 +616,7 @@ export function StudentsRosterKit({
                 {row.readiness != null ? (
                   <span style={{ whiteSpace: 'nowrap' }}>
                     Readiness{' '}
-                    <b
-                      style={{
-                        fontVariantNumeric: 'tabular-nums',
-                        color: readinessVar(row.readiness),
-                      }}
-                    >
+                    <b style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {row.readiness}
                     </b>
                   </span>

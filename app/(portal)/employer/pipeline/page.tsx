@@ -13,7 +13,8 @@ import EmployerMatchStatusSelect from '@/components/employer/EmployerMatchStatus
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import { employerAiMatchStatusBadgeVariant, employerMatchPipelineLabel } from '@/lib/employer/aiMatchPipelineLabels';
 import { getTranslations } from 'next-intl/server';
 import { EMPLOYER_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
@@ -190,7 +191,7 @@ export default async function EmployerPipelinePage() {
                           <div style={{ flexShrink: 0, textAlign: 'right', minWidth: 0, maxWidth: '42%' }}>
                             <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{matchScoreAsPercent(m.matchScore)}%</div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.25rem' }}>
-                              <StatusBadge className="wa-truncate max-w-full" label={employerMatchPipelineLabel(m.status)} variant={employerAiMatchStatusBadgeVariant(m.status)} />
+                              <StatusTag className="wa-truncate max-w-full" tone={badgeVariantToKitTone(employerAiMatchStatusBadgeVariant(m.status))}>{employerMatchPipelineLabel(m.status)}</StatusTag>
                             </div>
                           </div>
                         </div>

@@ -83,9 +83,10 @@
 }
 
 .resumeBtn:focus-visible {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
   border-color: color-mix(in srgb, var(--color-accent, #8c0f37) 40%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #8c0f37) 18%, transparent);
 }
 
 .resumeBtn:disabled {
@@ -261,9 +262,10 @@
 }
 
 .chip:focus-visible {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
   border-color: color-mix(in srgb, var(--color-accent, #8c0f37) 40%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #8c0f37) 18%, transparent);
 }
 
 .chip:active:not(:disabled) {
@@ -310,9 +312,10 @@
 }
 
 .input:focus {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
   border-color: color-mix(in srgb, var(--color-accent, #8c0f37) 40%, var(--outline-variant, #ddd));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #8c0f37) 16%, transparent);
 }
 
 .sendBtn {

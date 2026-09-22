@@ -18,3 +18,12 @@ export function statusToneToKitTone(tone: StatusTone): KitTone {
 export function badgeVariantToStatusTone(variant: BadgeVariant): StatusTone {
   return BADGE_TO_STATUS[variant];
 }
+
+/**
+ * Legacy `StatusBadge` variant → kit `StatusTag` tone, through the status
+ * tone so `error` / `accent` keep their attention (brand `alert`) meaning and
+ * never become kit's destructive red.
+ */
+export function badgeVariantToKitTone(variant: BadgeVariant): KitTone {
+  return STATUS_TO_KIT[BADGE_TO_STATUS[variant]];
+}

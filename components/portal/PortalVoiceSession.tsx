@@ -178,7 +178,7 @@ export type PortalVoiceSessionProps = {
 
 const PULSE_STYLE = `
 @keyframes pvs-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.pvs-focus-dark:focus-visible { outline: none; box-shadow: 0 0 0 2px #121212, 0 0 0 4px #ad2c4d; }
+.pvs-focus-dark:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring-on-dark); }
 `;
 
 /** Sent with `sendContextualUpdate`; bounded by the shared resume-coach disclosure contract. */

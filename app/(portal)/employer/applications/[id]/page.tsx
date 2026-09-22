@@ -10,7 +10,8 @@ import { prisma } from '@/lib/db/prisma';
 import { formatPortalDate } from '@/lib/formatDate';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import StatusBadge from '@/components/portal/StatusBadge';
+import { StatusTag } from '@/components/portal/kit';
+import { badgeVariantToKitTone } from '@/lib/ui/statusToneAdapters';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import ApplicationStatusUpdater from '@/components/employer/ApplicationStatusUpdater';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -102,8 +103,20 @@ export default async function EmployerApplicationPage({
               <p style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-on-surface-variant)', margin: '0 0 0.25rem' }}>
                 Current Status
               </p>
-              <StatusBadge
-                label={
+              <StatusTag tone={badgeVariantToKitTone(
+                  application.status === 'hired'
+                    ? 'success'
+                    : application.status === 'rejected'
+                      ? 'error'
+                      : application.status === 'interview'
+                        ? 'info'
+                        : application.status === 'offered'
+                          ? 'success'
+                          : application.status === 'reviewing'
+                            ? 'info'
+                            : 'warning'
+                )}>
+                {
                   application.status === 'hired'
                     ? 'Hired'
                     : application.status === 'rejected'
@@ -116,20 +129,7 @@ export default async function EmployerApplicationPage({
                             ? 'Reviewing'
                             : 'Pending'
                 }
-                variant={
-                  application.status === 'hired'
-                    ? 'success'
-                    : application.status === 'rejected'
-                      ? 'error'
-                      : application.status === 'interview'
-                        ? 'info'
-                        : application.status === 'offered'
-                          ? 'success'
-                          : application.status === 'reviewing'
-                            ? 'info'
-                            : 'warning'
-                }
-              />
+              </StatusTag>
             </div>
             <ApplicationStatusUpdater applicationId={application.id} currentStatus={application.status} />
           </div>

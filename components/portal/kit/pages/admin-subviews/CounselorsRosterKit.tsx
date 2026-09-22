@@ -161,6 +161,7 @@ export function CounselorsRosterKit({
       key: 'caseload',
       header: sortHeader('caseload', 'Caseload'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSortForColumn('caseload', sortKey, sortDirection),
       render: (row) => (
@@ -171,36 +172,29 @@ export function CounselorsRosterKit({
       key: 'atRisk',
       header: sortHeader('atRisk', 'At-risk'),
       align: 'right',
+      numeric: true,
       minWidth: 80,
       ariaSort: ariaSortForColumn('atRisk', sortKey, sortDirection),
       render: (row) => (
-        <span
-          style={{
-            ...numStyle,
-            fontWeight: 700,
-            color: row.atRisk > 0 ? 'var(--wa-accent)' : 'var(--wa-muted)',
-          }}
-        >
-          {row.atRisk}
-        </span>
+        <span style={{ ...numStyle, fontWeight: 700, color: 'var(--wa-text)' }}>{row.atRisk}</span>
       ),
     },
     {
       key: 'placements',
       header: sortHeader('placements', 'Placements'),
       align: 'right',
+      numeric: true,
       minWidth: 96,
       ariaSort: ariaSortForColumn('placements', sortKey, sortDirection),
       render: (row) => (
-        <span style={{ ...numStyle, color: 'var(--wa-success)', fontWeight: 700 }}>
-          {row.placements}
-        </span>
+        <span style={{ ...numStyle, fontWeight: 700 }}>{row.placements}</span>
       ),
     },
     {
       key: 'avgResponse',
       header: sortHeader('avgResponse', 'Avg response'),
       align: 'right',
+      numeric: true,
       minWidth: 108,
       ariaSort: ariaSortForColumn('avgResponse', sortKey, sortDirection),
       render: (row) => (
@@ -280,12 +274,10 @@ export function CounselorsRosterKit({
               </span>
               <span style={numStyle}>
                 At-risk{' '}
-                <b style={{ color: row.atRisk > 0 ? 'var(--wa-accent)' : 'var(--wa-text)' }}>
-                  {row.atRisk}
-                </b>
+                <b>{row.atRisk}</b>
               </span>
               <span style={numStyle}>
-                Placed <b style={{ color: 'var(--wa-success)' }}>{row.placements}</b>
+                Placed <b>{row.placements}</b>
               </span>
               <span style={numStyle}>Resp {row.avgResponse}</span>
             </div>

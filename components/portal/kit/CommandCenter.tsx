@@ -11,7 +11,6 @@
 import type { ReactNode } from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
-import { Badge } from '@astryxdesign/core/Badge';
 import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import Link from 'next/link';
 import { Sparkline, TrendPlaceholder } from './Charts';
@@ -46,15 +45,19 @@ export function CardHead({ title, linkLabel, linkHref }: { title: string; linkLa
   );
 }
 
-/** Trend pill: arrow + value, success (up) or danger (down) tone. */
+/**
+ * Trend pill: arrow + value, up (ok) or down (danger). Paints through
+ * `.wa-kit-delta--up|down` (css/portal-kit.css), the WCAG-tuned text-on-tint
+ * pairs shared with `.wa-kit-tag--ok|danger`; the Astryx `Badge` success
+ * variant read the base `--wa-success` hue at 3.1:1 on its tint.
+ */
 export function DeltaChip({ delta, direction = 'up' }: { delta: string; direction?: 'up' | 'down' }) {
   const Icon = direction === 'down' ? ArrowDown : ArrowUp;
   return (
-    <Badge
-      label={delta}
-      variant={direction === 'down' ? 'error' : 'success'}
-      icon={<Icon size={10} aria-hidden />}
-    />
+    <span className={cx('wa-kit-delta', direction === 'down' ? 'wa-kit-delta--down' : 'wa-kit-delta--up')}>
+      <Icon size={10} aria-hidden />
+      {delta}
+    </span>
   );
 }
 

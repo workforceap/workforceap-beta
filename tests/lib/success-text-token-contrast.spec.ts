@@ -84,3 +84,65 @@ describe('--wa-success-dark text-on-success-tint token', () => {
     expect(fitScore).toContain("score >= 8 ? 'var(--wa-success-soft)'");
   });
 });
+
+/**
+ * Portal refine (2026-09-22): the kit `DeltaChip` (StatSparkTile and the
+ * member home KPI tiles) painted its "↑ 4%" text from the base `--wa-success`
+ * hue — 3.13:1 on `--wa-success-soft` — through the Astryx Badge `success`
+ * variant in one copy and `var(--wa-kit-tone)` in the other. Both now read
+ * `.wa-kit-delta--up|down` (css/portal-kit.css), whose text/tint pairs are
+ * the WCAG-tuned ones `.wa-kit-tag--ok|danger` already prove.
+ */
+describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
+  const kitCss = readFileSync(path.join(root, 'css/portal-kit.css'), 'utf8');
+  const surface = lightDark('--wa-surface');
+  const commandCenter = readFileSync(path.join(root, 'components/portal/kit/CommandCenter.tsx'), 'utf8');
+  const memberHome = readFileSync(path.join(root, 'components/portal/kit/pages/member/MemberHomeKit.tsx'), 'utf8');
+
+  function ruleColour(selector: string): { light: string; dark: string } {
+    const block = kitCss.match(new RegExp(`${selector.replace(/[.-]/g, '\\$&')}\\s*\\{([^}]*)\\}`));
+    expect(block, `${selector} block in portal-kit.css`).not.toBeNull();
+    const m = block![1].match(/color:\s*light-dark\(\s*([^,]+?)\s*,\s*(.+?)\s*\);/);
+    expect(m, `${selector} colour must be light-dark()`).not.toBeNull();
+    return { light: m![1].trim(), dark: m![2].trim() };
+  }
+  /** `color-mix(in srgb, var(--wa-success) N%, transparent)` composited over the surface. */
+  function successTint(pct: number, mode: 'light' | 'dark'): number[] {
+    const hue = parseColor(lightDark('--wa-success')[mode]);
+    return over([...hue.slice(0, 3), pct / 100], parseColor(surface[mode]));
+  }
+
+  const up = ruleColour('.wa-kit-delta--up');
+  const down = ruleColour('.wa-kit-delta--down');
+
+  it('up: clears 4.5:1 on the 12% / 18% success tints in light and dark', () => {
+    expect(kitCss).toMatch(/\.wa-kit-delta--up \{[^}]*color-mix\(in srgb, var\(--wa-success\) 12%, transparent\)/);
+    expect(kitCss).toMatch(/\.wa-kit-delta--up \{[^}]*color-mix\(in srgb, var\(--wa-success\) 18%, transparent\)/);
+    expect(contrast(parseColor(up.light), successTint(12, 'light'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(parseColor(up.dark), successTint(18, 'dark'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('down: clears 4.5:1 on --wa-danger-soft in light and dark', () => {
+    const soft = tokensCss.match(/--wa-danger-soft:\s*(rgba\([^)]+\));/);
+    expect(soft).not.toBeNull();
+    const tint = parseColor(soft![1]);
+    expect(contrast(parseColor(down.light), over(tint, parseColor(surface.light)))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(parseColor(down.dark), over(tint, parseColor(surface.dark)))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('the base --wa-success hue the chip used to read is under AA on its tint (why the class exists)', () => {
+    const base = parseColor(lightDark('--wa-success').light);
+    expect(contrast(base, parseColor(lightDark('--wa-success-soft').light))).toBeLessThan(4.5);
+  });
+
+  it('both DeltaChip renderers paint through the class only', () => {
+    for (const source of [commandCenter, memberHome]) {
+      const chip = source.match(/function DeltaChip[\s\S]*?\n\}/)?.[0] ?? '';
+      expect(chip).toContain("'wa-kit-delta'");
+      expect(chip).toContain("'wa-kit-delta--down' : 'wa-kit-delta--up'");
+      expect(chip).not.toContain('var(--wa-kit-tone)');
+      expect(chip).not.toContain('<Badge');
+    }
+    expect(commandCenter).not.toMatch(/import \{ Badge \} from '@astryxdesign\/core\/Badge'/);
+  });
+});

@@ -103,8 +103,9 @@
 }
 
 .back:focus-visible {
-  outline: 3px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 .heading {
@@ -115,15 +116,18 @@
   color: var(--wa-text);
 }
 
-.heading:focus,
-.confirmTitle:focus {
+/* Programmatic focus (the step heading receives focus on navigation) shows
+   no mouse ring; keyboard focus keeps the recipe via :focus-visible below. */
+.heading:focus:not(:focus-visible),
+.confirmTitle:focus:not(:focus-visible) {
   outline: none;
 }
 
 .heading:focus-visible,
 .confirmTitle:focus-visible {
-  outline: 3px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
   border-radius: var(--wa-radius-sm);
 }
 
@@ -173,9 +177,10 @@
 }
 
 .wizard .field .control:focus {
-  outline: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
   border-color: var(--wa-accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wa-accent) 16%, transparent);
   background: var(--wa-surface);
 }
 
@@ -230,8 +235,9 @@
 }
 
 .answer:focus-within {
-  outline: 3px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 .answer input {
@@ -310,8 +316,9 @@
 }
 
 .primaryBtn:focus-visible {
-  outline: 3px solid var(--wa-accent);
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
 }
 
 .primaryBtn:disabled {

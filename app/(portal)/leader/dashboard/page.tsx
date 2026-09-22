@@ -291,7 +291,7 @@ export default function LeaderDashboardPage() {
                         {mtg.topic || "General meeting"}
                       </div>
                       <div style={{ color: "var(--color-on-surface-variant)" }}>
-                        {mtg.location || chapter.meetingLocation || "Location TBD"}
+                        {mtg.location || chapter.meetingLocation || "Location to be announced"}
                       </div>
                     </li>
                   ))}

@@ -90,6 +90,8 @@ export type SessionAgentConfig = {
   payload?: Record<string, unknown>;
   accent: string;
   accentDark: string;
+  /** Solid button fill that pairs with `--wa-on-hero` in both themes (see AGENT_ACCENT). */
+  solid: string;
   /**
    * When true, the idle state asks the member for a target role + interview
    * type before starting (used by Mock Interview), and merges them into the
@@ -103,10 +105,16 @@ export type SessionAgentConfig = {
 const LILLEY_DATA_USE_NOTICE =
   'ElevenLabs processes your microphone audio and live transcript during this session. WorkforceAP may share only the saved next-step, program, and progress facts needed for Lilley through approved read-only tools. This AI Career Tools session does not save the transcript to your WorkforceAP AI history or coach memory.';
 
+/**
+ * `solid` is the fill behind `--wa-on-hero` white text on the session panel's
+ * Start / End buttons: a mode-constant hero hue (guide §1) so the label clears
+ * 4.5:1 in both themes. White on the base `--wa-gold` measured 3.7:1 and on
+ * the dark-mode `--wa-accent` / `--wa-info` 3.3:1 / 2.2:1.
+ */
 const AGENT_ACCENT = {
-  crimson: { accent: 'var(--wa-accent)', accentDark: 'var(--wa-accent-dark)' },
-  gold: { accent: 'var(--wa-gold)', accentDark: 'var(--wa-gold-dark)' },
-  blue: { accent: 'var(--wa-info)', accentDark: 'color-mix(in srgb, var(--wa-info) 75%, black)' },
+  crimson: { accent: 'var(--wa-accent)', accentDark: 'var(--wa-accent-dark)', solid: 'var(--wa-hero-crimson)' },
+  gold: { accent: 'var(--wa-gold)', accentDark: 'var(--wa-gold-dark)', solid: 'var(--wa-hero-gold)' },
+  blue: { accent: 'var(--wa-info)', accentDark: 'color-mix(in srgb, var(--wa-info) 75%, black)', solid: 'color-mix(in srgb, var(--wa-info) 70%, black)' },
 } as const;
 
 const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
@@ -486,7 +494,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
         )}
       </div>
       <div>
-        <h3 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{title}</h3>
+        <h2 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{title}</h2>
         <p style={{ fontSize: 'var(--wa-type-body)', color: bodyColor, marginTop: 6, lineHeight: 1.5 }}>{body}</p>
         <div
           style={{
@@ -568,7 +576,7 @@ function formatClock(totalSeconds: number): string {
  * live session, not canned content.
  */
 function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
-  const { label, endpoint, payload, accent, accentDark, askRole, dataUseNotice } = agent;
+  const { label, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
   const [phase, setPhase] = useState<SessionPhase>('idle');
   const [error, setError] = useState('');
   const [agentSpeaking, setAgentSpeaking] = useState(false);
@@ -991,8 +999,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                     style={{
                       padding: '12px 24px',
                       borderRadius: 999,
-                      background: accent,
-                      color: 'var(--wa-on-accent)',
+                      background: solid,
+                      color: 'var(--wa-on-hero)',
                       fontWeight: 700,
                       fontSize: 'var(--wa-type-body)',
                       border: 'none',
@@ -1037,8 +1045,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                   style={{
                     padding: '12px 28px',
                     borderRadius: 999,
-                    background: accent,
-                    color: 'var(--wa-on-accent)',
+                    background: solid,
+                    color: 'var(--wa-on-hero)',
                     fontWeight: 700,
                     fontSize: 'var(--wa-type-body)',
                     border: 'none',
@@ -1105,8 +1113,8 @@ function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
                       <div
                         style={{
                           ...bubble,
-                          background: accent,
-                          color: 'var(--wa-on-accent)',
+                          background: solid,
+                          color: 'var(--wa-on-hero)',
                           borderTopRightRadius: 4,
                           display: 'inline-block',
                           textAlign: 'left',
@@ -1613,7 +1621,7 @@ const ORB_CSS = `
 .vs-orb-ring.vs-d3 { animation-delay: 1.8s; }
 .vs-eqbar { height: 60%; animation: vsEq 1s ease-in-out infinite; }
 .vs-dot { animation: vsPulse 1.6s ease-in-out infinite; }
-.vs-focus-dark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--wa-sidebar-bg), 0 0 0 4px var(--wa-accent); }
+.vs-focus-dark:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring-on-dark); }
 
 /* Micro-interactions — transform/opacity only, so they're cheap to composite
    and safe to disable wholesale under reduced motion below. */

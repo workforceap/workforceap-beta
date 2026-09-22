@@ -17,6 +17,8 @@ export interface Column<T> {
   /** Cell renderer; defaults to String(row[key]) when omitted. */
   render?: (row: T) => ReactNode;
   align?: 'left' | 'right';
+  /** Numeric column: right-aligned tabular numerals (`.wa-kit-table-cell--num`, guide §6a). */
+  numeric?: boolean;
   /** Pin this column while the table scrolls sideways (the first column, usually). */
   stickyLeft?: boolean;
   minWidth?: number | string;
@@ -106,6 +108,7 @@ export function DataTable<T>({
     key: c.key,
     header: c.header,
     align: c.align,
+    numeric: c.numeric,
     stickyLeft: c.stickyLeft,
     minWidth: c.minWidth,
     ariaSort: c.ariaSort,

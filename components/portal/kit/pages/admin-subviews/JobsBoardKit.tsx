@@ -147,6 +147,7 @@ export function JobsBoardKit({
       key: 'wage',
       header: sortHeader('wage', 'Wage'),
       align: 'right',
+      numeric: true,
       minWidth: 88,
       ariaSort: ariaSortForColumn('wage', sortKey, sortDirection),
       render: (row) => (
@@ -159,6 +160,7 @@ export function JobsBoardKit({
       key: 'applicants',
       header: sortHeader('applicants', 'Applicants'),
       align: 'right',
+      numeric: true,
       minWidth: 96,
       ariaSort: ariaSortForColumn('applicants', sortKey, sortDirection),
       render: (row) => (
