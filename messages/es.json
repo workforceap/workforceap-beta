@@ -4114,7 +4114,7 @@
       },
       "workQueueReviewClear": {
         "title": "Nada que revisar hoy",
-        "body": "No llegó ninguna solicitud hoy y ninguna de tus vacantes está esperando aprobación o publicación."
+        "body": "Ninguna solicitud nueva de hoy está en espera y ninguna de tus vacantes está esperando aprobación o publicación."
       },
       "workQueueStaleClear": {
         "title": "No hay solicitudes estancadas",

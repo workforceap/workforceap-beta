@@ -4114,7 +4114,7 @@
       },
       "workQueueReviewClear": {
         "title": "Nothing to review today",
-        "body": "No application arrived today and none of your postings is awaiting approval or go-live."
+        "body": "No new application is waiting from today and none of your postings is awaiting approval or go-live."
       },
       "workQueueStaleClear": {
         "title": "No stale applications",

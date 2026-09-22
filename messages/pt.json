@@ -4054,7 +4054,7 @@
       },
       "workQueueReviewClear": {
         "title": "Nada para revisar hoje",
-        "body": "Nenhuma candidatura chegou hoje e nenhuma das suas vagas aguarda aprovação ou publicação."
+        "body": "Nenhuma candidatura nova de hoje está aguardando e nenhuma das suas vagas aguarda aprovação ou publicação."
       },
       "workQueueStaleClear": {
         "title": "Nenhuma candidatura parada",
