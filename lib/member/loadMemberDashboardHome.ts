@@ -14,6 +14,11 @@ import { isTrainingActivityStale, trainingEligibleSince } from '@/lib/member/tra
 import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
+import {
+  buildMemberPointsTrend,
+  memberPointsSpark,
+  type MemberStatSpark,
+} from '@/lib/member/memberPointsTrend';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { buildNextBestActions, type NextBestAction } from '@/lib/member/nextBestActions';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
@@ -33,7 +38,9 @@ import {
  *  1. `user.findUnique` with the nested relations / `_count`s the kit needs
  * Course facts are included in the nested user read so the page can apply the
  * same validated X/Y/% formula as the training detail without trusting a stale
- * aggregate rollup.
+ * aggregate rollup. The Points tile's weekly trend is bucketed in memory from
+ * the same nested `points_transactions` page (see `memberPointsTrend`), so the
+ * sparkline adds no Prisma operation and no second round trip.
  *
  * Coursera B4B + `maybeAutoSyncCourseraOnDashboard` stay **off this path**.
  * Hourly `coursera-training-sync` owns seeding. `getMemberState` (Redis
@@ -45,7 +52,20 @@ import {
 /** Prisma ops this loader issues on the happy path (1–2). Layout bootstrap is extra. */
 export const MEMBER_DASHBOARD_HOME_PRISMA_BUDGET = 2;
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * Points rows read with the member (newest first).
+ *
+ * Sized for the eight rolling weeks the Points sparkline buckets into, not for
+ * the three-row ledger. There is no natural ceiling to appeal to — `daily_study`
+ * alone reaches 400 rows in 400 days, and job applications, counselor sessions
+ * and counselor bonuses are unbounded — so this number is not a proof that
+ * truncation cannot happen. It is a cheap headroom figure (the busiest member
+ * in production history holds 54 rows in total), and correctness comes from
+ * `buildMemberPointsTrend`, which drops the series rather than draw a
+ * truncated one. Widening this costs no extra Prisma operation: it is the same
+ * nested read.
+ */
+const POINTS_TRANSACTION_TAKE = 400;
 /** Recent pipeline rows shown on the home card: anything not yet closed. */
 const PIPELINE_ROW_STATUSES_EXCLUDED = ['REJECTED', 'ACCEPTED'] as const;
 
@@ -115,6 +135,18 @@ export type MemberDashboardHomeView = {
   certModulesTotal: number;
   pointsLedger: DashboardPointsLedgerEntry[];
   pointsThisWeek?: number;
+  /**
+   * Points earned per rolling week for the Points tile's sparkline, with the
+   * week-over-week delta chip. Omitted when there is nothing honest to draw.
+   * The last point equals `pointsThisWeek` by construction — both come from
+   * `buildMemberPointsTrend`, so the line cannot end on a different number
+   * than the chip beside it.
+   *
+   * Course %, Active jobs and Certs have no series here on purpose: the first
+   * two need history this schema does not keep, and a certification count
+   * moves twice a year.
+   */
+  pointsSpark?: MemberStatSpark;
   programHref: string;
   resumeHref: string;
   coursesHref: string;
@@ -540,10 +572,14 @@ function shapeHome(args: {
     allCoursesComplete,
   });
 
-  const weekAgo = Date.now() - WEEK_MS;
-  const pointsThisWeek = args.row.pointsTransactions
-    .filter((tx) => tx.createdAt.getTime() >= weekAgo)
-    .reduce((sum, tx) => sum + tx.points, 0);
+  // One rolling-7-day definition for both the "this week" chip and the last
+  // point of the sparkline: same rows, same windows, computed once.
+  const pointsTrend = buildMemberPointsTrend({
+    transactions: args.row.pointsTransactions,
+    now: Date.now(),
+    truncated: args.row.pointsTransactions.length >= POINTS_TRANSACTION_TAKE,
+  });
+  const pointsThisWeek = pointsTrend.thisWeek;
   const recentLedger = args.row.pointsTransactions.slice(0, 3);
   const totalPoints = args.row.memberPoints?.totalPoints ?? 0;
   const badge = deriveNextBadge({
@@ -609,6 +645,7 @@ function shapeHome(args: {
     certModulesTotal: totalCourses,
     pointsLedger: mapPointsLedger(recentLedger),
     pointsThisWeek: pointsThisWeek > 0 ? pointsThisWeek : undefined,
+    pointsSpark: memberPointsSpark(pointsTrend),
     programHref,
     resumeHref,
     coursesHref: '/dashboard/learning',
@@ -717,11 +754,14 @@ function userSelect() {
         currentMetricValue: true,
       },
     },
-    // Newest events: ledger uses the first 3; week chip sums those in the last 7 days.
-    // take: 50 is enough for a typical week without a second aggregate query.
+    // Newest events, serving three readers off one nested read: the ledger
+    // takes the first 3, the week chip sums the last 7 days, and the Points
+    // sparkline buckets the last 8 rolling weeks. Deriving the series here
+    // instead of issuing a GROUP BY keeps the loader at ONE Prisma operation,
+    // inside MEMBER_DASHBOARD_HOME_PRISMA_BUDGET with a slot to spare.
     pointsTransactions: {
       orderBy: { createdAt: 'desc' as const },
-      take: 50,
+      take: POINTS_TRANSACTION_TAKE,
       select: { event: true, points: true, createdAt: true },
     },
     _count: {

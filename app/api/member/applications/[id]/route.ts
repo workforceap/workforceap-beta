@@ -3,6 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { ensureUserInDb } from '@/lib/auth/ensureUser';
 import { prisma } from '@/lib/db/prisma';
 import { awardPoints } from '@/lib/member/points';
+import { recordApplicationStatusChange } from '@/lib/member/applicationStatusEvent';
 import { z } from 'zod';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -72,6 +73,19 @@ const updateSchema = z.object({
         awardPoints(user.id, 'job_application', app.id).catch(() => {});
       }
   
+      // Sibling of `/api/member/job-applications/[id]`, which has always logged
+      // this. Without it a status move made through this route left no trace in
+      // the member activity log.
+      if (parsed.data.status !== undefined) {
+        await recordApplicationStatusChange({
+          userId: user.id,
+          applicationId: app.id,
+          previousStatus: existing.status,
+          nextStatus: parsed.data.status,
+          sourcePage: '/dashboard/job-applications',
+        });
+      }
+
       auditLog({ actorUserId: user.id, action: 'member.application.update', targetType: 'JobApplication', targetId: id }).catch(() => {});
       logAuditEvent({ user: { id: user.id, role: 'member' }, verb: 'update', object: { type: 'JobApplication', id }, result: { success: true } }).catch(() => {});
       return NextResponse.json({ application: app });

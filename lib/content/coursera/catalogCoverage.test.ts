@@ -51,3 +51,69 @@ test('catalogCoverageIssueLabel covers every issue kind', () => {
   assert.match(catalogCoverageIssueLabel('discovered_extra_courses'), /extra courses/i);
   assert.match(catalogCoverageIssueLabel('unverified_path'), /Unverified/i);
 });
+
+/**
+ * WAP-76: the committed catalog must say what the Curriculum download says.
+ *
+ * Two programs are deliberately excluded and must stay excluded. Their live
+ * learner collections (legacy-v1) are not the board-approved 2026-approved-v2
+ * curricula, and the approved sets have no Coursera collection yet
+ * (docs/plans/2026-08-30-approved-coursera-curriculum-v2.md). Refreshing them
+ * from the download would quietly replace an approved curriculum with an
+ * unapproved one, so the drift is recorded here rather than removed.
+ */
+const DELIBERATELY_UNREFRESHED: ReadonlyMap<string, string> = new Map([
+  ['pWA8u', 'Data Science / DBA (IBM) - approved v2 curriculum has no Coursera collection'],
+  ['Qa9KU', 'Management & Data Analyst - approved v2 curriculum has no Coursera collection'],
+]);
+
+test('every refreshed program matches its curated collection exactly', () => {
+  const report = buildCatalogCoverageReport();
+  const drifted: string[] = [];
+  let compared = 0;
+  for (const row of report.rows) {
+    if (row.discoveredCourseCount === null) continue;
+    if (DELIBERATELY_UNREFRESHED.has(row.collectionId)) continue;
+    compared += 1;
+    if (row.curatedOnlyCourseIds.length > 0 || row.discoveredOnlyCourseIds.length > 0) {
+      drifted.push(
+        `${row.collectionId} (${row.programSlug}): ` +
+          `${row.curatedOnlyCourseIds.length} missing from the catalog, ` +
+          `${row.discoveredOnlyCourseIds.length} the collection no longer carries`,
+      );
+    }
+  }
+  assert.deepEqual(drifted, [], `catalog has drifted from the Curriculum download:\n  ${drifted.join('\n  ')}`);
+  // An empty drift list proves nothing about an empty input. There are 16
+  // registered Learning Paths and two documented exceptions, so this loop must
+  // have actually compared the other fourteen.
+  assert.equal(
+    compared,
+    report.summary.pathCount - DELIBERATELY_UNREFRESHED.size,
+    'the drift loop skipped programs it should have compared',
+  );
+  assert.ok(compared >= 14, `only ${compared} programs were compared against the download`);
+});
+
+test('the two deliberately unrefreshed programs are still the only exceptions', () => {
+  const report = buildCatalogCoverageReport();
+  const stillDrifting = report.rows
+    .filter((row) => row.curatedOnlyCourseIds.length > 0 || row.discoveredOnlyCourseIds.length > 0)
+    .map((row) => row.collectionId)
+    .sort();
+  assert.deepEqual(
+    stillDrifting,
+    [...DELIBERATELY_UNREFRESHED.keys()].sort(),
+    'a program either matches the download or is on the documented exception list',
+  );
+});
+
+test('UX Design no longer claims the course Coursera dropped', () => {
+  const report = buildCatalogCoverageReport();
+  const row = report.rows.find((entry) => entry.collectionId === 'h0Rk9');
+  assert.ok(row);
+  assert.equal(row.programSlug, 'ux-design-professional-certificate-google');
+  assert.equal(row.discoveredCourseCount, 6);
+  assert.equal(row.curatedCourseCount, 6);
+  assert.deepEqual(row.discoveredOnlyCourseIds, [], 'Build Dynamic User Interfaces (UI) for Websites is gone');
+});
