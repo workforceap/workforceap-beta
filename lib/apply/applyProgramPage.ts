@@ -55,7 +55,7 @@ export async function buildApplyPageMetadata(programParam: string | undefined): 
   const { title, description } = program ? buildApplyProgramSeo(program) : {
     title: 'Apply for Career Training',
     description:
-      'Apply for career certification training at no cost to members. CompTIA, Google, IBM, AWS, and more. Serving communities nationwide. We follow up with next steps in 1 to 2 business days.',
+      'Apply for career certification training at no cost to members. CompTIA, Google, IBM, AWS, and more. Serving communities nationwide. A counselor reviews every application; you\'ll get an email when a decision is made.',
   };
   const base = await buildPageMetadataAsync({
     title,

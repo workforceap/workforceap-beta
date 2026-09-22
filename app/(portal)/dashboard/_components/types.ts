@@ -22,6 +22,8 @@ export type ApplicationStatusSummary = {
   nextStep: string;
   nextStepHref: string;
   showResponseEstimate: boolean;
+  /** #2488's measured wait (median approval days over 30 days), reused verbatim by the legacy dashboard; null renders nothing. */
+  waitEstimate: MemberCounselorContext['waitEstimate'];
   progressIndex: number | null;
   stage: MemberApplicationStatusView['stage'];
 };

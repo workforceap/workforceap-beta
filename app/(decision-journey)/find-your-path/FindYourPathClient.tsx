@@ -335,7 +335,7 @@ function QuizResultsView({
             <div style={{ padding: '1rem', borderRadius: '0.9rem', background: 'var(--surface-container)', border: '1px solid var(--outline-variant)' }}>
               <strong>3 · Your next step</strong>
               <p style={{ margin: '0.5rem 0 0', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>
-                Apply in about 10 minutes, then an advisor follows up within 1–2 business days.
+                Apply in about 10 minutes. A counselor reviews every application, and you’ll get an email when a decision is made.
               </p>
             </div>
           </div>
@@ -467,7 +467,7 @@ function QuizResultsView({
             Your strongest match is <strong>{topProgram.title}</strong>. Review the curriculum and occupational requirements, then discuss your next step with an advisor.
           </p>
           <p className="quiz-results-cta-sub">
-            Choose the track that fits you best, then we’ll follow up within 1–2 business days.
+            Choose the track that fits you best, then apply. A counselor reviews every application and follows up by email.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
             <LocalizedLink href={topApplyHref} className="btn btn-primary btn-large">

@@ -28,6 +28,8 @@ export type DashboardApplicationStatusProps = {
   programInterest: string | null;
   nextStep: string;
   showResponseEstimate: boolean;
+  /** Median approval wait measured over the last 30 days (#2488); null when fewer than 5 approvals, and then no line renders. */
+  waitEstimate?: { medianDays: number; sampleSize: number } | null;
   progressIndex: number | null;
   stage: MemberApplicationStage;
 };
@@ -114,6 +116,8 @@ export default function DashboardHomeClient({
   homeOnly = false,
 }: DashboardHomeClientProps) {
   const t = useTranslations('dashboard');
+  // Same catalog line as MemberApprovalStatusCard: a measured median, never a fixed promise.
+  const tApproval = useTranslations('memberApproval');
   const primaryAction = recommendedActions[0];
 
   useEffect(() => {
@@ -412,11 +416,17 @@ export default function DashboardHomeClient({
                     <p style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{applicationStatus.label}</p>
                   </div>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', lineHeight: 1.5 }}>{applicationStatus.nextStep}</p>
-                  {applicationStatus.showResponseEstimate && (
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.8, marginTop: '0.5rem' }}>
-                      We typically respond with your next step in 1 to 2 business days.
+                  {applicationStatus.showResponseEstimate && applicationStatus.waitEstimate ? (
+                    <p
+                      data-approval-wait-estimate
+                      style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', opacity: 0.8, marginTop: '0.5rem' }}
+                    >
+                      {tApproval('reviewer.waitEstimate', {
+                        days: applicationStatus.waitEstimate.medianDays,
+                        count: applicationStatus.waitEstimate.sampleSize,
+                      })}
                     </p>
-                  )}
+                  ) : null}
                   <div className="portal-card portal-card--flat portal-card--padded-sm">
                     <p style={{ fontSize: '0.875rem', fontStyle: 'italic', color: 'var(--color-on-surface-variant)', lineHeight: 1.6 }}>
                       {applicationSupportCopy}

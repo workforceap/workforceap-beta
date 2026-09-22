@@ -525,6 +525,12 @@ async function renderMemberDashboard(
   // The wizard's closing step names the assigned counselor and the measured
   // review wait; loaded only while the wizard is actually shown.
   const wizardCounselorContext = showMemberOnboarding ? await getMemberCounselorContext(user.id) : null;
+  // The legacy status card quotes the same measured wait as the kit card
+  // (#2488). Reuse the wizard's read when it ran; otherwise take it only while
+  // the application is still under review. `awaiting === 'approval'` gates the
+  // estimate inside getMemberCounselorContext, so NEEDS_INFO shows nothing.
+  const legacyCounselorContext = wizardCounselorContext
+    ?? (memberState.application?.showResponseEstimate ? await getMemberCounselorContext(user.id) : null);
 
   // ── Application status ── (from memberState, single source of truth)
   const applicationStatusView = memberState.application;
@@ -536,6 +542,7 @@ async function renderMemberDashboard(
         nextStep: applicationStatusView.nextStep,
         nextStepHref: applicationStatusView.nextStepHref,
         showResponseEstimate: applicationStatusView.showResponseEstimate,
+        waitEstimate: legacyCounselorContext?.awaiting === 'approval' ? legacyCounselorContext.waitEstimate : null,
         progressIndex: applicationStatusView.progressIndex,
         stage: applicationStatusView.stage,
       }
