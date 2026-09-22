@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "b20cc9698120722deba97c7482948af99d6205a3243c2815bb10bf730fb1de2b",
+  "inputTreeSha256": "a37d93030224139c2805bf3db1fa1eb784ef62c043d3bacb6592d49617447ec1",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -44065,9 +44065,9 @@
       "path": "app/dev/member/home/page.tsx",
       "area": "pages",
       "domain": "member-counselor",
-      "bytes": 5751,
-      "lines": 157,
-      "sha256": "6f7bf7edd141ea98b0d2dc37e8449abbd02cc303c3dfc4957860cc259b16ecdc",
+      "bytes": 5912,
+      "lines": 159,
+      "sha256": "8e30e9e372280e67fd0bcd9224e6726b6d89cf096ea9409a4abe3211c21bf9e4",
       "binary": false,
       "exports": [
         {
@@ -44077,7 +44077,7 @@
         },
         {
           "name": "default",
-          "line": 42,
+          "line": 44,
           "kind": "FunctionDeclaration",
           "localName": "DevMemberHomePage"
         }
@@ -44095,7 +44095,7 @@
         },
         {
           "name": "DevMemberHomePage",
-          "line": 42,
+          "line": 44,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83905,9 +83905,9 @@
       "path": "lib/admin/applicationReview.ts",
       "area": "libraries",
       "domain": "administration",
-      "bytes": 7416,
-      "lines": 170,
-      "sha256": "cdf03ca5905568611eb09c2f16cd1580a91fe3a84b3702d9f0bcefe91949ea7c",
+      "bytes": 9999,
+      "lines": 230,
+      "sha256": "f2dde171c140bdbeb5ada27e4ff24c22d432129f13b2a4ed628ac0968623e0b6",
       "binary": false,
       "exports": [
         {
@@ -83917,7 +83917,7 @@
         },
         {
           "name": "changeApplicationStatus",
-          "line": 34,
+          "line": 87,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -83933,8 +83933,18 @@
           "kind": "FunctionDeclaration"
         },
         {
-          "name": "changeApplicationStatus",
+          "name": "ReviewTx",
           "line": 34,
+          "kind": "TypeAliasDeclaration"
+        },
+        {
+          "name": "clearTrainingApprovalOnClose",
+          "line": 55,
+          "kind": "FunctionDeclaration"
+        },
+        {
+          "name": "changeApplicationStatus",
+          "line": 87,
           "kind": "FunctionDeclaration"
         }
       ],
@@ -175030,9 +175040,9 @@
       "path": "tests/lib/application-review-atomic.spec.ts",
       "area": "tests",
       "domain": "tests",
-      "bytes": 11107,
-      "lines": 178,
-      "sha256": "b551c397fe073472738f9024580767ecbc60b98c1993fb2f39291b83fad7b6d3",
+      "bytes": 16266,
+      "lines": 290,
+      "sha256": "4a071e059f51403dded8942b356eb5b762f99206b4cdfc1d3fa8f6a912196148",
       "binary": false,
       "exports": [],
       "declarations": [
@@ -175043,7 +175053,7 @@
         },
         {
           "name": "args",
-          "line": 49,
+          "line": 70,
           "kind": "Variable"
         }
       ],

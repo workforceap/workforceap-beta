@@ -573,7 +573,7 @@
 | [app/dev/member/cover-letter/page.tsx](../../../app/dev/member/cover-letter/page.tsx) | 46 | member-counselor | dynamic:10, default:29 |
 | [app/dev/member/elevator-pitch/page.tsx](../../../app/dev/member/elevator-pitch/page.tsx) | 42 | member-counselor | dynamic:11, default:24 |
 | [app/dev/member/gap-analyzer/page.tsx](../../../app/dev/member/gap-analyzer/page.tsx) | 41 | member-counselor | dynamic:10, default:24 |
-| [app/dev/member/home/page.tsx](../../../app/dev/member/home/page.tsx) | 157 | member-counselor | dynamic:18, default:42 |
+| [app/dev/member/home/page.tsx](../../../app/dev/member/home/page.tsx) | 159 | member-counselor | dynamic:18, default:44 |
 | [app/dev/member/interview-coach/page.tsx](../../../app/dev/member/interview-coach/page.tsx) | 37 | member-counselor | dynamic:11, default:18 |
 | [app/dev/member/interview-practice/page.tsx](../../../app/dev/member/interview-practice/page.tsx) | 58 | member-counselor | dynamic:10, default:40 |
 | [app/dev/member/interview-prep/page.tsx](../../../app/dev/member/interview-prep/page.tsx) | 52 | ai-voice | dynamic:10, default:36 |
