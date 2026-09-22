@@ -97,6 +97,12 @@ function classify(relPath) {
     }
     return { unknownVitest: true };
   }
+  if (/lib\/admin\/memberMergeRealDb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Proves PostgreSQL transaction semantics the merge depends on (a
+    // duplicate key aborts the whole transaction), which a Prisma mock cannot
+    // reproduce by construction. Runs in the `database-contract` lane.
+    return { skip: 'realDb' };
+  }
   if (/lib\/admin\/memberOnlyWhere\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
     // Seeds rows and runs the real member predicate through Prisma and
     // PostgreSQL (WAP-182 item 3): a nested `NOT`, a `profile: null` to-one
