@@ -85,7 +85,9 @@ export type AdminProgramHealthRow = {
 export const PROGRAM_HEALTH_SHARE_LABEL = 'share of enrolled students' as const;
 
 /**
- * The definition printed under the Command Center's "Program health" heading.
+ * The definition printed under the Command Center's "Enrollment share by
+ * program" heading (renamed from "Program health" — the bars are a share, not
+ * a score, and the heading now says so).
  * #2425 (S21) cut the misleading "10 · 100%" from each row but left the bare
  * count unlabelled, so "Program health: 312" still read as a score. The
  * population is the member-only one #2425 settled everywhere

@@ -548,8 +548,8 @@
 | [components/portal/kit/pages/member/LinkedInHeadlineKit.tsx](../../../components/portal/kit/pages/member/LinkedInHeadlineKit.tsx) | 51 | member-counselor | LinkedInHeadlineKit:14 |
 | [components/portal/kit/pages/member/MemberCertificatesKit.tsx](../../../components/portal/kit/pages/member/MemberCertificatesKit.tsx) | 193 | member-counselor | MemberCertificatesKitProps:39, MemberCertificatesKit:70 |
 | [components/portal/kit/pages/member/MemberCounselorKit.tsx](../../../components/portal/kit/pages/member/MemberCounselorKit.tsx) | 76 | member-counselor | CounselorSessionSummary:16, MemberCounselorKitProps:22, MemberCounselorKit:31 |
-| [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 95 | member-counselor |  |
-| [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 1022 | member-counselor | StatSpark:97, WeeklyActivityPoint:107, PointsLedgerEntry:113, MemberHomeKitProps:132, MemberHomeKit:602 |
+| [components/portal/kit/pages/member/MemberHomeKit.test.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.test.tsx) | 144 | member-counselor |  |
+| [components/portal/kit/pages/member/MemberHomeKit.tsx](../../../components/portal/kit/pages/member/MemberHomeKit.tsx) | 1033 | member-counselor | StatSpark:97, WeeklyActivityPoint:107, PointsLedgerEntry:113, MemberHomeKitProps:132, MemberHomeKit:609 |
 | [components/portal/kit/pages/member/MemberJobDetail.tsx](../../../components/portal/kit/pages/member/MemberJobDetail.tsx) | 193 | member-counselor | JobDetailScreeningQuestion:15, MemberJobDetailProps:21, MemberJobDetail:52 |
 | [components/portal/kit/pages/member/MemberJobsBoard.tsx](../../../components/portal/kit/pages/member/MemberJobsBoard.tsx) | 154 | member-counselor | BoardJob:19, MemberJobsBoardProps:30, MemberJobsBoard:59 |
 | [components/portal/kit/pages/member/MemberJobsKit.tsx](../../../components/portal/kit/pages/member/MemberJobsKit.tsx) | 274 | member-counselor | JOBS_OPEN_ROLES_ANCHOR:27, OpenRoleRow:48, MemberJobsKitProps:59, MemberJobsKit:98 |

@@ -8544,6 +8544,30 @@
     "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
   },
   {
+    "file": "lib/member/trainingStaleness.test.ts",
+    "area": "libraries",
+    "domain": "member-counselor",
+    "frameworkImports": [
+      "node:test"
+    ],
+    "localReferences": [
+      {
+        "file": "lib/member/trainingStaleness.ts",
+        "line": 4
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "node-unit",
+        "source": "scripts/test-unit.mjs",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
     "file": "lib/member/xapiVerbProgress.test.ts",
     "area": "libraries",
     "domain": "member-counselor",
@@ -23292,6 +23316,39 @@
       {
         "file": "lib/member/labWorkspaceTypes.ts",
         "line": 10
+      }
+    ],
+    "kind": "test-candidate",
+    "declaredRunners": [
+      {
+        "runner": "vitest",
+        "source": "vitest.config.ts",
+        "status": "selected"
+      }
+    ],
+    "collectionStatus": "statically-selected",
+    "coverageNote": "Selection metadata is not proof of collection, passing assertions, execution, or test coverage."
+  },
+  {
+    "file": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "area": "tests",
+    "domain": "tests",
+    "frameworkImports": [
+      "@testing-library/react",
+      "vitest"
+    ],
+    "localReferences": [
+      {
+        "file": "messages/en.json",
+        "line": 4
+      },
+      {
+        "file": "app/(portal)/leader/dashboard/page.tsx",
+        "line": 5
+      },
+      {
+        "file": "lib/ui/statusToneAdapters.ts",
+        "line": 6
       }
     ],
     "kind": "test-candidate",

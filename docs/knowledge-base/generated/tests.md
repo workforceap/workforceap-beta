@@ -311,6 +311,7 @@
 | [tests/components/kit-data-table-primitive.spec.tsx](../../../tests/components/kit-data-table-primitive.spec.tsx) | 245 | tests |  |
 | [tests/components/kit-table-toolbar.spec.tsx](../../../tests/components/kit-table-toolbar.spec.tsx) | 138 | tests |  |
 | [tests/components/lab-evidence-review.test.tsx](../../../tests/components/lab-evidence-review.test.tsx) | 118 | tests |  |
+| [tests/components/leader-dashboard-status-tones.spec.tsx](../../../tests/components/leader-dashboard-status-tones.spec.tsx) | 106 | tests |  |
 | [tests/components/member-approval-status.spec.tsx](../../../tests/components/member-approval-status.spec.tsx) | 262 | tests |  |
 | [tests/components/member-form-connection-failure.spec.tsx](../../../tests/components/member-form-connection-failure.spec.tsx) | 153 | tests |  |
 | [tests/components/member-jobs-open-roles.spec.tsx](../../../tests/components/member-jobs-open-roles.spec.tsx) | 57 | tests |  |
@@ -325,7 +326,7 @@
 | [tests/components/member-visual-contracts.spec.tsx](../../../tests/components/member-visual-contracts.spec.tsx) | 117 | tests |  |
 | [tests/components/mfa-status-banner.spec.tsx](../../../tests/components/mfa-status-banner.spec.tsx) | 31 | tests |  |
 | [tests/components/notification-bell.spec.tsx](../../../tests/components/notification-bell.spec.tsx) | 201 | communications |  |
-| [tests/components/number-audit-followon-captions.spec.tsx](../../../tests/components/number-audit-followon-captions.spec.tsx) | 219 | tests |  |
+| [tests/components/number-audit-followon-captions.spec.tsx](../../../tests/components/number-audit-followon-captions.spec.tsx) | 225 | tests |  |
 | [tests/components/partner-attention-pagination.spec.tsx](../../../tests/components/partner-attention-pagination.spec.tsx) | 232 | tests |  |
 | [tests/components/partner-overview-density.spec.tsx](../../../tests/components/partner-overview-density.spec.tsx) | 41 | tests |  |
 | [tests/components/partner-referral-share.spec.tsx](../../../tests/components/partner-referral-share.spec.tsx) | 56 | tests |  |
@@ -337,7 +338,7 @@
 | [tests/components/portal-header-notifications.spec.tsx](../../../tests/components/portal-header-notifications.spec.tsx) | 127 | communications |  |
 | [tests/components/portal-semantics.spec.tsx](../../../tests/components/portal-semantics.spec.tsx) | 177 | tests |  |
 | [tests/components/portal-team-chat-read-cursor.spec.tsx](../../../tests/components/portal-team-chat-read-cursor.spec.tsx) | 123 | tests |  |
-| [tests/components/program-health-tone.spec.tsx](../../../tests/components/program-health-tone.spec.tsx) | 125 | tests |  |
+| [tests/components/program-health-tone.spec.tsx](../../../tests/components/program-health-tone.spec.tsx) | 126 | tests |  |
 | [tests/components/program-outcome-claims.spec.tsx](../../../tests/components/program-outcome-claims.spec.tsx) | 72 | tests |  |
 | [tests/components/public-staff-form-connection-failure.spec.tsx](../../../tests/components/public-staff-form-connection-failure.spec.tsx) | 160 | tests |  |
 | [tests/components/referral-share-toolkit.spec.tsx](../../../tests/components/referral-share-toolkit.spec.tsx) | 146 | applications-enrollment |  |

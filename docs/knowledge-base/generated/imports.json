@@ -14305,8 +14305,16 @@
   },
   {
     "from": "app/(portal)/leader/dashboard/page.tsx",
-    "specifier": "@/lib/ui/statusColors",
+    "specifier": "@/components/portal/kit",
     "line": 9,
+    "kind": "import",
+    "external": false,
+    "target": "components/portal/kit/index.ts"
+  },
+  {
+    "from": "app/(portal)/leader/dashboard/page.tsx",
+    "specifier": "@/lib/ui/statusColors",
+    "line": 12,
     "kind": "import",
     "external": false,
     "target": "lib/ui/statusColors.ts"
@@ -14314,7 +14322,7 @@
   {
     "from": "app/(portal)/leader/dashboard/page.tsx",
     "specifier": "@/lib/content/programTitle",
-    "line": 10,
+    "line": 13,
     "kind": "import",
     "external": false,
     "target": "lib/content/programTitle.ts"
@@ -110321,8 +110329,16 @@
   },
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
-    "specifier": "@/lib/member/jobPipelineDisplay",
+    "specifier": "@/lib/member/trainingStaleness",
     "line": 13,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingStaleness.ts"
+  },
+  {
+    "from": "lib/member/loadMemberDashboardHome.ts",
+    "specifier": "@/lib/member/jobPipelineDisplay",
+    "line": 14,
     "kind": "import",
     "external": false,
     "target": "lib/member/jobPipelineDisplay.ts"
@@ -110330,7 +110346,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/goalSteps",
-    "line": 14,
+    "line": 15,
     "kind": "import",
     "external": false,
     "target": "lib/member/goalSteps.ts"
@@ -110338,7 +110354,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/pointsConfig",
-    "line": 15,
+    "line": 16,
     "kind": "import",
     "external": false,
     "target": "lib/member/pointsConfig.ts"
@@ -110346,7 +110362,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/memberProgramHref",
-    "line": 16,
+    "line": 17,
     "kind": "import",
     "external": false,
     "target": "lib/member/memberProgramHref.ts"
@@ -110354,7 +110370,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/nextBestActions",
-    "line": 17,
+    "line": 18,
     "kind": "import",
     "external": false,
     "target": "lib/member/nextBestActions.ts"
@@ -110362,7 +110378,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/member/curriculumAssignment",
-    "line": 18,
+    "line": 19,
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
@@ -110370,7 +110386,7 @@
   {
     "from": "lib/member/loadMemberDashboardHome.ts",
     "specifier": "@/lib/content/courseDelivery",
-    "line": 19,
+    "line": 20,
     "kind": "import",
     "external": false,
     "target": "lib/content/courseDelivery.ts"
@@ -110742,6 +110758,14 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/trainingProgress.ts"
+  },
+  {
+    "from": "lib/member/memberProgramTrainingView.ts",
+    "specifier": "@/lib/member/trainingStaleness",
+    "line": 14,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingStaleness.ts"
   },
   {
     "from": "lib/member/mentorsEmptyState.test.ts",
@@ -111814,6 +111838,30 @@
     "kind": "import",
     "external": false,
     "target": "lib/member/curriculumAssignment.ts"
+  },
+  {
+    "from": "lib/member/trainingStaleness.test.ts",
+    "specifier": "node:test",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "node:test"
+  },
+  {
+    "from": "lib/member/trainingStaleness.test.ts",
+    "specifier": "node:assert/strict",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "node:assert"
+  },
+  {
+    "from": "lib/member/trainingStaleness.test.ts",
+    "specifier": "./trainingStaleness",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "lib/member/trainingStaleness.ts"
   },
   {
     "from": "lib/member/trainingWorkspace.ts",
@@ -138062,6 +138110,54 @@
     "kind": "type",
     "external": false,
     "target": "lib/member/labWorkspaceTypes.ts"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "vitest",
+    "line": 1,
+    "kind": "import",
+    "external": true,
+    "package": "vitest"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "@testing-library/react",
+    "line": 2,
+    "kind": "import",
+    "external": true,
+    "package": "@testing-library/react"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "next-intl",
+    "line": 3,
+    "kind": "import",
+    "external": true,
+    "package": "next-intl"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "@/messages/en.json",
+    "line": 4,
+    "kind": "import",
+    "external": false,
+    "target": "messages/en.json"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "@/app/(portal)/leader/dashboard/page",
+    "line": 5,
+    "kind": "import",
+    "external": false,
+    "target": "app/(portal)/leader/dashboard/page.tsx"
+  },
+  {
+    "from": "tests/components/leader-dashboard-status-tones.spec.tsx",
+    "specifier": "@/lib/ui/statusToneAdapters",
+    "line": 6,
+    "kind": "import",
+    "external": false,
+    "target": "lib/ui/statusToneAdapters.ts"
   },
   {
     "from": "tests/components/member-approval-status.spec.tsx",
