@@ -11,8 +11,14 @@ type Surface = {
   ctaShadow?: string;
 };
 
-const CRIMSON = '#ad2c4d';
-const CRIMSON_DARK = '#8c0f37';
+/**
+ * The text-bearing crimson ring / CTA gradient reads the same `--wa-hero-*`
+ * pair as CertificationsEarnMoreCard, so it stays dark under white copy in
+ * either theme. VoiceAgentSurface tints `glowColor` with color-mix, so a
+ * `var()` is valid there too.
+ */
+const CRIMSON = 'var(--wa-hero-crimson)';
+const CRIMSON_DARK = 'var(--wa-hero-crimson-dark)';
 const GOLD = '#a47f38';
 /**
  * White CTA text sits on these gradients, so the floor must be the tuned
