@@ -3376,10 +3376,11 @@
     "reviewer": {
       "assignedApproval": "Tu consejero(a), {name}, revisará tu solicitud.",
       "assignedIntake": "Tu consejero(a), {name}, completará tu revisión de admisión.",
+      "assignedNeedsInfo": "Tu consejero(a), {name}, continuará la revisión cuando envíes la información solicitada.",
       "unassigned": "Se te asignará un(a) consejero(a); verás su nombre aquí.",
       "message": "Enviar mensaje a {name}",
       "decisionStep": "Revisamos tu solicitud; recibirás la decisión por correo electrónico y la verás aquí.",
-      "waitEstimate": "Las solicitudes recientes se revisaron en unos {days, plural, one {# día} other {# días}} (según {count} decisiones en los últimos 30 días)."
+      "waitEstimate": "Las solicitudes recientes se aprobaron en unos {days, plural, one {# día} other {# días}} (según {count} aprobaciones en los últimos 30 días)."
     },
     "next": {
       "application": {

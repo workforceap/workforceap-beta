@@ -3316,10 +3316,11 @@
     "reviewer": {
       "assignedApproval": "Votre conseiller(ère), {name}, examinera votre candidature.",
       "assignedIntake": "Votre conseiller(ère), {name}, terminera votre examen d’admission.",
+      "assignedNeedsInfo": "Votre conseiller(ère), {name}, poursuivra l’examen dès que vous aurez envoyé les informations demandées.",
       "unassigned": "Un(e) conseiller(ère) vous sera attribué(e) ; son nom apparaîtra ici.",
       "message": "Écrire à {name}",
       "decisionStep": "Nous examinons votre candidature ; vous recevrez la décision par e-mail et la verrez ici.",
-      "waitEstimate": "Les candidatures récentes ont été examinées en environ {days, plural, one {# jour} other {# jours}} (d’après {count} décisions au cours des 30 derniers jours)."
+      "waitEstimate": "Les candidatures récentes ont été approuvées en environ {days, plural, one {# jour} other {# jours}} (d’après {count} approbations au cours des 30 derniers jours)."
     },
     "next": {
       "application": {

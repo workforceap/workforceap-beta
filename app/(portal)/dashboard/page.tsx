@@ -73,7 +73,7 @@ import MobileRecentActivity from './_components/MobileRecentActivity';
 import DesktopDashboard from './_components/DesktopDashboard';
 import { MemberDashboardKit } from '@/components/portal/kit';
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
-import { getMemberCounselorContext } from '@/lib/member/counselorContext';
+import { getApprovalWaitEstimate, getMemberCounselorContext } from '@/lib/member/counselorContext';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import SkillMissionTeaserCard, {
@@ -183,11 +183,13 @@ async function renderMemberDashboard(
     // card above the dashboard; a finished or closed one drops below the
     // content as a single collapsed line (memberApprovalCardPlacement).
     const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
-    // Who reviews the pending step and the measured wait: only while a step
-    // is still in flight, so a finished pathway keeps the 1-2 op budget.
-    const counselorContext = home.approvalStatus.currentStage === 'complete'
-      ? null
-      : await getMemberCounselorContext(user.id);
+    // Who reviews the pending step comes from the loader's own user read. The
+    // measured wait is a separate read, taken only while the application
+    // itself is under review, so the loader keeps its operation budget.
+    const homeCounselorContext = home.counselorContext ?? null;
+    const counselorContext = homeCounselorContext?.awaiting === 'approval' && home.organizationId
+      ? { ...homeCounselorContext, waitEstimate: await getApprovalWaitEstimate(home.organizationId) }
+      : homeCounselorContext;
     const approvalCard = (
       <MemberApprovalStatusCard
         status={home.approvalStatus}

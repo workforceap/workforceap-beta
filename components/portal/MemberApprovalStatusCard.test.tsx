@@ -57,9 +57,34 @@ describe('MemberApprovalStatusCard reviewer line', () => {
     const link = within(reviewer!).getByRole('link', { name: 'Message Dana' });
     expect(link.getAttribute('href')).toBe('/dashboard/messages');
     expect(container.querySelector('[data-approval-wait-estimate]')?.textContent).toBe(
-      'Recent applications were reviewed in about 40 days (based on 12 decisions in the last 30 days).',
+      'Recent applications were approved in about 40 days (based on 12 approvals in the last 30 days).',
     );
+    // The owner line under the stage uses the same first name: one person, one name form.
+    expect(container.textContent).toContain("Who's on it: Your counselor, Dana");
+    expect(container.textContent).not.toContain('Whitfield');
     expect(container.textContent).not.toMatch(RETIRED_COPY);
+  });
+
+  it('while the member owes information, the counselor line says the review resumes after they send it', () => {
+    const needsInfo = buildMemberApprovalStatus({
+      applications: [{ status: 'NEEDS_INFO', submittedAt: submitted }],
+      wioaReviewStatus: null,
+      courseraEnrollmentApproved: false,
+      counselorAssignments: [{ counselor: { user: { fullName: 'Dana Whitfield' } } }],
+    });
+    const { container } = renderCard(
+      <MemberApprovalStatusCard
+        status={needsInfo}
+        storageUserId="m1"
+        counselorContext={{ ...assigned, awaiting: 'info', waitEstimate: null }}
+      />,
+    );
+    expect(container.textContent).toContain(
+      'Your counselor, Dana, will continue the review once you send the information requested.',
+    );
+    expect(container.textContent).not.toContain('will review your application');
+    expect(container.querySelector('[data-approval-wait-estimate]')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Message Dana' })).toBeTruthy();
   });
 
   it('says a counselor is not assigned yet and shows no timing when the estimate is suppressed', () => {

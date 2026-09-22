@@ -5,11 +5,15 @@ import {
   WAIT_ESTIMATE_MIN_SAMPLE,
   WAIT_ESTIMATE_WINDOW_DAYS,
   awaitingStep,
+  counselorAssignmentSelect,
+  getApprovalWaitEstimate,
   getMemberCounselorContext,
   medianApprovalDays,
   recentApprovalEventsWhere,
+  resolveAssignedCounselor,
   type ApplicationSubmittedRow,
   type ApprovalEventRow,
+  type AssignedCounselorRow,
   type CounselorContextDb,
   type CounselorContextUserRow,
 } from './counselorContext';
@@ -17,6 +21,24 @@ import { MEMBER_ONLY_IDS, admittedIds, matchesWhere } from '../../tests/helpers/
 
 const NOW = new Date('2026-09-22T16:00:00Z');
 const DAY = 86_400_000;
+
+function assignment(overrides: {
+  active?: boolean;
+  fullName?: string | null;
+  organizationId?: string;
+  deletedAt?: Date | null;
+} = {}): AssignedCounselorRow {
+  return {
+    counselor: {
+      active: overrides.active ?? true,
+      user: {
+        fullName: overrides.fullName === undefined ? 'Dana Whitfield' : overrides.fullName,
+        organizationId: overrides.organizationId ?? 'org-1',
+        deletedAt: overrides.deletedAt ?? null,
+      },
+    },
+  };
+}
 
 function pendingRow(overrides: Partial<CounselorContextUserRow> = {}): CounselorContextUserRow {
   return {
@@ -55,10 +77,10 @@ function fakeDb(
   return { db, calls };
 }
 
-test('an assigned counselor is named by first name with a link to the member thread', async () => {
-  const { db } = fakeDb(pendingRow({
-    counselorAssignments: [{ counselor: { user: { fullName: '  Dana Whitfield ' } } }],
-  }));
+// ── Counselor resolution ──
+
+test('an active counselor in the member\'s organisation is named by first name with a link to the member thread', async () => {
+  const { db } = fakeDb(pendingRow({ counselorAssignments: [assignment({ fullName: '  Dana Whitfield ' })] }));
   const context = await getMemberCounselorContext('member-1', db, NOW);
   assert.deepEqual(context.counselor, {
     name: 'Dana Whitfield',
@@ -68,26 +90,42 @@ test('an assigned counselor is named by first name with a link to the member thr
   assert.equal(context.awaiting, 'approval');
 });
 
-test('no active assignment (or a blank counselor name) yields counselor: null', async () => {
-  const unassigned = await getMemberCounselorContext('member-1', fakeDb(pendingRow()).db, NOW);
-  assert.equal(unassigned.counselor, null);
-  const blank = await getMemberCounselorContext(
-    'member-1',
-    fakeDb(pendingRow({ counselorAssignments: [{ counselor: { user: { fullName: '   ' } } }] })).db,
-    NOW,
-  );
-  assert.equal(blank.counselor, null);
+test('no assignment, or a blank counselor name, yields counselor: null', () => {
+  assert.equal(resolveAssignedCounselor(pendingRow()), null);
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [assignment({ fullName: '   ' })] })), null);
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [assignment({ fullName: null })] })), null);
 });
 
-test('the user lookup reads only the active assignment, newest first', async () => {
+test('a deactivated counselor is not named (the messaging thread routes to nobody), so the unassigned copy shows', async () => {
+  const { db } = fakeDb(pendingRow({ counselorAssignments: [assignment({ active: false })] }));
+  const context = await getMemberCounselorContext('member-1', db, NOW);
+  assert.equal(context.counselor, null);
+  assert.equal(context.awaiting, 'approval');
+});
+
+test('a counselor from another organisation, or whose user is deleted, is not named', () => {
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [assignment({ organizationId: 'org-2' })] })), null);
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [assignment({ deletedAt: NOW })] })), null);
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [{ counselor: null }] })), null);
+  assert.equal(resolveAssignedCounselor(pendingRow({ counselorAssignments: [{ counselor: { active: true, user: null } }] })), null);
+});
+
+test('the shared assignment select matches the messaging resolver: active assignment, active counselor, live user, newest first', async () => {
+  const select = counselorAssignmentSelect();
+  assert.deepEqual(select.where, { active: true, counselor: { active: true, user: { deletedAt: null } } });
+  assert.deepEqual(select.orderBy, { assignedAt: 'desc' });
+  assert.equal(select.take, 1);
+  // The row-level check needs the user's organisation and deletion state.
+  assert.deepEqual(select.select.counselor.select.user.select, { fullName: true, organizationId: true, deletedAt: true });
   const { db, calls } = fakeDb(pendingRow());
   await getMemberCounselorContext('member-1', db, NOW);
-  const args = calls.user[0] as { where: unknown; select: { counselorAssignments: { where: unknown; orderBy: unknown; take: number } } };
+  const args = calls.user[0] as { where: unknown; select: { counselorAssignments: unknown; organizationId: boolean } };
   assert.deepEqual(args.where, { id: 'member-1' });
-  assert.deepEqual(args.select.counselorAssignments.where, { active: true });
-  assert.deepEqual(args.select.counselorAssignments.orderBy, { assignedAt: 'desc' });
-  assert.equal(args.select.counselorAssignments.take, 1);
+  assert.deepEqual(args.select.counselorAssignments, select);
+  assert.equal(args.select.organizationId, true);
 });
+
+// ── Wait estimate ──
 
 test('the wait estimate is the median of recent approvals when at least five exist', async () => {
   // Durations 2, 3, 40, 41, 45 days → median 40.
@@ -99,6 +137,13 @@ test('the wait estimate is the median of recent approvals when at least five exi
   const appArgs = calls.application[0] as { where: { id: { in: string[] }; user: { organizationId: string } } };
   assert.equal(appArgs.where.user.organizationId, 'org-1');
   assert.deepEqual([...appArgs.where.id.in].sort(), applications.map((a) => a.id).sort());
+});
+
+test('getApprovalWaitEstimate is the same computation the home page calls with the loader\'s organisation', async () => {
+  const { events, applications } = approvals([41, 2, 45, 3, 40]);
+  const { db, calls } = fakeDb(null, { events, applications });
+  assert.deepEqual(await getApprovalWaitEstimate('org-1', db, NOW), { medianDays: 40, sampleSize: 5 });
+  assert.equal(calls.user.length, 0);
 });
 
 test('fewer than five recent approvals suppress the estimate instead of guessing', async () => {
@@ -148,21 +193,30 @@ test('the approval query is scoped to the member population of the member\'s org
 
 test('the estimate is only computed while the application itself is under review', async () => {
   const intake = fakeDb(pendingRow({ applications: [{ status: 'APPROVED' }], wioaReviewStatus: 'pending' }));
-  const context = await getMemberCounselorContext('member-1', intake.db, NOW);
-  assert.equal(context.awaiting, 'intake');
-  assert.equal(context.waitEstimate, null);
+  const intakeContext = await getMemberCounselorContext('member-1', intake.db, NOW);
+  assert.equal(intakeContext.awaiting, 'intake');
+  assert.equal(intakeContext.waitEstimate, null);
   assert.equal(intake.calls.memberEvent.length, 0, 'no approval query for an approved application');
+
+  const info = fakeDb(pendingRow({ applications: [{ status: 'NEEDS_INFO' }] }));
+  const infoContext = await getMemberCounselorContext('member-1', info.db, NOW);
+  assert.equal(infoContext.awaiting, 'info');
+  assert.equal(infoContext.waitEstimate, null);
+  assert.equal(info.calls.memberEvent.length, 0, 'no approval query while the member owes information');
 });
 
-test('awaiting names the staff-owned step, or null once nothing is pending', () => {
+// ── Awaiting step ──
+
+test('awaiting names the step the member is waiting on, or null once nothing is pending', () => {
   assert.equal(awaitingStep({ applications: [{ status: 'PENDING' }], wioaReviewStatus: null }), 'approval');
-  assert.equal(awaitingStep({ applications: [{ status: 'NEEDS_INFO' }], wioaReviewStatus: null }), 'approval');
+  assert.equal(awaitingStep({ applications: [{ status: 'NEEDS_INFO' }], wioaReviewStatus: null }), 'info');
   assert.equal(awaitingStep({ applications: [{ status: 'APPROVED' }], wioaReviewStatus: null }), 'intake');
   assert.equal(awaitingStep({ applications: [{ status: 'APPROVED' }], wioaReviewStatus: 'in_review' }), 'intake');
   assert.equal(awaitingStep({ applications: [{ status: 'APPROVED' }], wioaReviewStatus: 'verified' }), null);
   assert.equal(awaitingStep({ applications: [{ status: 'APPROVED' }], wioaReviewStatus: 'not_eligible' }), null);
   assert.equal(awaitingStep({ applications: [{ status: 'DENIED' }], wioaReviewStatus: null }), null);
   assert.equal(awaitingStep({ applications: [], wioaReviewStatus: null }), null);
+  assert.equal(awaitingStep({}), null);
 });
 
 test('an unknown member yields an empty context and runs no further queries', async () => {

@@ -3316,10 +3316,11 @@
     "reviewer": {
       "assignedApproval": "Seu(sua) conselheiro(a), {name}, analisará sua inscrição.",
       "assignedIntake": "Seu(sua) conselheiro(a), {name}, concluirá sua análise de admissão.",
+      "assignedNeedsInfo": "Seu(sua) conselheiro(a), {name}, continuará a análise assim que você enviar as informações solicitadas.",
       "unassigned": "Um(a) conselheiro(a) será designado(a) para você; o nome aparecerá aqui.",
       "message": "Enviar mensagem para {name}",
       "decisionStep": "Analisamos sua inscrição; você receberá a decisão por e-mail e a verá aqui.",
-      "waitEstimate": "As inscrições recentes foram analisadas em cerca de {days, plural, one {# dia} other {# dias}} (com base em {count} decisões nos últimos 30 dias)."
+      "waitEstimate": "As inscrições recentes foram aprovadas em cerca de {days, plural, one {# dia} other {# dias}} (com base em {count} aprovações nos últimos 30 dias)."
     },
     "next": {
       "application": {

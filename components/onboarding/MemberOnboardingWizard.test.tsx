@@ -58,7 +58,7 @@ describe('MemberOnboardingWizard closing step', () => {
     expect(dialog.textContent).toContain('Your counselor, Dana, will review your application.');
     expect(within(dialog).getByRole('link', { name: 'Message Dana' }).getAttribute('href')).toBe('/dashboard/messages');
     expect(dialog.querySelector('[data-onboarding-wait-estimate]')?.textContent).toBe(
-      'Recent applications were reviewed in about 40 days (based on 12 decisions in the last 30 days).',
+      'Recent applications were approved in about 40 days (based on 12 approvals in the last 30 days).',
     );
     expect(dialog.querySelector('[data-onboarding-reviewer]')?.getAttribute('data-onboarding-reviewer')).toBe('assigned');
     expect(dialog.textContent).not.toMatch(RETIRED_COPY);

@@ -3376,10 +3376,11 @@
     "reviewer": {
       "assignedApproval": "Your counselor, {name}, will review your application.",
       "assignedIntake": "Your counselor, {name}, will complete your intake review.",
+      "assignedNeedsInfo": "Your counselor, {name}, will continue the review once you send the information requested.",
       "unassigned": "A counselor will be assigned to you; you'll see their name here.",
       "message": "Message {name}",
       "decisionStep": "We review your application; you'll hear by email and see the decision here.",
-      "waitEstimate": "Recent applications were reviewed in about {days, plural, one {# day} other {# days}} (based on {count} decisions in the last 30 days)."
+      "waitEstimate": "Recent applications were approved in about {days, plural, one {# day} other {# days}} (based on {count} approvals in the last 30 days)."
     },
     "next": {
       "application": {

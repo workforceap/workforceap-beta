@@ -13,14 +13,22 @@ import {
   approvalStatusSignature,
   type MemberApprovalCardPlacement,
 } from '@/lib/member/memberApprovalCardPlacement';
-import type {
-  ApprovalStageKey,
-  MemberApprovalStage,
-  MemberApprovalStatus,
+import {
+  firstNameOf,
+  type ApprovalStageKey,
+  type MemberApprovalStage,
+  type MemberApprovalStatus,
 } from '@/lib/member/memberApprovalStatus';
 import type { MemberCounselorContext } from '@/lib/member/counselorContext';
 
 const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
+
+/** `memberApproval.reviewer.*` line per step the member is waiting on. */
+const REVIEWER_KEY = {
+  approval: 'reviewer.assignedApproval',
+  info: 'reviewer.assignedNeedsInfo',
+  intake: 'reviewer.assignedIntake',
+} as const;
 
 /**
  * Three-stage approval chain (application → intake review → training
@@ -116,7 +124,8 @@ export default function MemberApprovalStatusCard({
       case 'member':
         return t('ownerMember');
       case 'counselor':
-        return t('ownerCounselor', { name: status.counselorName ?? '' });
+        // First name, like the reviewer line below: one person, one name form.
+        return t('ownerCounselor', { name: status.counselorName ? firstNameOf(status.counselorName) : '' });
       case 'staff':
         return t('ownerStaff');
       default:
@@ -196,10 +205,7 @@ export default function MemberApprovalStatusCard({
     <div className="wa-text-sm" data-approval-reviewer={counselorContext.counselor ? 'assigned' : 'unassigned'}>
       {counselorContext.counselor ? (
         <p>
-          {t(
-            counselorContext.awaiting === 'intake' ? 'reviewer.assignedIntake' : 'reviewer.assignedApproval',
-            { name: counselorContext.counselor.firstName },
-          )}{' '}
+          {t(REVIEWER_KEY[counselorContext.awaiting], { name: counselorContext.counselor.firstName })}{' '}
           <Link href={counselorContext.counselor.messagingHref} className="wa-kit-focus wa-underline">
             {t('reviewer.message', { name: counselorContext.counselor.firstName })}
           </Link>
