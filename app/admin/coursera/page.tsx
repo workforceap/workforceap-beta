@@ -22,6 +22,7 @@ import { CourseraCatalogHealthSection } from '@/components/admin/CourseraCatalog
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
 import { prisma } from '@/lib/db/prisma';
+import { MEMBER_OR_DOGFOOD_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
@@ -385,18 +386,17 @@ export default async function AdminCourseraPage({
   const auditEmailRaw = typeof sp.auditEmail === 'string' ? sp.auditEmail : '';
   const showTestAccounts = sp.showTest === '1' || sp.showTest === 'true';
 
-  // Include members, profile-less rows (treated as member), and admin/super_admin
-  // dogfood accounts (same idea as MEMBER_OR_DOGFOOD_WHERE) so Coursera tooling
-  // stays usable for platform operators testing with their own learner email.
+  // Members by the one definition (lib/admin/memberOnlyWhere.ts) plus
+  // admin/super_admin dogfood accounts — the role half of
+  // MEMBER_OR_DOGFOOD_WHERE — so Coursera tooling stays usable for platform
+  // operators testing with their own learner email, and so the accounts it can
+  // map are the accounts the member counts report. No fixture-email exclusion:
+  // QA learner accounts are exactly what this tooling gets pointed at.
   const members = await withAdminPageScope(scope, (db) => db.user.findMany({
     where: {
       deletedAt: null,
       organizationId,
-      OR: [
-        { profile: { is: null } },
-        { profile: { role: 'member' } },
-        { profile: { role: { in: ['admin', 'super_admin'] } } },
-      ],
+      NOT: MEMBER_OR_DOGFOOD_ROLE_NOT,
     },
     orderBy: [{ fullName: 'asc' }],
     select: {

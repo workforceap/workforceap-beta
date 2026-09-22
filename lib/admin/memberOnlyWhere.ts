@@ -151,10 +151,26 @@ function memberRoleNotEntries(
   ];
 }
 
-/** The role half of {@link MEMBER_ONLY_WHERE}, as `NOT` entries. */
+/**
+ * The role half of {@link MEMBER_ONLY_WHERE}, as `NOT` entries.
+ *
+ * Eligibility checks — may this account have a placement recorded, be
+ * messaged as a member, appear under the directory's "Member" filter — use
+ * this half directly as the `NOT` key of their own where
+ * (`NOT: MEMBER_ONLY_ROLE_NOT`) rather than a hand-rolled
+ * `profile: { role: 'member' }`, so an account the counts call a member is
+ * also an account staff can act on. They deliberately skip the fixture-email
+ * half: a QA account must stay eligible even though it is never counted.
+ * Writing it as an explicit key (not a spread) makes a second `NOT` on the
+ * same literal a compile error instead of a silent overwrite.
+ */
 export const MEMBER_ONLY_ROLE_NOT = memberRoleNotEntries([MEMBER_ROLE_NAME], NON_MEMBER_PROFILE_ROLES);
 
-/** The role half of {@link MEMBER_OR_DOGFOOD_WHERE}, as `NOT` entries. */
+/**
+ * The role half of {@link MEMBER_OR_DOGFOOD_WHERE}, as `NOT` entries. The
+ * eligibility twin of {@link MEMBER_ONLY_ROLE_NOT} for operator tooling that
+ * admins dogfood with their own learner email (Coursera mapping, skillset sync).
+ */
 export const MEMBER_OR_DOGFOOD_ROLE_NOT = memberRoleNotEntries(
   [MEMBER_ROLE_NAME, ...DOGFOOD_PROFILE_ROLES],
   DOGFOOD_EXCLUDED_PROFILE_ROLES,
