@@ -5,6 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { AdminDashboardKit } from '@/components/portal/kit/pages/admin-subviews/AdminDashboardKit';
+import {
+  COURSERA_XAPI_UNAVAILABLE,
+  COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE,
+  type CourseraXapiDegradation,
+} from '@/lib/coursera/xapiUnavailableNotice';
 
 const ExecutiveTrendCharts = dynamic(
   () => import('@/components/admin/ExecutiveTrendCharts'),
@@ -74,6 +79,12 @@ interface MetricsData {
     enrollments: TrendPoint[];
     dashboardViews: TrendPoint[];
   };
+  /**
+   * Sources the API read without (`['coursera-xapi-unavailable']` when the
+   * coursera_xapi_events table is absent, so `unmatchedCoursera` is narrower
+   * than production's). Absent or empty on a full database.
+   */
+  degraded?: CourseraXapiDegradation[];
 }
 
 import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
@@ -226,6 +237,7 @@ function ExecutiveDashboardContent() {
   }
 
   const { summary, funnels, trends } = data;
+  const courseraXapiUnavailable = data.degraded?.includes(COURSERA_XAPI_UNAVAILABLE) ?? false;
 
   // Format week labels
   const formatWeek = (w: string) => {
@@ -246,6 +258,7 @@ function ExecutiveDashboardContent() {
         signupData={signupData}
         enrollmentData={enrollmentData}
         viewData={viewData}
+        degraded={data.degraded}
       />
     );
   }
@@ -331,6 +344,16 @@ function ExecutiveDashboardContent() {
             color="#3b82f6"
             subtitle="Actor mapping needed"
           />
+          {courseraXapiUnavailable ? (
+            <p
+              role="status"
+              className="wa-kit-training-notice"
+              data-testid="dashboard-coursera-notice"
+              style={{ gridColumn: '1 / -1', margin: 0 }}
+            >
+              {COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE}
+            </p>
+          ) : null}
         </div>
       </div>
 

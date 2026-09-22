@@ -14,7 +14,7 @@ import {
   countUnmatchedLearners,
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
-import { COURSERA_XAPI_UNAVAILABLE_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
+import { COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
 import { CourseraCatalogHealthSection } from '@/components/admin/CourseraCatalogHealthTable';
 import {
   CourseraSyncKit,
@@ -168,7 +168,7 @@ export async function ReportingCourseraSection({
         unmatchedTotal={kitUnmatchedTotal}
         unmatchedLoaded={kitUnmatchedLoaded}
         hiddenTestCount={kitHiddenTest}
-        notice={xapiUnavailable ? COURSERA_XAPI_UNAVAILABLE_NOTICE : undefined}
+        notice={xapiUnavailable ? COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE : undefined}
         approvedForEnrollment={kitApprovedForEnrollment}
         activeLast30Days={kitActiveLast30Days}
         unresolvedOrgSentinels={kitUnresolvedOrgSentinels}

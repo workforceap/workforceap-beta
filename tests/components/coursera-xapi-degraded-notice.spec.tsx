@@ -135,12 +135,15 @@ async function renderLegacyPage(params: Record<string, string> = {}) {
   render(await Page({ searchParams: Promise.resolve({ ui: 'legacy', ...params }) }));
 }
 
+// The Coursera surfaces call their unmatched section an activity backlog, "not a
+// provider membership roster", one line above this notice — so it says "list".
 const DEGRADED_TEXT =
-  'Coursera unmatched-learner data is unavailable in this environment; the roster below excludes those rows.';
+  'Coursera unmatched-learner data is unavailable in this environment; the list below excludes those rows.';
 
 function expectCalmNotice(testId: string) {
   const notice = screen.getByRole('status');
   expect(notice).toHaveTextContent(DEGRADED_TEXT);
+  expect(notice).not.toHaveTextContent(/roster/);
   expect(notice).not.toHaveTextContent(/refresh in a few minutes/);
   expect(notice).not.toHaveTextContent(/error|failed/i);
   // The kit's info-toned notice, not an error banner.

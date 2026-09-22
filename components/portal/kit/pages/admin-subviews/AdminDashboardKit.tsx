@@ -22,6 +22,11 @@ import { ClickableCard } from '@astryxdesign/core/ClickableCard';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
 import MfaStatusBanner from '@/components/admin/MfaStatusBanner';
 import ErrorBoundary from '@/components/error/ErrorBoundary';
+import {
+  COURSERA_XAPI_UNAVAILABLE,
+  COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE,
+  type CourseraXapiDegradation,
+} from '@/lib/coursera/xapiUnavailableNotice';
 
 /**
  * Executive Dashboard (dense) — real-time metrics across the CEO funnels,
@@ -113,6 +118,13 @@ export interface AdminDashboardKitProps {
   viewData: AdminDashboardTrendPoint[];
   /** Funder CSV export link for the header action. */
   exportHref?: string;
+  /**
+   * `degraded` from /api/admin/metrics: sources the API read without.
+   * `'coursera-xapi-unavailable'` means `summary.unmatchedCoursera` was counted
+   * without the coursera_xapi_events table (db:push rigs), so the tile shows a
+   * narrower number than production's and says so. Absent or empty: no notice.
+   */
+  degraded?: CourseraXapiDegradation[];
 }
 
 /** Funnel rate → bar tone: ≥50 on track (`ok`), ≥25 lagging (`warn`), else needs a look (`alert`). */
@@ -131,7 +143,9 @@ export function AdminDashboardKit({
   enrollmentData,
   viewData,
   exportHref = '/api/admin/funder-program-summary',
+  degraded,
 }: AdminDashboardKitProps) {
+  const courseraXapiUnavailable = degraded?.includes(COURSERA_XAPI_UNAVAILABLE) ?? false;
   const kpis: KpiItem[] = [
     { label: 'Total Members', value: summary.totalMembers },
     {
@@ -309,6 +323,11 @@ export function AdminDashboardKit({
             emptyTitle="Nothing in the queue"
             emptyDescription="No items currently need attention."
           />
+          {courseraXapiUnavailable ? (
+            <p role="status" className="wa-kit-training-notice" data-testid="dashboard-coursera-notice">
+              {COURSERA_XAPI_UNAVAILABLE_COUNT_NOTICE}
+            </p>
+          ) : null}
         </Card>
 
         <Card style={{ minWidth: 0 }}>
