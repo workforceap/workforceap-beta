@@ -22,6 +22,11 @@ type Surface = {
 const CRIMSON = 'var(--wa-hero-crimson)';
 const CRIMSON_DARK = 'var(--wa-hero-crimson-dark)';
 /**
+ * The mock-interview ring's deep end stop (was the bare #5e1426): the same
+ * 70% hero-crimson-dark over black VoiceStudioKit's crimson-deep card uses.
+ */
+const CRIMSON_PLUM = `color-mix(in srgb, ${CRIMSON_DARK} 70%, black)`;
+/**
  * Badge copy on the crimson surfaces sits on the card, where the constant hero
  * crimson (#ad2c4d) is 2.99:1 on the dark card (scout M10). `--wa-accent-text`
  * is the text-on-surface accent (#8c0f37 light / #f39ab5 dark).
@@ -148,7 +153,7 @@ export const mockInterviewVoiceSurface: Surface = {
   icon: icon(AudioLines),
   glowColor: CRIMSON,
   badgeColor: CRIMSON_TEXT,
-  gradient: `linear-gradient(135deg, ${CRIMSON_DARK}, #5e1426)`,
+  gradient: `linear-gradient(135deg, ${CRIMSON_DARK}, ${CRIMSON_PLUM})`,
   ctaGradient: `linear-gradient(135deg, ${CRIMSON}, ${CRIMSON_DARK})`,
   ctaShadow: CRIMSON_CTA_SHADOW,
 };

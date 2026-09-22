@@ -2,7 +2,7 @@ import React from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  readCss, loadRootTokens, loadBlockTokens, colorOf, contrast, over, parseColor, resolve, type Scheme,
+  readCss, loadRootTokens, loadBlockTokens, colorOf, contrast, luminance, over, parseColor, resolve, splitTopLevel, type Scheme,
 } from '@/lib/ui/cssTokenContrast.test-helpers';
 
 /**
@@ -29,10 +29,23 @@ import {
  *    the other 22 `--color-accent` buttons, and paint `--wa-on-accent`
  *    (white): 6.47:1 in both modes.
  *
+ * 3. The #2491 follow-ups: the messaging ring gradients (five sets of literal
+ *    hex stops) and the mock-interview ring's `#5e1426` plum stop now derive
+ *    from their glow / hero token with color-mix; the VoiceStudioKit card
+ *    shadows (`rgba(120,20,38|120,93,38|0,0,0, …)`) tint `--wa-accent`,
+ *    `--wa-gold`, the panel chrome or read `--wa-shadow`; and the accent
+ *    `rgba(173, 44, 77, …)` shadows and gradient stops in css/portal.css
+ *    (`.mobile-fab`, `.portal-profile-avatar`, `.portal-app-progress__bar--current`,
+ *    `.job-app-card--editing`, `.portal-card--gradient-accent`,
+ *    `.portal-profile-hero`) are color-mixes of `--color-accent`, the token
+ *    OrgBrandingStyle overrides with the seeded org accent.
+ *
  * The specs render each surface in the light and the dark scheme, read the
  * computed style of the fixed element and fail on any hex or rgb()/rgba()
  * literal; every `var(--wa-*)` they find must resolve through the real
- * token files for that scheme.
+ * token files for that scheme. The portal.css rules are read from the
+ * stylesheet text and resolved through the same token chain with the org
+ * accent modelled on `:root`.
  */
 
 const routerMock = { push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), prefetch: vi.fn() };
@@ -51,6 +64,7 @@ import VoiceCoachLauncherCard from '@/components/portal/VoiceCoachLauncherCard';
 import VoiceCoachesPromo from '@/components/portal/VoiceCoachesPromo';
 import MemberDashboardVoiceSection from '@/components/portal/MemberDashboardVoiceSection';
 import MembersTable from '@/components/admin/MembersTable';
+import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
 import {
   careerBusinessVoiceSurface, counselorStaffVoiceSurface, employerVoiceSurface, mockInterviewVoiceSurface,
   partnerVoiceSurface, readinessVoiceSurface, resumeCoachVoiceSurface, studentCounselorVoiceSurface,
@@ -110,6 +124,46 @@ function expectTokensResolve(value: string, scheme: Scheme, label: string) {
 
 function expectNoLiteral(value: string, label: string) {
   expect(value, label).not.toMatch(LITERAL);
+}
+
+/** The colour stops of a `linear-gradient(<angle>, …)` value, split at top-level commas. */
+function gradientStops(gradient: string): string[] {
+  expect(gradient).toMatch(/^linear-gradient\([\s\S]*\)$/);
+  return splitTopLevel(gradient.slice('linear-gradient('.length, -1)).slice(1);
+}
+/** The helper parses hex / rgb() only; color-mix() stops mix toward the named black / white. */
+function named(value: string): string {
+  return value.replace(/\bblack\b/g, '#000000').replace(/\bwhite\b/g, '#ffffff');
+}
+/** The nearest ancestor (or the element) that paints an inline box-shadow. */
+function shadowHost(el: Element): HTMLElement {
+  let node: Element | null = el;
+  while (node && !(node as HTMLElement).style?.boxShadow) node = node.parentElement;
+  expect(node, 'an ancestor paints a box-shadow').not.toBeNull();
+  return node as HTMLElement;
+}
+/** Every inline box-shadow that reached the DOM under `root` is literal-free. */
+function expectNoLiteralShadows(root: HTMLElement, label: string) {
+  const shadows = Array.from(root.querySelectorAll<HTMLElement>('[style]')).map((el) => el.style.boxShadow).filter(Boolean);
+  expect(shadows.length, `${label}: inline shadows found`).toBeGreaterThan(0);
+  for (const shadow of shadows) expectNoLiteral(shadow, `${label} inline box-shadow "${shadow}"`);
+}
+/** The bodies of every `selector { … }` rule in a stylesheet (comments stripped; a selector may repeat under media queries). */
+function ruleBodies(css: string, selector: string): string[] {
+  const src = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const bodies: string[] = [];
+  for (let start = src.indexOf(`${selector} {`); start > -1; start = src.indexOf(`${selector} {`, start + 1)) {
+    const open = start + selector.length + 2;
+    bodies.push(src.slice(open, src.indexOf('}', open)));
+  }
+  expect(bodies.length, `${selector} is declared`).toBeGreaterThan(0);
+  return bodies;
+}
+/** The single `prop: value;` declaration for a selector across its rule bodies, whitespace collapsed. */
+function declaration(css: string, selector: string, prop: 'box-shadow' | 'background'): string {
+  const values = ruleBodies(css, selector).flatMap((body) => Array.from(body.matchAll(new RegExp(`(?:^|;)\\s*${prop}:\\s*([^;]+);`, 'g')), (m) => m[1]));
+  expect(values, `${selector} declares ${prop} once`).toHaveLength(1);
+  return values[0].replace(/\s+/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').trim();
 }
 
 beforeAll(() => {
@@ -344,14 +398,6 @@ describe('org-accent fills paint --wa-on-accent (white), not the dark-flipping -
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme), `${scheme}`).toBeCloseTo(6.47, 1);
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme)).toBeGreaterThanOrEqual(AA);
     }
-    // The neighbouring rule: main.css .btn-primary pairs the same --color-accent fill with --wa-on-accent.
-    const src = main.replace(/\/\*[\s\S]*?\*\//g, '');
-    const selector = '.btn-primary,\na.btn-primary,\nbutton.btn-primary';
-    const start = src.indexOf(`${selector} {`);
-    expect(start).toBeGreaterThan(-1);
-    const body = src.slice(start + selector.length + 2, src.indexOf('}', start));
-    expect(body).toMatch(/background:\s*var\(--color-accent\);/);
-    expect(body).toMatch(/color:\s*var\(--wa-on-accent\);/);
   });
 
   for (const scheme of SCHEMES) {
@@ -387,4 +433,178 @@ describe('org-accent fills paint --wa-on-accent (white), not the dark-flipping -
       expect(button.style.background).toBe('var(--surface-container)');
     });
   }
+});
+
+// ── 3a. messaging ring gradients ───────────────────────────────────────────
+describe('messaging ring gradients derive every stop from the glow token (were literal hex stops)', () => {
+  for (const scheme of SCHEMES) {
+    it.each(MESSAGING)(`${scheme}: $name ring and corner blob paint a three-stop gradient of $glow with no literal`, ({ surface, glow }) => {
+      const { container } = renderIn(scheme, <VoiceAgentSurface {...surface}><p>panel</p></VoiceAgentSurface>);
+      const ring = container.firstElementChild as HTMLElement;
+      const gradient = computed(ring, 'background');
+      expectNoLiteral(gradient, `${scheme} ${surface.badge} ring "${gradient}"`);
+      expect(gradient).toBe(surface.gradient);
+      expectTokensResolve(gradient, scheme, `${surface.badge} ring`);
+      const stops = gradientStops(gradient);
+      expect(stops).toHaveLength(3);
+      for (const stop of stops) expect(stop, `${surface.badge} stop "${stop}"`).toContain(glow);
+      const tokens = tokensFor(scheme);
+      const colours = stops.map((stop) => colorOf(named(stop), tokens, scheme));
+      for (const colour of colours) expect(colour.a).toBe(1);
+      // The band runs deep → light, like the literal stops did.
+      expect(luminance(colours[0])).toBeLessThan(luminance(colours[1]));
+      expect(luminance(colours[1])).toBeLessThan(luminance(colours[2]));
+      // The blurred corner blob inside the card repeats the ring gradient.
+      const blob = ring.querySelector('[aria-hidden]') as HTMLElement;
+      expect(computed(blob, 'background')).toBe(gradient);
+    });
+  }
+
+  it('each stop follows the theme: a different colour in light and dark', () => {
+    for (const { surface } of MESSAGING) {
+      for (const stop of gradientStops(surface.gradient)) {
+        expect(colorOf(named(stop), tokensFor('light'), 'light'), `${surface.badge} "${stop}"`).not.toEqual(colorOf(named(stop), tokensFor('dark'), 'dark'));
+      }
+    }
+  });
+});
+
+// ── 3b. mock-interview ring plum stop ──────────────────────────────────────
+describe('mockInterviewVoiceSurface ring: the plum end stop is a color-mix of --wa-hero-crimson-dark (was #5e1426)', () => {
+  const PLUM = 'color-mix(in srgb, var(--wa-hero-crimson-dark) 70%, black)';
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: the ring carries no literal, reads the hero pair and lands within 10 channel steps of the old plum`, () => {
+      const { container } = renderIn(scheme, <VoiceAgentSurface {...mockInterviewVoiceSurface}><p>panel</p></VoiceAgentSurface>);
+      const gradient = computed(container.firstElementChild as HTMLElement, 'background');
+      expectNoLiteral(gradient, `${scheme} PRACTICE ring "${gradient}"`);
+      expect(gradient).toBe(`linear-gradient(135deg, var(--wa-hero-crimson-dark), ${PLUM})`);
+      expectTokensResolve(gradient, scheme, 'PRACTICE ring');
+      const tokens = tokensFor(scheme);
+      const plum = colorOf(named(PLUM), tokens, scheme);
+      const was = parseColor('#5e1426');
+      for (const channel of ['r', 'g', 'b'] as const) expect(Math.abs(plum[channel] - was[channel]), channel).toBeLessThanOrEqual(10);
+      // Text-bearing crimson rings keep constant stops, so the plum is the same in both schemes and darker than its start stop.
+      const other: Scheme = scheme === 'light' ? 'dark' : 'light';
+      expect(plum).toEqual(colorOf(named(PLUM), tokensFor(other), other));
+      expect(luminance(plum)).toBeLessThan(luminance(colorOf('var(--wa-hero-crimson-dark)', tokens, scheme)));
+    });
+  }
+});
+
+// ── 3c. VoiceStudioKit card shadows ────────────────────────────────────────
+describe('VoiceStudioKit cards cast their shadow from tokens (were rgba(120,20,38 | 120,93,38 | 0,0,0, …) literals)', () => {
+  const ACCENT_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-accent) 15%, transparent)';
+  const GOLD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-gold) 15%, transparent)';
+  const CARDS = [
+    { badge: 'READINESS', shadow: GOLD_SHADOW },
+    { badge: 'RESUME', shadow: ACCENT_SHADOW },
+    { badge: 'PRACTICE', shadow: ACCENT_SHADOW },
+    { badge: 'LILLEY', shadow: 'var(--wa-shadow)' },
+    { badge: 'ADVANCED', shadow: ACCENT_SHADOW },
+    { badge: '10–20 SEC', shadow: 'var(--wa-shadow)' },
+  ];
+
+  for (const scheme of SCHEMES) {
+    it(`${scheme}: every coach card shadow is its token value and no inline box-shadow on the Coaches tab carries a literal`, () => {
+      const { container } = renderIn(scheme, <VoiceStudioKit />);
+      for (const { badge, shadow } of CARDS) {
+        const card = screen.getByText(badge).closest('.vs-hero-card') as HTMLElement | null;
+        expect(card, `${badge} card`).not.toBeNull();
+        const value = computed(card!, 'box-shadow');
+        expectNoLiteral(value, `${scheme} ${badge} card shadow "${value}"`);
+        expect(value, badge).toBe(shadow);
+        expectTokensResolve(value, scheme, `${badge} card shadow`);
+      }
+      expectNoLiteralShadows(container, `${scheme} Coaches tab`);
+    });
+
+    it(`${scheme}: the Resume Studio banner and the "Resume coach" card tint --wa-accent under their --wa-accent gradient`, () => {
+      // The "Resume coach" card renders once a resume is on file and scored.
+      const { container } = renderIn(scheme, <VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: true, structuralScore: 72, issues: [] }} />);
+      const banner = shadowHost(screen.getByRole('heading', { name: 'Resume Studio' }));
+      expect(computed(banner, 'background')).toContain('var(--wa-accent)');
+      expect(computed(banner, 'box-shadow')).toBe(ACCENT_SHADOW);
+      const coach = screen.getByText('Resume coach').closest('a') as HTMLElement;
+      expect(computed(coach, 'background')).toContain('var(--wa-accent)');
+      expect(computed(coach, 'box-shadow')).toBe(ACCENT_SHADOW);
+      expectTokensResolve(ACCENT_SHADOW, scheme, 'accent card shadow');
+      const tokens = tokensFor(scheme);
+      const tint = parseColor(resolve('color-mix(in srgb, var(--wa-accent) 15%, transparent)', tokens, scheme));
+      const accent = colorOf('var(--wa-accent)', tokens, scheme);
+      expect(tint).toEqual({ r: accent.r, g: accent.g, b: accent.b, a: 0.15 });
+      expectNoLiteralShadows(container, `${scheme} Resume tab`);
+    });
+  }
+
+  it('the accent tint follows the theme (the literal never did)', () => {
+    const mix = 'color-mix(in srgb, var(--wa-accent) 15%, transparent)';
+    expect(resolve(mix, tokensFor('light'), 'light')).not.toBe(resolve(mix, tokensFor('dark'), 'dark'));
+  });
+});
+
+// ── 3d. css/portal.css accent shadows and tints ────────────────────────────
+describe('css/portal.css accent shadows and gradient stops are color-mixes of --color-accent (were rgba(173, 44, 77, …) literals)', () => {
+  const portalCss = readCss('css/portal.css');
+  const SEEDED = '#ad2c4d';
+  const OTHER_ORG = '#1d4ed8';
+  /** The portal token chain with OrgBrandingStyle's `:root { --org-accent; --color-accent }` override modelled. */
+  const withOrg = (scheme: Scheme, accent: string) => new Map(tokensFor(scheme)).set('--org-accent', accent).set('--color-accent', 'var(--org-accent)');
+  const SHADOWS = [
+    { selector: '.mobile-fab', geometry: '0 8px 24px', pct: 30 },
+    { selector: '.job-app-card--editing', geometry: '0 8px 28px', pct: 20 },
+    { selector: '.portal-profile-avatar', geometry: '0 4px 16px', pct: 35 },
+    { selector: '.portal-app-progress__bar--current', geometry: '0 0 6px', pct: 50 },
+  ];
+
+  it.each(SHADOWS)('$selector: box-shadow is "$geometry color-mix(--color-accent $pct%)" and follows the seeded org accent', ({ selector, geometry, pct }) => {
+    const shadow = declaration(portalCss, selector, 'box-shadow');
+    expectNoLiteral(shadow, selector);
+    expect(shadow).toBe(`${geometry} color-mix(in srgb, var(--color-accent) ${pct}%, transparent)`);
+    const mix = shadow.slice(geometry.length + 1);
+    for (const scheme of SCHEMES) {
+      // The seeded org: the exact colour and alpha the literal painted.
+      expect(parseColor(resolve(mix, withOrg(scheme, SEEDED), scheme)), `${scheme} seeded org`).toEqual({ r: 173, g: 44, b: 77, a: pct / 100 });
+      // Another org accent: the shadow follows it.
+      expect(parseColor(resolve(mix, withOrg(scheme, OTHER_ORG), scheme)), `${scheme} other org`).toEqual({ r: 29, g: 78, b: 216, a: pct / 100 });
+    }
+    // Without an org override the chain's --color-accent is --wa-accent, so the shadow flips with the scheme.
+    expect(tokensFor('light').get('--color-accent')).toBe('var(--wa-accent)');
+    expect(resolve(mix, tokensFor('light'), 'light')).not.toBe(resolve(mix, tokensFor('dark'), 'dark'));
+  });
+
+  it('.portal-card--gradient-accent and .portal-profile-hero tint --color-accent (and --color-accent-dark) instead of rgba stops', () => {
+    const card = declaration(portalCss, '.portal-card--gradient-accent', 'background');
+    expectNoLiteral(card, '.portal-card--gradient-accent');
+    expect(card).toBe('linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 15%, transparent) 0%, color-mix(in srgb, var(--color-accent-dark) 8%, transparent) 100%)');
+    const hero = declaration(portalCss, '.portal-profile-hero', 'background');
+    expectNoLiteral(hero, '.portal-profile-hero');
+    expect(hero).toBe('linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 70%)');
+    for (const scheme of SCHEMES) {
+      const tokens = withOrg(scheme, SEEDED);
+      expect(tokens.has('--color-accent-dark'), `${scheme}: --color-accent-dark is on the portal chain`).toBe(true);
+      expect(parseColor(resolve('color-mix(in srgb, var(--color-accent) 15%, transparent)', tokens, scheme))).toEqual({ r: 173, g: 44, b: 77, a: 0.15 });
+      expect(parseColor(resolve('color-mix(in srgb, var(--color-accent) 10%, transparent)', tokens, scheme))).toEqual({ r: 173, g: 44, b: 77, a: 0.1 });
+      expect(parseColor(resolve('color-mix(in srgb, var(--color-accent-dark) 8%, transparent)', tokens, scheme)).a).toBeCloseTo(0.08, 5);
+    }
+  });
+
+  it('.portal-progress-bar--gold fill ends on --color-gold-light (was #ffd54f), the gold gradient pair main.css already uses', () => {
+    const fill = declaration(portalCss, '.portal-progress-bar--gold .portal-progress-bar__fill', 'background');
+    expectNoLiteral(fill, '.portal-progress-bar--gold');
+    expect(fill).toBe('linear-gradient(to right, var(--color-gold), var(--color-gold-light))');
+    for (const scheme of SCHEMES) {
+      const tokens = tokensFor(scheme);
+      expect(luminance(colorOf('var(--color-gold-light)', tokens, scheme))).toBeGreaterThan(luminance(colorOf('var(--color-gold)', tokens, scheme)));
+    }
+  });
+
+  it('no accent rgba() tint remains in any box-shadow or gradient in css/portal.css', () => {
+    // The text-bearing `.portal-action-card-gradient--*` hero backdrops keep constant hex stops
+    // under white copy (the hero-pair rule), so only the translucent accent tints are swept here.
+    const src = portalCss.replace(/\/\*[\s\S]*?\*\//g, '');
+    const ACCENT_LITERAL = /rgba\(\s*173,\s*44,\s*77|rgba\(\s*139,\s*31,\s*56/;
+    const declarations = (src.match(/(?:box-shadow|background)\s*:[^;]+;/g) ?? []).filter((d) => /box-shadow|gradient/.test(d));
+    expect(declarations.length).toBeGreaterThan(10);
+    for (const decl of declarations) expect(decl.replace(/\s+/g, ' ')).not.toMatch(ACCENT_LITERAL);
+  });
 });
