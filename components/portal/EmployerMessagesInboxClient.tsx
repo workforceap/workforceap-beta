@@ -1,13 +1,14 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { KitEmptyState } from '@/components/portal/kit';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
 import PortalTeamChatClient from '@/components/portal/PortalTeamChatClient';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
 import type { EmployerInboxCandidateRow, EmployerInboxTeamRow } from '@/lib/messages/employerInbox';
 import { employerMessagingSurface } from '@/lib/portal/messagingSurfaces';
 import {
-  InboxEmpty,
   InboxHeader,
   InboxList,
   InboxPane,
@@ -44,6 +45,7 @@ export default function EmployerMessagesInboxClient({
   candidateRows,
   teamInitial,
 }: Props) {
+  const t = useTranslations('empty');
   const [search, setSearch] = useState('');
   const [sel, setSel] = useState<Selection>({ kind: 'team' });
   const [mobileList, setMobileList] = useState(true);
@@ -60,14 +62,19 @@ export default function EmployerMessagesInboxClient({
     }>;
   } | null>(null);
   const [appLoading, setAppLoading] = useState(false);
+  // A candidate thread that failed to load is a failure, not an empty thread:
+  // it renders `unavailable`/danger with a real retry instead of "Loading…" forever.
+  const [appError, setAppError] = useState(false);
 
   const loadApplication = useCallback(async (applicationId: string) => {
     setAppLoading(true);
+    setAppError(false);
     try {
       const r = await fetch(`/api/employer/applications/${applicationId}/messages`, { credentials: 'include' });
       const d = await r.json();
       if (!r.ok) {
         setAppPayload(null);
+        setAppError(true);
         return;
       }
       setAppPayload({
@@ -76,6 +83,9 @@ export default function EmployerMessagesInboxClient({
         jobTitle: d.application.jobTitle,
         messages: d.messages,
       });
+    } catch {
+      setAppPayload(null);
+      setAppError(true);
     } finally {
       setAppLoading(false);
     }
@@ -158,7 +168,15 @@ export default function EmployerMessagesInboxClient({
         ))}
 
         {!showTeam && filteredCandidates.length === 0 ? (
-          <InboxEmpty title="No conversations found" description="Try a different search." />
+          <div style={{ padding: '1rem' }}>
+            <KitEmptyState
+              kind="filtered"
+              framed
+              title={t('conversationsFiltered.title')}
+              description={t('conversationsFiltered.body')}
+              primaryAction={{ label: t('conversationsFiltered.action'), onClick: () => setSearch('') }}
+            />
+          </div>
         ) : null}
       </InboxList>
     </InboxPane>
@@ -175,12 +193,26 @@ export default function EmployerMessagesInboxClient({
         portalUserId,
       }}
       subtitle="Our team reads every message and replies here."
-      emptyHint="No messages yet. Ask a question about job postings, applications, or candidate matches."
+      empty={{ title: t('teamThreadEmployer.title'), description: t('teamThreadEmployer.body'), action: t('teamThreadEmployer.action') }}
     />
   );
 
   const threadPane = sel.kind === 'team' ? (
     <div style={{ padding: '1rem', overflow: 'auto', flex: 1, minHeight: 0 }}>{teamChat}</div>
+  ) : appError ? (
+    <div style={{ padding: '1rem' }}>
+      <KitEmptyState
+        kind="unavailable"
+        tone="danger"
+        framed
+        title={t('applicationThreadUnavailable.title')}
+        description={t('applicationThreadUnavailable.body')}
+        primaryAction={{
+          label: t('applicationThreadUnavailable.action'),
+          onClick: () => { if (sel.kind === 'candidate') void loadApplication(sel.applicationId); },
+        }}
+      />
+    </div>
   ) : appLoading || !appPayload ? (
     <div style={{ padding: '2rem', color: 'var(--color-on-surface-variant)' }}>Loading…</div>
   ) : (

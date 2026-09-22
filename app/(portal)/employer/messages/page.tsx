@@ -14,6 +14,7 @@ import { serializeMessage } from '@/lib/messages/counselorThread';
 import { buildEmployerInbox } from '@/lib/messages/employerInbox';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { KitEmptyState } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('employer');
@@ -58,6 +59,7 @@ export default async function EmployerMessagesPage() {
 
   const t = await getTranslations('employer');
   const tm = await getTranslations('messages');
+  const te = await getTranslations('empty');
   const headerTitle = tm('inbox');
   const headerProps = {
     title: headerTitle,
@@ -75,14 +77,14 @@ export default async function EmployerMessagesPage() {
       <PortalPageFrame>
         {readOnlyAudit && <span hidden data-portal-audit-suppressed="employer-message-thread-provisioning" />}
         <EmployerMessagesHeader {...headerProps} />
-        <div className="portal-card portal-card--flat" style={{ padding: '1.5rem' }}>
-          <h2 style={{ marginTop: 0, fontSize: '1.125rem', fontWeight: 700, color: 'var(--wa-text)' }}>
-            No messages yet
-          </h2>
-          <p style={{ marginBottom: 0, color: 'var(--wa-muted)' }}>
-            Your WorkforceAP team conversation will appear here after the first message.
-          </p>
-        </div>
+        <KitEmptyState
+          kind="unavailable"
+          framed
+          headingAs="h2"
+          title={te('inboxUnavailable.title')}
+          description={te('inboxUnavailable.body')}
+          primaryAction={{ label: te('inboxUnavailable.overviewAction'), href: '/employer' }}
+        />
       </PortalPageFrame>
     );
   }

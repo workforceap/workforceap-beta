@@ -12,6 +12,9 @@ import pt from '@/messages/pt.json';
  *  - filtered:    "No X match these filters" + Clear filters
  *  - unavailable: what could not load + Try again (or, when nothing failed,
  *                 the honest reason and the real next steps)
+ *  - messages:    a thread with nothing sent is "No messages yet" and its action is
+ *                 writing; the inbox guards (provisioning, no thread in an audit)
+ *                 say what is not ready, never "No messages yet"
  * Copy rules moved here from lib/member/jobApplicationsEmptyState.test.ts
  * when that module's hardcoded sentences moved into messages.
  */
@@ -27,7 +30,7 @@ function shape(ns: Namespace): string[] {
 describe('empty.* copy', () => {
   it('has the same keys, all filled, in en/es/fr/pt', () => {
     const reference = shape(LOCALES.en);
-    expect(reference.length).toBeGreaterThanOrEqual(27);
+    expect(reference.length).toBeGreaterThanOrEqual(61);
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(shape(ns), locale).toEqual(reference);
       for (const [group, leaf] of Object.entries(ns)) {
@@ -69,6 +72,35 @@ describe('empty.* copy', () => {
       expect(en.empty[group].title).toBe('No live openings right now');
       expect(en.empty[group].body).toMatch(/have not posted live roles yet/);
       expect(en.empty[group].body).not.toMatch(/\[Demo\]|seed|Capital Area/i);
+    }
+  });
+
+  it('messages: threads with nothing sent are "No messages yet" + Write a message; guards and failures say what is not ready', () => {
+    for (const group of ['thread', 'counselorThread', 'teamThreadEmployer', 'teamThreadPartner', 'applicationThread'] as const) {
+      expect(en.empty[group].title).toBe('No messages yet');
+      expect(en.empty[group].action).toBe('Write a message');
+      expect(en.empty[group].body.length).toBeLessThanOrEqual(140);
+    }
+    // #2492's employer / partner sentences survive verbatim (as the body).
+    expect(en.empty.teamThreadEmployer.body).toBe('Ask a question about job postings, applications, or candidate matches.');
+    expect(en.empty.teamThreadPartner.body).toBe('Reach out about referrals, milestones, or program questions.');
+    // Unassigned is honest: no counselor yet, writing still works, staff read it.
+    expect(en.empty.counselorUnassigned.title).toBe('No counselor assigned yet');
+    expect(en.empty.counselorUnassigned.body).toMatch(/still write/);
+    expect(en.empty.counselorUnassigned.body).toMatch(/staff read/);
+    for (const group of ['inboxProvisioning', 'inboxUnavailable'] as const) {
+      expect(en.empty[group].title).not.toMatch(/^No messages/);
+      expect(en.empty[group].action.length).toBeGreaterThan(0);
+    }
+    expect(en.empty.conversationsFiltered.title).toMatch(/^No .+ match this search$/);
+    expect(en.empty.conversationsFiltered.action).toBe('Clear search');
+    expect(en.empty.applicationThreadUnavailable.title).toMatch(/could not load$/);
+    expect(en.empty.applicationThreadUnavailable.action).toBe('Try again');
+  });
+
+  it('never promises a reply time', () => {
+    for (const [locale, ns] of Object.entries(LOCALES)) {
+      expect(JSON.stringify(ns), locale).not.toMatch(/business day|día(s)? hábil|jour(s)? ouvr|dia(s)? útei|dia útil|within \d|\d+ ?(hours|horas|heures)/i);
     }
   });
 

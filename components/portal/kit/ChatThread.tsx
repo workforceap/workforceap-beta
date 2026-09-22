@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { Avatar } from './Avatar';
+import { KitEmptyState } from './KitEmptyState';
 
 export interface ChatMessage {
   id: string;
@@ -19,6 +20,12 @@ interface ChatThreadProps {
   /** Initial, editable context. Never sends until the member submits. */
   initialText?: string;
   multiline?: boolean;
+  /**
+   * Empty-thread copy (KIT_GUIDE §6 `first`): the composer is the first
+   * action, so the action focuses it. Surfaces with a translator pass their
+   * `empty.*` strings (MemberMessagesKit does); the defaults are kit English.
+   */
+  empty?: { title: string; description?: string; action?: string };
 }
 
 function authorLabel(author: ReactNode | undefined): string {
@@ -33,10 +40,11 @@ function authorLabel(author: ReactNode | undefined): string {
  * the same product as the rest of the member portal. Optional contextual drafts
  * are editable; asynchronous send failures preserve the current composer text.
  */
-export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false }: ChatThreadProps) {
+export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty }: ChatThreadProps) {
   const [text, setText] = useState(initialText);
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const canSend = Boolean(onSend);
 
   useEffect(() => {
@@ -62,9 +70,12 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }} role="log" aria-live="polite" aria-relevant="additions">
         {messages.length === 0 ? (
-          <p className="wa-kit-lede" style={{ margin: 0 }}>
-            {canSend ? 'No messages yet. Type below to start this thread.' : 'No messages in this thread yet.'}
-          </p>
+          <KitEmptyState
+            kind="first"
+            title={empty?.title ?? 'No messages yet'}
+            description={empty?.description ?? (canSend ? 'Write your first message and the conversation appears here.' : 'Nothing has been sent in this thread yet.')}
+            primaryAction={canSend ? { label: empty?.action ?? 'Write a message', onClick: () => inputRef.current?.focus() } : undefined}
+          />
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
             {messages.map((m) => {
@@ -117,6 +128,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
         </label>
         {multiline ? <textarea
           id="wa-kit-chat-input"
+          ref={(el) => { inputRef.current = el; }}
           className="wa-kit-focus"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -132,6 +144,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           }}
         /> : <input
           id="wa-kit-chat-input"
+          ref={(el) => { inputRef.current = el; }}
           className="wa-kit-focus"
           value={text}
           onChange={(e) => setText(e.target.value)}

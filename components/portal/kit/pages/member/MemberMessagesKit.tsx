@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { ArrowLeft, MessageCircle } from 'lucide-react';
 import { DesignSurface, Avatar, ChatThread, KitEmptyState, PageOpener, type ChatMessage } from '@/components/portal/kit';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
@@ -63,6 +64,28 @@ export interface MemberMessagesKitProps {
   feedbackNotice?: string;
 }
 
+/**
+ * The messages page shell — PageOpener over the warm surface — shared by the
+ * inbox and by the page-level empty states in app/(portal)/dashboard/messages
+ * (no member row yet, no thread in a read-only audit), so a provisioning
+ * inbox reads as the same product as a live one.
+ */
+export function MemberMessagesFrame({ children }: { children: ReactNode }) {
+  return (
+    <DesignSurface surface="warm">
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+        <PageOpener
+          kicker="Inbox"
+          title="Messages"
+          lede="Counselor and support in one inbox."
+          icon={<MessageCircle size={13} aria-hidden="true" />}
+        />
+        {children}
+      </div>
+    </DesignSurface>
+  );
+}
+
 const DEFAULT_CONVERSATIONS: Conversation[] = [];
 
 const DEFAULT_MESSAGES: ChatMessage[] = [];
@@ -81,6 +104,7 @@ export function MemberMessagesKit({
   feedbackDraft,
   feedbackNotice,
 }: MemberMessagesKitProps) {
+  const t = useTranslations('empty');
   const [messages, setMessages] = useState<ChatMessage[]>(messagesProp);
   const [error, setError] = useState<string | null>(null);
   // Mobile single-pane navigation: on phones the list and thread cannot sit
@@ -230,14 +254,7 @@ export function MemberMessagesKit({
   const canSend = Boolean(onSend) || Boolean(memberUserId);
 
   return (
-    <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
-        <PageOpener
-          kicker="Inbox"
-          title="Messages"
-          lede="Counselor and support in one inbox."
-          icon={<MessageCircle size={13} aria-hidden="true" />}
-        />
+    <MemberMessagesFrame>
         <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
           <div
             className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3"
@@ -255,10 +272,7 @@ export function MemberMessagesKit({
             <div>
               {conversations.length === 0 ? (
                 <div style={{ padding: '20px' }}>
-                  <KitEmptyState
-                    title="No conversations yet"
-                    description="Your counselor thread opens here after you send a message."
-                  />
+                  <KitEmptyState kind="first" title={t('conversations.title')} description={t('conversations.body')} />
                 </div>
               ) : (
               conversations.map((c) => (
@@ -383,12 +397,12 @@ export function MemberMessagesKit({
                 onSend={canSend ? handleSend : undefined}
                 initialText={feedbackDraft?.text}
                 multiline={Boolean(feedbackDraft)}
+                empty={{ title: t('thread.title'), description: t('thread.body'), action: t('thread.action') }}
               />
             </div>
           </div>
           </div>
         </div>
-      </div>
-    </DesignSurface>
+    </MemberMessagesFrame>
   );
 }

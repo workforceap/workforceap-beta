@@ -3883,6 +3883,62 @@
     },
     "stage": {
       "title": "Nada en esta etapa"
+    },
+    "thread": {
+      "title": "Aún no hay mensajes",
+      "body": "Escribe tu primer mensaje y la conversación aparecerá aquí.",
+      "action": "Escribir un mensaje"
+    },
+    "counselorThread": {
+      "title": "Aún no hay mensajes",
+      "body": "Escríbele a tu orientador y la conversación aparecerá aquí.",
+      "action": "Escribir un mensaje"
+    },
+    "counselorUnassigned": {
+      "title": "Aún no tienes un orientador asignado",
+      "body": "Puedes escribir aquí de todos modos. El personal de WorkforceAP lee este hilo hasta que se te asigne un orientador.",
+      "action": "Escribir un mensaje"
+    },
+    "conversations": {
+      "title": "Aún no hay conversaciones",
+      "body": "El hilo con tu orientador aparecerá aquí después de que envíes un mensaje."
+    },
+    "conversationsFiltered": {
+      "title": "Ninguna conversación coincide con esta búsqueda",
+      "body": "Borra la búsqueda para ver todas las conversaciones.",
+      "action": "Borrar búsqueda"
+    },
+    "inboxProvisioning": {
+      "title": "Tu bandeja de entrada se está configurando",
+      "body": "Los mensajes se abrirán cuando tu cuenta termine de configurarse. Escribe a soporte si necesitas ayuda ahora.",
+      "action": "Escribir a soporte",
+      "secondary": "Volver al panel"
+    },
+    "inboxUnavailable": {
+      "title": "Tu bandeja de entrada aún no está lista",
+      "body": "Tu conversación aparecerá aquí cuando el hilo esté configurado.",
+      "action": "Volver al panel",
+      "overviewAction": "Volver al resumen"
+    },
+    "teamThreadEmployer": {
+      "title": "Aún no hay mensajes",
+      "body": "Haz una pregunta sobre ofertas de empleo, postulaciones o candidatos compatibles.",
+      "action": "Escribir un mensaje"
+    },
+    "teamThreadPartner": {
+      "title": "Aún no hay mensajes",
+      "body": "Escríbenos sobre referidos, hitos o preguntas del programa.",
+      "action": "Escribir un mensaje"
+    },
+    "applicationThread": {
+      "title": "Aún no hay mensajes",
+      "body": "Inicia la conversación sobre esta postulación.",
+      "action": "Escribir un mensaje"
+    },
+    "applicationThreadUnavailable": {
+      "title": "No se pudo cargar esta conversación",
+      "body": "Inténtalo de nuevo o elige otra conversación de la lista.",
+      "action": "Intentar de nuevo"
     }
   }
 }

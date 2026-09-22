@@ -353,7 +353,7 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
 | `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
-| `ChatThread` | message threads |
+| `ChatThread` | message threads. An empty thread renders `KitEmptyState kind="first"` whose action focuses the composer; surfaces pass `empty={{ title, description, action }}` from their `empty.*` translator (`MemberMessagesKit` does), the kit English is the fallback. `PortalTeamChatClient` (employer / partner team threads) takes the same `empty` object. Page-level inbox guards (no member row, no thread in an audit) are `kind="unavailable"` inside `MemberMessagesFrame`, never "No messages yet". |
 | `Tabs`, `TabPanel` | section tabs around server-rendered panels (WAI-ARIA tabs on `useListFocus`; `?tab=` mirrored with `history.replaceState`; an in-page `#anchor` inside a panel opens that panel). Counselor student detail is the reference. |
 | `AppShellMember` (+ `AppShellSidebar` from `kit/AppShellSidebar`) | shell chrome (member tabs / dense sidebar) |
 | `UniversalSearch` (`kit/UniversalSearch`, not in the barrel) | global search affordance |

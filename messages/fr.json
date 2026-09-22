@@ -3823,6 +3823,62 @@
     },
     "stage": {
       "title": "Rien à cette étape"
+    },
+    "thread": {
+      "title": "Aucun message pour l'instant",
+      "body": "Écrivez votre premier message et la conversation apparaîtra ici.",
+      "action": "Écrire un message"
+    },
+    "counselorThread": {
+      "title": "Aucun message pour l'instant",
+      "body": "Écrivez à votre conseiller et la conversation apparaîtra ici.",
+      "action": "Écrire un message"
+    },
+    "counselorUnassigned": {
+      "title": "Aucun conseiller attribué pour l'instant",
+      "body": "Vous pouvez tout de même écrire ici. L'équipe WorkforceAP lit ce fil jusqu'à ce qu'un conseiller vous soit attribué.",
+      "action": "Écrire un message"
+    },
+    "conversations": {
+      "title": "Aucune conversation pour l'instant",
+      "body": "Le fil avec votre conseiller apparaîtra ici après l'envoi d'un message."
+    },
+    "conversationsFiltered": {
+      "title": "Aucune conversation ne correspond à cette recherche",
+      "body": "Effacez la recherche pour voir toutes les conversations.",
+      "action": "Effacer la recherche"
+    },
+    "inboxProvisioning": {
+      "title": "Votre boîte de réception est en cours de configuration",
+      "body": "Les messages s'ouvriront une fois la configuration de votre compte terminée. Écrivez au support si vous avez besoin d'aide maintenant.",
+      "action": "Écrire au support",
+      "secondary": "Retour au tableau de bord"
+    },
+    "inboxUnavailable": {
+      "title": "Votre boîte de réception n'est pas encore prête",
+      "body": "Votre conversation apparaîtra ici une fois le fil configuré.",
+      "action": "Retour au tableau de bord",
+      "overviewAction": "Retour à la vue d'ensemble"
+    },
+    "teamThreadEmployer": {
+      "title": "Aucun message pour l'instant",
+      "body": "Posez une question sur les offres d'emploi, les candidatures ou les candidats correspondants.",
+      "action": "Écrire un message"
+    },
+    "teamThreadPartner": {
+      "title": "Aucun message pour l'instant",
+      "body": "Contactez-nous au sujet des recommandations, des étapes clés ou des questions sur le programme.",
+      "action": "Écrire un message"
+    },
+    "applicationThread": {
+      "title": "Aucun message pour l'instant",
+      "body": "Lancez la conversation au sujet de cette candidature.",
+      "action": "Écrire un message"
+    },
+    "applicationThreadUnavailable": {
+      "title": "Impossible de charger cette conversation",
+      "body": "Réessayez ou choisissez une autre conversation dans la liste.",
+      "action": "Réessayer"
     }
   }
 }

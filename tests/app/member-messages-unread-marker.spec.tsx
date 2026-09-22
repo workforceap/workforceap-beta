@@ -29,7 +29,6 @@ vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({
     <span data-testid="kit-unread">{String(conversations[0]?.unread)}</span>
   ),
 }));
-vi.mock('@/components/portal/kit/pages/member/MemberMessagesEmpty', () => ({ MemberMessagesEmpty: () => null }));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({
   default: ({ initial }: { initial: { unreadCount: number } }) => <span data-testid="unread-count">{initial.unreadCount}</span>,
