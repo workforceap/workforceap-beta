@@ -78,7 +78,7 @@ export default async function DashboardCertificationsPage({
       take: 500,
       where: { userId: user.id },
       orderBy: { earnedAt: 'desc' },
-      select: { id: true, certName: true, earnedAt: true },
+      select: { id: true, certName: true, earnedAt: true, status: true },
     }),
     primaryPathway
       ? prisma.pathwayStepProgress.findMany({
@@ -113,14 +113,28 @@ export default async function DashboardCertificationsPage({
   if (requestedUi !== 'legacy') {
     // Earned certs → kit cards. earnedAt is a Date here (raw Prisma select,
     // not the ISO-mapped certRows used by the legacy mobile rows below).
-    const earned = certs.map((c) => ({
-      id: c.id,
-      title: c.certName,
-      meta: `Issued ${formatLocalizedDate(c.earnedAt, locale, { month: 'short', day: 'numeric', year: 'numeric' })}`,
-      // Coursera/manual certs aren't credential-verified through us, so we
-      // don't claim "verified" — leave the badge off.
-      verified: false,
-    }));
+    // WAP-20 / review 2026-09-22: every row starts `pending` (a self-report
+    // or a certificate created from a Coursera completion) and only a row
+    // staff approved is a verified credential. Say which is which instead of
+    // dating every row as issued.
+    const earned = certs.map((c) => {
+      const date = formatLocalizedDate(c.earnedAt, locale, { month: 'short', day: 'numeric', year: 'numeric' });
+      return {
+        id: c.id,
+        title: c.certName,
+        meta:
+          c.status === 'approved'
+            ? `Issued ${date}`
+            : c.status === 'pending'
+              ? `Pending verification · completed ${date}`
+              : `Not verified · reported ${date}`,
+        verified: c.status === 'approved',
+      };
+    });
+    // "Earned" and "Verified" both mean staff-approved: a pending or rejected
+    // row is listed with its state but does not count until it is verified,
+    // which is what the empty-state copy promises.
+    const approvedCount = earned.filter((cert) => cert.verified).length;
 
     // In-progress cert = the member's current pathway milestone, surfaced as a
     // single in-progress card with the overall pathway completion percent.
@@ -154,9 +168,9 @@ export default async function DashboardCertificationsPage({
 
     return (
       <MemberCertificatesKit
-        earnedCount={certs.length}
+        earnedCount={approvedCount}
         inProgressCount={inProgress.length}
-        verifiedCount={0}
+        verifiedCount={approvedCount}
         // Learning-hours isn't loaded on this route; pass 0 rather than let the
         // kit's fabricated default (86) show next to real counts.
         learningHours={0}

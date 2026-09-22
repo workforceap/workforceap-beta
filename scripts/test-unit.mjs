@@ -111,6 +111,13 @@ function classify(relPath) {
     // CI job runs this lane with TEST_REAL_DB=1 against a pushed schema.
     return { skip: 'realDb' };
   }
+  if (/lib\/certifications\/pendingFromCompletion\.realdb\.test\.ts/.test(normalized) && !REAL_DB) {
+    // Proves the `user_certifications (user_id, cert_name)` unique key holds
+    // under concurrent Coursera completion reports and that a repeat report
+    // is a true no-op on the stored row (review 2026-09-22 item 4). The
+    // `database-contract` CI job runs this lane with TEST_REAL_DB=1.
+    return { skip: 'realDb' };
+  }
   if (/lib\/auth\/roles\.test\.ts/.test(normalized) && !REAL_DB) {
     // Hits the real Prisma client via getProfileRole — needs a postgres
     // server. The default lane has none; the `database-contract` CI job

@@ -3,9 +3,11 @@ import { cleanup, render, screen } from '@testing-library/react';
 
 /**
  * Review 2026-09-22: both empty states on /dashboard/certifications?ui=legacy
- * (mobile row, desktop records panel, desktop PortalEmptyState) said Coursera certificates "sync
- * automatically". No code path writes a UserCertification from a Coursera
- * completion, so the page must describe what happens today instead.
+ * (mobile row, desktop records panel, desktop PortalEmptyState) said Coursera
+ * certificates "sync automatically" when nothing wrote one. Item 4 of the
+ * same review then made a Coursera-reported completion create a `pending`
+ * UserCertification, so the page must now say exactly that: pending on
+ * report, verified by the team before it counts, self-add still available.
  */
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => {
@@ -69,10 +71,13 @@ describe('/dashboard/certifications?ui=legacy empty states', () => {
     const notices = screen.getAllByText(/No certificates are recorded yet/);
     expect(notices).toHaveLength(3);
     for (const notice of notices) {
+      expect(notice).toHaveTextContent(/When Coursera reports a completed course we add it here as a pending certificate/);
       expect(notice).toHaveTextContent(/our team verifies it before it counts as earned/);
-      expect(notice).toHaveTextContent(/not added here automatically yet/);
+      expect(notice).toHaveTextContent(/you can also add a certificate you earned elsewhere/);
+      expect(notice).not.toHaveTextContent(/automatically/i);
     }
     expect(document.body).not.toHaveTextContent(/sync automatically/i);
+    expect(document.body).not.toHaveTextContent(/not added here automatically/i);
     expect(screen.getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program');
   });
 });
