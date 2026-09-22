@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
 import { Target } from 'lucide-react';
-import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { DesignSurface, KitEmptyState, PageOpener } from '@/components/portal/kit';
 import SkillMissionPanel, { type SkillMissionSummary } from '@/components/portal/SkillMissionPanel';
 import { SkillMissionChallengePreview } from '@/components/portal/SkillMissionChallenge';
 import SkillMissionTeaserCard from '@/components/portal/SkillMissionTeaserCard';
-import { SkillMissionEmpty } from '@/components/portal/SkillMissionEmpty';
+import { skillMissionEmptyState } from '@/lib/member/skillMissionEmptyState';
 
 /**
  * Credential-free proofs for Skill Missions.
@@ -180,13 +180,29 @@ export default async function DevMemberMissionsPage({
             resumeStudioHref="#"
           />
         ) : (
-          <SkillMissionEmpty
-            programSlug={view === 'enrolled' ? 'ai-professional-practitioner-certificate' : null}
-            programTitle={view === 'enrolled' ? 'AI Professional Practitioner Certificate' : null}
-            hrefMap={DEV_HREF}
-          />
+          <DevMissionsEmpty enrolled={view === 'enrolled'} />
         )}
       </div>
     </DesignSurface>
+  );
+}
+
+/** Same shell as the live page: kit card + KitEmptyState at h2, hrefs remapped to the proofs. */
+function DevMissionsEmpty({ enrolled }: { enrolled: boolean }) {
+  const empty = skillMissionEmptyState({
+    programSlug: enrolled ? 'ai-professional-practitioner-certificate' : null,
+    programTitle: enrolled ? 'AI Professional Practitioner Certificate' : null,
+  });
+  return (
+    <div className="wa-kit-card">
+      <KitEmptyState
+        kind={empty.kind}
+        tone={empty.tone}
+        headingAs="h2"
+        title={empty.title}
+        description={empty.description}
+        primaryAction={{ href: DEV_HREF[empty.primaryAction.href] ?? empty.primaryAction.href, label: empty.primaryAction.label }}
+      />
+    </div>
   );
 }

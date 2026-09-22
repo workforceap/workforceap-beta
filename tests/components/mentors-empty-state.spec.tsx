@@ -17,6 +17,11 @@ describe('member mentors kit empty state', () => {
   it('renders the shared member empty copy and CTAs, never "Check back soon"', () => {
     const { container } = render(<MemberMentorsKit mentors={[]} />);
 
+    // Mentoring is not live for anyone yet: `unavailable` painted warn, never a "first" step.
+    const empty = container.querySelector<HTMLElement>('.wa-kit-empty')!;
+    expect(empty.dataset.kind).toBe('unavailable');
+    expect(empty.dataset.tone).toBe('warn');
+    expect(empty).not.toHaveAttribute('role');
     expect(screen.getByText(MENTORS_MEMBER_EMPTY.title)).toBeInTheDocument();
     expect(screen.getByText(MENTORS_MEMBER_EMPTY.description)).toBeInTheDocument();
     expect(screen.getByText(MENTORS_MEMBER_EMPTY.statusLabel)).toBeInTheDocument();

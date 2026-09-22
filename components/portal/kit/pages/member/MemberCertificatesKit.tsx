@@ -1,10 +1,11 @@
 'use client';
 
 import { CheckCircle2, Download, Award } from 'lucide-react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, KitEmptyState, ProgressBar, PageOpener } from '@/components/portal/kit';
 import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
+import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
 
 /**
  * Member Portal — CERTIFICATES view.
@@ -79,6 +80,7 @@ export function MemberCertificatesKit({
 }: MemberCertificatesKitProps) {
   // The real next step for a member mid-course is the course, not a message.
   const continueIsPrimary = Boolean(continueHref) && inProgress.length > 0;
+  const te = useTranslations('empty');
   const kpiItems = [
     { label: 'Earned', value: earnedCount },
     { label: 'In progress', value: inProgressCount },
@@ -106,24 +108,23 @@ export function MemberCertificatesKit({
             <h2 className="sr-only">Earned certificates</h2>
             {earned.length === 0 ? (
               <div className="wa-kit-card">
+                {/* `empty.certificates` (KIT_GUIDE §6): `first` — the kit view has no
+                    self-add form, so the body stops at "show in My program" and the
+                    actions are the real next steps: resume the in-progress course
+                    (which lives in My program) or message the counselor. */}
                 <KitEmptyState
-                  title="No certificates yet"
-                  description="When Coursera reports a completed course it appears here as a pending certificate; our team verifies it before it counts as earned. You can also add a certificate yourself."
-                  action={
-                    continueIsPrimary ? (
-                      <span className="wa-flex wa-flex-wrap wa-items-center wa-justify-center wa-gap-3">
-                        <Link href={continueHref!} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
-                          Continue course
-                        </Link>
-                        <Link href={counselorHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90">
-                          Message counselor
-                        </Link>
-                      </span>
-                    ) : (
-                      <Link href={counselorHref} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
-                        Message counselor
-                      </Link>
-                    )
+                  kind="first"
+                  title={te('certificates.title')}
+                  description={te('certificates.bodyKit')}
+                  primaryAction={
+                    continueIsPrimary
+                      ? { href: continueHref!, label: te('certificates.continue') }
+                      : { href: counselorHref, label: te('certificates.counselor') }
+                  }
+                  secondaryAction={
+                    continueIsPrimary
+                      ? { href: counselorHref, label: te('certificates.counselor') }
+                      : { href: MEMBER_PROGRAM_HREF, label: te('certificates.secondary') }
                   }
                 />
               </div>

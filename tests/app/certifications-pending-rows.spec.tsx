@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 
 /**
  * Review 2026-09-22, item 4: a Coursera-reported completion now creates a
@@ -21,6 +23,13 @@ vi.mock('next/link', () => ({
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async (input: unknown) => input) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/i18n/server', () => ({ getRequestLocale: vi.fn(async () => 'en') }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (ns: string) => (key: string) => {
+    let node: unknown = (en as Record<string, unknown>)[ns];
+    for (const part of key.split('.')) node = (node as Record<string, unknown> | undefined)?.[part];
+    return typeof node === 'string' ? node : `${ns}.${key}`;
+  }),
+}));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
 vi.mock('@/lib/member/memberProgramTrainingView', () => ({ loadMemberProgramTrainingView: vi.fn(async () => null) }));
 vi.mock('@/lib/db/prisma', () => ({
@@ -70,7 +79,7 @@ describe('/dashboard/certifications with pending and approved rows', () => {
       { id: 'cert-approved', certName: 'Networking Basics', earnedAt: new Date('2026-08-01T12:00:00.000Z'), status: 'approved' },
     ] as never);
 
-    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({}) }));
+    render(<NextIntlClientProvider locale="en" messages={en}>{await DashboardCertificationsPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
 
     const pendingTitle = screen.getByRole('heading', { name: 'Introduction to Technical Support' });
     expect(pendingTitle.closest('div[style]')?.parentElement).toHaveTextContent(/Pending verification · completed Sep 20, 2026/);
@@ -93,7 +102,7 @@ describe('/dashboard/certifications with pending and approved rows', () => {
   it('reads the status column so the page can tell the two apart', async () => {
     vi.mocked(prisma.userCertification.findMany).mockResolvedValue([] as never);
 
-    render(await DashboardCertificationsPage({ searchParams: Promise.resolve({}) }));
+    render(<NextIntlClientProvider locale="en" messages={en}>{await DashboardCertificationsPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
 
     const select = vi.mocked(prisma.userCertification.findMany).mock.calls[0][0]?.select;
     expect(select).toMatchObject({ status: true, certName: true, earnedAt: true });

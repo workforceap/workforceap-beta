@@ -1,7 +1,13 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render as rtlRender, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
 import { workforceApCourseHref } from '@/lib/content/courseDelivery';
+
+/** The kit reads its `empty.*` copy through next-intl, as the (portal) layout provides it. */
+const render = (ui: ReactElement) => rtlRender(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
 
 // The Coursera CTA is a tracked link backed by a server action. Keep the real
 // anchor mounted so the rendered href is the thing under assertion.

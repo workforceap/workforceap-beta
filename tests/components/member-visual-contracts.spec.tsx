@@ -33,7 +33,7 @@ describe('categorical totals retain their value without status-like colors', () 
   });
 
   it.each([0, 2])('credential totals keep the Verified label and value %i without inventing a verification state', (value) => {
-    render(<MemberCertificatesKit earnedCount={value} inProgressCount={value} verifiedCount={value} />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberCertificatesKit earnedCount={value} inProgressCount={value} verifiedCount={value} /></NextIntlClientProvider>);
     for (const label of ['Earned', 'In progress', 'Verified']) {
       expect(stat(label)).toHaveTextContent(String(value));
       expect(stat(label).style.color).toBe('');
@@ -44,13 +44,13 @@ describe('categorical totals retain their value without status-like colors', () 
   });
 
   it('keeps readiness category percentages unchanged and distinguishes a failed read from zero', () => {
-    const view = render(<MemberProgressKit readinessScore={25} weekStats={[{ value: '0%', label: 'Profile fixture', color: 'var(--wa-gold)' }, { value: '100%', label: 'Resume fixture', color: 'var(--wa-success)' }]} />);
+    const view = render(<NextIntlClientProvider locale="en" messages={en}><MemberProgressKit readinessScore={25} weekStats={[{ value: '0%', label: 'Profile fixture', color: 'var(--wa-gold)' }, { value: '100%', label: 'Resume fixture', color: 'var(--wa-success)' }]} /></NextIntlClientProvider>);
     for (const [label, value] of [['Profile fixture', '0%'], ['Resume fixture', '100%']]) {
       const number = screen.getByText(label).previousElementSibling as HTMLElement;
       expect(number).toHaveTextContent(value);
       expect(number.style.color).toBe('var(--wa-text)');
     }
-    view.rerender(<MemberProgressKit loadFailed />);
+    view.rerender(<NextIntlClientProvider locale="en" messages={en}><MemberProgressKit loadFailed /></NextIntlClientProvider>);
     expect(screen.getByText("Couldn't load your readiness score")).toBeInTheDocument();
     expect(screen.queryByText('Profile fixture')).not.toBeInTheDocument();
   });
@@ -59,7 +59,7 @@ describe('categorical totals retain their value without status-like colors', () 
 describe('program and coach presentation preserves actions', () => {
   it.each([false, true])('uses the independent hero action pair without changing course navigation (Coursera=%s)', (coursera) => {
     const href = coursera ? '/api/member/coursera/launch?course=fixture' : '/dashboard/learning';
-    render(<MemberProgramKit courseraLaunchHref={coursera ? href : undefined} resumeHref={href} missionsHref="/dashboard/missions" />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberProgramKit courseraLaunchHref={coursera ? href : undefined} resumeHref={href} missionsHref="/dashboard/missions" /></NextIntlClientProvider>);
     const action = screen.getByRole('link', { name: coursera ? 'Resume in Coursera' : 'Open Learning Hub' });
     expect(action).toHaveAttribute('href', href);
     expect(action.style.background).toBe('var(--wa-hero-action-bg)');

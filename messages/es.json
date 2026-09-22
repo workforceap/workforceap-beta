@@ -523,8 +523,6 @@
     "jobApplicationsCount": "{count, plural, one {# solicitud} other {# solicitudes}}",
     "addApplication": "Agregar solicitud",
     "browseJobs": "Ver empleos",
-    "jobApplicationsEmptyTitle": "Aún no hay solicitudes",
-    "jobApplicationsEmptyDesc": "Registra los roles a los que postulas—agrega uno manualmente o postula desde el tablero de empleos.",
     "jobApplicationsLoadError": "No pudimos cargar tus solicitudes. Revisa tu conexión e inténtalo de nuevo.",
     "jobApplicationsAddError": "No pudimos agregar esta solicitud. Revisa tu conexión e inténtalo de nuevo.",
     "jobApplicationsUpdateError": "No pudimos actualizar esta solicitud. Revisa tu conexión e inténtalo de nuevo.",
@@ -1171,18 +1169,9 @@
     "salaryHighToLow": "Salario (mayor a menor)",
     "salaryLowToHigh": "Salario (menor a mayor)",
     "match": "coincidencia",
-    "noJobsMatchFilters": "Ningún empleo coincide con tus filtros",
-    "tryAdjustingFilters": "Prueba ajustando tus filtros o límpialos para ver todos los empleos disponibles.",
     "clearFilters": "Limpiar filtros",
-    "noOpeningsListed": "No hay ofertas activas ahora",
-    "newRolesAppear": "Los socios empleadores aún no han publicado roles activos en este tablero. Actualiza tu perfil para estar listo cuando haya coincidencias, escribe a tu consejero para pistas y vuelve a revisar cuando haya nuevas publicaciones.",
-    "updateProfile": "Actualizar perfil",
     "messageCounselor": "Escribir a tu consejero",
     "improveJobMatches": "Mejorar coincidencias de empleo",
-    "noJobsAvailable": "No hay empleos disponibles ahora",
-    "newJobsAddedRegularly": "Los socios empleadores aún no han publicado roles activos en este tablero. Explora los programas de entrenamiento mientras esperas y vuelve a revisar cuando haya nuevas ofertas.",
-    "browsePrograms": "Explorar programas",
-    "applyForTraining": "Solicita entrenamiento",
     "searchJobs": "Buscar empleos",
     "sortBy": "Ordenar por",
     "allTypes": "Todos los tipos",
@@ -1585,7 +1574,6 @@
     "messagesSubtitle": "Línea directa con tu equipo de partnership de WorkforceAP: referidos, hitos y recursos.",
     "messagesMetaDescription": "Envía un mensaje al equipo de WorkforceAP.",
     "noMessagesYetTitle": "Aún no hay mensajes",
-    "noMessagesYetDescription": "Tu conversación de partnership con WorkforceAP aparecerá aquí después del primer mensaje.",
     "messagesAuditPaused": "El acceso a mensajes está disponible. El contenido, los acuses de lectura y la sincronización en tiempo real están en pausa para esta auditoría.",
     "noMilestonesYet": "Aún no hay hitos",
     "noMilestonesYetDescription": "Los hitos aparecerán aquí a medida que tus miembros avancen en la capacitación.",
@@ -3939,6 +3927,75 @@
       "title": "No se pudo cargar esta conversación",
       "body": "Inténtalo de nuevo o elige otra conversación de la lista.",
       "action": "Intentar de nuevo"
+    },
+    "certificates": {
+      "title": "Aún no hay certificados",
+      "body": "Aún no hay certificados registrados. Cuando Coursera informa un curso completado, lo agregamos aquí como certificado pendiente; nuestro equipo lo verifica antes de que cuente como obtenido. Los cursos de Coursera completados se muestran en Mi programa, y también puedes agregar abajo un certificado que hayas obtenido en otro lugar.",
+      "bodyKit": "Cuando Coursera informa un curso completado, aparece aquí como certificado pendiente; nuestro equipo lo verifica antes de que cuente como obtenido. Los cursos de Coursera completados se muestran en Mi programa.",
+      "action": "Agregar un certificado",
+      "secondary": "Mi programa",
+      "counselor": "Escribir al orientador",
+      "continue": "Continuar el curso"
+    },
+    "learningPathway": {
+      "title": "No hay una ruta de aprendizaje activa",
+      "body": "Empieza ahora con lo básico digital, sin solicitud, o elige un programa financiado.",
+      "action": "Empezar con lo básico digital, sin solicitud",
+      "secondary": "Elegir un programa"
+    },
+    "learningPathwayUnavailable": {
+      "title": "Tu programa aún no tiene una ruta",
+      "body": "La lista de cursos de tu programa aún no está publicada, así que no hay nada que seguir aquí. Escribe a tu orientador sobre en qué trabajar.",
+      "action": "Escribir al orientador"
+    },
+    "enrolledCourses": {
+      "title": "Aún no hay clases inscritas",
+      "body": "Elige un programa y su lista de cursos aparecerá aquí con tu progreso.",
+      "action": "Ir a Mi programa"
+    },
+    "enrolledCoursesUnavailable": {
+      "title": "Aún no hay cursos listados para tu programa",
+      "body": "La lista de cursos de tu programa aún no está publicada. Escribe a tu orientador sobre en qué trabajar.",
+      "action": "Escribir al orientador"
+    },
+    "modules": {
+      "title": "Aún no hay módulos en esta ruta",
+      "body": "La lista de cursos de tu programa aún no está publicada. Escribe a tu orientador sobre en qué trabajar.",
+      "action": "Escribir al orientador"
+    },
+    "assignedCourses": {
+      "title": "Aún no hay cursos asignados",
+      "body": "La lista de cursos de tu programa aún no está publicada. Tu orientador puede decirte en qué trabajar.",
+      "action": "Escribir al orientador"
+    },
+    "programResources": {
+      "title": "Aún no hay recursos para esta área del programa",
+      "body": "Aún no hemos agregado recursos para esta área del programa. Mientras tanto, tu orientador puede indicarte materiales.",
+      "action": "Escribir al orientador",
+      "secondary": "Todas las herramientas de IA"
+    },
+    "resourcesFiltered": {
+      "title": "Ningún recurso coincide con estos filtros",
+      "body": "Borra los filtros para ver todo lo que hay en la biblioteca.",
+      "action": "Borrar filtros"
+    },
+    "resourcesUnavailable": {
+      "title": "No hay recursos disponibles ahora",
+      "body": "Aún no hay nada publicado en la biblioteca de carrera. Tus otras herramientas de carrera siguen disponibles.",
+      "action": "Abrir herramientas de IA"
+    },
+    "categoryScores": {
+      "title": "Aún no hay puntajes por categoría",
+      "body": "Los puntajes se completan con tu perfil, currículum, capacitación y actividad de empleo."
+    },
+    "milestones": {
+      "title": "Aún no hay hitos",
+      "body": "Los hitos siguen las cuatro áreas de preparación a medida que se completan perfil, capacitación, empleos y participación."
+    },
+    "readinessUnavailable": {
+      "title": "No se pudo cargar tu puntaje de preparación",
+      "body": "Actualiza la página. Si esto sigue pasando, escribe a tu orientador.",
+      "action": "Abrir el coach de preparación"
     }
   }
 }

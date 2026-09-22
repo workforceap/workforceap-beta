@@ -1,6 +1,5 @@
 import { Users2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
 import { Token } from '@astryxdesign/core/Token';
@@ -42,29 +41,6 @@ function initialsOf(name: string): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-function MentorsCta({
-  href,
-  children,
-  variant = 'primary',
-}: {
-  href: string;
-  children: ReactNode;
-  variant?: 'primary' | 'secondary';
-}) {
-  return (
-    <Link
-      href={href}
-      className={
-        variant === 'secondary'
-          ? 'wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90'
-          : 'wa-kit-cta wa-kit-focus hover:wa-opacity-90'
-      }
-    >
-      {children}
-    </Link>
-  );
-}
-
 export function MemberMentorsKit({ mentors }: MemberMentorsKitProps) {
   const empty = mentors.length === 0;
 
@@ -86,18 +62,12 @@ export function MemberMentorsKit({ mentors }: MemberMentorsKitProps) {
         {empty ? (
           <div className="wa-kit-card">
             <KitEmptyState
+              kind={MENTORS_MEMBER_EMPTY.kind}
+              tone={MENTORS_MEMBER_EMPTY.statusTone}
               title={MENTORS_MEMBER_EMPTY.title}
               description={MENTORS_MEMBER_EMPTY.description}
-              action={
-                <div className="wa-flex wa-flex-wrap wa-gap-2">
-                  <MentorsCta href={MENTORS_MEMBER_EMPTY.primaryCta.href}>
-                    {MENTORS_MEMBER_EMPTY.primaryCta.label}
-                  </MentorsCta>
-                  <MentorsCta href={MENTORS_MEMBER_EMPTY.secondaryCta.href} variant="secondary">
-                    {MENTORS_MEMBER_EMPTY.secondaryCta.label}
-                  </MentorsCta>
-                </div>
-              }
+              primaryAction={MENTORS_MEMBER_EMPTY.primaryCta}
+              secondaryAction={MENTORS_MEMBER_EMPTY.secondaryCta}
             />
           </div>
         ) : (

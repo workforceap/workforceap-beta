@@ -522,8 +522,6 @@
     "jobApplicationsCount": "{count, plural, one {# candidature} other {# candidatures}}",
     "addApplication": "Ajouter une candidature",
     "browseJobs": "Parcourir les emplois",
-    "jobApplicationsEmptyTitle": "Aucune candidature pour l’instant",
-    "jobApplicationsEmptyDesc": "Suivez les postes auxquels vous postulez—ajoutez-en un manuellement ou postulez depuis le tableau des emplois.",
     "jobApplicationsLoadError": "Nous n’avons pas pu charger vos candidatures. Vérifiez votre connexion et réessayez.",
     "jobApplicationsAddError": "Nous n’avons pas pu ajouter cette candidature. Vérifiez votre connexion et réessayez.",
     "jobApplicationsUpdateError": "Nous n’avons pas pu mettre à jour cette candidature. Vérifiez votre connexion et réessayez.",
@@ -1114,18 +1112,9 @@
     "salaryHighToLow": "Salaire (élevé à bas)",
     "salaryLowToHigh": "Salaire (bas à élevé)",
     "match": "correspondance",
-    "noJobsMatchFilters": "Aucun emploi ne correspond à vos filtres",
-    "tryAdjustingFilters": "Essayez d'ajuster vos filtres ou effacez-les pour voir tous les emplois disponibles.",
     "clearFilters": "Effacer les filtres",
-    "noOpeningsListed": "Aucune offre active pour le moment",
-    "newRolesAppear": "Les employeurs partenaires n'ont pas encore publié de rôles actifs sur ce tableau. Mettez à jour votre profil pour être prêt quand des correspondances apparaîtront, écrivez à votre conseiller pour des pistes, et revenez après de nouvelles publications.",
-    "updateProfile": "Mettre à jour le profil",
     "messageCounselor": "Écrire à votre conseiller",
     "improveJobMatches": "Améliorer les correspondances",
-    "noJobsAvailable": "Aucun emploi disponible pour l'instant",
-    "newJobsAddedRegularly": "Les employeurs partenaires n'ont pas encore publié de rôles actifs sur ce tableau. Explorez les programmes de formation en attendant, et revenez après de nouvelles offres.",
-    "browsePrograms": "Parcourir les programmes",
-    "applyForTraining": "Postuler pour une formation",
     "searchJobs": "Rechercher des emplois",
     "sortBy": "Trier par",
     "allTypes": "Tous les types",
@@ -1528,7 +1517,6 @@
     "messagesSubtitle": "Ligne directe avec votre équipe de partenariat WorkforceAP — parrainages, étapes et ressources.",
     "messagesMetaDescription": "Envoyez un message à l’équipe WorkforceAP.",
     "noMessagesYetTitle": "Pas encore de messages",
-    "noMessagesYetDescription": "Votre conversation de partenariat WorkforceAP apparaîtra ici après le premier message.",
     "messagesAuditPaused": "L’accès à la messagerie est disponible. Le contenu, les accusés de lecture et la sync temps réel sont en pause pour cet audit.",
     "noMilestonesYet": "Pas encore d’étapes",
     "noMilestonesYetDescription": "Les étapes apparaîtront ici à mesure que vos membres progressent dans la formation.",
@@ -3879,6 +3867,75 @@
       "title": "Impossible de charger cette conversation",
       "body": "Réessayez ou choisissez une autre conversation dans la liste.",
       "action": "Réessayer"
+    },
+    "certificates": {
+      "title": "Aucun certificat pour l'instant",
+      "body": "Aucun certificat n'est encore enregistré. Lorsque Coursera signale un cours terminé, nous l'ajoutons ici comme certificat en attente ; notre équipe le vérifie avant qu'il compte comme obtenu. Les cours Coursera terminés s'affichent dans Mon programme, et vous pouvez aussi ajouter ci-dessous un certificat obtenu ailleurs.",
+      "bodyKit": "Lorsque Coursera signale un cours terminé, il apparaît ici comme certificat en attente ; notre équipe le vérifie avant qu'il compte comme obtenu. Les cours Coursera terminés s'affichent dans Mon programme.",
+      "action": "Ajouter un certificat",
+      "secondary": "Mon programme",
+      "counselor": "Écrire au conseiller",
+      "continue": "Continuer le cours"
+    },
+    "learningPathway": {
+      "title": "Aucun parcours d'apprentissage actif",
+      "body": "Commencez dès maintenant les bases du numérique, sans candidature, ou choisissez un programme financé.",
+      "action": "Commencer les bases du numérique, sans candidature",
+      "secondary": "Choisir un programme"
+    },
+    "learningPathwayUnavailable": {
+      "title": "Pas encore de parcours pour votre programme",
+      "body": "La liste des cours de votre programme n'est pas encore publiée, il n'y a donc rien à suivre ici. Écrivez à votre conseiller pour savoir sur quoi travailler.",
+      "action": "Écrire au conseiller"
+    },
+    "enrolledCourses": {
+      "title": "Aucun cours inscrit pour l'instant",
+      "body": "Choisissez un programme et sa liste de cours apparaîtra ici avec votre progression.",
+      "action": "Aller à Mon programme"
+    },
+    "enrolledCoursesUnavailable": {
+      "title": "Aucun cours listé pour votre programme pour le moment",
+      "body": "La liste des cours de votre programme n'est pas encore publiée. Écrivez à votre conseiller pour savoir sur quoi travailler.",
+      "action": "Écrire au conseiller"
+    },
+    "modules": {
+      "title": "Aucun module sur ce parcours pour le moment",
+      "body": "La liste des cours de votre programme n'est pas encore publiée. Écrivez à votre conseiller pour savoir sur quoi travailler.",
+      "action": "Écrire au conseiller"
+    },
+    "assignedCourses": {
+      "title": "Aucun cours attribué pour le moment",
+      "body": "La liste des cours de votre programme n'est pas encore publiée. Votre conseiller peut vous dire sur quoi travailler.",
+      "action": "Écrire au conseiller"
+    },
+    "programResources": {
+      "title": "Aucune ressource pour ce domaine de programme pour le moment",
+      "body": "Nous n'avons pas encore ajouté de ressources pour ce domaine de programme. En attendant, votre conseiller peut vous orienter vers des supports.",
+      "action": "Écrire au conseiller",
+      "secondary": "Tous les outils IA"
+    },
+    "resourcesFiltered": {
+      "title": "Aucune ressource ne correspond à ces filtres",
+      "body": "Effacez les filtres pour voir tout le contenu de la bibliothèque.",
+      "action": "Effacer les filtres"
+    },
+    "resourcesUnavailable": {
+      "title": "Aucune ressource disponible pour le moment",
+      "body": "Rien n'est encore publié dans la bibliothèque carrière. Vos autres outils carrière restent disponibles.",
+      "action": "Ouvrir les outils IA"
+    },
+    "categoryScores": {
+      "title": "Aucun score par catégorie pour le moment",
+      "body": "Les scores se remplissent à partir de votre profil, de votre CV, de votre formation et de votre activité d'emploi."
+    },
+    "milestones": {
+      "title": "Aucun jalon pour l'instant",
+      "body": "Les jalons suivent les quatre domaines de préparation au fur et à mesure que le profil, la formation, les emplois et l'engagement se remplissent."
+    },
+    "readinessUnavailable": {
+      "title": "Impossible de charger votre score de préparation",
+      "body": "Actualisez la page. Si cela persiste, écrivez à votre conseiller.",
+      "action": "Ouvrir le coach de préparation"
     }
   }
 }

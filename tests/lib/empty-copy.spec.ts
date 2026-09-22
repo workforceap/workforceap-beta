@@ -30,7 +30,7 @@ function shape(ns: Namespace): string[] {
 describe('empty.* copy', () => {
   it('has the same keys, all filled, in en/es/fr/pt', () => {
     const reference = shape(LOCALES.en);
-    expect(reference.length).toBeGreaterThanOrEqual(61);
+    expect(reference.length).toBeGreaterThanOrEqual(104);
     for (const [locale, ns] of Object.entries(LOCALES)) {
       expect(shape(ns), locale).toEqual(reference);
       for (const [group, leaf] of Object.entries(ns)) {
@@ -96,6 +96,39 @@ describe('empty.* copy', () => {
     expect(en.empty.conversationsFiltered.action).toBe('Clear search');
     expect(en.empty.applicationThreadUnavailable.title).toMatch(/could not load$/);
     expect(en.empty.applicationThreadUnavailable.action).toBe('Try again');
+  });
+
+  it('training surfaces: certificates keep the #2471 sentence; unpublished curricula are unavailable with a counselor route', () => {
+    // #2471 / item 4 words survive verbatim as the legacy body; the kit body
+    // drops only the self-add clause (the kit view has no add form).
+    expect(en.empty.certificates.title).toBe('No certificates yet');
+    expect(en.empty.certificates.body).toBe(
+      'No certificates are recorded yet. When Coursera reports a completed course we add it here as a pending certificate; our team verifies it before it counts as earned. Completed Coursera courses show in My program, and you can also add a certificate you earned elsewhere below.',
+    );
+    expect(en.empty.certificates.bodyKit).toMatch(/^When Coursera reports a completed course it appears here as a pending certificate; our team verifies it before it counts as earned\./);
+    expect(en.empty.certificates.bodyKit).not.toMatch(/add a certificate/i);
+    expect(en.empty.certificates.action).toBe('Add a certificate');
+    expect(en.empty.certificates.secondary).toBe('My program');
+    // First states: the thing, what appears here, the first action.
+    expect(en.empty.learningPathway.title).toBe('No active learning pathway');
+    expect(en.empty.learningPathway.action).toBe('Start digital basics, no application needed');
+    expect(en.empty.enrolledCourses.title).toBe('No enrolled classes yet');
+    expect(en.empty.enrolledCourses.body).toMatch(/appears here/);
+    for (const group of ['categoryScores', 'milestones'] as const) {
+      expect(en.empty[group].title).toMatch(/^No .+ yet$/);
+      expect(en.empty[group]).not.toHaveProperty('action');
+    }
+    // Unavailable states never say "will appear here once …": a missing
+    // curriculum, resource list or score is not something the member unlocks.
+    for (const group of ['learningPathwayUnavailable', 'enrolledCoursesUnavailable', 'modules', 'assignedCourses', 'programResources'] as const) {
+      expect(en.empty[group].body).toMatch(/counselor/);
+      expect(en.empty[group].body).not.toMatch(/once you|when your enrollment|will appear/i);
+      expect(en.empty[group].action).toBe('Message counselor');
+    }
+    expect(en.empty.resourcesFiltered.title).toBe('No resources match these filters');
+    expect(en.empty.resourcesFiltered.action).toBe('Clear filters');
+    expect(en.empty.resourcesUnavailable.action.length).toBeGreaterThan(0);
+    expect(en.empty.readinessUnavailable.title).toBe("Couldn't load your readiness score");
   });
 
   it('never promises a reply time', () => {

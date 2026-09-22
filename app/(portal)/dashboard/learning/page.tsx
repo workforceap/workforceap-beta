@@ -9,8 +9,8 @@ import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { buildPathwayMilestones } from '@/lib/content/pathwayStepDisplay';
 import PageHeader from '@/components/portal/PageHeader';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
-import { CardHead, ProgressRing, ProgressBar, StatusTag } from '@/components/portal/kit';
+import { getTranslations } from 'next-intl/server';
+import { CardHead, KitEmptyState, ProgressRing, ProgressBar, StatusTag } from '@/components/portal/kit';
 import LearningPathCard from '@/components/portal/LearningPathCard';
 import LearningHubDestinationCards from '@/components/portal/LearningHubDestinationCards';
 import LearningHubEnrolledCourses from '@/components/portal/LearningHubEnrolledCourses';
@@ -118,6 +118,37 @@ export default async function LearningPage() {
       ? Math.round((completedPathwaySteps / ACTIVE_PATHWAY.steps.length) * 100)
       : 0;
   const learningStatusLabel = overallPct > 0 ? 'In Progress' : 'Ready to start';
+  // `empty.*` (KIT_GUIDE §6). getPathwayForProgram is null for two different
+  // reasons: no enrolled program (`first` — start digital basics or choose a
+  // program) or an enrolled program whose curriculum version has no published
+  // courses (`unavailable` — nothing to choose, message the counselor).
+  const te = await getTranslations('empty');
+  const pathwayEmpty = ACTIVE_PATHWAY
+    ? null
+    : enrolledProgram
+      ? (
+        <KitEmptyState
+          kind="unavailable"
+          framed
+          headingAs="h3"
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }}>school</span>}
+          title={te('learningPathwayUnavailable.title')}
+          description={te('learningPathwayUnavailable.body')}
+          primaryAction={{ href: '/dashboard/messages', label: te('learningPathwayUnavailable.action') }}
+        />
+      )
+      : (
+        <KitEmptyState
+          kind="first"
+          framed
+          headingAs="h3"
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', fontVariationSettings: "'FILL' 1" }}>school</span>}
+          title={te('learningPathway.title')}
+          description={te('learningPathway.body')}
+          primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: te('learningPathway.action') }}
+          secondaryAction={{ href: '/dashboard/program', label: te('learningPathway.secondary') }}
+        />
+      );
 
   return (
     <>
@@ -134,17 +165,7 @@ export default async function LearningPage() {
       {/* Empty state when no enrolled program */}
       {!ACTIVE_PATHWAY && (
         <div style={{ margin: '0 1.5rem 1.5rem' }}>
-          <PortalEmptyState
-            icon={
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
-                school
-              </span>
-            }
-            title="No active learning pathway"
-            description="Start digital basics now — no application needed — or choose a funded program."
-            primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: 'Start digital basics, no application needed' }}
-            secondaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
-          />
+          {pathwayEmpty}
         </div>
       )}
 
@@ -205,17 +226,7 @@ export default async function LearningPage() {
 
       {!ACTIVE_PATHWAY && (
         <div style={{ marginBottom: 'var(--space-8)' }}>
-          <PortalEmptyState
-            icon={
-              <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
-                school
-              </span>
-            }
-            title="No active learning pathway"
-            description="Start digital basics now — no application needed — or choose a funded program."
-            primaryAction={{ href: digitalLiteracyFirstModuleHref(), label: 'Start digital basics, no application needed' }}
-            secondaryAction={{ href: '/dashboard/program', label: 'Choose a program' }}
-          />
+          {pathwayEmpty}
         </div>
       )}
     </div>
