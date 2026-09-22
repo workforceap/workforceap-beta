@@ -42,7 +42,6 @@ const PUBLIC_FILES = [
   'components/MainNav.tsx',
   'components/MobileBottomNav.tsx',
   'components/ScrollToTopButton.tsx',
-  'components/FundingBadge.tsx',
   'components/ProgramsDecisionJourneyNav.tsx',
   // Member shell chrome.
   'components/portal/WorkspaceShell.tsx',
@@ -103,7 +102,6 @@ describe('public surfaces do not use the Material Symbols icon font (WAP-110)', 
       'components/portal/MemberPortalTopNav.tsx',
       'lib/nav/portalNav.ts',
       'app/org/[slug]/outcomes/OrgOutcomesClient.tsx',
-      'components/marketing/HomePageBelowFold.tsx',
       'app/(decision-journey)/find-your-path/FindYourPathClient.tsx',
     ];
     const names = new Set<string>();

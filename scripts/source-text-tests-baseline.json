@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "description": "Test files that read application source text (WAP-175). This list may only shrink; new source-text tests fail scripts/verify-no-source-text-tests.mjs.",
   "frozenAt": "2026-09-20",
-  "updatedAt": "2026-09-20",
+  "updatedAt": "2026-09-22",
   "files": [
     "components/CookieConsentBanner.test.tsx",
     "components/portal/StatusBadge.test.tsx",
@@ -21,7 +21,6 @@
     "lib/marketing/publicUiRouteContract.test.ts",
     "lib/member/curriculumAssignmentWriters.test.ts",
     "lib/member/loadMemberDashboardHome.test.ts",
-    "lib/member/mentorsEmptyState.test.ts",
     "lib/nav/portalNav.test.ts",
     "lib/portal/kit-architecture.test.ts",
     "lib/portal/member-program-coursera-links.test.ts",

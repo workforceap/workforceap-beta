@@ -276,9 +276,9 @@ export default function MemberOnboardingWizard({
                 onChange={() => setProgramInterest(p.title)}
                 className="wa-mt-1"
               />
-              <span>
-                <span className="wa-font-medium wa-text-slate-900">{p.title}</span>
-                <span className="wa-block wa-text-xs wa-text-slate-500">{p.categoryLabel}</span>
+              <span className="wa-font-medium wa-text-slate-900">
+                {p.title}
+                <span className="wa-block wa-text-xs wa-font-normal wa-text-slate-500">{p.categoryLabel}</span>
               </span>
             </label>
           ))}

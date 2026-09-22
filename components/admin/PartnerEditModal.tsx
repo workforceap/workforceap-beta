@@ -263,10 +263,10 @@ export default function PartnerEditModal({ partner, subgroups, programs = [], on
 
           {partnerSubgroups.length > 0 && (
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.9rem' }}>
+              <span id="partner-edit-subgroup-label" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500, fontSize: '0.9rem' }}>
                 Subgroup assignment
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: 140, overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--outline-variant)', borderRadius: '6px' }}>
+              </span>
+              <div role="group" aria-labelledby="partner-edit-subgroup-label" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: 140, overflowY: 'auto', padding: '0.5rem', border: '1px solid var(--outline-variant)', borderRadius: '6px' }}>
                 {partnerSubgroups.map((s) => (
                   <label key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
                     <input

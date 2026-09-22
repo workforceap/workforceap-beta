@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 import LanguageToggle from '@/components/portal/LanguageToggle';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import LocalizedLink from '@/components/LocalizedLink';
 import { marketingButtonPresets } from '@/lib/marketing/buttonClasses';
 import { usePathname } from 'next/navigation';
@@ -335,7 +336,7 @@ export default function MainNav() {
     <nav className={`main-nav main-nav--depth${scrolled ? ' scrolled' : ''}`} aria-label="Main navigation">
       <div className="nav-container" ref={navContainerRef}>
         <LocalizedLink href="/" prefetch={false} className="logo nav-brand" aria-label="Workforce Advancement Project home" onClick={closeMobile}>
-          <img src="/images/wap_logo.png" alt="Workforce Advancement Project" width={210} height={107} className="nav-logo-image" />
+          <Image src="/images/wap_logo.png" alt="Workforce Advancement Project" width={210} height={107} priority className="nav-logo-image" />
         </LocalizedLink>
 
         {/* Mobile toggle */}
