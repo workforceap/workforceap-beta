@@ -7,6 +7,71 @@ vi.mock('next/link', () => ({
 
 import { DataTable, KitEmptyState, type KitEmptyKind } from '@/components/portal/kit';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import portalKitCss from '@/css/portal-kit.css?raw';
+import portalCss from '@/css/portal.css?raw';
+
+/** Mount the real portal stylesheets in the cascade order portal.css imports them. */
+function withPortalStyles(): () => void {
+  const style = document.createElement('style');
+  style.textContent = `${portalKitCss}\n${portalCss.replace(/@import[^;]+;/g, '')}`;
+  document.head.appendChild(style);
+  return () => style.remove();
+}
+
+/** (ids, classes/attrs/pseudo-classes, elements) for a simple selector — enough for the kit's flat selectors. */
+function specificity(selector: string): [number, number, number] {
+  const noPseudoEl = selector.replace(/::[\w-]+/g, ' x');
+  const ids = (noPseudoEl.match(/#[\w-]+/g) ?? []).length;
+  const classes = (noPseudoEl.match(/\.[\w-]+|\[[^\]]+\]|:(?!not\()[\w-]+(\([^)]*\))?/g) ?? []).length;
+  const elements = (noPseudoEl.replace(/\[[^\]]+\]|\([^)]*\)/g, '').match(/(^|[\s>+~])[a-z][\w-]*/gi) ?? []).length;
+  return [ids, classes, elements];
+}
+
+/**
+ * The declared value each property cascades to for `el` from the mounted
+ * stylesheets: every matching rule, ordered by !important, specificity, then
+ * source order — jsdom's getComputedStyle resolves too few properties to use
+ * directly. Shorthands are read as the author wrote them.
+ */
+function cascade(el: Element): Record<string, string> {
+  const hits: Array<{ prop: string; value: string; important: boolean; spec: [number, number, number]; order: number }> = [];
+  let order = 0;
+  let rules = 0;
+  for (const sheet of Array.from(document.styleSheets)) {
+    for (const rule of Array.from(sheet.cssRules)) {
+      const styleRule = rule as Partial<CSSStyleRule>;
+      if (typeof styleRule.selectorText !== 'string' || !styleRule.style) continue;
+      rules += 1;
+      for (const selector of styleRule.selectorText.split(',')) {
+        let matched = false;
+        try {
+          matched = el.matches(selector.trim());
+        } catch {
+          matched = false;
+        }
+        if (!matched) continue;
+        order += 1;
+        const decls = styleRule.style.cssText.split(';').map((d) => d.trim()).filter(Boolean);
+        for (const decl of decls) {
+          const idx = decl.indexOf(':');
+          if (idx < 0) continue;
+          const prop = decl.slice(0, idx).trim();
+          const raw = decl.slice(idx + 1).trim();
+          const important = /!important$/.test(raw);
+          hits.push({ prop, value: raw.replace(/\s*!important$/, ''), important, spec: specificity(selector), order });
+        }
+      }
+    }
+  }
+  expect(rules, 'stylesheets parsed').toBeGreaterThan(200);
+  hits.sort((a, b) =>
+    Number(a.important) - Number(b.important) ||
+    a.spec[0] - b.spec[0] || a.spec[1] - b.spec[1] || a.spec[2] - b.spec[2] ||
+    a.order - b.order);
+  const out: Record<string, string> = {};
+  for (const hit of hits) out[hit.prop] = hit.value;
+  return out;
+}
 
 /**
  * One empty-state component for the four situations (KIT_GUIDE §6): `kind`
@@ -102,6 +167,63 @@ describe('KitEmptyState — actions and icon', () => {
     expect(root.className).toContain('caller-class');
     expect(root).toHaveAttribute('data-kind', 'filtered');
     expect(screen.getByRole('link', { name: 'Clear' }).className).toContain('wa-kit-cta');
+  });
+});
+
+describe('KitEmptyState — cascade with the real stylesheets', () => {
+  it('a PortalEmptyState caller keeps the pre-consolidation box: left-aligned, --wa-pad, --wa-surface-2, --wa-border, --wa-radius, 28rem cap', () => {
+    const detach = withPortalStyles();
+    try {
+      const { container } = render(<PortalEmptyState title="No members yet" description="Invite one." />);
+      const root = container.firstElementChild as HTMLElement;
+      expect(root.getAttribute('style')).toBeNull();
+      const styles = cascade(root);
+      // The values the old component set inline; `.wa-kit-empty--framed` owns them now and
+      // `.portal-empty-state` (later in the cascade) no longer overrides them.
+      expect(styles['text-align']).toBe('left');
+      expect(styles.padding).toBe('var(--wa-pad)');
+      expect(styles.background).toBe('var(--wa-surface-2)');
+      expect(styles.border).toBe('1px solid var(--wa-border)');
+      expect(styles['border-radius']).toBe('var(--wa-radius)');
+      expect(styles['max-width']).toBe('28rem');
+      expect(styles.margin).toBe('0px auto');
+      const everything = Object.entries(styles).map(([k, v]) => `${k}:${v}`).join(';');
+      expect(everything).not.toMatch(/rgba?\(|#[0-9a-f]{3,8}\b|--radius-lg|--surface-container-lowest|2\.5rem/i);
+    } finally {
+      detach();
+    }
+  });
+
+  it('a bare KitEmptyState is not boxed by the framed rule', () => {
+    const detach = withPortalStyles();
+    try {
+      render(<KitEmptyState title="No rows yet" data-testid="bare" />);
+      const styles = cascade(screen.getByTestId('bare'));
+      expect(styles.padding).toBe('0px');
+      expect(styles['text-align']).toBe('left');
+      expect(styles.border).toBeUndefined();
+      expect(styles.background).toBeUndefined();
+    } finally {
+      detach();
+    }
+  });
+
+  it('sizes the icon chip from its content so a 48px icon is not clipped', () => {
+    const detach = withPortalStyles();
+    try {
+      render(<PortalEmptyState title="All caught up" icon={<svg width={48} height={48} data-testid="glyph" />} />);
+      const chip = screen.getByTestId('glyph').closest('[aria-hidden]') as HTMLElement;
+      expect(chip.className).toContain('wa-kit-empty-icon');
+      const styles = cascade(chip);
+      expect(styles.width).toBe('auto');
+      expect(styles.height).toBe('auto');
+      expect(styles['min-width']).toBe('34px');
+      expect(styles['min-height']).toBe('34px');
+      expect(styles.overflow).toBe('visible');
+      expect(styles['margin-bottom']).toBe('12px');
+    } finally {
+      detach();
+    }
   });
 });
 

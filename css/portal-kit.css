@@ -500,7 +500,14 @@ html.dark [data-surface] .wa-kit-card,
 .wa-kit-empty--clear:not(.wa-kit-empty--framed) {
   padding-left: var(--wa-pad-sm);
 }
+/* The icon chip hugs its content: callers pass 24-48px glyphs, so the fixed
+   34px .wa-kit-tone-icon box becomes a floor, never a clip. */
 .wa-kit-empty-icon {
+  width: auto;
+  height: auto;
+  min-width: 34px;
+  min-height: 34px;
+  overflow: visible;
   margin-bottom: 12px;
 }
 .wa-kit-empty-actions {
