@@ -107,13 +107,16 @@ describe('MemberHomeKit Course tile warning', () => {
    * assertion below vacuously true.
    */
   function courseTileTone(): string | null {
-    const card = screen.getByText('Course').closest('.wa-kit-card');
-    expect(card).not.toBeNull();
-    const row = card!.parentElement!;
+    // The home tiles are the kit StatSparkTile: the marked inner element declares
+    // the tone hook itself and sits inside an Astryx Card, whose parent is the row.
+    const tile = screen.getByText('Course').closest<HTMLElement>('[data-testid="stat-spark-tile"]');
+    expect(tile).not.toBeNull();
+    const card = tile!.parentElement!;
+    const row = card.parentElement!;
     expect(row.children).toHaveLength(4);
     expect(row.children[0]).toBe(card);
     expect(row.children[1].textContent).toContain('Active jobs');
-    const toned = card!.querySelector<HTMLElement>('[class*="wa-kit-tone--"]');
+    const toned = tile!.matches('[class*="wa-kit-tone--"]') ? tile : tile!.querySelector<HTMLElement>('[class*="wa-kit-tone--"]');
     return toned ? toned.className.match(/wa-kit-tone--(\w+)/)![1] : null;
   }
 

@@ -119,6 +119,15 @@ beforeAll(() => {
 });
 afterEach(cleanup);
 
+/**
+ * The SessionRunClient case mounts ten tool cards, opens every one and runs
+ * every runnable tool before it inspects the DOM. That is ~3-6 s of work in
+ * jsdom on an idle machine and blew through vitest's 5 s default under CI /
+ * parallel-worker load (#2468). The budget is raised for this one case only;
+ * the assertions are unchanged and the case is never skipped.
+ */
+const SESSION_RUN_TIMEOUT_MS = 30_000;
+
 describe('SessionRunClient paints from --wa-* tokens', () => {
   it('idle, done and error states carry no hex literal outside the allowlist', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => {
@@ -185,7 +194,7 @@ describe('SessionRunClient paints from --wa-* tokens', () => {
     // No legacy var(--color-green|error, #hex) fallbacks survive.
     expect(styles).not.toMatch(/var\(--color-(green|error|gold)/);
     vi.unstubAllGlobals();
-  });
+  }, SESSION_RUN_TIMEOUT_MS);
 });
 
 describe('AdminAnalyticsCharts paints from --wa-* tokens', () => {
