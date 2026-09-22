@@ -27,6 +27,7 @@ import {
   StatSparkTile,
   StatusTag,
   colorVar,
+  textColorVar,
   type KitColor,
   type KitTone} from '@/components/portal/kit';
 import AtRiskDetailModal from './AtRiskDetailModal';
@@ -889,17 +890,42 @@ function FilterChip({
 }) {
   // Severity chips carry an explicit KitColor; status chips reuse the
   // StatusTag tone→color mapping so "Open" reads the same everywhere.
-  // `ok` reads the text-on-success-tint token: --wa-success itself is a fill
-  // colour (3.1:1 on its own tint), not a text colour.
+  // TONE_COLOR is the fill hue (border, tint); the label reads TONE_TEXT below,
+  // because --wa-success / --wa-gold / --wa-info are fill colours (3.1–4.3:1
+  // as 13px text), not text colours.
   const TONE_COLOR: Record<KitTone, string> = {
-    ok: 'var(--wa-success-dark)',
+    ok: 'var(--wa-success)',
     warn: 'var(--wa-gold)',
     alert: 'var(--wa-accent)',
-    danger: '#b91c1c',
+    danger: 'var(--wa-danger)',
     info: 'var(--wa-info)',
     muted: 'var(--wa-muted)'};
+  // The label reads the text twin of the tone (--wa-gold-dark, --wa-info-dark,
+  // --wa-success-dark, --wa-danger-text ...): the fill hues measured 3.2–4.3:1
+  // for 13px text on --wa-bg (scout M6). Border and active tint keep the tone.
+  const TONE_TEXT: Record<KitTone, string> = {
+    ok: 'var(--wa-success-dark)',
+    warn: 'var(--wa-gold-dark)',
+    alert: 'var(--wa-accent-text)',
+    danger: 'var(--wa-danger-text)',
+    info: 'var(--wa-info-dark)',
+    muted: 'var(--wa-muted)'};
+  // Active fill: the tone's soft tint (the kit tag backgrounds), which the
+  // text twins are tuned against. A 14% color-mix of the fill hue left
+  // --wa-success-dark at 4.28:1 on the active "Low" chip.
+  const SOFT_BG: Partial<Record<KitColor | KitTone, string>> = {
+    accent: 'var(--wa-accent-soft)',
+    accentDark: 'var(--wa-accent-soft)',
+    gold: 'var(--wa-gold-soft)',
+    info: 'var(--wa-info-soft)',
+    success: 'var(--wa-success-soft)',
+    ok: 'var(--wa-success-soft)',
+    warn: 'var(--wa-gold-soft)',
+    alert: 'var(--wa-accent-soft)',
+    danger: 'var(--wa-danger-soft)'};
   const c = color ? colorVar(color) : tone ? TONE_COLOR[tone] : 'var(--wa-text)';
-  const activeBg = tone === 'ok' ? 'var(--wa-success-soft)' : `color-mix(in srgb, ${c} 14%, transparent)`;
+  const text = color ? textColorVar(color) : tone ? TONE_TEXT[tone] : 'var(--wa-text)';
+  const activeBg = SOFT_BG[color ?? tone ?? 'text'] ?? `color-mix(in srgb, ${c} 14%, transparent)`;
   return (
     <button
       type="button"
@@ -910,7 +936,7 @@ function FilterChip({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 6,
-        minHeight: 36,
+        minHeight: 40,
         padding: '6px 12px',
         borderRadius: 999,
         fontSize: 13,
@@ -918,7 +944,7 @@ function FilterChip({
         cursor: 'pointer',
         border: `1.5px solid ${active ? c : 'transparent'}`,
         background: active ? activeBg : 'var(--wa-bg)',
-        color: c}}
+        color: text}}
     >
       {Icon ? <Icon size={13} /> : null}
       {label}

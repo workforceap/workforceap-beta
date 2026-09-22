@@ -46,7 +46,7 @@ export default function PartnerConnectPayoutButton({
         {connecting ? 'Connecting…' : label}
       </button>
       {error ? (
-        <p role="alert" style={{ marginTop: '0.5rem', fontSize: '0.8125rem', color: 'var(--color-accent)' }}>
+        <p role="alert" style={{ marginTop: '0.5rem', fontSize: '0.8125rem', color: 'var(--wa-accent-text)' }}>
           {error}
         </p>
       ) : null}

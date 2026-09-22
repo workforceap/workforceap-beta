@@ -77,7 +77,7 @@ export default function MatchedRoles() {
       <section className="dashboard-matched-roles" style={{ marginTop: '1.5rem' }} role="alert">
         <h2 className="dashboard-today-label">Roles that match you</h2>
         <p style={{ color: 'var(--color-error)', fontSize: '0.9rem' }}>
-          Couldn’t load matched roles right now. Try refreshing, or browse the <Link href="/dashboard/jobs" style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>job board</Link>.
+          Couldn’t load matched roles right now. Try refreshing, or browse the <Link href="/dashboard/jobs" style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline' }}>job board</Link>.
         </p>
       </section>
     );
@@ -90,7 +90,7 @@ export default function MatchedRoles() {
         <PortalEmptyState
           title="No matched jobs yet"
           description="Check back soon as we add new employer opportunities, or browse the job board to see all openings."
-          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">work_outline</span>}
+          icon={<span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }} aria-hidden="true">work_outline</span>}
           primaryAction={{ label: 'Browse job board', href: '/dashboard/jobs' }}
         />
       </section>

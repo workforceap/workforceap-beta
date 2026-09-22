@@ -40,7 +40,7 @@ const primaryPillStyle = {
   width: '100%',
   padding: '10px 22px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: 'var(--wa-type-body)',
   borderRadius: 999,

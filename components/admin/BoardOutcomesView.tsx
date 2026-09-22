@@ -170,7 +170,7 @@ export default function BoardOutcomesView({
                   ),
                   align: 'right',
                   cell: (p) => (
-                    <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: 'var(--color-accent)' }}>{p.placed}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: 'var(--wa-accent-text)' }}>{p.placed}</span>
                   ),
                 },
                 {

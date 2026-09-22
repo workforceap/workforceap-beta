@@ -610,7 +610,7 @@ export default function ResumeCoachWorkspace() {
                     border: 'none',
                     background: 'none',
                     padding: 0,
-                    color: 'var(--color-accent)',
+                    color: 'var(--wa-accent-text)',
                     fontSize: '0.8125rem',
                     fontWeight: 700,
                     cursor: saveStatus === 'saving' ? 'wait' : 'pointer',

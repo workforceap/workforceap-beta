@@ -297,7 +297,7 @@
   border: 1px solid var(--wa-accent);
   border-radius: 999px;
   background: var(--wa-accent);
-  color: var(--wa-on-accent);
+  color: var(--wa-on-accent-control);
   font-weight: 600;
   font-size: var(--wa-type-body);
   font-family: inherit;

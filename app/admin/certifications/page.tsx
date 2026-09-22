@@ -190,7 +190,7 @@ export default async function AdminCertificationsAnalyticsPage({
                     </div>
                     <div style={{ display: 'flex', gap: '1.5rem', flexShrink: 0, textAlign: 'center' }}>
                       <div>
-                        <p style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--color-accent)', margin: 0, lineHeight: 1 }}>{r.totalCerts}</p>
+                        <p style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--wa-accent-text)', margin: 0, lineHeight: 1 }}>{r.totalCerts}</p>
                         <p style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-on-surface-variant)', margin: '0.2rem 0 0' }}>Certs</p>
                       </div>
                       <div>
@@ -222,7 +222,7 @@ export default async function AdminCertificationsAnalyticsPage({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: 0 }}>{c.user.fullName}</p>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-accent)', margin: '0.1rem 0 0', fontWeight: 600 }}>{c.certName}</p>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--wa-accent-text)', margin: '0.1rem 0 0', fontWeight: 600 }}>{c.certName}</p>
                   </div>
                   <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', flexShrink: 0 }}>
                     {c.earnedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

@@ -159,7 +159,7 @@ export default async function EmployerApplicationPage({
               <div>
                 <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>LinkedIn</span>
                 <p style={{ margin: '0.125rem 0 0' }}>
-                  <a href={application.student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)' }}>
+                  <a href={application.student.profile.profileLinkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--wa-accent-text)' }}>
                     View Profile
                   </a>
                 </p>
@@ -179,7 +179,7 @@ export default async function EmployerApplicationPage({
                     href={`/api/employer/applications/${encodeURIComponent(application.id)}/resume`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: 'var(--color-accent)' }}
+                    style={{ color: 'var(--wa-accent-text)' }}
                   >
                     Download Resume
                   </a>

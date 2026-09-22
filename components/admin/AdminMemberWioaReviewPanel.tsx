@@ -223,7 +223,7 @@ export default function AdminMemberWioaReviewPanel({
                 style={{
                   padding: '0.5rem 0.65rem',
                   borderRadius: '6px',
-                  background: 'var(--color-surface)',
+                  background: 'var(--wa-surface)',
                   border: '1px solid var(--outline-variant)',
                   fontSize: '0.82rem',
                 }}

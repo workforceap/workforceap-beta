@@ -90,8 +90,10 @@ function FitScoreBadge({ score }: { score: number }) {
   // --wa-gold-soft, the .wa-kit-tag--warn pattern): the previous #d97706 on
   // #fffbeb measured 3.07:1 for 12.8px text. High scores use the matching
   // text-on-success-tint pair: the previous #16a34a on #f0fdf4 measured 3.15:1.
-  const color = score >= 8 ? 'var(--wa-success-dark)' : score >= 5 ? 'var(--wa-gold-dark)' : '#dc2626';
-  const bg = score >= 8 ? 'var(--wa-success-soft)' : score >= 5 ? 'var(--wa-gold-soft)' : '#fef2f2';
+  // Low scores: the danger tag pair (--wa-danger-text on --wa-danger-soft);
+  // #dc2626 on #fef2f2 was 4.41:1 and the opaque tint glowed white in dark.
+  const color = score >= 8 ? 'var(--wa-success-dark)' : score >= 5 ? 'var(--wa-gold-dark)' : 'var(--wa-danger-text)';
+  const bg = score >= 8 ? 'var(--wa-success-soft)' : score >= 5 ? 'var(--wa-gold-soft)' : 'var(--wa-danger-soft)';
   return <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid color-mix(in srgb, ${color} 12%, transparent)`, fontVariantNumeric: 'tabular-nums' }}>{score}/10</span>;
 }
 
@@ -167,10 +169,12 @@ function needsAttention(m: Member): boolean {
 }
 
 function AttentionBadge({ reasons }: { reasons: string[] }) {
-  if (reasons.length === 0) return <span style={{ color: '#9ca3af' }}>—</span>;
+  if (reasons.length === 0) return <span style={{ color: 'var(--wa-muted)' }}>—</span>;
   const isNewOnly = reasons.length === 1 && reasons[0] === 'New';
-  const color = isNewOnly ? '#2563eb' : '#dc2626';
-  const bg = isNewOnly ? '#eff6ff' : '#fef2f2';
+  // Kit tag pairs (info / danger) so the chip follows dark mode: the former
+  // #2563eb on #eff6ff / #dc2626 on #fef2f2 were opaque light tints.
+  const color = isNewOnly ? 'var(--wa-info-dark)' : 'var(--wa-danger-text)';
+  const bg = isNewOnly ? 'var(--wa-info-soft)' : 'var(--wa-danger-soft)';
   return (
     <span
       title={reasons.join(' · ')}
@@ -184,7 +188,7 @@ function AttentionBadge({ reasons }: { reasons: string[] }) {
         fontWeight: 700,
         color,
         background: bg,
-        border: `1px solid ${color}25`,
+        border: `1px solid color-mix(in srgb, ${color} 15%, transparent)`,
         whiteSpace: 'nowrap',
       }}
     >
@@ -902,11 +906,11 @@ export default function MembersTable({
               header: 'Status',
               cell: (m) => {
                 const status = m.memberStatus ?? 'active';
-                // Same pair as the mobile card below: #16a34a on #f0fdf4 was 3.15:1.
-                const color = status === 'active' ? '#166534' : status === 'placed' ? '#2563eb' : '#9ca3af';
-                const bg = status === 'active' ? '#f0fdf4' : status === 'placed' ? '#eff6ff' : '#f3f4f6';
+                // Same pairs as the mobile card below (kit tag ok / info / muted).
+                const color = status === 'active' ? 'var(--wa-success-dark)' : status === 'placed' ? 'var(--wa-info-dark)' : 'var(--wa-muted-strong)';
+                const bg = status === 'active' ? 'var(--wa-success-soft)' : status === 'placed' ? 'var(--wa-info-soft)' : 'var(--wa-surface-2)';
                 return (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid color-mix(in srgb, ${color} 12%, transparent)`, textTransform: 'capitalize' }}>
                     {status}
                   </span>
                 );
@@ -1058,7 +1062,7 @@ export default function MembersTable({
                       aria-label={`Select ${m.fullName}`}
                     />
                   </label>
-                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--color-accent)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
                     {m.healthStatus && <HealthDot status={m.healthStatus} />}
                     {m.fullName}
                   </Link>
@@ -1094,10 +1098,12 @@ export default function MembersTable({
                 <span className="admin-portal-card__label">Status</span>{' '}
                 {(() => {
                   const status = m.memberStatus ?? 'active';
-                  const color = status === 'active' ? '#166534' : status === 'placed' ? '#2563eb' : '#4b5563';
-                  const bg = status === 'active' ? '#f0fdf4' : status === 'placed' ? '#eff6ff' : '#f3f4f6';
+                  // Token pairs (kit tag ok / info / muted): the hardcoded light
+                  // tints rendered as white pills on the dark card (scout M5).
+                  const color = status === 'active' ? 'var(--wa-success-dark)' : status === 'placed' ? 'var(--wa-info-dark)' : 'var(--wa-muted-strong)';
+                  const bg = status === 'active' ? 'var(--wa-success-soft)' : status === 'placed' ? 'var(--wa-info-soft)' : 'var(--wa-surface-2)';
                   return (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid ${color}20`, textTransform: 'capitalize' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.15rem 0.5rem', borderRadius: '50px', fontSize: '0.8125rem', fontWeight: 600, color, background: bg, border: `1px solid color-mix(in srgb, ${color} 12%, transparent)`, textTransform: 'capitalize' }}>
                       {status}
                     </span>
                   );

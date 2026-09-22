@@ -183,7 +183,7 @@ export default function JobsTableClient({
               key: 'job',
               header: header('Job', 'job'),
               cell: (j) => (
-                <Link href={`/admin/jobs/${j.id}`} style={{ fontWeight: 600, color: 'var(--color-accent)' }}>
+                <Link href={`/admin/jobs/${j.id}`} style={{ fontWeight: 600, color: 'var(--wa-accent-text)' }}>
                   {j.title}
                 </Link>
               ),

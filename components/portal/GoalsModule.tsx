@@ -302,7 +302,7 @@ export default function GoalsModule() {
             borderRadius: '0.75rem',
             background: 'rgba(173,44,77,0.08)',
             border: '1px solid rgba(173,44,77,0.2)',
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             fontSize: '0.875rem',
             display: 'flex',
             alignItems: 'center',

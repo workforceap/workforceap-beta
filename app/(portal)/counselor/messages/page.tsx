@@ -84,7 +84,7 @@ export default async function CounselorMessagesHubPage({ searchParams }: Props) 
             />
           </div>
           <p className="wa-hidden md:wa-block" style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-            <Link href="/counselor/students" style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
+            <Link href="/counselor/students" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
               {t('browseAllMembers')}
             </Link>
           </p>

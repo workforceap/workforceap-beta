@@ -147,7 +147,7 @@ export default function DataRetentionClient({
             padding: '0.75rem 1rem',
             background: 'rgba(173,44,77,0.1)',
             borderRadius: 'var(--radius-lg)',
-            color: 'var(--color-accent)',
+            color: 'var(--wa-accent-text)',
             marginBottom: '1rem',
           }}
         >

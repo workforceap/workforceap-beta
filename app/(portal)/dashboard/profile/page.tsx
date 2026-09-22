@@ -399,7 +399,7 @@ export default async function DashboardProfilePage({
                     fontWeight: 700,
                     background:
                       "color-mix(in srgb, var(--color-accent) 12%, transparent)",
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                   }}
                 >
                   {program.title}
@@ -576,7 +576,7 @@ export default async function DashboardProfilePage({
                   style={{
                     fontSize: "0.8125rem",
                     fontWeight: 700,
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                     textDecoration: "none",
                   }}
                 >
@@ -667,7 +667,7 @@ export default async function DashboardProfilePage({
                     style={{
                       fontSize: "2rem",
                       fontWeight: 800,
-                      color: "var(--color-accent)",
+                      color: "var(--wa-accent-text)",
                       letterSpacing: "-0.04em",
                       margin: 0,
                       lineHeight: 1,
@@ -801,7 +801,7 @@ export default async function DashboardProfilePage({
                   background: "var(--surface-container-low)",
                   borderRadius: "var(--radius-md)",
                   border: "1px solid var(--outline-variant)",
-                  color: "var(--color-accent)",
+                  color: "var(--wa-accent-text)",
                   fontWeight: 600,
                   fontSize: "0.875rem",
                   textDecoration: "none",
@@ -949,7 +949,7 @@ export default async function DashboardProfilePage({
                   style={{
                     fontSize: "0.875rem",
                     fontWeight: 700,
-                    color: "var(--color-accent)",
+                    color: "var(--wa-accent-text)",
                     marginBottom: "0.75rem",
                   }}
                 >

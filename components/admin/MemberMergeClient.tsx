@@ -164,7 +164,7 @@ export default function MemberMergeClient() {
       )}
 
       {error && (
-        <div style={{ padding: '1rem 1.25rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--color-accent)', fontSize: '0.875rem' }}>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(173,44,77,0.08)', border: '1px solid rgba(173,44,77,0.2)', borderRadius: '0.75rem', color: 'var(--wa-accent-text)', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -299,7 +299,7 @@ export default function MemberMergeClient() {
               </div>
             </div>
             <div style={cardStyle}>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-accent)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--wa-accent-text)', marginBottom: '0.5rem' }}>Duplicate (merged in)</div>
               <div style={{ fontWeight: 700, fontSize: '1rem' }}>{preview.secondary.fullName}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{preview.secondary.email}</div>
               <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem' }}>

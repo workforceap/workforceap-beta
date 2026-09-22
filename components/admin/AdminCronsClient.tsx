@@ -228,7 +228,7 @@ export default function AdminCronsClient({
                       onClick={() => toggleError(row.id)}
                       style={{
                         fontSize: '0.8125rem',
-                        color: 'var(--color-accent)',
+                        color: 'var(--wa-accent-text)',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
@@ -242,7 +242,7 @@ export default function AdminCronsClient({
                       <p
                         style={{
                           fontSize: '0.8125rem',
-                          color: 'var(--color-accent)',
+                          color: 'var(--wa-accent-text)',
                           margin: '0.25rem 0 0',
                           maxWidth: '300px',
                           whiteSpace: 'pre-wrap',

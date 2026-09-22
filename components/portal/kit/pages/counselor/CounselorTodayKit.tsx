@@ -21,7 +21,9 @@ import {
 } from '@/components/portal/kit';
 import { attentionReasonLabel, type AttentionSeverity } from '@/lib/attention/reasons';
 import type { TodayGroup, TodayGroupKey, TodayQueue, TodayRow } from '@/lib/attention/counselorViews';
+import { emptyApprovalQueue, type ApprovalQueue } from '@/lib/counselor/approvalQueue';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { CounselorApprovalQueue } from './CounselorApprovalQueue';
 
 /**
  * Counselor Portal — TODAY view: the landing page.
@@ -31,8 +33,13 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
  * the Overview, Inbox zero, Triage and Work queue flag (counselor audit
  * 2026-09-20, §4.1 and §6.1). Layout, top to bottom:
  *   1. Page opener ("Today") with a quiet link to the full roster.
- *   2. Three StatTiles: needs attention / reply owed / on track.
- *   3. One section per group (`TODAY_GROUP_ORDER`), each with its rows as
+ *   2. Four StatTiles: needs attention / reply owed / waiting on you / on track.
+ *      "Waiting on you" prints `approvals.rows.length`, the row count of the
+ *      approval queue below it (tile = table, #2470).
+ *   3. "Waiting on your decision": every application / intake check awaiting
+ *      this counselor, oldest first with an age clock
+ *      (`CounselorApprovalQueue`, lib/counselor/approvalQueue.ts).
+ *   4. One section per group (`TODAY_GROUP_ORDER`), each with its rows as
  *      severity-coded QueueRows and its own empty state. On-track members
  *      are never listed — the queue must not list everyone.
  *
@@ -51,6 +58,10 @@ export interface CounselorTodayKitProps {
   queue: TodayQueue;
   /** True when the attention queue could not be loaded; the page then shows only the failed-load card. */
   loadError?: boolean;
+  /** Decisions awaiting this counselor (lib/counselor/loadApprovalQueue.ts). `null` renders as empty. */
+  approvals?: ApprovalQueue | null;
+  /** True when the approval queue could not be loaded; only that section shows a retry. */
+  approvalsLoadError?: boolean;
   memberHrefBase?: string;
   rosterHref?: string;
   retryHref?: string;
@@ -191,11 +202,20 @@ function TodayGroupSection({ group, memberHrefBase }: { group: TodayGroup; membe
 export function CounselorTodayKit({
   queue,
   loadError = false,
+  approvals = null,
+  approvalsLoadError = false,
   memberHrefBase = '/counselor/students',
   rosterHref = '/counselor/students',
   retryHref = '/counselor/today',
 }: CounselorTodayKitProps) {
   const { totals } = queue;
+  const approvalQueue = approvals ?? emptyApprovalQueue();
+  const awaiting = approvalsLoadError ? 0 : approvalQueue.rows.length;
+  const awaitingTone: KitTone | undefined = approvalQueue.totals.overDoubleSla > 0
+    ? 'alert'
+    : approvalQueue.totals.overSla > 0
+      ? 'warn'
+      : undefined;
   const lede = loadError
     ? 'Your attention queue could not be loaded.'
     : totals.flagged === 0
@@ -232,7 +252,7 @@ export function CounselorTodayKit({
           </div>
         ) : (
           <>
-            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-3 wa-gap-3" data-tour="tour-today-attention">
+            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" data-tour="tour-today-attention">
               <TodayTile
                 id="flagged"
                 label="Needs attention"
@@ -247,8 +267,26 @@ export function CounselorTodayKit({
                 caption="Member message waiting 24h+ without a staff reply"
                 tone={totals.awaitingReply > 0 ? 'alert' : undefined}
               />
+              <TodayTile
+                id="awaiting-decision"
+                label="Waiting on you"
+                value={awaiting}
+                caption={
+                  approvalsLoadError
+                    ? 'Approval queue did not load'
+                    : `Approvals past ${approvalQueue.slaBusinessDays} business days: ${approvalQueue.totals.overSla}`
+                }
+                tone={approvalsLoadError ? undefined : awaitingTone}
+              />
               <TodayTile id="on-track" label="On track" value={totals.onTrack} caption="No flags today" tone="ok" />
             </div>
+
+            <CounselorApprovalQueue
+              queue={approvalQueue}
+              loadError={approvalsLoadError}
+              memberHrefBase={memberHrefBase}
+              retryHref={retryHref}
+            />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} data-tour="tour-today-queue">
               {queue.groups.map((group) => (

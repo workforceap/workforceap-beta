@@ -56,7 +56,7 @@ export default async function DashboardAccountPage() {
                   flexShrink: 0,
                 }}
               >
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem' }} aria-hidden="true">mail</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem' }} aria-hidden="true">mail</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: '0 0 0.375rem' }}>
@@ -87,7 +87,7 @@ export default async function DashboardAccountPage() {
                   flexShrink: 0,
                 }}
               >
-                <span className="material-symbols-outlined" style={{ color: 'var(--color-accent)', fontSize: '1.125rem' }} aria-hidden="true">lock</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.125rem' }} aria-hidden="true">lock</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-on-surface)', margin: '0 0 0.375rem' }}>
@@ -105,7 +105,7 @@ export default async function DashboardAccountPage() {
         </div>
 
         <p style={{ marginTop: '1.5rem', fontSize: '0.8125rem' }}>
-          <Link href="/dashboard/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+          <Link href="/dashboard/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: 'var(--wa-accent-text)', fontWeight: 600, textDecoration: 'none' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '0.9375rem' }} aria-hidden="true">arrow_back</span>
             {t('backToProfile')}
           </Link>

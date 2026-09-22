@@ -160,7 +160,7 @@ export default function TestimonialsAdminClient() {
             padding: '0.625rem 0.875rem',
             borderRadius: '0.625rem',
             background: msg.type === 'ok' ? 'rgba(74,155,79,0.1)' : 'rgba(173,44,77,0.1)',
-            color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--color-accent)',
+            color: msg.type === 'ok' ? 'var(--wa-success-dark)' : 'var(--wa-accent-text)',
             fontSize: '0.875rem',
             marginBottom: '1rem',
           }}
@@ -215,7 +215,7 @@ export default function TestimonialsAdminClient() {
       {statusFilter && (
         <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
           Showing: <strong>{statusFilter}</strong>{' '}
-          <button onClick={() => setStatusFilter('')} style={{ color: 'var(--color-accent)', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button onClick={() => setStatusFilter('')} style={{ color: 'var(--wa-accent-text)', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
             Clear filter
           </button>
         </div>

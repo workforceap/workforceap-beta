@@ -112,7 +112,7 @@ export default function MobileProgramTrainingCard({
                       minHeight: '44px',
                     }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '1.35rem', color: 'var(--color-accent)', fontVariationSettings: "'FILL' 1" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '1.35rem', color: 'var(--wa-accent-text)', fontVariationSettings: "'FILL' 1" }}>
                       school
                     </span>
                     <span className="wa-text-[13px] wa-font-extrabold wa-uppercase wa-tracking-[0.08em] wa-text-[var(--color-accent-dark)]" style={{ lineHeight: 1.2 }}>

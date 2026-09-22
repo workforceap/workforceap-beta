@@ -298,7 +298,7 @@ export default function PrivacySettingsPage() {
 
       <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--outline-variant)' }}>
         <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>
-          {t('questionsContact')} <a href="mailto:privacy@workforceap.org" style={{ color: 'var(--color-accent)' }}>privacy@workforceap.org</a>
+          {t('questionsContact')} <a href="mailto:privacy@workforceap.org" style={{ color: 'var(--wa-accent-text)' }}>privacy@workforceap.org</a>
         </p>
       </div>
     </div>

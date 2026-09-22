@@ -37,7 +37,7 @@ const kitBtnSolid: CSSProperties = {
   minHeight: 44,
   padding: '10px 16px',
   background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent)',
+  color: 'var(--wa-on-accent-control)',
   border: '1px solid var(--wa-accent)',
   fontWeight: 600,
   fontSize: 'var(--wa-type-body)',
@@ -451,7 +451,7 @@ export default function ElevatorPitchClient({
               minHeight: 44,
               borderRadius: 999,
               background: 'var(--wa-accent)',
-              color: 'var(--wa-on-accent)',
+              color: 'var(--wa-on-accent-control)',
               fontSize: 'var(--wa-type-meta)',
               fontWeight: 700,
             }}
