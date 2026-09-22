@@ -7,7 +7,7 @@
     "reviewDate": "2026-09-12",
     "scope": "Repository-wide static inventory plus independent targeted audits. Live runtime, production data and provider state are not inferred from source."
   },
-  "inputTreeSha256": "e2b7e59fd933936fb94016cd6197a4c2131146a57a5b21d0748b4e399dbbb820",
+  "inputTreeSha256": "b20cc9698120722deba97c7482948af99d6205a3243c2815bb10bf730fb1de2b",
   "scope": "Every tracked path except this generator output directory. Untracked/ignored files are excluded. Symlinks, submodules, private dotenv/key/database paths and missing tracked files have metadata-only entries; their content is not read.",
   "extractionLimits": "AST extraction covers JS/TS variants only, not Astro frontmatter, shell, generated runtime behavior, computed environment names, or a complete call graph. Symbols are top-level declarations plus static ESM/CommonJS exports. Route indexing covers Next page/route/layout boundaries and Astro page filename patterns, not every metadata/file convention, dynamic expansion, or deployed precedence.",
   "excludedOutputPrefix": "docs/knowledge-base/generated/",
@@ -179060,9 +179060,9 @@
       "path": "tests/migrations/wap76-course-slug-remap.mjs",
       "area": "tests",
       "domain": "tests",
-      "bytes": 18124,
-      "lines": 393,
-      "sha256": "12104d8192b70d24f0161d431f07ada258db0f744ec8ea79661954cdd2289c87",
+      "bytes": 20061,
+      "lines": 437,
+      "sha256": "83f05014440312369198c08b21291cda2f2c5d65921bd066fda0534ae05b0b7c",
       "binary": false,
       "exports": [],
       "declarations": [
