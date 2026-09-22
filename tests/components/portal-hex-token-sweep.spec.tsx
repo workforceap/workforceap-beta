@@ -26,10 +26,13 @@ const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 const BARE_RGB = /\brgb\(\d+,\s*\d+,\s*\d+\)/g;
 const ALLOWED_RGB = new Set(['rgb(0, 119, 181)']);
 
+// AdminHealthPage's describe below switches this to ?ui=legacy; every other
+// surface here renders with empty search params.
+const searchParamsState = vi.hoisted(() => ({ current: new URLSearchParams() }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
   usePathname: () => '/dashboard',
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => searchParamsState.current,
 }));
 // VoiceAgentSurface paints from lib/portal/voiceAgentSurfaces.ts and has its
 // own describe below (rendered through vi.importActual); stub it here so this
@@ -456,5 +459,50 @@ describe('AdminAnalyticsCharts grid', () => {
     for (const line of lines) expect(line.getAttribute('stroke')).toBe('var(--wa-border)');
     // The old `rgba(255,255,255,0.05)` was white-on-white in light mode.
     expect(lines.some((l) => /rgba\(255,\s*255,\s*255/.test(l.getAttribute('stroke') ?? ''))).toBe(false);
+  });
+});
+
+describe('AdminHealthPage paints the failing status from --color-accent', () => {
+  const check = (status: 'ok' | 'fail') => ({ status, latencyMs: 12 });
+  const unhealthy = {
+    status: 'unhealthy',
+    generatedAt: '2026-09-22T12:00:00.000Z',
+    checks: {
+      database: check('fail'),
+      redis: check('ok'),
+      prisma: check('ok'),
+      cronJobs: { ...check('ok'), failures: 0 },
+      webhooks: { ...check('ok'), pendingRetries: 0 },
+      xapi: { ...check('ok'), pendingStatements: 0 },
+      aiTools: { ...check('ok'), queueDepth: 0 },
+      email: { ...check('ok'), backlog: 0 },
+      emailDelivery: { ...check('ok'), sent24h: 0, failed24h: 0, bounced24h: 0, webhookConfigured: true, lastWebhookAt: null },
+      discordNotifications: { ...check('ok'), configured: true, errors24h: 0, dropped24h: 0 },
+      webPush: { ...check('ok'), configured: true, subscriptions: 0, errors24h: 0 },
+    },
+  };
+
+  afterEach(() => {
+    searchParamsState.current = new URLSearchParams();
+    vi.unstubAllGlobals();
+  });
+
+  it('legacy view: the unhealthy banner and failing tile read var(--color-accent) with no hex fallback', async () => {
+    searchParamsState.current = new URLSearchParams('ui=legacy');
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => unhealthy })));
+    const { default: AdminHealthPage } = await import('@/app/admin/health/page');
+    const { container } = render(<AdminHealthPage />);
+    await screen.findByText(/System Health/);
+    await waitFor(() => expect(screen.queryByText(/Loading health data/)).toBeNull());
+
+    const accentStyles = paintedValues(container).filter((v) => v.includes('--color-accent'));
+    expect(accentStyles.length).toBeGreaterThan(0);
+    expect(allLiterals(container)).toEqual([]);
+
+    // The alias the page relies on is defined by the portal token sheet, so
+    // the former #ad2c4d fallback was dead weight.
+    const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'), readCss('css/portal-tokens.css'));
+    expect(tokens.has('--color-accent')).toBe(true);
+    expect(colorOf('var(--color-accent)', tokens, 'light').a).toBeGreaterThan(0);
   });
 });
