@@ -10,6 +10,7 @@ import {
   EMAIL_TEMPLATE_ENTITY_TYPE,
   parseEmailFailureMetadata,
 } from '@/lib/email/failureRecord';
+import { mirrorResendOntoEmailFailureSnapshot } from '@/lib/email/failureSnapshot';
 import { getResendableTemplate, validateResendParams } from '@/lib/email/resendRegistry';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -25,7 +26,9 @@ const ROUTE = 'admin/email-failures/resend';
  * name and the wrapper's params; the same wrapper is invoked with the same
  * payload. The outcome is written as a second diagnostic (method
  * `admin_resend`, success or error), the original row is stamped with the
- * result, and the action is audit-logged. Rows written before templates were
+ * result — and so is its `email_failure_snapshots` copy, if one exists, since
+ * that copy is never otherwise refreshed (WAP-163) — and the action is
+ * audit-logged. Rows written before templates were
  * stored (the historical backlog) answer 422: replaying those is a decision
  * for staff, per template family, not a button.
  */
@@ -101,17 +104,27 @@ export const POST = withApiGuc(async (
     const originalMetadata = row.metadata !== null && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
       ? (row.metadata as Record<string, unknown>)
       : {};
+    const resendStamp = {
+      resentAt: resentAt.toISOString(),
+      resentOk: result.ok,
+      resentDiagnosticId: outcome.id,
+    };
     await prisma.workflowDiagnostic.update({
       where: { id: row.id },
-      data: {
-        metadata: {
-          ...originalMetadata,
-          resentAt: resentAt.toISOString(),
-          resentOk: result.ok,
-          resentDiagnosticId: outcome.id,
-        },
-      },
+      data: { metadata: { ...originalMetadata, ...resendStamp } },
     });
+
+    // WAP-163: this row may already have been copied into
+    // `email_failure_snapshots`, and that copy is written with
+    // `skipDuplicates`, so nothing else will ever refresh it. Stamp the replay
+    // onto the copy too, or the evidence outlives the source still claiming
+    // the failure was never re-sent. A no-op when the row has not been
+    // snapshotted yet. Left deliberately un-caught, exactly like the source
+    // update above it: a failure here answers 500 through this route's existing
+    // handler rather than silently leaving the two records disagreeing. The
+    // send itself is already recorded in the outcome diagnostic and the audit
+    // log, so it is never lost by that 500.
+    await mirrorResendOntoEmailFailureSnapshot(prisma, row.id, resendStamp);
 
     await auditLog({
       actorUserId: user.id,
