@@ -9,7 +9,7 @@ export default function ApplyStatusClient() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ found: boolean; message: string } | null>(null);
+  const [result, setResult] = useState<{ found: boolean; message: string; email: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function ApplyStatusClient() {
         return;
       }
       if (typeof data.found === 'boolean' && data.message) {
-        setResult({ found: data.found, message: data.message });
+        setResult({ found: data.found, message: data.message, email: email.trim() });
       } else {
         setError(t('statusErrorUnexpected'));
       }
@@ -69,7 +69,19 @@ export default function ApplyStatusClient() {
           className={`apply-status-result${result.found ? ' apply-status-result--found' : ''}`}
           role="status"
         >
-          <p style={{ margin: 0 }}>{result.message}</p>
+          {result.found ? (
+            <p style={{ margin: 0 }}>{result.message}</p>
+          ) : (
+            <>
+              <p style={{ margin: 0, fontWeight: 600 }}>{t('statusNotFoundTitle', { email: result.email })}</p>
+              <p style={{ margin: '0.5rem 0 0' }}>{t('statusNotFoundBody')}</p>
+              <p style={{ margin: '0.5rem 0 0' }}>
+                {t('statusNotFoundContactBefore')}{' '}
+                <LocalizedLink href="/contact">{t('statusNotFoundContactLink')}</LocalizedLink>{' '}
+                {t('statusNotFoundContactAfter')}
+              </p>
+            </>
+          )}
           <p style={{ margin: '0.75rem 0 0.5rem' }}>{t('statusLoginCtaLead')}</p>
           <LocalizedLink href="/login?redirectTo=/dashboard" className="btn btn-primary">
             {t('statusLoginCta')}
