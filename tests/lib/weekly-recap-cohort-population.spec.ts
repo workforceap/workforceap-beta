@@ -73,6 +73,14 @@ const certs = [
   { userId: 'staff-super' },
 ];
 
+// Course enrollments this week: the dogfooder's, plus one for a member who
+// enrolled in a course without a user.enrolledAt this week. "Enrollments" is
+// the union of both halves; the staff half must be filtered like the first.
+const courseEnrollments = [
+  { userId: 'staff-super', enrolledAt: THIS_WEEK, user: () => roster.find((u) => u.id === 'staff-super')! },
+  { userId: 'member-c', enrolledAt: THIS_WEEK, user: () => roster.find((u) => u.id === 'member-c')! },
+];
+
 const toolRuns = [
   { userId: 'member-a', createdAt: daysAgo(1) },
   { userId: 'staff-super', createdAt: daysAgo(1) },
@@ -119,7 +127,12 @@ vi.mock('@/lib/db/prisma', () => ({
     userCertification: { findMany: vi.fn(async () => certs) },
     aIToolResult: { findMany: vi.fn(async () => toolRuns), groupBy: vi.fn(async () => []) },
     application: { findMany: vi.fn(async () => []) },
-    courseEnrollment: { findMany: vi.fn(async () => []) },
+    courseEnrollment: {
+      findMany: vi.fn(async ({ where }: Query) =>
+        courseEnrollments
+          .map((row) => ({ userId: row.userId, enrolledAt: row.enrolledAt, user: row.user() }))
+          .filter((row) => matchesWhere(row, where ?? {}))),
+    },
     message: { count: vi.fn(async () => 0), findMany: vi.fn(async () => []) },
     applicationMessage: { count: vi.fn(async () => 0) },
     counselor: { findMany: vi.fn(async () => []) },
@@ -164,8 +177,11 @@ describe('weekly recap and cohort tables count members only', () => {
   it('the scoreboard counts member enrollments, and at-risk means a member with no activity of their own', async () => {
     const board = await getWeeklyScoreboardStats(NOW, null);
 
-    // Three accounts enrolled this ISO week; one is a member.
-    expect(board.comparison.enrollments).toBe(1);
+    // Enrollments is a union: three accounts got user.enrolledAt this ISO week
+    // (member-a, the dogfooder, the fixture) and two course enrollments were
+    // written (the dogfooder again, member-c). Members only: member-a + member-c.
+    expect(courseEnrollments).toHaveLength(2);
+    expect(board.comparison.enrollments).toBe(2);
 
     // At risk: member-b (mailed, never acted) and member-c (silent). Not
     // member-a (signed in yesterday), not the staff account, not the fixture.

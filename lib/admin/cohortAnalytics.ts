@@ -256,7 +256,9 @@ export async function getWeeklyScoreboardStats(now = new Date(), orgId?: string 
       orderBy: { enrolledAt: 'desc' },
     }),
     prisma.courseEnrollment.findMany({
-      where: { enrolledAt: { gte: lastWeekStart, lt: weekEndExclusive }, user: { deletedAt: null, ...(orgId ? { organizationId: orgId } : {}) } },
+      // Same member predicate as the user.enrolledAt half above: this half of
+      // the "Enrollments" union admitted a staff course enrollment (#2467 review).
+      where: { enrolledAt: { gte: lastWeekStart, lt: weekEndExclusive }, user: { deletedAt: null, ...MEMBER_ONLY_WHERE, ...(orgId ? { organizationId: orgId } : {}) } },
       select: { userId: true, enrolledAt: true },
       take: ANALYTICS_COHORT_DETAIL_CAP,
       orderBy: { enrolledAt: 'desc' },
